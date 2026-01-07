@@ -11,12 +11,11 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,27 +30,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 class CodeboekApiClientTest {
     private static final MockWebServer SERVER = new MockWebServer();
-    private static URI baseUri;
-    @Spy
-    private final WebClient.Builder webClientBuilder = WebClient.builder();
-    @SuppressWarnings("unused")
-    @Spy
-    private final MijnAansluitingConfiguration config = new MijnAansluitingConfiguration(
-            "continuous-id",
-            "http://localhost",
-            new ClientID("id"),
-            new Scope("scope"),
-            baseUri,
-            "api-token",
-            URI.create("http://localhost")
-    );
-    @InjectMocks
     private CodeboekApiClient client;
 
     @BeforeAll
-    static void setup() throws IOException {
+    static void startServer() throws IOException {
         SERVER.start();
-        baseUri = SERVER.url("/").uri();
+    }
+
+    @BeforeEach
+    void setupClient() {
+        client = new CodeboekApiClient(new MijnAansluitingConfiguration(
+                "continuous-id",
+                "http://localhost",
+                new ClientID("id"),
+                new Scope("scope"),
+                SERVER.url("/").uri(),
+                "api-token",
+                URI.create("http://localhost")
+        ), WebClient.builder());
     }
 
     @AfterAll
@@ -138,6 +134,7 @@ class CodeboekApiClientTest {
                     .verify();
         assertEquals(Status.DOWN, client.health().getStatus());
     }
+
     @Test
     void meteringPoints_withUnrelatedError_doesNotSetHealth() {
         // Given

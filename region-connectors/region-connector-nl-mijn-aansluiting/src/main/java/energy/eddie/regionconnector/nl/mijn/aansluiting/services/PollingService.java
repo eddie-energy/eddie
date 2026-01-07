@@ -192,12 +192,12 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
         }
         var lastMeterReadings = new HashMap<String, ZonedDateTime>();
         for (MijnAansluitingResponse mijnAansluitingResponse : response) {
-            for (Register register : mijnAansluitingResponse.getMarketEvaluationPoint().getRegisterList()) {
+            for (Register register : mijnAansluitingResponse.marketEvaluationPoint().registerList()) {
 
                 // Update the last meter readings, even the ones that were already fulfilled.
                 // That way we always have the latest information, for the fulfillment-handler
-                var timestamp = register.getReadingList().getLast().getDateAndOrTime().getDateTime();
-                String meteringPointId = register.getMeter().getMRID();
+                var timestamp = register.readingList().getLast().dateAndOrTime().dateTime();
+                String meteringPointId = register.meter().mrid();
                 lastMeterReadings.put(meteringPointId, timestamp);
 
                 // Remove already received meter readings or before the start date from the response
@@ -228,15 +228,15 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
 
     private static void removeMeterReadings(Register register, Predicate<ZonedDateTime> func) {
         List<Reading> list = new ArrayList<>();
-        for (Reading reading : register.getReadingList()) {
-            var dateTime = reading.getDateAndOrTime().getDateTime();
+        for (Reading reading : register.readingList()) {
+            var dateTime = reading.dateAndOrTime().dateTime();
             if (func.test(dateTime)) {
                 list.add(reading);
             }
         }
         LOGGER.atDebug()
               .addArgument(list::size)
-              .addArgument(() -> register.getReadingList().size())
+              .addArgument(() -> register.readingList().size())
               .log("Retained meter readings resulting in a list of {} out of {} initial records");
 
         register.setReadingList(list);
@@ -263,13 +263,13 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
         var newResponseList = new ArrayList<MijnAansluitingResponse>();
         for (MijnAansluitingResponse mijnAansluitingResponse : mijnAansluitingResponses) {
             var newRegisterList = new ArrayList<Register>();
-            for (Register register : mijnAansluitingResponse.getMarketEvaluationPoint().getRegisterList()) {
+            for (Register register : mijnAansluitingResponse.marketEvaluationPoint().registerList()) {
                 if (isEnergyType(register, energyType)) {
                     newRegisterList.add(register);
                 }
             }
             if (!newRegisterList.isEmpty()) {
-                mijnAansluitingResponse.getMarketEvaluationPoint()
+                mijnAansluitingResponse.marketEvaluationPoint()
                                        .setRegisterList(newRegisterList);
                 newResponseList.add(mijnAansluitingResponse);
             }
@@ -278,8 +278,8 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
     }
 
     private static boolean isEnergyType(Register register, String energyType) {
-        return register.getMeter()
-                       .getMRID()
+        return register.meter()
+                       .mrid()
                        .startsWith(energyType);
     }
 }

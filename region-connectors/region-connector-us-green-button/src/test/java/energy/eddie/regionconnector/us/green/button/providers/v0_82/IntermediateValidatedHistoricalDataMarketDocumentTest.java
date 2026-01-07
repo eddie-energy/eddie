@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequest
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.providers.IdentifiableSyndFeed;
+import energy.eddie.regionconnector.us.green.button.providers.UnsupportedUnitException;
 import org.junit.jupiter.api.Test;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.xml.sax.InputSource;
@@ -100,7 +101,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                                            seriesPeriod.getTimeInterval().getStart()),
                                         () -> assertEquals("2024-09-03T00:15Z",
                                                            seriesPeriod.getTimeInterval().getEnd()),
-                                        () -> assertEquals(String.valueOf(1725321600),
+                                        () -> assertEquals(String.valueOf(1),
                                                            seriesPeriod.getPointList()
                                                                        .getPoints()
                                                                        .getFirst()

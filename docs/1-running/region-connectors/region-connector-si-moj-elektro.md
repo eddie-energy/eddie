@@ -1,6 +1,7 @@
 # Region Connector for Slovenia (Moj Elektro)
 
 This README will guide you through the process of configuring a region connector for Slovenia.
+The OpenAPI specs for Moj Elektro can be found [here](https://docs.informatika.si/mojelektro/api/).
 
 ## Prerequisites
 

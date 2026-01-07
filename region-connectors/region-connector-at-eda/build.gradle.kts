@@ -1,15 +1,15 @@
+import de.undercouch.gradle.tasks.download.Download
+import de.undercouch.gradle.tasks.download.VerifyAction
 import energy.eddie.configureJavaCompileWithErrorProne
-import org.apache.http.HttpStatus
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.io.FileOutputStream
 import java.net.URI
+import java.util.zip.ZipFile
 
 plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
 
+    alias(libs.plugins.undercouch.download)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -21,8 +21,44 @@ repositories {
     mavenCentral()
 }
 
+// This section defines the different versions of the ebutilities schemas that are currently used by the EDA Region Connector.
+// The checksums are used to guarantee stable schemas.
+// They are generated using the md5sum.
+
+val cmNotificationVersions = mapOf(
+    "01p12" to "7e9b168104f25071b92a7d894d0d1249", // current
+    "01p20" to "1cc5bca4a252263039b4617a68686df3" // active from 2026-04-13
+)
+val cmRequestVersions = mapOf(
+    "01p21" to "5e0c0e505e9ffe4e36125434702ef3c4", // current
+    "01p30" to "97c03cb478e13b0ecd744a5804b289c1" // active from 2026-04-13
+)
+val cmRevokeVersions = mapOf(
+    "01p00" to "ea294e7dd7df3d806a5221632bcfdbb8", // current
+    "01p10" to "ddcfcad87aca9751c227230e7d523371" // active from 2026-04-13
+)
+val consumptionRecordVersions = mapOf("01p41" to "256671cf2e7ccd736d6b1ec379177e6e")
+val cpCommonTypesVersions = mapOf("01p20" to "2482726eb973718551dcb006b3a65405")
+val cpNotificationVersions = mapOf("01p13" to "fcbbc0f86b0b3da5a7f7c154176b132c")
+val cpRequestVersions = mapOf("01p12" to "eb503977846a069ec0b68f5f3104e2fa")
+val masterDataVersions = mapOf(
+    "01p32" to "98dda83247de9459de3a7a588992056c", // current
+    "01p33" to "100f8e7b4c8c836ed2d852a9d035e460" // current
+)
+
+val edaVersionMatrix: Map<String, Map<String, String>> = mapOf(
+    "https://www.ebutilities.at/schemata/customerconsent/cmnotification/%s/CMNotification_%s.xsd" to cmNotificationVersions,
+    "https://www.ebutilities.at/schemata/customerconsent/cmrequest/%s/CMRequest_%s.xsd" to cmRequestVersions,
+    "https://www.ebutilities.at/schemata/customerconsent/cmrevoke/%s/CMRevoke_%s.xsd" to cmRevokeVersions,
+    "https://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/%s/ConsumptionRecord_%s.xsd" to consumptionRecordVersions,
+    "https://www.ebutilities.at/schemata/customerprocesses/common/types/%s/CPCommonTypes_%s.xsd" to cpCommonTypesVersions,
+    "https://www.ebutilities.at/schemata/customerprocesses/cpnotification/%s/CPNotification_%s.xsd" to cpNotificationVersions,
+    "https://www.ebutilities.at/schemata/customerprocesses/cprequest/%s/CPRequest_%s.xsd" to cpRequestVersions,
+    "https://www.ebutilities.at/schemata/customerprocesses/masterdata/%s/MasterData_%s.xsd" to masterDataVersions,
+)
+
 val pontonVersion = "4.6.5"
-val pontonDestinationDir = layout.buildDirectory.dir("PontonXP-Messenger-${pontonVersion}-Linux")
+val pontonLib = layout.projectDirectory.file("libs/adapterapi2.jar")
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
 dependencies {
@@ -39,7 +75,7 @@ dependencies {
     implementation(libs.nimbus.oidc)
 
     // dependency for PontonXP Messenger
-    implementation(fileTree(pontonDestinationDir) { include("lib/adapterapi2.jar") })
+    implementation(files("libs/adapterapi2.jar"))
     // dependencies needed to generate code
     jaxb(libs.jaxb.xjc)
     jaxb(libs.jaxb.runtime)
@@ -69,6 +105,8 @@ dependencies {
     testImplementation(libs.okhttp3.mockwebserver)
     testImplementation(libs.xmlunit.core)
     testImplementation(libs.opentelemetry.sdk.testing)
+
+    testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
@@ -95,7 +133,43 @@ sourceSets {
     }
 }
 
+// Path to XSD files
+val edaSchemaPath = "schemas/eda/xsd/"
+val edaSchemaDir = layout.buildDirectory.dir(edaSchemaPath)
+val sources: List<Pair<URI, String>> = edaVersionMatrix.flatMap { (key, value) ->
+    value.map { (version, checksum) ->
+        URI.create(key.format(version, version)) to checksum
+    }
+}
+val downloadEDASchemas = tasks.register<Download>("downloadEDASchemas") {
+    description = "Downloads EDA XML Schemas"
+    group = "download"
+    src(sources.map { it.first })
+    dest(edaSchemaDir)
+    overwrite(false)
+    onlyIfModified(false)
+}
+
+val validatedEDASchemas = tasks.register("verifyEDASchemas") {
+    description = "Verifies the EDA Schemas"
+    group = "download"
+    dependsOn(downloadEDASchemas)
+    inputs.dir(edaSchemaDir)
+    doLast {
+        if (!downloadEDASchemas.get().didWork)
+            return@doLast
+        val verify = VerifyAction(layout)
+        sources.forEach { (url, checksum) ->
+            val file = file(url.toURL().file)
+            verify.src(layout.buildDirectory.file("$edaSchemaPath${file.name}"))
+            verify.checksum(checksum)
+            verify.execute()
+        }
+    }
+}
+
 val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasses") {
+    dependsOn(validatedEDASchemas)
     description = "Generate EDA Java Classes from XSD files"
     group = "xml"
     classpath(jaxb)
@@ -104,14 +178,11 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
     // make sure the directory exists
     file(generatedXJCJavaDir).mkdirs()
 
-    // Path to XSD files
-    val edaSchemaFiles = "src/main/schemas/eda/xsd/"
-
     // explicitly set the encoding because of rare issues discovered on Windows 10
     args(
         "-d",
         generatedXJCJavaDir,
-        edaSchemaFiles,
+        edaSchemaDir.get(),
         "-mark-generated",
         "-npa",
         "-encoding",
@@ -121,55 +192,41 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
-    inputs.files(fileTree(edaSchemaFiles).include("**/*.xsd"))
+    inputs.dir(edaSchemaDir)
     outputs.dir(generatedXJCJavaDir)
 }
 
 
 val pontonUri: URI =
     URI.create("https://www.ponton.de/downloads/xp/${pontonVersion}/PontonXP-Messenger-${pontonVersion}-Linux.zip")
-val pontonDestinationFile = layout.buildDirectory.file("PontonXP-Messenger-${pontonVersion}-Linux.zip")
-val pollProprietaryLibraries = task("pollProprietaryLibraries") {
-    description = "Retrieves the adapter2 library for the Ponton X/P Messenger"
-    group = "build"
-    outputs.file(pontonDestinationFile)
-    doLast {
-        val outFile = pontonDestinationFile.get().asFile
-        if (outFile.exists()) {
-            println("File already exists, skipping download.")
-            return@doLast
-        }
-        val client = HttpClients.createDefault()
-        val get = HttpGet(pontonUri)
-        val response = client.execute(get)
-        if (response.statusLine.statusCode != HttpStatus.SC_OK) {
-            throw IllegalStateException("Download of $pontonUri failed: ${response.statusLine}")
-        }
-        try {
-            response.entity.writeTo(FileOutputStream(outFile))
-        } finally {
-            response.close()
-        }
+val pontonDestinationFile = layout.projectDirectory.file("libs/PontonXP-Messenger-${pontonVersion}-Linux.zip")
+if (!pontonLib.asFile.exists()) {
+    download.run {
+        src(pontonUri)
+        dest(pontonDestinationFile)
+        overwrite(false)
+        onlyIfModified(true)
     }
-}
-
-val unpackProprietaryLibraries = task<Copy>("unpackProprietaryLibraries") {
-    description = "Unpacks the adapter2 library for the Ponton X/P Messenger"
-    group = "build"
-    inputs.file(pontonDestinationFile)
-    outputs.dir(pontonDestinationDir)
-    dependsOn(pollProprietaryLibraries)
-    from(zipTree(pontonDestinationFile))
-    into(pontonDestinationDir)
-    doLast {
-        logger.info("Unpacked $pontonDestinationFile into $pontonDestinationDir")
+    ZipFile(pontonDestinationFile.asFile).use { zip ->
+        val entry = zip.getEntry("lib/adapterapi2.jar")
+        logger.lifecycle("Extracting $entry")
+        zip.getInputStream(entry).use { input ->
+            val destFile = pontonLib.asFile
+            destFile.parentFile.mkdirs()
+            destFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
     }
 }
 
 tasks.named("compileJava") {
     // generate the classes before compiling
     dependsOn(generateEDASchemaClasses)
-    dependsOn(unpackProprietaryLibraries)
+}
+
+tasks.withType<Javadoc> {
+    dependsOn(generateEDASchemaClasses)
 }
 
 sourceSets.configureEach {

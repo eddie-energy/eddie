@@ -11,7 +11,6 @@ import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseMod
 import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -43,11 +42,12 @@ class MeterReadingFilterTaskTest {
                 .permissionId("pid")
                 .dataNeedId("dnid")
                 .build();
-        var payload = new GetEnergyResponseModel()
-                .electricityMeters(List.of(new ElectricityMeterResponseModel()))
-                .gasMeters(List.of(new GasMeterResponseModel()));
-        var data = new GetEnergyResponseModelApiDataResponse()
-                .data(payload);
+        var payload = new GetEnergyResponseModel(
+                null,
+                List.of(new GasMeterResponseModel(null, null, null, null)),
+                List.of(new ElectricityMeterResponseModel(null, null, null, null))
+        );
+        var data = new GetEnergyResponseModelApiDataResponse(null, payload);
         var id = new IdentifiableMeteringData(pr, data);
         var dn = new ValidatedHistoricalDataDataNeed(
                 new RelativeDuration(null, null, null),
@@ -63,33 +63,9 @@ class MeterReadingFilterTaskTest {
         // Then
         assertAll(
                 () -> assertEquals(pr, res.permissionRequest()),
-                () -> assertEquals(electricityCount, res.payload().getData().getElectricityMeters().size()),
-                () -> assertEquals(gasCount, res.payload().getData().getGasMeters().size())
+                () -> assertEquals(electricityCount, res.payload().data().electricityMeters().size()),
+                () -> assertEquals(gasCount, res.payload().data().gasMeters().size())
         );
-    }
-
-    @Test
-    void apply_withoutData_returnsSame() {
-        // Given
-        var pr = new DefaultFluviusPermissionRequestBuilder()
-                .permissionId("pid")
-                .dataNeedId("dnid")
-                .build();
-        var data = new GetEnergyResponseModelApiDataResponse();
-        var id = new IdentifiableMeteringData(pr, data);
-        var dn = new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(null, null, null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT1H,
-                Granularity.P1D
-        );
-        when(dataNeedsService.getById("dnid")).thenReturn(dn);
-
-        // When
-        var res = task.apply(id);
-
-        // Then
-        assertEquals(id, res);
     }
 
     private static Stream<Arguments> apply_filterData_forEnergyTypeDataNeed() {

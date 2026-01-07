@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.be.fluvius.tasks;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +25,21 @@ public class MeterReadingFilterTask implements UnaryOperator<IdentifiableMeterin
         var pr = meteringData.permissionRequest();
         var permissionId = pr.permissionId();
         var dataNeed = (ValidatedHistoricalDataDataNeed) dataNeedsService.getById(pr.dataNeedId());
-        var data = meteringData.payload().getData();
-        if (data == null) {
-            LOGGER.debug("No data found for permission request {}", permissionId);
-            return meteringData;
-        }
+        var data = meteringData.payload().data();
+        GetEnergyResponseModel newEnergyResponseModel;
         if (dataNeed.energyType() == EnergyType.ELECTRICITY) {
             LOGGER.debug("Electricity data found for permission request {} removing gas data", permissionId);
-            data.setGasMeters(List.of());
+            newEnergyResponseModel = new GetEnergyResponseModel(data.fetchTime(), List.of(), data.electricityMeters());
         } else {
             LOGGER.debug("Gas data found for permission request {} removing energy data", permissionId);
-            data.setElectricityMeters(List.of());
+            newEnergyResponseModel = new GetEnergyResponseModel(data.fetchTime(), data.gasMeters(), List.of());
         }
-        return meteringData;
+        return new IdentifiableMeteringData(
+                meteringData.permissionRequest(),
+                new GetEnergyResponseModelApiDataResponse(
+                        meteringData.payload().metaData(),
+                        newEnergyResponseModel
+                )
+        );
     }
 }

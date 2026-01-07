@@ -9,6 +9,7 @@ on:
       - ".github/workflows/run-playwright-e2e-tests.yml"
       - "core/**"
       - "e2e-tests/**"
+      - "env/**"
       - "region-connectors/**"
       - "!**.md"
   push:
@@ -18,19 +19,20 @@ on:
       - ".github/workflows/run-playwright-e2e-tests.yml"
       - "core/**"
       - "e2e-tests/**"
+      - "env/**"
       - "region-connectors/**"
       - "!**.md"
   workflow_dispatch:
 
 env:
-  E2E_TEST_COMPOSE_FILE: "./e2e-tests/docker/docker-compose.yml"
-  E2E_COMPOSE_SECRETS_FILE: "./e2e-tests/docker/.env_secrets"
-  KEYS_FOLDER: "./e2e-tests/docker/keys"
-  FLUVIUS_CER_FILE: "./e2e-tests/docker/keys/fluvius.cer"
-  FLUVIUS_KEY_FILE: "./e2e-tests/docker/keys/fluvius.key"
-  MIJN_AANSLUITING_JKS_FILE: "./e2e-tests/docker/keys/mijn-aansluiting.jks"
-  PONTON_FOLDER: "./e2e-tests/docker/ponton"
-  PONTON_ID_DAT_FILE: "./e2e-tests/docker/ponton/id.dat"
+  COMPOSE_FILES: "-f ./env/docker-compose.yml -f ./env/docker-compose.e2e.yml"
+  E2E_COMPOSE_SECRETS_FILE: "./env/.env.local"
+  KEYS_FOLDER: "./env/keys"
+  FLUVIUS_CER_FILE: "./env/keys/fluvius.cer"
+  FLUVIUS_KEY_FILE: "./env/keys/fluvius.key"
+  MIJN_AANSLUITING_JKS_FILE: "./env/keys/mijn-aansluiting.jks"
+  PONTON_FOLDER: "./env/ponton"
+  PONTON_ID_DAT_FILE: "./env/ponton/id.dat"
 
 jobs:
   e2e-tests:
@@ -52,7 +54,7 @@ jobs:
         run: ./gradlew clean installDist
 
       - name: Build docker images
-        run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} build
+        run: docker compose ${{ env.COMPOSE_FILES }} build
 
       - name: Write secrets to files
         env:
@@ -73,7 +75,7 @@ jobs:
           echo -n "$PONTON_ID_DAT" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
       - name: Start docker containers
-        run: docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} up -d --wait
+        run: docker compose ${{ env.COMPOSE_FILES }} --profile dockerized-eddie --env-file ./env/.env up -d --wait
 
       - name: Install playwright dependencies
         run: ./gradlew e2e-tests:install-playwright-deps
@@ -103,7 +105,7 @@ jobs:
         if: ${{ failure() }}  # only store logs when tests failed
         run: |
           mkdir -p ./e2e-tests/build/docker-logs
-          docker logs eddie-e2e-test-eddie-1 &> ./e2e-tests/build/docker-logs/eddie.log
+          docker logs e2e-tests-eddie-1 &> ./e2e-tests/build/docker-logs/eddie.log
 
       - name: Archive results
         if: ${{ failure() }}  # we are only interested in failed tests
@@ -119,6 +121,7 @@ jobs:
       - name: Clean up
         if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
         run: |
-          docker compose -f ${{ env.E2E_TEST_COMPOSE_FILE }} down
+          docker compose ${{ env.COMPOSE_FILES }} --profile dockerized-eddie down
           rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           rm -rf ${{ env.PONTON_FOLDER }}
+          rm -rf ./env/keys

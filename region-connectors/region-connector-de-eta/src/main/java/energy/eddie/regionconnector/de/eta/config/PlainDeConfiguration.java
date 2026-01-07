@@ -1,47 +1,42 @@
 package energy.eddie.regionconnector.de.eta.config;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Plain implementation of DeConfiguration using Spring's value annotations.
+ * Configuration for the German (DE) ETA Plus region connector.
+ * Spring infers property names from the constructor parameter names.
  */
-@Configuration
-@SuppressWarnings("NullAway") // Fields are injected by Spring
-public class PlainDeConfiguration implements DeConfiguration {
+@ConfigurationProperties("region-connector.de.eta")
+public class PlainDeConfiguration {
+    private final String eligiblePartyId;
+    private final String apiBaseUrl;
+    private final String apiClientId;
+    private final String apiClientSecret;
 
-    @Value("${" + ELIGIBLE_PARTY_ID_KEY + "}")
-    @SuppressWarnings("unused")
-    private String eligiblePartyId;
+    public PlainDeConfiguration(
+            String eligiblePartyId,
+            String apiBaseUrl,
+            String apiClientId,
+            String apiClientSecret
+    ) {
+        this.eligiblePartyId = eligiblePartyId;
+        this.apiBaseUrl = apiBaseUrl != null ? apiBaseUrl : "https://api.eta-plus.de";
+        this.apiClientId = apiClientId;
+        this.apiClientSecret = apiClientSecret;
+    }
 
-    @Value("${" + API_BASE_URL_KEY + ":https://api.eta-plus.de}")
-    @SuppressWarnings("unused")
-    private String apiBaseUrl;
-
-    @Value("${" + API_CLIENT_ID_KEY + "}")
-    @SuppressWarnings("unused")
-    private String apiClientId;
-
-    @Value("${" + API_CLIENT_SECRET_KEY + "}")
-    @SuppressWarnings("unused")
-    private String apiClientSecret;
-
-    @Override
     public String eligiblePartyId() {
         return eligiblePartyId;
     }
 
-    @Override
     public String apiBaseUrl() {
         return apiBaseUrl;
     }
 
-    @Override
     public String apiClientId() {
         return apiClientId;
     }
 
-    @Override
     public String apiClientSecret() {
         return apiClientSecret;
     }

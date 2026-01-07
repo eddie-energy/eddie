@@ -18,7 +18,7 @@ either.
 - PONTON_ID_DAT_FILE: Contains the contents of the *id.dat* file in BASE64 encoding without newlines.
   Use `base64 -w 0 id.dat` to generate output and make sure, that the output ends with an equals symbol (=)
 - E2E_TEST_ALL_SECRETS: Contains all secrets that are needed by *core* (e.g. client secrets for FR Enedis). The contents
-  are written to a file called `.env_secrets` and passed to the *core* container. Separate multiple entries by newline.
+  are written to a file called `.env.local` and passed to the *core* container. Separate multiple entries by newline.
   Note that GitHub does not allow editing of existing secrets, but only overwriting. Therefore, when updating this
   secret, always include the previously stored secrets as well, to avoid failing tests.
 - DK_ENERGINET_METERING_POINT and DK_ENERGINET_REFRESH_TOKEN are passed directly to the playwright tests.

@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -13,10 +14,10 @@ public class DatadisAccountingPointEnvelopeProvider implements AccountingPointEn
     private final IntermediateAPMDFactory intermediateAPMDFactory;
 
     public DatadisAccountingPointEnvelopeProvider(
-            Flux<IdentifiableAccountingPointData> identifiableMeterReadings,
+            EnergyDataStreams streams,
             IntermediateAPMDFactory intermediateAPMDFactory
     ) {
-        this.identifiableMeterReadings = identifiableMeterReadings;
+        this.identifiableMeterReadings = streams.getAccountingPointData();
         this.intermediateAPMDFactory = intermediateAPMDFactory;
     }
 

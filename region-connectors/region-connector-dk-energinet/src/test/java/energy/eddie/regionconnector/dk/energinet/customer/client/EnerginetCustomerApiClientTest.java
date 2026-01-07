@@ -121,7 +121,7 @@ class EnerginetCustomerApiClientTest {
     @MethodSource
     void isAlive_returnsMonoWithBoolean(boolean expected) {
         // Given
-        when(isAliveApi.apiIsaliveGet()).thenReturn(Mono.just(expected));
+        when(isAliveApi.customerapiApiIsaliveGet("1.0")).thenReturn(Mono.just(expected));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, isAliveApi, null);
 
         // When
@@ -136,7 +136,7 @@ class EnerginetCustomerApiClientTest {
     @Test
     void accessToken_returnsToken() {
         // Given
-        when(tokenApi.apiTokenGet()).thenReturn(Mono.just(new StringApiResponse().result("token")));
+        when(tokenApi.customerapiApiTokenGet("1.0")).thenReturn(Mono.just(new StringApiResponse().result("token")));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), tokenApi, null, null, null);
 
         // When
@@ -156,7 +156,7 @@ class EnerginetCustomerApiClientTest {
                                                                                 HttpHeaders.EMPTY,
                                                                                 "".getBytes(StandardCharsets.UTF_8),
                                                                                 StandardCharsets.UTF_8);
-        when(tokenApi.apiTokenGet()).thenReturn(Mono.error(unauthorized));
+        when(tokenApi.customerapiApiTokenGet("1.0")).thenReturn(Mono.error(unauthorized));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), tokenApi, null, null, null);
 
         // When
@@ -198,12 +198,13 @@ class EnerginetCustomerApiClientTest {
                                 .id("ID")
                                 .myEnergyDataMarketDocument(document)
                 );
-        when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(),
-                                                                                 anyString(),
-                                                                                 anyString(),
-                                                                                 any(),
-                                                                                 any()))
-                .thenReturn(Mono.just(data));
+        when(meterDataApi.customerapiApiMeterdataGettimeseriesDateFromDateToAggregationPost(
+                anyString(),
+                anyString(),
+                anyString(),
+                any(),
+                any()
+        )).thenReturn(Mono.just(data));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, meterDataApi, null, null);
 
         // When
@@ -236,11 +237,11 @@ class EnerginetCustomerApiClientTest {
                                                                                 HttpHeaders.EMPTY,
                                                                                 "".getBytes(StandardCharsets.UTF_8),
                                                                                 StandardCharsets.UTF_8);
-        when(meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(),
-                                                                                 anyString(),
-                                                                                 anyString(),
-                                                                                 any(),
-                                                                                 any()))
+        when(meterDataApi.customerapiApiMeterdataGettimeseriesDateFromDateToAggregationPost(anyString(),
+                                                                                            anyString(),
+                                                                                            anyString(),
+                                                                                            any(),
+                                                                                            any()))
                 .thenReturn(Mono.error(unauthorized));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, meterDataApi, null, null);
 
@@ -265,7 +266,7 @@ class EnerginetCustomerApiClientTest {
         // Given
         var document = new MeteringPointDetailsCustomerDtoResponseListApiResponse();
 
-        when(meteringPointsApi.apiMeteringpointsMeteringpointGetdetailsPost(any()))
+        when(meteringPointsApi.customerapiApiMeteringpointsMeteringpointGetdetailsPost(eq("1.0"), any()))
                 .thenReturn(Mono.just(document));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, null, meteringPointsApi);
 
@@ -288,7 +289,7 @@ class EnerginetCustomerApiClientTest {
                                                                                 HttpHeaders.EMPTY,
                                                                                 "".getBytes(StandardCharsets.UTF_8),
                                                                                 StandardCharsets.UTF_8);
-        when(meteringPointsApi.apiMeteringpointsMeteringpointGetdetailsPost(any()))
+        when(meteringPointsApi.customerapiApiMeteringpointsMeteringpointGetdetailsPost(eq("1.0"), any()))
                 .thenReturn(Mono.error(unauthorized));
         var customerApi = new EnerginetCustomerApiClient(new ApiClient(), null, null, null, meteringPointsApi);
 

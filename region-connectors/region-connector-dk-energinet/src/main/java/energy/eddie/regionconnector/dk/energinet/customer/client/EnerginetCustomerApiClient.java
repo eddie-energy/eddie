@@ -24,7 +24,7 @@ import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnector
 
 @Component
 public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
-    // Request period must not exceed the maximum number of days of 730
+    // The Request period must not exceed the maximum number of days of 730
     private static final int MAX_REQUEST_PERIOD = 730;
     private final ApiClient apiClient;
     private final TokenApi tokenApi;
@@ -56,24 +56,10 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         this.meteringPointsApi = meteringPointsApi;
     }
 
-    private void throwIfInvalidTimeframe(LocalDate start, LocalDate end) throws DateTimeException {
-        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), DK_ZONE_ID);
-
-        if (start.isEqual(end) || start.isAfter(end)) {
-            throw new DateTimeException("Start date must be before end date.");
-        }
-        if (end.isAfter(currentDate)) {
-            throw new DateTimeException("The end date parameter must be <= than the current date.");
-        }
-        if (start.plusDays(MAX_REQUEST_PERIOD).isBefore(end)) {
-            throw new DateTimeException("Request period exceeds the maximum number of days (" + MAX_REQUEST_PERIOD + ").");
-        }
-    }
-
     @Override
     public Mono<Boolean> isAlive() {
         synchronized (apiClient) {
-            return isAliveApi.apiIsaliveGet();
+            return isAliveApi.customerapiApiIsaliveGet("1.0");
         }
     }
 
@@ -81,7 +67,7 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     public Mono<String> accessToken(String refreshToken) {
         synchronized (apiClient) {
             setApiKey(refreshToken);
-            return tokenApi.apiTokenGet()
+            return tokenApi.customerapiApiTokenGet("1.0")
                            .mapNotNull(StringApiResponse::getResult);
         }
     }
@@ -100,11 +86,11 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         synchronized (apiClient) {
             setApiKey(accessToken);
             return
-                    meterDataApi.apiMeterdataGettimeseriesDateFromDateToAggregationPost(
+                    meterDataApi.customerapiApiMeterdataGettimeseriesDateFromDateToAggregationPost(
                             dateFrom.format(DateTimeFormatter.ISO_DATE),
                             dateTo.format(DateTimeFormatter.ISO_DATE),
                             aggregation.toString(),
-                            userCorrelationId,
+                            "1.0",
                             meteringPointsRequest
                     );
         }
@@ -117,11 +103,26 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
     ) {
         synchronized (apiClient) {
             setApiKey(accessToken);
-            return meteringPointsApi.apiMeteringpointsMeteringpointGetdetailsPost(meteringPointsRequest);
+            return meteringPointsApi.customerapiApiMeteringpointsMeteringpointGetdetailsPost("1.0",
+                                                                                             meteringPointsRequest);
+        }
+    }
+
+    private void throwIfInvalidTimeframe(LocalDate start, LocalDate end) throws DateTimeException {
+        LocalDate currentDate = LocalDate.ofInstant(Instant.now(), DK_ZONE_ID);
+
+        if (start.isEqual(end) || start.isAfter(end)) {
+            throw new DateTimeException("Start date must be before end date.");
+        }
+        if (end.isAfter(currentDate)) {
+            throw new DateTimeException("The end date parameter must be <= than the current date.");
+        }
+        if (start.plusDays(MAX_REQUEST_PERIOD).isBefore(end)) {
+            throw new DateTimeException("Request period exceeds the maximum number of days (" + MAX_REQUEST_PERIOD + ").");
         }
     }
 
     private void setApiKey(String token) {
-        apiClient.setApiKey("Bearer " + token);
+        apiClient.setBearerToken(token);
     }
 }

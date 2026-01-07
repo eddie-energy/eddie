@@ -8,10 +8,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.*;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
@@ -61,9 +58,9 @@ class SandboxFluviusApiClientTest {
         when(dataNeedsService.getById("dnid"))
                 .thenReturn(createDataNeed());
         when(api.mockMandate("pid", now, now, "541440110000000001", Granularity.PT15M))
-                .thenReturn(Mono.just(new CreateMandateResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new CreateMandateResponseModelApiDataResponse(null, null)));
         when(api.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M))
-                .thenReturn(Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new FluviusSessionCreateResultResponseModelApiDataResponse(null, null)));
 
         // When
         var res = sandboxFluviusApiClient.shortUrlIdentifier("pid", Flow.B2B, now, now, Granularity.PT15M);
@@ -78,7 +75,7 @@ class SandboxFluviusApiClientTest {
     void testMandateFor_callsDecoratee() {
         // Given
         when(api.mandateFor("pid"))
-                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetMandateResponseModelApiDataResponse(null, null)));
 
         // When
         var res = sandboxFluviusApiClient.mandateFor("pid");
@@ -94,7 +91,10 @@ class SandboxFluviusApiClientTest {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         when(api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now))
-                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse()));
+                .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
+                        new ApiMetaData(null),
+                        new GetEnergyResponseModel(null, null, null)
+                )));
 
         // When
         var res = sandboxFluviusApiClient.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);

@@ -133,7 +133,7 @@ public final class IntermediateValidatedHistoricalDocument {
 
     private List<PointComplexType> consumptionPoints() {
         List<PointComplexType> consumptionPoints = new ArrayList<>();
-        int position = 0;
+        int position = 1;
         for (MeteringData meteringData
                 : identifiableMeteringData.intermediateMeteringData().meteringData()) {
             QualityTypeList qualityTypeList = qualityTypeList(meteringData);
@@ -150,7 +150,7 @@ public final class IntermediateValidatedHistoricalDocument {
 
     private List<PointComplexType> productionPoints() {
         List<PointComplexType> productionPoints = new ArrayList<>();
-        int position = 0;
+        int position = 1;
         for (MeteringData meteringData
                 : identifiableMeteringData.intermediateMeteringData().meteringData()) {
             QualityTypeList qualityTypeList = qualityTypeList(meteringData);

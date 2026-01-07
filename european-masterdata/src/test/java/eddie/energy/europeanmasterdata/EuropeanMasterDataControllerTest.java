@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -38,8 +39,10 @@ class EuropeanMasterDataControllerTest {
                   .willReturn(permissionAdministrators);
         mvc.perform(MockMvcRequestBuilders.get("/api/permission-administrators").accept(MediaType.APPLICATION_JSON))
            .andExpect(MockMvcResultMatchers.status().isOk())
-           .andExpect(MockMvcResultMatchers.content()
-                                           .json(objectMapper.writeValueAsString(permissionAdministrators), true));
+           .andExpect(MockMvcResultMatchers
+                              .content()
+                              .json(objectMapper.writeValueAsString(permissionAdministrators),
+                                    JsonCompareMode.STRICT));
     }
 
     @Test
@@ -55,8 +58,10 @@ class EuropeanMasterDataControllerTest {
         mvc.perform(MockMvcRequestBuilders.get("/api/permission-administrators/company-id")
                                           .accept(MediaType.APPLICATION_JSON))
            .andExpect(MockMvcResultMatchers.status().isOk())
-           .andExpect(MockMvcResultMatchers.content()
-                                           .json(objectMapper.writeValueAsString(permissionAdministrator), true));
+           .andExpect(MockMvcResultMatchers
+                              .content()
+                              .json(objectMapper.writeValueAsString(permissionAdministrator),
+                                    JsonCompareMode.STRICT));
     }
 
     @Test
@@ -80,8 +85,10 @@ class EuropeanMasterDataControllerTest {
                   .willReturn(meteredDataAdministrators);
         mvc.perform(MockMvcRequestBuilders.get("/api/metered-data-administrators").accept(MediaType.APPLICATION_JSON))
            .andExpect(MockMvcResultMatchers.status().isOk())
-           .andExpect(MockMvcResultMatchers.content()
-                                           .json(objectMapper.writeValueAsString(meteredDataAdministrators), true));
+           .andExpect(MockMvcResultMatchers
+                              .content()
+                              .json(objectMapper.writeValueAsString(meteredDataAdministrators),
+                                    JsonCompareMode.STRICT));
     }
 
     @Test
@@ -97,8 +104,10 @@ class EuropeanMasterDataControllerTest {
         mvc.perform(MockMvcRequestBuilders.get("/api/metered-data-administrators/company-id")
                                           .accept(MediaType.APPLICATION_JSON))
            .andExpect(MockMvcResultMatchers.status().isOk())
-           .andExpect(MockMvcResultMatchers.content()
-                                           .json(objectMapper.writeValueAsString(meteredDataAdministrator), true));
+           .andExpect(MockMvcResultMatchers
+                              .content()
+                              .json(objectMapper.writeValueAsString(meteredDataAdministrator),
+                                    JsonCompareMode.STRICT));
     }
 
     @Test

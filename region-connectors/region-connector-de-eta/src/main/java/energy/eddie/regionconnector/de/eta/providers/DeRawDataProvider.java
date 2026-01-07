@@ -2,40 +2,44 @@ package energy.eddie.regionconnector.de.eta.providers;
 
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 
 /**
- * Provides raw data messages from the German (DE) MDA.
- * This class streams raw, unprocessed data received from ETA Plus to outbound connectors.
- * 
- * Note: This is registered as a bean via the Spring config, not as a @Component.
+ * Provider for raw data messages from the DE-ETA region connector.
+ * This implementation subscribes to the ValidatedHistoricalDataStream and
+ * converts each validated historical data payload to a RawDataMessage.
  */
+@Component
 public class DeRawDataProvider implements RawDataProvider {
-    
-    private final Sinks.Many<RawDataMessage> rawDataSink;
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeRawDataProvider.class);
 
-    public DeRawDataProvider() {
-        this.rawDataSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Flux<RawDataMessage> messages;
+
+    public DeRawDataProvider(ValidatedHistoricalDataStream stream) {
+        this.messages = stream.validatedHistoricalData()
+                .map(this::toRawDataMessage)
+                .doOnNext(msg -> LOGGER.atDebug()
+                        .addArgument(msg::permissionId)
+                        .log("Emitting raw data message for permission request {}"));
     }
 
     @Override
     public Flux<RawDataMessage> getRawDataStream() {
-        return rawDataSink.asFlux();
+        return messages;
     }
 
     @Override
     public void close() {
-        rawDataSink.tryEmitComplete();
+        // No-Op: The underlying stream is managed by ValidatedHistoricalDataStream
     }
 
-    /**
-     * Emit a raw data message to all subscribers
-     * 
-     * @param message the raw data message to emit
-     */
-    public void emitRawData(RawDataMessage message) {
-        rawDataSink.tryEmitNext(message);
+    private RawDataMessage toRawDataMessage(IdentifiableValidatedHistoricalData identifiableData) {
+        // Use the raw JSON from the ETA Plus API response
+        String rawPayload = identifiableData.payload().rawJson();
+        return new RawDataMessage(identifiableData.permissionRequest(), rawPayload);
     }
 }
+

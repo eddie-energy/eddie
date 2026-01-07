@@ -137,7 +137,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                          .size() - 1; i >= 0; i--) {
                         var point = seriesPeriod.getPointList().getPoints().get(i);
                         var meteringData = identifiableMeteringData.intermediateMeteringData().meteringData().get(i);
-                        int finalI = i;
+                        int finalI = i + 1;
                         QualityTypeList expectedQuality = switch (meteringData.obtainMethod()) {
                             case ESTIMATED -> QualityTypeList.ESTIMATED;
                             case REAL -> QualityTypeList.AS_PROVIDED;
@@ -251,7 +251,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                          .size() - 1; i >= 0; i--) {
                         var consumptionPoint = consumptionSeriesPeriod.getPointList().getPoints().get(i);
                         var meteringData = identifiableMeteringData.intermediateMeteringData().meteringData().get(i);
-                        int finalI = i;
+                        int finalI = i + 1;
                         QualityTypeList expectedQuality = switch (meteringData.obtainMethod()) {
                             case ESTIMATED -> QualityTypeList.ESTIMATED;
                             case REAL -> QualityTypeList.AS_PROVIDED;
@@ -272,7 +272,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                                                          .size() - 1; i >= 0; i--) {
                         var productionPoint = productionSeriesPeriod.getPointList().getPoints().get(i);
                         var meteringData = identifiableMeteringData.intermediateMeteringData().meteringData().get(i);
-                        int finalI = i;
+                        int finalI = i + 1;
                         QualityTypeList expectedQuality = switch (meteringData.obtainMethod()) {
                             case ESTIMATED -> QualityTypeList.ESTIMATED;
                             case REAL -> QualityTypeList.AS_PROVIDED;

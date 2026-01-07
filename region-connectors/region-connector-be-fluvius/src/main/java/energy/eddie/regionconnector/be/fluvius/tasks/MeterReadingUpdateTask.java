@@ -1,24 +1,23 @@
 package energy.eddie.regionconnector.be.fluvius.tasks;
 
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.Meter;
-import energy.eddie.regionconnector.be.fluvius.client.model.Readings;
+import energy.eddie.regionconnector.be.fluvius.client.model.EnergyItemResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.MeterResponseModel;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MeterReadingUpdatedEvent;
+import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
 import energy.eddie.regionconnector.be.fluvius.persistence.MeterReadingRepository;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.UnaryOperator;
 
 
 @Component
@@ -47,8 +46,9 @@ public class MeterReadingUpdateTask {
         var meters = getMeters(identifiableMeteringData);
         for (var meterReading : meterReadings) {
             for (var meter : meters) {
-                if (meterReading.meterEan().endsWith(meter.getMeterId())) {
-                    updateMeters(meterReading, meter);
+                var meterId = meter.meterID();
+                if (meterId != null && meterReading.meterEan().endsWith(meterId)) {
+                    updateMeters(meterReading, meter, permissionRequest);
                 }
             }
         }
@@ -56,55 +56,56 @@ public class MeterReadingUpdateTask {
         outbox.commit(new MeterReadingUpdatedEvent(permissionId, permissionRequest.status()));
     }
 
-
-    private List<Meter<?>> getMeters(IdentifiableMeteringData identifiableMeteringData) {
-        var electricityMeters = get(identifiableMeteringData.payload(), GetEnergyResponseModel::getElectricityMeters);
-        var gasMeters = get(identifiableMeteringData.payload(), GetEnergyResponseModel::getGasMeters);
-        var meters = new ArrayList<Meter<?>>();
-        for (var electricityMeter : electricityMeters) {
-            meters.add(Meter.from(electricityMeter));
-        }
-        for (var gasMeter : gasMeters) {
-            meters.add(Meter.from(gasMeter));
-        }
+    private List<MeterResponseModel> getMeters(IdentifiableMeteringData identifiableMeteringData) {
+        var data = identifiableMeteringData.payload().data();
+        List<MeterResponseModel> meters = new ArrayList<>(Objects.requireNonNullElse(data.electricityMeters(),
+                                                                                     List.of()));
+        List<? extends MeterResponseModel> gasMeterResponseModels = data.gasMeters();
+        meters.addAll(Objects.requireNonNullElse(gasMeterResponseModels, List.of()));
         return meters;
     }
 
     private void updateMeters(
             MeterReading meterReading,
-            Meter<?> meter
+            MeterResponseModel meter,
+            FluviusPermissionRequest permissionRequest
     ) {
         var meterEan = meterReading.meterEan();
         var permissionId = meterReading.permissionId();
-        LOGGER.info("Updating meterReading {} for permission request {}", meterEan, permissionId);
+        LOGGER.debug("Updating meterReading {} for permission request {}", meterEan, permissionId);
 
-        for (Readings<?> readings : meter.getReadingSources()) {
-            if (updateMeterReading(meterReading, readings)) {
-                return;
+        var granularity = permissionRequest.granularity();
+        var readings = meter.getByGranularity(granularity);
+        if (readings == null) {
+            LOGGER.debug("No meter readings for granularity {} found for permission request {}",
+                         granularity,
+                         permissionId);
+            return;
+        }
+        updateMeterReading(meterReading, getLatest(readings));
+    }
+
+    private void updateMeterReading(
+            MeterReading meterReading,
+            @Nullable ZonedDateTime newMeterReading
+    ) {
+        if (newMeterReading == null) {
+            return;
+        }
+        var lastMeterReading = meterReading.lastMeterReading();
+        if (lastMeterReading == null || newMeterReading.isAfter(lastMeterReading)) {
+            meterReading.setLastMeterReading(newMeterReading);
+        }
+    }
+
+    @Nullable
+    private ZonedDateTime getLatest(List<? extends EnergyItemResponseModel<?>> energyItems) {
+        ZonedDateTime lastMeterReading = null;
+        for (EnergyItemResponseModel<?> energyItem : energyItems) {
+            if (lastMeterReading == null || energyItem.timestampEnd().isAfter(lastMeterReading)) {
+                lastMeterReading = energyItem.timestampEnd();
             }
         }
-    }
-
-    private boolean updateMeterReading(
-            MeterReading meterReading,
-            Readings<?> readings
-    ) {
-        var end = readings.getLastReadingTimestamp();
-        end.ifPresent(meterReading::setLastMeterReading);
-        return end.isPresent();
-    }
-
-
-    private <T> List<T> get(
-            GetEnergyResponseModelApiDataResponse payload,
-            Function<GetEnergyResponseModel, List<T>> getter
-    ) {
-        var data = payload.getData();
-        if (data == null) {
-            return List.of();
-        }
-        UnaryOperator<List<T>> onNullFunc = res -> Objects.requireNonNullElse(res, List.of());
-        return getter.andThen(onNullFunc)
-                     .apply(data);
+        return lastMeterReading;
     }
 }

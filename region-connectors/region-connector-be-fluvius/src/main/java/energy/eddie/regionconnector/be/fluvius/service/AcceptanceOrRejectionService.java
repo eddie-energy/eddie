@@ -97,19 +97,20 @@ public class AcceptanceOrRejectionService {
     }
 
 
+    @SuppressWarnings("NullAway") // False positive for the nullable switch expression
     private void handleSuccess(GetMandateResponseModelApiDataResponse res, FluviusPermissionRequest permissionRequest) {
         var permissionId = permissionRequest.permissionId();
-        if (res.getData() == null || res.getData().getMandates() == null || res.getData().getMandates().isEmpty()) {
+        if (res.data() == null || res.data().mandates() == null || res.data().mandates().isEmpty()) {
             LOGGER.info("No mandates found for permission request {}", permissionId);
             return;
         }
-        var mandates = res.getData().getMandates();
+        var mandates = res.data().mandates();
         var approvedMeters = new ArrayList<String>();
         var others = 0;
         var rejected = 0;
         for (var mandate : mandates) {
-            var ean = mandate.getEanNumber();
-            var status = mandate.getStatus();
+            var ean = mandate.eanNumber();
+            var status = mandate.status();
             switch (status) {
                 case "Approved" -> {
                     LOGGER.info("Meter {} of permission request {} approved", ean, permissionId);

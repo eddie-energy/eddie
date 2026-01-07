@@ -5,6 +5,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.de.eta.DeDataSourceInformation;
+import jakarta.persistence.*;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -15,48 +17,101 @@ import java.util.Optional;
  * Permission request implementation for Germany (ETA Plus).
  * This class represents a permission request in the German energy market.
  */
+@Entity
+@Table(schema = "de_eta", name = "eta_permission_request")
+@SuppressWarnings({"NullAway", "unused"})
 public class DePermissionRequest implements MeterReadingPermissionRequest {
+    @Transient
+    private final DataSourceInformation dataSourceInformation = new DeDataSourceInformation();
+
+    @Id
+    @Column(name = "permission_id")
     private final String permissionId;
+
+    @Column(name = "data_source_connection_id")
     private final String connectionId;
+
+    @Column(name = "metering_point_id")
     private final String meteringPointId;
+
+    @Column(name = "data_start")
     private final LocalDate start;
+
+    @Column(name = "data_end")
     private final LocalDate end;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "text")
     private final Granularity granularity;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "energy_type", columnDefinition = "text")
     private final EnergyType energyType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(columnDefinition = "text")
     private final PermissionProcessStatus status;
+
     private final ZonedDateTime created;
-    private final DataSourceInformation dataSourceInformation;
+
+    @Column(name = "data_need_id")
     private final String dataNeedId;
-    
+
     @Nullable
+    @Column(name = "latest_meter_reading")
     private final LocalDate latestMeterReadingEndDate;
-    
+
     @Nullable
     private final String message;
-    
+
     @Nullable
     private final String cause;
 
-    @SuppressWarnings("NullAway") // Builder ensures all required fields are set
-    private DePermissionRequest(Builder builder) {
-        this.permissionId = builder.permissionId;
-        this.connectionId = builder.connectionId;
-        this.meteringPointId = builder.meteringPointId;
-        this.start = builder.start;
-        this.end = builder.end;
-        this.granularity = builder.granularity;
-        this.energyType = builder.energyType;
-        this.status = builder.status;
-        this.created = builder.created;
-        this.dataSourceInformation = builder.dataSourceInformation;
-        this.dataNeedId = builder.dataNeedId;
-        this.latestMeterReadingEndDate = builder.latestMeterReadingEndDate;
-        this.message = builder.message;
-        this.cause = builder.cause;
+    @SuppressWarnings("java:S107") // Constructor with many parameters is needed for mapping
+    public DePermissionRequest(
+            String permissionId,
+            String connectionId,
+            String meteringPointId,
+            LocalDate start,
+            LocalDate end,
+            Granularity granularity,
+            EnergyType energyType,
+            PermissionProcessStatus status,
+            ZonedDateTime created,
+            String dataNeedId,
+            @Nullable LocalDate latestMeterReadingEndDate,
+            @Nullable String message,
+            @Nullable String cause
+    ) {
+        this.permissionId = permissionId;
+        this.connectionId = connectionId;
+        this.meteringPointId = meteringPointId;
+        this.start = start;
+        this.end = end;
+        this.granularity = granularity;
+        this.energyType = energyType;
+        this.status = status;
+        this.created = created;
+        this.dataNeedId = dataNeedId;
+        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
+        this.message = message;
+        this.cause = cause;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    protected DePermissionRequest() {
+        this.permissionId = null;
+        this.connectionId = null;
+        this.meteringPointId = null;
+        this.start = null;
+        this.end = null;
+        this.granularity = null;
+        this.energyType = null;
+        this.status = null;
+        this.created = null;
+        this.dataNeedId = null;
+        this.latestMeterReadingEndDate = null;
+        this.message = null;
+        this.cause = null;
     }
 
     @Override
@@ -122,114 +177,5 @@ public class DePermissionRequest implements MeterReadingPermissionRequest {
     @Override
     public Optional<LocalDate> latestMeterReadingEndDate() {
         return Optional.ofNullable(latestMeterReadingEndDate);
-    }
-
-    /**
-     * Builder for DePermissionRequest
-     */
-    @SuppressWarnings("NullAway") // Builder pattern allows null until build() is called
-    public static class Builder {
-        @Nullable
-        private String permissionId;
-        @Nullable
-        private String connectionId;
-        @Nullable
-        private String meteringPointId;
-        @Nullable
-        private LocalDate start;
-        @Nullable
-        private LocalDate end;
-        @Nullable
-        private Granularity granularity;
-        @Nullable
-        private EnergyType energyType;
-        @Nullable
-        private PermissionProcessStatus status;
-        @Nullable
-        private ZonedDateTime created;
-        @Nullable
-        private DataSourceInformation dataSourceInformation;
-        @Nullable
-        private String dataNeedId;
-        @Nullable
-        private LocalDate latestMeterReadingEndDate;
-        @Nullable
-        private String message;
-        @Nullable
-        private String cause;
-
-        public Builder permissionId(String permissionId) {
-            this.permissionId = permissionId;
-            return this;
-        }
-
-        public Builder connectionId(String connectionId) {
-            this.connectionId = connectionId;
-            return this;
-        }
-
-        public Builder meteringPointId(String meteringPointId) {
-            this.meteringPointId = meteringPointId;
-            return this;
-        }
-
-        public Builder start(LocalDate start) {
-            this.start = start;
-            return this;
-        }
-
-        public Builder end(LocalDate end) {
-            this.end = end;
-            return this;
-        }
-
-        public Builder granularity(Granularity granularity) {
-            this.granularity = granularity;
-            return this;
-        }
-
-        public Builder energyType(EnergyType energyType) {
-            this.energyType = energyType;
-            return this;
-        }
-
-        public Builder status(PermissionProcessStatus status) {
-            this.status = status;
-            return this;
-        }
-
-        public Builder created(ZonedDateTime created) {
-            this.created = created;
-            return this;
-        }
-
-        public Builder dataSourceInformation(DataSourceInformation dataSourceInformation) {
-            this.dataSourceInformation = dataSourceInformation;
-            return this;
-        }
-
-        public Builder dataNeedId(String dataNeedId) {
-            this.dataNeedId = dataNeedId;
-            return this;
-        }
-
-        public Builder latestMeterReadingEndDate(LocalDate latestMeterReadingEndDate) {
-            this.latestMeterReadingEndDate = latestMeterReadingEndDate;
-            return this;
-        }
-
-        public Builder message(String message) {
-            this.message = message;
-            return this;
-        }
-
-        public Builder cause(String cause) {
-            this.cause = cause;
-            return this;
-        }
-
-        public DePermissionRequest build() {
-            return new DePermissionRequest(this);
-        }
     }
 }

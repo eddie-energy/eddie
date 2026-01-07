@@ -8,35 +8,29 @@ import energy.eddie.regionconnector.es.datadis.permission.events.EsGranularityEv
 import energy.eddie.regionconnector.es.datadis.permission.events.EsUnfulfillableEvent;
 import energy.eddie.regionconnector.es.datadis.permission.request.DatadisPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.persistence.EsPermissionRequestRepository;
-import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.es.datadis.services.HistoricalDataService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Sinks;
 
-import java.time.Duration;
 import java.util.Optional;
 
 @Component
-public class AcceptedVHDHandler implements EventHandler<EsAcceptedEventForVHD>, AutoCloseable {
+public class AcceptedVHDHandler implements EventHandler<EsAcceptedEventForVHD> {
     private final Outbox outbox;
     private final HistoricalDataService historicalDataService;
     private final EsPermissionRequestRepository repository;
-    private final Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink;
 
     public AcceptedVHDHandler(
             EventBus eventBus,
             Outbox outbox,
             HistoricalDataService historicalDataService,
-            EsPermissionRequestRepository repository,
-            Sinks.Many<IdentifiableAccountingPointData> identifiableAccountingPointDataSink
+            EsPermissionRequestRepository repository
     ) {
         this.outbox = outbox;
         this.historicalDataService = historicalDataService;
         this.repository = repository;
-        this.identifiableAccountingPointDataSink = identifiableAccountingPointDataSink;
         eventBus.filteredFlux(EsAcceptedEventForVHD.class)
                 .subscribe(this::accept);
     }
@@ -99,10 +93,5 @@ public class AcceptedVHDHandler implements EventHandler<EsAcceptedEventForVHD>, 
         return (pointType == 1 || pointType == 2) &&
                (allowedGranularity == AllowedGranularity.PT15M
                 || allowedGranularity == AllowedGranularity.PT15M_OR_PT1H);
-    }
-
-    @Override
-    public void close() {
-        identifiableAccountingPointDataSink.emitComplete(Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
     }
 }

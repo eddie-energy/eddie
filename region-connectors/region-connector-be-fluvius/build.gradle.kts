@@ -1,13 +1,10 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
-import net.ltgt.gradle.errorprone.errorprone
+import energy.eddie.configureJavaCompileWithErrorProne
 import org.springframework.boot.gradle.tasks.bundling.BootJar
-import java.util.*
 
 plugins {
     id("energy.eddie.java-conventions")
     id("energy.eddie.pnpm-build")
 
-    alias(libs.plugins.openapi.generator)
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
@@ -64,80 +61,9 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-val packagePrefix = "energy.eddie.regionconnector.be.fluvius.client"
-tasks.withType<JavaCompile>().configureEach {
-    options.errorprone.disableWarningsInGeneratedCode.set(true)
-    if (!name.lowercase(Locale.getDefault()).contains("test")) {
-        options.errorprone {
-            check("NullAway", CheckSeverity.ERROR)
-            option("NullAway:AnnotatedPackages", "energy.eddie.regionconnector.be")
-            option("NullAway:AnnotatedPackages", packagePrefix)
-            option("NullAway:UnannotatedClasses", "${packagePrefix}.model")
-            option("NullAway:TreatGeneratedAsUnannotated", true)
-        }
-    }
-}
-
 tasks.jacocoTestReport {
     dependsOn(tasks.test)
     finalizedBy(tasks.jacocoTestCoverageVerification)
 }
 
-// Directory for generated java files
-val generatedSwaggerJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/swagger/main/java"
-
-// Add generated sources to the main source set
-sourceSets {
-    main {
-        java {
-            srcDir(generatedSwaggerJavaDir)
-        }
-    }
-    test {
-        java {
-            srcDir(generatedSwaggerJavaDir)
-        }
-    }
-}
-
-openApiGenerate {
-    generatorName.set("java")
-    inputSpec.set("${projectDir.invariantSeparatorsPath}/src/main/resources/fluvius-sandbox-swagger.json")
-    outputDir.set(generatedSwaggerJavaDir)
-
-    apiPackage.set("${packagePrefix}.api")
-    invokerPackage.set("${packagePrefix}.invoker")
-    modelPackage.set("${packagePrefix}.model")
-
-    generateApiTests.set(false)
-    generateApiDocumentation.set(false)
-    generateModelTests.set(false)
-    generateModelDocumentation.set(false)
-    configOptions.set(
-        mapOf(
-            "sourceFolder" to "/",
-            "useJakartaEe" to "true",
-            "dateLibrary" to "java8",
-        )
-    )
-    globalProperties.set(
-        mapOf(
-            "apis" to "false",
-            "invokers" to "false",
-            "models" to ""
-        )
-    )
-
-    library.set("webclient")
-    cleanupOutput.set(true)
-}
-
-val openApiTask = tasks.named("openApiGenerate")
-
-tasks.named("compileJava").configure {
-    dependsOn(openApiTask)
-}
-
-sourceSets.configureEach {
-    java.srcDir(openApiTask.map { files() })
-}
+configureJavaCompileWithErrorProne("energy.eddie.regionconnector.be.fluvius")

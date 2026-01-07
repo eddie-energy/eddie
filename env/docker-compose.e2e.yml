@@ -1,0 +1,10 @@
+name: e2e-tests
+services:
+  eddie:
+    env_file:
+      - .env.e2e
+
+networks:
+  default:
+    external: true
+    name: "e2e-tests-network"

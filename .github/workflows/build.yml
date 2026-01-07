@@ -7,20 +7,22 @@ on:
       - synchronize
     paths-ignore:
       - "docs/**"
+      - ".github/workflows/build.yml"
       - ".idea/**"
       - ".sonarlint/**"
       - ".run/**"
       - "**.md"
-      - ".github/**"
   push:
     branches:
       - main
     paths-ignore:
       - "docs/**"
+      - ".github/workflows/build.yml"
       - ".idea/**"
       - ".sonarlint/**"
       - ".run/**"
       - "**.md"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -36,13 +38,6 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5

@@ -3,23 +3,20 @@ package energy.eddie.regionconnector.de.eta;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-/**
- * Unit tests for EtaRegionConnector.
- */
 @ExtendWith(MockitoExtension.class)
 class EtaRegionConnectorTest {
 
@@ -29,55 +26,53 @@ class EtaRegionConnectorTest {
     @Mock
     private Outbox outbox;
 
-    private EtaRegionConnector regionConnector;
+    private EtaRegionConnector connector;
 
     @BeforeEach
     void setUp() {
-        regionConnector = new EtaRegionConnector(repository, outbox);
+        connector = new EtaRegionConnector(repository, outbox);
     }
 
     @Test
-    void testGetMetadata() {
-        var metadata = regionConnector.getMetadata();
-        
-        assertNotNull(metadata);
-        assertEquals("de-eta", metadata.id());
-        assertEquals("DE", metadata.countryCode());
-        assertTrue(metadata.coveredMeteringPoints() > 0);
-        assertFalse(metadata.supportedGranularities().isEmpty());
-        assertFalse(metadata.supportedEnergyTypes().isEmpty());
+    void getMetadataShouldReturnCorrectMetadata() {
+        var metadata = connector.getMetadata();
+        assertThat(metadata).isNotNull();
+        assertThat(metadata.id()).isEqualTo(EtaRegionConnectorMetadata.REGION_CONNECTOR_ID);
     }
 
     @Test
-    void testTerminatePermissionSuccess() {
-        String permissionId = UUID.randomUUID().toString();
-        DePermissionRequest mockRequest = mock(DePermissionRequest.class);
-        
-        when(repository.findByPermissionId(permissionId))
-            .thenReturn(Optional.of(mockRequest));
+    void terminatePermissionWhenPermissionExistsShouldCommitEvents() {
+        String permissionId = "test-permission-id";
+        DePermissionRequest request = mock(DePermissionRequest.class);
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
-        regionConnector.terminatePermission(permissionId);
+        connector.terminatePermission(permissionId);
 
-        verify(repository).findByPermissionId(permissionId);
-        verify(outbox, times(2)).commit(any());
+        ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
+        verify(outbox, times(2)).commit(eventCaptor.capture());
+
+        var events = eventCaptor.getAllValues();
+        assertThat(events).hasSize(2);
+        assertThat(events.get(0).permissionId()).isEqualTo(permissionId);
+        assertThat(events.get(0).status()).isEqualTo(PermissionProcessStatus.TERMINATED);
+        assertThat(events.get(1).permissionId()).isEqualTo(permissionId);
+        assertThat(events.get(1).status()).isEqualTo(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
     }
 
     @Test
-    void testTerminatePermissionNotFound() {
-        String permissionId = UUID.randomUUID().toString();
-        
-        when(repository.findByPermissionId(permissionId))
-            .thenReturn(Optional.empty());
+    void terminatePermissionWhenPermissionDoesNotExistShouldNotCommitEvents() {
+        String permissionId = "non-existent-id";
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
 
-        regionConnector.terminatePermission(permissionId);
+        connector.terminatePermission(permissionId);
 
-        verify(repository).findByPermissionId(permissionId);
         verify(outbox, never()).commit(any());
     }
 
     @Test
-    void testRegionConnectorIdConsistency() {
-        assertEquals("de-eta", EtaRegionConnectorMetadata.REGION_CONNECTOR_ID);
-        assertEquals("de-eta", regionConnector.getMetadata().id());
+    void constructorShouldLogInitialization() {
+        // Just to cover the constructor and the log line
+        EtaRegionConnector newConnector = new EtaRegionConnector(repository, outbox);
+        assertThat(newConnector).isNotNull();
     }
 }

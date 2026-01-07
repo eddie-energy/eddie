@@ -1,3 +1,5 @@
+import de.undercouch.gradle.tasks.download.Download
+import de.undercouch.gradle.tasks.download.Verify
 import net.ltgt.gradle.errorprone.CheckSeverity
 import net.ltgt.gradle.errorprone.errorprone
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
@@ -11,6 +13,7 @@ plugins {
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
     alias(libs.plugins.openapi.generator)
+    alias(libs.plugins.undercouch.download)
 }
 
 group = "energy.eddie"
@@ -81,7 +84,8 @@ tasks.getByName<Jar>("jar") {
 }
 
 // Directory for generated java files
-val generatedSwaggerJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/swagger/main/java"
+val eanCodeboekOpenApiFileLocation = layout.buildDirectory.file("generated/sources/swagger/eancodeboek.json")
+val generatedSwaggerJavaDir = "${layout.buildDirectory.asFile.get()}/generated/sources/swagger/main/java"
 
 // Add generated sources to the main source set
 sourceSets {
@@ -97,66 +101,68 @@ sourceSets {
     }
 }
 
-val packagePrefix = "energy.eddie.regionconnector.nl.mijn.aansluiting.client"
-val openApiSpecs = mapOf(
-    "continuous-request-api" to "/src/main/resources/ReadingSeriesRetrieval_v0_3_1.json",
-    "ean-codeboek-api" to "/src/main/resources/edsn-eancodeboek.json",
-)
-openApiSpecs.forEach { (name, spec) ->
-    tasks.register<GenerateTask>(name) {
-        group = "openapi tools"
-        description = "Generates Java classes for $name of Mijn Aansluiting"
+val eancodeboekUrl = "https://gateway.edsn.nl/eancodeboek/v3/api-docs"
+val eancodeboekChecksum = "b84b118a7f3d11e49571bb4b1c2920c0"
 
-        generatorName.set("java")
-        inputSpec.set("${projectDir.invariantSeparatorsPath}${spec}")
-        outputDir.set(generatedSwaggerJavaDir)
-        ignoreFileOverride.set("${projectDir.invariantSeparatorsPath}/src/main/resources/.openapi-generator-ignore")
+val openApiDownloadTask = tasks.register<Download>("eancodeboekOpenApiDownload") {
+    group = "download"
+    description = "Download the Open API files for the EAN Codeboek API"
+    src(eancodeboekUrl)
+    dest(eanCodeboekOpenApiFileLocation)
+    overwrite(false)
+    onlyIfModified(true)
+}
 
-        apiPackage.set("${packagePrefix}.api")
-        invokerPackage.set("${packagePrefix}.invoker")
-        modelPackage.set("${packagePrefix}.model")
-        library.set("webclient")
-        generateApiTests.set(false)
-        generateApiDocumentation.set(false)
-        generateModelTests.set(false)
-        generateModelDocumentation.set(false)
-        configOptions.set(
-            mapOf(
-                "sourceFolder" to "/",
-                "useJakartaEe" to "true",
-                "dateLibrary" to "java8"
-            )
+val eancodeboekVerifyTask = tasks.register<Verify>("verifyEANCodeboekOpenApiSpecs") {
+    group = "openapi tools"
+    description = "Verifies the downloaded OpenAPI specs"
+    dependsOn(openApiDownloadTask)
+    src(eanCodeboekOpenApiFileLocation)
+    checksum(eancodeboekChecksum)
+}
+
+openApiGenerate {
+    generatorName.set("java")
+    inputSpec.set(eanCodeboekOpenApiFileLocation.get().asFile.absolutePath)
+    outputDir.set(generatedSwaggerJavaDir)
+    modelPackage.set("energy.eddie.regionconnector.nl.mijn.aansluiting.client.model")
+    library.set("webclient")
+    cleanupOutput.set(true)
+    generateApiDocumentation.set(false)
+    generateModelTests.set(false)
+    generateModelDocumentation.set(false)
+    configOptions.set(
+        mapOf(
+            "sourceFolder" to "/",
+            "useJakartaEe" to "true",
+            "dateLibrary" to "java8"
         )
-        typeMappings.set(
-            mapOf(
-                "OffsetDateTime" to "ZonedDateTime"
-            )
+    )
+    typeMappings.set(
+        mapOf(
+            "OffsetDateTime" to "ZonedDateTime"
         )
-        importMappings.set(
-            mapOf(
-                "java.time.OffsetDateTime" to "java.time.ZonedDateTime"
-            )
+    )
+    importMappings.set(
+        mapOf(
+            "java.time.OffsetDateTime" to "java.time.ZonedDateTime"
         )
-        globalProperties.set(
-            mapOf(
-                "apis" to "false",
-                "invokers" to "false",
-                "models" to ""
-            )
+    )
+    globalProperties.set(
+        mapOf(
+            "apis" to "false",
+            "invokers" to "false",
+            "models" to ""
         )
-    }
+    )
+}
+
+tasks.withType<GenerateTask>().configureEach {
+    dependsOn(eancodeboekVerifyTask)
 }
 
 tasks.named("compileJava").configure {
-    openApiSpecs.forEach { (name, _) ->
-        dependsOn(tasks.named(name))
-    }
-}
-
-sourceSets.configureEach {
-    openApiSpecs.forEach { (name, _) ->
-        java.srcDir(tasks.named(name).map { files() })
-    }
+    dependsOn(tasks.withType<GenerateTask>())
 }
 
 tasks.jacocoTestReport {
