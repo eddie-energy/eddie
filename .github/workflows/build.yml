@@ -42,10 +42,6 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@bfd569614358980afc8f89c2730eee75bb97efdf
 
-      # Prevents an issue where region connector custom elements do not show up in the classpath for parallel builds
-      - name: Build node projects for use in compilation
-        run: ./gradlew pnpmBuild
-
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

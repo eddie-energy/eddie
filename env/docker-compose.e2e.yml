@@ -1,6 +1,7 @@
 name: e2e-tests
 services:
   eddie:
+    pull_policy: build
     env_file:
       - .env.e2e
 
