@@ -1,12 +1,13 @@
 package energy.eddie.regionconnector.simulation.engine;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -57,7 +58,7 @@ public class PredefinedScenarios {
     }
 
     private Map<String, Scenario> loadJsonFilesFromClasspath(URI classpathLocation) throws IOException {
-        var scenarios = new HashMap<String, Scenario>();
+        var map = new HashMap<String, Scenario>();
         var resources = new PathMatchingResourcePatternResolver().getResources("classpath*:" + classpathLocation.getPath());
         for (var resource : resources) {
             if (!resource.exists()) {
@@ -65,13 +66,13 @@ public class PredefinedScenarios {
             }
             var src = resource.getContentAsString(StandardCharsets.UTF_8);
             var scenario = objectMapper.readValue(src, Scenario.class);
-            scenarios.put(scenario.name(), scenario);
+            map.put(scenario.name(), scenario);
         }
-        return scenarios;
+        return map;
     }
 
     private Map<String, Scenario> loadJsonFilesFromFileSystem(URI uri) throws IOException {
-        var scenarios = new HashMap<String, Scenario>();
+        var map = new HashMap<String, Scenario>();
         var path = Paths.get(uri.getPath());
         if (Files.isDirectory(path)) {
             try (var walker = Files.walk(path)) {
@@ -79,17 +80,17 @@ public class PredefinedScenarios {
                       .forEach(p -> {
                           try {
                               var scenario = objectMapper.readValue(p.toFile(), Scenario.class);
-                              scenarios.put(scenario.name(), scenario);
-                          } catch (IOException e) {
+                              map.put(scenario.name(), scenario);
+                          } catch (JacksonException e) {
                               LOGGER.warn("Couldn't parse scenario file {}", p, e);
                           }
                       });
             }
         } else if (isJsonFile(path)) {
             var scenario = objectMapper.readValue(path.toFile(), Scenario.class);
-            scenarios.put(scenario.name(), scenario);
+            map.put(scenario.name(), scenario);
         }
-        return scenarios;
+        return map;
     }
 
     private static boolean isJsonFile(Path path) {

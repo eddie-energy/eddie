@@ -49,15 +49,17 @@ dependencies {
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.actuator)
-    implementation(libs.reactor.core)
-    implementation(libs.flyway.core)
+    implementation(libs.spring.boot.starter.flyway)
     implementation(libs.spring.boot.starter.opentelemetry)
+    implementation(libs.reactor.core)
 
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.webflux.test)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.testcontainers.junit)
@@ -68,7 +70,7 @@ dependencies {
 }
 
 configurations.all {
-    exclude(group = "commons-logging", module = "commons-logging") // TODO check
+    //exclude(group = "commons-logging", module = "commons-logging") // TODO check
     exclude(group = "org.slf4j", module = "slf4j-simple") // TODO this shoudn't be necessary
     exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl") // TODO this neither
 }

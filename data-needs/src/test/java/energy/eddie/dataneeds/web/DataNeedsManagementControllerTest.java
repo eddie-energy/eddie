@@ -1,8 +1,5 @@
 package energy.eddie.dataneeds.web;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.dataneeds.DataNeedsSpringConfig;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -19,13 +16,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.*;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,6 +32,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,8 +53,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = DataNeedsManagementController.class, properties = {"eddie.management.server.urlprefix=management", "eddie.data-needs-config.data-need-source=database"})
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
+@Import(WebTestConfig.class)
 class DataNeedsManagementControllerTest {
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = JsonMapper.builder()
+                                                  .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                                                  .build();
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -117,7 +122,7 @@ class DataNeedsManagementControllerTest {
     }
 
     @BeforeEach
-    void setUp() throws JsonProcessingException {
+    void setUp() {
         exampleVhd = mapper.readValue(EXAMPLE_VHD_DATA_NEED, DataNeed.class);
         exampleAccount = mapper.readValue(EXAMPLE_ACCOUNTING_POINT_DATA_NEED, DataNeed.class);
     }
@@ -140,7 +145,7 @@ class DataNeedsManagementControllerTest {
     }
 
     @Test
-    void givenDataNeeds_getAllDataNeeds_returnsAllDataNeeds() throws Exception {
+    void nullgivenDataNeeds_getAllDataNeeds_returnsAllDataNeeds() throws Exception {
         // Given
         when(mockService.findAll()).thenReturn(List.of(exampleAccount, exampleVhd));
 
@@ -252,6 +257,8 @@ class DataNeedsManagementControllerTest {
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = DataNeedsSpringConfig.class)
 @ActiveProfiles("test-data-needs-management-api")
 @Sql(scripts = "/test-data-needs-management-api.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@AutoConfigureTestRestTemplate
+@Import(WebTestConfig.class)
 class DataNeedsManagementFullTest {
     @LocalServerPort
     private int port;
@@ -270,14 +277,14 @@ class DataNeedsManagementFullTest {
                 Arguments.of(
                         "{\"type\":\"validated\",\"name\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"description\":\"Historical validated consumption data for the next 10 days, one measurement per day\",\"purpose\":\"Some purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"absoluteDuration\",\"start\":\"2024-04-01\",\"end\":\"2024-04-05\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"P1D\",\"maxGranularity\":\"P1D\"}"),
                 Arguments.of(
-                        "{\"type\":\"account\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My Account Point Data Need\",\"description\":\"Some longtext\",\"purpose\":\"A purpose\"}")
+                        "{\"type\":\"account\",\"policyLink\":\"https://example.com/toc\",\"name\":\"My Account Point Data Need\",\"description\":\"Some longtext\",\"purpose\":\"A purpose\", \"enabled\": \"true\"}")
         );
     }
 
     @ParameterizedTest
     @DisplayName("Valid new data need request")
     @MethodSource("validDataNeedRequests")
-    void givenValidDataNeed_returnsCreated(String json) throws JsonProcessingException {
+    void givenValidDataNeed_returnsCreated(String json) {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");
 
@@ -289,7 +296,7 @@ class DataNeedsManagementFullTest {
                 entity,
                 DataNeed.class);
 
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(response.getBody()));
 
         assertEquals(201, response.getStatusCode().value());
@@ -303,7 +310,7 @@ class DataNeedsManagementFullTest {
     @org.springframework.boot.test.context.TestConfiguration
     static class TestConfiguration {
         @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        public SecurityFilterChain securityFilterChain(HttpSecurity http) {
             http.securityMatcher("/**")
                 .authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
 

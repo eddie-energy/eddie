@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.it.transformer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -22,8 +22,8 @@ public class SinapsiAlfaEntryJsonTest {
     public static final String PAYLOAD = "[" + PAYLOAD_ENTRY + "]";
 
     @Test
-    void deserialize_returnsParsed() throws JsonProcessingException {
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    void deserialize_returnsParsed() throws JacksonException {
+        var objectMapper = ObjectMapperCreatorUtil.mapper();
 
         var json = objectMapper.readValue(PAYLOAD_ENTRY, SinapsiAlfaEntryJson.class);
 

@@ -1,8 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -33,13 +30,12 @@ import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import org.openapitools.jackson.nullable.JsonNullableModule;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.function.Supplier;
 
@@ -73,14 +69,6 @@ public class EnerginetBeanConfig {
                 fulfillmentService,
                 (reading, end) -> outbox.commit(new DkInternalPollingEvent(reading.permissionId(), end))
         );
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new JsonNullableModule())
-                .registerModule(new Jdk8Module());
     }
 
     @Bean
@@ -132,10 +120,7 @@ public class EnerginetBeanConfig {
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(
-            @Qualifier("objectMapper") ObjectMapper objectMapper,
-            EnergyDataStreams streams
-    ) {
+    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, EnergyDataStreams streams) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,

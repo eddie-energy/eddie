@@ -1,14 +1,14 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -82,7 +82,7 @@ public class NettyDatadisTokenProvider implements DatadisTokenProvider {
             token = jwtToken;
             expiryTime = jsonNode.get("exp").asLong();
             return Mono.just(token);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return Mono.error(new TokenProviderException(e));
         }
     }

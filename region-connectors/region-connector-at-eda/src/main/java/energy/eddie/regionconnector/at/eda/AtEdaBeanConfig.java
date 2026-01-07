@@ -1,8 +1,5 @@
 package energy.eddie.regionconnector.at.eda;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.ponton.xp.adapter.api.ConnectionException;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
@@ -36,7 +33,6 @@ import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +40,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.function.Supplier;
@@ -131,12 +128,6 @@ public class AtEdaBeanConfig {
                 AtPermissionRequest::message,
                 pr -> objectMapper.createObjectNode().put("cmRequestId", pr.cmRequestId())
         );
-    }
-
-    @Bean
-    public Jackson2ObjectMapperBuilderCustomizer objectMapper() {
-        return customizer -> customizer
-                .modules(new JavaTimeModule(), new Jdk8Module());
     }
 
     @Bean

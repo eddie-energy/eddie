@@ -1,11 +1,10 @@
 package energy.eddie.e2etests.regionconnector;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microsoft.playwright.Locator;
 import energy.eddie.e2etests.E2eTestSetup;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
@@ -22,9 +21,9 @@ class FrEnedisTest extends E2eTestSetup {
             if (response.url().contains("fr-enedis/permission-request")) {
                 try {
                     var responseBody = objectMapper.readTree(response.body());
-                    requestDetails.setPermissionId(responseBody.get("permissionId").asText());
+                    requestDetails.setPermissionId(responseBody.get("permissionId").asString());
                     requestDetails.setUrl(response.url().split("/permission-request", -1)[0]);
-                } catch (IOException e) {
+                } catch (JacksonException e) {
                     throw new RuntimeException(e);
                 }
             }

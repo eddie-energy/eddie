@@ -29,7 +29,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/EDDIE_logo_V.svg", "/new-example-app-styles.css").permitAll()
@@ -51,7 +51,7 @@ public class WebSecurityConfig {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
         auth
                 .jdbcAuthentication().dataSource(dataSource)
                 .usersByUsernameQuery("SELECT username, password, 'true' as enabled"

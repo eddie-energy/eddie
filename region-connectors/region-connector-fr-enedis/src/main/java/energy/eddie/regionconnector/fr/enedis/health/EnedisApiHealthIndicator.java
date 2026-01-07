@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis.health;
 
 import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 
 public class EnedisApiHealthIndicator implements HealthIndicator {
     private final EnedisHealth enedisHealth;

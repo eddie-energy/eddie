@@ -1,22 +1,21 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.fr.enedis.EnedisBeanConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.JacksonJsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -30,7 +29,7 @@ import static org.mockito.Mockito.mock;
 class EnedisApiClientHealthTest {
     private static MockWebServer mockBackEnd;
     private static WebClient webClient;
-    private final ObjectMapper objectMapper = new EnedisBeanConfig().objectMapper();
+    private final JsonMapper objectMapper = new JsonMapper();
 
     @BeforeEach
     void setUp() throws IOException {
@@ -39,10 +38,12 @@ class EnedisApiClientHealthTest {
         String basePath = "http://localhost:" + mockBackEnd.getPort();
         webClient = WebClient.builder()
                              .baseUrl(basePath)
-                             .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
-                                                                                   .jackson2JsonDecoder(new Jackson2JsonDecoder(
-                                                                                           objectMapper,
-                                                                                           MediaType.APPLICATION_JSON)))
+                             .codecs(clientCodecConfigurer -> clientCodecConfigurer
+                                     .defaultCodecs()
+                                     .jacksonJsonDecoder(
+                                             new JacksonJsonDecoder(objectMapper, MediaType.APPLICATION_JSON)
+                                     )
+                             )
                              .build();
     }
 

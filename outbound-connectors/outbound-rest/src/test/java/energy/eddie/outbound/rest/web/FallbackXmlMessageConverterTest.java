@@ -16,7 +16,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.http.MockHttpOutputMessage;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class FallbackXmlMessageConverterTest {
     private final FallbackXmlMessageConverter converter = new FallbackXmlMessageConverter(
             new MarshallingHttpMessageConverter(new RestOutboundBeanConfig().jaxb2Marshaller()),
-            new MappingJackson2XmlHttpMessageConverter()
+            new JacksonXmlHttpMessageConverter()
     );
 
     @ParameterizedTest

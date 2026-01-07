@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.es.datadis.dtos;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.regionconnector.es.datadis.serializer.LocalDateToEpochSerializer;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.LocalDate;
 

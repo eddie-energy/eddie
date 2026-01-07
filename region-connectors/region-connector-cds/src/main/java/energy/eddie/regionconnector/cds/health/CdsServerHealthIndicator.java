@@ -2,8 +2,8 @@ package energy.eddie.regionconnector.cds.health;
 
 import energy.eddie.regionconnector.cds.client.CdsPublicApis;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 public class CdsServerHealthIndicator implements HealthIndicator {

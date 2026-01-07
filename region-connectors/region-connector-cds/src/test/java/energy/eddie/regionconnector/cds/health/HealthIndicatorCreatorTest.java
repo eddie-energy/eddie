@@ -10,10 +10,10 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.health.CompositeHealthContributor;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
-import org.springframework.boot.actuate.health.NamedContributor;
-import org.springframework.boot.actuate.health.PingHealthIndicator;
+import org.springframework.boot.health.contributor.CompositeHealthContributor;
+import org.springframework.boot.health.contributor.HealthContributors;
+import org.springframework.boot.health.contributor.PingHealthIndicator;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 
 import java.util.List;
 import java.util.Map;
@@ -23,6 +23,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("DataFlowIssue") // False positive warnings for mocking nullable methods
 @ExtendWith(MockitoExtension.class)
 class HealthIndicatorCreatorTest {
     @Mock
@@ -50,7 +51,7 @@ class HealthIndicatorCreatorTest {
         verify(registry).registerContributor(eq("region-connector-cds"), compositeCaptor.capture());
         var composite = compositeCaptor.getValue();
         assertThat(composite).singleElement()
-                             .extracting(NamedContributor::getName)
+                             .extracting(HealthContributors.Entry::name)
                              .isEqualTo("1");
     }
 
@@ -84,7 +85,7 @@ class HealthIndicatorCreatorTest {
         verify(registry).registerContributor(eq("region-connector-cds"), compositeCaptor.capture());
         var composite = compositeCaptor.getValue();
         assertThat(composite).singleElement()
-                             .extracting(NamedContributor::getName)
+                             .extracting(HealthContributors.Entry::name)
                              .isEqualTo("1");
     }
 }

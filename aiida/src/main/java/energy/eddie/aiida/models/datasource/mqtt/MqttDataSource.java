@@ -69,12 +69,16 @@ public abstract class MqttDataSource extends DataSource {
         return user.password();
     }
 
+    @SuppressWarnings("NullAway")
+    // False positive for encode call, since plaintextPassword is NonNull encode should always return non-null password
     public void configure(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
         this.internalHost = config.internalHost();
         this.externalHost = config.externalHost();
         this.passwordHash = encoder.encode(plaintextPassword);
     }
 
+    @SuppressWarnings("NullAway")
+    // False positive for encode call, since plaintextPassword is NonNull encode should always return non-null password
     public void updatePassword(BCryptPasswordEncoder encoder, String plaintextPassword) {
         var password = encoder.encode(plaintextPassword);
         this.user.updatePassword(password);

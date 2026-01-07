@@ -1,12 +1,14 @@
 package energy.eddie.regionconnector.shared.security;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
@@ -36,7 +38,13 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
     }
 
     @Override
-    public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
+    public @Nullable AuthorizationResult authorize(
+            @Nullable Supplier<? extends @Nullable Authentication> authentication,
+            @Nullable RequestAuthorizationContext context
+    ) {
+        if (context == null) {
+            return new AuthorizationDecision(false);
+        }
         String requestURI = context.getRequest().getRequestURI();
         String jwt = getJwtFromHeader(context.getRequest());
 

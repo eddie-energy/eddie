@@ -1,8 +1,5 @@
 package energy.eddie.dataneeds.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -14,6 +11,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +28,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DataNeedsDbServiceTest {
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = JsonMapper.builder()
+                                                  .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                                                  .build();
     @Mock
     private DataNeedsRepository mockRepository;
     @InjectMocks
@@ -36,7 +38,7 @@ class DataNeedsDbServiceTest {
     private DataNeed exampleVhd;
 
     @BeforeEach
-    void setUp() throws JsonProcessingException {
+    void setUp() {
         exampleVhd = mapper.readValue(EXAMPLE_VHD_DATA_NEED, DataNeed.class);
     }
 
@@ -124,7 +126,7 @@ class DataNeedsDbServiceTest {
     }
 
     @Test
-    void givenDataNeeds_findAll_returnsListOfAll() throws JsonProcessingException {
+    void givenDataNeeds_findAll_returnsListOfAll() {
         // Given
         DataNeed accountExample = mapper.readValue(EXAMPLE_ACCOUNTING_POINT_DATA_NEED, DataNeed.class);
         when(mockRepository.findAll()).thenReturn(List.of(accountExample, exampleVhd));

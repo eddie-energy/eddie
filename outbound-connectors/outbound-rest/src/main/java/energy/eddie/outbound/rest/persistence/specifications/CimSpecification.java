@@ -1,6 +1,6 @@
 package energy.eddie.outbound.rest.persistence.specifications;
 
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -18,7 +18,7 @@ public class CimSpecification {
 
     // Disable name rule, for readable CIM version
     @SuppressWarnings("java:S100")
-    public static <T> Specification<T> buildQueryForV0_82(
+    public static <T> PredicateSpecification<T> buildQueryForV0_82(
             Optional<String> permissionId,
             Optional<String> connectionId,
             Optional<String> dataNeedId,
@@ -51,17 +51,17 @@ public class CimSpecification {
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
                 to.map(InsertionTimeSpecification::<T>insertedBeforeEquals)
         );
-        return Specification.allOf(
+        return PredicateSpecification.allOf(
                 query.stream()
                      .filter(Optional::isPresent)
-                     .map(spec -> (Specification<T>) spec.get())
+                     .map(spec -> (PredicateSpecification<T>) spec.get())
                      .toList()
         );
     }
 
     // Disable name rule, for readable CIM version
     @SuppressWarnings("java:S100")
-    public static <T> Specification<T> buildQueryForV1_04(
+    public static <T> PredicateSpecification<T> buildQueryForV1_04(
             Optional<String> permissionId,
             Optional<String> connectionId,
             Optional<String> dataNeedId,
@@ -94,10 +94,10 @@ public class CimSpecification {
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
                 to.map(InsertionTimeSpecification::<T>insertedBeforeEquals)
         );
-        return Specification.allOf(
+        return PredicateSpecification.allOf(
                 query.stream()
                      .filter(Optional::isPresent)
-                     .map(spec -> (Specification<T>) spec.get())
+                     .map(spec -> (PredicateSpecification<T>) spec.get())
                      .toList()
         );
     }

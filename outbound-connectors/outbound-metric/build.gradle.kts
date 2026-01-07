@@ -33,9 +33,9 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.reactor.core)
-    runtimeOnly(libs.slf4j.simple)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
@@ -45,7 +45,7 @@ dependencies {
     testImplementation(libs.okhttp3.mockwebserver)
 
     testRuntimeOnly(libs.junit.platform.launcher)
-    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
 }

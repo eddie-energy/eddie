@@ -1,8 +1,8 @@
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -114,8 +114,8 @@ public class ShellyJsonTest {
             """;
 
     @Test
-    void deserialize_returnsEMJson() throws JsonProcessingException {
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    void deserialize_returnsEMJson() throws JacksonException {
+        var objectMapper = ObjectMapperCreatorUtil.mapper();
 
         var json = objectMapper.readValue(EM_PAYLOAD, ShellyJson.class);
         var component = json.params().em().get(ShellyComponent.EM);
@@ -130,8 +130,8 @@ public class ShellyJsonTest {
     }
 
     @Test
-    void deserialize_returnsEMDataJson() throws JsonProcessingException {
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    void deserialize_returnsEMDataJson() {
+        var objectMapper = ObjectMapperCreatorUtil.mapper();
 
         var json = objectMapper.readValue(EM_DATA_PAYLOAD, ShellyJson.class);
         var component = json.params().em().get(ShellyComponent.EM_DATA);
@@ -146,8 +146,8 @@ public class ShellyJsonTest {
     }
 
     @Test
-    void deserialize_returnsSwitchJson() throws JsonProcessingException {
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    void deserialize_returnsSwitchJson() {
+        var objectMapper = ObjectMapperCreatorUtil.mapper();
 
         var json = objectMapper.readValue(SWITCH_PAYLOAD, ShellyJson.class);
         var component = json.params().em().get(ShellyComponent.SWITCH_3);
@@ -165,8 +165,8 @@ public class ShellyJsonTest {
     }
 
     @Test
-    void deserialize_returnsJsonWithoutData_whenUnknownComponent() throws JsonProcessingException {
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    void deserialize_returnsJsonWithoutData_whenUnknownComponent() {
+        var objectMapper = ObjectMapperCreatorUtil.mapper();
 
         var json = objectMapper.readValue(UNKNOWN_COMPONENT_PAYLOAD, ShellyJson.class);
 
@@ -180,9 +180,9 @@ public class ShellyJsonTest {
 
     @Test
     void deserialize_throws_whenJsonIsInvalid() {
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
+        var objectMapper = ObjectMapperCreatorUtil.mapper();
         var invalidJson = "{ \"foo\": \"bar\" }";
 
-        assertThrows(JsonProcessingException.class, () -> objectMapper.readValue(invalidJson, ShellyJson.class));
+        assertThrows(JacksonException.class, () -> objectMapper.readValue(invalidJson, ShellyJson.class));
     }
 }

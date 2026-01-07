@@ -1,22 +1,16 @@
 package energy.eddie.dataneeds.utils.cron;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.scheduling.support.CronExpression;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
-
-public class CronExpressionDeserializer extends JsonDeserializer<CronExpression> {
+public class CronExpressionDeserializer extends ValueDeserializer<CronExpression> {
     @Override
     public CronExpression deserialize(
-            JsonParser jsonParser,
-            DeserializationContext deserializationContext
-    ) throws IOException {
-        ObjectCodec oc = jsonParser.getCodec();
-        JsonNode node = oc.readTree(jsonParser);
-        return CronExpression.parse(node.asText(CronExpressionDefaults.SECONDLY.expression()));
+            tools.jackson.core.JsonParser p,
+            tools.jackson.databind.DeserializationContext ctxt
+    ) throws JacksonException {
+        var cron = ctxt.readValue(p, String.class);
+        return CronExpression.parse(cron);
     }
 }

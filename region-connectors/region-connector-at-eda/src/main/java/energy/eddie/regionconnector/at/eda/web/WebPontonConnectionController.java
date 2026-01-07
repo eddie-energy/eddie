@@ -86,7 +86,7 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     ) throws IOException {
         if (cmNotificationHandler == null) {
             LOGGER.warn("Received CM Notification, but no handler is available.");
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
         try {
             EdaCMNotification notification = inboundMessageFactoryCollection
@@ -120,7 +120,7 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     public ResponseEntity<Void> cmRevoke(HttpServletRequest request) throws IOException {
         if (cmRevokeHandler == null) {
             LOGGER.warn("Received CM Revoke message, but no handler is available.");
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
         try {
             LOGGER.debug("Received CM Revoke");
@@ -150,7 +150,7 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     public ResponseEntity<Void> consumptionRecord(HttpServletRequest request) throws IOException {
         if (consumptionRecordHandler == null) {
             LOGGER.warn("Received Consumption Record, but no handler is available.");
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
         try {
             LOGGER.debug("Received Consumption Record");
@@ -186,7 +186,7 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     public ResponseEntity<Void> masterData(HttpServletRequest request) throws IOException {
         if (masterDataHandler == null) {
             LOGGER.warn("Received MasterData, but no handler is available.");
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
         try {
             LOGGER.debug("Received MasterData");
@@ -219,7 +219,7 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     ) throws IOException {
         if (cpNotificationHandler == null) {
             LOGGER.warn("Received CpNotification, but no handler is available.");
-            return ResponseEntity.unprocessableEntity().build();
+            return ResponseEntity.unprocessableContent().build();
         }
         try {
             LOGGER.debug("Received CpNotification");

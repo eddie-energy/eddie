@@ -1,7 +1,5 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -18,6 +16,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +48,7 @@ public class RegionConnectorsCommonControllerAdvice {
         if (isEnumCauseOfException(exception)) {
             var invalidFormatEx = (InvalidFormatException) exception.getCause();
 
-            var fieldName = invalidFormatEx.getPath().getLast().getFieldName();
+            var fieldName = invalidFormatEx.getPath().getLast().getPropertyName();
             Object[] validEnumConstants = invalidFormatEx.getTargetType().getEnumConstants();
 
             errorDetails = String.format("%s: Invalid enum value: '%s'. Valid values: %s.",
@@ -58,7 +58,7 @@ public class RegionConnectorsCommonControllerAdvice {
             String completeFieldName = formatException
                     .getPath()
                     .stream()
-                    .map(JsonMappingException.Reference::getFieldName)
+                    .map(JacksonException.Reference::getPropertyName)
                     .collect(Collectors.joining("."));
 
             errorDetails = String.format("%s: Cannot parse value '%s'.", completeFieldName, formatException.getValue());

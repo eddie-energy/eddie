@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,13 +9,13 @@ import java.nio.charset.Charset;
 
 public class JsonResourceObjectMapper<T> {
     private final TypeReference<T> model;
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public JsonResourceObjectMapper(TypeReference<T> model) {
         this.model = model;
     }
 
-    public T loadTestJson(String fileName) throws IOException {
+    public T loadTestJson(String fileName) {
         ClassLoader classLoader = this.getClass().getClassLoader();
         InputStream inputStream = classLoader.getResourceAsStream(fileName);
         return mapper.readValue(inputStream, this.model);

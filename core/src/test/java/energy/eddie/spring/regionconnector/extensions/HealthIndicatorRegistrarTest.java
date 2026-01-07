@@ -6,10 +6,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.actuate.health.HealthContributor;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
-import org.springframework.boot.actuate.health.NamedContributor;
-import org.springframework.boot.actuate.health.PingHealthIndicator;
+import org.springframework.boot.health.contributor.HealthContributor;
+import org.springframework.boot.health.contributor.HealthContributors;
+import org.springframework.boot.health.contributor.PingHealthIndicator;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ class HealthIndicatorRegistrarTest {
         HealthContributor bean = new PingHealthIndicator();
         when(beanFactory.getParentBeanFactory()).thenReturn(beanFactory);
         when(beanFactory.getBean(HealthContributorRegistry.class)).thenReturn(registry);
-        var iterator = List.of(NamedContributor.of("first", bean)).iterator();
+        var iterator = List.of(new HealthContributors.Entry("first", bean)).iterator();
         when(registry.iterator()).thenReturn(iterator);
 
         // When
@@ -52,9 +52,10 @@ class HealthIndicatorRegistrarTest {
         healthIndicatorRegistrar.postProcessAfterInitialization(bean, null);
 
         // Then
-        verify(registry).registerContributor(null, bean);
+        verify(registry).registerContributor("PingHealthIndicator", bean);
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void doesNotRegisterNonHealthIndicators() {
         // Given
@@ -67,13 +68,14 @@ class HealthIndicatorRegistrarTest {
         verify(registry, never()).registerContributor(any(), any());
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void doesNotRegisterDuplicateHealthIndicators() {
         // Given
         var bean = new PingHealthIndicator();
         when(beanFactory.getParentBeanFactory()).thenReturn(beanFactory);
         when(beanFactory.getBean(HealthContributorRegistry.class)).thenReturn(registry);
-        var it = List.of(NamedContributor.of("bean", (HealthContributor) bean))
+        var it = List.of(new HealthContributors.Entry("bean", bean))
                      .iterator();
         when(registry.iterator()).thenReturn(it);
 

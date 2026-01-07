@@ -1,10 +1,10 @@
 package energy.eddie.aiida.schemas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 

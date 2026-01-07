@@ -3,7 +3,11 @@ package energy.eddie.regionconnector.cds.health;
 import energy.eddie.regionconnector.cds.client.CdsPublicApis;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
 import energy.eddie.regionconnector.cds.persistence.CdsServerRepository;
-import org.springframework.boot.actuate.health.*;
+import org.springframework.boot.health.contributor.CompositeHealthContributor;
+import org.springframework.boot.health.contributor.HealthContributor;
+import org.springframework.boot.health.contributor.HealthContributors;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -49,8 +53,8 @@ public class HealthIndicatorCreator {
             map = new HashMap<>();
         } else {
             map = chc.stream()
-                     .collect(Collectors.toMap(NamedContributor::getName,
-                                               NamedContributor::getContributor));
+                     .collect(Collectors.toMap(HealthContributors.Entry::name,
+                                               HealthContributors.Entry::contributor));
         }
         map.put(contributorName(cdsServer), contributor);
         registry.registerContributor(COMPOSITE_NAME, CompositeHealthContributor.fromMap(map));

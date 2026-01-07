@@ -1,9 +1,9 @@
 package energy.eddie.examples.exampleapp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import io.javalin.Javalin;
 import org.jdbi.v3.core.Jdbi;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 import java.util.stream.Collectors;

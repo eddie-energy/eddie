@@ -33,6 +33,8 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.reactor.test)
     testImplementation(libs.nimbus.oidc)
     testImplementation(libs.testcontainers.postgresql)
@@ -42,7 +44,7 @@ dependencies {
 
     testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.postgresql)
-    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.h2database)
 }

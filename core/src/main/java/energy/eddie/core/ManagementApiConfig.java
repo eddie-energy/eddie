@@ -6,12 +6,13 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import org.apache.catalina.connector.Connector;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.servlet.ServletWebServerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
-import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.GenericFilterBean;
@@ -58,12 +59,12 @@ public class ManagementApiConfig {
         connector.setPort(managementPort);
 
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
-        tomcat.addAdditionalTomcatConnectors(connector);
+        tomcat.addAdditionalConnectors(connector);
         return tomcat;
     }
 
     @Bean
-    public FilterRegistrationBean<InternalEndpointsFilter> trustedEndpointsFilter() {
+    public FilterRegistrationBean<@NotNull InternalEndpointsFilter> trustedEndpointsFilter() {
         return new FilterRegistrationBean<>(new InternalEndpointsFilter());
     }
 

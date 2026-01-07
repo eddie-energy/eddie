@@ -23,6 +23,7 @@ dependencies {
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
 
     testRuntimeOnly(libs.junit.platform.launcher)
 }

@@ -1,10 +1,5 @@
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -18,6 +13,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.testcontainers.shaded.com.google.common.net.HttpHeaders;
 import reactor.core.publisher.Mono;
 import reactor.test.scheduler.VirtualTimeScheduler;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.ZonedDateTime;
@@ -35,8 +32,7 @@ class WebClientMessengerMonitorTest {
 
     static MockWebServer mockBackEnd;
     private static PontonXPAdapterConfiguration config;
-    private final ObjectMapper objectMapper = new ObjectMapper()
-            .registerModules(new Jdk8Module(), new JavaTimeModule());
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final WebClient webClient = WebClient.create();
     @Spy
     private PontonTokenProvider tokenProvider;
@@ -59,7 +55,7 @@ class WebClientMessengerMonitorTest {
 
     @SuppressWarnings("DataFlowIssue")
     @Test
-    void resendFailedMessage_sendsExpectedRequest() throws InterruptedException, JsonProcessingException {
+    void resendFailedMessage_sendsExpectedRequest() throws InterruptedException {
         // Given
         var webClientMessengerMonitor = new WebClientMessengerMonitor(config, webClient, this.tokenProvider);
         when(tokenProvider.getToken()).thenReturn(Mono.just("token123"));
@@ -76,10 +72,10 @@ class WebClientMessengerMonitorTest {
         assertAll(
                 () -> assertEquals("Bearer token123", authHeader),
                 () -> assertEquals(now.format(DateTimeFormatter.ofPattern(PONTON_DATE_PATTERN)),
-                                   body.findValue("fromDate").asText()),
-                () -> assertEquals(messageId, body.findValue("messageId").asText()),
-                () -> assertEquals(config.adapterId(), body.findValue("adapterIds").elements().next().asText()),
-                () -> assertEquals("FAILED", body.findValue("inboundStates").elements().next().asText())
+                                   body.findValue("fromDate").asString()),
+                () -> assertEquals(messageId, body.findValue("messageId").asString()),
+                () -> assertEquals(config.adapterId(), body.findValue("adapterIds").get(0).asString()),
+                () -> assertEquals("FAILED", body.findValue("inboundStates").get(0).asString())
         );
     }
 

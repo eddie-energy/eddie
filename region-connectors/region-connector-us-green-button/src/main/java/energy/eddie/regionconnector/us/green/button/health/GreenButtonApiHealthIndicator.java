@@ -1,8 +1,9 @@
 package energy.eddie.regionconnector.us.green.button.health;
 
 import energy.eddie.regionconnector.us.green.button.api.GreenButtonApi;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.jspecify.annotations.Nullable;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -17,6 +18,7 @@ public class GreenButtonApiHealthIndicator implements HealthIndicator {
     }
 
     @Override
+    @Nullable
     public Health health() {
         return greenButtonApi.isAlive()
                              .map(isAlive -> Boolean.TRUE.equals(isAlive) ? Health.up() : Health.down())

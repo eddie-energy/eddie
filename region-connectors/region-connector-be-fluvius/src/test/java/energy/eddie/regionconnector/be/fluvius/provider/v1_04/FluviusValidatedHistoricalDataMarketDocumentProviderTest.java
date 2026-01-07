@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
@@ -15,8 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
 
@@ -25,8 +23,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
     private final ClassLoader classLoader = this.getClass().getClassLoader();
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
-                                                          .registerModule(new JsonNullableModule());
+    private final ObjectMapper mapper = new ObjectMapper();
     @Mock
     private DataNeedsService dataNeedsService;
 
@@ -34,7 +31,7 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
     private FluviusOAuthConfiguration fluviusConfig;
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_differentUnits() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_differentUnits() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_daily.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,

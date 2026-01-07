@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.regionconnector.shared.utils.CommonPaths;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springdoc.core.configuration.SpringDocConfiguration;
@@ -22,14 +23,13 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
-import org.springframework.lang.NonNull;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
@@ -129,7 +129,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     @Override
-    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
+    public void postProcessBeanFactory(@org.jspecify.annotations.NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
         // not needed by this processor
     }
 
@@ -218,7 +218,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * @param metadata                        Automatically registers the metadata as a bean, since it has to be present in every region-connector
      * @return AnnotationConfigWebApplicationContext for the region connector.
      */
-    @NonNull
+    @org.jspecify.annotations.NonNull
     private static AnnotationConfigWebApplicationContext createWebContext(
             Class<?> regionConnectorConfigClass,
             String regionConnectorName,
@@ -248,7 +248,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * @param regionConnectorName    Unique name of the region connector, as defined in {@link RegionConnector}.
      * @return AbstractBeanDefinition that can be registered in the root context (i.e. the EDDIE core context).
      */
-    @NonNull
+    @org.jspecify.annotations.NonNull
     private static AbstractBeanDefinition createRegionConnectorBeanDefinition(
             AnnotationConfigWebApplicationContext regionConnectorContext,
             String regionConnectorName
@@ -257,7 +257,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
 
-        ServletRegistrationBean<DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+        ServletRegistrationBean<@org.jspecify.annotations.NonNull DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
                 dispatcherServlet,
                 urlMapping);
         // use unique name

@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
 import java.util.Objects;

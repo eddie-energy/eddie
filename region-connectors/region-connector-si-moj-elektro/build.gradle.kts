@@ -32,6 +32,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.reactor.test)
     testImplementation(libs.okhttp3.mockwebserver)
     testImplementation(libs.testcontainers.postgresql)

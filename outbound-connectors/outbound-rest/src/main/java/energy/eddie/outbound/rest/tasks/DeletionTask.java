@@ -27,8 +27,7 @@ public class DeletionTask<T> {
     public void delete() {
         var timestamp = ZonedDateTime.now(ZoneOffset.UTC).minus(restConfig.retentionTime());
         LOGGER.debug("Deleting all records inserted before {}", timestamp);
-        var where = InsertionTimeSpecification.<T>insertedBeforeEquals(
-                timestamp);
+        var where = InsertionTimeSpecification.<T>insertedBeforeEquals(timestamp);
         repository.delete(where);
     }
 }

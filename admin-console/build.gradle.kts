@@ -33,9 +33,9 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.reactor.test)
     testRuntimeOnly(libs.junit.platform.launcher)
-    testRuntimeOnly(libs.h2database)
 }
 
 tasks.withType<JavaCompile>().configureEach {

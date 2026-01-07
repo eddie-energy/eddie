@@ -1,12 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.providers.agnostic;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openapitools.jackson.nullable.JsonNullableModule;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,17 +16,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("DataFlowIssue")
 class IdentifiableApiResponseTest {
-    static MyEnergyDataMarketDocumentResponse response;
-    private static final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static MyEnergyDataMarketDocumentResponse response;
 
     @BeforeAll
     static void setUp() throws IOException {
-        mapper.registerModule(new JsonNullableModule());
         try (InputStream is = IdentifiableApiResponseTest.class.getClassLoader()
                                                                .getResourceAsStream(
                                                                        "MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
-            MyEnergyDataMarketDocumentResponseListApiResponse response = mapper.readValue(is,
-                                                                                                MyEnergyDataMarketDocumentResponseListApiResponse.class);
+            MyEnergyDataMarketDocumentResponseListApiResponse response = MAPPER.readValue(is,
+                                                                                          MyEnergyDataMarketDocumentResponseListApiResponse.class);
             IdentifiableApiResponseTest.response = response.getResult().getFirst();
         }
     }

@@ -17,8 +17,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -48,7 +49,9 @@ class ShellyAdapterTest {
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
-        var mapper = new AiidaConfiguration().customObjectMapper().build();
+        var builder = JsonMapper.builder();
+        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
+        var mapper = builder.build();
         adapter = new ShellyAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }

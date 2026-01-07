@@ -1,21 +1,20 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_ACCEPTED;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REJECTED;
-import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.mvcRequestMatcher;
+import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.pathPatternRequestMatcher;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.securityFilterChain;
 
 @RegionConnectorSecurityConfig
@@ -24,14 +23,14 @@ public class DatadisSecurityConfig {
 
     @Bean
     @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
-    public MvcRequestMatcher.Builder datadisMvcRequestMatcher(HandlerMappingIntrospector introspector) {
-        return mvcRequestMatcher(introspector, DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID);
+    public PathPatternRequestMatcher.Builder datadisRequestMatcher() {
+        return pathPatternRequestMatcher(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID);
     }
 
     @Bean
     @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
     public SecurityFilterChain datadisSecurityFilterChain(
-            MvcRequestMatcher.Builder datadisMvcRequestMatcher,
+            PathPatternRequestMatcher.Builder datadisMvcRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,

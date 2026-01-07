@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.cds.client.customer.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.cds.CdsBeanConfig;
 import energy.eddie.regionconnector.cds.oauth.OAuthCredentials;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -13,11 +11,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.http.codec.json.JacksonJsonDecoder;
+import org.springframework.http.codec.json.JacksonJsonEncoder;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -30,16 +29,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CustomerDataClientTest {
     private static MockWebServer server;
     private static URI baseUri;
-    private final ObjectMapper objectMapper = new CdsBeanConfig().customObjectMapper().build();
+    private final JsonMapper objectMapper = new JsonMapper();
     private final ExchangeStrategies strats = ExchangeStrategies
             .builder()
             .codecs(clientDefaultCodecsConfigurer -> {
                 clientDefaultCodecsConfigurer.defaultCodecs()
-                                             .jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper,
-                                                                                          MediaType.APPLICATION_JSON));
+                                             .jacksonJsonEncoder(new JacksonJsonEncoder(objectMapper,
+                                                                                        MediaType.APPLICATION_JSON));
                 clientDefaultCodecsConfigurer.defaultCodecs()
-                                             .jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper,
-                                                                                          MediaType.APPLICATION_JSON));
+                                             .jacksonJsonDecoder(new JacksonJsonDecoder(objectMapper,
+                                                                                        MediaType.APPLICATION_JSON));
             }).build();
     @Spy
     @SuppressWarnings("unused")
@@ -258,6 +257,7 @@ class CustomerDataClientTest {
                     .assertNext(list -> assertThat(list).hasSize(2))
                     .verifyComplete();
     }
+
     @Test
     void testServicePoints_retrievesAllServicePoints() {
         // Given

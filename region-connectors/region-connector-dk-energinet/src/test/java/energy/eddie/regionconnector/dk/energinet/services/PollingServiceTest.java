@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -9,8 +8,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalGranularityEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
@@ -37,6 +35,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -54,9 +53,9 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PollingServiceTest {
-    private final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     @Mock
-    private EnerginetCustomerApi customerApi;
+    private EnerginetCustomerApiClient customerApi;
     @Mock
     private Outbox outbox;
     @Mock
@@ -217,8 +216,7 @@ class PollingServiceTest {
                                        eq(end.plusDays(1)),
                                        any(),
                                        any(),
-                                       eq("token"),
-                                       any()))
+                                       eq("token")))
                 .thenReturn(Mono.empty());
 
         when(dataNeed.minGranularity()).thenReturn(min);
@@ -272,8 +270,7 @@ class PollingServiceTest {
                                        eq(end.plusDays(1)),
                                        any(),
                                        any(),
-                                       eq("token"),
-                                       any()))
+                                       eq("token")))
                 .thenReturn(Mono.just(document));
 
         // When
@@ -359,8 +356,7 @@ class PollingServiceTest {
                                        eq(end.plusDays(1)),
                                        any(),
                                        any(),
-                                       eq("token"),
-                                       any()))
+                                       eq("token")))
                 .thenReturn(Mono.just(data));
 
         // When

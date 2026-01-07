@@ -1,9 +1,9 @@
 package energy.eddie.outbound.rest.dto;
 
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
-import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import jakarta.annotation.Nullable;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
+import tools.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 
 import java.util.List;
 

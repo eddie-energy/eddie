@@ -1,7 +1,6 @@
 package energy.eddie.aiida.adapters.datasource.at;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import eu.rekawek.toxiproxy.Proxy;
@@ -23,6 +22,7 @@ import org.testcontainers.toxiproxy.ToxiproxyContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -81,7 +81,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     @BeforeEach
     void setUp() throws IOException {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
-        mapper = new AiidaConfiguration().customObjectMapper().build();
+        mapper = ObjectMapperCreatorUtil.mapper();
 
         var toxiproxyClient = new ToxiproxyClient(toxiproxy.getHost(), toxiproxy.getControlPort());
         proxy = toxiproxyClient.createProxy("mqtt", "0.0.0.0:8666", "mqtt:1883");

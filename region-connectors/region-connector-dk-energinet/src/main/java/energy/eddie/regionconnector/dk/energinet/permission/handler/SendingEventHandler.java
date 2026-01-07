@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.permission.handler;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkAcceptedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
@@ -22,13 +22,13 @@ import java.net.UnknownHostException;
 public class SendingEventHandler implements EventHandler<DKValidatedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SendingEventHandler.class);
     private final Outbox outbox;
-    private final EnerginetCustomerApi customerApi;
+    private final EnerginetCustomerApiClient customerApi;
     private final DkPermissionRequestRepository repository;
 
     public SendingEventHandler(
             Outbox outbox,
             EventBus eventBus,
-            EnerginetCustomerApi customerApi,
+            EnerginetCustomerApiClient customerApi,
             DkPermissionRequestRepository repository
     ) {
         this.outbox = outbox;

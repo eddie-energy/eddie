@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.image.Image;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.ImageRepository;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,8 @@ public class DataSourceImageService {
     @Autowired
     public DataSourceImageService(
             ImageRepository imageRepository,
-            DataSourceRepository dataSourceRepository) {
+            DataSourceRepository dataSourceRepository
+    ) {
         this.imageRepository = imageRepository;
         this.dataSourceRepository = dataSourceRepository;
     }
@@ -77,21 +79,23 @@ public class DataSourceImageService {
     }
 
 
+    @SuppressWarnings("NullAway") // contentType is nullable, but it is checked before passed to any non-null method
     private Image imageFromMultipartFile(MultipartFile file) throws ImageReadException, ImageFormatException {
+        var name = file.getOriginalFilename() == null ? file.getName() : file.getOriginalFilename();
+        var contentType = file.getContentType();
+
+        if (!isValidContentType(contentType)) {
+            throw new ImageFormatException(name);
+        }
+
         try {
-            var contentType = file.getContentType();
-
-            if (!isValidContentType(contentType)) {
-                throw new ImageFormatException(file.getOriginalFilename());
-            }
-
             return new Image(file.getBytes(), contentType);
         } catch (IOException e) {
-            throw new ImageReadException(file.getOriginalFilename());
+            throw new ImageReadException(name, e);
         }
     }
 
-    private boolean isValidContentType(String contentType) {
+    private boolean isValidContentType(@Nullable String contentType) {
         return contentType != null && (
                 contentType.equals(MediaType.IMAGE_JPEG_VALUE) ||
                 contentType.equals(MediaType.IMAGE_PNG_VALUE) ||

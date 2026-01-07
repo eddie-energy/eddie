@@ -1,5 +1,6 @@
 package energy.eddie.aiida.models.permission;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -121,6 +122,7 @@ public class Permission {
      * Constructor only for JPA.
      */
     @SuppressWarnings("NullAway.Init")
+    @JsonCreator
     public Permission() {
     }
 

@@ -1,6 +1,5 @@
 package energy.eddie.aiida.streamers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
@@ -13,6 +12,7 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 

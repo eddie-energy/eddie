@@ -1,12 +1,10 @@
 package energy.eddie.regionconnector.cds.client;
 
-import energy.eddie.regionconnector.cds.CdsBeanConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
 
@@ -20,19 +18,7 @@ class CdsPublicApisTest {
     private static MockWebServer server;
     private static String basepath;
 
-    private final CdsBeanConfig cdsBeanConfig = new CdsBeanConfig();
-    private final CdsPublicApis publicApis = new CdsPublicApis(
-            WebClient.builder()
-                     .codecs(configurer -> {
-                         var decoder = new Jackson2JsonDecoder(
-                                 cdsBeanConfig.customObjectMapper()
-                                              .build()
-                         );
-                         configurer.defaultCodecs()
-                                   .jackson2JsonDecoder(decoder);
-                     })
-                     .build()
-    );
+    private final CdsPublicApis publicApis = new CdsPublicApis(WebClient.create());
 
     @BeforeAll
     static void setUp() throws IOException {

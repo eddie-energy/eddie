@@ -1,12 +1,17 @@
 package energy.eddie.outbound.rest.persistence.specifications;
 
-import jakarta.persistence.criteria.*;
-import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
+import jakarta.persistence.criteria.From;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.validation.constraints.NotNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class JsonPathSpecification<T> implements Specification<T> {
+public class JsonPathSpecification<T> implements PredicateSpecification<T> {
     private final List<String> path;
     private final String value;
 
@@ -21,13 +26,12 @@ public class JsonPathSpecification<T> implements Specification<T> {
     }
 
     @Override
-    public Predicate toPredicate(
-            Root<T> root,
-            CriteriaQuery<?> query,
-            @SuppressWarnings("NullableProblems") CriteriaBuilder cb
-    ) {
+    public @Nullable Predicate toPredicate(@NotNull From<?, T> from, @Nullable CriteriaBuilder cb) {
+        if (cb == null) {
+            return null;
+        }
         var expressions = new ArrayList<Expression<?>>();
-        expressions.add(root.get("payload"));
+        expressions.add(from.get("payload"));
         for (var key : path) {
             expressions.addLast(cb.literal(key));
         }

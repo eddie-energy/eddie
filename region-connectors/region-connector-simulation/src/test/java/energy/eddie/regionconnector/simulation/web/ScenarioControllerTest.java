@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.simulation.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -18,13 +17,14 @@ import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
 import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;

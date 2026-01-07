@@ -1,6 +1,5 @@
 package energy.eddie.core.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import energy.eddie.spring.regionconnector.extensions.SecurityExceptionHandler;
 import org.springframework.context.annotation.Bean;
@@ -9,9 +8,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @SuppressWarnings("java:S4502")
@@ -22,17 +21,16 @@ public class SecurityConfig {
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
-            ObjectMapper mapper,
-            HandlerMappingIntrospector introspector
-    ) throws Exception {
-        MvcRequestMatcher.Builder mvcMatcherBuilder = new MvcRequestMatcher.Builder(introspector);
+            ObjectMapper mapper
+    ) {
+        PathPatternRequestMatcher.Builder pathPatternRequestMatcherBuilder = PathPatternRequestMatcher.withDefaults();
 
         return http
                 .securityMatcher("/api/connection-status-messages/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        // @formatter:off
-                        .requestMatchers(mvcMatcherBuilder.pattern("/api/connection-status-messages/{permissionId}")).access(jwtHeaderAuthorizationManager)
+                                               // @formatter:off
+                        .requestMatchers(pathPatternRequestMatcherBuilder.matcher("/api/connection-status-messages/{permissionId}")).access(jwtHeaderAuthorizationManager)
                         .anyRequest().denyAll()
                        // @formatter
                 )

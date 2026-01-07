@@ -16,7 +16,6 @@ public class AccountingPointDataNeed extends DataNeed {
 
     public AccountingPointDataNeed() {}
 
-    @SuppressWarnings("java:S107")
     public AccountingPointDataNeed(
             String name,
             String description,

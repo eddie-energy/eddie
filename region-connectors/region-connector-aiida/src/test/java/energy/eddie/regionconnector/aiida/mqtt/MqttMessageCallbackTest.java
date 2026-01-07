@@ -1,9 +1,5 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -26,8 +22,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -42,9 +38,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class MqttMessageCallbackTest {
     private final LogCaptor logCaptor = LogCaptor.forClass(MqttMessageCallback.class);
-    private final ObjectMapper realObjectMapper = new ObjectMapper()
-            .registerModule(new JavaTimeModule())
-            .registerModule(new Jdk8Module());
+    private final ObjectMapper realObjectMapper = new ObjectMapper();
     private final Sinks.Many<AiidaConnectionStatusMessageDto> statusSink = Sinks.many()
                                                                                 .unicast()
                                                                                 .onBackpressureBuffer();
@@ -76,7 +70,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_statusMessage_revoked() throws Exception {
+    void messageArrived_statusMessage_revoked() {
         // Given
         String topic = "aiida/v1/00000000-0000-0000-0000-000000000001/status";
         String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000000\",\"timestamp\":1725458241.237425343,\"status\":\"REVOKED\",\"permissionId\":\"00000000-0000-0000-0000-000000000001\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
@@ -107,7 +101,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_statusMessage_accepted() throws IOException {
+    void messageArrived_statusMessage_accepted() {
         // Given
         String topic = "aiida/v1/00000000-0000-0000-0000-000000000001/status";
         String payload = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000000\",\"timestamp\":1725458241.237425343,\"status\":\"ACCEPTED\",\"permissionId\":\"00000000-0000-0000-0000-000000000001\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
@@ -138,7 +132,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_valid() throws IOException {
+    void messageArrived_smartMeterP1CimMessage_valid() {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-cim";
 
@@ -168,7 +162,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_invalidPermission() throws IOException {
+    void messageArrived_smartMeterP1CimMessage_invalidPermission() {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-cim";
 
@@ -185,7 +179,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_invalidStatus() throws IOException {
+    void messageArrived_smartMeterP1CimMessage_invalidStatus() {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-cim";
 
@@ -204,7 +198,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_beforeStartDate() throws IOException {
+    void messageArrived_smartMeterP1CimMessage_beforeStartDate() {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-cim";
 
@@ -225,7 +219,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_afterEndDate() throws IOException {
+    void messageArrived_smartMeterP1CimMessage_afterEndDate() {
         // Given
         var topic = "aiida/v1/perm-1/data/outbound/smart-meter-p1-cim";
 
@@ -367,7 +361,7 @@ class MqttMessageCallbackTest {
 
     @Test
     void messageArrived_unknownTopic()
-            throws MqttTopicException, PermissionInvalidException, PermissionNotFoundException, JsonProcessingException {
+            throws MqttTopicException, PermissionInvalidException, PermissionNotFoundException {
         // Given
         var topic = "aiida/v1/test/unknown/topic";
 

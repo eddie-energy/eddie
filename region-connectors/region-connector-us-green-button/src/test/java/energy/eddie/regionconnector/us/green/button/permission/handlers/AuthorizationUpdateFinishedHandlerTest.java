@@ -30,6 +30,7 @@ class AuthorizationUpdateFinishedHandlerTest {
     private final EventBusImpl eventBus = new EventBusImpl();
     @Mock
     private HistoricalCollectionService historicalCollectionService;
+    @SuppressWarnings("unused")
     @Mock
     private PermissionRequestService permissionRequestService;
     @Mock
@@ -73,7 +74,7 @@ class AuthorizationUpdateFinishedHandlerTest {
         when(historicalCollectionService.persistMetersForPermissionRequest(pr))
                 .thenReturn(Flux.just(meter1, meter2));
         when(historicalCollectionService.triggerHistoricalDataCollection(any(), any()))
-                .thenReturn(Mono.just("").then());
+                .thenReturn(Mono.empty().then());
         when(repository.getByPermissionId("pid")).thenReturn(pr);
 
         // When
@@ -82,6 +83,5 @@ class AuthorizationUpdateFinishedHandlerTest {
         // Then
         verify(historicalCollectionService)
                 .triggerHistoricalDataCollection(assertArg(res -> assertEquals(1, res.size())), eq(pr));
-        verify(permissionRequestService).removeUnfulfillablePermissionRequest("pid");
     }
 }

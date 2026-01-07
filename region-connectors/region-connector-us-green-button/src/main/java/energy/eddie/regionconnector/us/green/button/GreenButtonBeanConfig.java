@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -27,11 +26,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.http.codec.json.JacksonJsonDecoder;
+import org.springframework.http.codec.json.JacksonJsonEncoder;
 import org.springframework.http.codec.xml.Jaxb2XmlDecoder;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.ZoneOffset;
 import java.util.function.Supplier;
@@ -50,7 +50,7 @@ public class GreenButtonBeanConfig {
     @Bean
     public WebClient webClient(
             GreenButtonConfiguration greenButtonConfiguration,
-            ObjectMapper objectMapper,
+            JsonMapper objectMapper,
             WebClient.Builder builder
     ) {
         return builder
@@ -58,9 +58,9 @@ public class GreenButtonBeanConfig {
                 .defaultHeader(HttpHeaders.ACCEPT, "application/atom+xml")
                 .codecs(codecs -> {
                     codecs.defaultCodecs()
-                          .jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
+                          .jacksonJsonEncoder(new JacksonJsonEncoder(objectMapper, MediaType.APPLICATION_JSON));
                     codecs.defaultCodecs()
-                          .jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
+                          .jacksonJsonDecoder(new JacksonJsonDecoder(objectMapper, MediaType.APPLICATION_JSON));
                     codecs.defaultCodecs()
                           .jaxb2Decoder(
                                   new Jaxb2XmlDecoder(MediaType.APPLICATION_XML,

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvent;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvents;
@@ -8,12 +7,13 @@ import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAu
 import energy.eddie.regionconnector.us.green.button.services.utility.events.UtilityEventService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.time.ZoneOffset;

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -14,8 +13,8 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.IdentifiableMetered
 import energy.eddie.regionconnector.nl.mijn.aansluiting.permission.request.MijnAansluitingPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.JsonResourceObjectMapper;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.type.TypeReference;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
@@ -50,7 +49,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     @Test
     @SuppressWarnings({"java:S5961"})
         // The CIM requires too many asserts
-    void testToEddieValidatedHistoricalDataMarketDocuments_withValidObisCode() throws IOException {
+    void testToEddieValidatedHistoricalDataMarketDocuments_withValidObisCode() {
         // Given
         var json = mapper.loadTestJson("single_consumption_data_multiple_meters.json");
         var identifiableMeteredData = new IdentifiableMeteredData(pr, json);
@@ -130,7 +129,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     }
 
     @Test
-    void testToEddieValidatedHistoricalDataMarketDocuments_withGasConsumptionData() throws IOException {
+    void testToEddieValidatedHistoricalDataMarketDocuments_withGasConsumptionData() {
         // Given
         var json = mapper.loadTestJson("gas_consumption_data.json");
         var identifiableMeteredData = new IdentifiableMeteredData(pr, json);
@@ -157,7 +156,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
 
 
     @Test
-    void testToEddieValidatedHistoricalDataMarketDocuments_withInvalidObisCode() throws IOException {
+    void testToEddieValidatedHistoricalDataMarketDocuments_withInvalidObisCode() {
         // Given
         var json = mapper.loadTestJson("invalid_obis_code_consumption_data.json");
         var identifiableMeteredData = new IdentifiableMeteredData(pr, json);

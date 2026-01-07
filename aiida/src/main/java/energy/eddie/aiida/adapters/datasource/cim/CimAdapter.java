@@ -1,6 +1,5 @@
 package energy.eddie.aiida.adapters.datasource.cim;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
@@ -9,8 +8,9 @@ import energy.eddie.cim.v1_04.rtd.TimeSeries;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class CimAdapter extends MqttDataSourceAdapter<CimDataSource> {
@@ -31,7 +31,7 @@ public class CimAdapter extends MqttDataSourceAdapter<CimDataSource> {
             var cimTimeSeries = mapper.readValue(message.getPayload(), TimeSeries.class);
 
             emitAiidaRecord(dataSource.asset(), CimUtil.timeSeriesToAiidaRecordValues(cimTimeSeries));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8),
                          e);

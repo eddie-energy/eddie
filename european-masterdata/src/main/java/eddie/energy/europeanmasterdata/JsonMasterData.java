@@ -1,14 +1,13 @@
 package eddie.energy.europeanmasterdata;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import energy.eddie.api.agnostic.master.data.MasterData;
 import energy.eddie.api.agnostic.master.data.MeteredDataAdministrator;
 import energy.eddie.api.agnostic.master.data.PermissionAdministrator;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,10 +31,10 @@ public class JsonMasterData implements MasterData {
     private <T> List<T> readJsonFile(String filename, Class<T> elementType) throws FileNotFoundException {
         try {
             return objectMapper.readValue(
-                    getClass().getClassLoader().getResource(filename),
-                    TypeFactory.defaultInstance().constructCollectionType(List.class, elementType)
+                    getClass().getClassLoader().getResourceAsStream(filename),
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, elementType)
             );
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new FileNotFoundException("Error reading config file " + filename + ": " + e.getMessage());
         }
     }

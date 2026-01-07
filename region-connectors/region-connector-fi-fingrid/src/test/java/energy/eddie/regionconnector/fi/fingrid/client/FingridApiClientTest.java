@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.fi.fingrid.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.vhd.EnergyProductTypeList;
 import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
 import energy.eddie.regionconnector.fi.fingrid.client.model.*;
@@ -18,9 +16,10 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.ZoneOffset;
@@ -70,7 +69,7 @@ class FingridApiClientTest {
 
     @ParameterizedTest
     @EnumSource(names = {"ACTIVE_ENERGY", "REACTIVE_ENERGY"})
-    void getTimeSeriesDataDoesNotThrow(EnergyProductTypeList productType) throws JsonProcessingException {
+    void getTimeSeriesDataDoesNotThrow(EnergyProductTypeList productType) {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
         var start = now.minusDays(10);
@@ -92,7 +91,7 @@ class FingridApiClientTest {
     }
 
     @Test
-    void getCustomerData_returnsData() throws JsonProcessingException {
+    void getCustomerData_returnsData() {
         // Given
         var resp = TestResourceProvider.readCustomerDataFromFile(TestResourceProvider.CUSTOMER_DATA_JSON);
         mockBackEnd.enqueue(
@@ -111,7 +110,7 @@ class FingridApiClientTest {
     }
 
     @Test
-    void getCustomerData_forEmptyTransaction_returnsNullTransaction() throws JsonProcessingException {
+    void getCustomerData_forEmptyTransaction_returnsNullTransaction() {
         // Given
         var resp = TestResourceProvider.readCustomerDataFromFile(TestResourceProvider.EMPTY_CUSTOMER_DATA_JSON);
         mockBackEnd.enqueue(

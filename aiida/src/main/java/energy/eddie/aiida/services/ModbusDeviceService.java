@@ -1,13 +1,14 @@
 package energy.eddie.aiida.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.models.modbus.*;
 import jakarta.annotation.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.yaml.YAMLMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,6 +53,29 @@ public class ModbusDeviceService {
         this.devices = devices;
     }
 
+    public static ModbusDevice loadConfig(@Nullable UUID deviceId) {
+        if (deviceId == null) {
+            throw new ModbusDeviceConfigException("Device UUID must not be null");
+        }
+        try {
+            String filename = "modbus-configs/" + deviceId + ".yml";
+            ClassPathResource resource = new ClassPathResource(filename);
+
+            ObjectMapper mapper = YAMLMapper.builder()
+                                            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                                            .build();
+            DeviceConfigWrapper configWrapper = mapper.readValue(resource.getInputStream(), DeviceConfigWrapper.class);
+
+            if (configWrapper == null || configWrapper.devices() == null || configWrapper.devices().isEmpty()) {
+                throw new IllegalStateException("Failed to load device config for " + deviceId);
+            }
+
+            return configWrapper.devices().getFirst();
+        } catch (IOException e) {
+            throw new ModbusDeviceConfigException("Failed to load device config for " + deviceId, e);
+        }
+    }
+
     public List<ModbusVendor> vendors() {
         return this.vendors;
     }
@@ -74,26 +98,5 @@ public class ModbusDeviceService {
 
     public List<Device> devices(String modelId) {
         return devices(UUID.fromString(modelId));
-    }
-
-    public static ModbusDevice loadConfig(@Nullable UUID deviceId) {
-        if (deviceId == null) {
-            throw new ModbusDeviceConfigException("Device UUID must not be null");
-        }
-        try {
-            String filename = "modbus-configs/" + deviceId + ".yml";
-            ClassPathResource resource = new ClassPathResource(filename);
-
-            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-            DeviceConfigWrapper configWrapper = mapper.readValue(resource.getInputStream(), DeviceConfigWrapper.class);
-
-            if (configWrapper == null || configWrapper.devices() == null || configWrapper.devices().isEmpty()) {
-                throw new IllegalStateException("Failed to load device config for " + deviceId);
-            }
-
-            return configWrapper.devices().getFirst();
-        } catch (IOException e) {
-            throw new ModbusDeviceConfigException("Failed to load device config for " + deviceId, e);
-        }
     }
 }

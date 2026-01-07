@@ -1,7 +1,5 @@
 package energy.eddie.dataneeds.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.dataneeds.exceptions.DataNeedAlreadyExistsException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.persistence.DataNeedsNameAndIdProjection;
@@ -17,6 +15,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;

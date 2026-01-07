@@ -1,10 +1,8 @@
 # See: https://docs.gradle.org/current/userguide/platforms.html#sub:conventional-dependencies-toml
 [versions]
-spring-boot = "3.4.2"
-spring-dependency-management = "1.1.2"
+spring-boot = "4.0.1"
+spring-dependency-management = "1.1.7"
 spring-retry = "2.0.4"
-spring-aspects = "6.1.1"
-spring-kafka = "3.3.0"
 spring-oxm = "6.1.5"
 spring-security-test = "6.3.3"
 junit = "5.10.0"
@@ -24,10 +22,10 @@ jakarta-validation = "3.0.2"
 jakarta-persistence-api = "3.2.0"
 sonar = "7.2.0.6526"
 commons-codec = "1.15"
-jackson = "2.18.2"
+jackson = "3.0.3"
 h2database = "2.3.232"
 postgresql = "42.7.3"
-javalin = "6.3.0"
+javalin = "6.7.0"
 jdbi3 = "3.37.1"
 reactor = "3.7.0"
 slf4j = "2.0.7"
@@ -37,6 +35,7 @@ kafka-clients = "3.4.0"
 kafka-streams = "3.9.0"
 rabbitmq-amqp-client = "0.3.0"
 hibernate-validator = "8.0.1.Final"
+hibernate-orm = "7.2.0.Final"
 mockwebserver = "4.12.0"
 flyway = "11.10.2"
 hakky-logcaptor = "2.9.2"
@@ -47,9 +46,9 @@ keycloak = "25.0.3"
 caffeine = "3.2.0"
 
 swagger-annotations = "2.2.34"
-openapi-generator = "7.11.0"
+openapi-generator = "7.14.0"
 jsonschema2pojo = "1.2.2"
-openapi-webmvc-ui = "2.8.9"
+openapi-webmvc-ui = "3.0.1"
 apache-httpcomponents-version = "4.5.14"
 apache-httpcomponents-client-version = "5.4.1"
 jackson-databind-nullable-version = "0.2.6"
@@ -80,8 +79,15 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
 junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito-junit" }
 
-# dependencies required by region-connector-api
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+# Jackson
+jackson-bom = { module = "tools.jackson:jackson-bom", version.ref = "jackson" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
+jackson-jakarta-xmlbind-annotations = { module = "tools.jackson.module:jackson-module-jakarta-xmlbind-annotations" }
+jackson-dataformat-xml = { module = "tools.jackson.dataformat:jackson-dataformat-xml" }
+jackson-dataformat-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml" }
+jackson-core = { module = "tools.jackson.core:jackson-core" }
+jackson-hibernate7 = { module = "tools.jackson.datatype:jackson-datatype-hibernate7", version.ref = "jackson" }
 
 # shared dependencies
 testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
@@ -89,21 +95,15 @@ testcontainers-toxiproxy = { module = "org.testcontainers:testcontainers-toxipro
 testcontainers-junit = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
 swagger-annotations = { module = "io.swagger.core.v3:swagger-annotations-jakarta", version.ref = "swagger-annotations" }
 
-
 # dependencies required by region-connector-at
 jaxb-xjc = { module = "org.glassfish.jaxb:jaxb-xjc", version.ref = "jaxb" }
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version.ref = "jaxb" }
 jaxb-plugins = { module = "org.jvnet.jaxb:jaxb-plugins", version.ref = "jaxb-plugins" }
 jaxb-plugin-annotate = { module = "org.jvnet.jaxb:jaxb-plugin-annotate", version.ref = "jaxb-plugins" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson" }
-
 
 jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind" }
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
-
-jackson-datatype-jsr310 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jsr310", version.ref = "jackson" }
-jackson-datatype-jdk8 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-jdk8", version.ref = "jackson" }
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
@@ -112,14 +112,9 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 
 xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunit" }
 
-# dependencies required by outbound-connectors
-jackson-jakarta-xmlbind-annotations = { module = "com.fasterxml.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson" }
-
 # dependencies required by outbound-kafka
 kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 testcontainers-kafka = { module = "org.testcontainers:testcontainers-kafka", version.ref = "testcontainers" }
-jackson-dataformat-xml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
-jackson-core = { module = "com.fasterxml.jackson.core:jackson-core", version.ref = "jackson" }
 
 # dpendencies required by outbound-amqp
 rabbitmq-amqp-client = { module = "com.rabbitmq.client:amqp-client", version.ref = "rabbitmq-amqp-client" }
@@ -127,6 +122,7 @@ testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+# TODO: Remove
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
@@ -145,24 +141,32 @@ apache-http-mime = { module = "org.apache.httpcomponents:httpmime", version.ref 
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
 spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
+spring-boot-starter-webflux-test = { module = "org.springframework.boot:spring-boot-starter-webflux-test" }
+spring-boot-starter-restclient-test = { module = "org.springframework.boot:spring-boot-starter-restclient-test" }
+spring-boot-starter-flyway = { module = "org.springframework.boot:spring-boot-starter-flyway" }
 spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-data-jpa-test = { module = "org.springframework.boot:spring-boot-starter-data-jpa-test" }
 spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-starter-webclient = { module = "org.springframework.boot:spring-boot-starter-webclient" }
 spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot-starter-thymeleaf" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
+spring-boot-autoconfigurer = { module = "org.springframework.boot:spring-boot-autoconfigure" }
 spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
-spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
-spring-kafka-test = { module = "org.springframework.kafka:spring-kafka-test", version.ref = "spring-kafka" }
+spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
+spring-kafka-test = { module = "org.springframework.kafka:spring-kafka-test" }
 spring-retry = { module = "org.springframework.retry:spring-retry", version.ref = "spring-retry" }
-spring-aspects = { module = "org.springframework:spring-aspects", version.ref = "spring-aspects" }
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security-test" }
 spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref = "keycloak" }
-spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "spring-boot" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
+spring-boot-starter-oauth2-resource-server-test = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test" }
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
+hibernate-orm-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate-orm" }
 
 # extra test dependencies
 okhttp3-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver" }
@@ -175,7 +179,6 @@ flyway-postgresql = { module = "org.flywaydb:flyway-database-postgresql", versio
 # AIIDA
 hakky-logcaptor = { module = "io.github.hakky54:logcaptor", version.ref = "hakky-logcaptor" }
 eclipse-paho-mqttv5-client = { module = "org.eclipse.paho:org.eclipse.paho.mqttv5.client", version.ref = "paho-mqtt-client" }
-jackson-hibernate6 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6", version.ref = "jackson" }
 j2mod = { module = "com.ghgande:j2mod", version.ref = "j2mod" }
 mvel2 = { module = "org.mvel:mvel2", version.ref = "mvel2" }
 

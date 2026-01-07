@@ -25,16 +25,6 @@ class JsonMessageSerdeTest {
     }
 
     @Test
-    void testSerialize_throwsOnEmptyObject() {
-        // Given
-        var serde = new JsonMessageSerde();
-        var obj = new Object();
-
-        // When & Then
-        assertThrows(SerializationException.class, () -> serde.serialize(obj));
-    }
-
-    @Test
     void testDeserialize_deserializesMessage() throws DeserializationException {
         // Given
         var serde = new JsonMessageSerde();

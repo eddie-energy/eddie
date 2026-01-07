@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.be.fluvius.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.oauth2.sdk.ParseException;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.be.fluvius.client.model.*;
@@ -9,7 +8,6 @@ import energy.eddie.regionconnector.be.fluvius.oauth.OAuthException;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthRequestException;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthTokenService;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.Assertions;
@@ -20,12 +18,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.JacksonJsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -37,7 +36,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FluviusApiClientTest {
     private static final String PUBLIC_URL = "https://localhost:8080";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
+    private static final JsonMapper OBJECT_MAPPER = new JsonMapper();
     private static final MockWebServer SERVER = new MockWebServer();
     private static WebClient webClient;
     @Mock
@@ -50,7 +49,7 @@ class FluviusApiClientTest {
         webClient = WebClient.builder()
                              .baseUrl(basePath)
                              .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
-                                                                                   .jackson2JsonDecoder(new Jackson2JsonDecoder(
+                                                                                   .jacksonJsonDecoder(new JacksonJsonDecoder(
                                                                                            OBJECT_MAPPER,
                                                                                            MediaType.APPLICATION_JSON)))
                              .build();

@@ -1,8 +1,5 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
@@ -36,6 +33,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.function.Supplier;
 
@@ -45,13 +43,6 @@ import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetada
 @EnableConfigurationProperties(EnedisConfiguration.class)
 @Configuration
 public class EnedisBeanConfig {
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module());
-    }
-
     @Bean
     public EnedisTokenProvider enedisTokenProvider(EnedisConfiguration config, WebClient webClient) {
         return new EnedisTokenProvider(config, webClient);

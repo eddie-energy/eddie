@@ -30,6 +30,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.webclient)
     implementation(libs.spring.oxm)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.security)
@@ -43,6 +44,8 @@ dependencies {
     jaxb(libs.jaxb.plugins)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.reactor.test)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
@@ -50,7 +53,7 @@ dependencies {
     testImplementation(libs.okhttp3.mockwebserver)
 
     testRuntimeOnly(libs.postgresql)
-    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.flyway.postgresql)
 }
 

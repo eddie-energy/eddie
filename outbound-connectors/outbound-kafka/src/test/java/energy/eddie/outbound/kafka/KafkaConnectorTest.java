@@ -54,7 +54,7 @@ class KafkaConnectorTest {
                                               dataSourceInformation,
                                               PermissionProcessStatus.ACCEPTED);
         kafkaConnector.setConnectionStatusMessageStream(Flux.just(csm));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<String, Object>(consumerProps).createConsumer();
         consumer.subscribe(Collections.singleton("ep.eddie.agnostic.connection-status-message"));
 
@@ -80,7 +80,7 @@ class KafkaConnectorTest {
                                 )
                 );
         kafkaConnector.setPermissionMarketDocumentStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
@@ -108,7 +108,7 @@ class KafkaConnectorTest {
                                 )
                 );
         kafkaConnector.setEddieValidatedHistoricalDataMarketDocumentStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
@@ -136,7 +136,7 @@ class KafkaConnectorTest {
                                 )
                 );
         kafkaConnector.setAccountingPointEnvelopeStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
@@ -161,7 +161,7 @@ class KafkaConnectorTest {
                 "blblblb"
         );
         kafkaConnector.setRawDataStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
@@ -183,7 +183,7 @@ class KafkaConnectorTest {
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
                 .withMessageDocumentHeaderMetaInformationDocumentType("validated-historical-data-market-document");
         kafkaConnector.setValidatedHistoricalDataMarketDocumentStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
@@ -205,7 +205,7 @@ class KafkaConnectorTest {
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
                 .withMessageDocumentHeaderMetaInformationDocumentType("near-real-time-data-market-document");
         kafkaConnector.setNearRealTimeDataMarketDocumentStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps("testGroup", "true", embeddedKafka);
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();

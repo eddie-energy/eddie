@@ -79,8 +79,48 @@ public class MqttService implements AutoCloseable {
     }
 
     /**
+     * Deletes all associated ACLs for the specified permission ID.
+     *
+     * @param permissionId The permission ID for which to delete the credentials and ACLs.
+     */
+    @Transactional
+    public void deleteAclsForPermission(String permissionId) {
+        LOGGER.info("Deleting MQTT ACLs for permission {}", permissionId);
+        aclRepository.deleteByUsername(permissionId);
+    }
+
+    @Override
+    public void close() throws MqttException {
+        mqttClient.disconnect(3000);
+        mqttClient.close(true);
+    }
+
+    public void subscribeToOutboundDataTopic(String permissionId) throws MqttException {
+        var topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA).eddieTopic();
+        LOGGER.info("Subscribing to outbound data topic {}", topic);
+
+        mqttClient.subscribe(topic, 1);
+    }
+
+    public void subscribeToStatusTopic(String permissionId) throws MqttException {
+        var topic = MqttTopic.of(permissionId, MqttTopicType.STATUS).eddieTopic();
+        LOGGER.info("Subscribing to status topic {}", topic);
+
+        mqttClient.subscribe(topic, 1);
+    }
+
+    public void sendTerminationRequest(AiidaPermissionRequest permissionRequest) throws MqttException {
+        mqttClient.publish(permissionRequest.terminationTopic(),
+                           permissionRequest.permissionId().getBytes(StandardCharsets.UTF_8),
+                           1,
+                           true);
+    }
+
+    /**
      * Creates a new {@link MqttUser} with a random password and saves it to the database.
      */
+    @SuppressWarnings("NullAway")
+    // bCryptPasswordEncoder.encode(rawPassword) will only return null if rawPassword is null, which it never will be.
     private UserPasswordWrapper createAndSaveMqttUser(String permissionId) {
         String rawPassword = passwordGenerator.generatePassword(PASSWORD_LENGTH);
         // BCryptPasswordEncoder will generate and store the salt in the hash
@@ -113,45 +153,7 @@ public class MqttService implements AutoCloseable {
         return topics;
     }
 
-    /**
-     * Deletes all associated ACLs for the specified permission ID.
-     *
-     * @param permissionId The permission ID for which to delete the credentials and ACLs.
-     */
-    @Transactional
-    public void deleteAclsForPermission(String permissionId) {
-        LOGGER.info("Deleting MQTT ACLs for permission {}", permissionId);
-        aclRepository.deleteByUsername(permissionId);
-    }
-
-    @Override
-    public void close() throws MqttException {
-        mqttClient.disconnect(3000);
-        mqttClient.close(true);
-    }
-
     private record UserPasswordWrapper(MqttUser user, String rawPassword) {}
 
     private record Topics(MqttTopic dataTopic, MqttTopic statusTopic, MqttTopic terminationTopic) {}
-
-    public void subscribeToOutboundDataTopic(String permissionId) throws MqttException {
-        var topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA).eddieTopic();
-        LOGGER.info("Subscribing to outbound data topic {}", topic);
-
-        mqttClient.subscribe(topic, 1);
-    }
-
-    public void subscribeToStatusTopic(String permissionId) throws MqttException {
-        var topic = MqttTopic.of(permissionId, MqttTopicType.STATUS).eddieTopic();
-        LOGGER.info("Subscribing to status topic {}", topic);
-
-        mqttClient.subscribe(topic, 1);
-    }
-
-    public void sendTerminationRequest(AiidaPermissionRequest permissionRequest) throws MqttException {
-        mqttClient.publish(permissionRequest.terminationTopic(),
-                           permissionRequest.permissionId().getBytes(StandardCharsets.UTF_8),
-                           1,
-                           true);
-    }
 }

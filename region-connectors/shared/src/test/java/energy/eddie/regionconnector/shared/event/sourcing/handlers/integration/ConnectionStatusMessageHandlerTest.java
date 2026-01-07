@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -13,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -103,7 +103,7 @@ class ConnectionStatusMessageHandlerTest {
                     .assertNext(csm -> assertEquals("value",
                                                     Objects.requireNonNull(csm.additionalInformation())
                                                            .get("key")
-                                                           .asText()))
+                                                           .asString()))
                     .verifyComplete();
     }
 }

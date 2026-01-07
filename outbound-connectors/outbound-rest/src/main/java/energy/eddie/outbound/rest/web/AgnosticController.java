@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -212,7 +212,7 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<ConnectionStatusMessageModel> specification = buildQuery(permissionId,
+        PredicateSpecification<ConnectionStatusMessageModel> specification = buildQuery(permissionId,
                                                                                connectionId,
                                                                                dataNeedId,
                                                                                countryCode,
@@ -373,7 +373,7 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<RawDataMessageModel> specification = buildQuery(permissionId,
+        PredicateSpecification<RawDataMessageModel> specification = buildQuery(permissionId,
                                                                       connectionId,
                                                                       dataNeedId,
                                                                       countryCode,
@@ -386,7 +386,7 @@ public class AgnosticController {
                              .body(new RawDataMessages(messages));
     }
 
-    private static <T> Specification<T> buildQuery(
+    private static <T> PredicateSpecification<T> buildQuery(
             Optional<String> permissionId,
             Optional<String> connectionId,
             Optional<String> dataNeedId,
@@ -410,10 +410,10 @@ public class AgnosticController {
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
                 to.map(InsertionTimeSpecification::<T>insertedBeforeEquals)
         );
-        return Specification.allOf(
+        return PredicateSpecification.allOf(
                 query.stream()
                      .filter(Optional::isPresent)
-                     .map(spec -> (Specification<T>) spec.get())
+                     .map(spec -> (PredicateSpecification<T>) spec.get())
                      .toList()
         );
     }

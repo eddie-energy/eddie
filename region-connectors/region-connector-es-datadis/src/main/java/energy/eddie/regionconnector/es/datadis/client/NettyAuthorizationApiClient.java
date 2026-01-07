@@ -1,8 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
@@ -16,6 +13,9 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 
@@ -46,7 +46,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
 
         try {
             body = mapper.writeValueAsString(authorizationRequest);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             return Mono.error(e);
         }
 
@@ -70,9 +70,9 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                                         try {
                                             JsonNode jsonNode = mapper.readTree(bodyString);
                                             return Mono.just(AuthorizationRequestResponse.fromResponse(
-                                                    jsonNode.get("response").asText()
+                                                    jsonNode.get("response").asString()
                                             ));
-                                        } catch (JsonProcessingException e) {
+                                        } catch (tools.jackson.core.JacksonException e) {
                                             return Mono.error(e);
                                         }
                                     } else {

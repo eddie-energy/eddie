@@ -44,4 +44,8 @@ public class ValidatedHistoricalDataMarketDocumentModelV1_04 implements ModelWit
     public VHDEnvelope payload() {
         return payload;
     }
+
+    public Long id() {
+        return id;
+    }
 }

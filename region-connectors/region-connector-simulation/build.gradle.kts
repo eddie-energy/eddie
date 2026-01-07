@@ -31,6 +31,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.xmlunit.core)
     testImplementation(project(":outbound-connectors:outbound-shared"))
 

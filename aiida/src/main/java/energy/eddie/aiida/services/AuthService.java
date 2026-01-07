@@ -17,12 +17,16 @@ public class AuthService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
 
     public UUID getCurrentUserId() throws InvalidUserException {
-        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            LOGGER.error("No authentication present for this context");
+            throw new InvalidUserException();
+        }
+        var principal = authentication.getPrincipal();
         var id = switch (principal) {
             case Jwt jwt -> jwt.getSubject();
             case OidcUser oidcUser -> oidcUser.getSubject();
-            default -> {
+            case null, default -> {
                 LOGGER.error("Could not parse UUID from token, because the user is not an OIDC user");
                 throw new InvalidUserException();
             }

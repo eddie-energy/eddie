@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.shared.agnostic;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;

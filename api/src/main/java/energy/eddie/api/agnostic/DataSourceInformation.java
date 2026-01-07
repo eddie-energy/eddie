@@ -2,7 +2,7 @@ package energy.eddie.api.agnostic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Information about the data source such as the country code, the region connector id, the metered data administrator id and the permission administrator id.

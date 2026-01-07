@@ -15,7 +15,7 @@ import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocument
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
 import energy.eddie.outbound.shared.TopicStructure;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +69,7 @@ public class CimController implements CimSwagger {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<ValidatedHistoricalDataMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
+        PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
                 permissionId,
                 connectionId,
                 dataNeedId,
@@ -104,7 +104,7 @@ public class CimController implements CimSwagger {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<PermissionMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
+        PredicateSpecification<PermissionMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
                 permissionId,
                 connectionId,
                 dataNeedId,
@@ -139,7 +139,7 @@ public class CimController implements CimSwagger {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<AccountingPointDataMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
+        PredicateSpecification<AccountingPointDataMarketDocumentModel> specification = CimSpecification.buildQueryForV0_82(
                 permissionId,
                 connectionId,
                 dataNeedId,

@@ -3,17 +3,20 @@ package energy.eddie.outbound.rest.persistence.specifications;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v1_04.StandardCodingSchemeTypeList;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
+import energy.eddie.outbound.rest.persistence.PersistenceConfig;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -29,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import({PersistenceConfig.class, RestTestConfig.class})
 @Testcontainers
 @DirtiesContext
 class CimSpecificationTest {
@@ -36,7 +40,6 @@ class CimSpecificationTest {
     @Container
     @ServiceConnection
     private static final PostgreSQLContainer postgresqlContainer = new PostgreSQLContainer("postgres:15-alpine");
-
     @Autowired
     private PermissionMarketDocumentRepository pmdRepository;
     @Autowired
@@ -68,7 +71,7 @@ class CimSpecificationTest {
                                 )
                 );
         pmdRepository.save(new PermissionMarketDocumentModel(payload));
-        Specification<PermissionMarketDocumentModel> specs = CimSpecification.buildQueryForV0_82(
+        PredicateSpecification<PermissionMarketDocumentModel> specs = CimSpecification.buildQueryForV0_82(
                 Optional.of(pid),
                 Optional.of("1"),
                 Optional.of(dnid),
@@ -112,7 +115,7 @@ class CimSpecificationTest {
                                 )
                 );
         pmdRepository.save(new PermissionMarketDocumentModel(payload));
-        Specification<PermissionMarketDocumentModel> specs = CimSpecification.buildQueryForV0_82(
+        PredicateSpecification<PermissionMarketDocumentModel> specs = CimSpecification.buildQueryForV0_82(
                 Optional.of(pid),
                 Optional.of("2"),
                 Optional.of(dnid),
@@ -147,7 +150,7 @@ class CimSpecificationTest {
                 .withMessageDocumentHeaderMetaInformationRegionConnector("at-eda")
                 .withMessageDocumentHeaderMetaInformationRegionCountry(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value());
         vhdRepository.save(new ValidatedHistoricalDataMarketDocumentModelV1_04(payload));
-        Specification<ValidatedHistoricalDataMarketDocumentModelV1_04> specs = CimSpecification.buildQueryForV1_04(
+        PredicateSpecification<ValidatedHistoricalDataMarketDocumentModelV1_04> specs = CimSpecification.buildQueryForV1_04(
                 Optional.of(pid),
                 Optional.of("1"),
                 Optional.of(dnid),
@@ -181,7 +184,7 @@ class CimSpecificationTest {
                 .withMessageDocumentHeaderMetaInformationRegionConnector("at-eda")
                 .withMessageDocumentHeaderMetaInformationRegionCountry(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value());
         vhdRepository.save(new ValidatedHistoricalDataMarketDocumentModelV1_04(payload));
-        Specification<ValidatedHistoricalDataMarketDocumentModelV1_04> specs = CimSpecification.buildQueryForV1_04(
+        PredicateSpecification<ValidatedHistoricalDataMarketDocumentModelV1_04> specs = CimSpecification.buildQueryForV1_04(
                 Optional.of(pid),
                 Optional.of("2"),
                 Optional.of(dnid),

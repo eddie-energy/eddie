@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.dk.energinet.permission.handler;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkAcceptedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
@@ -45,7 +45,7 @@ class SendingEventHandlerTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private EnerginetCustomerApi customerApi;
+    private EnerginetCustomerApiClient customerApi;
     @Mock
     private DkPermissionRequestRepository repository;
     @InjectMocks

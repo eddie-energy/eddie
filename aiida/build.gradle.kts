@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.autoconfigurer)
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)
     implementation(libs.spring.boot.starter.keycloak)
@@ -41,8 +42,9 @@ dependencies {
     implementation(libs.reactor.core)
     implementation(libs.eclipse.paho.mqttv5.client)
     // enable Jackson support to fetch Hibernate lazy loaded properties when serializing
-    implementation(libs.jackson.hibernate6)
+    implementation(libs.jackson.hibernate7)
     implementation(libs.jackson.jakarta.xmlbind.annotations)
+    implementation(libs.jackson.dataformat.yaml)
     implementation(libs.j2mod)
     implementation(libs.mvel2)
 
@@ -51,6 +53,9 @@ dependencies {
     runtimeOnly(libs.flyway.core)
 
     testImplementation(libs.spring.security.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.spring.boot.starter.oauth2.resource.server.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)
     testImplementation(libs.apache.http.client)

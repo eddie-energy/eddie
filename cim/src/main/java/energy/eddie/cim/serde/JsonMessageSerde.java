@@ -1,9 +1,7 @@
 package energy.eddie.cim.serde;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.IOException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * A {@link MessageSerde} that serializes to JSON.
@@ -18,7 +16,7 @@ public class JsonMessageSerde implements MessageSerde {
     public byte[] serialize(Object message) throws SerializationException {
         try {
             return objectMapper.writeValueAsBytes(message);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new SerializationException(e);
         }
     }
@@ -27,7 +25,7 @@ public class JsonMessageSerde implements MessageSerde {
     public <T> T deserialize(byte[] message, Class<T> messageType) throws DeserializationException {
         try {
             return objectMapper.readValue(message, messageType);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new DeserializationException(e);
         }
     }

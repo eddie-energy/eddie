@@ -1,12 +1,12 @@
 package energy.eddie.core;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.cfg.MappingSettings;
 import org.hibernate.type.format.jackson.JacksonJsonFormatMapper;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernatePropertiesCustomizer;
+import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.json.JsonMapper;
 
 // The empty persistence config is needed, so it is not loaded during testing.
 // Even when excluding configs, spring boot tests load the main application config
@@ -24,7 +24,8 @@ public class PersistenceConfig {
      * @see MapperConfig#jsonCustomizer()
      */
     @Bean
-    public HibernatePropertiesCustomizer jsonFormatMapperCustomizer(ObjectMapper objectMapper) {
-        return props -> props.put(MappingSettings.JSON_FORMAT_MAPPER, new JacksonJsonFormatMapper(objectMapper));
+    public HibernatePropertiesCustomizer jsonFormatMapperCustomizer(JsonMapper objectMapper) {
+        // TODO: Switch to jackson3 object mapper
+        return props -> props.put(MappingSettings.JSON_FORMAT_MAPPER, new JacksonJsonFormatMapper());
     }
 }

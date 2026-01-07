@@ -2,110 +2,90 @@ package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.customer.api.*;
-import energy.eddie.regionconnector.dk.energinet.customer.invoker.ApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDtoResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import energy.eddie.regionconnector.dk.energinet.customer.model.StringApiResponse;
-import energy.eddie.regionconnector.dk.energinet.enums.TimeSeriesAggregationEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ApiVersionInserter;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.DateTimeException;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 @Component
-public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
+public class EnerginetCustomerApiClient {
     // The Request period must not exceed the maximum number of days of 730
     private static final int MAX_REQUEST_PERIOD = 730;
-    private final ApiClient apiClient;
-    private final TokenApi tokenApi;
-    private final MeterDataApi meterDataApi;
-    private final MeteringPointsApi meteringPointsApi;
-    private final IsAliveApi isAliveApi;
+    private final WebClient webClient;
 
     @Autowired
-    public EnerginetCustomerApiClient(EnerginetConfiguration configuration, WebClient webClient) {
-        apiClient = new ApiClient(webClient)
-                .setBasePath(configuration.customerBasePath());
-        tokenApi = new TokenApi(apiClient);
-        meterDataApi = new MeterDataApi(apiClient);
-        isAliveApi = new IsAliveApi(apiClient);
-        meteringPointsApi = new MeteringPointsApi(apiClient);
+    public EnerginetCustomerApiClient(EnerginetConfiguration configuration, WebClient.Builder builder) {
+        this.webClient = builder.baseUrl(configuration.customerBasePath())
+                                .apiVersionInserter(ApiVersionInserter.useHeader("api-version"))
+                                .defaultApiVersion("1.0")
+                                .build();
     }
 
-    EnerginetCustomerApiClient(
-            ApiClient apiClient,
-            TokenApi tokenApi,
-            MeterDataApi meterDataApi,
-            IsAliveApi isAliveApi,
-            MeteringPointsApi meteringPointsApi
-    ) {
-        this.apiClient = apiClient;
-        this.tokenApi = tokenApi;
-        this.meterDataApi = meterDataApi;
-        this.isAliveApi = isAliveApi;
-        this.meteringPointsApi = meteringPointsApi;
-    }
-
-    @Override
     public Mono<Boolean> isAlive() {
-        synchronized (apiClient) {
-            return isAliveApi.customerapiApiIsaliveGet("1.0");
-        }
+        return webClient.get()
+                        .uri("/customerapi/api/isalive")
+                        .exchangeToMono(response -> {
+                            var statusCode = response.statusCode();
+                            if (statusCode.is2xxSuccessful()
+                                || HttpStatus.SERVICE_UNAVAILABLE.equals(statusCode)
+                                || HttpStatus.BAD_REQUEST.equals(statusCode)) {
+                                return response.bodyToMono(Boolean.class);
+                            }
+                            return Mono.just(false);
+                        });
     }
 
-    @Override
     public Mono<String> accessToken(String refreshToken) {
-        synchronized (apiClient) {
-            setApiKey(refreshToken);
-            return tokenApi.customerapiApiTokenGet("1.0")
-                           .mapNotNull(StringApiResponse::getResult);
-        }
+        return webClient.get()
+                        .uri("/customerapi/api/token")
+                        .headers(headers -> headers.setBearerAuth(refreshToken))
+                        .retrieve()
+                        .bodyToMono(StringApiResponse.class)
+                        .mapNotNull(StringApiResponse::getResult);
     }
 
-    @Override
     public Mono<MyEnergyDataMarketDocumentResponseListApiResponse> getTimeSeries(
             LocalDate dateFrom,
             LocalDate dateTo,
             Granularity granularity,
             MeteringPointsRequest meteringPointsRequest,
-            String accessToken,
-            UUID userCorrelationId
+            String accessToken
     ) {
         throwIfInvalidTimeframe(dateFrom, dateTo);
         TimeSeriesAggregationEnum aggregation = TimeSeriesAggregationEnum.fromGranularity(granularity);
-        synchronized (apiClient) {
-            setApiKey(accessToken);
-            return
-                    meterDataApi.customerapiApiMeterdataGettimeseriesDateFromDateToAggregationPost(
-                            dateFrom.format(DateTimeFormatter.ISO_DATE),
-                            dateTo.format(DateTimeFormatter.ISO_DATE),
-                            aggregation.toString(),
-                            "1.0",
-                            meteringPointsRequest
-                    );
-        }
+        return webClient.post()
+                        .uri("/customerapi/api/meterdata/gettimeseries/{dateFrom}/{dateTo}/{aggregation}",
+                             dateFrom,
+                             dateTo,
+                             aggregation.toString())
+                        .headers(headers -> headers.setBearerAuth(accessToken))
+                        .bodyValue(meteringPointsRequest)
+                        .retrieve()
+                        .bodyToMono(MyEnergyDataMarketDocumentResponseListApiResponse.class);
     }
 
-    @Override
     public Mono<MeteringPointDetailsCustomerDtoResponseListApiResponse> getMeteringPointDetails(
             MeteringPointsRequest meteringPointsRequest,
             String accessToken
     ) {
-        synchronized (apiClient) {
-            setApiKey(accessToken);
-            return meteringPointsApi.customerapiApiMeteringpointsMeteringpointGetdetailsPost("1.0",
-                                                                                             meteringPointsRequest);
-        }
+        return webClient.post()
+                        .uri("/customerapi/api/meteringpoints/meteringpoint/getdetails")
+                        .headers(headers -> headers.setBearerAuth(accessToken))
+                        .bodyValue(meteringPointsRequest)
+                        .retrieve()
+                        .bodyToMono(MeteringPointDetailsCustomerDtoResponseListApiResponse.class);
     }
 
     private void throwIfInvalidTimeframe(LocalDate start, LocalDate end) throws DateTimeException {
@@ -120,9 +100,5 @@ public class EnerginetCustomerApiClient implements EnerginetCustomerApi {
         if (start.plusDays(MAX_REQUEST_PERIOD).isBefore(end)) {
             throw new DateTimeException("Request period exceeds the maximum number of days (" + MAX_REQUEST_PERIOD + ").");
         }
-    }
-
-    private void setApiKey(String token) {
-        apiClient.setBearerToken(token);
     }
 }

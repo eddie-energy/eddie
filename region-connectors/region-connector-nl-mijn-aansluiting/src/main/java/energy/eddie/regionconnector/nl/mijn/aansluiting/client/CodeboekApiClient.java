@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.client;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoint;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MeteringPoints;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;

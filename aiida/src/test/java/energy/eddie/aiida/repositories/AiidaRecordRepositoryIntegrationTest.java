@@ -1,19 +1,17 @@
 package energy.eddie.aiida.repositories;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTeleinfoV3AdapterStandardModeMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTeleinfoV3StandardModeJson;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -21,6 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.List;
@@ -55,7 +54,7 @@ class AiidaRecordRepositoryIntegrationTest {
                     );
     private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private final ObjectMapper objectMapper = new AiidaConfiguration().customObjectMapper().build();
+    private final ObjectMapper objectMapper = ObjectMapperCreatorUtil.mapper();
     @Autowired
     private AiidaRecordRepository repository;
 
@@ -96,7 +95,7 @@ class AiidaRecordRepositoryIntegrationTest {
     }
 
     @Test
-    void givenMicroTeleinfoStandardModeRecord_sanitizeNullValue_persistsProperly() throws JsonProcessingException {
+    void givenMicroTeleinfoStandardModeRecord_sanitizeNullValue_persistsProperly() {
         var standardModeJson = """
                 {
                   "ADSC": {

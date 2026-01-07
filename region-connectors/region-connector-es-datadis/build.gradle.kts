@@ -29,7 +29,6 @@ dependencies {
     implementation(libs.spring.boot.security)
 
     implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.reactor.core)
@@ -38,13 +37,15 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
     testImplementation(libs.okhttp3.mockwebserver)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
 
     testRuntimeOnly(libs.junit.platform.launcher)
-    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.flyway.postgresql)
     testRuntimeOnly(libs.postgresql)
 }

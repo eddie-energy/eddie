@@ -1,11 +1,11 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.EddieApiError;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;

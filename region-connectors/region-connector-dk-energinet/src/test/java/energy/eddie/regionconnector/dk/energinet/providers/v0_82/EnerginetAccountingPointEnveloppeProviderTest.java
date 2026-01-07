@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -12,8 +11,8 @@ import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableAccountingPointDetails;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +32,7 @@ class EnerginetAccountingPointEnvelopeProviderTest {
 
     @BeforeAll
     static void setUp() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
+        ObjectMapper objectMapper = new ObjectMapper();
         MeteringPointDetailsCustomerDto meteringPointDetailsCustomerDto;
         try (InputStream is = EnerginetAccountingPointEnvelopeProviderTest.class.getClassLoader()
                                                                                 .getResourceAsStream(

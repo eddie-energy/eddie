@@ -1,11 +1,11 @@
 package energy.eddie.aiida.schemas;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.errors.formatter.RawFormatterException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public class RawFormatter extends SchemaFormatter {
 
@@ -17,7 +17,7 @@ public class RawFormatter extends SchemaFormatter {
     ) throws FormatterException {
         try {
             return objectMapper.writeValueAsBytes(aiidaRecord);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RawFormatterException(e);
         }
     }

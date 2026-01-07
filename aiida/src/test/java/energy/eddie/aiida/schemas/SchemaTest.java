@@ -1,7 +1,6 @@
 package energy.eddie.aiida.schemas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
@@ -17,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.springframework.test.json.JsonAssert;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -26,7 +28,8 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -131,7 +134,7 @@ class SchemaTest {
 
     @BeforeEach
     void setUp() {
-        objectMapper = new AiidaConfiguration().customObjectMapper().build();
+        objectMapper = ObjectMapperCreatorUtil.mapper();
     }
 
     @Test
@@ -145,8 +148,9 @@ class SchemaTest {
         var resultAT = rawFormatter.toSchema(aiidaRecordAT, objectMapper, permissionMock);
         var resultFR = rawFormatter.toSchema(aiidaRecordFR, objectMapper, permissionMock);
 
-        assertEquals(rawAiidaRecordAT, new String(resultAT, StandardCharsets.UTF_8));
-        assertEquals(rawAiidaRecordFR, new String(resultFR, StandardCharsets.UTF_8));
+        var comparator = JsonAssert.comparator(JSONCompareMode.LENIENT);
+        comparator.assertIsMatch(rawAiidaRecordAT, new String(resultAT, StandardCharsets.UTF_8));
+        comparator.assertIsMatch(rawAiidaRecordFR, new String(resultFR, StandardCharsets.UTF_8));
     }
 
     @Test

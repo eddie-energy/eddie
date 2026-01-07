@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.cds;
 
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -13,12 +11,9 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.function.Supplier;
@@ -37,15 +32,8 @@ public class CdsBeanConfig {
     }
 
     @Bean
-    @Primary
-    public Jackson2ObjectMapperBuilder customObjectMapper() {
-        return new Jackson2ObjectMapperBuilder()
-                .modules(new JsonNullableModule(), new Jdk8Module(), new JavaTimeModule());
-    }
-
-    @Bean
-    public WebClient webClient(WebClient.Builder builder) {
-        return builder.build();
+    public WebClient webClient() {
+        return WebClient.create();
     }
 
     @Bean

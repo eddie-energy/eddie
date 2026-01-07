@@ -17,7 +17,6 @@ class CustomDeserializerTest {
         var json = """
                 {
                     "key": "value"
-                }
                 """.getBytes(StandardCharsets.UTF_8);
         var deserializer = new CustomDeserializer<>(SerdeFactory.getInstance().create("json"),
                                                     PermissionEnvelope.class);
