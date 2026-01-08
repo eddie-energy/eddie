@@ -4,6 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.Name;
 
 /**
+ * The main configuration for the Enedis region connector.
+ *
  * @param clientId     Client ID that will be used to authenticate with Enedis. Must be from an Application registered with Enedis.
  * @param clientSecret Client Secret that will be used to authenticate with Enedis. Must be from an Application registered with Enedis.
  * @param basePath     BasePath is optional and can be changed to the sandbox environment of Enedis for testing - default is production.

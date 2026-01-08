@@ -4,6 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.Name;
 
 /**
+ * The main configuration for the Energinet region connector.
+ *
  * @param customerBasePath BasePath for the customer api
  */
 @ConfigurationProperties("region-connector.dk.energinet")
