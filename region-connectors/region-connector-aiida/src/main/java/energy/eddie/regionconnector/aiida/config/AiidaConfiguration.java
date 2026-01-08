@@ -1,37 +1,24 @@
 package energy.eddie.regionconnector.aiida.config;
 
-import jakarta.annotation.Nullable;
-import org.springframework.web.util.UriTemplate;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.springframework.boot.context.properties.bind.Name;
 
 /**
+ * The main configuration for the AIIDA region connector.
+ *
  * @param customerId     Customer Identifier
  * @param bCryptStrength Strength to be used by {@link org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder}.
- * @param handshakeUrl   URL which should be used by AIIDA instances as an endpoint for the handshake.
- *                       Is a template with a placeholder {@code permissionId} that can be replaced by using {@link UriTemplate}.
- *                       A PATCH request to this URL can be used to change the state of the permission request (e.g. to ACCEPTED), whereas a GET request will return the details of the permission request.
  * @param mqttServerUri  URI of the MQTT broker to which termination requests should be published.
+ * @param mqttUsername   Username to use to authenticate to the MQTT broker.
  * @param mqttPassword   Optional password to use to authenticate to the MQTT broker.
  * @see <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>
  */
+@ConfigurationProperties("region-connector.aiida")
 public record AiidaConfiguration(
-        String customerId,
-        int bCryptStrength,
-        String handshakeUrl,
-        String mqttServerUri,
-        @Nullable String mqttPassword
-) {
-    public static final String PREFIX = "region-connector.aiida.";
-    public static final String CUSTOMER_ID = PREFIX + "customer.id";
-    public static final String BCRYPT_STRENGTH = PREFIX + "bcrypt.strength";
-    public static final String MQTT_SERVER_URI = PREFIX + "mqtt.server.uri";
-    public static final String MQTT_PASSWORD = PREFIX + "mqtt.password";
-    public static final String EDDIE_PUBLIC_URL = "eddie.public.url";
-    private static final String USERNAME = "eddie";
-
-    /**
-     * Username to use to authenticate to the MQTT broker.
-     */
-    public String mqttUsername() {
-        return USERNAME;
-    }
-}
+        @Name("customer.id") String customerId,
+        @Name("bcrypt.strength") int bCryptStrength,
+        @Name("mqtt.server.uri") String mqttServerUri,
+        @Name("mqtt.username") @DefaultValue("eddie") String mqttUsername,
+        @Name("mqtt.password") @DefaultValue("") String mqttPassword
+) {}

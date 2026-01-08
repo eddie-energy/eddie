@@ -39,6 +39,7 @@ ACLs and authentication ensure that only the permitted AIIDA instance may publis
 | `region-connector.aiida.customer.id`     | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                                                     |
 | `region-connector.aiida.bcrypt.strength` | Strength to be used by the BCryptPasswordEncoder instance used to hash the passwords for the MQTT user accounts for the AIIDA instances. It should be configured to a value that the hashing of a password takes around ~1 second. See also <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>. |
 | `region-connector.aiida.mqtt.server.uri` | URI of the MQTT server which the AIIDA instances and the region connector use for communication.                                                                                                                                                                                                                                                                                                                              |
+| `region-connector.aiida.mqtt.username`   | (Optional) Username to use when connecting to the MQTT broker (defaults to 'eddie')                                                                                                                                                                                                                                                                                                                                           |
 | `region-connector.aiida.mqtt.password`   | (Optional) Password to use when connecting to the MQTT broker (if not supplied, no password is used).                                                                                                                                                                                                                                                                                                                         |
 
 The region connector can be configured using Spring properties or environment variables.
@@ -51,6 +52,7 @@ When using environment variables, the configuration values need to be converted 
 region-connector.aiida.customer.id=my-unique-id
 region-connector.aiida.bcrypt.strength=14
 region-connector.aiida.mqtt.server.uri=tcp://localhost:1883
+region-connector.aiida.mqtt.username=eddie
 region-connector.aiida.mqtt.password=superSafe
 ```
 

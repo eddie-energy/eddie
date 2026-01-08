@@ -89,12 +89,12 @@ class AiidaPermissionServiceTest {
     void setUp() {
         service = new AiidaPermissionService(mockOutbox,
                                              mockDataNeedsService,
-                                             config,
                                              mockMqttService,
                                              mockViewRepository,
                                              calculationService,
                                              Sinks.many().multicast().onBackpressureBuffer(),
-                                             applicationContext);
+                                             applicationContext,
+                                             "http://localhost:8080");
     }
 
     @AfterEach

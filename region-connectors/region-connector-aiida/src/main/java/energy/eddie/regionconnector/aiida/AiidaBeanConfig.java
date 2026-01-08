@@ -34,7 +34,7 @@ import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -47,30 +47,12 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.*;
-import static energy.eddie.regionconnector.aiida.config.AiidaConfiguration.*;
-import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
-import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.MQTT_CLIENT_ID;
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ZONE_ID;
 
 @Configuration
+@EnableConfigurationProperties(AiidaConfiguration.class)
 public class AiidaBeanConfig {
-    @Bean
-    public AiidaConfiguration aiidaConfiguration(
-            @Value("${" + CUSTOMER_ID + "}") String customerId,
-            @Value("${" + BCRYPT_STRENGTH + "}") int bCryptStrength,
-            @Value("${" + EDDIE_PUBLIC_URL + "}") String eddiePublicUrl,
-            @Value("${" + MQTT_SERVER_URI + "}") String mqttServerUri,
-            @Value("${" + MQTT_PASSWORD + ":}") String mqttPassword
-    ) {
-        String eddieUrl = eddiePublicUrl.endsWith("/") ? eddiePublicUrl : eddiePublicUrl + "/";
-        String handshakeUrl = eddieUrl + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_HANDSHAKE_PERMISSION_REQUEST;
-
-        if (mqttPassword != null && mqttPassword.trim().isEmpty())
-            mqttPassword = null;
-
-        return new AiidaConfiguration(customerId, bCryptStrength, handshakeUrl, mqttServerUri, mqttPassword);
-    }
-
     @Bean
     @Primary
     public ObjectMapper objectMapper() {
@@ -156,11 +138,10 @@ public class AiidaBeanConfig {
         connectionOptions.setAutomaticReconnect(true);
         connectionOptions.setAutomaticReconnectDelay(1, 30);
 
-        if (configuration.mqttUsername() != null)
-            connectionOptions.setUserName(configuration.mqttUsername());
+        connectionOptions.setUserName(configuration.mqttUsername());
 
         String password = configuration.mqttPassword();
-        if (password != null)
+        if (password.trim().isEmpty())
             connectionOptions.setPassword(password.getBytes(StandardCharsets.UTF_8));
 
         return connectionOptions;
