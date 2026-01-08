@@ -9,8 +9,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies.DatadisStrategy;
 import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsInternalPollingEvent;
@@ -33,6 +32,7 @@ import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdate
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -44,16 +44,8 @@ import java.util.function.Supplier;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 @Configuration
+@EnableConfigurationProperties(DatadisConfiguration.class)
 public class DatadisBeanConfig {
-    @Bean
-    public DatadisConfig datadisConfig(
-            @Value("${" + DatadisConfig.USERNAME_KEY + "}") String username,
-            @Value("${" + DatadisConfig.PASSWORD_KEY + "}") String password,
-            @Value("${" + DatadisConfig.BASE_PATH_KEY + ":https://datadis.es}") String basePath
-    ) {
-        return new PlainDatadisConfiguration(username, password, basePath);
-    }
-
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper()
@@ -100,7 +92,7 @@ public class DatadisBeanConfig {
             EventBus eventBus,
             EsPermissionRequestRepository esPermissionRequestRepository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            DatadisConfig config,
+            DatadisConfiguration config,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         return new PermissionMarketDocumentMessageHandler<>(

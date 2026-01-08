@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -48,7 +47,7 @@ class SendingEventHandlerTest {
             null,
             ZonedDateTime.now(AT_ZONE_ID)
     );
-    private final AtConfiguration configuration = new PlainAtConfiguration("AT00000");
+    private final AtConfiguration configuration = new AtConfiguration("AT00000");
     @Mock
     private EdaAdapter edaAdapter;
     @Mock

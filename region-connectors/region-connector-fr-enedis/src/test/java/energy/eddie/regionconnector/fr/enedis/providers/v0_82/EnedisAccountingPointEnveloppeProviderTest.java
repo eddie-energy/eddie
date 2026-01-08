@@ -5,7 +5,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
 import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
 import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
@@ -29,7 +29,7 @@ class EnedisAccountingPointEnvelopeProviderTest {
     void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
         // Given
         var identifiableAccountingPointData = identifiableAccountingPointData();
-        PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
+        EnedisConfiguration enedisConfiguration = new EnedisConfiguration(
                 "clientId",
                 "clientSecret",
                 "/path"

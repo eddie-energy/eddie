@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.at.eda.web;
 import de.ponton.xp.adapter.api.domainvalues.InboundStatusEnum;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
@@ -262,7 +262,7 @@ class WebPontonConnectionControllerTest {
                 RequestDataType.METERING_DATA,
                 AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
-                new PlainAtConfiguration("EP100"),
+                new AtConfiguration("EP100"),
                 now.atStartOfDay(ZoneOffset.UTC)
         );
 
@@ -281,7 +281,7 @@ class WebPontonConnectionControllerTest {
                 now,
                 now,
                 null,
-                new PlainAtConfiguration("EP100")
+                new AtConfiguration("EP100")
         );
 
         // When & Then

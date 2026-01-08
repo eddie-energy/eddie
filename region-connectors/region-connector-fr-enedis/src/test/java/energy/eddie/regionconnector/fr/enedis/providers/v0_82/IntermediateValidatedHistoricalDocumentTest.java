@@ -7,7 +7,7 @@ import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
@@ -97,7 +97,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                 identifiableMeterReading,
                 new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                              "fallbackId"),
-                new PlainEnedisConfiguration("clientId", "clientSecret", "basepath")
+                new EnedisConfiguration("clientId", "clientSecret", "basepath")
         );
     }
 

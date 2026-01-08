@@ -8,7 +8,7 @@ import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.MeteringDataProvider;
 import energy.eddie.regionconnector.es.datadis.PointType;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.IntermediateMeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissionRequest;
@@ -61,9 +61,9 @@ class IntermediateValidatedHistoricalDocumentTest {
     void eddieValidatedHistoricalDataMarketDocument_withoutProduction() throws IOException {
 
         IdentifiableMeteringData identifiableMeteringData = identifiableMeterReading(false);
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
-                                                                                "clientSecret",
-                                                                                "basepath"
+        DatadisConfiguration datadisConfig = new DatadisConfiguration("clientId",
+                                                                      "clientSecret",
+                                                                      "basepath"
         );
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,
@@ -160,9 +160,9 @@ class IntermediateValidatedHistoricalDocumentTest {
     void eddieValidatedHistoricalDataMarketDocument_withProduction() throws IOException {
 
         IdentifiableMeteringData identifiableMeteringData = identifiableMeterReading(true);
-        PlainDatadisConfiguration datadisConfig = new PlainDatadisConfiguration("clientId",
-                                                                                "clientSecret",
-                                                                                "basepath"
+        DatadisConfiguration datadisConfig = new DatadisConfiguration("clientId",
+                                                                      "clientSecret",
+                                                                      "basepath"
         );
         var intermediateVHD = new IntermediateValidatedHistoricalDocument(
                 identifiableMeteringData,

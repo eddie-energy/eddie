@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
@@ -16,7 +16,7 @@ class IntermediateMarketDocumentFactoryTest {
     @Test
     void testCreate_returnsValidatedHistoricalDocument() {
         // Given
-        PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
+        EnedisConfiguration enedisConfiguration = new EnedisConfiguration(
                 "clientId",
                 "clientSecret",
                 "/path"

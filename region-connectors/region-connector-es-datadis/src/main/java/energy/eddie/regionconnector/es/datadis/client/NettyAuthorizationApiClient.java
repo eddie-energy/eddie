@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -31,12 +31,12 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
             HttpClient httpClient,
             ObjectMapper mapper,
             DatadisTokenProvider tokenProvider,
-            DatadisConfig datadisConfig
+            DatadisConfiguration datadisConfig
     ) {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.authorizationEndpoint = URI.create(datadisConfig.basePath())
+        this.authorizationEndpoint = URI.create(datadisConfig.basepath())
                                         .resolve("api-private/request/send-request-authorization");
     }
 

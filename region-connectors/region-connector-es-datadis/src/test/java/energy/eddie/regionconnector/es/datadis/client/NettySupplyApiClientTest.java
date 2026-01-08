@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -28,16 +27,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NettySupplyApiClientTest {
     private static MockWebServer mockBackEnd;
-    private static String basePath;
-    private static DatadisConfig config;
+    private static DatadisConfiguration config;
     private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {
         mockBackEnd = new MockWebServer();
         mockBackEnd.start();
-        basePath = "http://localhost:" + mockBackEnd.getPort();
-        config = new PlainDatadisConfiguration("username", "password", basePath);
+        String basePath = "http://localhost:" + mockBackEnd.getPort();
+        config = new DatadisConfiguration("username", "password", basePath);
     }
 
     @AfterAll

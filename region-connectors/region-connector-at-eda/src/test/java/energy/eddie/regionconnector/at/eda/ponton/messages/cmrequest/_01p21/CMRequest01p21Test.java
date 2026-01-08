@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
 
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.*;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
@@ -25,7 +24,7 @@ class CMRequest01p21Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("");
+        AtConfiguration atConfiguration = new AtConfiguration("");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();
@@ -52,7 +51,7 @@ class CMRequest01p21Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
@@ -80,7 +79,7 @@ class CMRequest01p21Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();

@@ -1,7 +1,6 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12;
 
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,7 @@ class CPRequestOutbound01p12MessageFactoryTest {
     void createOutboundMessage() {
         // given
         var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
-        AtConfiguration atConfiguration = new PlainAtConfiguration("RC100007");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007");
         var request = new CPRequestCR(
                 "dsoid",
                 "meteringpoint",

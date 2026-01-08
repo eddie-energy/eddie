@@ -10,7 +10,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.aiida.config.PlainAiidaConfiguration;
+import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.mqtt.MqttService;
@@ -57,11 +57,11 @@ class AiidaPermissionServiceTest {
     private final UUID aiidaId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     @Spy
     @SuppressWarnings("unused")
-    private final PlainAiidaConfiguration config = new PlainAiidaConfiguration("customerId",
-                                                                               4,
-                                                                               HANDSHAKE_URL,
-                                                                               "tcp://localhost:1883",
-                                                                               null);
+    private final AiidaConfiguration config = new AiidaConfiguration("customerId",
+                                                                     4,
+                                                                     HANDSHAKE_URL,
+                                                                     "tcp://localhost:1883",
+                                                                     null);
     private final LogCaptor logCaptor = LogCaptor.forClass(AiidaPermissionService.class);
     @Mock
     private DataNeedsService mockDataNeedsService;
@@ -89,12 +89,12 @@ class AiidaPermissionServiceTest {
     void setUp() {
         service = new AiidaPermissionService(mockOutbox,
                                              mockDataNeedsService,
-                                             config,
                                              mockMqttService,
                                              mockViewRepository,
                                              calculationService,
                                              Sinks.many().multicast().onBackpressureBuffer(),
-                                             applicationContext);
+                                             applicationContext,
+                                             "http://localhost:8080");
     }
 
     @AfterEach

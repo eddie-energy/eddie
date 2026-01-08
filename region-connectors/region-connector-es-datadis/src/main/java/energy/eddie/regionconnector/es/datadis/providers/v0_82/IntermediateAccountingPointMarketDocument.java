@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.dtos.Address;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
@@ -25,12 +25,12 @@ public final class IntermediateAccountingPointMarketDocument {
     private final EsPermissionRequest permissionRequest;
     private final AccountingPointData accountingPointData;
     private final CommonInformationModelConfiguration cimConfig;
-    private final DatadisConfig datadisConfig;
+    private final DatadisConfiguration datadisConfig;
 
     public IntermediateAccountingPointMarketDocument(
             IdentifiableAccountingPointData identifiableAccountingPointData,
             CommonInformationModelConfiguration cimConfig,
-            DatadisConfig datadisConfig
+            DatadisConfiguration datadisConfig
     ) {
         this.permissionRequest = identifiableAccountingPointData.permissionRequest();
         this.accountingPointData = identifiableAccountingPointData.accountingPointData();

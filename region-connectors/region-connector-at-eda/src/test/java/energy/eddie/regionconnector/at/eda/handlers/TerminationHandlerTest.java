@@ -4,7 +4,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -52,7 +52,7 @@ class TerminationHandlerTest {
                                                          PermissionProcessStatus.ACCEPTED, "",
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new PlainAtConfiguration("epid"), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid"), edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -66,7 +66,7 @@ class TerminationHandlerTest {
     void terminatePermission_unknownPermissionRequest_emitsNothing() {
         // given
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
-        new TerminationHandler(outbox, eventBus, repository, new PlainAtConfiguration("epid"), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid"), edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -85,7 +85,7 @@ class TerminationHandlerTest {
                                                          PermissionProcessStatus.ACCEPTED, "",
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new PlainAtConfiguration("epid"), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid"), edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 

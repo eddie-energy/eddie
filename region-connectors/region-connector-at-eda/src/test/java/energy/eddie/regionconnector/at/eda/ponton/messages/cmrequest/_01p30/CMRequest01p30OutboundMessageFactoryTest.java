@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
 
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -60,7 +60,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           RequestDataType.METERING_DATA,
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new PlainAtConfiguration("ep-id"),
+                                          new AtConfiguration("ep-id"),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           "purpose");
 

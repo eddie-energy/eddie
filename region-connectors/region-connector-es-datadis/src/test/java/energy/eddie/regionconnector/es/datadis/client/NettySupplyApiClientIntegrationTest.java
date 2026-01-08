@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.api.SupplyApi;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -21,7 +21,7 @@ class NettySupplyApiClientIntegrationTest {
             HttpClient.create(),
             mapper,
             () -> Mono.just("replace_me"),
-            new PlainDatadisConfiguration("username", "password", "https://datadis.es")
+            new DatadisConfiguration("username", "password", "https://datadis.es")
     );
 
     @Test

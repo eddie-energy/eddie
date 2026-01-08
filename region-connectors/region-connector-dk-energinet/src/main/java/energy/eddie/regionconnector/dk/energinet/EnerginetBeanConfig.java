@@ -11,7 +11,6 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
-import energy.eddie.regionconnector.dk.energinet.config.PlainEnerginetConfiguration;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkInternalPollingEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
@@ -36,6 +35,7 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import org.openapitools.jackson.nullable.JsonNullableModule;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
@@ -44,17 +44,10 @@ import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
-import static energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration.ENERGINET_CUSTOMER_BASE_PATH_KEY;
 
 @Configuration
+@EnableConfigurationProperties(EnerginetConfiguration.class)
 public class EnerginetBeanConfig {
-    @Bean
-    public EnerginetConfiguration energinetConfiguration(
-            @Value("${" + ENERGINET_CUSTOMER_BASE_PATH_KEY + "}") String customerBasePath
-    ) {
-        return new PlainEnerginetConfiguration(customerBasePath);
-    }
-
     @Bean
     public ValidatedHistoricalDataMarketDocumentBuilderFactory validatedHistoricalDataMarketDocumentBuilderFactory(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration commonInformationModelConfiguration

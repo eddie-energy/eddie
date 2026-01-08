@@ -13,7 +13,6 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
-import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
@@ -29,6 +28,7 @@ import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -41,37 +41,40 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.v0.PermissionProcessStatus.*;
+import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 
 @Component
 public class AiidaPermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaPermissionService.class);
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
-    private final AiidaConfiguration configuration;
     private final MqttService mqttService;
     private final AiidaPermissionRequestViewRepository viewRepository;
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final UUID eddieId;
+    private final String eddiePublicUrl;
 
     public AiidaPermissionService(
             Outbox outbox,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
             DataNeedsService dataNeedsService,
-            AiidaConfiguration configuration,
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
             DataNeedCalculationService<DataNeed> calculationService,
             Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
-            ApplicationContext applicationContext
+            ApplicationContext applicationContext,
+            @Value("${eddie.public.url}") String eddiePublicUrl
     ) {
         this.outbox = outbox;
         this.dataNeedsService = dataNeedsService;
-        this.configuration = configuration;
         this.mqttService = mqttService;
         this.viewRepository = viewRepository;
         this.calculationService = calculationService;
         statusSink.asFlux().subscribe(this::statusChangedExternally);
         this.eddieId = applicationContext.getBean(ApplicationInformationAware.BEAN_NAME, UUID.class);
+        this.eddiePublicUrl = eddiePublicUrl;
     }
 
     @Override
@@ -127,7 +130,8 @@ public class AiidaPermissionService implements ApplicationListener<ContextRefres
                 // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
                 outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
 
-                var handshakeUrl = new UriTemplate(configuration.handshakeUrl()).expand(permissionId).toString();
+                var handshakeUrlTemplate = eddiePublicUrl + "/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + REGION_CONNECTOR_ID + PATH_HANDSHAKE_PERMISSION_REQUEST;
+                var handshakeUrl = new UriTemplate(handshakeUrlTemplate).expand(permissionId).toString();
                 var dataNeed = dataNeedsService.getById(dataNeedId);
                 return new QrCodeDto(eddieId, UUID.fromString(permissionId), dataNeed.name(), handshakeUrl);
             }

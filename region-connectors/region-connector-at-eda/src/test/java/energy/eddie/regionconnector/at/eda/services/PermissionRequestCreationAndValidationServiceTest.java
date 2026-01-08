@@ -5,7 +5,6 @@ import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
@@ -32,7 +31,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Mock
     private Outbox mockOutbox;
     @Spy
-    private final AtConfiguration configuration = new AtEdaBeanConfig().atConfiguration("epId");
+    private final AtConfiguration configuration = new AtConfiguration("epId");
     @SuppressWarnings("unused")
     @Spy
     private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);

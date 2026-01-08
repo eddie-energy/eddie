@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.fr.enedis.providers.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
@@ -31,7 +31,7 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
         var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest,
                                                                     meterReading,
                                                                     MeterReadingType.CONSUMPTION);
-        PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
+        EnedisConfiguration enedisConfiguration = new EnedisConfiguration(
                 "clientId",
                 "clientSecret",
                 "/path"

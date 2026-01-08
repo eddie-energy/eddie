@@ -5,7 +5,7 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
@@ -35,13 +35,13 @@ public final class IntermediateValidatedHistoricalDocument {
             .withReceiverMarketParticipantMarketRoleType(RoleTypeList.CONSUMER)
             .withProcessProcessType(ProcessTypeList.REALISED);
     private final CommonInformationModelConfiguration cimConfig;
-    private final DatadisConfig datadisConfig;
+    private final DatadisConfiguration datadisConfig;
     private final IdentifiableMeteringData identifiableMeteringData;
 
     IntermediateValidatedHistoricalDocument(
             IdentifiableMeteringData identifiableMeteringData,
             CommonInformationModelConfiguration cimConfig,
-            DatadisConfig datadisConfig
+            DatadisConfiguration datadisConfig
     ) {
         this.identifiableMeteringData = identifiableMeteringData;
         this.cimConfig = cimConfig;

@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,7 +70,7 @@ class EnedisTokenProviderTest {
     @Test
     void getToken_fetchesTokenIfExpired() {
         EnedisTokenProvider uut = new EnedisTokenProvider(
-                new PlainEnedisConfiguration("id", "secret", basePath),
+                new EnedisConfiguration("id", "secret", basePath),
                 webClient
         );
 
@@ -101,7 +101,7 @@ class EnedisTokenProviderTest {
     @Test
     void getToken_doesNotFetchTokenIfItIsStillValid() {
         EnedisTokenProvider uut = new EnedisTokenProvider(
-                new PlainEnedisConfiguration("id", "secret", basePath),
+                new EnedisConfiguration("id", "secret", basePath),
                 webClient
         );
 
@@ -126,7 +126,7 @@ class EnedisTokenProviderTest {
     @MethodSource("invalidCredentialResponses")
     void getToken_withInvalidCredentials_returnsError(String response, String name) {
         EnedisTokenProvider uut = new EnedisTokenProvider(
-                new PlainEnedisConfiguration("x", "x", basePath),
+                new EnedisConfiguration("x", "x", basePath),
                 webClient
         );
 

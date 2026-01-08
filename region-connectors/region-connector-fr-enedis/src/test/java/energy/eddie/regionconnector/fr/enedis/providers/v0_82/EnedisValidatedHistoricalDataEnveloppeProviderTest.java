@@ -4,7 +4,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
-import energy.eddie.regionconnector.fr.enedis.config.PlainEnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
@@ -32,7 +32,7 @@ class EnedisValidatedHistoricalDataEnvelopeProviderTest {
         var identifiableMeterReading = new IdentifiableMeterReading(permissionRequest,
                                                                     meterReading,
                                                                     MeterReadingType.CONSUMPTION);
-        PlainEnedisConfiguration enedisConfiguration = new PlainEnedisConfiguration(
+        EnedisConfiguration enedisConfiguration = new EnedisConfiguration(
                 "clientId",
                 "clientSecret",
                 "/path"

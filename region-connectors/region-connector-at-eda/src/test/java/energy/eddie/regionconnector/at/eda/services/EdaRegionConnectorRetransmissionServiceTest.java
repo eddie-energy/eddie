@@ -9,7 +9,6 @@ import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -44,7 +43,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
 
     public static final LocalDate TODAY = LocalDate.now(ZoneOffset.UTC);
     public static final String PERMISSION_ID = "id";
-    private final AtConfiguration atConfiguration = new PlainAtConfiguration("ep");
+    private final AtConfiguration atConfiguration = new AtConfiguration("ep");
     @Mock
     private AtPermissionRequestRepository atPermissionRequestRepository;
     @Mock

@@ -1,62 +1,30 @@
 package energy.eddie.regionconnector.at.eda.ponton;
 
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Name;
 
 /**
- * This interface defines all information needed for a PontonXPAdapter to establish a connection to a Ponton XP
- * Messenger.
+ * This record defines all information needed for a PontonXPAdapter to establish a connection to a Ponton XP Messenger.
+ *
+ * @param adapterId      ID of the adapter that will be used by the Ponton XP Messenger.
+ *                       The value used for this should be configured as the default adapter in the messenger
+ * @param adapterVersion Version of the adapter.
+ * @param hostname       Address of the Ponton XP Messenger
+ * @param port           Port of the Ponton XP Messenger adapter interface (default: 2600)
+ * @param apiEndpoint    API endpoint of the Ponton XP Messenger
+ * @param workFolder     Path to the folder where the Ponton XP Adapter will store its files like id.dat which is used by the messenger to identify the adapter.
+ * @param username       Username for the Ponton XP Messenger to use REST API endpoints that require authentication.
+ *                       Needs to be a user without 2FA activated.
+ * @param password       Password for the given username.
  */
-public interface PontonXPAdapterConfiguration {
-    String PREFIX = AtConfiguration.PREFIX + "ponton.messenger.";
-    String ADAPTER_ID_KEY = PREFIX + "adapter.id";
-    String ADAPTER_VERSION_KEY = PREFIX + "adapter.version";
-    String HOSTNAME_KEY = PREFIX + "hostname";
-    String PORT_KEY = PREFIX + "port";
-    String API_ENDPOINT_KEY = PREFIX + "api.endpoint";
-    String WORK_FOLDER_KEY = PREFIX + "folder";
-    String USERNAME_KEY = PREFIX + "username";
-    String PASSWORD_KEY = PREFIX + "password";
-
-    /**
-     * ID of the adapter that will be used by the Ponton XP Messenger. The value used for this should be configured as
-     * the default adapter in the messenger
-     */
-    String adapterId();
-
-    /**
-     * Version of the adapter
-     */
-    String adapterVersion();
-
-    /**
-     * Address of the Ponton XP Messenger
-     */
-    String hostname();
-
-    /**
-     * API endpoint of the Ponton XP Messenger
-     */
-    String apiEndpoint();
-
-    /**
-     * Port of the Ponton XP Messenger adapter interface (default: 2600)
-     */
-    int port();
-
-    /**
-     * Path to the folder where the Ponton XP Adapter will store its files like id.dat which is used by the messenger to
-     * identify the adapter.
-     */
-    String workFolder();
-
-    /**
-     * Username for the Ponton XP Messenger to use REST API endpoints that require authentication. Needs to be a user
-     * without 2FA activated.
-     */
-    String username();
-
-    /**
-     * Password for the given username.
-     */
-    String password();
-}
+@ConfigurationProperties("region-connector.at.eda.ponton.messenger")
+public record PontonXPAdapterConfiguration(
+        @Name("adapter.id") String adapterId,
+        @Name("adapter.version") String adapterVersion,
+        @Name("hostname") String hostname,
+        @Name("port") int port,
+        @Name("api.endpoint") String apiEndpoint,
+        @Name("folder") String workFolder,
+        @Name("username") String username,
+        @Name("password") String password
+) {}

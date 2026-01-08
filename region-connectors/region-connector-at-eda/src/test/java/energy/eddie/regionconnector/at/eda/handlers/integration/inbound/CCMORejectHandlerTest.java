@@ -8,7 +8,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.config.PlainAtConfiguration;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.dto.SimpleResponseData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
@@ -44,7 +44,7 @@ class CCMORejectHandlerTest {
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     @Spy
     @SuppressWarnings("unused") // injected
-    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new PlainAtConfiguration("test"));
+    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new AtConfiguration("test"));
     @Mock
     private Outbox outbox;
 

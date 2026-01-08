@@ -1,12 +1,14 @@
 package energy.eddie.regionconnector.dk.energinet.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Name;
 
-public interface EnerginetConfiguration {
-    String PREFIX = "region-connector.dk.energinet.";
-    String ENERGINET_CUSTOMER_BASE_PATH_KEY = PREFIX + "customer.client.basepath";
-
-    /**
-     * BasePath for the customer api
-     */
-    String customerBasePath();
-}
+/**
+ * The main configuration for the Energinet region connector.
+ *
+ * @param customerBasePath BasePath for the customer api
+ */
+@ConfigurationProperties("region-connector.dk.energinet")
+public record EnerginetConfiguration(
+        @Name("customer.client.basepath") String customerBasePath
+) {}

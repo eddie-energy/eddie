@@ -3,8 +3,7 @@ package energy.eddie.regionconnector.es.datadis.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
-import energy.eddie.regionconnector.es.datadis.config.PlainDatadisConfiguration;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 class NettyAuthorizationApiClientIntegrationTest {
     private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
     private final String requestNif = "replace_me";
-    private final DatadisConfig config = new PlainDatadisConfiguration("username", "password", "https://datadis.es");
+    private final DatadisConfiguration config = new DatadisConfiguration("username", "password", "https://datadis.es");
 
     @Test
     @Disabled("Integration test, that needs real credentials")

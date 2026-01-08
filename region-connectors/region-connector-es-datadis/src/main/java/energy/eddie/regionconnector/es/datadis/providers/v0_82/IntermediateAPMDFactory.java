@@ -1,18 +1,18 @@
 package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.regionconnector.es.datadis.config.DatadisConfig;
+import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableAccountingPointData;
 import org.springframework.stereotype.Component;
 
 @Component
 public class IntermediateAPMDFactory {
-    private final DatadisConfig datadisConfig;
+    private final DatadisConfiguration datadisConfig;
     private final CommonInformationModelConfiguration cimConfiguration;
 
     public IntermediateAPMDFactory(
-            DatadisConfig datadisConfig,
-            CommonInformationModelConfiguration cimConfiguration
+            DatadisConfiguration datadisConfig,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfiguration
     ) {
         this.datadisConfig = datadisConfig;
         this.cimConfiguration = cimConfiguration;
