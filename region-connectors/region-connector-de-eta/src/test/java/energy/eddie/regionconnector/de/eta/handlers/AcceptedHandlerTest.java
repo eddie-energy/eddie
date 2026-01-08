@@ -1,141 +1,190 @@
 package energy.eddie.regionconnector.de.eta.handlers;
 
-// 1. Imports matching your working AcceptedHandler
-import energy.eddie.api.agnostic.process.model.PermissionRequest;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.de.eta.client.EtaApiClient;
+import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
+import energy.eddie.regionconnector.de.eta.permission.handlers.AcceptedHandler;
+import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
-import energy.eddie.regionconnector.de.eta.persistence.DeMeterReadingTrackingEntity;
-import energy.eddie.regionconnector.de.eta.persistence.DeMeterReadingTrackingRepository;
-import energy.eddie.regionconnector.de.eta.providers.vhd.DeEtaMeteredData;
-import energy.eddie.regionconnector.de.eta.providers.vhd.IdentifiableValidatedHistoricalData;
-import energy.eddie.regionconnector.de.eta.providers.vhd.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
+import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
-
-// 2. Testing Imports
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor; // Useful for inspecting what was saved
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Collections;
 import java.util.Optional;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AcceptedHandlerTest {
 
-    @Mock private EventBus eventBus;
-    @Mock private DePermissionRequestRepository repository;
-    @Mock private DataNeedsService dataNeedsService;
-    @Mock private EtaApiClient apiClient;
-    @Mock private ValidatedHistoricalDataStream stream;
-    @Mock private DeMeterReadingTrackingRepository trackingRepository;
+    @Mock
+    private DePermissionRequestRepository repository;
+    @Mock
+    private EtaPlusApiClient apiClient;
+    @Mock
+    private ValidatedHistoricalDataStream stream;
+    @Mock
+    private Outbox outbox;
+    @Mock
+    private EventBus eventBus;
 
     private AcceptedHandler handler;
 
     @BeforeEach
     void setUp() {
-        // Prevent the constructor from crashing or subscribing to a real Flux
+        // Prevent NullPointerException during constructor initialization
         when(eventBus.filteredFlux(AcceptedEvent.class)).thenReturn(Flux.empty());
 
         handler = new AcceptedHandler(
                 eventBus,
                 repository,
-                dataNeedsService,
                 apiClient,
                 stream,
-                trackingRepository
+                outbox
         );
     }
 
     @Test
-    void should_fetch_stream_and_persist_when_data_need_is_historical() {
+    void should_fetch_and_publish_data_when_request_is_valid_and_in_past() {
         // --- ARRANGE ---
         String permissionId = "perm-123";
-        UUID dataNeedId = UUID.randomUUID();
+        AcceptedEvent event = new AcceptedEvent(permissionId);
 
-        // 1. Mock the Event
-        AcceptedEvent event = mock(AcceptedEvent.class);
-        when(event.permissionId()).thenReturn(permissionId);
-
-        // 2. Mock Repository finding the request
-        PermissionRequest request = mock(PermissionRequest.class);
+        // 1. Mock Request
+        DePermissionRequest request = mock(DePermissionRequest.class);
         when(request.permissionId()).thenReturn(permissionId);
-        when(request.dataNeedId()).thenReturn(dataNeedId);
-        when(repository.getByPermissionId(permissionId)).thenReturn(request);
+        // Ensure start date is yesterday to pass the "future data" check
+        when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).minusDays(1));
 
-        // 3. Mock DataNeedService returning the CORRECT type
-        // This triggers the switch case: case ValidatedHistoricalDataDataNeed ignored -> ...
-        DataNeedInterface historicalNeed = new ValidatedHistoricalDataDataNeed();
-        when(dataNeedsService.getById(dataNeedId)).thenReturn(historicalNeed);
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
-        // 4. Mock API Client returning data
-        Instant now = Instant.now();
-        DeEtaMeteredData.Reading reading = new DeEtaMeteredData.Reading(
-                now, new BigDecimal("500.00"), "kWh"
+        // 2. Create concrete Data object (EtaPlusMeteredData is a record, so we instantiate it)
+        EtaPlusMeteredData realData = new EtaPlusMeteredData(
+                "meter-abc",
+                LocalDate.now(),
+                LocalDate.now(),
+                Collections.emptyList(),
+                "{}"
         );
-        DeEtaMeteredData data = new DeEtaMeteredData("METER-ABC", List.of(reading));
-        when(apiClient.getValidatedHistoricalData(request)).thenReturn(Mono.just(data));
 
-        // 5. Mock DB Tracking (simulate first time seeing this permission)
-        when(trackingRepository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
+        // 3. Mock API to return the concrete type
+        when(apiClient.fetchMeteredData(request)).thenReturn(Mono.just(realData));
 
         // --- ACT ---
         handler.accept(event);
 
         // --- ASSERT ---
-        // A. Verify data was streamed
-        verify(stream).publish(any(IdentifiableValidatedHistoricalData.class));
-
-        // B. Verify correct reading was saved to DB
-        ArgumentCaptor<DeMeterReadingTrackingEntity> entityCaptor = ArgumentCaptor.forClass(DeMeterReadingTrackingEntity.class);
-        verify(trackingRepository).save(entityCaptor.capture());
-
-        DeMeterReadingTrackingEntity savedEntity = entityCaptor.getValue();
-        assertEquals(permissionId, savedEntity.getPermissionId());
-        assertEquals(now, savedEntity.getLatestReadingTime());
-        assertEquals(new BigDecimal("500.00"), savedEntity.getLatestReadingValue());
+        verify(apiClient).fetchMeteredData(request);
+        // Verify the stream received the specific concrete data object
+        verify(stream).publish(request, realData);
+        verifyNoInteractions(outbox);
     }
 
     @Test
-    void should_ignore_request_if_data_need_is_not_historical() {
+    void should_ignore_request_if_permission_not_found() {
         // --- ARRANGE ---
-        String permissionId = "perm-999";
-        UUID dataNeedId = UUID.randomUUID();
+        String permissionId = "perm-missing";
+        AcceptedEvent event = new AcceptedEvent(permissionId);
 
-        AcceptedEvent event = mock(AcceptedEvent.class);
-        when(event.permissionId()).thenReturn(permissionId);
-
-        PermissionRequest request = mock(PermissionRequest.class);
-        when(request.dataNeedId()).thenReturn(dataNeedId);
-        when(repository.getByPermissionId(permissionId)).thenReturn(request);
-
-        // Mock DataNeedService returning a DIFFERENT type (e.g. Accounting Point)
-        DataNeedInterface accountingNeed = new AccountingPointDataNeed();
-        when(dataNeedsService.getById(dataNeedId)).thenReturn(accountingNeed);
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
 
         // --- ACT ---
         handler.accept(event);
 
         // --- ASSERT ---
-        // Verify we NEVER called the API or Stream
-        verify(apiClient, never()).getValidatedHistoricalData(any());
-        verify(stream, never()).publish(any());
-        verify(trackingRepository, never()).save(any());
+        verifyNoInteractions(apiClient);
+        verifyNoInteractions(stream);
+    }
+
+    @Test
+    void should_skip_fetching_if_start_date_is_in_future() {
+        // --- ARRANGE ---
+        String permissionId = "perm-future";
+        AcceptedEvent event = new AcceptedEvent(permissionId);
+
+        DePermissionRequest request = mock(DePermissionRequest.class);
+        when(request.permissionId()).thenReturn(permissionId);
+        // Set start date to tomorrow
+        when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).plusDays(1));
+
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
+
+        // --- ACT ---
+        handler.accept(event);
+
+        // --- ASSERT ---
+        verifyNoInteractions(apiClient);
+        verifyNoInteractions(stream);
+    }
+
+    @Test
+    void should_emit_revoked_event_on_forbidden_error() {
+        // --- ARRANGE ---
+        String permissionId = "perm-revoked";
+        AcceptedEvent event = new AcceptedEvent(permissionId);
+
+        DePermissionRequest request = mock(DePermissionRequest.class);
+        when(request.permissionId()).thenReturn(permissionId);
+        when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).minusDays(1));
+
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
+
+        // Simulate a 403 Forbidden error from the API
+        // Using Spring's HttpClientErrorException.create for accurate simulation
+        HttpClientErrorException forbiddenError = HttpClientErrorException.create(
+                HttpStatus.FORBIDDEN, "Forbidden", null, null, null
+        );
+        when(apiClient.fetchMeteredData(request)).thenReturn(Mono.error(forbiddenError));
+
+        // --- ACT ---
+        handler.accept(event);
+
+        // --- ASSERT ---
+        ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
+        verify(outbox).commit(eventCaptor.capture());
+
+        SimpleEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(permissionId, capturedEvent.permissionId());
+        assertEquals(PermissionProcessStatus.REVOKED, capturedEvent.status());
+    }
+
+    @Test
+    void should_log_error_but_not_revoke_on_generic_error() {
+        // --- ARRANGE ---
+        String permissionId = "perm-error";
+        AcceptedEvent event = new AcceptedEvent(permissionId);
+
+        DePermissionRequest request = mock(DePermissionRequest.class);
+        when(request.permissionId()).thenReturn(permissionId);
+        when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).minusDays(1));
+
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
+
+        // Simulate a generic RuntimeException
+        when(apiClient.fetchMeteredData(request)).thenReturn(Mono.error(new RuntimeException("Network Error")));
+
+        // --- ACT ---
+        handler.accept(event);
+
+        // --- ASSERT ---
+        verify(apiClient).fetchMeteredData(request);
+        verifyNoInteractions(stream);
+        verifyNoInteractions(outbox);
     }
 }
