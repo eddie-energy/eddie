@@ -77,8 +77,8 @@ class AcceptedHandlerTest {
         // 2. Create concrete Data object (EtaPlusMeteredData is a record, so we instantiate it)
         EtaPlusMeteredData realData = new EtaPlusMeteredData(
                 "meter-abc",
-                LocalDate.now(),
-                LocalDate.now(),
+                LocalDate.now(ZoneId.of("UTC")),
+                LocalDate.now(ZoneId.of("UTC")),
                 Collections.emptyList(),
                 "{}"
         );

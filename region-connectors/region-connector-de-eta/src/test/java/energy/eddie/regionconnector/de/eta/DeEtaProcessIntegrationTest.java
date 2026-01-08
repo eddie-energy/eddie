@@ -19,6 +19,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -60,8 +61,8 @@ class DeEtaProcessIntegrationTest {
         // Emit VALIDATED event to set start/end dates
         outbox.commit(new ValidatedEvent(
                 permissionId,
-                LocalDate.now().minusDays(10), // Start
-                LocalDate.now().minusDays(1),  // End
+                LocalDate.now(ZoneId.of("UTC")).minusDays(10),
+                LocalDate.now(ZoneId.of("UTC")).minusDays(1),
                 Granularity.PT15M
         ));
 
@@ -86,7 +87,7 @@ class DeEtaProcessIntegrationTest {
 
             // Assuming your Stub returns data for 'start' date
             assertThat(request.latestReading().get().toLocalDate())
-                    .isEqualTo(LocalDate.now().minusDays(1)); // Or whatever your stub returns
+                    .isEqualTo(LocalDate.now(ZoneId.of("UTC")).minusDays(1));
         });
     }
 }
