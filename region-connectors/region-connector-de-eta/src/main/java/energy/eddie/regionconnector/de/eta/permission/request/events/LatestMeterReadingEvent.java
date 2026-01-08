@@ -1,39 +1,36 @@
 package energy.eddie.regionconnector.de.eta.permission.request.events;
 
-import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.de.eta.permission.request.events.PersistablePermissionEvent;
+import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import org.springframework.lang.Nullable;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
-/**
- * Internal event used to track the latest meter reading for a permission request.
- * This event is used to update the state of a permission request without changing
- * the PermissionProcessStatus.
- * 
- * <p>Since this implements {@link InternalPermissionEvent}, it will be persisted
- * but not propagated to the eligible party as an integration event.</p>
- */
-@Entity(name = "DeLatestMeterReadingEvent")
-@SuppressWarnings({"NullAway", "unused"})
+@Entity(name = "DeEtaLatestMeterReadingEvent")
+@DiscriminatorValue("LATEST_READING")
 public class LatestMeterReadingEvent extends PersistablePermissionEvent implements InternalPermissionEvent {
 
-    @Column(name = "latest_meter_reading")
-    private final LocalDate latestMeterReading;
+    @Column(name = "latest_reading")
+    @Nullable
+    private final ZonedDateTime latestReading;
 
-    public LatestMeterReadingEvent(String permissionId, LocalDate latestMeterReading) {
-        super(permissionId, PermissionProcessStatus.ACCEPTED);
-        this.latestMeterReading = latestMeterReading;
-    }
-
+    // JPA Requirement
     protected LatestMeterReadingEvent() {
         super();
-        this.latestMeterReading = null;
+        this.latestReading = null;
     }
 
-    public LocalDate latestMeterReading() {
-        return latestMeterReading;
+    public LatestMeterReadingEvent(String permissionId, ZonedDateTime latestReading) {
+        super(permissionId, PermissionProcessStatus.ACCEPTED);
+        this.latestReading = latestReading;
+    }
+
+    @Nullable
+    public ZonedDateTime latestReading() {
+        return latestReading;
     }
 }
-

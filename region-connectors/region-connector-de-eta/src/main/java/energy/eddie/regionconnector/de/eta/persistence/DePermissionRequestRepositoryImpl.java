@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +30,8 @@ public class DePermissionRequestRepositoryImpl implements DePermissionRequestRep
         SELECT permission_id, data_source_connection_id, metering_point_id,
                permission_start, permission_end, data_start, data_end,
                granularity, energy_type, status, data_need_id, created,
-               message, cause
+               message, cause,
+               latest_reading
         FROM de_eta.eta_permission_request
         """;
 
@@ -79,6 +81,11 @@ public class DePermissionRequestRepositoryImpl implements DePermissionRequestRep
     private static class PermissionRequestRowMapper implements RowMapper<DePermissionRequest> {
         @Override
         public DePermissionRequest mapRow(ResultSet rs, int rowNum) throws SQLException {
+            ZonedDateTime latestReading = null;
+            var latestTs = rs.getTimestamp("latest_reading");
+            if (latestTs != null) {
+                latestReading = latestTs.toInstant().atZone(ZoneId.of("UTC"));
+            }
             return DePermissionRequest.builder()
                     .permissionId(rs.getString("permission_id"))
                     .connectionId(rs.getString("data_source_connection_id"))
@@ -90,7 +97,7 @@ public class DePermissionRequestRepositoryImpl implements DePermissionRequestRep
                     .status(PermissionProcessStatus.valueOf(rs.getString("status")))
                     .dataNeedId(rs.getString("data_need_id"))
                     .created(rs.getTimestamp("created").toInstant().atZone(ZoneId.systemDefault()))
-                    .dataSourceInformation(new DeDataSourceInformation())
+                    .latestReading(latestReading)
                     .message(rs.getString("message"))
                     .cause(rs.getString("cause"))
                     .build();

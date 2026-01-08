@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 /**
  * Event handler for accepted permission requests.
@@ -57,7 +58,7 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
         var pr = optionalPr.get();
 
         // Only request historical data (data in the past)
-        if (pr.start().isAfter(LocalDate.now())) {
+        if (pr.start().isAfter(LocalDate.now(ZoneId.of("UTC")))) {
             LOGGER.atInfo()
                   .addArgument(pr::permissionId)
                   .log("Permission request {} is for future data only, skipping historical data fetch");

@@ -11,6 +11,8 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDate;
 import java.util.List;
 
+import java.time.ZoneId;
+
 /**
  * Client for the ETA Plus API.
  * This client is responsible for fetching validated historical data from the German ETA Plus system.
@@ -20,6 +22,7 @@ import java.util.List;
 public class EtaPlusApiClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(EtaPlusApiClient.class);
 
+    @SuppressWarnings("unused")
     private final WebClient webClient;
 
     public EtaPlusApiClient(WebClient deEtaWebClient) {
@@ -72,7 +75,7 @@ public class EtaPlusApiClient {
         LocalDate end = permissionRequest.end();
         
         // Don't return data for future dates
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(ZoneId.of("UTC"));
         LocalDate effectiveEnd = end.isAfter(today) ? today : end;
 
         return new EtaPlusMeteredData(

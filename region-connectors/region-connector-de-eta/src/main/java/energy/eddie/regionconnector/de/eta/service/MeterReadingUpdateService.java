@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId; // Added Import
+import java.time.ZonedDateTime;
+
 /**
  * Service responsible for handling meter reading updates.
  * Subscribes to the ValidatedHistoricalDataStream and emits LatestMeterReadingEvents
@@ -27,7 +30,8 @@ public class MeterReadingUpdateService {
 
     private void handleMeterReading(IdentifiableValidatedHistoricalData data) {
         var permissionRequest = data.permissionRequest();
-        var latestReading = data.meterReadingEndDate();
+        ZonedDateTime latestReading = data.meterReadingEndDate()
+                .atStartOfDay(ZoneId.of("UTC"));
 
         LOGGER.atInfo()
               .addArgument(permissionRequest::permissionId)
@@ -35,8 +39,7 @@ public class MeterReadingUpdateService {
               .log("Updating latest meter reading for permission request {} to {}");
 
         outbox.commit(new LatestMeterReadingEvent(
-                permissionRequest.permissionId(),
-                latestReading
+                permissionRequest.permissionId(), latestReading
         ));
     }
 }

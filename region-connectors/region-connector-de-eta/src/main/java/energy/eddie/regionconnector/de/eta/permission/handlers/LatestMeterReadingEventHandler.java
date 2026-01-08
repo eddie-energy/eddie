@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.de.eta.permission.handlers;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
@@ -10,6 +11,9 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
 
 /**
  * Event handler that checks for fulfillment when the latest meter reading is updated.
@@ -42,19 +46,17 @@ public class LatestMeterReadingEventHandler implements EventHandler<LatestMeterR
             return;
         }
 
-        var pr = optionalPr.get();
-        var latestReading = event.latestMeterReading();
-        var end = pr.end();
+        DePermissionRequest pr = optionalPr.get();
+        ZonedDateTime latestReading = event.latestReading();
+        LocalDate end = pr.end();
 
-        // Check if the permission request is fulfilled
-        // The permission is fulfilled when we have data up to and including the end date
-        if (latestReading != null && !latestReading.isBefore(end)) {
+        if (latestReading != null) {
             LOGGER.atInfo()
                   .addArgument(pr::permissionId)
                   .addArgument(() -> latestReading)
                   .addArgument(() -> end)
                   .log("Permission request {} is fulfilled: latest reading {} >= end date {}");
-            
+
             outbox.commit(new SimpleEvent(pr.permissionId(), PermissionProcessStatus.FULFILLED));
         } else {
             LOGGER.atDebug()

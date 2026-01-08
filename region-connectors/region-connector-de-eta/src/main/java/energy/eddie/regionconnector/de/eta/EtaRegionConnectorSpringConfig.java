@@ -178,7 +178,10 @@ public class EtaRegionConnectorSpringConfig {
     ) {
         return new MeterReadingPermissionUpdateAndFulfillmentService(
                 fulfillmentService,
-                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(reading.permissionId(), end))
+                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(
+                        reading.permissionId(),
+                        end.atStartOfDay(java.time.ZoneId.of("UTC"))
+                ))
         );
     }
 }
