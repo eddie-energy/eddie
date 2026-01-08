@@ -15,7 +15,7 @@ public enum StandardModeEntry {
     /**
      * Meter's secondary address (None)
      */
-    ADSC(ObisCode.DEVICE_ID_1, UnitOfMeasurement.NONE, "ADSC", true),
+    ADSC(ObisCode.METER_SERIAL, UnitOfMeasurement.NONE, "ADSC", true),
     /** TIC version (None) */
     VTIC(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "VTIC", false),
     /** Current date and time (None) */

@@ -2,6 +2,7 @@ package energy.eddie.aiida.schemas;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.StandardModeEntry;
 import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.Permission;
@@ -82,7 +83,7 @@ public class CimFormatter extends SchemaFormatter {
                 .stream()
                 .filter(value -> value
                         .rawTag()
-                        .equals("PRM"))
+                        .equals(StandardModeEntry.PRM.name()))
                 .findFirst();
         String mRID = prmValue.isPresent() ? prmValue.get().value() : aiidaRecord.dataSourceId().toString();
 
