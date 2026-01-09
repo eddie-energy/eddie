@@ -1,17 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.List;
 
 public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "dk-energinet";
@@ -19,15 +12,6 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
     public static final Period PERIOD_EARLIEST_START = Period.ofYears(-4);
     // Currently we only support the customer api and the token for this is valid for a maximum of 1 year
     public static final Period PERIOD_LATEST_END = Period.ofYears(1);
-    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M,
-                                                                            Granularity.PT1H,
-                                                                            Granularity.P1D,
-                                                                            Granularity.P1M,
-                                                                            Granularity.P1Y);
-    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
-            ValidatedHistoricalDataDataNeed.class,
-            AccountingPointDataNeed.class
-    );
     /**
      * The Global Location Number (GLN) of the sender of the message. This value is from the <a
      * href="https://api.eloverblik.dk/customerapi/index.html">API documentation</a> (from the API description linked in
@@ -74,22 +58,7 @@ public class EnerginetRegionConnectorMetadata implements RegionConnectorMetadata
     }
 
     @Override
-    public List<Granularity> supportedGranularities() {
-        return SUPPORTED_GRANULARITIES;
-    }
-
-    @Override
     public ZoneId timeZone() {
         return DK_ZONE_ID;
-    }
-
-    @Override
-    public List<EnergyType> supportedEnergyTypes() {
-        return List.of(EnergyType.ELECTRICITY, EnergyType.NATURAL_GAS);
-    }
-
-    @Override
-    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

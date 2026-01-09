@@ -1,15 +1,11 @@
 package energy.eddie.regionconnector.si.moj.elektro;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import org.springframework.stereotype.Component;
 
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.List;
 
 @Component
 public class MojElektroRegionConnectorMetadata implements RegionConnectorMetadata {
@@ -43,22 +39,7 @@ public class MojElektroRegionConnectorMetadata implements RegionConnectorMetadat
     }
 
     @Override
-    public List<Granularity> supportedGranularities() {
-        return List.of();
-    }
-
-    @Override
     public ZoneId timeZone() {
         return ZoneOffset.UTC;
-    }
-
-    @Override
-    public List<EnergyType> supportedEnergyTypes() {
-        return List.of();
-    }
-
-    @Override
-    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.of();
     }
 }

@@ -82,11 +82,13 @@ The [`RegionConnectorMetadata` object](https://architecture.eddie.energy/javadoc
 - earliest start for historical metered data
 - latest end for historical metered data
 - ID of the region connector
-- supported data need types, since some region connector might only support validated historical data, which is needed during development
-- supported granularities for historical metered data
 - time zone of the region connector
 
 Each region connector has to have one implementation, which can be a singleton, since the information it provides are usually static.
+
+#### `DataNeedRuleSet`
+
+The [`DataNeedRuleSet` object](https://architecture.eddie.energy/javadoc/energy/eddie/dataneeds/rules/DataNeedRuleSet.html) defines which data needs a region connector can support according to EDDIE's [Data Need Concept](../../2-integrating/data-needs.md).
 
 ### `RegionConnectorRetransmissionService`
 

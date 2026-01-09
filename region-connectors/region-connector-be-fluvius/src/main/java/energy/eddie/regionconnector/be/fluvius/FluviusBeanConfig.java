@@ -8,6 +8,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
@@ -40,7 +41,6 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -63,13 +63,16 @@ public class FluviusBeanConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            RegionConnectorMetadata metadata
+            RegionConnectorMetadata metadata,
+            DataNeedRuleSet ruleSet
     ) {
-        return new DataNeedCalculationServiceImpl(dataNeedsService,
-                                                  metadata,
-                                                  new FluviusPermissionTimeframeStrategy(),
-                                                  new FluviusEnergyTimeframeStrategy(metadata),
-                                                  List.of());
+        return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                new FluviusPermissionTimeframeStrategy(),
+                new FluviusEnergyTimeframeStrategy(metadata),
+                ruleSet
+        );
     }
 
     @Bean

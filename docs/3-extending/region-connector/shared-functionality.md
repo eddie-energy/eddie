@@ -36,8 +36,8 @@ This implementation can be heavily customized to match the requirements of the r
 @Configuration
 public class Config {
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(DataNeedsService dataNeedsService, RegionConnectorMetadata metadata) {
-      return new DataNeedCalculationServiceImpl(dataNeedsService, metadata);
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(DataNeedsService dataNeedsService, RegionConnectorMetadata metadata, DataNeedRuleSet ruleSet) {
+      return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
     }
 }
 ```

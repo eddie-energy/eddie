@@ -1,7 +1,7 @@
 package energy.eddie.core.web;
 
 import energy.eddie.core.security.JwtIssuerFilter;
-import energy.eddie.core.services.MetadataService;
+import energy.eddie.core.services.DataNeedRuleSetRouter;
 import energy.eddie.core.services.SupportedFeatureService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ class ManagementControllerTest {
     private RegionConnectorSupportedFeatureExtension extension;
     @SuppressWarnings("unused")
     @MockitoBean
-    private MetadataService metadataService;
+    private DataNeedRuleSetRouter router;
 
     @Test
     void testSupportedFeatures_returns200() throws Exception {

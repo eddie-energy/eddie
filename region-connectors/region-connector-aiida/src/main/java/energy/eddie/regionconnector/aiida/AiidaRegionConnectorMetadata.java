@@ -1,19 +1,11 @@
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
-import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 
 import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.List;
 
 public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "aiida";
@@ -21,10 +13,6 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String MQTT_CLIENT_ID = "eddie-region-connector-aiida";
     public static final Period EARLIEST_START = Period.ZERO;
     public static final Period LATEST_END = Period.ofYears(9999);
-    public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
-            OutboundAiidaDataNeed.class,
-            InboundAiidaDataNeed.class
-    );
 
     @Nullable
     private static AiidaRegionConnectorMetadata instance = null;
@@ -65,22 +53,7 @@ public class AiidaRegionConnectorMetadata implements RegionConnectorMetadata {
     }
 
     @Override
-    public List<Granularity> supportedGranularities() {
-        return List.of();
-    }
-
-    @Override
     public ZoneId timeZone() {
         return REGION_CONNECTOR_ZONE_ID;
-    }
-
-    @Override
-    public List<EnergyType> supportedEnergyTypes() {
-        return Arrays.asList(EnergyType.values());
-    }
-
-    @Override
-    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.copyOf(SUPPORTED_DATA_NEEDS);
     }
 }

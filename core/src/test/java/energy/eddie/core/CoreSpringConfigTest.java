@@ -3,6 +3,7 @@ package energy.eddie.core;
 import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
+import energy.eddie.core.services.DataNeedRuleSetRouter;
 import energy.eddie.core.services.MetadataService;
 import energy.eddie.core.web.PermissionFacadeController;
 import org.junit.jupiter.api.Nested;
@@ -37,6 +38,8 @@ class CoreSpringConfigTest {
         @MockitoBean
         private DataNeedCalculationRouter dataNeedCalculationRouter;
         @MockitoBean
+        private DataNeedRuleSetRouter dataNeedRuleSetRouter;
+        @MockitoBean
         private ApplicationInformationService unusedApplicationInformationService;
 
         @Test
@@ -61,6 +64,8 @@ class CoreSpringConfigTest {
         private MetadataService unusedMetadataService;
         @MockitoBean
         private DataNeedCalculationRouter dataNeedCalculationRouter;
+        @MockitoBean
+        private DataNeedRuleSetRouter dataNeedRuleSetRouter;
         @MockitoBean
         private ApplicationInformationService unusedApplicationInformationService;
 

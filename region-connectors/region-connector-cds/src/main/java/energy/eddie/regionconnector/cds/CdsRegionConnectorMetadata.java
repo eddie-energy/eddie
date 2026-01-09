@@ -1,11 +1,6 @@
 package energy.eddie.regionconnector.cds;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.cds.client.CdsServerClient;
 import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.dtos.CdsServerMasterData;
@@ -14,7 +9,6 @@ import org.springframework.stereotype.Component;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,30 +60,7 @@ public class CdsRegionConnectorMetadata implements RegionConnectorMetadata {
     }
 
     @Override
-    public List<Granularity> supportedGranularities() {
-        return Arrays.asList(Granularity.values());
-    }
-
-    @Override
     public ZoneId timeZone() {
         return ZoneOffset.UTC;
-    }
-
-    @Override
-    public List<EnergyType> supportedEnergyTypes() {
-        var energyTypes = factory.getAll()
-                .flatMap(CdsServerClient::masterData)
-                .flatMapIterable(CdsServerMasterData::energyTypes)
-                .collect(Collectors.toSet())
-                .block();
-        if(energyTypes == null) {
-            return List.of();
-        }
-        return energyTypes.stream().toList();
-    }
-
-    @Override
-    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.of(ValidatedHistoricalDataDataNeed.class, AccountingPointDataNeed.class);
     }
 }

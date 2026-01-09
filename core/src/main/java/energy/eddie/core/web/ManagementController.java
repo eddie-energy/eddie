@@ -1,7 +1,7 @@
 package energy.eddie.core.web;
 
 import energy.eddie.core.dtos.SupportedDataNeeds;
-import energy.eddie.core.services.MetadataService;
+import energy.eddie.core.services.DataNeedRuleSetRouter;
 import energy.eddie.core.services.SupportedFeatureService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorSupportedFeatureExtension;
 import org.springframework.http.HttpStatus;
@@ -11,15 +11,19 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class ManagementController {
     private final SupportedFeatureService supportedFeatureService;
-    private final MetadataService metadataService;
+    private final DataNeedRuleSetRouter dataNeedRuleSetRouter;
 
-    public ManagementController(SupportedFeatureService supportedFeatureService, MetadataService metadataService) {
+    public ManagementController(
+            SupportedFeatureService supportedFeatureService,
+            DataNeedRuleSetRouter dataNeedRuleSetRouter
+    ) {
         this.supportedFeatureService = supportedFeatureService;
-        this.metadataService = metadataService;
+        this.dataNeedRuleSetRouter = dataNeedRuleSetRouter;
     }
 
     @GetMapping("/${eddie.management.server.urlprefix}/region-connectors/supported-features")
@@ -28,8 +32,8 @@ public class ManagementController {
     }
 
     @GetMapping("/${eddie.management.server.urlprefix}/region-connectors/supported-data-needs")
-    public ResponseEntity<List<SupportedDataNeeds>> supportedDataNeeds() {
-        return ResponseEntity.ok(metadataService.getSupportedDataNeeds());
+    public ResponseEntity<Set<SupportedDataNeeds>> supportedDataNeeds() {
+        return ResponseEntity.ok(dataNeedRuleSetRouter.supportedDataNeeds());
     }
 
     /**
