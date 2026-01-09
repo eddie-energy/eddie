@@ -61,7 +61,7 @@ public class PermissionFacadeController {
         return dataNeedCalculationRouter.calculate(dataNeedId);
     }
 
-    @GetMapping("/region-connectors/data-need-rule-set")
+    @GetMapping("/region-connectors/data-need-rule-sets")
     public Map<String, DataNeedRuleSet> supportedDataNeeds() {
         return dataNeedRuleSetRouter.dataNeedRuleSets();
     }

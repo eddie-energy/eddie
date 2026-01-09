@@ -53,8 +53,6 @@ class DataNeedCalculationServiceImplTest {
     private DataNeedsService dataNeedsService;
     @Mock
     private AccountingPointDataNeed accountingPointDataNeed;
-    @Mock
-    private OutboundAiidaDataNeed aiidaDataNeed;
 
     @Test
     void givenUnknownDataNeedId_returnsDataNeedNotFoundResult() {
@@ -111,9 +109,9 @@ class DataNeedCalculationServiceImplTest {
     @Test
     void givenUnsupportedDataNeed_returnsDataNeedNotSupportedResult() {
         // Given
+        var dn = new OutboundAiidaDataNeed();
         when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(aiidaDataNeed));
-        when(aiidaDataNeed.isEnabled()).thenReturn(true);
+                .thenReturn(Optional.of(dn));
         var calculationService = new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 metadata,
@@ -181,6 +179,33 @@ class DataNeedCalculationServiceImplTest {
         // Then
         var result = assertInstanceOf(ValidatedHistoricalDataDataNeedResult.class, res);
         assertEquals(List.of(Granularity.PT15M, Granularity.P1D), result.granularities());
+    }
+
+    @Test
+    void testCalculateWhereEnergyTimeframeStrategyAlwaysReturnsNull_givenValidatedHistoricalDataDataNeed_returnsUnsupportedDataNeed() {
+        // Given
+        var value = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(Period.ofDays(-10), Period.ofDays(-1), null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT15M,
+                Granularity.P1D
+        );
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                new PermissionEndIsEnergyDataEndStrategy(),
+                (dn, dt) -> null,
+                () -> List.of(new ValidatedHistoricalDataDataNeedRule(
+                        EnergyType.ELECTRICITY,
+                        List.of(Granularity.PT15M, Granularity.P1D)
+                ))
+        );
+
+        // When
+        var res = calculationService.calculate(value);
+
+        // Then
+        assertInstanceOf(DataNeedNotSupportedResult.class, res);
     }
 
     @Test

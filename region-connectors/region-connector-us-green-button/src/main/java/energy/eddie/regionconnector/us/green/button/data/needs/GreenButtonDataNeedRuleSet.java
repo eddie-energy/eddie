@@ -21,7 +21,7 @@ public class GreenButtonDataNeedRuleSet implements DataNeedRuleSet {
                 new AccountingPointDataNeedRule(),
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES),
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.NATURAL_GAS, SUPPORTED_GRANULARITIES),
-                new ValidatedHistoricalDataDataNeedRule(EnergyType.NATURAL_GAS, SUPPORTED_GRANULARITIES),
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.HYDROGEN, SUPPORTED_GRANULARITIES),
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.HEAT, SUPPORTED_GRANULARITIES)
         );
     }

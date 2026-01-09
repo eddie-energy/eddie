@@ -57,4 +57,32 @@ class CdsDataNeedRuleSetTest {
                         new ValidatedHistoricalDataDataNeedRule(EnergyType.HYDROGEN, granularities)
                 );
     }
+
+    @Test
+    void testSupportedEnergyTypes_whenException_returnsOnlyAccountingPointDataNeedRule() {
+        // Given
+        var ruleSet = new CdsDataNeedRuleSet(factory);
+        when(factory.getAll()).thenReturn(Flux.just(client));
+        when(client.masterData())
+                .thenReturn(Mono.error(new Exception()));
+
+        // When
+        var res = ruleSet.dataNeedRules();
+        assertThat(res)
+                .containsExactlyInAnyOrder(new AccountingPointDataNeedRule());
+    }
+
+    @Test
+    void testSupportedEnergyTypes_whenNoResponse_returnsOnlyAccountingPointDataNeedRule() {
+        // Given
+        var ruleSet = new CdsDataNeedRuleSet(factory);
+        when(factory.getAll()).thenReturn(Flux.just(client));
+        when(client.masterData())
+                .thenReturn(Mono.empty());
+
+        // When
+        var res = ruleSet.dataNeedRules();
+        assertThat(res)
+                .containsExactlyInAnyOrder(new AccountingPointDataNeedRule());
+    }
 }

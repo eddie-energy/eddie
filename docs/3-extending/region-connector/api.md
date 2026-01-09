@@ -88,7 +88,7 @@ Each region connector has to have one implementation, which can be a singleton, 
 
 #### `DataNeedRuleSet`
 
-The [`DataNeedRuleSet` object](https://architecture.eddie.energy/javadoc/energy/eddie/dataneeds/rules/DataNeedRuleSet.html) defines which data a region connector can support according to EDDIE's [Data Need Concept](../../2-integrating/data-needs.md).
+The [`DataNeedRuleSet` object](https://architecture.eddie.energy/javadoc/energy/eddie/dataneeds/rules/DataNeedRuleSet.html) defines which data needs a region connector can support according to EDDIE's [Data Need Concept](../../2-integrating/data-needs.md).
 
 ### `RegionConnectorRetransmissionService`
 

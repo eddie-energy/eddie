@@ -105,7 +105,9 @@ class PermissionFacadeControllerTest {
                 .thenReturn(() -> List.of(new AccountingPointDataNeedRule()));
 
         mockMvc.perform(get("/api/region-connectors/{region-connector}/data-need-rule-set", "id"))
-               .andExpect(status().isOk());
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$", hasSize(1)))
+               .andExpect(jsonPath("$.[0].type").value("AccountingPointDataNeed"));
     }
 
     @Test
@@ -113,7 +115,7 @@ class PermissionFacadeControllerTest {
         when(dataNeedRuleSetRouter.dataNeedRuleSets())
                 .thenReturn(Map.of("id", () -> List.of(new AccountingPointDataNeedRule())));
 
-        mockMvc.perform(get("/api/region-connectors/data-need-rule-set"))
+        mockMvc.perform(get("/api/region-connectors/data-need-rule-sets"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasKey("id")));
     }

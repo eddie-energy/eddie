@@ -1,20 +1,19 @@
-package energy.eddie.regionconnector.es.datadis.data.needs;
+package energy.eddie.regionconnector.dk.energinet.data.needs;
 
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
+import static energy.eddie.regionconnector.dk.energinet.data.needs.EnerginetDataNeedRuleSet.SUPPORTED_GRANULARITIES;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class DatadisDataNeedRuleSetTest {
+class EnerginetDataNeedRuleSetTest {
+
     @Test
     void testRuleSet() {
         // Given
-        var ruleSet = new DatadisDataNeedRuleSet();
+        var ruleSet = new EnerginetDataNeedRuleSet();
 
         // When
         var res = ruleSet.dataNeedRules();
@@ -23,8 +22,8 @@ class DatadisDataNeedRuleSetTest {
         assertThat(res)
                 .containsExactlyInAnyOrder(
                         new AccountingPointDataNeedRule(),
-                        new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY,
-                                                                List.of(Granularity.PT15M, Granularity.PT1H))
+                        new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES),
+                        new ValidatedHistoricalDataDataNeedRule(EnergyType.NATURAL_GAS, SUPPORTED_GRANULARITIES)
                 );
     }
 }

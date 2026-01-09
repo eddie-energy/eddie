@@ -245,13 +245,13 @@ public class FooBarSpringConfig {
 #### DataNeedRuleSet
 
 Each region connector can create rules on which data needs it can support.
-Furthermore, those rules include what energy types and granularity are supported.
+Those rules include what energy type and granularities are supported.
 Essentially, a data need rule set defines, what data the region connector can provide and in what form.
 All of this is mapped onto EDDIE's data need concept.
 The following is an example of a rule set for data needs.
 It defines two rules.
 First, it allows AccountingPointDataNeeds, which is rather straightforward.
-Second, it allows ValidateHistoricalDataDataNeeds, but only for Electricity data with an resolution of either 15 minutes or one day.
+Second, it allows ValidatedHistoricalDataDataNeeds, but only for Electricity data with a resolution of either 15 minutes or one day.
 
 ```java
 package energy.eddie.regionconnector.foo.bar.data.needs;

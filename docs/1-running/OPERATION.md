@@ -192,7 +192,5 @@ The endpoint for supported features is available under `<host>:<port>/<eddie.man
 
 The endpoint to query the supported data needs per region connector is available under `<host>:<port>/<eddie.management.server.urlprefix>/region-connectors/supported-data-needs`.
 
-#### Data Need Rules
-
-Each region connector declares which data needs are supported in what configuration.
+Each region connector declares which data need types are supported in what configuration.
 This API returns these rules for each region connector.

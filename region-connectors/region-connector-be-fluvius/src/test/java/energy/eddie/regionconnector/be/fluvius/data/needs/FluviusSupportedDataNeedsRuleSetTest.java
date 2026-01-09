@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class FluviusSupportedDataNeedsSpecificationsTest {
+class FluviusSupportedDataNeedsRuleSetTest {
     @Test
     void givenFluviusDataNeedRuleSet_whenDataNeedRuleSet_thenReturnOnlyValidatedHistoricalDataDataNeedsRule() {
         // Given
@@ -34,7 +34,7 @@ class FluviusSupportedDataNeedsSpecificationsTest {
     }
 
     @Test
-    void givenEnabledSandbox_whenSupportedDataNeeds_thenReturnOnlyValidatedHistoricalDataDataNeedsRule() {
+    void givenEnabledSandbox_whenDataNeedsRuleSet_thenReturnOnlyValidatedHistoricalDataDataNeedsRule() {
         // Given
         var specs = new FluviusDataNeedsRuleSet(true);
 
