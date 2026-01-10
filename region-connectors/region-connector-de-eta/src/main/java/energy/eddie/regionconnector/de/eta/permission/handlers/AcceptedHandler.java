@@ -5,6 +5,7 @@ import energy.eddie.regionconnector.de.eta.permission.request.DePermissionReques
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -18,11 +19,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
-/**
- * Event handler for accepted permission requests.
- * When a permission request is accepted, this handler fetches the validated historical data
- * from the ETA Plus API and publishes it to the ValidatedHistoricalDataStream.
- */
 @Component
 public class AcceptedHandler implements EventHandler<AcceptedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
@@ -57,11 +53,8 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
 
         var pr = optionalPr.get();
 
-        // Only request historical data (data in the past)
         if (pr.start().isAfter(LocalDate.now(ZoneId.of("UTC")))) {
-            LOGGER.atInfo()
-                  .addArgument(pr::permissionId)
-                  .log("Permission request {} is for future data only, skipping historical data fetch");
+            LOGGER.info("Permission request {} is for future data only, skipping historical fetch", pr.permissionId());
             return;
         }
 
@@ -69,33 +62,29 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
     }
 
     private void fetchAndPublishData(DePermissionRequest pr) {
-        apiClient.fetchMeteredData(pr)
+        apiClient.streamMeteredData(pr)
+                .buffer(1000)
                 .subscribe(
-                        data -> {
-                            LOGGER.atInfo()
-                                  .addArgument(pr::permissionId)
-                                  .log("Successfully fetched metered data for permission request {}");
-                            stream.publish(pr, data);
+                        batch -> {
+                            EtaPlusMeteredData chunk = new EtaPlusMeteredData(
+                                    pr.meteringPointId(),
+                                    pr.start(),
+                                    pr.end(),
+                                    batch,
+                                    ""
+                            );
+                            stream.publish(pr, chunk);
                         },
-                        error -> handleError(error, pr.permissionId())
+                        error -> handleError(error, pr.permissionId()),
+                        () -> LOGGER.info("Finished streaming data for {}", pr.permissionId())
                 );
     }
 
     private void handleError(Throwable error, String permissionId) {
-        // Forbidden usually indicates that the final customer revoked the permission
         if (error instanceof HttpClientErrorException.Forbidden) {
-            LOGGER.atWarn()
-                  .addArgument(permissionId)
-                  .log("Permission {} appears to be revoked, emitting RevokedEvent");
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
         } else {
-            LOGGER.atError()
-                  .addArgument(permissionId)
-                  .addArgument(error::getMessage)
-                  .log("Error fetching metered data for permission request {}: {}");
-            // For other errors, we could implement retry logic or emit an error event
-            // For now, we just log the error
+            LOGGER.error("Error fetching data for {}: {}", permissionId, error.getMessage());
         }
     }
 }
-

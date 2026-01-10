@@ -20,12 +20,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -48,7 +48,6 @@ class AcceptedHandlerTest {
 
     @BeforeEach
     void setUp() {
-        // Prevent NullPointerException during constructor initialization
         when(eventBus.filteredFlux(AcceptedEvent.class)).thenReturn(Flux.empty());
 
         handler = new AcceptedHandler(
@@ -61,81 +60,76 @@ class AcceptedHandlerTest {
     }
 
     @Test
-    void should_fetch_and_publish_data_when_request_is_valid_and_in_past() {
-        // --- ARRANGE ---
+    void should_fetch_and_publish_data_in_chunks_when_request_is_valid() {
         String permissionId = "perm-123";
         AcceptedEvent event = new AcceptedEvent(permissionId);
 
-        // 1. Mock Request
         DePermissionRequest request = mock(DePermissionRequest.class);
         when(request.permissionId()).thenReturn(permissionId);
-        // Ensure start date is yesterday to pass the "future data" check
-        when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).minusDays(1));
+
+        when(request.meteringPointId()).thenReturn("DE_METER_123");
+        when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).minusDays(30));
+        when(request.end()).thenReturn(LocalDate.now(ZoneId.of("UTC")).minusDays(1));
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
-        // 2. Create concrete Data object (EtaPlusMeteredData is a record, so we instantiate it)
-        EtaPlusMeteredData realData = new EtaPlusMeteredData(
-                "meter-abc",
-                LocalDate.now(ZoneId.of("UTC")),
-                LocalDate.now(ZoneId.of("UTC")),
-                Collections.emptyList(),
-                "{}"
-        );
+        List<EtaPlusMeteredData.MeterReading> mockReadings = IntStream.range(0, 2500)
+                .mapToObj(i -> new EtaPlusMeteredData.MeterReading(
+                        "2023-01-01T00:00:00Z",
+                        (double) i,
+                        "kWh",
+                        "VALIDATED"
+                ))
+                .toList();
 
-        // 3. Mock API to return the concrete type
-        when(apiClient.fetchMeteredData(request)).thenReturn(Mono.just(realData));
+        when(apiClient.streamMeteredData(request)).thenReturn(Flux.fromIterable(mockReadings));
 
-        // --- ACT ---
         handler.accept(event);
 
-        // --- ASSERT ---
-        verify(apiClient).fetchMeteredData(request);
-        // Verify the stream received the specific concrete data object
-        verify(stream).publish(request, realData);
+        verify(apiClient).streamMeteredData(request);
+
+        ArgumentCaptor<EtaPlusMeteredData> dataCaptor = ArgumentCaptor.forClass(EtaPlusMeteredData.class);
+
+        verify(stream, times(3)).publish(eq(request), dataCaptor.capture());
         verifyNoInteractions(outbox);
+
+        List<EtaPlusMeteredData> capturedChunks = dataCaptor.getAllValues();
+        assertEquals(1000, capturedChunks.get(0).readings().size(), "First chunk should be 1000");
+        assertEquals(1000, capturedChunks.get(1).readings().size(), "Second chunk should be 1000");
+        assertEquals(500, capturedChunks.get(2).readings().size(), "Last chunk should be 500");
     }
 
     @Test
     void should_ignore_request_if_permission_not_found() {
-        // --- ARRANGE ---
         String permissionId = "perm-missing";
         AcceptedEvent event = new AcceptedEvent(permissionId);
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
 
-        // --- ACT ---
         handler.accept(event);
 
-        // --- ASSERT ---
         verifyNoInteractions(apiClient);
         verifyNoInteractions(stream);
     }
 
     @Test
     void should_skip_fetching_if_start_date_is_in_future() {
-        // --- ARRANGE ---
         String permissionId = "perm-future";
         AcceptedEvent event = new AcceptedEvent(permissionId);
 
         DePermissionRequest request = mock(DePermissionRequest.class);
-        when(request.permissionId()).thenReturn(permissionId);
-        // Set start date to tomorrow
         when(request.start()).thenReturn(LocalDate.now(ZoneId.of("UTC")).plusDays(1));
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
-        // --- ACT ---
         handler.accept(event);
 
-        // --- ASSERT ---
         verifyNoInteractions(apiClient);
         verifyNoInteractions(stream);
     }
 
     @Test
     void should_emit_revoked_event_on_forbidden_error() {
-        // --- ARRANGE ---
         String permissionId = "perm-revoked";
         AcceptedEvent event = new AcceptedEvent(permissionId);
 
@@ -145,17 +139,14 @@ class AcceptedHandlerTest {
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
-        // Simulate a 403 Forbidden error from the API
-        // Using Spring's HttpClientErrorException.create for accurate simulation
         HttpClientErrorException forbiddenError = HttpClientErrorException.create(
                 HttpStatus.FORBIDDEN, "Forbidden", null, null, null
         );
-        when(apiClient.fetchMeteredData(request)).thenReturn(Mono.error(forbiddenError));
 
-        // --- ACT ---
+        when(apiClient.streamMeteredData(request)).thenReturn(Flux.error(forbiddenError));
+
         handler.accept(event);
 
-        // --- ASSERT ---
         ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
         verify(outbox).commit(eventCaptor.capture());
 
@@ -166,7 +157,6 @@ class AcceptedHandlerTest {
 
     @Test
     void should_log_error_but_not_revoke_on_generic_error() {
-        // --- ARRANGE ---
         String permissionId = "perm-error";
         AcceptedEvent event = new AcceptedEvent(permissionId);
 
@@ -176,14 +166,11 @@ class AcceptedHandlerTest {
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
-        // Simulate a generic RuntimeException
-        when(apiClient.fetchMeteredData(request)).thenReturn(Mono.error(new RuntimeException("Network Error")));
+        when(apiClient.streamMeteredData(request)).thenReturn(Flux.error(new RuntimeException("Network Error")));
 
-        // --- ACT ---
         handler.accept(event);
 
-        // --- ASSERT ---
-        verify(apiClient).fetchMeteredData(request);
+        verify(apiClient).streamMeteredData(request);
         verifyNoInteractions(stream);
         verifyNoInteractions(outbox);
     }
