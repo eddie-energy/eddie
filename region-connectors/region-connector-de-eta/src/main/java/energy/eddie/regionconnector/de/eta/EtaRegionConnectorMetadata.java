@@ -8,7 +8,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
