@@ -15,9 +15,12 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import energy.eddie.regionconnector.de.eta.service.PollingService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -141,6 +144,35 @@ public class EtaRegionConnectorSpringConfig {
                         .defaultCodecs()
                         .maxInMemorySize(10 * 1024 * 1024)) // 10 MB buffer
                 .build();
+    }
+
+    /**
+     * Create the CommonFutureDataService for periodic polling of future data.
+     * This service schedules polling for active permission requests based on the configured cron expression.
+     *
+     * @param pollingService the polling service for fetching data
+     * @param repository the permission request repository
+     * @param configuration the DE configuration containing the polling cron expression
+     * @param taskScheduler the Spring task scheduler
+     * @param dataNeedCalculationService the data need calculation service
+     * @return the configured CommonFutureDataService
+     */
+    @Bean
+    public CommonFutureDataService<DePermissionRequest> deCommonFutureDataService(
+            PollingService pollingService,
+            DePermissionRequestRepository repository,
+            PlainDeConfiguration configuration,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                configuration.pollingCronExpression(),
+                EtaRegionConnectorMetadata.getInstance(),
+                taskScheduler,
+                dataNeedCalculationService
+        );
     }
 }
 
