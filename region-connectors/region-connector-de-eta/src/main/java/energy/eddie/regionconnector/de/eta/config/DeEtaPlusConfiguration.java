@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.de.eta.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
  * Configuration for the German (DE) ETA Plus region connector.
@@ -13,4 +14,3 @@ public record DeEtaPlusConfiguration(
         String apiClientId,
         String apiClientSecret
 ) {}
-}
