@@ -9,11 +9,16 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
+import energy.eddie.regionconnector.de.eta.service.PollingService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -50,6 +55,7 @@ class EtaRegionConnectorSpringConfigTest {
                     assertThat(context).hasBean("dePermissionMarketDocumentMessageHandler");
                     assertThat(context).hasSingleBean(TransmissionScheduleProvider.class);
                     assertThat(context).hasSingleBean(DataNeedCalculationService.class);
+                    assertThat(context).hasSingleBean(CommonFutureDataService.class);
                 });
     }
 }
