@@ -20,6 +20,7 @@ import java.util.List;
  */
 public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "de-eta";
+    public static final String COUNTRY_CODE = "DE";
     
     /**
      * Historical data can be requested up to 36 months in the past
@@ -55,7 +56,7 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
         ValidatedHistoricalDataDataNeed.class,
         AccountingPointDataNeed.class
     );
-    
+
     /**
      * Approximate number of metering points covered in Germany
      * This is an estimate and should be updated with actual data from ETA Plus
