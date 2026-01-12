@@ -14,7 +14,7 @@ public class DeDataSourceInformation implements DataSourceInformation {
 
     @Override
     public String countryCode() {
-        return EtaRegionConnectorMetadata.getInstance().countryCode();
+        return EtaRegionConnectorMetadata.COUNTRY_CODE;
     }
 
     @Override
