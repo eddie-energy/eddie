@@ -4,8 +4,8 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.persistence.Entity;
 
 /**
- * Event emitted when a permission request is accepted by the ETA Plus system.
- * This indicates that the final customer has granted permission for data access.
+ * Event emitted when a permission request is accepted.
+ * This event triggers the start of data polling for the permission request.
  */
 @Entity(name = "DeAcceptedEvent")
 @SuppressWarnings("NullAway")
