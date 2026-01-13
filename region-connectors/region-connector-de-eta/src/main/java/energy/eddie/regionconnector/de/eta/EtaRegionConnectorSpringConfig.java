@@ -25,7 +25,7 @@ import org.springframework.web.reactive.function.client.WebClient;
  * This configuration class sets up beans and dependencies required by the region connector.
  */
 @Configuration
-@EnableConfigurationProperties(PlainDeConfiguration.class)
+@EnableConfigurationProperties(DeEtaPlusConfiguration.class)
 public class EtaRegionConnectorSpringConfig {
 
     /**
