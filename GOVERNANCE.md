@@ -148,11 +148,11 @@ Minutes of the meetings mentioned above to be stored in the project GitHub.
                         FH-Prof. Priv.-Doz. Dr. Oliver Hödl
                                      │
                                      │
-       ┌─────────────────────────────┼─────────────────────────────┐
-       │                             │                             │
- Business Coordinator         Technical Coordinator          Development Coordinator
-  Laurent Schmitt              Georg Hartner              FH-Prof. Dr. Marc Kurz
- (Digital4Grids)           (Entarc.eu GmbH)               (FH Oberösterreich)
+       ┌─────────────────────────────┼─────────────────────────────┐─────────────────────────────┐
+       │                             │                             │                             │
+ Business Coordinator         Technical Coordinator          Development Coordinator    Operationalisation Lead
+  Laurent Schmitt              Georg Hartner              FH-Prof. Dr. Marc Kurz          Nathaniel Boisgard
+ (Digital4Grids)           (Entarc.eu GmbH)               (FH Oberösterreich)            (University of Vienna)
        │                             │                             │
        │──────────── Community Building (joint responsibility) ────────────│
        │                             │                             │
@@ -189,22 +189,22 @@ The project adheres to the LF Energy principles of vendor neutrality, open contr
 
 ## 6. Responsibility Matrix (RACI)
 
-| Activity                 | Admin & Scientific | Business | Technical | Development | EDDIE Lead | AIIDA Lead |
-|--------------------------|--------------------|----------|-----------|-------------|------------|------------|
-| Scientific leadership    | R                  | I        | C         | C           | I          | I          |
-| Academic coordination    | R                  | I        | C         | C           | I          | I          |
-| Business strategy        | C                  | R        | C         | I           | I          | I          |
-| Partner engagement       | I                  | R        | C         | I           | I          | I          |
-| Community building       | R                  | C        | C         | I           | C          | C          |
-| Architecture design      | I                  | I        | R         | C           | C          | C          |
-| Development leadership   | I                  | I        | C         | R           | C          | C          |
-| Coding standards         | I                  | I        | C         | R           | C          | C          |
-| Quality assurance        | I                  | I        | C         | R           | C          | C          |
-| Release management       | I                  | I        | C         | R           | C          | C          |
-| Documentation            | C                  | C        | C         | R           | C          | C          |
-| EDDIE roadmap            | I                  | I        | C         | R           | C          | I          |
-| AIIDA roadmap            | I                  | I        | C         | R           | C          | C          |
-| LF Energy representation | I                  | R        | R         | I           | I          | I          |
+| Activity                 | Admin & Scientific | Business | Technical | Development | EDDIE Lead | AIIDA Lead | Operationalisation Lead |
+|--------------------------|--------------------|----------|-----------|-------------|------------|------------|-------------------------| 
+| Scientific leadership    | R                  | I        | C         | C           | I          | I          | I                       |
+| Academic coordination    | R                  | I        | C         | C           | I          | I          | I                       |
+| Business strategy        | C                  | R        | C         | I           | I          | I          | C                       |
+| Partner engagement       | I                  | R        | C         | I           | I          | I          | C                       |
+| Community building       | R                  | C        | C         | I           | C          | C          | C                       |
+| Architecture design      | I                  | I        | R         | C           | C          | C          | C                       |
+| Development leadership   | I                  | I        | C         | R           | C          | C          | C                       |
+| Coding standards         | I                  | I        | C         | R           | C          | C          | C                       |
+| Quality assurance        | I                  | I        | C         | R           | C          | C          | C                       |
+| Release management       | I                  | I        | C         | C           | C          | C          | R                       |
+| Documentation            | C                  | C        | C         | R           | C          | C          | I                       |
+| EDDIE roadmap            | I                  | I        | C         | R           | C          | I          | C                       |
+| AIIDA roadmap            | I                  | I        | C         | R           | C          | C          | C                       |
+| LF Energy representation | I                  | R        | R         | I           | I          | I          | I                       |
 
 **Legend:**  
 R = Responsible  
