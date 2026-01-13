@@ -1,0 +1,24 @@
+name: Publish CIM Schemas
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - cim/src/main/schemas/cim/xsd/**
+  workflow_dispatch:
+
+jobs:
+  publish-cim-schemas:
+    runs-on: [ linux, external ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copy files via SSH
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
+          username: ${{ secrets.EDDIE_ENERGY_SSH_USERNAME }}
+          password: ${{ secrets.EDDIE_ENERGY_SSH_PASSWORD }}
+          source: "./cim/src/main/schemas/cim/"
+          target: "/var/www/vhosts/eddie.energy/cim.eddie.energy/"
+          strip_components: "6"
+          overwrite: true
