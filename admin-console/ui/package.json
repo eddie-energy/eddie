@@ -13,7 +13,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@fontsource/poppins": "^5.1.1",
+    "@fontsource-variable/inter": "^5.2.8",
     "@primevue/themes": "^4.2.4",
     "chart.js": "^4.4.4",
     "modern-normalize": "^3.0.1",

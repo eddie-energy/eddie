@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import '@fontsource/poppins'
+import '@fontsource-variable/inter'
 import 'modern-normalize/modern-normalize.css'
 
 import './assets/main.css'
