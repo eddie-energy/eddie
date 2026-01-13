@@ -17,9 +17,9 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.2.8
         version: 5.2.8
-      '@primevue/themes':
-        specifier: ^4.2.4
-        version: 4.3.7
+      '@primeuix/themes':
+        specifier: ^2.0.2
+        version: 2.0.2
       chart.js:
         specifier: ^4.4.4
         version: 4.5.0
@@ -1254,11 +1254,15 @@ packages:
     resolution: {integrity: sha512-tIJ6byZezTYZ9YUICNSidQHOIQOQL3zeUgjwiX0JnBTK3+WCvy4DyCBcrJ94RtiX0WGFZSYNvaGaFkTo4jU8FQ==}
     engines: {node: '>=12.11.0'}
 
+  '@primeuix/styled@0.7.4':
+    resolution: {integrity: sha512-QSO/NpOQg8e9BONWRBx9y8VGMCMYz0J/uKfNJEya/RGEu7ARx0oYW0ugI1N3/KB1AAvyGxzKBzGImbwg0KUiOQ==}
+    engines: {node: '>=12.11.0'}
+
   '@primeuix/styles@1.2.3':
     resolution: {integrity: sha512-+KwmQsLTYgVAqFADmO252btz40lstPML6r4QMNjxz4gLNCKVW3kPR0/aCouQx6/21+boXG1P68tu8Zk3FAKr2w==}
 
-  '@primeuix/themes@1.2.3':
-    resolution: {integrity: sha512-GLAU2h6lhgln2w10EQalUQlgwbgQ0xZoIOLMNGfIvqU4O09L282P7rwKCKQksvAGAFt1GoO/Q1NgBSxnttr7iA==}
+  '@primeuix/themes@2.0.2':
+    resolution: {integrity: sha512-prwQvA3tDGBz8yWSUenaJUttEMCEvPvxwOfFhDPmSe1vwsfVKL2Nmh5eZvtPFQnxmIOPsHZS7zc0/L3CzJ83Eg==}
 
   '@primeuix/utils@0.6.1':
     resolution: {integrity: sha512-tQL/ZOPgCdD+NTimlUmhyD0ey8J1XmpZE4hDHM+/fnuBicVVmlKOd5HpS748LcOVRUKbWjmEPdHX4hi5XZoC1Q==}
@@ -1272,10 +1276,6 @@ packages:
 
   '@primevue/icons@4.3.7':
     resolution: {integrity: sha512-CKiOeiJzNSbELwbQdrgWHgmfcAmjNQXqRZtBGb8sUPrB8hjWf9lYMBAbcAuqJbyLFFcC0lFiB80CfBR07FNSHw==}
-    engines: {node: '>=12.11.0'}
-
-  '@primevue/themes@4.3.7':
-    resolution: {integrity: sha512-Ej/3CBGpSIJFo0BJHrPa7HjyQZ8YPxQUiOuXj1tKFJkSqFxgOk52JL6aLBGdQkSnx7TjkHuHuKuk4t6SKkD5hw==}
     engines: {node: '>=12.11.0'}
 
   '@rolldown/pluginutils@1.0.0-beta.29':
@@ -4741,13 +4741,17 @@ snapshots:
     dependencies:
       '@primeuix/utils': 0.6.1
 
+  '@primeuix/styled@0.7.4':
+    dependencies:
+      '@primeuix/utils': 0.6.1
+
   '@primeuix/styles@1.2.3':
     dependencies:
       '@primeuix/styled': 0.7.2
 
-  '@primeuix/themes@1.2.3':
+  '@primeuix/themes@2.0.2':
     dependencies:
-      '@primeuix/styled': 0.7.2
+      '@primeuix/styled': 0.7.4
 
   '@primeuix/utils@0.6.1': {}
 
@@ -4763,11 +4767,6 @@ snapshots:
       '@primevue/core': 4.3.7(vue@3.5.20(typescript@5.4.5))
     transitivePeerDependencies:
       - vue
-
-  '@primevue/themes@4.3.7':
-    dependencies:
-      '@primeuix/styled': 0.7.2
-      '@primeuix/themes': 1.2.3
 
   '@rolldown/pluginutils@1.0.0-beta.29': {}
 

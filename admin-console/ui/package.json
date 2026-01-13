@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
-    "@primevue/themes": "^4.2.4",
+    "@primeuix/themes": "^2.0.2",
     "chart.js": "^4.4.4",
     "modern-normalize": "^3.0.1",
     "primeicons": "^7.0.0",
