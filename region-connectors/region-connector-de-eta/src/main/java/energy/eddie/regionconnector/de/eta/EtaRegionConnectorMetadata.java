@@ -88,7 +88,7 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public String countryCode() {
-        return "DE";
+        return COUNTRY_CODE;
     }
 
     @Override
