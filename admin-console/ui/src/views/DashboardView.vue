@@ -9,13 +9,13 @@ import {
   type StatusMessage
 } from '@/api'
 import LineChartPermissions from '@/components/LineChartPermissions.vue'
-import DoughnutChartRegions from '@/components/DoughnutChartRegions.vue'
 import { computed, onMounted, ref } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 import { REGION_CONNECTORS } from '@/constants'
 import type { AnyDataNeed } from '@/types'
 import DashboardCard from '@/components/DashboardCard.vue'
 import { countryFlag, formatCountry } from '@/util/countries'
+import Chart from 'primevue/chart'
 
 const permissions = ref<StatusMessage[]>([])
 const dataNeeds = ref<AnyDataNeed[]>([])
@@ -34,7 +34,7 @@ onMounted(async () => {
 })
 
 function getPermissionCountPerRegionConnector() {
-  const permissionsPerRegionConnector: { [key: string]: number } = {}
+  const permissionsPerRegionConnector: Record<string, number> = {}
 
   for (const id of REGION_CONNECTORS) {
     permissionsPerRegionConnector[id] = 0
@@ -171,16 +171,26 @@ function getPermissionCountPerRegionConnector() {
     <div>
       <h3>Permission Distribution</h3>
 
-      <DoughnutChartRegions
-        :permission-count-per-region-connector="permissionCountPerRegionConnector"
-      ></DoughnutChartRegions>
+      <Chart
+        class="chart"
+        type="doughnut"
+        :data="{
+          labels: Object.keys(permissionCountPerRegionConnector),
+          datasets: [{ data: Object.values(permissionCountPerRegionConnector) }]
+        }"
+        :canvasProps="{
+          role: 'img',
+          'aria-label': 'Pie chart describing the number of permissions per region connector.'
+        }"
+      />
     </div>
   </section>
 </template>
 
 <style scoped>
 section {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   flex: 1;
   padding: 1.25rem;
   border-radius: var(--panel-radius);
@@ -219,11 +229,12 @@ section {
 }
 
 .bottom {
-  display: flex;
+  flex-direction: row;
   gap: 2.5rem;
 
   > * {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     max-height: 32.5rem;
     flex-grow: 1;
   }
