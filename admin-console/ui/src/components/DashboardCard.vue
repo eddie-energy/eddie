@@ -1,8 +1,9 @@
 <script setup lang="ts">
 defineProps<{
-  text: string;
+  text: string
   count: number | string
   info: string
+  color: 'blue' | 'green' | 'orange' | 'pink' | 'red'
 }>()
 </script>
 
@@ -10,6 +11,9 @@ defineProps<{
   <div class="card">
     <span class="tooltip" v-tooltip="info">🛈</span>
     <div class="content">
+      <div class="icon" :style="`background: var(--${color})`">
+        <slot></slot>
+      </div>
       <div>
         {{ text }}
         <br />
@@ -33,8 +37,18 @@ defineProps<{
   }
 
   .content {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
     gap: 0.625rem;
+  }
+
+  .icon {
+    text-align: center;
+    height: 1.5rem;
+    width: 1.5rem;
+    border-radius: 50%;
+    padding: 0.25rem;
+    color: white;
   }
 
   .count {

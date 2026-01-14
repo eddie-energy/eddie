@@ -64,10 +64,23 @@ function getPermissionCountPerRegionConnector() {
 
       <!-- TODO: Calculate with SQL queries for performance -->
       <div class="cards">
-        <DashboardCard :count="permissions.length" info="TODO" text="Total Permissions" />
-        <DashboardCard count="TODO" info="TODO" text="Granted Permissions" />
-        <DashboardCard count="TODO" info="TODO" text="Active Permissions" />
-        <DashboardCard count="TODO" info="TODO" text="Failed Permissions" />
+        <DashboardCard
+          :count="permissions.length"
+          info="TODO"
+          text="Total Permissions"
+          color="blue"
+        >
+          <i class="pi pi-plus-circle"></i>
+        </DashboardCard>
+        <DashboardCard count="TODO" info="TODO" text="Granted Permissions" color="green">
+          <i class="pi pi-check-circle"></i>
+        </DashboardCard>
+        <DashboardCard count="TODO" info="TODO" text="Active Permissions" color="pink">
+          <i class="pi pi-play-circle"></i>
+        </DashboardCard>
+        <DashboardCard count="TODO" info="TODO" text="Failed Permissions" color="red">
+          <i class="pi pi-times-circle"></i>
+        </DashboardCard>
       </div>
 
       <div>
@@ -82,10 +95,18 @@ function getPermissionCountPerRegionConnector() {
       </header>
 
       <div class="cards">
-        <DashboardCard :count="dataNeeds.length" info="TODO" text="Total Data Needs" />
-        <DashboardCard count="TODO" info="TODO" text="Disabled Data Needs" />
-        <DashboardCard count="TODO" info="TODO" text="Active Data Needs" />
-        <DashboardCard count="TODO" info="TODO" text="Expired Data Needs" />
+        <DashboardCard :count="dataNeeds.length" info="TODO" text="Total Data Needs" color="blue">
+          <i class="pi pi-plus-circle"></i>
+        </DashboardCard>
+        <DashboardCard count="TODO" info="TODO" text="Disabled Data Needs" color="orange">
+          <i class="pi pi-pause-circle"></i>
+        </DashboardCard>
+        <DashboardCard count="TODO" info="TODO" text="Active Data Needs" color="green">
+          <i class="pi pi-play-circle"></i>
+        </DashboardCard>
+        <DashboardCard count="TODO" info="TODO" text="Expired Data Needs" color="red">
+          <i class="pi pi-times-circle"></i>
+        </DashboardCard>
       </div>
 
       <div class="data-needs">
@@ -104,24 +125,19 @@ function getPermissionCountPerRegionConnector() {
           <span>{{ dataNeed.description }}</span>
           <div class="data-need-stats">
             <div class="data-need-stat">
-              <i class="pi pi-play-circle"></i>
-              &nbsp;
-              <span>Active Permissions</span>
-              &nbsp;
+              <i class="pi pi-check-circle" style="background: var(--green)"></i>
+              <span>Granted Permissions</span>
               <b>TODO</b>
             </div>
             <div class="data-need-stat">
-              <i class="pi pi-check-circle"></i>
-              &nbsp;
-              <span>Granted Permissions</span>
-              &nbsp;
+              <i class="pi pi-play-circle" style="background: var(--pink)"></i>
+              <span> Active Permissions </span>
               <b>TODO</b>
             </div>
           </div>
         </div>
       </div>
     </section>
-  </div>
 
     <section class="bottom">
       <div>
@@ -280,10 +296,25 @@ section {
 }
 
 .data-need-stat {
-  display: flex;
+  display: grid;
+  grid-template-columns: max-content 1fr auto;
+  align-items: center;
   background: var(--tile-background);
   border-radius: var(--tile-radius);
   padding: 0.5rem;
+  min-width: 14rem;
+  font-size: 0.875rem;
+  gap: 0.5rem;
+
+  i {
+    padding: 0.25rem;
+    border-radius: 50%;
+    color: white;
+  }
+
+  b {
+    font-weight: 500;
+  }
 }
 
 /* table's display value does not support scrolling */
