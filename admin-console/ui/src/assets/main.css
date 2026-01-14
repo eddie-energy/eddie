@@ -6,6 +6,11 @@
   --tile-radius: 0.5rem;
 
   /* Light mode variables */
+  --blue: #15a7e0;
+  --green: #92c143;
+  --orange: #fe9719;
+  --pink: #ea5197;
+  --red: #c42222;
   --text-color: #017aa0;
   --app-background: #eff2f7;
   --sidebar-background: #d0e6ed;
@@ -58,9 +63,4 @@ h1 {
   font-size: 2.5rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
-}
-
-h2 {
-  font-size: 1.5rem;
-  font-weight: 500;
 }

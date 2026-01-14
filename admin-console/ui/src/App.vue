@@ -19,19 +19,18 @@ import { ConfirmDialog, Toast } from 'primevue'
 
 <style scoped>
 .wrapper {
-  display: flex;
-  height: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
 }
 
 main {
-  flex-grow: 1;
   padding: 7.5rem 2.5rem 3rem;
   overflow: auto;
 }
 
 @media (width < 80rem) {
   .wrapper {
-    flex-direction: column
+    grid-template-columns: auto;
   }
 
   main {

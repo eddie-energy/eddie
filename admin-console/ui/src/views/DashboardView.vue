@@ -55,7 +55,7 @@ function getPermissionCountPerRegionConnector() {
     through the EDDIE Framework.
   </p>
 
-  <div class="top">
+  <div class="layout">
     <section>
       <header>
         <i class="pi pi-check-circle"></i>
@@ -123,75 +123,104 @@ function getPermissionCountPerRegionConnector() {
     </section>
   </div>
 
-  <section class="bottom">
-    <div>
-      <header>
-        <i class="pi pi-globe"></i>
-        <h2>Region Connectors</h2>
-      </header>
+    <section class="bottom">
+      <div>
+        <header>
+          <i class="pi pi-globe"></i>
+          <h2>Region Connectors</h2>
+        </header>
 
-      <div class="table-scroll-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th scope="col">Region Connector</th>
-              <th scope="col">Total Permissions</th>
-              <th scope="col">Permissions Granted</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="{ id, countryCodes } in regionConnectors" :key="id">
-              <th scope="row">
-                <span>
-                  {{ countryFlag(countryCodes[0]) }}
-                </span>
-                <span>
-                  <b>{{ id }}</b>
-                  <br />
-                  <small>{{ formatCountry(countryCodes[0]) }}</small>
-                </span>
-              </th>
-              <td>
-                {{ permissionCountPerRegionConnector[id] }}
-              </td>
-              <td>
-                {{ permissionCountPerRegionConnector[id] }}
-              </td>
-              <td>
-                {{ regionConnectorHealth.get(id) }}&nbsp;
-                <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="table-scroll-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Region Connector</th>
+                <th scope="col">Total Permissions</th>
+                <th scope="col">Permissions Granted</th>
+                <th scope="col">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="{ id, countryCodes } in regionConnectors" :key="id">
+                <th scope="row">
+                  <span>
+                    {{ countryFlag(countryCodes[0]) }}
+                  </span>
+                  <span>
+                    <b>{{ id }}</b>
+                    <br />
+                    <small>{{ formatCountry(countryCodes[0]) }}</small>
+                  </span>
+                </th>
+                <td>
+                  {{ permissionCountPerRegionConnector[id] }}
+                </td>
+                <td>
+                  {{ permissionCountPerRegionConnector[id] }}
+                </td>
+                <td>
+                  {{ regionConnectorHealth.get(id) }}&nbsp;
+                  <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
 
-    <div>
-      <h3>Permission Distribution</h3>
+      <div>
+        <h3>Permission Distribution</h3>
 
-      <Chart
-        class="chart"
-        type="doughnut"
-        :data="{
-          labels: Object.keys(permissionCountPerRegionConnector),
-          datasets: [{ data: Object.values(permissionCountPerRegionConnector) }]
-        }"
-        :canvasProps="{
-          role: 'img',
-          'aria-label': 'Pie chart describing the number of permissions per region connector.'
-        }"
-      />
-    </div>
-  </section>
+        <Chart
+          type="doughnut"
+          :data="{
+            labels: Object.keys(permissionCountPerRegionConnector),
+            datasets: [{ data: Object.values(permissionCountPerRegionConnector) }]
+          }"
+          :canvasProps="{
+            role: 'img',
+            'aria-label': 'Pie chart describing the number of permissions per region connector.'
+          }"
+        />
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>
+.layout {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.5rem 1.25rem;
+
+  > * {
+    flex: 1;
+    height: 35rem;
+  }
+}
+
+.bottom {
+  gap: 2.5rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+  }
+
+  > * {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+}
+
 section {
   display: flex;
   flex-direction: column;
-  flex: 1;
   padding: 1.25rem;
   border-radius: var(--panel-radius);
   border: var(--panel-border);
@@ -211,6 +240,11 @@ section {
     span {
       font-weight: 300;
     }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
   }
 }
 
@@ -218,26 +252,6 @@ section {
   display: flex;
   gap: 1.25rem;
   margin-bottom: 1.75rem;
-}
-
-.top {
-  max-height: 35rem;
-  display: flex;
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-  margin-bottom: 2.5rem;
-}
-
-.bottom {
-  flex-direction: row;
-  gap: 2.5rem;
-
-  > * {
-    display: flex;
-    flex-direction: column;
-    max-height: 32.5rem;
-    flex-grow: 1;
-  }
 }
 
 .data-needs {
@@ -331,15 +345,12 @@ table {
 }
 
 @media (width < 80rem) {
-  .top {
-    max-height: unset;
-    flex-direction: column;
-    margin-bottom: 1.25rem;
+  .layout {
+    gap: 1.25rem;
   }
 
   .bottom {
-    max-height: unset;
-    flex-direction: column;
+    height: max-content;
   }
 }
 </style>
