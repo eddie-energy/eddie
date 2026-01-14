@@ -5,7 +5,6 @@ import { ref, watch } from 'vue'
 const props = defineProps<{ permissionCountPerRegionConnector: { [key: string]: number } }>()
 
 const chartData = ref()
-const chartOptions = ref()
 watch(props, () => {
   const labels = Object.keys(props.permissionCountPerRegionConnector)
   const data = Object.values(props.permissionCountPerRegionConnector)
@@ -18,36 +17,24 @@ watch(props, () => {
       }
     ]
   }
-  chartOptions.value = {
-    maintainAspectRatio: false
-  }
 })
 </script>
 
 <template>
-  <div class="regionConnectorCount-chart-container">
-    <Chart
-      class="regionConnectorCount-chart"
-      type="doughnut"
-      :data="chartData"
-      :options="chartOptions"
-      :canvasProps="{
-        role: 'img',
-        'aria-label': 'Pie chart describing the number of permissions per region connector.'
-      }"
-    />
-  </div>
+  <Chart
+    class="chart"
+    type="doughnut"
+    :data="chartData"
+    :canvasProps="{
+      role: 'img',
+      'aria-label': 'Pie chart describing the number of permissions per region connector.'
+    }"
+  />
 </template>
 
 <style scoped>
-.regionConnectorCount-chart {
-  width: 100%;
-  height: 100%;
-}
-
-.regionConnectorCount-chart-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
+.chart {
+  height: 30rem;
+  max-width: 30rem;
 }
 </style>

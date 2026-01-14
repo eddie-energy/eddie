@@ -1,5 +1,35 @@
 @import 'primeicons/primeicons.css';
 
+:root {
+  --panel-radius: 1rem;
+  --card-radius: 0.5rem;
+  --tile-radius: 0.5rem;
+
+  /* Light mode variables */
+  --text-color: #017aa0;
+  --app-background: #eff2f7;
+  --sidebar-background: #d0e6ed;
+  --panel-background: #fafbfc;
+  --panel-border: 1px solid #fafbfc;
+  --panel-shadow: 0 5px 10px 0 rgba(30, 30, 30, 0.1);
+  --card-background: #fafbfc;
+  --card-border: 1px solid rgba(1, 122, 160, 0.25);
+  --tile-background: #e5f1f4;
+
+  /* Dark mode variables */
+  @media (prefers-color-scheme: dark) {
+    --text-color: #ffffff;
+    --app-background: #1b1b1d;
+    --sidebar-background: #161616;
+    --panel-background: #202022;
+    --panel-border: 1px solid #2e2e30;
+    --panel-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.25);
+    --card-background: #161616;
+    --card-border: 1px solid #242424;
+    --tile-background: #27262b;
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -14,12 +44,10 @@ body,
   height: 100%;
 }
 
-html {
-  font-size: 16px;
-}
-
 body {
   font-family: 'Inter Variable', 'Inter', Helvetica, sans-serif;
+  color: var(--text-color);
+  background-color: var(--app-background);
 }
 
 p {

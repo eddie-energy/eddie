@@ -21,11 +21,12 @@ const EddiePreset = definePreset(Aura, {
     colorScheme: {
       light: {
         content: {
-          color: '#017AA0'
+          color: '#017aa0'
         },
         primary: {
-          color: '#017AA0'
-        }
+          color: '#017aa0'
+        },
+        surface: {}
       },
       dark: {
         content: {
