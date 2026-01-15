@@ -56,7 +56,7 @@ function getPermissionCountPerRegionConnector() {
   </p>
 
   <div class="layout">
-    <section>
+    <section class="panel">
       <header>
         <i class="pi pi-check-circle"></i>
         <h2>Permissions <span>Timeline</span></h2>
@@ -88,7 +88,7 @@ function getPermissionCountPerRegionConnector() {
       </div>
     </section>
 
-    <section>
+    <section class="panel">
       <header>
         <i class="pi pi-briefcase"></i>
         <h2>Data Needs <span>Most Popular</span></h2>
@@ -139,7 +139,7 @@ function getPermissionCountPerRegionConnector() {
       </div>
     </section>
 
-    <section class="bottom">
+    <section class="panel bottom">
       <div>
         <header>
           <i class="pi pi-globe"></i>
@@ -188,6 +188,7 @@ function getPermissionCountPerRegionConnector() {
         <h3>Permission Distribution</h3>
 
         <Chart
+          style="height: 28rem"
           type="doughnut"
           :data="{
             labels: Object.keys(permissionCountPerRegionConnector),
@@ -212,31 +213,23 @@ function getPermissionCountPerRegionConnector() {
 
   > * {
     flex: 1;
-    height: 35rem;
   }
 }
 
 .bottom {
-  gap: 2.5rem;
-  flex-direction: row;
+  display: flex;
   flex-wrap: wrap;
+  flex-basis: 100%;
+  gap: 2.5rem;
 
   h3 {
     font-size: 1.5rem;
     font-weight: 300;
     margin-bottom: 1.5rem;
   }
-
-  > * {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
 }
 
-section {
-  display: flex;
-  flex-direction: column;
+.panel {
   padding: 1.25rem;
   border-radius: var(--panel-radius);
   border: var(--panel-border);
@@ -271,6 +264,7 @@ section {
 }
 
 .data-needs {
+  max-height: 24rem;
   overflow: auto;
   scrollbar-gutter: stable;
   display: grid;
@@ -320,14 +314,11 @@ section {
 /* table's display value does not support scrolling */
 .table-scroll-wrapper {
   position: relative;
-  display: flex;
   height: 100%;
+  max-height: 28rem;
   overflow: auto;
   scrollbar-gutter: stable;
-
-  table {
-    width: 100%;
-  }
+  display: grid;
 }
 
 table {
@@ -378,10 +369,6 @@ table {
 @media (width < 80rem) {
   .layout {
     gap: 1.25rem;
-  }
-
-  .bottom {
-    height: max-content;
   }
 }
 </style>
