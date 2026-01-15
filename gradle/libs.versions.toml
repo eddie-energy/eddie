@@ -23,6 +23,7 @@ jakarta-persistence-api = "3.2.0"
 sonar = "7.2.0.6526"
 commons-codec = "1.15"
 jackson = "3.0.3"
+jackson2-short = "2.20"
 h2database = "2.3.232"
 postgresql = "42.7.3"
 javalin = "6.7.0"
@@ -81,12 +82,12 @@ junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "m
 
 # Jackson
 jackson-bom = { module = "tools.jackson:jackson-bom", version.ref = "jackson" }
-jackson-databind = { module = "tools.jackson.core:jackson-databind" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations" }
-jackson-jakarta-xmlbind-annotations = { module = "tools.jackson.module:jackson-module-jakarta-xmlbind-annotations" }
-jackson-dataformat-xml = { module = "tools.jackson.dataformat:jackson-dataformat-xml" }
-jackson-dataformat-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml" }
-jackson-core = { module = "tools.jackson.core:jackson-core" }
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson2-short" }
+jackson-jakarta-xmlbind-annotations = { module = "tools.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson" }
+jackson-dataformat-xml = { module = "tools.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
+jackson-dataformat-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+jackson-core = { module = "tools.jackson.core:jackson-core", version.ref = "jackson" }
 jackson-hibernate7 = { module = "tools.jackson.datatype:jackson-datatype-hibernate7", version.ref = "jackson" }
 
 # shared dependencies
@@ -122,7 +123,6 @@ testcontainers-rabbitmq = { module = "org.testcontainers:testcontainers-rabbitmq
 
 # used by core
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
-# TODO: Remove
 h2database = { module = "com.h2database:h2", version.ref = "h2database" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 

@@ -1,8 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.JacksonJsonDecoder;
 import org.springframework.http.codec.json.JacksonJsonEncoder;
@@ -10,6 +12,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
+@Import(ObjectMapperConfig.class)
 public class WebClientConfiguration {
     @Bean
     public WebClient webClient(JsonMapper mapper) {
@@ -26,7 +29,6 @@ public class WebClientConfiguration {
 
     @Bean
     public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
-        // TODO: JsonNullableModule
         return builder -> builder
                 .disable(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }

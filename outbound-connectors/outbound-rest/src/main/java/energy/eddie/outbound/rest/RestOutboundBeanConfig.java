@@ -15,14 +15,25 @@ import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomize
 import org.springframework.boot.jackson.autoconfigure.XmlMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(RestOutboundConnectorConfiguration.class)
 public class RestOutboundBeanConfig {
+    @Bean
+    @Primary
+    public JsonMapper jsonMapper(List<JsonMapperBuilderCustomizer> customizers) {
+        var builder = JsonMapper.builder();
+        customizers.forEach(customizer -> customizer.customize(builder));
+        return builder.build();
+    }
 
     @Bean
     public XmlMapperBuilderCustomizer xmlMapperBuilderCustomizer() {

@@ -19,7 +19,6 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -39,19 +38,38 @@ public class DataNeedsConfigService implements DataNeedsService {
             @Value("${eddie.data-needs-config.file}") String dataNeedsFilePath,
             ObjectMapper mapper,
             ApplicationContext context
-    ) throws DataNeedAlreadyExistsException, IOException {
+    ) throws DataNeedAlreadyExistsException {
         // if declared as constructor dependency, validator.validate(dataNeed) fails because of an unresolved
         // dependency, but getting the validator directly from the context somehow works?
         var validator = context.getBean("validator", LocalValidatorFactoryBean.class);
-
         readDataNeedsFromFile(dataNeedsFilePath, mapper, validator);
+    }
+
+    // use collect(Collectors.toUnmodifiableList()) instead of .toList() to get properly typed list
+    @SuppressWarnings("java:S6204")
+    @Override
+    public List<DataNeedsNameAndIdProjection> getDataNeedIdsAndNames() {
+        return dataNeeds.values()
+                        .stream()
+                        .map(DataNeedsNameAndIdProjectionRecord::new)
+                        .collect(Collectors.toUnmodifiableList());
+    }
+
+    @Override
+    public Optional<DataNeed> findById(String id) {
+        return Optional.ofNullable(dataNeeds.get(id));
+    }
+
+    @Override
+    public DataNeed getById(String id) {
+        return findById(id).orElseThrow(EntityNotFoundException::new);
     }
 
     private void readDataNeedsFromFile(
             String dataNeedsFilePath,
             ObjectMapper mapper,
             LocalValidatorFactoryBean validator
-    ) throws IOException, DataNeedAlreadyExistsException, ValidationException {
+    ) throws DataNeedAlreadyExistsException, ValidationException {
         File file = new File(dataNeedsFilePath);
         TypeReference<List<DataNeed>> listOfDataNeedsTypeReference = new TypeReference<>() {};
         List<DataNeed> dataNeedsFromFile = mapper.readValue(file, listOfDataNeedsTypeReference);
@@ -96,25 +114,5 @@ public class DataNeedsConfigService implements DataNeedsService {
                             .map(Path.Node::getName)
                             .filter(Objects::nonNull)
                             .collect(Collectors.joining("."));
-    }
-
-    // use collect(Collectors.toUnmodifiableList()) instead of .toList() to get properly typed list
-    @SuppressWarnings("java:S6204")
-    @Override
-    public List<DataNeedsNameAndIdProjection> getDataNeedIdsAndNames() {
-        return dataNeeds.values()
-                        .stream()
-                        .map(DataNeedsNameAndIdProjectionRecord::new)
-                        .collect(Collectors.toUnmodifiableList());
-    }
-
-    @Override
-    public Optional<DataNeed> findById(String id) {
-        return Optional.ofNullable(dataNeeds.get(id));
-    }
-
-    @Override
-    public DataNeed getById(String id) {
-        return findById(id).orElseThrow(EntityNotFoundException::new);
     }
 }

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.client;
 
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.api.Pages;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -62,7 +61,7 @@ class GreenButtonClientTest {
     private static MockWebServer mockBackEnd;
 
     private static String basePath;
-    private final ObjectMapper mapper = new ObjectMapperConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {

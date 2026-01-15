@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvent;
 import energy.eddie.regionconnector.us.green.button.dtos.WebhookEvents;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAuthorizationService;
@@ -27,7 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(WebhookController.class)
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class WebhookControllerTest {
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean

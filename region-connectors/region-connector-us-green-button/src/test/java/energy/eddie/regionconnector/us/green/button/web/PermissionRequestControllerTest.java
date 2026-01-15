@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.web;
 
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.us.green.button.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.us.green.button.services.PermissionRequestAuthorizationService;
@@ -27,7 +26,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(PermissionRequestController.class)
 @AutoConfigureMockMvc(addFilters = false)   // disables spring security filters
 class PermissionRequestControllerTest {
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    @Autowired
+    private ObjectMapper objectMapper;
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean

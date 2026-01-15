@@ -29,11 +29,13 @@ import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.DefaultEnergyDataTimeframeStrategy;
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.TaskScheduler;
 import reactor.netty.http.client.HttpClient;
 import tools.jackson.databind.DeserializationFeature;
@@ -45,6 +47,7 @@ import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMeta
 
 @Configuration
 @EnableConfigurationProperties(DatadisConfiguration.class)
+@Import(ObjectMapperConfig.class)
 public class DatadisBeanConfig {
 
     @Bean

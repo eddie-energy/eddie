@@ -1,7 +1,7 @@
 ### GET connection status messages as json
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
 Accept: application/json
-Authorization: Bearer {{$auth.token("keycloak")}}
+#Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### GET connection status messages as xml
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
@@ -11,12 +11,12 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get connection status messages as event stream
 GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
 Accept: text/event-stream
-Authorization: Bearer {{$auth.token("keycloak")}}
+#Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### GET raw data messages as json
 GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
 Accept: application/json
-Authorization: Bearer {{$auth.token("keycloak")}}
+#Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### GET raw data messages as xml
 GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages

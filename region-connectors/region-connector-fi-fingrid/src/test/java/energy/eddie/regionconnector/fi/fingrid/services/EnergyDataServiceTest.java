@@ -6,7 +6,6 @@ import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.MeterReadingEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -29,7 +28,7 @@ import static org.mockito.Mockito.verify;
 class EnergyDataServiceTest {
     @SuppressWarnings("unused")
     @Spy
-    private final ObjectMapper mapper = new ObjectMapperConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     @Mock
     private Outbox outbox;
     @InjectMocks

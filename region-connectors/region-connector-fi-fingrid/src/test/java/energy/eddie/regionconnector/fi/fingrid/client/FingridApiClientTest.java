@@ -4,7 +4,6 @@ import energy.eddie.cim.v0_82.vhd.EnergyProductTypeList;
 import energy.eddie.regionconnector.fi.fingrid.TestResourceProvider;
 import energy.eddie.regionconnector.fi.fingrid.client.model.*;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
@@ -31,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(MockitoExtension.class)
 class FingridApiClientTest {
     public static MockWebServer mockBackEnd = new MockWebServer();
-    public static ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    public static ObjectMapper objectMapper = new ObjectMapper();
     @SuppressWarnings("unused")
     @Spy
     private final FingridConfiguration config = new FingridConfiguration("orgUser", "orgName", "http://localhost");
