@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.fi.fingrid;
 
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,12 +32,12 @@ public class FingridSecurityConfig {
     @ConditionalOnProperty(value = FINGRID_ENABLED_PROPERTY, havingValue = "true")
     @SuppressWarnings("java:S4502")
     public SecurityFilterChain fingridSecurityFilterChain(
-            PathPatternRequestMatcher.Builder fingridMvcRequestMatcher,
+            @Qualifier("fingridRequestMatcher") PathPatternRequestMatcher.Builder fingridMvcRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
-    ) throws Exception {
+    ) {
         return securityFilterChain(fingridMvcRequestMatcher,
                                    http,
                                    jwtHeaderAuthorizationManager,

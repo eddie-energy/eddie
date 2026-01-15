@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.es.datadis;
 
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,12 +31,12 @@ public class DatadisSecurityConfig {
     @Bean
     @ConditionalOnProperty(value = DATADIS_ENABLED_PROPERTY, havingValue = "true")
     public SecurityFilterChain datadisSecurityFilterChain(
-            PathPatternRequestMatcher.Builder datadisMvcRequestMatcher,
+            @Qualifier("datadisRequestMatcher") PathPatternRequestMatcher.Builder datadisMvcRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
-    ) throws Exception {
+    ) {
         return securityFilterChain(datadisMvcRequestMatcher,
                                    http,
                                    jwtHeaderAuthorizationManager,

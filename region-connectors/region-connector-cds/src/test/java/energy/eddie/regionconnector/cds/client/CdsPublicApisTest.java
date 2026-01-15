@@ -18,7 +18,7 @@ class CdsPublicApisTest {
     private static MockWebServer server;
     private static String basepath;
 
-    private final CdsPublicApis publicApis = new CdsPublicApis(WebClient.create());
+    private final CdsPublicApis publicApis = new CdsPublicApis(WebClient.builder());
 
     @BeforeAll
     static void setUp() throws IOException {

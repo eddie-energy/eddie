@@ -1,6 +1,7 @@
 package energy.eddie.outbound.admin.console.config;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -33,18 +34,15 @@ public class AdminConsoleSecurityConfig {
     @ConditionalOnProperty(value = "outbound-connector.admin.console.login.mode")
     public SecurityFilterChain loginEnabledSecurityFilterChain(
             HttpSecurity http,
-            PathPatternRequestMatcher.Builder adminConsoleRequestMatcher,
+            @Qualifier("adminConsoleRequestMatcher") PathPatternRequestMatcher.Builder adminConsoleRequestMatcher,
             @Value("${outbound-connector.admin.console.login.mode}") String authMode
     ) {
         http
-                .csrf(csrf -> csrf.requireCsrfProtectionMatcher(
-                        adminConsoleRequestMatcher.matcher("*")
-                ))
+                .securityMatcher(adminConsoleRequestMatcher.matcher("/**"))
                 .authorizeHttpRequests(authorize -> authorize
                         // Allow access to static resources used by the login page
                         .requestMatchers(adminConsoleRequestMatcher.matcher("/static/**")).permitAll()
-                        .requestMatchers(adminConsoleRequestMatcher.matcher("**")).authenticated()
-                        .anyRequest().permitAll()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/**")).authenticated()
                 )
                 .logout(LogoutConfigurer::permitAll);
 
@@ -53,9 +51,8 @@ public class AdminConsoleSecurityConfig {
                     .httpBasic(Customizer.withDefaults())
                     .formLogin(formLogin -> formLogin
                             .loginPage(ADMIN_CONSOLE_BASE_URL + "/login")
-                            .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
-                            .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error")
-                            .permitAll()
+                            .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL, true)
+                            .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error").permitAll()
                     );
             case "keycloak" -> http
                     .oauth2Login(Customizer.withDefaults());

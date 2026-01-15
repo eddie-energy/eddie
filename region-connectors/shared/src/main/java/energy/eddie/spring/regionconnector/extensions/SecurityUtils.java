@@ -31,7 +31,7 @@ public class SecurityUtils {
             ObjectMapper mapper,
             Iterable<String> authorizationPaths,
             Iterable<String> publicPaths
-    ) throws Exception {
+    ) {
         return http
                 .securityMatcher(patternRequestMatcher.matcher("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)

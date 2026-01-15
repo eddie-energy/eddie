@@ -3,6 +3,7 @@ package energy.eddie.regionconnector.aiida;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import energy.eddie.spring.regionconnector.extensions.SecurityExceptionHandler;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -33,12 +34,12 @@ public class AiidaSecurityConfig {
     @Bean
     @ConditionalOnProperty(value = AIIDA_ENABLED_PROPERTY, havingValue = "true")
     public SecurityFilterChain aiidaSecurityFilterChain(
-            PathPatternRequestMatcher.Builder aiidaRequestMatcher,
+            @Qualifier("aiidaMvcRequestMatcher") PathPatternRequestMatcher.Builder aiidaRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
-    ) throws Exception {
+    ) {
         return http
                 .securityMatcher(aiidaRequestMatcher.matcher("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)

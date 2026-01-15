@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculati
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.function.Supplier;
 
@@ -29,11 +28,6 @@ public class CdsBeanConfig {
     @Bean
     public Outbox outbox(EventBus eventBus, CdsPermissionEventRepository repository) {
         return new Outbox(eventBus, repository);
-    }
-
-    @Bean
-    public WebClient webClient() {
-        return WebClient.create();
     }
 
     @Bean

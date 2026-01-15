@@ -4,6 +4,7 @@ import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
 import energy.eddie.outbound.shared.utils.CommonPaths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
@@ -40,12 +41,21 @@ public class RestSecurityConfig {
             HttpSecurity http,
             CorsConfigurationSource corsConfigurationSource,
             JwtDecoder decoder,
-            Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authCustomizer
+            @Value("${outbound-connector.rest.oauth2.enabled:false}") boolean oauthEnabled,
+            @Value("${outbound-connector.rest.oauth2.scopes.enabled:false}") boolean oauthScopesEnabled
     ) {
         LOGGER.info("OAuth Security enabled for REST outbound connector");
+        Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authorizeHttpRequestsConfigurer = oauth -> {};
+        if (oauthEnabled) {
+            if (oauthScopesEnabled) {
+                authorizeHttpRequestsConfigurer = this.authorizeHttpRequestsCustomizerWithScopes(restRequestMatcher);
+            } else {
+                authorizeHttpRequestsConfigurer = this.authorizeHttpRequestsCustomizer();
+            }
+        }
         return http
                 .securityMatcher(restRequestMatcher.matcher("/**"))
-                .authorizeHttpRequests(authCustomizer)
+                .authorizeHttpRequests(authorizeHttpRequestsConfigurer)
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(decoder)))
                 .sessionManagement(customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(AbstractHttpConfigurer::disable)
@@ -66,15 +76,11 @@ public class RestSecurityConfig {
                                .build();
     }
 
-    @Bean
-    @ConditionalOnExpression(value = "${outbound-connector.rest.enabled:false} and ${outbound-connector.rest.oauth2.enabled:false} and !${outbound-connector.rest.oauth2.scopes.enabled:false}")
-    public Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authorizeHttpRequestsCustomizer() {
+    private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authorizeHttpRequestsCustomizer() {
         return auth -> auth.anyRequest().authenticated();
     }
 
-    @Bean
-    @ConditionalOnExpression(value = "${outbound-connector.rest.enabled:false} and ${outbound-connector.rest.oauth2.enabled:false} and ${outbound-connector.rest.oauth2.scopes.enabled:false}")
-    public Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authorizeHttpRequestsCustomizerWithScopes(
+    private Customizer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry> authorizeHttpRequestsCustomizerWithScopes(
             PathPatternRequestMatcher.Builder restRequestMatcher
     ) {
         return auth -> auth
@@ -88,6 +94,7 @@ public class RestSecurityConfig {
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/termination-md")).hasAuthority("SCOPE_cim-termination-md:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_91_08/redistribution-transaction-rd")).hasAuthority("SCOPE_cim-redistribution-transaction-rd:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_04/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
+                .requestMatchers(restRequestMatcher.matcher("/v3/api-docs")).permitAll() // Allow requests to the swagger file
                 .anyRequest().denyAll();
                 // @formatter:on
     }

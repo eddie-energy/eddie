@@ -42,9 +42,8 @@ class CustomerDataClientTest {
             }).build();
     @Spy
     @SuppressWarnings("unused")
-    private final WebClient webClient = WebClient.builder()
-                                                 .exchangeStrategies(strats)
-                                                 .build();
+    private final WebClient.Builder webClientBuilder = WebClient.builder()
+                                                                .exchangeStrategies(strats);
     @InjectMocks
     private CustomerDataClient customerDataClient;
 

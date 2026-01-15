@@ -48,8 +48,8 @@ public class AdminClient {
                     .maximumSize(100)
                     .buildAsync(AdminClient.this::oauthMetadataSpecLoader);
 
-    public AdminClient(WebClient webClient) {
-        this.webClient = webClient;
+    public AdminClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
     }
 
     public Mono<List<ClientEndpoint200ResponseClientsInner>> clients(
