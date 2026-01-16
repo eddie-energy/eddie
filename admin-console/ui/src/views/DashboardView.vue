@@ -280,7 +280,6 @@ function getPermissionCountPerRegionConnector() {
                   {{ permissionCountPerRegionConnector[id] }}
                 </td>
                 <td>
-                  {{ regionConnectorHealth.get(id) }}&nbsp;
                   <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
                 </td>
               </tr>
