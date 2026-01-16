@@ -15,7 +15,7 @@ defineProps<{
         <slot></slot>
       </div>
       <div>
-        {{ text }}
+        <span class="text">{{ text }}</span>
         <br />
         <span class="count">{{ count }}</span>
       </div>
@@ -30,6 +30,7 @@ defineProps<{
   border: var(--card-border);
   border-radius: var(--card-radius);
   padding: 0.5rem 1rem 0.75rem;
+  width: 10rem;
 
   .tooltip {
     display: flex;
