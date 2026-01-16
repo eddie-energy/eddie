@@ -42,7 +42,10 @@ public class AdminConsoleSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Allow access to static resources used by the login page
                         .requestMatchers(adminConsoleRequestMatcher.matcher("/static/**")).permitAll()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/favicon.ico")).permitAll()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/favicon.svg")).permitAll()
                         .requestMatchers(adminConsoleRequestMatcher.matcher("/**")).authenticated()
+                        .anyRequest().permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);
 
@@ -50,8 +53,7 @@ public class AdminConsoleSecurityConfig {
             case "basic" -> http
                     .httpBasic(Customizer.withDefaults())
                     .formLogin(formLogin -> formLogin
-                            .loginPage(ADMIN_CONSOLE_BASE_URL + "/login")
-                            .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL, true)
+                            .loginPage(ADMIN_CONSOLE_BASE_URL + "/login").defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
                             .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error").permitAll()
                     );
             case "keycloak" -> http
