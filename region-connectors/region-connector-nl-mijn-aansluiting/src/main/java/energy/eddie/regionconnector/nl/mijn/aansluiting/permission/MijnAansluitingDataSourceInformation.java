@@ -8,7 +8,7 @@ import jakarta.persistence.Embeddable;
 public class MijnAansluitingDataSourceInformation implements DataSourceInformation {
     private static final MijnAansluitingRegionConnectorMetadata regionConnectorMetadata = MijnAansluitingRegionConnectorMetadata.getInstance();
 
-    private static final String MIIJN_AANSLUITING = "Miijn Aansluiting";
+    private static final String MIJN_AANSLUITING = "Mijn Aansluiting";
 
     @Override
     public String countryCode() {
@@ -22,12 +22,12 @@ public class MijnAansluitingDataSourceInformation implements DataSourceInformati
 
     @Override
     public String meteredDataAdministratorId() {
-        return MIIJN_AANSLUITING;
+        return MIJN_AANSLUITING;
     }
 
     @Override
     public String permissionAdministratorId() {
-        return MIIJN_AANSLUITING;
+        return MIJN_AANSLUITING;
     }
 
     @Override

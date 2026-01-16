@@ -160,7 +160,7 @@ class PollingServiceTest {
         // Then
         verify(outbox).commit(internalPollingEventCaptor.capture());
         var res = internalPollingEventCaptor.getValue();
-        var end = ZonedDateTime.parse("2023-06-30T00:00:00.000+02:00").withZoneSameInstant(ZoneOffset.UTC);
+        var end = ZonedDateTime.parse("2023-07-01T00:00:00.000+02:00").withZoneSameInstant(ZoneOffset.UTC);
         assertThat(res.lastMeterReadings()).containsOnlyKeys("E0003000007083514", "E0003000007083514")
                                            .containsEntry("E0003000007083514", end)
                                            .containsEntry("E0003000007083514", end);

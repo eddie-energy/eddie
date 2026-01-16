@@ -195,10 +195,11 @@ public class PollingService implements AutoCloseable, CommonPollingService<MijnA
             for (Register register : mijnAansluitingResponse.marketEvaluationPoint().registerList()) {
 
                 // Update the last meter readings, even the ones that were already fulfilled.
-                // That way we always have the latest information, for the fulfillment-handler
+                // That way we always have the latest information for the fulfillment-handler
                 var timestamp = register.readingList().getLast().dateAndOrTime().dateTime();
                 String meteringPointId = register.meter().mrid();
-                lastMeterReadings.put(meteringPointId, timestamp);
+                // Add the duration to the last reading, since it's an aggregation the reading spans from the timestamp until the timestamp + granularity
+                lastMeterReadings.put(meteringPointId, timestamp.plus(permissionRequest.granularity().duration()));
 
                 // Remove already received meter readings or before the start date from the response
                 var lastTimestamp = start.atStartOfDay(timestamp.getZone());
