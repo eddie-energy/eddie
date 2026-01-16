@@ -364,6 +364,7 @@ function getPermissionCountPerRegionConnector() {
 
 .cards {
   display: flex;
+  flex-wrap: wrap;
   gap: 1.25rem;
   margin-bottom: 1.75rem;
 }
@@ -396,6 +397,7 @@ function getPermissionCountPerRegionConnector() {
 
 .data-need-stats {
   display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
