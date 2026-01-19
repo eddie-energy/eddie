@@ -27,34 +27,35 @@ const regionConnectors = ref<RegionConnectorMetadata[]>([])
 const permissionCountPerRegionConnector = computed(() => getPermissionCountPerRegionConnector())
 const regionConnectorHealth = ref<Map<string, HealthStatus>>(new Map())
 
-let grantedPermissions = 0
-let activePermissions = 0
-let failedPermissions = 0
+const permissionStates = computed(() => countPermissionStates())
+const dataNeedStates = computed(() => countDataNeedStates())
 
 function countPermissionStates() {
+  const states = { granted: 0, active: 0, failed: 0 }
+
   for (const permission of permissions.value) {
     if (GRANTED_PERMISSION_STATES.includes(permission.status)) {
-      grantedPermissions++
+      states.granted++
     }
 
     if (ACTIVE_PERMISSION_STATES.includes(permission.status)) {
-      activePermissions++
+      states.active++
     }
 
     if (FAILED_PERMISSION_STATES.includes(permission.status)) {
-      failedPermissions++
+      states.failed++
     }
   }
+
+  return states
 }
 
-let disabledDataNeeds = 0
-let activeDataNeeds = 0
-let expiredDataNeeds = 0
-
 function countDataNeedStates() {
+  const states = { disabled: 0, active: 0, expired: 0 }
+
   for (const dataNeed of dataNeeds.value) {
     if (!dataNeed.enabled) {
-      disabledDataNeeds++
+      states.disabled++
     }
 
     if (
@@ -63,7 +64,7 @@ function countDataNeedStates() {
           dataNeedId === dataNeed.id && ACTIVE_PERMISSION_STATES.includes(status)
       )
     ) {
-      activeDataNeeds++
+      states.active++
     }
 
     const timeFramed = dataNeed as TimeFramedDataNeed
@@ -72,9 +73,11 @@ function countDataNeedStates() {
       timeFramed.duration.type === 'absoluteDuration' &&
       new Date(timeFramed.duration.end) < new Date()
     ) {
-      expiredDataNeeds++
+      states.expired++
     }
   }
+
+  return states
 }
 
 onMounted(async () => {
@@ -85,9 +88,6 @@ onMounted(async () => {
     const health = await getRegionConnectorHealth(id)
     regionConnectorHealth.value.set(id, health?.status || HealthStatus.UNKNOWN)
   }
-
-  countPermissionStates()
-  countDataNeedStates()
 })
 
 function getPermissionCountPerRegionConnector() {
@@ -126,7 +126,7 @@ function getPermissionCountPerRegionConnector() {
           <i class="pi pi-plus-circle"></i>
         </DashboardCard>
         <DashboardCard
-          :count="grantedPermissions"
+          :count="permissionStates.granted"
           info="Number of permissions that have been accepted or fulfilled."
           text="Granted Permissions"
           color="green"
@@ -134,7 +134,7 @@ function getPermissionCountPerRegionConnector() {
           <i class="pi pi-check-circle"></i>
         </DashboardCard>
         <DashboardCard
-          :count="activePermissions"
+          :count="permissionStates.active"
           info="Number of permissions that are in the accepted state and should be sending data."
           text="Active Permissions"
           color="pink"
@@ -142,7 +142,7 @@ function getPermissionCountPerRegionConnector() {
           <i class="pi pi-play-circle"></i>
         </DashboardCard>
         <DashboardCard
-          :count="failedPermissions"
+          :count="permissionStates.failed"
           info="Number of permissions that are in a failure state."
           text="Failed Permissions"
           color="red"
@@ -170,7 +170,7 @@ function getPermissionCountPerRegionConnector() {
           <i class="pi pi-plus-circle"></i>
         </DashboardCard>
         <DashboardCard
-          :count="disabledDataNeeds"
+          :count="dataNeedStates.disabled"
           info="Data needs that have been disabled."
           text="Disabled Data Needs"
           color="orange"
@@ -178,7 +178,7 @@ function getPermissionCountPerRegionConnector() {
           <i class="pi pi-pause-circle"></i>
         </DashboardCard>
         <DashboardCard
-          :count="activeDataNeeds"
+          :count="dataNeedStates.active"
           info="Data needs having permissions that are in the accepted state and should be sending data."
           text="Active Data Needs"
           color="green"
@@ -186,7 +186,7 @@ function getPermissionCountPerRegionConnector() {
           <i class="pi pi-play-circle"></i>
         </DashboardCard>
         <DashboardCard
-          :count="expiredDataNeeds"
+          :count="dataNeedStates.expired"
           info="Data needs with absolute durations with their end date in the past."
           text="Expired Data Needs"
           color="red"
