@@ -3,14 +3,14 @@ import Chart from 'primevue/chart'
 import { computed } from 'vue'
 import type { StatusMessage } from '@/api'
 
-const props = defineProps<{
+const { permissions } = defineProps<{
   permissions: StatusMessage[]
 }>()
 
 const chartData = computed(() => {
   const dates: Record<string, number> = {}
 
-  for (let permission of props.permissions) {
+  for (let permission of permissions) {
     const date = permission.startDate.substring(0, permission.startDate.indexOf('T'))
     dates[date] = (dates[date] || 0) + 1
   }

@@ -7,7 +7,7 @@ import EddieIcon from '@/components/EddieIcon.vue'
     <header>
       <RouterLink to="/">
         <EddieIcon class="logo" />
-        <span>Admin Console</span>
+        Admin Console
       </RouterLink>
     </header>
 

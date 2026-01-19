@@ -156,9 +156,7 @@ function getPermissionCountPerRegionConnector() {
         </DashboardCard>
       </div>
 
-      <div>
-        <LineChartPermissions :permissions></LineChartPermissions>
-      </div>
+      <LineChartPermissions :permissions></LineChartPermissions>
     </section>
 
     <section class="panel">
