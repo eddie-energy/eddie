@@ -23,7 +23,7 @@ public class SecurityConfig {
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
     ) {
-        PathPatternRequestMatcher.Builder pathPatternRequestMatcherBuilder = PathPatternRequestMatcher.withDefaults();
+        var pathPatternRequestMatcherBuilder = PathPatternRequestMatcher.withDefaults();
 
         return http
                 .securityMatcher("/api/connection-status-messages/**")

@@ -129,7 +129,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
     }
 
     @Override
-    public void postProcessBeanFactory(@org.jspecify.annotations.NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
+    public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory unusedBeanFactory) throws BeansException {
         // not needed by this processor
     }
 
@@ -218,7 +218,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * @param metadata                        Automatically registers the metadata as a bean, since it has to be present in every region-connector
      * @return AnnotationConfigWebApplicationContext for the region connector.
      */
-    @org.jspecify.annotations.NonNull
+    @NonNull
     private static AnnotationConfigWebApplicationContext createWebContext(
             Class<?> regionConnectorConfigClass,
             String regionConnectorName,
@@ -248,7 +248,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
      * @param regionConnectorName    Unique name of the region connector, as defined in {@link RegionConnector}.
      * @return AbstractBeanDefinition that can be registered in the root context (i.e. the EDDIE core context).
      */
-    @org.jspecify.annotations.NonNull
+    @NonNull
     private static AbstractBeanDefinition createRegionConnectorBeanDefinition(
             AnnotationConfigWebApplicationContext regionConnectorContext,
             String regionConnectorName
@@ -257,7 +257,7 @@ public class RegionConnectorRegistrationBeanPostProcessor implements BeanDefinit
         LOGGER.info("Registering new region connector with URL mapping {}", urlMapping);
         DispatcherServlet dispatcherServlet = new DispatcherServlet(regionConnectorContext);
 
-        ServletRegistrationBean<@org.jspecify.annotations.NonNull DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
+        ServletRegistrationBean<@NonNull DispatcherServlet> connectorServletBean = new ServletRegistrationBean<>(
                 dispatcherServlet,
                 urlMapping);
         // use unique name

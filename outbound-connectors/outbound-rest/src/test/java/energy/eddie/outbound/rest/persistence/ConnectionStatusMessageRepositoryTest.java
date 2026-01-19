@@ -24,12 +24,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest(properties = {
-        "spring.flyway.enabled=true",
-        "spring.flyway.locations=classpath:db/migration/rest",
-        "spring.flyway.schemas=rest"
-})
-
+@DataJpaTest()
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @Testcontainers
 @DirtiesContext

@@ -70,7 +70,6 @@ dependencies {
 }
 
 configurations.all {
-    //exclude(group = "commons-logging", module = "commons-logging") // TODO check
     exclude(group = "org.slf4j", module = "slf4j-simple") // TODO this shoudn't be necessary
     exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j2-impl") // TODO this neither
 }

@@ -55,8 +55,7 @@ import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.RE
 public class AiidaBeanConfig {
     @Bean
     public JsonMapperBuilderCustomizer objectMapper() {
-        return builder -> builder
-                .addModule(new JakartaXmlBindAnnotationModule());
+        return builder -> builder.addModule(new JakartaXmlBindAnnotationModule());
     }
 
     @Bean

@@ -65,14 +65,13 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                                 .asString()
                                 .defaultIfEmpty(Strings.EMPTY)
                                 .flatMap(bodyString -> {
-                                    if (httpClientResponse.status()
-                                                          .code() == HttpResponseStatus.OK.code()) {
+                                    if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
                                         try {
                                             JsonNode jsonNode = mapper.readTree(bodyString);
                                             return Mono.just(AuthorizationRequestResponse.fromResponse(
                                                     jsonNode.get("response").asString()
                                             ));
-                                        } catch (tools.jackson.core.JacksonException e) {
+                                        } catch (JacksonException e) {
                                             return Mono.error(e);
                                         }
                                     } else {

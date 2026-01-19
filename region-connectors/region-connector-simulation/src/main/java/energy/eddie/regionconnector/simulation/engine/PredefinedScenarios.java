@@ -58,7 +58,7 @@ public class PredefinedScenarios {
     }
 
     private Map<String, Scenario> loadJsonFilesFromClasspath(URI classpathLocation) throws IOException {
-        var map = new HashMap<String, Scenario>();
+        var loadedScenarios = new HashMap<String, Scenario>();
         var resources = new PathMatchingResourcePatternResolver().getResources("classpath*:" + classpathLocation.getPath());
         for (var resource : resources) {
             if (!resource.exists()) {
@@ -66,21 +66,22 @@ public class PredefinedScenarios {
             }
             var src = resource.getContentAsString(StandardCharsets.UTF_8);
             var scenario = objectMapper.readValue(src, Scenario.class);
-            map.put(scenario.name(), scenario);
+            loadedScenarios.put(scenario.name(), scenario);
         }
-        return map;
+        return loadedScenarios;
     }
 
     private Map<String, Scenario> loadJsonFilesFromFileSystem(URI uri) throws IOException {
-        var map = new HashMap<String, Scenario>();
+        var loadedScenarios = new HashMap<String, Scenario>();
         var path = Paths.get(uri.getPath());
         if (Files.isDirectory(path)) {
             try (var walker = Files.walk(path)) {
                 walker.filter(PredefinedScenarios::isJsonFile)
                       .forEach(p -> {
                           try {
+                              LOGGER.info("Loading scenario {}", p);
                               var scenario = objectMapper.readValue(p.toFile(), Scenario.class);
-                              map.put(scenario.name(), scenario);
+                              loadedScenarios.put(scenario.name(), scenario);
                           } catch (JacksonException e) {
                               LOGGER.warn("Couldn't parse scenario file {}", p, e);
                           }
@@ -88,9 +89,9 @@ public class PredefinedScenarios {
             }
         } else if (isJsonFile(path)) {
             var scenario = objectMapper.readValue(path.toFile(), Scenario.class);
-            map.put(scenario.name(), scenario);
+            loadedScenarios.put(scenario.name(), scenario);
         }
-        return map;
+        return loadedScenarios;
     }
 
     private static boolean isJsonFile(Path path) {

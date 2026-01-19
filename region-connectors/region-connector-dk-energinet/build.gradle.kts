@@ -146,8 +146,8 @@ tasks.withType<JavaCompile>().configureEach {
     // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a regex string!
     val regexString = ".*/energy/eddie/regionconnector/dk/energinet/customer/(model|invoker)/.*".replace("/", "[/\\\\]")
     options.errorprone.excludedPaths.set(regexString)
-    if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault())
-            .contains("generated")
+    if (!name.lowercase(Locale.getDefault()).contains("test")
+        && !name.lowercase(Locale.getDefault()).contains("generated")
     ) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
