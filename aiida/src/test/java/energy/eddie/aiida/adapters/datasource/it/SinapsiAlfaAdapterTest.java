@@ -3,7 +3,9 @@ package energy.eddie.aiida.adapters.datasource.it;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJsonTest;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -16,6 +18,7 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -23,14 +26,18 @@ import static org.mockito.Mockito.*;
 
 class SinapsiAlfaAdapterTest {
     private static final String TOPIC = "/oetzi/iomtsgdata/abcdef-abcde-abcde-abcde-12345/";
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final SinapsiAlfaDataSource DATA_SOURCE = mock(SinapsiAlfaDataSource.class);
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private SinapsiAlfaAdapter adapter;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws SecretLoadingException {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
+        var secretsService = mock(SecretsService.class);
+        when(secretsService.loadSecret(anyString())).thenReturn("password");
+        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
         when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
         when(DATA_SOURCE.topic()).thenReturn(TOPIC);
         when(DATA_SOURCE.username()).thenReturn("oetzi");
@@ -39,7 +46,7 @@ class SinapsiAlfaAdapterTest {
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
         var mapper = new AiidaConfiguration().customObjectMapper().build();
-        adapter = new SinapsiAlfaAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
+        adapter = new SinapsiAlfaAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION, secretsService);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package energy.eddie.aiida.web;
 
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -40,7 +41,7 @@ public class InboundController {
             @PathVariable UUID permissionId,
             @RequestHeader(value = "X-API-Key", required = false) String apiKeyHeader,
             @RequestParam(name = "apiKey", required = false) String apiKeyQuery
-    ) throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+    ) throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException, SecretLoadingException {
         String apiKey = (apiKeyHeader != null && !apiKeyHeader.isBlank())
                 ? apiKeyHeader
                 : apiKeyQuery;

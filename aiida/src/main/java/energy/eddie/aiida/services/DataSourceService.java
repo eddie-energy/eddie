@@ -9,6 +9,9 @@ import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.SecretDeletionException;
+import energy.eddie.aiida.errors.SecretLoadingException;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
@@ -20,14 +23,17 @@ import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -49,6 +55,7 @@ public class DataSourceService {
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
+    private final SecretsService secretsService;
 
     @Autowired
     public DataSourceService(
@@ -59,7 +66,8 @@ public class DataSourceService {
             ObjectMapper objectMapper,
             BCryptPasswordEncoder bCryptPasswordEncoder,
             SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
-            AiidaEventPublisher aiidaEventPublisher
+            AiidaEventPublisher aiidaEventPublisher,
+            SecretsService secretsService
     ) {
         this.repository = repository;
         this.aggregator = aggregator;
@@ -69,10 +77,12 @@ public class DataSourceService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
         this.aiidaEventPublisher = aiidaEventPublisher;
+        this.secretsService = secretsService;
     }
 
-    @EventListener(ContextRefreshedEvent.class)
+    @EventListener(ApplicationReadyEvent.class)
     public void startDataSources() {
+        LOGGER.info("Starting datasources");
         var dataSources = repository.findAll();
 
         for (var dataSource : dataSources) {
@@ -81,7 +91,7 @@ public class DataSourceService {
     }
 
     public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration, secretsService);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {
@@ -119,7 +129,7 @@ public class DataSourceService {
     }
 
     @Transactional
-    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException {
+    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException, SecretStoringException {
         var currentUserId = authService.getCurrentUserId();
         var plaintextPassword = "";
 
@@ -128,6 +138,10 @@ public class DataSourceService {
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
                 sinapsiAlfaDataSource.configure(sinapsiAlfaConfiguration, sinapsiAlfaDataSourceDto.activationKey());
+                repository.save(sinapsiAlfaDataSource);
+                secretsService.storeSecret(sinapsiAlfaDataSource.id(),
+                                           SecretType.PASSWORD,
+                                           sinapsiAlfaConfiguration.mqttPassword());
                 LOGGER.info("Generated MQTT settings for Sinapsi Alfa data source ({})", dataSource.name());
             } else {
                 plaintextPassword = SecretGenerator.generate();
@@ -145,22 +159,13 @@ public class DataSourceService {
 
     @Transactional
     public void deleteDataSource(UUID dataSourceId) {
-        findDataSourceAdapter(dataSourceId).ifPresentOrElse(
-                this::closeDataSourceAdapter,
-                () -> LOGGER.warn(
-                        "Tried to close DataSourceAdapter but could not be found for data source ({}).",
-                        dataSourceId));
+        findDataSourceAdapter(dataSourceId)
+                .ifPresentOrElse(this::closeDataSourceAdapter,
+                                 () -> closeDataSourceAdapterEmptyAction(dataSourceId));
 
         repository.findById(dataSourceId)
-                  .ifPresentOrElse(
-                          dataSource -> {
-                              publishDataSourceDeletionEventIfOutboundDataSource(dataSource);
-                              var dataSourceName = dataSource.name();
-                              repository.delete(dataSource);
-                              LOGGER.info("Deleted data source {} ({})", dataSourceName, dataSourceId);
-                          },
-                          () -> LOGGER.warn("Tried to delete data source ({}) but it could not found be found.",
-                                            dataSourceId));
+                  .ifPresentOrElse(this::deleteDataSourceAction,
+                                   () -> deleteDataSourceEmptyAction(dataSourceId));
     }
 
     @Transactional
@@ -234,12 +239,50 @@ public class DataSourceService {
     }
 
     @Transactional
-    public InboundDataSource createInboundDataSource(Permission permission) {
+    @SuppressWarnings("NullAway")
+    public InboundDataSource createInboundDataSource(Permission permission) throws SecretStoringException, SecretLoadingException {
         var inboundDataSource = new InboundDataSource.Builder(permission).build();
         repository.save(inboundDataSource);
+        storeInboundDataSourceSecrets(inboundDataSource, permission.mqttStreamingConfig());
+
         LOGGER.info("Created inbound data source {}", inboundDataSource.id());
 
         return inboundDataSource;
+    }
+
+    private void storeInboundDataSourceSecrets(
+            InboundDataSource inboundDataSource,
+            MqttStreamingConfig mqttStreamingConfig
+    ) throws SecretStoringException, SecretLoadingException {
+        Objects.requireNonNull(mqttStreamingConfig);
+        secretsService.storeSecret(inboundDataSource.id(),
+                                   SecretType.PASSWORD,
+                                   secretsService.loadSecret(mqttStreamingConfig.password()));
+        secretsService.storeSecret(inboundDataSource.id(),
+                                   SecretType.API_KEY,
+                                   SecretGenerator.generate());
+    }
+
+    private void deleteDataSourceAction(DataSource dataSource) {
+        try {
+            publishDataSourceDeletionEventIfOutboundDataSource(dataSource);
+
+            var dataSourceId = dataSource.id();
+            var dataSourceName = dataSource.name();
+
+            if (dataSource instanceof InboundDataSource || dataSource instanceof SinapsiAlfaDataSource) {
+                secretsService.deleteSecret(dataSource.id().toString());
+            }
+
+            repository.delete(dataSource);
+            LOGGER.info("Deleted data source {} ({})", dataSourceName, dataSourceId);
+        } catch (SecretDeletionException e) {
+            LOGGER.error("Could not delete password of data source {}", dataSource.id(), e);
+        }
+    }
+
+    private void deleteDataSourceEmptyAction(UUID dataSourceId) {
+        LOGGER.warn("Tried to delete data source ({}) but it could not found be found.", dataSourceId);
     }
 
     private void publishDataSourceDeletionEventIfOutboundDataSource(DataSource dataSource) {
@@ -264,6 +307,11 @@ public class DataSourceService {
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
         aggregator.removeDataSourceAdapter(dataSourceAdapter);
         dataSourceAdapters.remove(dataSourceAdapter);
+    }
+
+    private void closeDataSourceAdapterEmptyAction(UUID dataSourceId) {
+        LOGGER.warn("Tried to close DataSourceAdapter but could not be found for data source ({}).",
+                    dataSourceId);
     }
 
     private MqttDataSource castToMqttDataSourceIfSecretRegenerationIsSupported(DataSource dataSource) throws DataSourceSecretGenerationNotSupportedException {

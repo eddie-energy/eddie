@@ -45,6 +45,7 @@ nimbus = "11.10.1"
 bouncycastle = "1.78"
 keycloak = "25.0.3"
 caffeine = "3.2.0"
+throwing-function = "1.6.1"
 
 swagger-annotations = "2.2.34"
 openapi-generator = "7.11.0"
@@ -178,6 +179,7 @@ eclipse-paho-mqttv5-client = { module = "org.eclipse.paho:org.eclipse.paho.mqttv
 jackson-hibernate6 = { module = "com.fasterxml.jackson.datatype:jackson-datatype-hibernate6", version.ref = "jackson" }
 j2mod = { module = "com.ghgande:j2mod", version.ref = "j2mod" }
 mvel2 = { module = "org.mvel:mvel2", version.ref = "mvel2" }
+throwing-function = { module = "com.pivovarit:throwing-function", version.ref = "throwing-function" }
 
 # Security
 nimbus-oidc = { module = "com.nimbusds:oauth2-oidc-sdk", version.ref = "nimbus" }

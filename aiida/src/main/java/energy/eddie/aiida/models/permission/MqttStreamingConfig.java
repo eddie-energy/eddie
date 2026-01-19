@@ -1,6 +1,7 @@
 package energy.eddie.aiida.models.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.UUID;
+
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Entity
 @Table(name = "mqtt_streaming_config")
@@ -28,17 +31,31 @@ public class MqttStreamingConfig {
     @Column(name = "termination_topic", nullable = false)
     private String terminationTopic;
 
+    private MqttStreamingConfig(MqttStreamingConfig config, String alias) {
+        this.permissionId = config.permissionId;
+        this.password = alias;
+        this.serverUri = config.serverUri;
+        this.dataTopic = config.dataTopic;
+        this.statusTopic = config.statusTopic;
+        this.terminationTopic = config.terminationTopic;
+    }
+
     @SuppressWarnings("NullAway.Init") // required by JPA
     protected MqttStreamingConfig() {
     }
 
     public MqttStreamingConfig(MqttDto mqttDto) {
-        this.permissionId = UUID.fromString(mqttDto.username());
-        this.password = mqttDto.password();
+        var id = UUID.fromString(mqttDto.username());
+        this.permissionId = id;
+        this.password = alias(id, SecretType.PASSWORD);
         this.serverUri = mqttDto.serverUri();
         this.dataTopic = mqttDto.dataTopic();
         this.statusTopic = mqttDto.statusTopic();
         this.terminationTopic = mqttDto.terminationTopic();
+    }
+
+    public MqttStreamingConfig copyWithAliasAsPassword() {
+        return new MqttStreamingConfig(this, alias(permissionId, SecretType.PASSWORD));
     }
 
     public UUID permissionId() {

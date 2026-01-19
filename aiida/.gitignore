@@ -114,3 +114,4 @@ build
 
 application-local.properties
 application-local.yml
+/docker/security/secrets.jks

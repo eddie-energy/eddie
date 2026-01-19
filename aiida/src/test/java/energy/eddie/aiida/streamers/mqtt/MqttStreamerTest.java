@@ -2,6 +2,7 @@ package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -10,6 +11,7 @@ import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.FailedToSendEntity;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -90,11 +92,13 @@ class MqttStreamerTest {
     private AiidaConnectionStatusMessageDto mockStatusMessage;
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
+    @Mock
+    private SecretsService secretsService;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
     @BeforeEach()
-    void setUp() {
+    void setUp() throws SecretLoadingException {
         var mqttDto = new MqttDto("tcp://localhost:1883",
                                   PERMISSION_ID.toString(),
                                   "mqttPassword",
@@ -105,6 +109,7 @@ class MqttStreamerTest {
         mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
         Permission permissionMock = mock(Permission.class);
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
+        when(secretsService.loadSecret(anyString())).thenReturn(mqttStreamingConfig.password());
         var streamingContext = new MqttStreamingContext(mockClient, mqttStreamingConfig, mockLatestRecordMap);
 
         streamer = new MqttStreamer(AIIDA_ID,
@@ -113,7 +118,8 @@ class MqttStreamerTest {
                                     permissionMock,
                                     recordPublisher.flux(),
                                     streamingContext,
-                                    terminationSink);
+                                    terminationSink,
+                                    secretsService);
     }
 
 

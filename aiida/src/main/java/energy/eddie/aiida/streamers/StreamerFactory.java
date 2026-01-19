@@ -5,6 +5,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -33,6 +34,7 @@ public class StreamerFactory {
      * @param recordFlux             Flux on which the records that should be sent are published.
      * @param terminationRequestSink Sink, to which the permissionId will be published when the EP requests a
      *                               termination.
+     * @param secretsService         Secrets service to retrieve passwords in order to connect to the EDDIE MQTT broker
      * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
@@ -42,7 +44,8 @@ public class StreamerFactory {
             Permission permission,
             Flux<AiidaRecord> recordFlux,
             Sinks.One<UUID> terminationRequestSink,
-            PermissionLatestRecordMap permissionLatestRecordMap
+            PermissionLatestRecordMap permissionLatestRecordMap,
+            SecretsService secretsService
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var streamingConfig = requireNonNull(permission.mqttStreamingConfig());
@@ -60,6 +63,8 @@ public class StreamerFactory {
                                 permission,
                                 recordFlux,
                                 streamingContext,
-                                terminationRequestSink);
+                                terminationRequestSink,
+                                secretsService
+        );
     }
 }

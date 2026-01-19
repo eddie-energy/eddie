@@ -8,12 +8,15 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttUser;
+import energy.eddie.aiida.services.secrets.SecretType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
+
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SINAPSI_ALFA)
@@ -32,6 +35,15 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     public SinapsiAlfaDataSource(SinapsiAlfaDataSourceDto dto, UUID userId) {
         super(dto, userId);
+    }
+
+    private SinapsiAlfaDataSource(SinapsiAlfaDataSource sinapsiAlfaDataSource, String alias) {
+        super(sinapsiAlfaDataSource);
+        internalHost = sinapsiAlfaDataSource.internalHost;
+        externalHost = sinapsiAlfaDataSource.externalHost;
+        activationKey = sinapsiAlfaDataSource.activationKey;
+        config = sinapsiAlfaDataSource.config;
+        user = sinapsiAlfaDataSource.user.copyWithAliasAsPassword(alias);
     }
 
     public void configure(
@@ -53,9 +65,8 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
         // Ignore, as the password is set in the constructor
     }
 
-    @Override
-    protected void createMqttUser() {
-        this.user = new MqttUser(config.mqttUsername(), config.mqttPassword());
+    public SinapsiAlfaDataSource copyWithAliasAsPassword() {
+        return new SinapsiAlfaDataSource(this, alias(id, SecretType.PASSWORD));
     }
 
     @Override
@@ -68,5 +79,10 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
                     + SinapsiAlfaConfiguration.TOPIC_SUFFIX;
 
         this.accessControlEntry = new MqttAccessControlEntry(username, topic);
+    }
+
+    @Override
+    protected void createMqttUser() {
+        this.user = new MqttUser(config.mqttUsername(), alias(id, SecretType.PASSWORD));
     }
 }

@@ -4,6 +4,7 @@ import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
@@ -19,6 +20,8 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
@@ -30,9 +33,9 @@ import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.lang.NonNull;
+import org.springframework.context.event.EventListener;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +48,7 @@ import static energy.eddie.aiida.models.permission.PermissionStatus.*;
 import static java.util.Objects.requireNonNull;
 
 @Service
-public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
+public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
     private final Clock clock;
@@ -55,6 +58,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final AuthService authService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
     private final AiidaEventPublisher aiidaEventPublisher;
+    private final SecretsService secretsService;
 
     @Autowired
     public PermissionService(
@@ -65,7 +69,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             PermissionScheduler permissionScheduler,
             AuthService authService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
-            AiidaEventPublisher aiidaEventPublisher
+            AiidaEventPublisher aiidaEventPublisher,
+            SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
         this.clock = clock;
@@ -75,6 +80,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.authService = authService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
+        this.secretsService = secretsService;
 
         streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
     }
@@ -226,7 +232,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public Permission acceptPermission(
             UUID permissionId,
             @Nullable UUID dataSourceId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, SecretStoringException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -261,6 +267,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         var mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
+        secretsService.storeSecret(mqttStreamingConfig.permissionId(),
+                                   SecretType.PASSWORD,
+                                   mqttStreamingConfig.password());
 
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
@@ -296,14 +305,24 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                    .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
+    @Transactional
+    public void addDataSourceToPermission(DataSource dataSource, UUID permissionId) {
+        try {
+            var permission = findById(permissionId);
+            permission.setDataSource(dataSource);
+        } catch (PermissionNotFoundException e) {
+            LOGGER.error("No permission found with id {}", permissionId, e);
+        }
+    }
+
     /**
      * Gets all active permissions from the database and checks if they have expired. If not, streaming is resumed,
      * otherwise their database entry will be updated accordingly. This is done when a {@link ContextRefreshedEvent} is
      * received, which ensures that all beans are started and the database is set up correctly.
      */
-    @Override
     @Transactional
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
+    @EventListener(ApplicationStartedEvent.class)
+    protected void onApplicationEvent() {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
         List<Permission> allActivePermissions = permissionRepository.findAllActivePermissions();
         LOGGER.info(
@@ -327,16 +346,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                             permission.id());
                 permission.setStatus(PermissionStatus.FULFILLED);
             }
-        }
-    }
-
-    @Transactional
-    public void addDataSourceToPermission(DataSource dataSource, UUID permissionId) {
-        try {
-            var permission = findById(permissionId);
-            permission.setDataSource(dataSource);
-        } catch (PermissionNotFoundException e) {
-            LOGGER.error("No permission found with id {}", permissionId, e);
         }
     }
 

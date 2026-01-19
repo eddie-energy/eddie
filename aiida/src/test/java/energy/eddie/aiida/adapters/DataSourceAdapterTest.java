@@ -23,9 +23,11 @@ import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.services.ModbusDeviceService;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -39,6 +41,8 @@ import static org.mockito.Mockito.*;
 class DataSourceAdapterTest {
     private ObjectMapper mapper;
     private MqttConfiguration mqttConfiguration;
+    @Mock
+    private SecretsService secretsService;
 
     @BeforeEach
     void setUp() {
@@ -58,7 +62,7 @@ class DataSourceAdapterTest {
         var dataSource = mock(OesterreichsEnergieDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(OesterreichsEnergieAdapter.class, adapter);
@@ -72,7 +76,7 @@ class DataSourceAdapterTest {
         when(dataSource.topic()).thenReturn("");
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(MicroTeleinfoV3Adapter.class, adapter);
@@ -84,7 +88,7 @@ class DataSourceAdapterTest {
         var dataSource = mock(SinapsiAlfaDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(SinapsiAlfaAdapter.class, adapter);
@@ -97,7 +101,7 @@ class DataSourceAdapterTest {
         when(dataSource.topic()).thenReturn("");
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(SmartGatewaysAdapter.class, adapter);
@@ -109,7 +113,7 @@ class DataSourceAdapterTest {
         var dataSource = mock(ShellyDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(ShellyAdapter.class, adapter);
@@ -121,7 +125,7 @@ class DataSourceAdapterTest {
         var dataSource = mock(InboundDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(InboundAdapter.class, adapter);
@@ -133,7 +137,7 @@ class DataSourceAdapterTest {
         var dataSource = mock(SimulationDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
         // Then
         assertInstanceOf(SimulationAdapter.class, adapter);
@@ -150,7 +154,7 @@ class DataSourceAdapterTest {
 
             var dataSource = mock(ModbusDataSource.class);
 
-            var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration);
+            var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, secretsService);
 
             assertInstanceOf(ModbusTcpDataSourceAdapter.class, adapter);
         }

@@ -40,6 +40,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
     env_file:
       - .env
+    volumes:
+      - "aiida_security:/usr/local/aiida/security"
 
   emqx:
     image: emqx/emqx:5.8.6
@@ -113,3 +115,4 @@ networks:
 volumes:
   db_data:
   emqx_data:
+  aiida_security:

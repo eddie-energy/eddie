@@ -2,7 +2,9 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -39,8 +41,10 @@ class InboundAdapterTest {
     private InboundAdapter adapter;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws SecretLoadingException {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
+        var secretsService = mock(SecretsService.class);
+        when(secretsService.loadSecret(anyString())).thenReturn("password");
 
         // Mock mqtt configuration
         when(MQTT_CONFIGURATION.password()).thenReturn("aiida");
@@ -55,7 +59,7 @@ class InboundAdapterTest {
         when(dataSource.username()).thenReturn(String.valueOf(MQTT_USERNAME));
         when(dataSource.password()).thenReturn("testPassword");
 
-        adapter = new InboundAdapter(dataSource, MQTT_CONFIGURATION);
+        adapter = new InboundAdapter(dataSource, MQTT_CONFIGURATION, secretsService);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 

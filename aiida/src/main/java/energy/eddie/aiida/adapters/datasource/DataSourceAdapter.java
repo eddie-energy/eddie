@@ -24,6 +24,7 @@ import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,23 +56,25 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
     /**
      * Factory method for {@code DataSourceAdapter} creation.
      *
-     * @param dataSource   The entity of the data source.
-     * @param objectMapper The object mapper to use for deserialization.
+     * @param dataSource     The entity of the data source.
+     * @param objectMapper   The object mapper to use for deserialization.
+     * @param secretsService The secrets service to load the plaintext password
      * @return The created {@code DataSourceAdapter}.
      */
     public static DataSourceAdapter<? extends DataSource> create(
             DataSource dataSource,
             ObjectMapper objectMapper,
-            MqttConfiguration mqttConfiguration
+            MqttConfiguration mqttConfiguration,
+            SecretsService secretsService
     ) {
         return switch (dataSource) {
             case OesterreichsEnergieDataSource ds ->
                     new OesterreichsEnergieAdapter(ds, objectMapper, mqttConfiguration);
             case MicroTeleinfoV3DataSource ds -> new MicroTeleinfoV3Adapter(ds, objectMapper, mqttConfiguration);
-            case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration);
+            case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration, secretsService);
             case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
             case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
-            case InboundDataSource ds -> new InboundAdapter(ds, mqttConfiguration);
+            case InboundDataSource ds -> new InboundAdapter(ds, mqttConfiguration, secretsService);
             case SimulationDataSource ds -> new SimulationAdapter(ds);
             case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
             case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);

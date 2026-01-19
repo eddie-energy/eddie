@@ -66,17 +66,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    /**
-     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be
-     *                  matched.
-     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched
-     * is an Enum.
-     */
-    private boolean isEnumCauseOfException(HttpMessageNotReadableException exception) {
-        return exception.getCause() instanceof InvalidFormatException invalidFormatEx
-               && (invalidFormatEx.getTargetType() != null && invalidFormatEx.getTargetType().isEnum());
-    }
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, List<EddieApiError>>> handleMethodArgumentNotValidException
             (MethodArgumentNotValidException ex) {
@@ -151,5 +140,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<EddieApiError>>> handleInstallerException(InstallerException exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(exception.httpStatus()).body(errors);
+    }
+
+    @ExceptionHandler({
+            SecretStoringException.class,
+            SecretLoadingException.class,
+            SecretDeletionException.class
+    })
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleInternalServerError(Exception exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.internalServerError().body(errors);
+    }
+
+    /**
+     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be
+     *                  matched.
+     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched
+     * is an Enum.
+     */
+    private boolean isEnumCauseOfException(HttpMessageNotReadableException exception) {
+        return exception.getCause() instanceof InvalidFormatException invalidFormatEx
+               && (invalidFormatEx.getTargetType() != null && invalidFormatEx.getTargetType().isEnum());
     }
 }

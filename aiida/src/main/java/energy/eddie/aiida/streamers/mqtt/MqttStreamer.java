@@ -2,12 +2,14 @@ package energy.eddie.aiida.streamers.mqtt;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatter;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
@@ -39,6 +41,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
+    private final SecretsService secretsService;
     private boolean isBeingTerminated = false;
     @Nullable
     private Disposable subscription;
@@ -55,6 +58,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      *                               MQTT configuration values.
      * @param terminationRequestSink Sink, to which the ID of the permission will be published when the EP requests a
      *                               termination.
+     * @param secretsService         Secrets service to retrieve passwords in order to connect to the EDDIE MQTT broker
      */
     public MqttStreamer(
             UUID aiidaId,
@@ -63,7 +67,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             Permission permission,
             Flux<AiidaRecord> recordFlux,
             MqttStreamingContext streamingContext,
-            Sinks.One<UUID> terminationRequestSink
+            Sinks.One<UUID> terminationRequestSink,
+            SecretsService secretsService
     ) {
         super(aiidaId, recordFlux, terminationRequestSink);
 
@@ -73,6 +78,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         this.permission = permission;
         this.streamingConfig = streamingContext.streamingConfig();
         this.permissionLatestRecordMap = streamingContext.permissionLatestRecordMap();
+        this.secretsService = secretsService;
 
         client.setCallback(this);
     }
@@ -84,7 +90,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         connOpts.setAutomaticReconnect(true);
         connOpts.setAutomaticReconnectDelay(30, 60 * 5);
         connOpts.setUserName(streamingConfig.username().toString());
-        connOpts.setPassword(streamingConfig.password().getBytes(StandardCharsets.UTF_8));
+        connOpts.setPassword(loadPassword(streamingConfig).getBytes(StandardCharsets.UTF_8));
 
         // pending tokens are messages that are saved by the MqttClient to its persistence config
         LOGGER.atInfo()
@@ -308,5 +314,16 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
               .addArgument(streamingConfig.permissionId())
               .addArgument(failedToSend.size())
               .log("MqttStreamer for permission {} fetched and enqueued {} messages for sending that previously failed to send");
+    }
+
+    private String loadPassword(MqttStreamingConfig mqttStreamingConfig) {
+        try {
+            return secretsService.loadSecret(mqttStreamingConfig.password());
+        } catch (SecretLoadingException e) {
+            LOGGER.warn("Streamer found no password for permission {}. Continuing with empty password.",
+                        mqttStreamingConfig.password(),
+                        e);
+            return "";
+        }
     }
 }

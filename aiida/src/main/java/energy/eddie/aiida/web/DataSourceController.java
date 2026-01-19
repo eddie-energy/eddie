@@ -3,6 +3,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceTypeDto;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
@@ -130,7 +131,7 @@ public class DataSourceController {
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<DataSourceSecretsDto> addDataSource(
             @RequestBody DataSourceDto dataSource
-    ) throws InvalidUserException, ModbusConnectionException, SinapsiAlflaEmptyConfigException {
+    ) throws InvalidUserException, ModbusConnectionException, SinapsiAlflaEmptyConfigException, SecretStoringException {
         LOGGER.info("Adding new datasource");
 
         if (dataSource.name() == null || dataSource.name().isEmpty()) {

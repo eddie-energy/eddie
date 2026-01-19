@@ -31,16 +31,29 @@ public class MqttUser {
     @SuppressWarnings("NullAway.Init")
     protected MqttUser() {}
 
-    @SuppressWarnings("NullAway")
-    public MqttUser(String username, String password) {
+    private MqttUser(MqttUser user, String alias) {
+        this.id = user.id;
+        this.username = user.username;
+        this.password = alias;
+    }
+
+    public MqttUser(String username, String alias) {
         this.username = username;
-        this.password = password;
+        this.password = alias;
     }
 
     @SuppressWarnings("NullAway")
     public MqttUser(UUID dataSourceId, String password) {
         this.username = dataSourceId.toString();
         this.password = password;
+    }
+
+    public MqttUser copyWithAliasAsPassword(String alias) {
+        return new MqttUser(this, alias);
+    }
+
+    public Long id() {
+        return id;
     }
 
     public String username() {
