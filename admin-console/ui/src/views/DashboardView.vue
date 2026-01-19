@@ -14,8 +14,7 @@ import HealthIcon from '@/components/HealthIcon.vue'
 import {
   ACTIVE_PERMISSION_STATES,
   FAILED_PERMISSION_STATES,
-  GRANTED_PERMISSION_STATES,
-  REGION_CONNECTORS
+  GRANTED_PERMISSION_STATES
 } from '@/constants'
 import type { AnyDataNeed, TimeFramedDataNeed } from '@/types'
 import DashboardCard from '@/components/DashboardCard.vue'
@@ -92,17 +91,13 @@ onMounted(async () => {
 })
 
 function getPermissionCountPerRegionConnector() {
-  const permissionsPerRegionConnector: Record<string, number> = {}
-
-  for (const id of REGION_CONNECTORS) {
-    permissionsPerRegionConnector[id] = 0
-  }
+  const count: Record<string, number> = {}
 
   for (const { regionConnectorId } of permissions.value) {
-    permissionsPerRegionConnector[regionConnectorId]++
+    count[regionConnectorId] = (count[regionConnectorId] || 0) + 1
   }
 
-  return permissionsPerRegionConnector
+  return count
 }
 </script>
 
@@ -272,10 +267,10 @@ function getPermissionCountPerRegionConnector() {
                   </span>
                 </th>
                 <td>
-                  {{ permissionCountPerRegionConnector[id] }}
+                  {{ permissionCountPerRegionConnector[id] || 0 }}
                 </td>
                 <td>
-                  {{ permissionCountPerRegionConnector[id] }}
+                  {{ permissionCountPerRegionConnector[id] || 0 }}
                 </td>
                 <td>
                   <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
