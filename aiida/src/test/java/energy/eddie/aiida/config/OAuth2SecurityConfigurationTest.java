@@ -5,11 +5,8 @@ import energy.eddie.aiida.web.HomeController;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -101,14 +98,6 @@ class OAuth2SecurityConfigurationTest {
 
             assertThat(configurationMetadata)
                     .containsExactlyEntriesOf(Map.of("end_session_endpoint", "https://auth.aiida.energy/logout"));
-        }
-
-        @TestConfiguration
-        static class TestOauth2Configuration {
-            @Bean
-            OAuth2ClientProperties clientProperties() {
-                return new OAuth2ClientProperties();
-            }
         }
     }
 }

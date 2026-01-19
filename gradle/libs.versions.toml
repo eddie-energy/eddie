@@ -164,6 +164,7 @@ spring-security-test = { module = "org.springframework.security:spring-security-
 spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref = "keycloak" }
 spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
 spring-boot-starter-oauth2-resource-server-test = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test" }
+spring-security-oauth-client = { module = "org.springframework.security:spring-security-oauth2-client" }
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
 hibernate-orm-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate-orm" }

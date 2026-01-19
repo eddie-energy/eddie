@@ -38,6 +38,7 @@ dependencies {
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.oauth2.client)
     implementation(libs.spring.boot.starter.oauth2.resource.server)
+    implementation(libs.spring.security.oauth.client)
 
     implementation(libs.reactor.core)
     implementation(libs.eclipse.paho.mqttv5.client)
@@ -50,7 +51,7 @@ dependencies {
 
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)
-    runtimeOnly(libs.flyway.core)
+    runtimeOnly(libs.spring.boot.starter.flyway)
 
     testImplementation(libs.spring.security.test)
     testImplementation(libs.spring.boot.starter.webmvc.test)
@@ -65,7 +66,7 @@ dependencies {
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.flyway.core)
+    testImplementation(libs.spring.boot.starter.flyway)
     testImplementation(libs.junit.mockito)
 
     testRuntimeOnly(libs.junit.platform.launcher)
