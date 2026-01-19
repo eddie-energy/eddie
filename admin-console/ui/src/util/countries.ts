@@ -7,12 +7,15 @@ export function formatCountry(country: string) {
   try {
     return COUNTRY_NAMES.of(country)
   } catch {
+    if (country.toLowerCase() === 'aiida' || country === 'Unknown') {
+      return 'AIIDA'
+    }
     return country
   }
 }
 
 export function countryFlag(countryCode: string) {
-  if (countryCode === 'aiida') {
+  if (countryCode === 'aiida' || countryCode === 'Unknown') {
     return '🤖'
   }
   // check if result is in right range
@@ -21,5 +24,5 @@ export function countryFlag(countryCode: string) {
   }
   return [...countryCode]
     .map((char) => String.fromCodePoint(127397 + char.charCodeAt(0)))
-    .reduce((a, b) => `${a}${b}`)
+    .reduce((a, b) => `${a}${b}`, '')
 }
