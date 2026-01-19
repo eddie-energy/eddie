@@ -29,15 +29,14 @@ import { countryFlag, formatCountry } from '@/util/countries'
 const confirm = useConfirm()
 const toast = useToast()
 
+const permissions = ref<StatusMessage[]>([])
+const totalRecords = ref(0)
+const loading = ref(true)
+
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const expandedRows = ref({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
-const loading = ref(true)
 
-const permissions = ref<StatusMessage[]>([])
-const totalRecords = ref(0)
-const rowOptions = [50, 100, 250, 500]
-const rows = rowOptions[0]
 let loadedPage = 0
 
 async function fetchPermissions(page: number = 0, size: number = 500) {
@@ -138,8 +137,8 @@ onMounted(async () => {
     v-model:expanded-rows="expandedRows"
     @row-expand="onRowExpand"
     paginator
-    :rows
-    :rows-per-page-options="rowOptions"
+    :rows="50"
+    :rows-per-page-options="[50, 100, 250, 500]"
     v-model:filters="filters"
     :global-filter-fields="[
       'country',
