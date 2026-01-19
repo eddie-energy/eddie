@@ -153,7 +153,7 @@ spring-boot-starter-thymeleaf = { module = "org.springframework.boot:spring-boot
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 spring-boot-testcontainers = { module = "org.springframework.boot:spring-boot-testcontainers" }
 spring-boot-autoconfigurer = { module = "org.springframework.boot:spring-boot-autoconfigure" }
-spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
+spring-boot-starter-security-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-client" }
 spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security" }
 spring-kafka = { module = "org.springframework.kafka:spring-kafka" }
 spring-kafka-test = { module = "org.springframework.kafka:spring-kafka-test" }
@@ -162,9 +162,8 @@ spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-w
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security-test" }
 spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref = "keycloak" }
-spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
-spring-boot-starter-oauth2-resource-server-test = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test" }
-spring-security-oauth-client = { module = "org.springframework.security:spring-security-oauth2-client" }
+spring-boot-starter-security-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server" }
+spring-boot-starter-security-oauth2-resource-server-test = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test" }
 
 hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", version.ref = "hibernate-validator" }
 hibernate-orm-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate-orm" }

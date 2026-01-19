@@ -28,7 +28,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webflux)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.spring.boot.starter.oauth2.resource.server)
+    implementation(libs.spring.boot.starter.security.oauth2.resource.server)
     implementation(libs.spring.oxm)
     implementation(libs.jakarta.annotation.api)
     implementation(libs.jackson.jakarta.xmlbind.annotations)
