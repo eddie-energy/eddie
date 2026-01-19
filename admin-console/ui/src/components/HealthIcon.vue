@@ -1,42 +1,27 @@
 <script setup lang="ts">
 import type { HealthStatus } from '@/api'
 
-const colors: Record<HealthStatus, string> = {
-  DISABLED: 'danger',
-  DOWN: 'danger',
-  OUT_OF_SERVICE: 'info',
-  UNKNOWN: 'warn',
-  UP: 'success'
+const presets: Record<HealthStatus, { severity: string; text: string; icon: string }> = {
+  DISABLED: { severity: 'danger', icon: 'pi-stop-circle', text: 'Disabled' },
+  DOWN: { severity: 'danger', icon: 'pi-exclamation-circle', text: 'Down' },
+  OUT_OF_SERVICE: { severity: 'info', icon: 'pi-times-circle', text: 'Unavailable' },
+  UNKNOWN: { severity: 'warn', icon: 'pi-question-circle', text: 'Unknown' },
+  UP: { severity: 'success', icon: 'pi-check-circle', text: 'Running' }
 }
 
-const text: Record<HealthStatus, string> = {
-  DISABLED: 'Disabled',
-  DOWN: 'Down',
-  OUT_OF_SERVICE: 'Unavailable',
-  UNKNOWN: 'Unknown',
-  UP: 'Running'
-}
-
-const icons: Record<HealthStatus, string> = {
-  DISABLED: 'pi-stop-circle',
-  DOWN: 'pi-exclamation-circle',
-  OUT_OF_SERVICE: 'pi-times-circle',
-  UNKNOWN: 'pi-question-circle',
-  UP: 'pi-check-circle'
-}
-
-defineProps<{ health: HealthStatus }>()
+const { health } = defineProps<{ health: HealthStatus }>()
+const { icon, severity, text } = presets[health]
 </script>
 
 <template>
   <span
     :style="{
-      color: `var(--chip-text-${colors[health]})`,
-      background: `var(--chip-background-${colors[health]})`
+      color: `var(--chip-text-${severity})`,
+      background: `var(--chip-background-${severity})`
     }"
   >
-    <i class="pi" :class="[icons[health]]"></i>
-    {{ text[health] }}
+    <i class="pi" :class="[icon]"></i>
+    {{ text }}
   </span>
 </template>
 
