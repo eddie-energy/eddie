@@ -94,4 +94,4 @@ Some important documentation links:
 
 - [Docs](https://www.acc.mijnenergiedata.nl/docs/)
 - [Test users](https://www.acc.mijnenergiedata.nl/docs/ontwikkelaars/test-users.html#test_users)
-- [Registration & Open ID Connect](https://www.mijnenergiedata.nl/docs/afnemers-algemeen.html)
+- [Registration & Open ID Connect](https://www.mijnenergiedata.nl/docs/ontwikkelaars.html)
