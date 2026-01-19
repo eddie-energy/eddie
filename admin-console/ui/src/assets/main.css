@@ -20,14 +20,14 @@
   --card-background: #fafbfc;
   --card-border: 1px solid rgba(1, 122, 160, 0.25);
   --tile-background: #e5f1f4;
-  --chip-text-green: #105429;
-  --chip-background-green: #c5ff64;
-  --chip-text-orange: #975d00;
-  --chip-background-orange: #ffe8c3;
-  --chip-text-blue: #004cbf;
-  --chip-background-blue: #d7e8ff;
-  --chip-text-red: #c42222;
-  --chip-background-red: #ffdddd;
+  --chip-text-success: #105429;
+  --chip-background-success: #c5ff64;
+  --chip-text-warn: #975d00;
+  --chip-background-warn: #ffe8c3;
+  --chip-text-info: #004cbf;
+  --chip-background-info: #d7e8ff;
+  --chip-text-danger: #c42222;
+  --chip-background-danger: #ffdddd;
 
   /* Dark mode variables */
   @media (prefers-color-scheme: dark) {
@@ -40,7 +40,7 @@
     --card-background: #161616;
     --card-border: 1px solid #242424;
     --tile-background: #27262b;
-    --chip-background-green: #76ffa8;
+    --chip-background-success: #76ffa8;
   }
 }
 

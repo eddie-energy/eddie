@@ -2,11 +2,11 @@
 import type { HealthStatus } from '@/api'
 
 const colors: Record<HealthStatus, string> = {
-  DISABLED: 'red',
-  DOWN: 'red',
-  OUT_OF_SERVICE: 'blue',
-  UNKNOWN: 'orange',
-  UP: 'green'
+  DISABLED: 'danger',
+  DOWN: 'danger',
+  OUT_OF_SERVICE: 'info',
+  UNKNOWN: 'warn',
+  UP: 'success'
 }
 
 const text: Record<HealthStatus, string> = {
