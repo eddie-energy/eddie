@@ -121,7 +121,7 @@ function getPermissionCountPerRegionConnector() {
           :count="permissions.length"
           info="Number of permissions and permission requests in all states."
           text="Total Permissions"
-          color="blue"
+          color="info"
         >
           <i class="pi pi-plus-circle"></i>
         </DashboardCard>
@@ -129,7 +129,7 @@ function getPermissionCountPerRegionConnector() {
           :count="permissionStates.granted"
           info="Number of permissions that have been accepted or fulfilled."
           text="Granted Permissions"
-          color="green"
+          color="success"
         >
           <i class="pi pi-check-circle"></i>
         </DashboardCard>
@@ -137,7 +137,7 @@ function getPermissionCountPerRegionConnector() {
           :count="permissionStates.active"
           info="Number of permissions that are in the accepted state and should be sending data."
           text="Active Permissions"
-          color="pink"
+          color="help"
         >
           <i class="pi pi-play-circle"></i>
         </DashboardCard>
@@ -145,7 +145,7 @@ function getPermissionCountPerRegionConnector() {
           :count="permissionStates.failed"
           info="Number of permissions that are in a failure state."
           text="Failed Permissions"
-          color="red"
+          color="danger"
         >
           <i class="pi pi-times-circle"></i>
         </DashboardCard>
@@ -165,7 +165,7 @@ function getPermissionCountPerRegionConnector() {
           :count="dataNeeds.length"
           info="Total number of data needs."
           text="Total Data Needs"
-          color="blue"
+          color="info"
         >
           <i class="pi pi-plus-circle"></i>
         </DashboardCard>
@@ -173,7 +173,7 @@ function getPermissionCountPerRegionConnector() {
           :count="dataNeedStates.disabled"
           info="Data needs that have been disabled."
           text="Disabled Data Needs"
-          color="orange"
+          color="warn"
         >
           <i class="pi pi-pause-circle"></i>
         </DashboardCard>
@@ -181,7 +181,7 @@ function getPermissionCountPerRegionConnector() {
           :count="dataNeedStates.active"
           info="Data needs having permissions that are in the accepted state and should be sending data."
           text="Active Data Needs"
-          color="green"
+          color="success"
         >
           <i class="pi pi-play-circle"></i>
         </DashboardCard>
@@ -189,7 +189,7 @@ function getPermissionCountPerRegionConnector() {
           :count="dataNeedStates.expired"
           info="Data needs with absolute durations with their end date in the past."
           text="Expired Data Needs"
-          color="red"
+          color="danger"
         >
           <i class="pi pi-times-circle"></i>
         </DashboardCard>
@@ -211,7 +211,7 @@ function getPermissionCountPerRegionConnector() {
           <span>{{ dataNeed.description }}</span>
           <div class="data-need-stats">
             <div class="data-need-stat">
-              <i class="pi pi-check-circle" style="background: var(--green)"></i>
+              <i class="pi pi-check-circle" style="background: var(--success)"></i>
               <span>Granted Permissions</span>
               <b>{{
                 permissions.filter(
@@ -222,7 +222,7 @@ function getPermissionCountPerRegionConnector() {
               }}</b>
             </div>
             <div class="data-need-stat">
-              <i class="pi pi-play-circle" style="background: var(--pink)"></i>
+              <i class="pi pi-play-circle" style="background: var(--help)"></i>
               <span>Active Permissions</span>
               <b>{{
                 permissions.filter(

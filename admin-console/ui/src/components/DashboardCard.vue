@@ -3,7 +3,7 @@ defineProps<{
   text: string
   count: number | string
   info: string
-  color: 'blue' | 'green' | 'orange' | 'pink' | 'red'
+  color: 'success' | 'info' | 'warn' | 'help' | 'danger'
 }>()
 </script>
 
