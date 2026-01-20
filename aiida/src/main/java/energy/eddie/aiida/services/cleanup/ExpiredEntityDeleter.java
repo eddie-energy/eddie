@@ -4,5 +4,5 @@ import java.time.Instant;
 
 @FunctionalInterface
 public interface ExpiredEntityDeleter {
-    long deleteEntitiesOlderThan(Instant threshold);
+    int deleteOldestByTimestampBefore(Instant threshold, int limit);
 }

@@ -13,6 +13,6 @@ public class AiidaRecordService extends TimeBasedCleanupService {
     public AiidaRecordService(CleanupConfiguration cleanupConfiguration, AiidaRecordRepository repository) {
         super(CleanupEntity.AIIDA_RECORD,
               Objects.requireNonNull(cleanupConfiguration.entities().get(CleanupEntity.AIIDA_RECORD)).retention(),
-              repository::deleteAiidaRecordsByTimestampBefore);
+              repository::deleteOldestByTimestampBefore);
     }
 }

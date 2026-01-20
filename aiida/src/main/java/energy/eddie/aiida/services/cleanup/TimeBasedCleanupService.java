@@ -1,16 +1,15 @@
 package energy.eddie.aiida.services.cleanup;
 
 import energy.eddie.aiida.config.cleanup.CleanupEntity;
-import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 public abstract class TimeBasedCleanupService implements EntityCleanupService {
+    protected static final int BATCH_SIZE = 1_000;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeBasedCleanupService.class);
 
     private final CleanupEntity cleanupEntity;
@@ -28,20 +27,33 @@ public abstract class TimeBasedCleanupService implements EntityCleanupService {
     }
 
     @Override
-    @Transactional
     public void deleteExpiredEntities() {
-        LOGGER.info("Starting cleanup for {}", cleanupEntity);
-        try {
-            var threshold = Instant.now().minus(retention);
-            var deletedEntities = expiredEntityDeleter.deleteEntitiesOlderThan(threshold);
+        final Instant threshold = Instant.now().minus(retention);
 
-            LOGGER.info("Deleting {} expired entities ({}) older than {} (retention: {})",
-                         deletedEntities,
-                         cleanupEntity,
-                         LocalDateTime.ofInstant(threshold, ZoneId.systemDefault()),
-                         retention);
-        } catch (Exception e) {
-            LOGGER.error("Error during cleanup for {}", cleanupEntity, e);
+        LOGGER.info("Starting cleanup for {} (retention: {}, batch size: {})", cleanupEntity, retention, BATCH_SIZE);
+
+        var totalDeleted = 0;
+
+        while (true) {
+            try {
+                var deletedInBatch = expiredEntityDeleter.deleteOldestByTimestampBefore(threshold, BATCH_SIZE);
+
+                if (deletedInBatch == 0) {
+                    break;
+                }
+
+                totalDeleted += deletedInBatch;
+
+                LOGGER.debug("Deleted {} expired entities for {} in current batch", deletedInBatch, cleanupEntity);
+            } catch (Exception ex) {
+                LOGGER.error("Cleanup aborted for {} after deleting {} entities", cleanupEntity, totalDeleted, ex);
+                break;
+            }
         }
+
+        LOGGER.info("Finished cleanup for {} – deleted {} entities older than {}",
+                    cleanupEntity,
+                    totalDeleted,
+                    threshold);
     }
 }
