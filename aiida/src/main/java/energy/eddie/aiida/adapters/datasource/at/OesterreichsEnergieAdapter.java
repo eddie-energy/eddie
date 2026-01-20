@@ -53,7 +53,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.info("Topic {} new message: {}", topic, message);
+        LOGGER.trace("Topic {} new message: {}", topic, message);
 
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
@@ -65,7 +65,8 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (IOException e) {
-            LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
+            LOGGER.error("Topic {}: error while deserializing JSON received from adapter. JSON was {}",
+                         topic,
                          new String(message.getPayload(), StandardCharsets.UTF_8),
                          e);
         }
