@@ -11,3 +11,19 @@ Copyright (c) 2018-2020 Green Button Alliance, Inc.
 The Initial Developer of the region-connectors/region-connector-us-green-button/src/main/schemas/green-button/xsd/GB_XML_schema_usage_v3_3.xsd,
 is NAESB (https://www.naesb.org/).
 Copyright 2011-2020 North American Energy Standards Board
+
+Icons in aiida/ui/src/assets/icons were sourced from the following icon sets
+- css.gg by Astrit (https://github.com/astrit/css.gg)
+- IconPark Outline by ByteDance (https://github.com/bytedance/IconPark)
+- Solar by 480 Design (https://www.figma.com/community/file/1166831539721848736)
+- Lucide by Lucide Contributors (https://github.com/lucide-icons/lucide)
+- Flowbite Icons by Themeberg (https://github.com/themesberg/flowbite-icons)
+- MingCute Icon by MingCute Design (https://github.com/Richard9394/MingCute)
+- System UIcons by Corey Ginnivan (https://github.com/CoreyGinnivan/system-uicons)
+- Huge Icons by Hugeicons (https://icon-sets.iconify.design/icon-sets/hugeicons)
+- Material Symbols by Google (https://github.com/google/material-design-icons)
+- Google Material Icons by Material Design Authors (https://github.com/material-icons/material-icons)
+- Myna UI Icons by Praveen Juge (https://github.com/praveenjuge/mynaui-icons)
+- WeUI Icon by WeUI (https://github.com/weui/weui-icon)
+- Simple line icons by Sabbir Ahmed (https://github.com/thesabbir/simple-line-icons)
+- IonIcons by Ben Sperry (https://github.com/ionic-team/ionicons)
