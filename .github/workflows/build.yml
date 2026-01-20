@@ -12,6 +12,8 @@ on:
       - ".sonarlint/**"
       - ".run/**"
       - "**.md"
+      - "LICENSE"
+      - "NOTICE"
   push:
     branches:
       - main
@@ -22,6 +24,8 @@ on:
       - ".sonarlint/**"
       - ".run/**"
       - "**.md"
+      - "LICENSE"
+      - "NOTICE"
   workflow_dispatch:
 
 jobs:
