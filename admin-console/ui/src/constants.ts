@@ -24,3 +24,15 @@ export const REGION_CONNECTORS = [
   'sim',
   'us-green-button'
 ]
+
+export const ACTIVE_PERMISSION_STATES = ['ACCEPTED']
+
+export const GRANTED_PERMISSION_STATES = ['ACCEPTED', 'FULFILLED']
+
+export const FAILED_PERMISSION_STATES = [
+  'MALFORMED',
+  'UNABLE_TO_SEND',
+  'TIMED_OUT',
+  'UNFULFILLABLE',
+  'FAILED_TO_TERMINATE'
+]

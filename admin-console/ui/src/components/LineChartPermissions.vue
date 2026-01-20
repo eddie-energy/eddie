@@ -1,82 +1,48 @@
 <script setup lang="ts">
 import Chart from 'primevue/chart'
-import { ref, watch } from 'vue'
+import { computed } from 'vue'
+import type { StatusMessage } from '@/api'
 
-const props = defineProps<{
-  permissions: {
-    permissionId: string
-    regionConnectorId: string
-    dataNeedId: string
-    country: string
-    dso: string
-    startDate: string
-    status: string
-    parsedStartDate: string
-  }[]
+const { permissions } = defineProps<{
+  permissions: StatusMessage[]
 }>()
 
-const chartData = ref()
-const chartOptions = ref()
+const chartData = computed(() => {
+  const dates: Record<string, number> = {}
 
-watch(props, () => {
-  const permissionsStartDates = props.permissions.map(({ startDate }) => startDate)
-
-  const dateArray = permissionsStartDates.map((dateTime) => {
-    const [year, month, day] = dateTime.split('T')[0].split('-')
-    return `${day}.${month}.${year}`
-  })
-
-  let permissionsCountPerDate: { [key: string]: number } = {}
-  for (const date of dateArray) {
-    permissionsCountPerDate[date] = (permissionsCountPerDate[date] || 0) + 1
+  for (let permission of permissions) {
+    const date = permission.startDate.substring(0, permission.startDate.indexOf('T'))
+    dates[date] = (dates[date] || 0) + 1
   }
 
-  chartData.value = {
-    labels: Object.keys(permissionsCountPerDate),
+  return {
+    labels: Object.keys(dates),
     datasets: [
       {
         label: 'Permissions per day',
-        data: Object.values(permissionsCountPerDate),
+        data: Object.values(dates),
         tension: 0.25
       }
     ]
-  }
-
-  chartOptions.value = {
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true
-      }
-    }
   }
 })
 </script>
 
 <template>
-  <div class="permissions-chart-container">
-    <Chart
-      class="permissions-chart"
-      type="line"
-      :data="chartData"
-      :options="chartOptions"
-      :canvasProps="{
-        role: 'img',
-        'aria-label': 'Line chart describing the number of permissions added over time.'
-      }"
-    />
-  </div>
+  <Chart
+    type="line"
+    :data="chartData"
+    :options="{
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }"
+    :canvasProps="{
+      role: 'img',
+      'aria-label': 'Line chart describing the number of permissions added over time.'
+    }"
+  />
 </template>
-
-<style scoped>
-.permissions-chart {
-  width: 100%;
-  height: 100%;
-}
-
-.permissions-chart-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-</style>

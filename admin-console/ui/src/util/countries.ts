@@ -9,6 +9,9 @@ export function formatCountry(country: string) {
 }
 
 export function countryFlag(countryCode: string) {
+  if (countryCode === 'aiida') {
+    return '🤖'
+  }
   // check if result is in right range
   if (countryCode.length !== 2) {
     return ''

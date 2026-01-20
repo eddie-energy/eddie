@@ -4,7 +4,12 @@ import EddieIcon from '@/components/EddieIcon.vue'
 
 <template>
   <aside>
-    <EddieIcon class="logo" />
+    <header>
+      <RouterLink to="/">
+        <EddieIcon class="logo" />
+        Admin Console
+      </RouterLink>
+    </header>
 
     <nav>
       <RouterLink to="/">
@@ -23,16 +28,31 @@ import EddieIcon from '@/components/EddieIcon.vue'
         <span class="pi pi-briefcase"></span>
         Data Needs
       </RouterLink>
+      <RouterLink to="/configuration">
+        <span class="pi pi-cog"></span>
+        Configuration
+      </RouterLink>
     </nav>
   </aside>
 </template>
 
 <style scoped>
-.logo {
-  margin: 0.5rem;
+aside {
+  padding: 1.75rem 1.25rem;
+  background: var(--sidebar-background);
+}
+
+header a {
+  color: var(--text-color);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
 }
 
 nav {
+  margin-top: 4.5rem;
   display: grid;
   gap: 0.5rem;
 }

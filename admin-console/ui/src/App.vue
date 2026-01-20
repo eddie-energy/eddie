@@ -19,19 +19,23 @@ import { ConfirmDialog, Toast } from 'primevue'
 
 <style scoped>
 .wrapper {
-  height: 100%;
   display: grid;
-  padding: 1rem;
-  gap: 1rem;
+  grid-template-columns: auto 1fr;
 }
 
-@media only screen and (min-width: 1280px) {
+main {
+  padding: 7.5rem 2.5rem 3rem;
+  overflow: auto;
+}
+
+@media (width < 80rem) {
   .wrapper {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto;
   }
 
   main {
-    overflow: auto;
+    padding: 3rem 2rem;
+    overflow: initial;
   }
 }
 </style>

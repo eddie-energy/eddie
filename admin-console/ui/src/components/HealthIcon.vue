@@ -1,21 +1,40 @@
 <script setup lang="ts">
 import type { HealthStatus } from '@/api'
 
-const HEALTH_INDICATOR_COLORS = {
-  UP: 'var(--p-green-500)',
-  UNKNOWN: 'var(--p-yellow-400)',
-  OUT_OF_SERVICE: 'var(--p-orange-500)',
-  DOWN: 'var(--p-red-500)',
-  DISABLED: 'var(--p-gray-500)'
+const presets: Record<HealthStatus, { severity: string; text: string; icon: string }> = {
+  DISABLED: { severity: 'danger', icon: 'pi-stop-circle', text: 'Disabled' },
+  DOWN: { severity: 'danger', icon: 'pi-exclamation-circle', text: 'Down' },
+  OUT_OF_SERVICE: { severity: 'info', icon: 'pi-times-circle', text: 'Unavailable' },
+  UNKNOWN: { severity: 'warn', icon: 'pi-question-circle', text: 'Unknown' },
+  UP: { severity: 'success', icon: 'pi-check-circle', text: 'Running' }
 }
 
-defineProps<{ health: HealthStatus }>()
+const { health } = defineProps<{ health: HealthStatus }>()
+const { icon, severity, text } = presets[health]
 </script>
 
 <template>
-  <i
-    class="pi pi-circle-fill"
-    :style="{ color: HEALTH_INDICATOR_COLORS[health] }"
-    v-tooltip.top="health"
-  ></i>
+  <span
+    :style="{
+      color: `var(--chip-text-${severity})`,
+      background: `var(--chip-background-${severity})`
+    }"
+  >
+    <i class="pi" :class="[icon]"></i>
+    {{ text }}
+  </span>
 </template>
+
+<style scoped>
+span {
+  display: inline-flex;
+  gap: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+span,
+i {
+  font-size: 0.625rem;
+}
+</style>
