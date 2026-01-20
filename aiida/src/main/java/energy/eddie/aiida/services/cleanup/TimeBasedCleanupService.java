@@ -30,13 +30,17 @@ public abstract class TimeBasedCleanupService implements EntityCleanupService {
     @Override
     @Transactional
     public void deleteExpiredEntities() {
-        var threshold = Instant.now().minus(retention);
-        var deletedEntities = expiredEntityDeleter.deleteEntitiesOlderThan(threshold);
+        try {
+            var threshold = Instant.now().minus(retention);
+            var deletedEntities = expiredEntityDeleter.deleteEntitiesOlderThan(threshold);
 
-        LOGGER.debug("Deleting {} expired entities ({}) older than {} (retention: {})",
-                     deletedEntities,
-                     cleanupEntity,
-                     LocalDateTime.ofInstant(threshold, ZoneId.systemDefault()),
-                     retention);
+            LOGGER.debug("Deleting {} expired entities ({}) older than {} (retention: {})",
+                         deletedEntities,
+                         cleanupEntity,
+                         LocalDateTime.ofInstant(threshold, ZoneId.systemDefault()),
+                         retention);
+        } catch (Exception e) {
+            LOGGER.error("Error during cleanup for {}", cleanupEntity, e);
+        }
     }
 }
