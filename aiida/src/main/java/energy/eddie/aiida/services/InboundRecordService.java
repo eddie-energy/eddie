@@ -13,6 +13,6 @@ public class InboundRecordService extends TimeBasedCleanupService {
     public InboundRecordService(CleanupConfiguration cleanupConfiguration, InboundRecordRepository repository) {
         super(CleanupEntity.INBOUND_RECORD,
               Objects.requireNonNull(cleanupConfiguration.entities().get(CleanupEntity.INBOUND_RECORD)).retention(),
-              repository::deleteInboundRecordsByTimestampBefore);
+              repository::deleteOldestByTimestampBefore);
     }
 }

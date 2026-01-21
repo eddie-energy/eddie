@@ -140,7 +140,8 @@ public class Aggregator implements AutoCloseable {
                                                              dataSourceId))
                    .map(aiidaRecord -> filterAllowedDataTags(aiidaRecord, allowedDataTags))
                    .buffer(cronSink.asFlux())
-                   .flatMapIterable(this::aggregateRecords);
+                   .flatMapIterable(this::aggregateRecords)
+                   .onErrorContinue((err, obj) -> LOGGER.error("Error while filtering records for permission", err));
     }
 
     /**

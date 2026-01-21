@@ -14,6 +14,6 @@ public class FailedToSendService extends TimeBasedCleanupService {
         super(CleanupEntity.FAILED_TO_SEND_ENTITY,
               Objects.requireNonNull(cleanupConfiguration.entities().get(CleanupEntity.FAILED_TO_SEND_ENTITY))
                      .retention(),
-              repository::deleteFailedToSendEntitiesByCreatedAtBefore);
+              repository::deleteOldestByCreatedAtBefore);
     }
 }

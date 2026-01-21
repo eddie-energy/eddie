@@ -45,7 +45,7 @@ management:
 
 aiida:
   cleanup:
-    cleanup-interval: P1D
+    interval: P1D
     entities:
       aiida-record:
         retention: P1D

@@ -65,7 +65,7 @@ authorization {
       password = REPLACED_WITH_ENV
       pool_size = 8
       query = """~
-        SELECT LOWER(action), LOWER(acl_type) AS permission, topic
+        SELECT LOWER(action) AS action, LOWER(acl_type) AS permission, topic
          FROM public.data_source_mqtt_acl
          WHERE username = ${username};~"""
       # Replaced with .env file
