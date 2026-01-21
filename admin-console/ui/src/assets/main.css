@@ -1,5 +1,5 @@
 /*
- * SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+ * SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -9,6 +9,8 @@
   --panel-radius: 1rem;
   --card-radius: 0.5rem;
   --tile-radius: 0.5rem;
+  --table-radius: 0.5rem;
+  --table-padding: 1rem 0.75rem;
 
   /* Light mode variables */
   --success: #92c143;
@@ -21,18 +23,22 @@
   --sidebar-background: #d0e6ed;
   --panel-background: #fafbfc;
   --panel-border: 1px solid #fafbfc;
-  --panel-shadow: 0 5px 10px 0 rgba(30, 30, 30, 0.1);
+  --panel-shadow: 0 5px 10px 0 #1e1e1e1a;
   --card-background: #fafbfc;
-  --card-border: 1px solid rgba(1, 122, 160, 0.25);
+  --card-border: 1px solid #017aa040;
   --tile-background: #e5f1f4;
+  --chip-text-neutral: #017aa0;
+  --chip-text-contrast: #017aa0;
+  --chip-text-link: #004cbf;
   --chip-text-success: #105429;
-  --chip-background-success: #c5ff64;
+  --chip-background-success: #d3ffe3;
   --chip-text-warn: #975d00;
   --chip-background-warn: #ffe8c3;
   --chip-text-info: #004cbf;
   --chip-background-info: #d7e8ff;
   --chip-text-danger: #c42222;
   --chip-background-danger: #ffdddd;
+  --table-border: 1px solid #017aa040;
 
   /* Dark mode variables */
   @media (prefers-color-scheme: dark) {
@@ -45,7 +51,9 @@
     --card-background: #161616;
     --card-border: 1px solid #242424;
     --tile-background: #27262b;
-    --chip-background-success: #76ffa8;
+    --chip-text-neutral: #606060;
+    --chip-text-contrast: #161616;
+    --table-border: 1px solid #2e2e30;
   }
 }
 
@@ -77,4 +85,9 @@ h1 {
   font-size: 2.5rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
 }

@@ -23,7 +23,12 @@ const EddiePreset = definePreset(Aura, {
     primary: palette('#017aa0'),
     colorScheme: {
       light: {
+        text: {
+          color: '#017aa0'
+        },
         content: {
+          background: '#fafbfc',
+          borderColor: '#fafbfc',
           color: '#017aa0'
         },
         primary: {
@@ -32,7 +37,12 @@ const EddiePreset = definePreset(Aura, {
         surface: {}
       },
       dark: {
+        text: {
+          color: '#ffffff'
+        },
         content: {
+          background: '#202022',
+          borderColor: '#2e2e30',
           color: '#ffffff'
         }
       }
