@@ -26,6 +26,7 @@ import { ConfirmDialog, Toast } from 'primevue'
 .wrapper {
   display: grid;
   grid-template-columns: auto 1fr;
+  height: 100%;
 }
 
 main {
