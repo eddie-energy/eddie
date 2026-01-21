@@ -144,7 +144,7 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors/{region-connector}/data-need-rule-set", "id"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasSize(1)))
-               .andExpect(jsonPath("$.[0].type").value("AccountingPointDataNeed"));
+               .andExpect(jsonPath("$.[0].type").value("account"));
     }
 
     @Test
@@ -155,5 +155,16 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors/data-need-rule-sets"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasKey("id")));
+    }
+
+    @Test
+    void regionConnectorsSupportDataNeeds_returnsAllSupportedRegionConnectors() throws Exception {
+        when(router.findRegionConnectorsSupportingDataNeeds(Set.of("dnid1", "dnid2")))
+                .thenReturn(Set.of("at-eda", "be-fluvius"));
+
+        mockMvc.perform(get("/api/region-connectors/data-needs")
+                                .queryParam("data-need-id", "dnid1", "dnid2"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").value(hasSize(2)));
     }
 }

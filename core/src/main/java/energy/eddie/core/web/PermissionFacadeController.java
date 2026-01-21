@@ -71,9 +71,17 @@ public class PermissionFacadeController {
     ) throws UnknownRegionConnectorException {
         return switch (dataNeedCalculationRouter.calculateFor(regionConnector, dataNeedId)) {
             case MultipleDataNeeds(Map<String, DataNeedCalculation> result) -> ResponseEntity.ok(result);
-            case MultipleDataNeedsError multipleDataNeedsError ->
-                    ResponseEntity.badRequest().body(Map.of(ERRORS_PROPERTY_NAME, List.of(multipleDataNeedsError)));
+            case MultipleDataNeedsError multipleDataNeedsError -> {
+                var errorMap = Map.of(ERRORS_PROPERTY_NAME, List.of(multipleDataNeedsError));
+                yield ResponseEntity.badRequest()
+                                    .body(errorMap);
+            }
         };
+    }
+
+    @GetMapping("/region-connectors/data-needs")
+    public Set<String> supportedDataNeeds(@RequestParam("data-need-id") Set<String> dataNeedIds) {
+        return dataNeedCalculationRouter.findRegionConnectorsSupportingDataNeeds(dataNeedIds);
     }
 
     @GetMapping("/region-connectors/data-need-rule-sets")

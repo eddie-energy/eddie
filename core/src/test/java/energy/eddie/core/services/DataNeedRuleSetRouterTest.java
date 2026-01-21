@@ -65,6 +65,6 @@ class DataNeedRuleSetRouterTest {
         // Then
         assertThat(res)
                 .singleElement()
-                .isEqualTo(new SupportedDataNeeds("id", Set.of("AccountingPointDataNeed")));
+                .isEqualTo(new SupportedDataNeeds("id", Set.of("account")));
     }
 }

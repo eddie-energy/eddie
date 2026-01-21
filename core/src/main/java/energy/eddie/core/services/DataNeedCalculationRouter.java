@@ -9,19 +9,19 @@ import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeeds;
 import static energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeedsError;
 
 @Service
 public class DataNeedCalculationRouter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataNeedCalculationRouter.class);
     private final Map<String, DataNeedCalculationService<DataNeed>> services = new HashMap<>();
     private final DataNeedsService dataNeedsService;
 
@@ -59,6 +59,16 @@ public class DataNeedCalculationRouter {
         return calculations;
     }
 
+    public Set<String> findRegionConnectorsSupportingDataNeeds(Set<String> dataNeedIds) {
+        Set<String> supportedRegionConnectors = new HashSet<>();
+        for (var key : services.keySet()) {
+            if (checkIfRegionConnectorSupportsDataNeeds(dataNeedIds, key)) {
+                supportedRegionConnectors.add(key);
+            }
+        }
+        return supportedRegionConnectors;
+    }
+
     public MultipleDataNeedsOrErrorResult calculateFor(
             String regionConnector,
             Set<String> dataNeedIds
@@ -82,6 +92,21 @@ public class DataNeedCalculationRouter {
             case InvalidDataNeedCombination(Set<String> offendingDataNeedIds, String message) ->
                     new MultipleDataNeedsError(offendingDataNeedIds, message);
         };
+    }
+
+    private boolean checkIfRegionConnectorSupportsDataNeeds(Set<String> dataNeedIds, String regionConnector) {
+        try {
+            var value = calculateFor(regionConnector, dataNeedIds);
+            if (value instanceof MultipleDataNeeds(Map<String, DataNeedCalculation> result)) {
+                return result.values()
+                             .stream()
+                             .allMatch(DataNeedCalculation::supportsDataNeed);
+            }
+        } catch (UnknownRegionConnectorException e) {
+            LOGGER.warn("Got exception while calculating for multiple data needs {} for region connector {}",
+                        dataNeedIds, regionConnector, e);
+        }
+        return false;
     }
 
     private DataNeedCalculation toCalculation(
