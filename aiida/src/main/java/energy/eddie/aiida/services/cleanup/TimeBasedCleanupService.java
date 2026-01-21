@@ -8,9 +8,9 @@ import java.time.Duration;
 import java.time.Instant;
 
 public abstract class TimeBasedCleanupService implements EntityCleanupService {
-    protected static final int BATCH_SIZE = 1_000;
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TimeBasedCleanupService.class);
+
+    protected static final int BATCH_SIZE = 1_000;
 
     private final CleanupEntity cleanupEntity;
     private final Duration retention;
@@ -27,17 +27,15 @@ public abstract class TimeBasedCleanupService implements EntityCleanupService {
     }
 
     @Override
-    public void deleteExpiredEntities() {
+    public int deleteExpiredEntities() {
         final Instant threshold = Instant.now().minus(retention);
 
-        LOGGER.info("Starting cleanup for {} (retention: {}, batch size: {})", cleanupEntity, retention, BATCH_SIZE);
+        LOGGER.debug("Starting cleanup for {} (retention: {}, batch size: {})", cleanupEntity, retention, BATCH_SIZE);
 
         var totalDeleted = 0;
-
         while (true) {
             try {
                 var deletedInBatch = expiredEntityDeleter.deleteOldestByTimestampBefore(threshold, BATCH_SIZE);
-
                 if (deletedInBatch == 0) {
                     break;
                 }
@@ -51,9 +49,10 @@ public abstract class TimeBasedCleanupService implements EntityCleanupService {
             }
         }
 
-        LOGGER.info("Finished cleanup for {} – deleted {} entities older than {}",
+        LOGGER.debug("Finished cleanup for {} – deleted {} entities older than {}",
                     cleanupEntity,
                     totalDeleted,
                     threshold);
+        return totalDeleted;
     }
 }
