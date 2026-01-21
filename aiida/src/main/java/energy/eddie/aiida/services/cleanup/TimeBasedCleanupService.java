@@ -33,26 +33,22 @@ public abstract class TimeBasedCleanupService implements EntityCleanupService {
         LOGGER.debug("Starting cleanup for {} (retention: {}, batch size: {})", cleanupEntity, retention, BATCH_SIZE);
 
         var totalDeleted = 0;
-        while (true) {
-            try {
-                var deletedInBatch = expiredEntityDeleter.deleteOldestByTimestampBefore(threshold, BATCH_SIZE);
-                if (deletedInBatch == 0) {
-                    break;
-                }
-
+        try {
+            var deletedInBatch = 0;
+            do {
+                deletedInBatch = expiredEntityDeleter.deleteOldestByTimestampBefore(threshold, BATCH_SIZE);
                 totalDeleted += deletedInBatch;
 
                 LOGGER.debug("Deleted {} expired entities for {} in current batch", deletedInBatch, cleanupEntity);
-            } catch (Exception ex) {
-                LOGGER.error("Cleanup aborted for {} after deleting {} entities", cleanupEntity, totalDeleted, ex);
-                break;
-            }
+            } while (deletedInBatch > 0);
+        } catch (Exception ex) {
+            LOGGER.error("Cleanup aborted for {} after deleting {} entities", cleanupEntity, totalDeleted, ex);
         }
 
         LOGGER.debug("Finished cleanup for {} – deleted {} entities older than {}",
-                    cleanupEntity,
-                    totalDeleted,
-                    threshold);
+                     cleanupEntity,
+                     totalDeleted,
+                     threshold);
         return totalDeleted;
     }
 }
