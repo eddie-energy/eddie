@@ -2,14 +2,18 @@ package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
+import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.CalculationResult;
+import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.InvalidDataNeedCombination;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.AiidaDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
@@ -31,8 +35,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.map;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.when;
@@ -64,7 +69,7 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(DataNeedNotFoundResult.class));
+        assertThat(res).isInstanceOf(DataNeedNotFoundResult.class);
     }
 
     @ParameterizedTest
@@ -89,7 +94,7 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(expected));
+        assertThat(res).isInstanceOf(expected);
     }
 
     @Test
@@ -103,7 +108,7 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
+        assertThat(res).isInstanceOf(DataNeedNotSupportedResult.class);
     }
 
     @Test
@@ -122,11 +127,12 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
-        assertEquals(
-                "Data need type \"OutboundAiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed",
-                ((DataNeedNotSupportedResult) res).message()
-        );
+        assertThat(res)
+                .asInstanceOf(type(DataNeedNotSupportedResult.class))
+                .extracting(DataNeedNotSupportedResult::message)
+                .isEqualTo(
+                        "Data need type \"OutboundAiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed"
+                );
     }
 
     @Test
@@ -230,7 +236,7 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
+        assertThat(res).isInstanceOf(DataNeedNotSupportedResult.class);
     }
 
     @Test
@@ -255,7 +261,7 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
+        assertThat(res).isInstanceOf(DataNeedNotSupportedResult.class);
     }
 
     @Test
@@ -278,7 +284,7 @@ class DataNeedCalculationServiceImplTest {
         var res = calculationService.calculate("dnid");
 
         // Then
-        assertThat(res, instanceOf(DataNeedNotSupportedResult.class));
+        assertThat(res).isInstanceOf(DataNeedNotSupportedResult.class);
     }
 
     @Test
@@ -298,19 +304,15 @@ class DataNeedCalculationServiceImplTest {
     @Test
     void givenMultipleDataNeeds_whenCalculateAll_thenReturnsCorrectResults() {
         // Given
-        when(dataNeedsService.findById("vhd-dnid"))
-                .thenReturn(Optional.of(
-                        new ValidatedHistoricalDataDataNeed(
-                                new RelativeDuration(null, null, null),
-                                EnergyType.ELECTRICITY,
-                                Granularity.PT1H,
-                                Granularity.P1D
-                        )
-                ));
-        when(dataNeedsService.findById("ap-dnid"))
-                .thenReturn(Optional.of(
-                        new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null)
-                ));
+        var vhd = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT1H,
+                Granularity.P1D
+        );
+        when(dataNeedsService.findById("vhd-dnid")).thenReturn(Optional.of(vhd));
+        var ap = new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null);
+        when(dataNeedsService.findById("ap-dnid")).thenReturn(Optional.of(ap));
         List<DataNeedRule<?>> dataNeedRules = List.of(
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
                 new AccountingPointDataNeedRule()
@@ -321,10 +323,83 @@ class DataNeedCalculationServiceImplTest {
         var res = service.calculateAll(Set.of("vhd-dnid", "ap-dnid"));
 
         // Then
-        assertThat(res, allOf(
-                hasEntry(equalTo("vhd-dnid"), instanceOf(ValidatedHistoricalDataDataNeedResult.class)),
-                hasEntry(equalTo("ap-dnid"), instanceOf(AccountingPointDataNeedResult.class))
-        ));
+        assertThat(res)
+                .asInstanceOf(type(CalculationResult.class))
+                .extracting(CalculationResult::result)
+                .asInstanceOf(map(String.class, DataNeedCalculationResult.class))
+                .hasEntrySatisfying(vhd.id(),
+                                    dn -> assertThat(dn).isInstanceOf(ValidatedHistoricalDataDataNeedResult.class))
+                .hasEntrySatisfying(ap.id(),
+                                    dn -> assertThat(dn).isInstanceOf(AccountingPointDataNeedResult.class))
+                .hasSize(2);
+    }
+
+    @Test
+    void givenMultipleAccountingPointDataNeeds_whenCalculateAll_thenReturnsRepeatedDataNeedResult() {
+        // Given
+        var ap = new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null);
+        when(dataNeedsService.findById("ap-dnid-1")).thenReturn(Optional.of(ap));
+        when(dataNeedsService.findById("ap-dnid-2")).thenReturn(Optional.of(ap));
+        List<DataNeedRule<?>> dataNeedRules = List.of(
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
+                new AccountingPointDataNeedRule()
+        );
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+
+        // When
+        var res = service.calculateAll(Set.of("ap-dnid-1", "ap-dnid-2"));
+
+        // Then
+        assertThat(res).isInstanceOf(InvalidDataNeedCombination.class);
+    }
+
+    @Test
+    void givenMultipleValidatedHistoricalDataDataNeedsWithSameEnergyType_whenCalculateAll_thenReturnsRepeatedDataNeedResult() {
+        // Given
+        var vhd = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT1H,
+                Granularity.P1D
+        );
+        when(dataNeedsService.findById("vhd-dnid-1")).thenReturn(Optional.of(vhd));
+        when(dataNeedsService.findById("vhd-dnid-2")).thenReturn(Optional.of(vhd));
+        List<DataNeedRule<?>> dataNeedRules = List.of(
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
+                new AccountingPointDataNeedRule()
+        );
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+
+        // When
+        var res = service.calculateAll(Set.of("vhd-dnid-1", "vhd-dnid-2"));
+
+        // Then
+        assertThat(res).isInstanceOf(InvalidDataNeedCombination.class);
+    }
+
+
+    @Test
+    void givenMixedDataDataNeeds_whenCalculateAll_thenReturnsInvalidMixedDataNeedResult() {
+        // Given
+        var vhd = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT1H,
+                Granularity.P1D
+        );
+        when(dataNeedsService.findById("vhd-dnid")).thenReturn(Optional.of(vhd));
+        when(dataNeedsService.findById("aiida-dnid")).thenReturn(Optional.of(new InboundAiidaDataNeed()));
+        List<DataNeedRule<?>> dataNeedRules = List.of(
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
+                new AiidaDataNeedRule<>(InboundAiidaDataNeed.class)
+        );
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+
+        // When
+        var res = service.calculateAll(Set.of("vhd-dnid", "aiida-dnid"));
+
+        // Then
+        assertThat(res).isInstanceOf(InvalidDataNeedCombination.class);
     }
 
     private static Stream<Arguments> regionConnectorFilterConfigurations() {

@@ -38,6 +38,7 @@ dependencies {
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.assertj.core)
 
     testRuntimeOnly(libs.junit.platform.launcher)
 }

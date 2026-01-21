@@ -5,6 +5,8 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.application.information.ApplicationInformation;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeeds;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeedsError;
 import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
@@ -21,8 +23,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import static org.hamcrest.Matchers.*;
@@ -97,6 +101,39 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors/data-needs/9bd0668f-cc19-40a8-99db-dc2cb2802b17"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasKey("at-eda")));
+    }
+
+    @Test
+    void dataNeedCalculationsWithMultipleDataNeeds_returnsDataNeedCalculation() throws Exception {
+        // Given
+        var result = new HashMap<String, DataNeedCalculation>();
+        result.put("dnid1", new DataNeedCalculation(false, ""));
+        result.put("dnid2", null);
+        result.put("dnid3", new DataNeedCalculation(true, null, null, null));
+        when(router.calculateFor("at-eda", Set.of("dnid1", "dnid2", "dnid3")))
+                .thenReturn(new MultipleDataNeeds(result));
+
+        // When
+        mockMvc.perform(get("/api/region-connectors/at-eda/data-needs")
+                                .queryParam("data-need-id", "dnid1", "dnid2", "dnid3"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.dnid1.supportsDataNeed").value(false))
+               .andExpect(jsonPath("$.dnid2").isEmpty())
+               .andExpect(jsonPath("$.dnid3.supportsDataNeed").value(true));
+    }
+
+    @Test
+    void dataNeedCalculationsWithInvalidCombination_returnsError() throws Exception {
+        // Given
+        when(router.calculateFor("at-eda", Set.of("dnid1", "dnid2", "dnid3")))
+                .thenReturn(new MultipleDataNeedsError(Set.of("dnid1", "dnid2"), "Error"));
+
+        // When
+        mockMvc.perform(get("/api/region-connectors/at-eda/data-needs")
+                                .queryParam("data-need-id", "dnid1", "dnid2", "dnid3"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.errors.[0].offendingDataNeedIds").isArray())
+               .andExpect(jsonPath("$.errors.[0].message").value("Error"));
     }
 
     @Test

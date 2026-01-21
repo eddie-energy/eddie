@@ -2,6 +2,10 @@ package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
+import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.CalculationResult;
+import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.InvalidDataNeedCombination;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeeds;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeedsError;
 import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -17,9 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.map;
+import static org.assertj.core.api.InstanceOfAssertFactories.type;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -152,5 +160,47 @@ class DataNeedCalculationRouterTest {
         // When
         // Then
         assertThrows(DataNeedDisabledException.class, () -> router.calculate("dnid"));
+    }
+
+    @Test
+    void testCalculateForMultipleDataNeeds_withUnknownRegionConnector_throwsUnknownRegionConnectorException() {
+        // Given
+        // When
+        // Then
+        assertThrows(UnknownRegionConnectorException.class, () -> router.calculateFor("unknown", Set.of("dnid")));
+    }
+
+    @Test
+    void testCalculateForMultipleDataNeeds_withInvalidCombinationOfDataNeeds_returnsInvalidDataNeedCombination() throws UnknownRegionConnectorException {
+        // Given
+        when(service.calculateAll(Set.of("dnid")))
+                .thenReturn(new InvalidDataNeedCombination(Set.of("dnid"), "Invalid combination"));
+        // When
+        var res = router.calculateFor("at-eda", Set.of("dnid"));
+
+        // Then
+        assertThat(res)
+                .asInstanceOf(type(MultipleDataNeedsError.class))
+                .satisfies(error -> {
+                    assertThat(error.offendingDataNeedIds()).singleElement()
+                                                            .isEqualTo("dnid");
+                    assertThat(error.message()).isEqualTo("Invalid combination");
+                });
+    }
+
+    @Test
+    void testCalculateForMultipleDataNeeds_withValidCombinationOfDataNeeds_returnsMultipleDataNeeds() throws UnknownRegionConnectorException {
+        // Given
+        when(service.calculateAll(Set.of("dnid")))
+                .thenReturn(new CalculationResult(Map.of("dnid", new DataNeedNotSupportedResult("Error"))));
+        // When
+        var res = router.calculateFor("at-eda", Set.of("dnid"));
+
+        // Then
+        assertThat(res)
+                .asInstanceOf(type(MultipleDataNeeds.class))
+                .extracting(MultipleDataNeeds::result)
+                .asInstanceOf(map(String.class, DataNeedCalculation.class))
+                .containsExactlyEntriesOf(Map.of("dnid", new DataNeedCalculation(false, "Error")));
     }
 }

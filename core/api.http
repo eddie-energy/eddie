@@ -2,11 +2,16 @@
 GET http://localhost:8080/api/region-connectors-metadata
 
 ### GET supported data needs of region-connectors
-GET http://localhost:8080/api/region-connectors/supported-data-need-specifications
+GET http://localhost:8080/api/region-connectors/data-need-rule-sets
 
 ### GET supported data needs of one region-connector
 @regionConnector = dk-energinet
 GET http://localhost:8080/api/region-connectors/{{regionConnector}}/supported-data-needs
+
+### GET caluclation for multiple data needs of one region-connector
+GET http://localhost:8080/api/region-connectors/{{regionConnector}}/data-needs?
+    data-need-id=9bd0668f-cc19-40a8-99db-dc2cb2802b17&
+    data-need-id=782bb69e-9316-4f17-8507-66614c9b24bf
 
 ### GET actuator endpoint
 GET http://localhost:8080/actuator

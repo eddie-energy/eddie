@@ -1,9 +1,6 @@
 package energy.eddie.api.agnostic.data.needs;
 
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -53,9 +50,7 @@ public interface DataNeedCalculationService<T extends DataNeedInterface> {
      * @param dataNeedIds the ID of the data needs
      * @return a Map of the calculations, where the key is the data need ID and the value the calculation result.
      */
-    default Map<String, DataNeedCalculationResult> calculateAll(Set<String> dataNeedIds) {
-        return calculateAll(dataNeedIds, ZonedDateTime.now(ZoneOffset.UTC));
-    }
+    MultipleDataNeedCalculationResult calculateAll(Set<String> dataNeedIds);
 
     /**
      * Calculates the relevant information for multiple given data need IDs, using the reference datetime.
@@ -64,16 +59,7 @@ public interface DataNeedCalculationService<T extends DataNeedInterface> {
      * @param referenceDateTime the reference datetime the calculations are based on
      * @return a Map of the calculations, where the key is the data need ID and the value the calculation result.
      */
-    default Map<String, DataNeedCalculationResult> calculateAll(
-            Set<String> dataNeedIds,
-            ZonedDateTime referenceDateTime
-    ) {
-        Map<String, DataNeedCalculationResult> results = new HashMap<>();
-        for (var dataNeedId : dataNeedIds) {
-            results.put(dataNeedId, calculate(dataNeedId, referenceDateTime));
-        }
-        return results;
-    }
+    MultipleDataNeedCalculationResult calculateAll(Set<String> dataNeedIds, ZonedDateTime referenceDateTime);
 
     /**
      * The id of the region-connector that provides the implementation of this service.
