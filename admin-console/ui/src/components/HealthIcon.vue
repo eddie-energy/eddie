@@ -15,18 +15,17 @@ const presets: Record<HealthStatus, { severity: string; text: string; icon: stri
 }
 
 const { health } = defineProps<{ health: HealthStatus }>()
-const { icon, severity, text } = presets[health]
 </script>
 
 <template>
   <span
     :style="{
-      color: `var(--chip-text-${severity})`,
-      background: `var(--chip-background-${severity})`
+      color: `var(--chip-text-${presets[health].severity})`,
+      background: `var(--chip-background-${presets[health].severity})`
     }"
   >
-    <i class="pi" :class="[icon]"></i>
-    {{ text }}
+    <i class="pi" :class="[presets[health].icon]"></i>
+    {{ presets[health].text }}
   </span>
 </template>
 
