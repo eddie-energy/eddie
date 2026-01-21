@@ -1,98 +1,116 @@
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8" />
-  <title>EDDIE Button</title>
+  <head>
+    <meta charset="UTF-8" />
+    <title>EDDIE Button</title>
 
-  <base th:href="${publicUrl}">
+    <!-- Source remote eddie-components when running with Thymeleaf -->
+    <!--/*/
+    <base th:href="${publicUrl}">
+    <script type="module" src="/lib/eddie-components.js"></script>
+    /*/-->
 
-  <script type="module" src="/lib/eddie-components.js"></script>
+    <!-- Source local eddie-components when running with Vite -->
+    <!--/*-->
+    <script type="module" src="../../js/eddie-components.js"></script>
+    <!--*/-->
 
-  <style>
+    <!-- Pass public url as core url when running with Thymeleaf -->
+    <script th:inline="javascript">
+      const THYMELEAF_CORE_URL = /*[[${publicUrl}]]*/ undefined;
+    </script>
+
+    <style>
       form {
-          margin-top: 1.5rem;
-          display: grid;
-          justify-items: start;
-          gap: 0.5rem;
+        margin-top: 1.5rem;
+        display: grid;
+        justify-items: start;
+        gap: 0.5rem;
       }
 
       span + input,
       span + select {
-          margin-top: 0.1rem;
-          display: block;
+        margin-top: 0.1rem;
+        display: block;
       }
-  </style>
-</head>
-<body>
-<form>
-  <label>
-    <span>Data need</span>
-    <select name="data-need-id" autocomplete="off"></select>
-  </label>
-  <label>
-    <span>Connection ID</span>
-    <input type="text" name="connection-id" value="1" />
-  </label>
-  <label>
-    <span>Permission administrator</span>
-    <input type="text" name="permission-administrator" />
-  </label>
-  <label>
-    <span>Accounting point ID</span>
-    <input type="text" name="accounting-point-id" />
-  </label>
-  <label>
-    <span>Customer Identification</span>
-    <input type="text" name="customer-identification" />
-  </label>
-  <label>
-    <input type="checkbox" name="remember-permission-administrator" />
-    <span>Remember permission administrator</span>
-  </label>
-  <label>
-    <span>Core URL</span>
-    <input type="text" name="core-url" th:value="${publicUrl}" />
-  </label>
-</form>
+    </style>
+  </head>
+  <body>
+    <form>
+      <label>
+        <span>Data need</span>
+        <select name="data-need-id" autocomplete="off"></select>
+      </label>
+      <label>
+        <span>Connection ID</span>
+        <input type="text" name="connection-id" value="1" />
+      </label>
+      <label>
+        <span>Permission administrator</span>
+        <input type="text" name="permission-administrator" />
+      </label>
+      <label>
+        <span>Accounting point ID</span>
+        <input type="text" name="accounting-point-id" />
+      </label>
+      <label>
+        <span>Customer Identification</span>
+        <input type="text" name="customer-identification" />
+      </label>
+      <label>
+        <input type="checkbox" name="remember-permission-administrator" />
+        <span>Remember permission administrator</span>
+      </label>
+      <label>
+        <span>Core URL</span>
+        <input type="text" name="core-url" th:value="${publicUrl}" />
+      </label>
+    </form>
 
-<script type="module">
-  // Fetch data needs from the API
-  const dataNeeds = await fetch("/data-needs/api").then(
-    (response) => response.json()
-  );
+    <script type="module">
+      const coreUrl =
+        THYMELEAF_CORE_URL ?? import.meta.env.VITE_CORE_URL ?? "localhost:8080";
 
-  // Create initial button with first data need
-  const button = document.createElement("eddie-connect-button");
-  button.setAttribute("connection-id", "1");
-  button.setAttribute("data-need-id", dataNeeds[0].id);
-  document.body.prepend(button);
+      // Fetch data needs from the API
+      const dataNeeds = await fetch(`${coreUrl}/data-needs/api`).then(
+        (response) => response.json()
+      );
 
-  // Populate the select element with data needs
-  const select = document.querySelector("select[name='data-need-id']");
-  for (const { id, name } of dataNeeds) {
-    const option = document.createElement("option");
-    option.value = id;
-    option.textContent = name;
-    select.appendChild(option);
-  }
+      // Create initial button with first data need
+      const button = document.createElement("eddie-connect-button");
+      button.setAttribute("connection-id", "1");
+      button.setAttribute("data-need-id", dataNeeds[0].id);
+      document.body.prepend(button);
 
-  // Update button on input changes
-  const inputs = document.querySelectorAll("input, select");
-  for (const input of inputs) {
-    input.addEventListener("change", (event) => {
-      const { name, value, type, checked } = event.target;
-      // Reselect button as replacing it breaks the reference
-      const button = document.querySelector("eddie-connect-button");
-      // Recreate over reset to ensure no data is left from the previous button
-      button.setAttribute(name, type === "checkbox" ? checked : value);
-      button.replaceWith(button.cloneNode());
-    });
-  }
+      // Populate the select element with data needs
+      const select = document.querySelector("select[name='data-need-id']");
+      for (const { id, name } of dataNeeds) {
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = name;
+        select.appendChild(option);
+      }
 
-  // Log all status events for debugging purposes
-  document.addEventListener("eddie-request-status", (event) => {
-    console.debug(event.detail.status, event.detail);
-  });
-</script>
-</body>
+      // Set initial input value for core url field
+      document.querySelector("input[name='core-url']").value = coreUrl;
+
+      // Update button on input changes
+      const inputs = document.querySelectorAll("input, select");
+      for (const input of inputs) {
+        input.addEventListener("change", (event) => {
+          const { name, value, type, checked } = event.target;
+          // Reselect button as replacing it breaks the reference
+          const button = document.querySelector("eddie-connect-button");
+          // Recreate over reset to ensure no data is left from the previous button
+          button.setAttribute(name, type === "checkbox" ? checked : value);
+          button.replaceWith(button.cloneNode());
+        });
+      }
+
+      // Log all status events for debugging purposes
+      document.addEventListener("eddie-request-status", (event) => {
+        console.debug(event.detail.status, event.detail);
+      });
+    </script>
+  </body>
 </html>
