@@ -44,7 +44,7 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 | AIIDA_EXTERNAL_HOST                                 | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                                    |
 | AIIDA_CORS_ALLOWED_ORIGINS                          | The origins that are allowed to communicate with AIIDA (see [reverse proxy deployments](#reverse-proxy-deployment))                  |
 | AIIDA_KEYCLOAK_ACCOUNT_URI                          | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page. |
-| AIIDA_CLEANUP_CLEANUPINTERVAL                       | Specifies in which fixed duration the cleanup task is scheduled (default: P1D)                                                       |
+| AIIDA_CLEANUP_INTERVAL                              | Specifies in which fixed duration the cleanup task is scheduled (default: P1D)                                                       |
 | AIIDA_CLEANUP_ENTITIES_AIIDARECORD_RETENTION        | Specifies the time-to-live for an AIIDA_RECORD (default: P1D)                                                                        |
 | AIIDA_CLEANUP_ENTITIES_FAILEDTOSENDENTITY_RETENTION | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY (default: P1D)                                                                |
 | AIIDA_CLEANUP_ENTITIES_INBOUNDRECORD_RETENTION      | Specifies the time-to-live for an INBOUND_RECORD (default: P1D)                                                                      |

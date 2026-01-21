@@ -17,7 +17,7 @@ public class CleanupScheduler {
         this.services = services;
     }
 
-    @Scheduled(fixedDelayString = "#{@cleanupConfiguration.cleanupInterval.toMillis()}")
+    @Scheduled(fixedDelayString = "#{@cleanupConfiguration.interval().toMillis()}")
     public void cleanup() {
         LOGGER.info("Starting scheduled cleanup run for expired entities");
 

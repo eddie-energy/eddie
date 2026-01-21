@@ -10,15 +10,15 @@ import java.util.Map;
 @Configuration
 @ConfigurationProperties(prefix = "aiida.cleanup")
 public class CleanupConfiguration {
-    private Duration cleanupInterval = Duration.ofDays(1);
+    private Duration interval = Duration.ofDays(1);
     private Map<CleanupEntity, CleanupProperties> entities = new EnumMap<>(CleanupEntity.class);
 
-    public Duration cleanupInterval() {
-        return cleanupInterval;
+    public Duration interval() {
+        return interval;
     }
 
-    public void setCleanupInterval(Duration cleanupInterval) {
-        this.cleanupInterval = cleanupInterval;
+    public void setInterval(Duration interval) {
+        this.interval = interval;
     }
 
     public Map<CleanupEntity, CleanupProperties> entities() {
