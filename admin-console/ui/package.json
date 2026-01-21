@@ -19,6 +19,7 @@
     "modern-normalize": "^3.0.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
+    "tinyduration": "^3.4.1",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4"
   },
