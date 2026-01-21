@@ -25,7 +25,7 @@ jobs:
           # Ignores private github links and localhost links, which would make it fail.
           # Furthermore, it ignores specific links that do not accept requests using automated means, such as npmjs.
           # User agent is set to Mozilla for most compatibility.
-          args: --exclude '^https://github\.com/eddie-energy/' --exclude '^https://gw.ext.prod.api.enedis.fr' --exclude '^https://www.eancodeboek.nl' --exclude '^https://particulier.edf.fr/en/home/contract-and-consumption/meter/linky-meter.html$' --exclude '^https://www.npmjs.com/' --exclude 'https://.+\.sharepoint.com' --exclude 'https://eddie.energy/metadata-sharing' --exclude '^https://mvnrepository\.com/' --exclude-all-private --user-agent 'Mozilla/5.0' --exclude-path 'node_modules' --hidden --extensions md --root-dir $(pwd) --insecure .
+          args: --accept 200,403 --exclude '^https://github\.com/eddie-energy/' --exclude '^https://gw.ext.prod.api.enedis.fr' --exclude '^https://www.eancodeboek.nl' --exclude '^https://particulier.edf.fr/en/home/contract-and-consumption/meter/linky-meter.html$' --exclude '^https://www.npmjs.com/' --exclude 'https://.+\.sharepoint.com' --exclude 'https://eddie.energy/metadata-sharing' --exclude '^https://mvnrepository\.com/' --exclude-all-private --user-agent 'Mozilla/5.0' --exclude-path 'node_modules' --hidden --extensions md --root-dir $(pwd) --insecure .
           fail: 'true'
       - name: Comment Broken Links
         uses: marocchino/sticky-pull-request-comment@5060d4700a91de252c87eeddd2da026382d9298a

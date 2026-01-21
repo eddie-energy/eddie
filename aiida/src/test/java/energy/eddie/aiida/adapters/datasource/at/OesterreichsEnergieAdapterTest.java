@@ -317,7 +317,7 @@ class OesterreichsEnergieAdapterTest {
         adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
-        TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
+        TestUtils.verifyErrorLogStartsWith("Topic aiida/test: error while deserializing JSON received from adapter. JSON was %s".formatted(
                 invalidJson), LOG_CAPTOR, JsonMappingException.class);
 
         stepVerifier.verify();
