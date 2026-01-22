@@ -129,7 +129,7 @@ class PermissionControllerTest {
     @WithMockUser
     void givenIncompletePostBody_permissionRequest_returnsBadRequest() throws Exception {
         // Given
-        when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
+        when(permissionService.setupNewPermissions(any())).thenReturn(mockPermission);
         when(mockPermission.id()).thenReturn(permissionId);
         var requestJson = "{\"permissionId\":\"" + permissionId + "\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
 
@@ -145,7 +145,7 @@ class PermissionControllerTest {
     @WithMockUser
     void givenValidInput_setupPermission_callsService_andReturnsLocationHeader() throws Exception {
         // Given
-        when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
+        when(permissionService.setupNewPermissions(any())).thenReturn(mockPermission);
         when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.id()).thenReturn(permissionId);
         var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
@@ -156,7 +156,7 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isCreated()).andExpect(header().string("location", expectedLocationHeader));
 
-        verify(permissionService).setupNewPermission(argThat(dto -> dto.permissionId().equals(permissionId)));
+        verify(permissionService).setupNewPermissions(argThat(dto -> dto.permissionId().equals(permissionId)));
     }
 
     @Test

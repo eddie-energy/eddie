@@ -1,13 +1,14 @@
 import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
 import type {
-    AiidaApplicationInformation,
-    AiidaDataSource,
-    AiidaDataSourceHealthStatus,
-    AiidaDataSourceType,
-    AiidaPermission,
-    AiidaPermissionRequest,
+  AiidaApplicationInformation,
+  AiidaDataSource,
+  AiidaDataSourceHealthStatus,
+  AiidaDataSourceType,
+  AiidaPermission,
+  QrCode,
 } from './types'
+
 const { danger, success } = useToast()
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL
@@ -35,7 +36,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
         ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {}),
-        ...(isHealthEndpoint ? { 'Accept': 'application/json' } : {}),
+        ...(isHealthEndpoint ? { Accept: 'application/json' } : {}),
       },
       ...init,
     })
@@ -49,7 +50,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'errors.unexpectedError'
-    if (!(isImagesEndpoint && response.status == 404 || isHealthEndpoint)) {
+    if (!((isImagesEndpoint && response.status == 404) || isHealthEndpoint)) {
       danger(message, response.status == 404 ? 5000 : 0, true)
     }
     throw new Error(message)
@@ -116,7 +117,7 @@ export function getModbusVendors(): Promise<{ id: string; name: string }[]> {
 }
 
 export function getDataSourceHealthStatus(id: string): Promise<AiidaDataSourceHealthStatus> {
-    return fetch(`/actuator/health/DATA_SOURCE_${id}`)
+  return fetch(`/actuator/health/DATA_SOURCE_${id}`)
 }
 
 export function getModbusModels(
@@ -135,10 +136,10 @@ export function getApplicationInformation(): Promise<AiidaApplicationInformation
   return fetch('/application-information')
 }
 
-export function addPermission(permission: AiidaPermissionRequest): Promise<AiidaPermission> {
+export function addPermissions(qrCode: QrCode): Promise<AiidaPermission> {
   return fetch('/permissions', {
     method: 'POST',
-    body: JSON.stringify(permission),
+    body: JSON.stringify(qrCode),
   })
 }
 

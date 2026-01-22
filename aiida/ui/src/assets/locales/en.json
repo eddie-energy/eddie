@@ -78,7 +78,7 @@
   },
   "permissions": {
     "title": "Permissions",
-    "addButton": "Add Permission",
+    "addButton": "Add Permissions",
     "tagActive": "Active",
     "tagPending": "Pending",
     "tagComplete": "Complete",
