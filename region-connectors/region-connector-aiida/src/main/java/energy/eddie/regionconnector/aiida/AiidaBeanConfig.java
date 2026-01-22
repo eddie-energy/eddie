@@ -141,7 +141,7 @@ public class AiidaBeanConfig {
         connectionOptions.setUserName(configuration.mqttUsername());
 
         String password = configuration.mqttPassword();
-        if (password.trim().isEmpty())
+        if (!password.trim().isEmpty())
             connectionOptions.setPassword(password.getBytes(StandardCharsets.UTF_8));
 
         return connectionOptions;
