@@ -126,7 +126,7 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenNonExistingDataNeedId_createValidateAndSendPermissionRequest_throwsException() {
+    void givenNonExistingDataNeedId_createValidateAndSendPermissionRequests_throwsException() {
         // Given
         var nonExisting = "NonExisting";
         when(calculationService.calculate(anyString())).thenReturn(new DataNeedNotFoundResult());
@@ -134,23 +134,23 @@ class AiidaPermissionServiceTest {
         // Then
         assertThrows(DataNeedNotFoundException.class,
                      // When
-                     () -> service.createValidateAndSendPermissionRequest(new PermissionRequestForCreation("testConnId",
-                                                                                                           nonExisting)));
+                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation("testConnId",
+                                                                                                            nonExisting)));
     }
 
     @Test
-    void givenUnsupportedDataNeed_createValidateAndSendPermissionRequest_throwsException() {
+    void givenUnsupportedDataNeed_createValidateAndSendPermissionRequests_throwsException() {
         // Given
         when(calculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult(""));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
-                     () -> service.createValidateAndSendPermissionRequest(new PermissionRequestForCreation(connectionId,
-                                                                                                           dataNeedId)));
+                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                            dataNeedId)));
     }
 
     @Test
-    void givenValidInput_createValidateAndSendPermissionRequest_returnsAsExpected() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void givenValidInput_createValidateAndSendPermissionRequests_returnsAsExpected() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
@@ -165,8 +165,8 @@ class AiidaPermissionServiceTest {
                                                                                                                      end)));
 
         // When
-        var dto = service.createValidateAndSendPermissionRequest(new PermissionRequestForCreation(connectionId,
-                                                                                                  dataNeedId));
+        var dto = service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                   dataNeedId));
 
         // Then
         var expectedHandshakeUrl = HANDSHAKE_URL.substring(0,
@@ -177,7 +177,7 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenValidInput_createValidateAndSendPermissionRequest_commitsThreeEvents() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void givenValidInput_createValidateAndSendPermissionRequests_commitsThreeEvents() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var forCreation = new PermissionRequestForCreation(connectionId, dataNeedId);
         var start = LocalDate.now(ZoneOffset.UTC);
@@ -192,7 +192,7 @@ class AiidaPermissionServiceTest {
                                                                                                                      end)));
 
         // When
-        service.createValidateAndSendPermissionRequest(forCreation);
+        service.createValidateAndSendPermissionRequests(forCreation);
 
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));

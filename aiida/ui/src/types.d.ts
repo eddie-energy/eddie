@@ -72,12 +72,16 @@ export type AiidaApplicationInformation = {
   aiidaId: string
 }
 
-export type AiidaPermissionRequest = {
+export type QrCode = {
   eddieId: string
-  permissionId: string
-  serviceName: string
+  permissions: QrCodePermission[]
   handshakeUrl: string
   bearerToken: string
+}
+
+export type QrCodePermission = {
+  permissionId: string
+  serviceName: string
 }
 
 export type AiidaDataSourceHealthStatus = {

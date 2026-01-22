@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -111,12 +110,12 @@ public class Permission {
      * Create a new permission from the contents of the QR code. The status will be set to
      * {@link PermissionStatus#CREATED}.
      */
-    public Permission(QrCodeDto qrCodeDto, UUID userId) {
-        this.eddieId = qrCodeDto.eddieId();
-        this.permissionId = qrCodeDto.permissionId();
-        this.serviceName = qrCodeDto.serviceName();
-        this.handshakeUrl = qrCodeDto.handshakeUrl();
-        this.accessToken = qrCodeDto.accessToken();
+    public Permission(UUID eddieId, UUID permissionId, String serviceName, String handshakeUrl, String accessToken, UUID userId) {
+        this.eddieId = eddieId;
+        this.permissionId = permissionId;
+        this.serviceName = serviceName;
+        this.handshakeUrl = handshakeUrl;
+        this.accessToken = accessToken;
         this.status = PermissionStatus.CREATED;
         this.userId = userId;
     }

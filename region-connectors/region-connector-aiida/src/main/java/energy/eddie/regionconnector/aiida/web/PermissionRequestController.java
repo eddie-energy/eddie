@@ -19,10 +19,10 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -44,15 +44,14 @@ public class PermissionRequestController {
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QrCodeDto> createPermissionRequest(
-            @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation
+    public ResponseEntity<QrCodeDto> createPermissionRequests(
+            @Valid @RequestBody List<PermissionRequestForCreation> permissionRequestsForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
-        var qrCodeDto = permissionService.createValidateAndSendPermissionRequest(permissionRequestForCreation);
+        var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
 
-        var location = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
-                .expand(qrCodeDto.permissionId());
-
-        return ResponseEntity.created(location).body(qrCodeDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(qrCodeDto);
     }
 
     @PatchMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST,
