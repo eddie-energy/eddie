@@ -1,13 +1,17 @@
+// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
 import type {
-    AiidaApplicationInformation,
-    AiidaDataSource,
-    AiidaDataSourceHealthStatus,
-    AiidaDataSourceType,
-    AiidaPermission,
-    AiidaPermissionRequest,
+  AiidaApplicationInformation,
+  AiidaDataSource,
+  AiidaDataSourceHealthStatus,
+  AiidaDataSourceType,
+  AiidaPermission,
+  AiidaPermissionRequest,
 } from './types'
+
 const { danger, success } = useToast()
 
 export const BASE_URL = THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL

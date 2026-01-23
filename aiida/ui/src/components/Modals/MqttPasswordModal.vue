@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import ModalDialog from '@/components/ModalDialog.vue'
 import { ref, useTemplateRef } from 'vue'

@@ -1,7 +1,10 @@
+// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie;
 
-import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
+import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
 import energy.eddie.core.CoreSpringConfig;
 import energy.eddie.spring.OutboundConnectorRegistrationBeanPostProcessor;
 import energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor;

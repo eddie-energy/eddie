@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package eddie.energy.europeanmasterdata;
 
 import energy.eddie.api.agnostic.master.data.MasterData;

@@ -1,3 +1,8 @@
+<!--
+  - SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
+
 <script setup lang="ts">
 import Button from '@/components/Button.vue'
 import TrashIcon from '@/assets/icons/TrashIcon.svg'
@@ -11,7 +16,7 @@ import type { AiidaDataSource } from '@/types'
 import { dataSourceHealthStatuses, dataSourceImages } from '@/stores/dataSources'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
-import StatusTag from "@/components/StatusTag.vue";
+import StatusTag from '@/components/StatusTag.vue'
 
 const { t } = useI18n()
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
@@ -39,7 +44,6 @@ const {
 
 const image = computed(() => dataSourceImages.value[dataSource.id])
 const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id])
-
 </script>
 
 <template>
@@ -62,9 +66,16 @@ const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id
       </div>
 
       <div>
-        <dt>{{ t('datasources.card.healthStatus')}}</dt>
-        <StatusTag :status-type="healthStatus?.status !== 'UP' ? 'unhealthy' : 'healthy'" minimal-on-mobile>
-          {{ healthStatus?.status === 'UP' ? t('datasources.card.healthStatusUp') : t('datasources.card.healthStatusDown') }}
+        <dt>{{ t('datasources.card.healthStatus') }}</dt>
+        <StatusTag
+          :status-type="healthStatus?.status !== 'UP' ? 'unhealthy' : 'healthy'"
+          minimal-on-mobile
+        >
+          {{
+            healthStatus?.status === 'UP'
+              ? t('datasources.card.healthStatusUp')
+              : t('datasources.card.healthStatusDown')
+          }}
         </StatusTag>
       </div>
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
 import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;

@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import EddieIcon from '@/components/EddieIcon.vue'
 </script>

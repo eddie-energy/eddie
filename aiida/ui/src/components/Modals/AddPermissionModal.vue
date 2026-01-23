@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import Button from '@/components/Button.vue'
 import ModalDialog from '@/components/ModalDialog.vue'

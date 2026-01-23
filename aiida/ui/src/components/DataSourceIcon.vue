@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import ElectricityIcon from '@/assets/icons/ElectricityIcon.svg'
 import MeterIcon from '@/assets/icons/MeterIcon.svg'

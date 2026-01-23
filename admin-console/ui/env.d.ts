@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 /// <reference types="vite/client" />
 declare const THYMELEAF_CSRF_TOKEN: string
 declare const THYMELEAF_CSRF_HEADER: string

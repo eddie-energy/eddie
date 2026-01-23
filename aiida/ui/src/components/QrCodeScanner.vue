@@ -1,6 +1,11 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import { ref } from 'vue'
-import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
+import { type DetectedBarcode, QrcodeStream } from 'vue-qrcode-reader'
 import type { AiidaPermissionRequest } from '@/types'
 import { useI18n } from 'vue-i18n'
 

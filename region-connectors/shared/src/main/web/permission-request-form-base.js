@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import { LitElement } from "lit";
 import { fetchEventSource } from "@microsoft/fetch-event-source";
 

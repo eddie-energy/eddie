@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <template>
   <svg
     xmlns="http://www.w3.org/2000/svg"

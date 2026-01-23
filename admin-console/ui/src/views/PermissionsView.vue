@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script lang="ts" setup>
 import PermissionsTable from '@/components/PermissionsTable.vue'
 </script>

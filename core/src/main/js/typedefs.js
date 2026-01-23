@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * @typedef {Object} PermissionAdministrator
  * @property {string} country - The lowercase country code of the permission administrator.

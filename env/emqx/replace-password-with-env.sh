@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+# SPDX-License-Identifier: Apache-2.0
+
 set -e
 
 if [ -z "${REGION_CONNECTOR_AIIDA_MQTT_PASSWORD}" ]; then

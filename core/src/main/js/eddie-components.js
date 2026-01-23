@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import EddieConnectButton from "./eddie-connect-button.js";
 import EddieNotificationHandler from "./eddie-notification-handler.js";
 import EddieRequestStatusHandler from "./eddie-request-status-handler.js";

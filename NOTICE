@@ -40,3 +40,8 @@ Images in aiida/docs/images were sourced from the following:
 Datadis is the owner of this logo: region-connectors/region-connector-es-datadis/src/main/resources/datadis-logo.svg .
 This project does not claim ownership of this logo.
 Source: https://datadis.es/home
+
+ENTSO-E is the copyright owner of the following files:
+- cim/src/main/schemas/cim/xsd/v1_04/urn-entsoe-eu-local-extension-types.xsd
+- cim/src/main/schemas/cim/xsd/v1_04/urn-entsoe-eu-wgedi-codelists.xsd
+- cim/src/main/schemas/cim/xsd/v1_04/urn-entsoe-eu-wgedi-components.xsd

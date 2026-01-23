@@ -1,7 +1,10 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import energy.eddie.cim.v0_82.pmd.*;
+import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

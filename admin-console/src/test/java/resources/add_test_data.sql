@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+-- SPDX-License-Identifier: Apache-2.0
+
 --Some datas to be inserted into the database for testing purposes only
 
 delete from status_messages;

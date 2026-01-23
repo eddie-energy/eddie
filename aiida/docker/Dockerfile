@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+# SPDX-License-Identifier: Apache-2.0
+
 # Build the JAR file using Gradle in advance by running the bootJar task located at: eddie/aiida/Tasks/build/bootJar
 
 FROM eclipse-temurin:21-jre-alpine

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12;
 
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType;

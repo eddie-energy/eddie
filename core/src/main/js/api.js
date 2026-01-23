@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 const CORE_URL =
   import.meta.env.VITE_CORE_URL ?? import.meta.url.split("/lib/")[0];
 
