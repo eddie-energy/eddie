@@ -11,7 +11,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.lang.reflect.Type;
 
-// TODO: Remove with hibernate 7.3
+// TODO: GH-2325 Remove with hibernate 7.3
 
 /**
  * Replacement for the {@link JacksonJsonFormatMapper} which only works for Jackson2 and not Jackson3.
