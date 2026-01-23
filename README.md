@@ -91,3 +91,43 @@ The following instructions can be used to perform a local test run with compilin
 While Docker Compose and local configurations should run out of the box,
 actual deployments of the EDDIE Framework will require further configuration.
 Please refer to the [Configuration](https://architecture.eddie.energy/framework/1-running/OPERATION.html#configuration) of the operation manual.
+
+## Contributors
+
+<a href="https://github.com/eddie-energy/eddie/graphs/contributors">
+  <img alt="Wall of Contributors" src="https://contrib.rocks/image?repo=eddie-energy/eddie" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
+### EDDIE Development Team
+
+- Alexander Gaertner <alexander.gaertner@fh-hagenberg.at>
+- Arthur Grabmair <100279418+yungAnsem@users.noreply.github.com>
+- Auriane Dupin <144226487+AduDeVinci@users.noreply.github.com>
+- Aya Khaled <ayak.youssef@gmail.com>
+- Benjamin Ellmer <benjamin.ellmer@fh-hagenberg.at>
+- Fabian Haas <fabian.h.haas@gmail.com>
+- Florian Auzinger <florian.auzi0204@gmail.com>
+- Florian Weingartshofer <florian@flwr.dev>
+- Henner Carl <carl@ponton.de>
+- Kerstin Hoebart <kerstin.hoebart@fh-hagenberg.at>
+- Manuel Seifriedsberger <p43057@fhooe.at>
+- Manuel Zatschkowitsch <manuel.zatschkowitsch@gmail.com>
+- Markus Reichl <markus@re1.at>
+- Michael Zauner <mi.zauner.dev@proton.me>
+- Rainer Danner <rainer.danner@fh-hagenberg.at>
+- Simon Mayr <simon.mayr@fh-hagenberg.at>
+- Stefan Penzinger <Stefan.Penzinger@fh-hagenberg.at>
+- Thomas Staltner <thomas.staltner@fh-hagenberg.at>
+- Thomas Wagner <thomas.wagner@fh-hagenberg.at>
+- Tobias Fischer <tobias@tformatix.at>
+
+### Organizational Team
+
+- Christoph Schaffer <christoph.schaffer@fh-hagenberg.at>
+- Georg Hartner <georg.hartner@fh-hagenberg.at>
+- Marc Kurz <marc.kurz@fh-hagenberg.at>
+- Oliver Hoedl <oliver.hoedl@fh-hagenberg.at>
+- Shievam Kashyap <shievam.kashyap@fh-hagenberg.at>
+- Stefan Gruenberger <stefan.gruenberger@fh-hagenberg.at>
