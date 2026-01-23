@@ -39,7 +39,7 @@ Be sure to consider accessibility when adapting the styling for your own needs.
 
 ### Branding
 
-To change the branding of the AIIDA UI exchange the following SVG files:c
+To change the branding of the AIIDA UI exchange the following SVG files:
 
 - [HeaderLogo.svg](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/assets/HeaderLogo.svg) to change the logo used in the header.
 - [BackgroundBrandmark.svg](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/assets/BackgroundBrandmark.svg) to change the icon that is displayed in the background.
