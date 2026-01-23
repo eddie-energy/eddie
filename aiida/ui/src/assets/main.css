@@ -100,7 +100,7 @@ body {
 
   &::before {
     content: '';
-    background: url(@/assets/aiida-brandmark.svg) no-repeat center/contain;
+    background: url(@/assets/BackgroundBrandmark.svg) no-repeat center/contain;
     z-index: -1;
     rotate: 11.7deg;
     position: fixed;

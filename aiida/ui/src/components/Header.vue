@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import Logo from '@/assets/logo.svg'
+import HeaderLogo from '@/assets/HeaderLogo.svg'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
@@ -15,7 +15,7 @@ const { t } = useI18n()
 <template>
   <header class="header">
     <RouterLink to="/">
-      <Logo class="logo" />
+      <HeaderLogo class="logo" />
     </RouterLink>
 
     <nav class="header-nav">

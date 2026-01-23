@@ -77,6 +77,9 @@ For example, if your AIIDA instance is reachable at the url `https://aiida.eddie
 `AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
 To the best of our knowledge, this is only necessary for reverse proxy deployments and not e.g. using Kubernetes.
 
+### Customizing Appearance
+
+The Appearance of the AIIDA User interface can be fully customized via CSS. A detailed explanation for this can be viewed its [documentation](ui.md#appearance).
 
 ## Application Information
 

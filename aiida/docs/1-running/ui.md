@@ -29,3 +29,20 @@ It is also possible to easily delete or edit a already created data source.
 More information on data sources themselves can be found on the [data sources page](./data-sources/data-sources.md).
 
 ![showcase of datasources page](../images/ui/datasources.png)
+
+## Appearance
+
+Since the AIIDA UI is a web app it can be fully customized by changing the CSS styles defined in the individual components.
+For basic customization the values of the CSS variables inside [main.css file](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/assets/main.css) can be changed as desired.
+The default styling of the AIIDA UI was made with accessibility in mind and meets the [WCAG 2.2 Level AA requirement for color contrast](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum).
+Be sure to consider accessibility when adapting the styling for your own needs.
+
+### Branding
+
+To change the branding of the AIIDA UI exchange the following SVG files:c
+
+- [HeaderLogo.svg](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/assets/HeaderLogo.svg) to change the logo used in the header.
+- [BackgroundBrandmark.svg](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/src/assets/BackgroundBrandmark.svg) to change the icon that is displayed in the background.
+- [favicon.svg](https://github.com/eddie-energy/eddie/blob/main/aiida/ui/public/favicon.svg) to change the favicon.
+
+For best results try to match the dimensions in the original files as best as possible. 
