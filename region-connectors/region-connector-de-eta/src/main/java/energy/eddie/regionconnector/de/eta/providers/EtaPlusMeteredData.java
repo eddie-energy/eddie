@@ -1,12 +1,12 @@
 package energy.eddie.regionconnector.de.eta.providers;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.List;
 
 /**
  * Represents metered data from the ETA Plus API.
- * This is a placeholder structure that should be replaced with the actual
- * ETA Plus API response format once the API specification is available.
  *
  * @param meteringPointId the metering point identifier
  * @param startDate       the start date of the metering period
@@ -14,6 +14,7 @@ import java.util.List;
  * @param readings        the list of meter readings
  * @param rawJson         the original JSON response from ETA Plus for raw data emission
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record EtaPlusMeteredData(
         String meteringPointId,
         LocalDate startDate,
@@ -21,7 +22,6 @@ public record EtaPlusMeteredData(
         List<MeterReading> readings,
         String rawJson
 ) {
-
     /**
      * Individual meter reading within a time series.
      *
@@ -30,11 +30,11 @@ public record EtaPlusMeteredData(
      * @param unit      the unit of measurement (e.g., kWh, Wh)
      * @param quality   the quality indicator of the reading
      */
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public record MeterReading(
             String timestamp,
             Double value,
             String unit,
-            String quality
+            @JsonProperty("status") String quality
     ) {}
 }
-

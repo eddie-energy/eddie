@@ -2,6 +2,7 @@ package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -15,6 +16,7 @@ import static energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata.REG
 @EnableScheduling
 @SpringBootApplication
 @RegionConnector(name = REGION_CONNECTOR_ID)
+@ComponentScan(basePackages = "energy.eddie.regionconnector.de.eta")
 public class DeEtaSpringConfig {
 
 }

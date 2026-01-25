@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventReposito
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.de.eta.providers.cim.v104.DeValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
@@ -101,7 +102,10 @@ public class EtaRegionConnectorSpringConfig {
     ) {
         return new MeterReadingPermissionUpdateAndFulfillmentService(
                 fulfillmentService,
-                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(reading.permissionId(), end))
+                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(
+                        reading.permissionId(),
+                        end.atStartOfDay(java.time.ZoneId.of("UTC"))
+                ))
         );
     }
 
