@@ -35,4 +35,6 @@ public interface DePermissionRequestRepository extends
             nativeQuery = true
     )
     List<DePermissionRequest> findStalePermissionRequests(@Param("hours") int stalenessDuration);
+
+    void deleteAll();
 }

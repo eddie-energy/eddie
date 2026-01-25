@@ -5,22 +5,25 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
+import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
+import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.de.eta.providers.cim.v104.DeValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
-import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
-import energy.eddie.regionconnector.de.eta.service.PollingService;
+import energy.eddie.api.v0.PermissionProcessStatus;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 
 /**
@@ -147,31 +150,39 @@ public class EtaRegionConnectorSpringConfig {
     }
 
     /**
-     * Create the CommonFutureDataService for periodic polling of future data.
-     * This service schedules polling for active permission requests based on the configured cron expression.
+     * Create the fulfillment service for completing permission requests.
      *
-     * @param pollingService the polling service for fetching data
-     * @param repository the permission request repository
-     * @param configuration the DE configuration containing the polling cron expression
-     * @param taskScheduler the Spring task scheduler
-     * @param dataNeedCalculationService the data need calculation service
-     * @return the configured CommonFutureDataService
+     * @param outbox the outbox for emitting events
+     * @return the fulfillment service
      */
     @Bean
-    public CommonFutureDataService<DePermissionRequest> deCommonFutureDataService(
-            PollingService pollingService,
-            DePermissionRequestRepository repository,
-            PlainDeConfiguration configuration,
-            TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    public FulfillmentService deFulfillmentService(Outbox outbox) {
+        return new FulfillmentService(
+                outbox,
+                SimpleEvent::new
+        );
+    }
+
+    /**
+     * Create the meter reading update and fulfillment service.
+     * This service updates the latest meter reading and fulfills permission requests
+     * when all data has been received.
+     *
+     * @param fulfillmentService the fulfillment service
+     * @param outbox            the outbox for emitting events
+     * @return the meter reading update and fulfillment service
+     */
+    @Bean
+    public MeterReadingPermissionUpdateAndFulfillmentService deMeterReadingUpdateAndFulfillmentService(
+            FulfillmentService fulfillmentService,
+            Outbox outbox
     ) {
-        return new CommonFutureDataService<>(
-                pollingService,
-                repository,
-                configuration.pollingCronExpression(),
-                EtaRegionConnectorMetadata.getInstance(),
-                taskScheduler,
-                dataNeedCalculationService
+        return new MeterReadingPermissionUpdateAndFulfillmentService(
+                fulfillmentService,
+                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(
+                        reading.permissionId(),
+                        end.atStartOfDay(java.time.ZoneId.of("UTC"))
+                ))
         );
     }
 }
