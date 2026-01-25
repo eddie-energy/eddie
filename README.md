@@ -126,7 +126,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 ### Organizational Team
 
 - Christoph Schaffer <christoph.schaffer@fh-hagenberg.at>
-- Georg Hartner <georg.hartner@fh-hagenberg.at>
+- Georg Hartner <georg.hartner@eddie.energy>
 - Marc Kurz <marc.kurz@fh-hagenberg.at>
 - Oliver Hoedl <oliver.hoedl@fh-hagenberg.at>
 - Shievam Kashyap <shievam.kashyap@fh-hagenberg.at>
