@@ -1,21 +1,30 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import Logo from '@/assets/logo.svg'
+import HeaderLogo from '@/assets/HeaderLogo.svg'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from './LanguageSwitcher.vue'
+import { onMounted, ref } from 'vue'
+import { getSvgUrlIfExists } from '@/utils/files'
 
 const { t } = useI18n()
+
+const HeaderLogoUrl = ref('')
+
+onMounted(async () => {
+  HeaderLogoUrl.value = await getSvgUrlIfExists('HeaderLogo.svg')
+})
 </script>
 
 <template>
   <header class="header">
     <RouterLink to="/">
-      <Logo class="logo" />
+      <img :src="HeaderLogoUrl" class="logo" />
+      <HeaderLogo v-if="!HeaderLogoUrl" class="logo" />
     </RouterLink>
 
     <nav class="header-nav">

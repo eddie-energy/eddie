@@ -77,6 +77,14 @@ For example, if your AIIDA instance is reachable at the url `https://aiida.eddie
 `AIIDA_CORS_ALLOWED_ORIGINS` to `https://aiida.eddie.energy`.
 To the best of our knowledge, this is only necessary for reverse proxy deployments and not e.g. using Kubernetes.
 
+### Customizing Brand Icons in the UI
+
+The AIIDA brand icons can be customized by replacing the SVG files inside `aiida/docker/svgs` with your custom icons.
+For best results try to use SVGs with a similar aspect ratio to the original icons. If the icons are deleted or otherwise invalid, fallback icons will be used.
+
+- `HeaderLogo.svg` the logo used in the header.
+- `BackgroundBrandmark.svg` the icon that is displayed in the background.
+- `favicon.svg` the favicon
 
 ## Application Information
 
