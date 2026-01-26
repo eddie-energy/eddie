@@ -8,3 +8,16 @@ export function createJsonBlobUrl(data: unknown): string {
 export function revokeUrl(url: string) {
   URL.revokeObjectURL(url)
 }
+
+export async function getSvgUrlIfExists(svg: string) {
+  const filePath = `/svgs/${svg}`
+  try {
+    const response = await fetch(filePath, { method: 'HEAD' })
+    if (response.ok) {
+      return `${THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL}${filePath}`
+    }
+  } catch {
+    return ""
+  }
+  return ""
+}
