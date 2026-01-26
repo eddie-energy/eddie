@@ -1,5 +1,6 @@
 package energy.eddie.api.agnostic.aiida;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
@@ -24,7 +25,12 @@ public class QrCodePermissionDto {
         serviceName = "";
     }
 
-    public QrCodePermissionDto(UUID permissionId, String serviceName) {
+
+    @JsonCreator
+    public QrCodePermissionDto(
+            @JsonProperty("permissionId") UUID permissionId,
+            @JsonProperty("serviceName") String serviceName
+    ) {
         this.permissionId = permissionId;
         this.serviceName = serviceName;
     }
