@@ -79,12 +79,12 @@ To the best of our knowledge, this is only necessary for reverse proxy deploymen
 
 ### Customizing Brand Icons in the UI
 
-The AIIDA brand icons can be customized by replacing the SVG files inside `aiida/docker/svgs` (or `/container-assets/svgs` in a running container) with your custom icons.
+The AIIDA brand icons can be customized by replacing the SVG files inside `aiida/docker/svgs` with your custom icons.
 For best results try to use SVGs with a similar aspect ratio to the original icons. If the icons are deleted or otherwise invalid, fallback icons will be used.
 
 - `HeaderLogo.svg` the logo used in the header.
 - `BackgroundBrandmark.svg` the icon that is displayed in the background.
-- `favicon.svg` the favicon.
+- `favicon.svg` the favicon.![favicon.svg](../../../../../../Downloads/favicon.svg)
 
 ## Application Information
 
