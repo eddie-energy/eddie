@@ -51,3 +51,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.2.1 - 2026-01-15
 
 - Update Jackson dependencies to Jackson 3
+
+## 3.2.2 - 2026-01-26
+
+- Add copyright notices to source files
