@@ -84,7 +84,7 @@ For best results try to use SVGs with a similar aspect ratio to the original ico
 
 - `HeaderLogo.svg` the logo used in the header.
 - `BackgroundBrandmark.svg` the icon that is displayed in the background.
-- `favicon.svg` the favicon.![favicon.svg](../../../../../../Downloads/favicon.svg)
+- `favicon.svg` the favicon
 
 ## Application Information
 
