@@ -100,7 +100,10 @@ body {
 
   &::before {
     content: '';
-    background: url(@/assets/BackgroundBrandmark.svg) no-repeat center/contain;
+    background: url(/svgs/BackgroundBrandmark.svg), url(@/assets/BackgroundBrandmark.svg);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
     z-index: -1;
     rotate: 11.7deg;
     position: fixed;
