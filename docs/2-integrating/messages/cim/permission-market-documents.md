@@ -3,7 +3,7 @@
 Permission market documents are used to signal the status change of one or multiple permission requests.
 They contain a lot of information, the following example focuses on the most necessary parts.
 The header is described in [CIM envelope](./cim.md#cim-envelope-for-v082).
-The schema can be found [here](https://github.com/eddie-energy/eddie/tree/main/api/src/main/schemas/cim/xsd/v0_82/pmd).
+The schema can be found [here](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/pmd).
 
 > [!Warning]
 > Only the XSD is provided since the CIM is an XML first format, and it cannot be guaranteed that the JSON variant is stable.

@@ -6,7 +6,7 @@ They can contain information such as contract details, address of the metering p
 > [!Warning]
 > Only the XSD is provided since the CIM is an XML first format, and it cannot be guaranteed that the JSON variant is stable.
 
-The XSD files can be found [here](https://github.com/eddie-energy/eddie/tree/main/api/src/main/schemas/cim/xsd/v0_82/ap).
+The XSD files can be found [here](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/ap).
 The following is an example of an accounting point market document.
 
 ```xml

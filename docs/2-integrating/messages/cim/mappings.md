@@ -15,7 +15,7 @@ The schemas used by EDA can be found at [ebutilities.at](https://www.ebutilities
 ## BE Fluvius Mapping
 
 This is the mapping for the [Fluvius Region Connector](../../../1-running/region-connectors/region-connector-be-fluvius.md).
-The schemas used by Fluvius can be found in [eddie/main/.../fluvius-sandbox-swagger.json](https://github.com/eddie-energy/eddie/blob/main/region-connectors/region-connector-be-fluvius/src/main/resources/fluvius-sandbox-swagger.json).
+The schemas used by Fluvius have to be obtained from Fluvius itself.
 
 ![Mapping for Validated Historical Data](./images/fluvius-vhd.png "Validated historical data market document mapping")
 
