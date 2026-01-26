@@ -64,7 +64,8 @@ public class OAuth2SecurityConfiguration {
                                 "/inbound/**",
                                 "/",
                                 "/data-sources",
-                                "/account")
+                                "/account,",
+                                "/svgs/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )
