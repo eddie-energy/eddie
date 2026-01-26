@@ -64,7 +64,7 @@
       "requiredFields": "Mit * markierte Felder sind erforderlich!",
       "localIpInput": "Lokale IP-Adresse",
       "vendorInput": "Hersteller",
-      "vendorPlaceholder": "Hersteller auswählen",
+      "vendorInputPlaceholder": "Hersteller auswählen",
       "modelInput": "Modell",
       "modelPlaceholder": "Modell auswählen",
       "deviceInput": "Gerät",
@@ -73,7 +73,12 @@
       "mqttCopyTitle": "Passwort kopieren",
       "mqttResetTitle": "Passwort zurücksetzen",
       "activationKey": "Aktivierungsschlüssel",
-      "isRequired": "ist ein Pflichtfeld"
+      "isRequired": "ist ein Pflichtfeld",
+      "meterId": "Physische Zähler-ID",
+      "meterIdLabel": "Physische Zähler-ID eingeben",
+      "accountingPoint": "Abrechnungspunkt-ID",
+      "accountingPoints": "Eine oder mehrere Abrechnungspunkt-IDs eingeben",
+      "accountingPointsError": "Abrechnungspunkt-IDs dürfen nicht leer sein"
     }
   },
   "permissions": {

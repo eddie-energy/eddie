@@ -42,6 +42,8 @@ const getEmptyDataSource = (): AiidaDataSource => {
     modelId: '',
     deviceId: '',
     icon: '' as AiidaDataSourceIcon,
+    meterId: '',
+    accountPointIds: [''],
   }
 }
 // All EU countries
@@ -235,6 +237,11 @@ const validateForm = () => {
   } else if (imageFile.value && imageFile.value.size > 20 * 1024 * 1024) {
     errors.value['image'] = t('datasources.modal.uploadImageSize')
   }
+  if (dataSource.value.accountPointIds.length >= 2) {
+    if (dataSource.value.accountPointIds.filter((point) => point === '').length > 0) {
+      errors.value['accountingPoints'] = t('datasources.modal.accountingPointsError')
+    }
+  }
 }
 
 const handleFormSubmit = async () => {
@@ -361,9 +368,9 @@ defineExpose({ showModal })
           </p>
         </div>
       </div>
-      <Transition name="extra-column">
-        <div v-if="dataSourceTypesWithExtraField.includes(dataSource.type)" class="column">
-          <template v-if="dataSource.type === 'MODBUS'">
+      <div class="column">
+        <TransitionGroup name="extra-column">
+          <div v-if="dataSource.type === 'MODBUS'" class="column" key="modbus">
             <div class="input-field extra-margin">
               <label for="ipAddress">{{ t('datasources.modal.localIpInput') }}</label>
               <input
@@ -413,42 +420,97 @@ defineExpose({ showModal })
               />
               <p v-if="errors['device']" class="error-message">{{ errors['device'] }}</p>
             </div>
-          </template>
-          <template v-if="dataSource.type === 'SIMULATION'">
-            <div class="input-field">
-              <label for="pollInterval"> {{ t('datasources.modal.pollingInterval') }} </label>
-              <input
-                :placeholder="t('datasources.modal.pollingInterval')"
-                required
-                type="number"
-                id="pollInterval"
-                v-model="dataSource.pollingInterval"
-                min="0"
-                name="pollInterval"
-              />
-              <p v-if="errors['pollInterval']" class="error-message">
-                {{ errors['pollInterval'] }}
-              </p>
+          </div>
+          <div
+            class="input-field extra-margin"
+            v-if="dataSource.type === 'SIMULATION'"
+            key="simulation"
+          >
+            <label for="pollInterval"> {{ t('datasources.modal.pollingInterval') }} </label>
+            <input
+              :placeholder="t('datasources.modal.pollingInterval')"
+              required
+              type="number"
+              id="pollInterval"
+              v-model="dataSource.pollingInterval"
+              min="0"
+              name="pollInterval"
+            />
+            <p v-if="errors['pollInterval']" class="error-message">
+              {{ errors['pollInterval'] }}
+            </p>
+          </div>
+          <div
+            class="input-field extra-margin"
+            v-if="dataSource.type === 'SINAPSI_ALFA'"
+            key="sinapsi"
+          >
+            <label for="activationKey">Sinapsi {{ t('datasources.modal.activationKey') }}</label>
+            <input
+              :placeholder="t('datasources.modal.activationKey')"
+              required
+              type="text"
+              id="activationKey"
+              v-model="dataSource.activationKey"
+              name="activationKey"
+            />
+            <p v-if="errors['activationKey']" class="error-message">
+              {{ errors['activationKey'] }}
+            </p>
+          </div>
+          <div
+            class="input-field"
+            :class="{
+              'extra-margin': !dataSourceTypesWithExtraField.includes(dataSource.type),
+              'extra-error-margin':
+                !dataSourceTypesWithExtraField.includes(dataSource.type) &&
+                (errors['name'] || errors['icon']),
+            }"
+            key="meterId"
+          >
+            <label for="meterId" class="optional">{{ t('datasources.modal.meterIdLabel') }}</label>
+            <input
+              :placeholder="t('datasources.modal.meterId')"
+              type="text"
+              id="meterId"
+              v-model="dataSource.meterId"
+              name="meterId"
+              autocomplete="off"
+            />
+            <p v-if="errors['meterId']" class="error-message">{{ errors['meterId'] }}</p>
+          </div>
+          <div class="input-field account-points" key="accountPoints">
+            <label for="accountingPoints" class="optional">{{
+              t('datasources.modal.accountingPoints')
+            }}</label>
+            <input
+              v-for="(point, index) in dataSource.accountPointIds"
+              :key="`accountingPoint-${index}`"
+              :placeholder="t('datasources.modal.accountingPoint')"
+              type="text"
+              :id="`accountingPoint-${index}`"
+              v-model="dataSource.accountPointIds[index]"
+              name="meterId"
+              autocomplete="off"
+            />
+            <p v-if="errors['accountingPoints']" class="error-message">
+              {{ errors['accountingPoints'] }}
+            </p>
+            <div class="actions">
+              <Button
+                :type="'button'"
+                @click="dataSource.accountPointIds.pop()"
+                :disabled="dataSource.accountPointIds.length == 1"
+                button-style="error"
+              >
+                Remove
+              </Button>
+              <Button :type="'button'" @click="dataSource.accountPointIds.push('')">Add</Button>
             </div>
-          </template>
-          <template v-if="dataSource.type === 'SINAPSI_ALFA'">
-            <div class="input-field">
-              <label for="activationKey">Sinapsi {{ t('datasources.modal.activationKey') }}</label>
-              <input
-                :placeholder="t('datasources.modal.activationKey')"
-                required
-                type="text"
-                id="activationKey"
-                v-model="dataSource.activationKey"
-                name="activationKey"
-              />
-              <p v-if="errors['activationKey']" class="error-message">
-                {{ errors['activationKey'] }}
-              </p>
-            </div>
-          </template>
-        </div>
-      </Transition>
+          </div>
+        </TransitionGroup>
+      </div>
+
       <div class="column last-column">
         <div class="input-field extra-margin">
           <label>{{ t('datasources.modal.chooseIcon') }}</label>
@@ -503,7 +565,7 @@ defineExpose({ showModal })
   flex-direction: column;
   gap: var(--spacing-lg);
 
-  label::after {
+  label:not(.optional)::after {
     content: ' *';
   }
 
@@ -552,6 +614,7 @@ defineExpose({ showModal })
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xlg);
+  position: relative;
 }
 
 .input-field {
@@ -606,18 +669,37 @@ defineExpose({ showModal })
   justify-content: space-between;
 }
 
-.last-column {
-  justify-content: space-between;
-}
-
 .extra-column-enter-active,
 .extra-column-leave-active {
-  transition: opacity 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
-.extra-column-enter-from,
+.extra-column-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 .extra-column-leave-to {
   opacity: 0;
+  transform: translateY(8px);
+}
+
+.extra-column-leave-active {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 0;
+}
+
+.actions {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.error-message {
+  color: var(--eddie-red-dark);
 }
 
 @media screen and (min-width: 1024px) {
@@ -631,6 +713,10 @@ defineExpose({ showModal })
 
   .extra-margin {
     margin-bottom: calc(var(--spacing-xlg) * 2);
+
+    &.extra-error-margin {
+      margin-bottom: calc(var(--spacing-xlg) * 3.33);
+    }
   }
 }
 </style>

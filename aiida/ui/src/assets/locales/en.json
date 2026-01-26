@@ -63,7 +63,7 @@
       "requiredFields": "Fields marked with * are required!",
       "localIpInput": "Local IP Address",
       "vendorInput": "Vendor",
-      "vendorPlaceholder": "Select Vendor",
+      "vendorInputPlaceholder": "Select Vendor",
       "modelInput": "Model",
       "modelPlaceholder": "Select Model",
       "deviceInput": "Device",
@@ -73,7 +73,12 @@
       "mqttResetTitle": "Reset Password",
       "mqttResetSuccess": "Successfully reset MQTT password",
       "activationKey": "Activation Key",
-      "isRequired": "is a required field"
+      "isRequired": "is a required field",
+      "meterId": "Physical Meter ID",
+      "meterIdLabel": "Enter physical meter ID",
+      "accountingPoint": "Accounting Point ID",
+      "accountingPoints": "Enter one or more accounting point ID",
+      "accountingPointsError": "Accountingpoint IDs can not be empty"
     }
   },
   "permissions": {
