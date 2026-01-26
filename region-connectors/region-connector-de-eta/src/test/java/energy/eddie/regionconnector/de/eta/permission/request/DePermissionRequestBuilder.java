@@ -4,8 +4,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
 
-import jakarta.annotation.Nullable;
+import org.springframework.lang.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
@@ -35,7 +36,7 @@ public class DePermissionRequestBuilder {
     @Nullable
     private String dataNeedId;
     @Nullable
-    private LocalDate latestMeterReadingEndDate;
+    private ZonedDateTime latestMeterReadingEndDate;
     @Nullable
     private String message;
     @Nullable
@@ -91,8 +92,17 @@ public class DePermissionRequestBuilder {
         return this;
     }
 
-    public DePermissionRequestBuilder latestMeterReadingEndDate(LocalDate latestMeterReadingEndDate) {
-        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
+    public DePermissionRequestBuilder latestMeterReadingEndDate(LocalDate localDate) {
+        if (localDate != null) {
+            this.latestMeterReadingEndDate = localDate.atStartOfDay(ZoneId.of("UTC"));
+        } else {
+            this.latestMeterReadingEndDate = null;
+        }
+        return this;
+    }
+
+    public DePermissionRequestBuilder latestReading(ZonedDateTime latestReading) {
+        this.latestMeterReadingEndDate = latestReading;
         return this;
     }
 
