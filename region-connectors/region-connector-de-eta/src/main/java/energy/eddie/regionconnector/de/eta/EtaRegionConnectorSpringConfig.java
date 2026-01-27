@@ -20,7 +20,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * Spring configuration for the German (DE) ETA Plus region connector.
@@ -132,18 +131,5 @@ public class EtaRegionConnectorSpringConfig {
         return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
     }
 
-    /**
-     * Create a WebClient for making HTTP requests to the ETA Plus API
-     * 
-     * @return the configured WebClient
-     */
-    @Bean
-    public WebClient deEtaWebClient() {
-        return WebClient.builder()
-                .codecs(configurer -> configurer
-                        .defaultCodecs()
-                        .maxInMemorySize(10 * 1024 * 1024)) // 10 MB buffer
-                .build();
-    }
 }
 
