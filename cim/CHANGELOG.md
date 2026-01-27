@@ -47,3 +47,11 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.2.0 - 2025-11-07
 
 - Add serialization and deserialization capabilities for CIM messages for JSON and XML format
+
+## 3.3.0 - 2025-xx-xx
+- Add (near) real-time data for CIM version `1.06`
+- Fixes wrong wording of `QuantityTypeKind` values
+- Adds additional `QuantityTypeKind` values
+- AIIDA now depends on this version of the CIM
+
+[//]: # (TODO: Adapt the changelog before pushing to main)

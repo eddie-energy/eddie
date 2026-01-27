@@ -1,0 +1,104 @@
+{
+  "asset": "SUBMETER",
+  "userId": "5211ea05-d4ab-48ff-8613-8f4791a56606",
+  "dataSourceId": "4211ea05-d4ab-48ff-8613-8f4791a56606",
+  "permissionId": "3211ea05-d4ab-48ff-8613-8f4791a56606",
+  "values": [
+    {
+      "rawTag": "1-0:1.7.0",
+      "dataTag": "1-0:1.7.0",
+      "rawValue": "10",
+      "value": "10",
+      "rawUnitOfMeasurement": "kW",
+      "unitOfMeasurement": "kW"
+    },
+    {
+      "rawTag": "1-0:2.7.0",
+      "dataTag": "1-0:2.7.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "kW",
+      "unitOfMeasurement": "kW"
+    },
+    {
+      "rawTag": "1-0:1.8.0",
+      "dataTag": "1-0:1.8.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "kWh",
+      "unitOfMeasurement": "kWh"
+    },
+    {
+      "rawTag": "1-0:2.8.0",
+      "dataTag": "1-0:2.8.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "kWh",
+      "unitOfMeasurement": "kWh"
+    },
+    {
+      "rawTag": "1-0:31.7.0",
+      "dataTag": "1-0:31.7.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "A",
+      "unitOfMeasurement": "A"
+    },
+    {
+      "rawTag": "1-0:51.7.0",
+      "dataTag": "1-0:51.7.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "A",
+      "unitOfMeasurement": "A"
+    },
+    {
+      "rawTag": "1-0:71.7.0",
+      "dataTag": "1-0:71.7.0",
+      "rawValue": "50",
+      "value": "50",
+      "rawUnitOfMeasurement": "A",
+      "unitOfMeasurement": "A"
+    },
+    {
+      "rawTag": "1-0:13.7.0",
+      "dataTag": "1-0:13.7.0",
+      "rawValue": "5",
+      "value": "5",
+      "rawUnitOfMeasurement": "none",
+      "unitOfMeasurement": "none"
+    },
+    {
+      "rawTag": "1-0:32.7.0",
+      "dataTag": "1-0:32.7.0",
+      "rawValue": "10",
+      "value": "10",
+      "rawUnitOfMeasurement": "V",
+      "unitOfMeasurement": "V"
+    },
+    {
+      "rawTag": "1-0:52.7.0",
+      "dataTag": "1-0:52.7.0",
+      "rawValue": "10",
+      "value": "10",
+      "rawUnitOfMeasurement": "V",
+      "unitOfMeasurement": "V"
+    },
+    {
+      "rawTag": "1-0:52.7.0",
+      "dataTag": "1-0:72.7.0",
+      "rawValue": "10",
+      "value": "10",
+      "rawUnitOfMeasurement": "V",
+      "unitOfMeasurement": "V"
+    },
+    {
+      "rawTag": "1-0:96.1.0",
+      "dataTag": "0-0:96.1.0",
+      "rawValue": "Device123",
+      "value": "Device123",
+      "rawUnitOfMeasurement": "none",
+      "unitOfMeasurement": "none"
+    }
+  ]
+}

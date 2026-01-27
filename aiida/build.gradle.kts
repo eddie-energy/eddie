@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.j2mod)
     implementation(libs.mvel2)
+    implementation(libs.throwing.function)
 
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)

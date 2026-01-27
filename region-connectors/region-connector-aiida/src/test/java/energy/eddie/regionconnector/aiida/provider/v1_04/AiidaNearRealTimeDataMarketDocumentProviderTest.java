@@ -20,7 +20,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
     void getRawDataStream_emitsUnderlyingFlux() {
         var msg1 = mock(RTDEnvelope.class);
         var msg2 = mock(RTDEnvelope.class);
-        when(streams.nearRealTimeDataFlux()).thenReturn(Flux.just(msg1, msg2));
+        when(streams.nearRealTimeDataCimV104Flux()).thenReturn(Flux.just(msg1, msg2));
 
         var provider = new AiidaNearRealTimeDataMarketDocumentProvider(streams);
 
@@ -29,7 +29,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
                     .thenCancel()
                     .verify();
 
-        verify(streams).nearRealTimeDataFlux();
+        verify(streams).nearRealTimeDataCimV104Flux();
         verifyNoMoreInteractions(streams);
     }
 }

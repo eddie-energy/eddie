@@ -8,7 +8,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.ZonedDateTime;
 
-@Entity
+@Entity(name = "NearRealTimeDataMarketDocumentModelV1_04")
 @Table(name = "near_real_time_data_marked_document", schema = "rest")
 @SuppressWarnings("NullAway")
 public class NearRealTimeDataMarketDocumentModel implements ModelWithJsonPayload<RTDEnvelope> {

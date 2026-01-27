@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<OesterreichsEnergieDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(OesterreichsEnergieAdapter.class);
@@ -58,7 +58,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         try {
             var json = mapper.readValue(message.getPayload(), OesterreichsEnergieAdapterJson.class);
 
-            var aiidaRecordValues = new ArrayList<>(convertEnergyDataToAiidaRecordValues(json));
+            var aiidaRecordValues = convertEnergyDataToAiidaRecordValues(json);
             if (!json.name().isEmpty()) {
                 aiidaRecordValues.add(convertNameToAiidaRecordValue(json.name()));
             }
@@ -72,7 +72,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
         }
     }
 
-    private List<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
+    private ArrayList<AiidaRecordValue> convertEnergyDataToAiidaRecordValues(OesterreichsEnergieAdapterJson json) {
         return json.energyData()
                    .entrySet()
                    .stream()
@@ -83,7 +83,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
                                 )
                    )
                    .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                   .toList();
+                   .collect(Collectors.toCollection(ArrayList::new));
     }
 
     private AiidaRecordValue convertNameToAiidaRecordValue(String name) {

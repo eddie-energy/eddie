@@ -1,7 +1,7 @@
 package energy.eddie.aiida.dtos.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 
 import java.time.Instant;
 
