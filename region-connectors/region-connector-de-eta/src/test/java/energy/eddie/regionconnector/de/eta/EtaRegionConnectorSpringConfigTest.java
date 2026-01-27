@@ -6,7 +6,6 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
@@ -32,12 +31,6 @@ class EtaRegionConnectorSpringConfigTest {
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
-                .withBean(DeEtaPlusConfiguration.class, () -> new DeEtaPlusConfiguration(
-                        "party-1",
-                        "https://api.eta-plus.de",
-                        "client-id",
-                        "client-secret"
-                ))
                 .withBean(RegionConnectorMetadata.class, EtaRegionConnectorMetadata::getInstance)
                 .withBean(DataNeedRuleSet.class, EtaDataNeedRuleSet::new)
                 .withBean(CommonInformationModelConfiguration.class, () -> {
@@ -45,6 +38,12 @@ class EtaRegionConnectorSpringConfigTest {
                     when(cimConfig.eligiblePartyNationalCodingScheme()).thenReturn(CodingSchemeTypeList.EIC);
                     return cimConfig;
                 })
+                .withPropertyValues(
+                        "region-connector.de.eta.eligible-party-id=party-1",
+                        "region-connector.de.eta.api-base-url=https://api.eta-plus.de",
+                        "region-connector.de.eta.api-client-id=client-id",
+                        "region-connector.de.eta.api-client-secret=client-secret"
+                )
                 .run(context -> {
                     assertThat(context).hasSingleBean(EventBus.class);
                     assertThat(context).hasSingleBean(Outbox.class);
