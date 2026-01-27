@@ -2,9 +2,11 @@ package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
@@ -86,7 +88,7 @@ public class EtaRegionConnectorSpringConfig {
             EventBus eventBus,
             DePermissionRequestRepository repository,
             DataNeedsService dataNeedsService,
-            PlainDeConfiguration configuration,
+            DeEtaPlusConfiguration configuration,
             CommonInformationModelConfiguration cimConfig,
             TransmissionScheduleProvider<DePermissionRequest> transmissionScheduleProvider
     ) {
@@ -117,16 +119,17 @@ public class EtaRegionConnectorSpringConfig {
      * supports a given data need.
      * 
      * @param dataNeedsService the data needs service
+     * @param metadata the region connector metadata
+     * @param ruleSet the data need rule set for this region connector
      * @return the data need calculation service
      */
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            RegionConnectorMetadata metadata,
+            DataNeedRuleSet ruleSet
     ) {
-        return new DataNeedCalculationServiceImpl(
-                dataNeedsService,
-                EtaRegionConnectorMetadata.getInstance()
-        );
+        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
     }
 
     /**
