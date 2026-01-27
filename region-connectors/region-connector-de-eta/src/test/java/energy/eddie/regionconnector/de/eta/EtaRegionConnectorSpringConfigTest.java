@@ -2,9 +2,12 @@ package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
+import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -29,12 +32,14 @@ class EtaRegionConnectorSpringConfigTest {
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
-                .withBean(PlainDeConfiguration.class, () -> new PlainDeConfiguration(
+                .withBean(DeEtaPlusConfiguration.class, () -> new DeEtaPlusConfiguration(
                         "party-1",
                         "https://api.eta-plus.de",
                         "client-id",
                         "client-secret"
                 ))
+                .withBean(RegionConnectorMetadata.class, EtaRegionConnectorMetadata::getInstance)
+                .withBean(DataNeedRuleSet.class, EtaDataNeedRuleSet::new)
                 .withBean(CommonInformationModelConfiguration.class, () -> {
                     CommonInformationModelConfiguration cimConfig = mock(CommonInformationModelConfiguration.class);
                     when(cimConfig.eligiblePartyNationalCodingScheme()).thenReturn(CodingSchemeTypeList.EIC);
