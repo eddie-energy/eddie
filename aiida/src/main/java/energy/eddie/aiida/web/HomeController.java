@@ -30,11 +30,6 @@ public class HomeController {
         return "index";
     }
 
-    @GetMapping("/installer")
-    public String installer() {
-        return "installer";
-    }
-
     @GetMapping("/login")
     public String login() {
         return "login";
