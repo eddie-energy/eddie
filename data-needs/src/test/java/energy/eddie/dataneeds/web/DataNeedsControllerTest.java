@@ -94,4 +94,38 @@ public class DataNeedsControllerTest {
                .andExpect(jsonPath("$.duration.start", is("P-90D")))
                .andExpect(jsonPath("$.duration.stickyStartCalendarUnit").doesNotExist());
     }
+
+    @Test
+    void givenExistingId_getDataNeeds_returnsDataNeeds() throws Exception {
+        // Given
+        String id = "123";
+        DataNeed dataNeed = mapper.readValue(EXAMPLE_VHD_DATA_NEED, DataNeed.class);
+        when(mockDataNeedsService.findById(id)).thenReturn(Optional.of(dataNeed));
+
+        // When
+        mockMvc.perform(get("/api/")
+                                .queryParam("data-need-id", id)
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.[0].id", is(id)))
+               .andExpect(jsonPath("$.[0].type", is(ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE)))
+               .andExpect(jsonPath("$.[0].duration.start", is("P-90D")))
+               .andExpect(jsonPath("$.[0].duration.stickyStartCalendarUnit").doesNotExist());
+    }
+
+    @Test
+    void givenNonExistingId_getDataNeeds_returnsEmptyList() throws Exception {
+        // Given
+        String id = "123";
+        when(mockDataNeedsService.findById(id)).thenReturn(Optional.empty());
+
+        // When
+        mockMvc.perform(get("/api/")
+                                .queryParam("data-need-id", id)
+                                .accept(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").isEmpty());
+    }
 }

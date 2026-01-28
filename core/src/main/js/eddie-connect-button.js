@@ -22,7 +22,7 @@ import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import {
-  getDataNeedAttributes,
+  getDataNeedsAttributes,
   getPermissionAdministrators,
   getRegionConnectorMetadata,
   getSupportedRegionConnectorsFor,
@@ -479,12 +479,9 @@ class EddieConnectButton extends LitElement {
       throw new Error("EDDIE button loaded without data-need-id.");
     }
 
-    // TODO: batch into one request
     try {
-      for (const dnId of this.dataNeedId.split(",")) {
-        const res = await getDataNeedAttributes(dnId);
-        this._dataNeedAttributes = [res, ...this._dataNeedAttributes];
-      }
+      const dns = this.dataNeedId.split(",");
+      this._dataNeedAttributes = await getDataNeedsAttributes(dns);
     } catch (error) {
       throw new Error("Could not fetch data needs.");
     }
@@ -620,7 +617,12 @@ class EddieConnectButton extends LitElement {
   }
 
   dataNeedDescription() {
-    return unsafeHTML(dataNeedDescription(this._dataNeedAttributes));
+    console.debug(this._dataNeedAttributes);
+    return unsafeHTML(
+      this._dataNeedAttributes
+        .map((dataNeed) => dataNeedDescription(dataNeed))
+        .join("<br/>")
+    );
   }
 
   render() {
