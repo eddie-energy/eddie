@@ -43,9 +43,6 @@ aiida:
         retention: PT5M
       inbound-record:
         retention: P1D
-  installer:
-    host: https://installer.aiida.energy
-    token: "Test123!"
   mqtt:
     bcrypt-salt-rounds: 12
     password: Test123!

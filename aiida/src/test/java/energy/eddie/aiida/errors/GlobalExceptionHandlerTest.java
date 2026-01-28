@@ -3,7 +3,6 @@ package energy.eddie.aiida.errors;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
-import energy.eddie.aiida.errors.installer.InstallerException;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
 import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -197,23 +196,6 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo(message);
-    }
-
-    @Test
-    void givenDetailInstallerException_returnsSameStatus() {
-        // Given
-        var exception = new InstallerException(HttpStatus.BAD_GATEWAY, "Test exception");
-
-        // When
-        var response = advice.handleInstallerException(exception);
-
-        // Then
-        assertEquals(HttpStatus.BAD_GATEWAY, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo("Test exception");
     }
 
     private static List<ObjectError> createErrorFields() {

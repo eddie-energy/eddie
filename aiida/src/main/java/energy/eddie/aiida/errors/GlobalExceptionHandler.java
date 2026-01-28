@@ -15,7 +15,6 @@ import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigExcep
 import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
-import energy.eddie.aiida.errors.installer.InstallerException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
@@ -145,11 +144,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<EddieApiError>>> handleServiceUnavailableExceptions(Exception exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
-    }
-
-    @ExceptionHandler({InstallerException.class})
-    public ResponseEntity<Map<String, List<EddieApiError>>> handleInstallerException(InstallerException exception) {
-        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
-        return ResponseEntity.status(exception.httpStatus()).body(errors);
     }
 }
