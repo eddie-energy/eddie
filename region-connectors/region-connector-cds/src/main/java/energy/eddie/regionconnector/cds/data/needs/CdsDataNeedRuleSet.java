@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.cds.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
@@ -28,8 +27,8 @@ public class CdsDataNeedRuleSet implements DataNeedRuleSet {
     public CdsDataNeedRuleSet(CdsServerClientFactory factory) {this.factory = factory;}
 
     @Override
-    public List<DataNeedRule<? extends DataNeed>> dataNeedRules() {
-        var list = new ArrayList<DataNeedRule<? extends DataNeed>>();
+    public List<DataNeedRule> dataNeedRules() {
+        var list = new ArrayList<DataNeedRule>();
         list.add(new AccountingPointDataNeedRule());
         Set<EnergyType> energyTypes;
         try {

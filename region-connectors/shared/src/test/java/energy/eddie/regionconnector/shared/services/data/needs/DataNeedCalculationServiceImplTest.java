@@ -13,8 +13,9 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.AiidaDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
+import static energy.eddie.dataneeds.rules.DataNeedRule.AiidaDataNeedRule;
+import static energy.eddie.dataneeds.rules.DataNeedRule.AiidaDataNeedRule.AiidaDataNeedTypes.INBOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
@@ -121,7 +124,8 @@ class DataNeedCalculationServiceImplTest {
                 dataNeedsService,
                 metadata,
                 () -> List.of(new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of()),
-                              new AccountingPointDataNeedRule())
+                              new AccountingPointDataNeedRule(),
+                              new AllowMultipleDataNeedsRule())
         );
         // When
         var res = calculationService.calculate("dnid");
@@ -131,7 +135,7 @@ class DataNeedCalculationServiceImplTest {
                 .asInstanceOf(type(DataNeedNotSupportedResult.class))
                 .extracting(DataNeedNotSupportedResult::message)
                 .isEqualTo(
-                        "Data need type \"OutboundAiidaDataNeed\" not supported, region connector supports data needs of types ValidatedHistoricalDataDataNeed, AccountingPointDataNeed"
+                        "Data need type \"OutboundAiidaDataNeed\" not supported, region connector supports data needs of types AccountingPointDataNeed, ValidatedHistoricalDataDataNeed"
                 );
     }
 
@@ -148,10 +152,13 @@ class DataNeedCalculationServiceImplTest {
         var calculationService = new DataNeedCalculationServiceImpl(
                 dataNeedsService,
                 metadata,
-                () -> List.of(new ValidatedHistoricalDataDataNeedRule(
-                        EnergyType.ELECTRICITY,
-                        List.of(Granularity.PT15M, Granularity.P1D)
-                ))
+                () -> List.of(
+                        new ValidatedHistoricalDataDataNeedRule(
+                                EnergyType.ELECTRICITY,
+                                List.of(Granularity.PT15M, Granularity.P1D)
+                        ),
+                        new AllowMultipleDataNeedsRule()
+                )
         );
         // When
         var res = calculationService.calculate("dnid");
@@ -313,11 +320,14 @@ class DataNeedCalculationServiceImplTest {
         when(dataNeedsService.findById("vhd-dnid")).thenReturn(Optional.of(vhd));
         var ap = new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null);
         when(dataNeedsService.findById("ap-dnid")).thenReturn(Optional.of(ap));
-        List<DataNeedRule<?>> dataNeedRules = List.of(
+        List<DataNeedRule> dataNeedRules = List.of(
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
-                new AccountingPointDataNeedRule()
+                new AccountingPointDataNeedRule(),
+                new AllowMultipleDataNeedsRule()
         );
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                         metadata,
+                                                         new TestDataNeedRuleSet(dataNeedRules));
 
         // When
         var res = service.calculateAll(Set.of("vhd-dnid", "ap-dnid"));
@@ -335,16 +345,50 @@ class DataNeedCalculationServiceImplTest {
     }
 
     @Test
+    void givenSingleDataNeed_whenCalculateAll_thenReturnsCorrectResults() {
+        // Given
+        var vhd = new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                Granularity.PT1H,
+                Granularity.P1D
+        );
+        when(dataNeedsService.findById("vhd-dnid")).thenReturn(Optional.of(vhd));
+        List<DataNeedRule> dataNeedRules = List.of(
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
+                new AccountingPointDataNeedRule()
+        );
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                         metadata,
+                                                         new TestDataNeedRuleSet(dataNeedRules));
+
+        // When
+        var res = service.calculateAll(Set.of("vhd-dnid"));
+
+        // Then
+        assertThat(res)
+                .asInstanceOf(type(CalculationResult.class))
+                .extracting(CalculationResult::result)
+                .asInstanceOf(map(String.class, DataNeedCalculationResult.class))
+                .hasEntrySatisfying("vhd-dnid",
+                                    dn -> assertThat(dn).isInstanceOf(ValidatedHistoricalDataDataNeedResult.class))
+                .hasSize(1);
+    }
+
+    @Test
     void givenMultipleAccountingPointDataNeeds_whenCalculateAll_thenReturnsRepeatedDataNeedResult() {
         // Given
         var ap = new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null);
         when(dataNeedsService.findById("ap-dnid-1")).thenReturn(Optional.of(ap));
         when(dataNeedsService.findById("ap-dnid-2")).thenReturn(Optional.of(ap));
-        List<DataNeedRule<?>> dataNeedRules = List.of(
+        List<DataNeedRule> dataNeedRules = List.of(
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
-                new AccountingPointDataNeedRule()
+                new AccountingPointDataNeedRule(),
+                new AllowMultipleDataNeedsRule()
         );
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                         metadata,
+                                                         new TestDataNeedRuleSet(dataNeedRules));
 
         // When
         var res = service.calculateAll(Set.of("ap-dnid-1", "ap-dnid-2"));
@@ -364,11 +408,14 @@ class DataNeedCalculationServiceImplTest {
         );
         when(dataNeedsService.findById("vhd-dnid-1")).thenReturn(Optional.of(vhd));
         when(dataNeedsService.findById("vhd-dnid-2")).thenReturn(Optional.of(vhd));
-        List<DataNeedRule<?>> dataNeedRules = List.of(
+        List<DataNeedRule> dataNeedRules = List.of(
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
-                new AccountingPointDataNeedRule()
+                new AccountingPointDataNeedRule(),
+                new AllowMultipleDataNeedsRule()
         );
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                         metadata,
+                                                         new TestDataNeedRuleSet(dataNeedRules));
 
         // When
         var res = service.calculateAll(Set.of("vhd-dnid-1", "vhd-dnid-2"));
@@ -389,17 +436,62 @@ class DataNeedCalculationServiceImplTest {
         );
         when(dataNeedsService.findById("vhd-dnid")).thenReturn(Optional.of(vhd));
         when(dataNeedsService.findById("aiida-dnid")).thenReturn(Optional.of(new InboundAiidaDataNeed()));
-        List<DataNeedRule<?>> dataNeedRules = List.of(
+        List<DataNeedRule> dataNeedRules = List.of(
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
-                new AiidaDataNeedRule<>(InboundAiidaDataNeed.class)
+                new AiidaDataNeedRule(INBOUND),
+                new AllowMultipleDataNeedsRule()
         );
-        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata, () -> dataNeedRules);
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata,
+                                                         new TestDataNeedRuleSet(dataNeedRules));
 
         // When
         var res = service.calculateAll(Set.of("vhd-dnid", "aiida-dnid"));
 
         // Then
         assertThat(res).isInstanceOf(InvalidDataNeedCombination.class);
+    }
+
+
+    @Test
+    void givenUnsupportedMultipleDataNeeds_whenCalculateAll_thenReturnsInvalidDataNeedCombination() {
+        // Given
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata,
+                                                         new TestDataNeedRuleSet(List.of()));
+
+        // When
+        var res = service.calculateAll(Set.of("vhd-dnid", "aiida-dnid"));
+
+        // Then
+        assertThat(res).isInstanceOf(InvalidDataNeedCombination.class);
+    }
+
+    @Test
+    void givenUnknownDataNeed_whenCalculateAll_thenReturnsDataNeedNotFoundForUnknownDataNeed() {
+        // Given
+        when(dataNeedsService.findById("vhd-dnid")).thenReturn(Optional.empty());
+        var ap = new AccountingPointDataNeed("name", "desc", "purpose", "https://localhost", true, null);
+        when(dataNeedsService.findById("ap-dnid")).thenReturn(Optional.of(ap));
+        List<DataNeedRule> dataNeedRules = List.of(
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
+                new AccountingPointDataNeedRule(),
+                new AllowMultipleDataNeedsRule()
+        );
+        var service = new DataNeedCalculationServiceImpl(dataNeedsService,
+                                                         metadata,
+                                                         new TestDataNeedRuleSet(dataNeedRules));
+
+        // When
+        var res = service.calculateAll(Set.of("vhd-dnid", "ap-dnid"));
+
+        // Then
+        assertThat(res)
+                .asInstanceOf(type(CalculationResult.class))
+                .extracting(CalculationResult::result)
+                .asInstanceOf(map(String.class, DataNeedCalculationResult.class))
+                .hasEntrySatisfying("vhd-dnid", dn -> assertThat(dn).isInstanceOf(DataNeedNotFoundResult.class))
+                .hasEntrySatisfying(ap.id(),
+                                    dn -> assertThat(dn).isInstanceOf(AccountingPointDataNeedResult.class))
+                .hasSize(2);
     }
 
     private static Stream<Arguments> regionConnectorFilterConfigurations() {
@@ -425,4 +517,6 @@ class DataNeedCalculationServiceImplTest {
                                                ZoneId timeZone,
                                                List<EnergyType> supportedEnergyTypes) implements RegionConnectorMetadata {
     }
+
+    private record TestDataNeedRuleSet(List<DataNeedRule> dataNeedRules) implements DataNeedRuleSet {}
 }

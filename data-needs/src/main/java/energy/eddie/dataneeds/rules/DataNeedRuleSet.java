@@ -14,17 +14,42 @@ public interface DataNeedRuleSet {
 
     /**
      * Returns all the data need rules
+     *
      * @return all data need rules
      */
     @JsonValue
-    @SuppressWarnings("java:S1452")
-    // It is not possible to completely remove the wildcard type here, since this method might return a non-homogenous list.
-    List<DataNeedRule<? extends DataNeed>> dataNeedRules();
+    List<DataNeedRule> dataNeedRules();
+
+    default boolean hasRule(DataNeedRule rule) {
+        return dataNeedRules().contains(rule);
+    }
+
+    default boolean hasRule(DataNeed dataNeed) {
+        for (DataNeedRule rule : dataNeedRules()) {
+            if (rule instanceof DataNeedRule.SpecificDataNeedRule specificDataNeedRule && dataNeed.getClass()
+                                                                                                  .equals(specificDataNeedRule.getDataNeedClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    default <T extends DataNeedRule> Set<T> dataNeedRules(Class<T> clazz) {
+        var result = new HashSet<T>();
+        for (var dataNeedRule : dataNeedRules()) {
+            if (clazz.isAssignableFrom(dataNeedRule.getClass())) {
+                result.add(clazz.cast(dataNeedRule));
+            }
+        }
+        return result;
+    }
 
     default Set<String> supportedDataNeeds() {
         var dataNeeds = new HashSet<String>();
         for (var rule : dataNeedRules()) {
-            dataNeeds.add(rule.getType());
+            if (rule instanceof DataNeedRule.SpecificDataNeedRule dataNeedRule) {
+                dataNeeds.add(dataNeedRule.getType());
+            }
         }
         return dataNeeds;
     }

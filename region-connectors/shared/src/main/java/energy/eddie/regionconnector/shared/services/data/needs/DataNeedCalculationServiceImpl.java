@@ -13,6 +13,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -113,8 +114,13 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             }
         }
 
-        if (!dataNeedRuleSet.supportedDataNeeds().contains(dataNeed.getClass().getSimpleName())) {
-            var classes = String.join(", ", dataNeedRuleSet.supportedDataNeeds());
+        if (!dataNeedRuleSet.hasRule(dataNeed)) {
+            var supportedDataNeeds = dataNeedRuleSet.dataNeedRules(DataNeedRule.SpecificDataNeedRule.class)
+                                                    .stream()
+                                                    .map(specificDataNeedRule -> specificDataNeedRule.getDataNeedClass()
+                                                                                                     .getSimpleName())
+                                                    .toList();
+            var classes = String.join(", ", supportedDataNeeds);
             return new DataNeedNotSupportedResult(
                     "Data need type \"%s\" not supported, region connector supports data needs of types %s"
                             .formatted(dataNeed.getClass().getSimpleName(), classes)
@@ -168,6 +174,13 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
     @Override
     public MultipleDataNeedCalculationResult calculateAll(Set<String> dataNeedIds, ZonedDateTime referenceDateTime) {
+        if (dataNeedIds.size() == 1) {
+            var id = dataNeedIds.iterator().next();
+            return new CalculationResult(Map.of(id, calculate(id, referenceDateTime)));
+        }
+        if (!this.dataNeedRuleSet.hasRule(new DataNeedRule.AllowMultipleDataNeedsRule())) {
+            return new InvalidDataNeedCombination(dataNeedIds, "Multiple data needs not supported");
+        }
         Map<String, DataNeedCalculationResult> results = new HashMap<>();
         var dns = new ArrayList<DataNeed>();
         for (var dataNeedId : dataNeedIds) {
@@ -201,7 +214,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return regionConnectorMetadata.id();
     }
 
-    private static Optional<InvalidDataNeedCombination> unmixableDataNeedTypes(ArrayList<DataNeed> dataNeeds) {
+    private static Optional<InvalidDataNeedCombination> unmixableDataNeedTypes(List<DataNeed> dataNeeds) {
         var unmixableDataNeeds = Set.of(InboundAiidaDataNeed.class, OutboundAiidaDataNeed.class);
         var dnPartition = dataNeeds.stream()
                                    .collect(Collectors.partitioningBy(dn -> unmixableDataNeeds.contains(dn.getClass())));
@@ -218,7 +231,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return Optional.empty();
     }
 
-    private static Optional<InvalidDataNeedCombination> repeatedUniqueDataNeedTypes(ArrayList<DataNeed> dns) {
+    private static Optional<InvalidDataNeedCombination> repeatedUniqueDataNeedTypes(List<DataNeed> dns) {
         var repeatedAccountingPointDns = dns.stream()
                                             .filter(AccountingPointDataNeed.class::isInstance)
                                             .map(DataNeed::id)
@@ -232,7 +245,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         return Optional.empty();
     }
 
-    private static Optional<InvalidDataNeedCombination> repeatedEnergyTypes(ArrayList<DataNeed> dns) {
+    private static Optional<InvalidDataNeedCombination> repeatedEnergyTypes(List<DataNeed> dns) {
         var vhdDns = dns.stream()
                         .filter(ValidatedHistoricalDataDataNeed.class::isInstance)
                         .map(ValidatedHistoricalDataDataNeed.class::cast)
