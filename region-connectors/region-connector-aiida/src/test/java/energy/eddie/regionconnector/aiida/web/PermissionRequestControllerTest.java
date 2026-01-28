@@ -83,7 +83,7 @@ class PermissionRequestControllerTest {
     private MqttService unusedMqttService;
 
     @Test
-    void givenNoRequestBody_createPermissionRequest_returnsBadRequest() throws Exception {
+    void givenNoRequestBody_createPermissionRequest_returnsBadRequests() throws Exception {
         mockMvc.perform(post("/permission-request").contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
@@ -91,7 +91,7 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenMissingConnectionId_createPermissionRequest_returnsBadRequest() throws Exception {
+    void givenMissingConnectionId_createPermissionRequest_returnsBadRequests() throws Exception {
         var json = "{\"dataNeedId\":\"1\"}";
 
         mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
@@ -101,10 +101,10 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenAdditionalNotNeededInformation_createPermissionRequest_isIgnored() throws Exception {
+    void givenAdditionalNotNeededInformation_createPermissionRequests_isIgnored() throws Exception {
         // Given
         var qrCodeDto = new QrCodeDto(UUID.randomUUID(), permissionId, "serviceName", "http://localhost:8080/example");
-        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(qrCodeDto);
+        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(qrCodeDto);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
         var expectedLocationHeader = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
                 .expand(permissionId)
@@ -116,16 +116,16 @@ class PermissionRequestControllerTest {
                .andExpect(status().isCreated())
                .andExpect(header().string("Location", is(expectedLocationHeader)))
                .andExpect(jsonPath("$.permissionId", is(permissionId.toString())));
-        verify(mockService).createValidateAndSendPermissionRequest(any());
+        verify(mockService).createValidateAndSendPermissionRequests(any());
     }
 
     @Test
-    void givenValidInput_createPermissionRequest_asExpected() throws Exception {
+    void givenValidInput_createPermissionRequests_asExpected() throws Exception {
         // Given
-        when(mockService.createValidateAndSendPermissionRequest(any())).thenReturn(new QrCodeDto(eddieId,
-                                                                                                 permissionId,
-                                                                                                 "serviceName",
-                                                                                                 "http://localhost:8080/example"));
+        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(new QrCodeDto(eddieId,
+                                                                                                  permissionId,
+                                                                                                  "serviceName",
+                                                                                                  "http://localhost:8080/example"));
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
         var expectedLocationHeader = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
                 .expand(permissionId)
@@ -140,13 +140,13 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath("$.serviceName", is("serviceName")))
                .andExpect(jsonPath("$.handshakeUrl", is("http://localhost:8080/example")));
 
-        verify(mockService).createValidateAndSendPermissionRequest(any());
+        verify(mockService).createValidateAndSendPermissionRequests(any());
     }
 
     @Test
-    void givenUnsupportedDataNeedId_createPermissionRequest_returnsBadRequest() throws Exception {
+    void givenUnsupportedDataNeedId_createPermissionRequest_returnsBadRequests() throws Exception {
         // Given
-        when(mockService.createValidateAndSendPermissionRequest(any())).thenThrow(new UnsupportedDataNeedException(
+        when(mockService.createValidateAndSendPermissionRequests(any())).thenThrow(new UnsupportedDataNeedException(
                 AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                 "test",
                 "Is a test reason."));

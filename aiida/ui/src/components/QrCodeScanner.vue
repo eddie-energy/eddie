@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
-import type { AiidaPermissionRequest } from '@/types'
+import type { QrCode } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const { open } = defineProps<{ open?: boolean }>()
@@ -12,7 +12,7 @@ const notValid = ref(false)
 const { t } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'valid', permission: AiidaPermissionRequest): void
+  (e: 'valid', permission: QrCode): void
 }>()
 
 function parseAiidaCode(aiidaCode: string) {

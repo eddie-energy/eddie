@@ -78,7 +78,7 @@
   },
   "permissions": {
     "title": "Berechtigungen",
-    "addButton": "Berechtigung hinzufügen",
+    "addButton": "Berechtigungen hinzufügen",
     "tagActive": "Aktiv",
     "tagPending": "Ausstehend",
     "tagComplete": "Abgeschlossen",
