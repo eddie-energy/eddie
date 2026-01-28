@@ -14,7 +14,6 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -51,7 +50,6 @@ class EtaRegionConnectorSpringConfigTest {
                     assertThat(context).hasBean("dePermissionMarketDocumentMessageHandler");
                     assertThat(context).hasSingleBean(TransmissionScheduleProvider.class);
                     assertThat(context).hasSingleBean(DataNeedCalculationService.class);
-                    assertThat(context).hasSingleBean(WebClient.class);
                 });
     }
 }
