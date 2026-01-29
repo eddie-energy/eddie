@@ -2,7 +2,6 @@ package energy.eddie.aiida.schemas;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.StandardModeEntry;
 import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.Permission;
@@ -10,6 +9,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.cim.v1_04.utils.CimUtil;
 import energy.eddie.aiida.utils.CimUtils;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.cim.v1_04.rtd.*;
 import jakarta.annotation.Nullable;
@@ -79,13 +79,13 @@ public class CimFormatter extends SchemaFormatter {
             @Nullable String codingScheme
     ) throws CimFormatterException {
 
-        var prmValue = aiidaRecord.aiidaRecordValues()
+        var deviceId = aiidaRecord.aiidaRecordValues()
                 .stream()
                 .filter(value -> value
-                        .rawTag()
-                        .equals(StandardModeEntry.PRM.name()))
+                        .dataTag()
+                        .equals(ObisCode.DEVICE_ID_1))
                 .findFirst();
-        String mRID = prmValue.isPresent() ? prmValue.get().value() : aiidaRecord.dataSourceId().toString();
+        String mRID = deviceId.isPresent() ? deviceId.get().value() : aiidaRecord.dataSourceId().toString();
 
         return new TimeSeries().withDateAndOrTimeDateTime(aiidaRecord.timestamp().atZone(UTC))
                                .withQuantities(aiidaRecord
