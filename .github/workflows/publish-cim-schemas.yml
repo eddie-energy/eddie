@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Copy files via SSH
-        uses: appleboy/scp-action@v1
+        uses: appleboy/scp-action@7179e72a3fa4d4c33870a471708fda724fae7596
         with:
           host: ${{ secrets.EDDIE_ENERGY_SSH_HOST }}
           username: ${{ secrets.EDDIE_ENERGY_SSH_USERNAME }}
