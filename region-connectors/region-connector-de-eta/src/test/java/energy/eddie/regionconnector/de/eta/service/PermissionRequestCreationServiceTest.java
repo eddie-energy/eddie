@@ -44,7 +44,7 @@ class PermissionRequestCreationServiceTest {
     }
 
     @Test
-    void createPermissionRequestWhenDataNeedIsValidatedShouldReturnCreatedPermissionRequest() throws Exception {
+    void createPermissionRequestWhenDataNeedIsValidatedShouldReturnCreatedPermissionRequest() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         LocalDate start = LocalDate.now(ZoneId.systemDefault());
         LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(30);
@@ -68,7 +68,7 @@ class PermissionRequestCreationServiceTest {
     }
 
     @Test
-    void createPermissionRequestWhenAccountingPointDataNeedShouldSucceedAndCommitValidated() {
+    void createPermissionRequestWhenAccountingPointDataNeedShouldSucceedAndCommitValidated() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
@@ -84,7 +84,7 @@ class PermissionRequestCreationServiceTest {
 
     @Test
     void createPermissionRequestWhenDataNeedNotFoundShouldThrowNotFoundAndCommitMalformed() {
-        PermissionRequestForCreation request = new PermissionRequestForCreation("dn-1", CONNECTION_ID, "mp-1");
+        PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new DataNeedNotFoundResult());
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
@@ -96,7 +96,7 @@ class PermissionRequestCreationServiceTest {
 
     @Test
     void createPermissionRequestWhenDataNeedNotSupportedShouldThrowUnsupportedAndCommitMalformed() {
-        PermissionRequestForCreation request = new PermissionRequestForCreation("dn-1", CONNECTION_ID, "mp-1");
+        PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult("Unsupported"));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))

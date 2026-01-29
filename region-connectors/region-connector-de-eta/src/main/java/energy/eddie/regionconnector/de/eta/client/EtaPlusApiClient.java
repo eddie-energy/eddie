@@ -126,6 +126,7 @@ public class EtaPlusApiClient {
         return new EtaPlusAccountingPointData(
                 meteringPointId,
                 null, // customerId
+                null, // streetName
                 null, // address
                 null, // postalCode
                 null, // city
