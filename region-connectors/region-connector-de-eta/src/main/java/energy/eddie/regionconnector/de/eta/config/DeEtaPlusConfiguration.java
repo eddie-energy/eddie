@@ -12,5 +12,6 @@ public record DeEtaPlusConfiguration(
         String eligiblePartyId,
         @DefaultValue("https://api.eta-plus.de") String apiBaseUrl,
         String apiClientId,
-        String apiClientSecret
+        String apiClientSecret,
+        @DefaultValue("0 0 2 * * *") String pollingCronExpression // Default: Daily at 2 AM
 ) {}

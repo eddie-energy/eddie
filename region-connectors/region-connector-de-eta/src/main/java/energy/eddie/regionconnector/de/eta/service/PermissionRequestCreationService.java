@@ -65,10 +65,19 @@ public class PermissionRequestCreationService {
         ));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
-            case AccountingPointDataNeedResult ignored -> {
-                String message = "AccountingPointDataNeedResult not supported by DE-ETA connector";
-                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
+                LOGGER.info("Validated accounting point data permission request {}", permissionId);
+                // Accounting point data doesn't require start/end dates or granularity
+                // We emit a validated event without those fields
+                // Note: ValidatedEvent may need to be extended or we use a different approach
+                // For now, we'll use the permission timeframe for compatibility
+                outbox.commit(new ValidatedEvent(
+                        permissionId,
+                        permissionTimeframe.start(),
+                        permissionTimeframe.end(),
+                        null // No granularity for accounting point data
+                ));
+                return new CreatedPermissionRequest(permissionId);
             }
 
             case DataNeedNotFoundResult ignored -> {

@@ -1,6 +1,7 @@
 package energy.eddie.regionconnector.de.eta.client;
 
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
+import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -89,5 +90,51 @@ public class EtaPlusApiClient {
 
     public reactor.core.publisher.Mono<Boolean> checkPermissionValidity(DePermissionRequest permissionRequest) {
         return reactor.core.publisher.Mono.just(true);
+    }
+
+    /**
+     * Fetches accounting point data from the ETA Plus MDA API.
+     * Accounting point data contains information about the metering point and customer.
+     * 
+     * Aligns with EDDIE documentation:
+     * - https://architecture.eddie.energy/framework/3-extending/region-connector/quickstart.html#accounting-point-data
+     * - Requests accounting point data instead of validated historical data when the permission request
+     *   contains AccountingPointDataNeed
+     * 
+     * @param meteringPointId the metering point identifier
+     * @return Mono containing the accounting point data
+     */
+    public reactor.core.publisher.Mono<EtaPlusAccountingPointData> fetchAccountingPointData(String meteringPointId) {
+        LOGGER.info("Fetching accounting point data for metering point {}", meteringPointId);
+
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/meters/accounting-point")
+                        .queryParam("meteringPointId", meteringPointId)
+                        .build())
+                .retrieve()
+                .bodyToMono(EtaPlusAccountingPointData.class)
+                .doOnError(e -> LOGGER.error("Failed to fetch accounting point data for " + meteringPointId, e))
+                .onErrorReturn(createEmptyAccountingPointData(meteringPointId));
+    }
+
+    /**
+     * Creates an empty accounting point data object as fallback.
+     * This should be replaced with proper error handling based on actual API behavior.
+     */
+    private EtaPlusAccountingPointData createEmptyAccountingPointData(String meteringPointId) {
+        return new EtaPlusAccountingPointData(
+                meteringPointId,
+                null, // customerId
+                null, // address
+                null, // postalCode
+                null, // city
+                null, // country
+                null, // energyType
+                null, // voltageLevel
+                null, // connectionDate
+                null, // status
+                "" // rawJson
+        );
     }
 }

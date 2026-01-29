@@ -8,7 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId; // Added Import
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
@@ -30,8 +31,14 @@ public class MeterReadingUpdateService {
 
     private void handleMeterReading(IdentifiableValidatedHistoricalData data) {
         var permissionRequest = data.permissionRequest();
-        ZonedDateTime latestReading = data.meterReadingEndDate()
-                .atStartOfDay(ZoneId.of("UTC"));
+        LocalDate endDate = data.payload().endDate();
+        
+        if (endDate == null) {
+            LOGGER.warn("No end date available for permission request {}", permissionRequest.permissionId());
+            return;
+        }
+        
+        ZonedDateTime latestReading = endDate.atStartOfDay(ZoneId.of("UTC"));
 
         LOGGER.atInfo()
               .addArgument(permissionRequest::permissionId)

@@ -2,9 +2,9 @@ package energy.eddie.regionconnector.de.eta.service;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
-import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.regionconnector.de.eta.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.de.eta.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.de.eta.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEvent;
@@ -68,16 +68,18 @@ class PermissionRequestCreationServiceTest {
     }
 
     @Test
-    void createPermissionRequestWhenAccountingPointDataNeedShouldThrowUnsupportedAndCommitMalformed() {
+    void createPermissionRequestWhenAccountingPointDataNeedShouldSucceedAndCommitValidated() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
 
-        assertThatThrownBy(() -> service.createPermissionRequest(request))
-                .isInstanceOf(UnsupportedDataNeedException.class);
+        CreatedPermissionRequest result = service.createPermissionRequest(request);
 
+        assertThat(result).isNotNull();
+        assertThat(result.permissionId()).isNotNull();
         verify(outbox).commit(any(CreatedEvent.class));
-        verify(outbox).commit(any(MalformedEvent.class));
+        verify(outbox).commit(any(ValidatedEvent.class));
+        verify(outbox, never()).commit(any(MalformedEvent.class));
     }
 
     @Test

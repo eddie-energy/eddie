@@ -17,13 +17,18 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.api.agnostic.RawDataProvider;
+import energy.eddie.regionconnector.de.eta.providers.AccountingPointDataStream;
+import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.de.eta.service.PollingService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.web.reactive.function.client.WebClient;
 
 /**
  * Spring configuration for the German (DE) ETA Plus region connector.
@@ -151,7 +156,7 @@ public class EtaRegionConnectorSpringConfig {
     public CommonFutureDataService<DePermissionRequest> deCommonFutureDataService(
             PollingService pollingService,
             DePermissionRequestRepository repository,
-            PlainDeConfiguration configuration,
+            DeEtaPlusConfiguration configuration,
             TaskScheduler taskScheduler,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService
     ) {
@@ -162,6 +167,46 @@ public class EtaRegionConnectorSpringConfig {
                 EtaRegionConnectorMetadata.getInstance(),
                 taskScheduler,
                 dataNeedCalculationService
+        );
+    }
+
+    /**
+     * Create the ObjectMapper bean for JSON serialization/deserialization.
+     * Required by RawDataProvider for serializing data to JSON.
+     * 
+     * @return the ObjectMapper instance
+     */
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
+    }
+
+    /**
+     * Create the RawDataProvider bean for emitting raw data messages.
+     * This provider emits both validated historical data and accounting point data as raw JSON.
+     * 
+     * Aligns with EDDIE documentation:
+     * - https://architecture.eddie.energy/framework/3-extending/region-connector/quickstart.html#accounting-point-data
+     * - Uses JsonRawDataProvider to serialize both data types to JSON
+     * 
+     * @param objectMapper the ObjectMapper for JSON serialization
+     * @param validatedHistoricalDataStream the stream for validated historical data
+     * @param accountingPointDataStream the stream for accounting point data
+     * @return the RawDataProvider instance
+     */
+    @Bean
+    @OnRawDataMessagesEnabled
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
+    public RawDataProvider rawDataProvider(
+            ObjectMapper objectMapper,
+            ValidatedHistoricalDataStream validatedHistoricalDataStream,
+            AccountingPointDataStream accountingPointDataStream
+    ) {
+        return new JsonRawDataProvider(
+                EtaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                objectMapper,
+                validatedHistoricalDataStream.validatedHistoricalData(),
+                accountingPointDataStream.accountingPointData()
         );
     }
 }
