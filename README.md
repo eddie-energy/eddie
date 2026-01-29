@@ -9,6 +9,9 @@ It abstracts the complex and diverse processes required by the different MDAs an
 This repository is home to both the EDDIE Framework and AIIDA.
 AIIDA lives in the `aiida` folder and has its own [README](aiida/README.md).
 
+> [!NOTE]
+> Feedback and Questions create either an issue or direct at <georg.hartner@eddie.energy> and <florian.weingartshofer@fh-hagenberg.at>
+
 ## Getting started
 
 The EDDIE Framework [documentation](https://architecture.eddie.energy/framework/) is a great place to start for both operators and developers.
