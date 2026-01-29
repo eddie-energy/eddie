@@ -596,7 +596,7 @@
     "company": "LINZ NETZ GmbH",
     "name": "LINZ NETZ GmbH",
     "companyId": "AT003100",
-    "jumpOffUrl": "https://sso.linznetz.at/auth/realms/netzsso/protocol/openid-connect/auth/?client_id=portal&scope=openid&response_type=code&state=3052b878-82c6-4830-9424-416ba63dd2a7&redirect_uri=https://www.linznetz.at/portal/de/home/online_services/serviceportal/mein_serviceportal#",
+    "jumpOffUrl": "https://www.linznetz.at/portal/de/home/online_services/serviceportal/mein_serviceportal",
     "regionConnector": "at-eda"
   },
   {
