@@ -39,7 +39,7 @@
     <form>
       <label>
         <span>Data need</span>
-        <select name="data-need-id" autocomplete="off"></select>
+        <select autocomplete="off" multiple name="data-need-id"></select>
       </label>
       <label>
         <span>Connection ID</span>
@@ -98,11 +98,17 @@
       const inputs = document.querySelectorAll("input, select");
       for (const input of inputs) {
         input.addEventListener("change", (event) => {
-          const { name, value, type, checked } = event.target;
+          const { name, type, checked, options } = event.target;
+          let ids = [];
+          for (const option of options) {
+            if (option.selected) {
+              ids = [option.value, ...ids];
+            }
+          }
           // Reselect button as replacing it breaks the reference
           const button = document.querySelector("eddie-connect-button");
           // Recreate over reset to ensure no data is left from the previous button
-          button.setAttribute(name, type === "checkbox" ? checked : value);
+          button.setAttribute(name, type === "checkbox" ? checked : ids.join(","));
           button.replaceWith(button.cloneNode());
         });
       }
