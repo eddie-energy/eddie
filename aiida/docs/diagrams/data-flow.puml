@@ -1,3 +1,6 @@
+' SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml
 
 "Data Source" -> "Data Source\nAdapter" : sends data\n(over e.g. MQTT)

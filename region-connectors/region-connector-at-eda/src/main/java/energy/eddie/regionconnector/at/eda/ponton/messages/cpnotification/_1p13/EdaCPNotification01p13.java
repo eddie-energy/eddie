@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification._1p13;
 
 import at.ebutilities.schemata.customerprocesses.cpnotification._01p13.CPNotification;

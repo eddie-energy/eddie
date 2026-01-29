@@ -1,5 +1,10 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
-import { ref, onBeforeUnmount, computed, useTemplateRef, nextTick } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue'
 import Button from '@/components/Button.vue'
 import { createJsonBlobUrl, revokeUrl } from '@/utils/files'
 import type { AiidaDataSource, AiidaPermission } from '@/types'

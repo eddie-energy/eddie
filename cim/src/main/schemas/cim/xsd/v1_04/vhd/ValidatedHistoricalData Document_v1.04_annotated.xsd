@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <xs:schema xmlns:TargetNamespace="https//eddie.energy/CIM/VHD_v1.04" xmlns:ecl="urn:entsoe.eu:wgedi:codelists:1.04"
            xmlns:sawsdl="http://www.w3.org/ns/sawsdl" xmlns:cimp="http://www.iec.ch/cimprofile"
            xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"

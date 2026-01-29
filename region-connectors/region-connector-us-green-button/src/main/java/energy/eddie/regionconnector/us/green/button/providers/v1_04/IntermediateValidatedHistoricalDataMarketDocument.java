@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.us.green.button.providers.v1_04;
 
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -8,7 +11,6 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
-import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import energy.eddie.regionconnector.us.green.button.atom.feed.Query;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;

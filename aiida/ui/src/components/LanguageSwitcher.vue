@@ -1,6 +1,12 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import GlobeIcon from '@/assets/icons/GlobeIcon.svg'
 import { useI18n } from 'vue-i18n'
+
 const { locale, availableLocales } = useI18n()
 
 const localizedLanguageNames = availableLocales.map((loc) => {

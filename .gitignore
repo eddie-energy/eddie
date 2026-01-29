@@ -104,6 +104,8 @@ build
 !.idea/prettier.xml
 !.idea/vcs.xml
 !.idea/externalDependencies.xml
+#### Copyright Notice
+!.idea/copyright/**
 
 ### jte template generated files ###
 **/jte-classes

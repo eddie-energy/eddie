@@ -1,23 +1,12 @@
 <?xml version="1.0"?>
+<!--
+  ~ SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  ~ SPDX-License-Identifier: Apache-2.0
+  -->
+
 <!-- ****************************************************************** -->
 <!-- ***** ValidatedHistoricalData_Envelope XML Schema File ***** -->
 <!-- ****************************************************************** -->
-<!--
-Schema agency: Gasunie 
-Schema version: 1p0
-Schema date: Friday, 21 June 2024 12:10:48
- 
-Generator name: EA_Toolkit by E. van Slooten
-Generator builddate: 04/04/2024 10:16:37
- 
-Copyright (C) Gasunie (2024). All Rights Reserved.
- 
-This document and the information contained herein is provided on an "AS IS" basis
-and Gasunie DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT
-LIMITED TO ANY WARRANTY THAT THE USE OF THE INFORMATION HEREIN WILL NOT INFRINGE
- ANY RIGHTS OR ANY IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
-PURPOSE
--->
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
 		   xmlns:ns1="http://www.eddie.energy/VHD/EDD01/20240614"
 		   targetNamespace="http://www.eddie.energy/VHD/EDD01/20240614" attributeFormDefault="unqualified"

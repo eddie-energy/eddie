@@ -1,8 +1,17 @@
+<!--
+  - SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
+
 <script setup lang="ts">
 import { deleteDataSource, toggleDataSource } from '@/api'
 import DataSourceCard from '@/components/DataSourceCard.vue'
 import { onMounted } from 'vue'
-import { dataSources, fetchDataSourcesFull, fetchDataSourcesHealthStatus } from '@/stores/dataSources'
+import {
+  dataSources,
+  fetchDataSourcesFull,
+  fetchDataSourcesHealthStatus,
+} from '@/stores/dataSources'
 import type { AiidaDataSource } from '@/types'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useI18n } from 'vue-i18n'

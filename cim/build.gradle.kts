@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
 import javax.xml.parsers.DocumentBuilderFactory
@@ -12,7 +17,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.2.1"
+version = "3.2.2"
 
 repositories {
     mavenCentral()

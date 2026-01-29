@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+-- SPDX-License-Identifier: Apache-2.0
+
 CREATE SCHEMA IF NOT EXISTS data_needs;
 
 CREATE TABLE IF NOT EXISTS data_needs.flyway_schema_history

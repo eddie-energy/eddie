@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.outbound.admin.console.services;
 
 import energy.eddie.api.utils.Pair;

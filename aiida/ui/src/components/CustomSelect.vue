@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <script setup lang="ts">
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 export const ENERGY_TYPES = ['ELECTRICITY', 'NATURAL_GAS', 'HYDROGEN', 'HEAT']
 
 export const GRANULARITIES = ['PT5M', 'PT10M', 'PT15M', 'PT30M', 'PT1H', 'P1D', 'P1M', 'P1Y']

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!--
+SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 <ValidatedHistoricalDataMarketDocuments xmlns:ns2="http://www.eddie.energy/VHD/EDD01/20240614">
     <ns2:ValidatedHistoricalData_Envelope>
         <ns2:MessageDocumentHeader>

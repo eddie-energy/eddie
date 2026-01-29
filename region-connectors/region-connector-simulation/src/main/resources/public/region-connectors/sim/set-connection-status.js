@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import { css, html, LitElement } from "https://esm.sh/lit";
 import { commonParameters } from "./common-parameters-form.js";
 

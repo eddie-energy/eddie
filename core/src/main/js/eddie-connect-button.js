@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import { css, html, LitElement } from "lit";
 import { createRef, ref } from "lit/directives/ref.js";
 import { until } from "lit/directives/until.js";

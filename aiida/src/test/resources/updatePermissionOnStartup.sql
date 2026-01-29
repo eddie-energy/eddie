@@ -1,3 +1,6 @@
+-- SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+-- SPDX-License-Identifier: Apache-2.0
+
 INSERT INTO public.aiida_local_data_need(data_need_id,
                                          asset,
                                          name,

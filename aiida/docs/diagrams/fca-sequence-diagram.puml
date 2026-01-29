@@ -1,3 +1,6 @@
+' SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+' SPDX-License-Identifier: Apache-2.0
+
 @startuml
 
 == 1. Initialization of the Digital Customer Interface (DCI) ==

@@ -1,5 +1,8 @@
+// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import { ref } from 'vue'
-import { getDataSourceImage, getDataSources, getDataSourceHealthStatus } from '@/api.js'
+import { getDataSourceHealthStatus, getDataSourceImage, getDataSources } from '@/api.js'
 import type { AiidaDataSource, AiidaDataSourceHealthStatus } from '@/types'
 
 export const dataSources = ref<AiidaDataSource[]>([])

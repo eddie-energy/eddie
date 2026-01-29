@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import { html, LitElement } from "lit";
 
 import STATUS_MESSAGES from "./permission-process-status-messages.json";

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 import { css } from "lit";
 
 const flags = ["at", "be", "dk", "es", "fi", "fr", "nl", "us", "ca"];
