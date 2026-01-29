@@ -1,13 +1,11 @@
 package energy.eddie.core;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.DataSourceInformation;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.core.dtos.SimpleDataSourceInformation;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -17,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MapperConfigTest {
 
     @Test
-    void canDeserializeDataSourceInformation() throws JsonProcessingException {
+    void canDeserializeDataSourceInformation() {
         // Given
         DataSourceInformation dataSourceInformation = new SimpleDataSourceInformation(
                 "at",
@@ -35,11 +33,9 @@ class MapperConfigTest {
                 "",
                 null
         );
-        var builder = new Jackson2ObjectMapperBuilder();
+        var builder = JsonMapper.builder();
         new MapperConfig().jsonCustomizer().customize(builder);
-        var mapper = builder
-                .modules(new JavaTimeModule())
-                .build();
+        var mapper = builder.build();
         var str = mapper.writeValueAsString(msg);
 
         // When

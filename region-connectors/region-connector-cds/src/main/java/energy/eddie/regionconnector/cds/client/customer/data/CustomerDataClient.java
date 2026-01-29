@@ -20,8 +20,8 @@ import java.util.function.Function;
 public class CustomerDataClient {
     private final WebClient webClient;
 
-    public CustomerDataClient(WebClient webClient) {
-        this.webClient = webClient;
+    public CustomerDataClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
     }
 
     public Mono<List<AccountsEndpoint200ResponseAllOfAccountsInner>> accounts(

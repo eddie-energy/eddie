@@ -11,7 +11,7 @@ import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTImeDataMarketDo
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
 import energy.eddie.outbound.shared.TopicStructure;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,7 +67,7 @@ public class CimControllerV1_04 implements CimSwaggerV1_04 {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<ValidatedHistoricalDataMarketDocumentModelV1_04> specification = CimSpecification.buildQueryForV1_04(
+        PredicateSpecification<ValidatedHistoricalDataMarketDocumentModelV1_04> specification = CimSpecification.buildQueryForV1_04(
                 permissionId,
                 connectionId,
                 dataNeedId,
@@ -102,7 +102,7 @@ public class CimControllerV1_04 implements CimSwaggerV1_04 {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
-        Specification<NearRealTimeDataMarketDocumentModel> specification = CimSpecification.buildQueryForV1_04(
+        PredicateSpecification<NearRealTimeDataMarketDocumentModel> specification = CimSpecification.buildQueryForV1_04(
                 permissionId,
                 connectionId,
                 dataNeedId,

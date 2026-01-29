@@ -1,11 +1,10 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointDetailsCustomerDto;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
@@ -31,11 +30,11 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
@@ -47,7 +46,7 @@ public class PollingService implements CommonPollingService<DkEnerginetPermissio
     private static final Logger LOGGER = LoggerFactory.getLogger(PollingService.class);
     private final IdentifiableApiResponseFilter identifiableApiResponseFilter = new IdentifiableApiResponseFilter();
     private final MeteringDetailsApiResponseFilter meteringDetailsApiResponseFilter = new MeteringDetailsApiResponseFilter();
-    private final EnerginetCustomerApi energinetCustomerApi;
+    private final EnerginetCustomerApiClient energinetCustomerApi;
     private final MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService;
     private final Outbox outbox;
     private final ObjectMapper objectMapper;
@@ -57,7 +56,7 @@ public class PollingService implements CommonPollingService<DkEnerginetPermissio
 
 
     public PollingService(
-            EnerginetCustomerApi energinetCustomerApi,
+            EnerginetCustomerApiClient energinetCustomerApi,
             MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService,
             Outbox outbox,
             ObjectMapper objectMapper,
@@ -154,8 +153,7 @@ public class PollingService implements CommonPollingService<DkEnerginetPermissio
                  dateTo,
                  pair.granularity,
                  meteringPointsRequest,
-                 pair.token,
-                 UUID.fromString(permissionId)
+                 pair.token
          ))
          .retryWhen(RETRY_BACKOFF_SPEC)
          .mapNotNull(MyEnergyDataMarketDocumentResponseListApiResponse::getResult)

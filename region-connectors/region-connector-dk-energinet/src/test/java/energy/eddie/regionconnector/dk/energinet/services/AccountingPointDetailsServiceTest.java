@@ -1,11 +1,9 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.dk.energinet.DtoLoader;
-import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPermissionRequestBuilder;
@@ -23,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -38,10 +37,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AccountingPointDetailsServiceTest {
-    private final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     private final String refreshToken = "token";
     @Mock
-    private EnerginetCustomerApi customerApi;
+    private EnerginetCustomerApiClient customerApi;
     @Mock
     private Outbox outbox;
     private EnergyDataStreams streams;

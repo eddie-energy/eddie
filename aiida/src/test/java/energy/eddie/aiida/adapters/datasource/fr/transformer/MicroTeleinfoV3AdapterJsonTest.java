@@ -1,12 +1,12 @@
 package energy.eddie.aiida.adapters.datasource.fr.transformer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.history.HistoryModeEntry;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.history.MicroTeleinfoV3HistoryModeJson;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import org.junit.jupiter.api.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -15,14 +15,10 @@ class MicroTeleinfoV3AdapterJsonTest {
      * Checks that the Jackson annotations are correct and every field of the JSON is deserialized as expected.
      */
     @Test
-    void verify_isProperlyDeserialized() throws JsonProcessingException {
-        ObjectMapper mapper = new AiidaConfiguration().customObjectMapper().build();
-
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(MicroTeleinfoV3DataField.class,
-                               new MicroTeleinfoV3DataFieldDeserializer(null));
-        mapper.registerModule(module);
-
+    void verify_isProperlyDeserialized() throws JacksonException {
+        var builder = JsonMapper.builder();
+        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
+        ObjectMapper mapper = builder.build();
 
         String str = """
                 {

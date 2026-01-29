@@ -27,6 +27,9 @@ dependencies {
 
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.spring.boot.starter.restclient.test)
     testImplementation(libs.spring.boot.security)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
@@ -35,10 +38,10 @@ dependencies {
     testImplementation(project(":region-connectors:shared"))
 
     testRuntimeOnly(libs.junit.platform.launcher)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.h2database)
-    testRuntimeOnly(libs.postgresql)
-    testRuntimeOnly(libs.flyway.core)
     testRuntimeOnly(libs.flyway.postgresql)
+    testRuntimeOnly(libs.postgresql)
 }
 
 tasks.test {

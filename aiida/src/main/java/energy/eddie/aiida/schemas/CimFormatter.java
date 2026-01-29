@@ -1,7 +1,5 @@
 package energy.eddie.aiida.schemas;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.CimFormatterException;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.Permission;
@@ -12,6 +10,8 @@ import energy.eddie.aiida.utils.CimUtils;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.cim.v1_04.rtd.*;
 import jakarta.annotation.Nullable;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -38,7 +38,7 @@ public class CimFormatter extends SchemaFormatter {
     ) throws FormatterException {
         try {
             return mapper.writeValueAsBytes(toEnvelope(aiidaRecord, permission));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new CimFormatterException(e);
         }
     }

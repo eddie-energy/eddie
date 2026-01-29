@@ -51,7 +51,8 @@ class TerminationKafkaConnectorTest {
     void testTerminationWithInvalidFormat() throws ExecutionException, InterruptedException {
         // Given
         stringKafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_82.termination-md", "id", "Invalid JSON")).get();
-        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_82.termination-md", "id", new PermissionEnvelope())).get();
+        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_0_82.termination-md", "id", new PermissionEnvelope()))
+                     .get();
 
         // When
         var pair = terminationConnector.getTerminationMessages()

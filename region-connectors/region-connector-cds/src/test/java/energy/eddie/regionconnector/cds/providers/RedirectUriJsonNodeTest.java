@@ -1,9 +1,9 @@
 package energy.eddie.regionconnector.cds.providers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

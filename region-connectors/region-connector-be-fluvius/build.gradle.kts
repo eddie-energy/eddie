@@ -27,25 +27,29 @@ dependencies {
     implementation(project(":data-needs"))
     implementation(project(":region-connectors:shared"))
     implementation(libs.spring.boot.starter.web)
+    implementation(libs.spring.boot.autoconfigurer)
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.webclient)
     implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.webclient)
     implementation(libs.jackson.databind.nullable)
 
     implementation(libs.nimbus.oidc)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.reactor.test)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.spring.boot.testcontainers)
     testImplementation(libs.okhttp3.mockwebserver)
 
-    testRuntimeOnly(libs.postgresql)
-    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.flyway.postgresql)
+    testRuntimeOnly(libs.postgresql)
 }
 
 // disable bootJar task as it needs a main class and region connectors do not have one

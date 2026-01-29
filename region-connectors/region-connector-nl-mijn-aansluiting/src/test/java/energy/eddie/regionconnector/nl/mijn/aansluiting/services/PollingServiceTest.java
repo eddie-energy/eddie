@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -33,8 +32,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.core.type.TypeReference;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -140,7 +139,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchConsumptionData_publishesInternalPollingEvent() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchConsumptionData_publishesInternalPollingEvent() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var json = vhdMapper.loadTestJson("consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
@@ -191,7 +190,7 @@ class PollingServiceTest {
     void testFetchConsumptionData_publishesOnlyNeededEnergyType(
             EnergyType energyType,
             int registerSize
-    ) throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    ) throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var json = vhdMapper.loadTestJson("consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
@@ -225,7 +224,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchConsumptionData_doesEmitNothing_onUnknownDataNeed() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchConsumptionData_doesEmitNothing_onUnknownDataNeed() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var json = vhdMapper.loadTestJson("consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
@@ -248,7 +247,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchConsumptionData_doesEmitNothing_onInvalidDataNeed() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchConsumptionData_doesEmitNothing_onInvalidDataNeed() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var json = vhdMapper.loadTestJson("consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
@@ -271,7 +270,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchConsumptionData_doesNotPublishDataBeforeStartDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchConsumptionData_doesNotPublishDataBeforeStartDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var json = vhdMapper.loadTestJson("consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
@@ -309,7 +308,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchConsumptionData_doesNotPublishDataAfterEndDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchConsumptionData_doesNotPublishDataAfterEndDate() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var json = vhdMapper.loadTestJson("consumption_data.json");
         when(oAuthManager.accessTokenAndSingleSyncUrl("pid"))
@@ -347,7 +346,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchAccountingPointData_emitsData() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchAccountingPointData_emitsData() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var codeboekJson = codeboekMapper.loadTestJson("codeboek_response.json");
         var json = vhdMapper.loadTestJson("single_consumption_data.json");
@@ -383,7 +382,7 @@ class PollingServiceTest {
     }
 
     @Test
-    void testFetchAccountingPointData_withoutMeters_emitsUnfulfillable() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException, IOException {
+    void testFetchAccountingPointData_withoutMeters_emitsUnfulfillable() throws JWTSignatureCreationException, OAuthUnavailableException, OAuthException, NoRefreshTokenException, IllegalTokenException {
         // Given
         var codeboekJson = codeboekMapper.loadTestJson("codeboek_response.json");
         var json = vhdMapper.loadTestJson("single_consumption_data.json");

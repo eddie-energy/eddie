@@ -34,7 +34,7 @@ class AdminClientTest {
     );
     @Spy
     @SuppressWarnings("unused")
-    private final WebClient webClient = WebClient.create();
+    private final WebClient.Builder webClientBuilder = WebClient.builder();
     @InjectMocks
     private AdminClient adminClient;
 

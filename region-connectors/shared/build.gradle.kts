@@ -30,7 +30,6 @@ dependencies {
     implementation(libs.reactor.core)
     implementation(libs.hibernate.validator)
     implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.nimbus.oidc)
     implementation(libs.bouncycastle.bcpkix)
     implementation(libs.bouncycastle.bcprov)

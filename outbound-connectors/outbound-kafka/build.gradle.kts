@@ -15,10 +15,6 @@ repositories {
     mavenCentral()
 }
 
-configurations.all {
-    exclude(group = "ch.qos.logback", module = "logback-classic")
-    exclude(group = "ch.qos.logback", module = "logback-core")
-}
 dependencies {
     implementation(project(":api"))
     implementation(project((":outbound-connectors:outbound-shared")))
@@ -29,7 +25,6 @@ dependencies {
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.reactor.core)
-    runtimeOnly(libs.slf4j.simple)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.kafka.test)

@@ -1,7 +1,5 @@
 package energy.eddie.core.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import jakarta.annotation.Nullable;
@@ -14,6 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingResponseWrapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -66,9 +67,9 @@ public class JwtIssuerFilter extends OncePerRequestFilter {
         }
 
         var permissionId = objectNode.get("permissionId");
-        if (permissionId != null && permissionId.isTextual()) {
+        if (permissionId != null && permissionId.isString()) {
             try {
-                String token = jwtUtil.createJwt(rcId, permissionId.asText());
+                String token = jwtUtil.createJwt(rcId, permissionId.asString());
                 objectNode.put("bearerToken", token);
             } catch (JwtCreationFailedException e) {
                 throw new ServletException("JWT creation failed", e);
@@ -98,7 +99,7 @@ public class JwtIssuerFilter extends OncePerRequestFilter {
                 return null;
             }
             return objectNode;
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             LOGGER.warn("Invalid response body for {}", request.getRequestURI(), e);
             return null;
         }

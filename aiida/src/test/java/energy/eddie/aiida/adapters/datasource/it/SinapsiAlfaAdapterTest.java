@@ -1,7 +1,7 @@
 package energy.eddie.aiida.adapters.datasource.it;
 
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJsonTest;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -38,7 +38,7 @@ class SinapsiAlfaAdapterTest {
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
-        var mapper = new AiidaConfiguration().customObjectMapper().build();
+        var mapper = ObjectMapperCreatorUtil.mapper();
         adapter = new SinapsiAlfaAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
     }
 

@@ -1,20 +1,19 @@
 package energy.eddie.aiida.config;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.datatype.hibernate6.Hibernate6Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterJson;
 import energy.eddie.aiida.adapters.datasource.at.transformer.OesterreichsEnergieAdapterValueDeserializer;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataField;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataFieldDeserializer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.datatype.hibernate7.Hibernate7Module;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.time.Clock;
 import java.time.ZoneId;
@@ -37,19 +36,20 @@ public class AiidaConfiguration {
      */
     @Bean
     @Primary
-    public Jackson2ObjectMapperBuilder customObjectMapper() {
-        return new Jackson2ObjectMapperBuilder()
-                .featuresToDisable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .failOnUnknownProperties(true)
-                .modules(
-                        new JavaTimeModule(),
+    public JsonMapperBuilderCustomizer objectMapperCustomizer() {
+        return builder -> builder
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .addModules(
                         new JakartaXmlBindAnnotationModule(),
-                        new Hibernate6Module().enable(Hibernate6Module.Feature.FORCE_LAZY_LOADING)
-                                              .disable(Hibernate6Module.Feature.USE_TRANSIENT_ANNOTATION),
-                        new SimpleModule().addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
-                                                           new OesterreichsEnergieAdapterValueDeserializer(null)),
-                        new SimpleModule().addDeserializer(MicroTeleinfoV3DataField.class,
-                                                           new MicroTeleinfoV3DataFieldDeserializer(null))
+                        new Hibernate7Module().enable(Hibernate7Module.Feature.FORCE_LAZY_LOADING)
+                                              .disable(Hibernate7Module.Feature.USE_TRANSIENT_ANNOTATION),
+                        new SimpleModule()
+                                .addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class,
+                                                 new OesterreichsEnergieAdapterValueDeserializer()),
+                        new SimpleModule()
+                                .addDeserializer(MicroTeleinfoV3DataField.class,
+                                                 new MicroTeleinfoV3DataFieldDeserializer())
                 );
     }
 

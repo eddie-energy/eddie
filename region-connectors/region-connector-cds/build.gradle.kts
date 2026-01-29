@@ -27,20 +27,21 @@ dependencies {
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.webclient)
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.spring.boot.security)
     implementation(libs.caffeine)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.nimbus.oidc)
 
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
     testImplementation(libs.reactor.test)
     testImplementation(libs.testcontainers.postgresql)
     testImplementation(libs.testcontainers.junit)
@@ -49,9 +50,9 @@ dependencies {
     testImplementation(libs.xmlunit.core)
     testImplementation(project(":outbound-connectors:outbound-shared"))
 
-    testRuntimeOnly(libs.postgresql)
-    testRuntimeOnly(libs.flyway.core)
+    testRuntimeOnly(libs.spring.boot.starter.flyway)
     testRuntimeOnly(libs.flyway.postgresql)
+    testRuntimeOnly(libs.postgresql)
 }
 
 tasks.test {
@@ -99,8 +100,6 @@ openApiGenerate {
     inputSpec.set("${projectDir.invariantSeparatorsPath}/src/main/schemas/cds.yaml")
     outputDir.set(generatedSwaggerJavaDir)
 
-    apiPackage.set("${packagePrefix}.api")
-    invokerPackage.set("${packagePrefix}.invoker")
     modelPackage.set("${packagePrefix}.model")
 
     generateApiTests.set(false)
@@ -113,6 +112,7 @@ openApiGenerate {
             "sourceFolder" to "/",
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
+            "openApiNullable" to "false"
         )
     )
     globalProperties.set(
@@ -120,7 +120,6 @@ openApiGenerate {
             "apis" to "false",
             "invokers" to "false",
             "models" to "",
-            //"useStringUri" to "true"
         )
     )
 

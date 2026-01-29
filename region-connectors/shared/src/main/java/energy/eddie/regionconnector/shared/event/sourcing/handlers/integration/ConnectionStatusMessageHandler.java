@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
@@ -13,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.JsonNode;
 
 import java.util.function.Function;
 

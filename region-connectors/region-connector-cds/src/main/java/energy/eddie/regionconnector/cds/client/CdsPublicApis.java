@@ -40,8 +40,8 @@ public class CdsPublicApis {
                     .buildAsync(this::coverageLoader);
 
 
-    public CdsPublicApis(WebClient webClient) {
-        this.webClient = webClient;
+    public CdsPublicApis(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
     }
 
     public Mono<CarbonDataSpec200Response> carbonDataSpec(URI baseUrl) {

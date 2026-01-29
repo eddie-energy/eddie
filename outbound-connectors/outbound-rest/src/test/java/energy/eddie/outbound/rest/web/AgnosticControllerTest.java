@@ -3,6 +3,7 @@ package energy.eddie.outbound.rest.web;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
 import energy.eddie.outbound.rest.model.RawDataMessageModel;
@@ -11,11 +12,11 @@ import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -31,8 +32,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.BDDMockito.given;
 
-@WebFluxTest(value = AgnosticController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
-@Import({WebTestConfig.class, AgnosticConnector.class})
+@WebFluxTest(value = AgnosticController.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
+@Import({WebTestConfig.class, AgnosticConnector.class, RestTestConfig.class})
 class AgnosticControllerTest {
     @Autowired
     private WebTestClient webTestClient;
@@ -71,7 +72,7 @@ class AgnosticControllerTest {
     @Test
     void connectionStatusMessage_returnsMessages() {
         var msg = new ConnectionStatusMessageModel(statusMessage(PermissionProcessStatus.CREATED));
-        given(csmRepository.findAll(ArgumentMatchers.<Specification<ConnectionStatusMessageModel>>any()))
+        given(csmRepository.findAll(ArgumentMatchers.<PredicateSpecification<ConnectionStatusMessageModel>>any()))
                 .willReturn(List.of(msg));
 
 
@@ -121,7 +122,7 @@ class AgnosticControllerTest {
     void rawDataMessage_returnsMessages() {
         var message = new RawDataMessage("pid", "cid", "dnid", null, ZonedDateTime.now(ZoneOffset.UTC), "{}");
         var msg = new RawDataMessageModel(message);
-        given(rawDataRepository.findAll(ArgumentMatchers.<Specification<RawDataMessageModel>>any()))
+        given(rawDataRepository.findAll(ArgumentMatchers.<PredicateSpecification<RawDataMessageModel>>any()))
                 .willReturn(List.of(msg));
 
 

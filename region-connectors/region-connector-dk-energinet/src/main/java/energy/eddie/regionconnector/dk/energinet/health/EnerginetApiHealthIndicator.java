@@ -1,16 +1,16 @@
 package energy.eddie.regionconnector.dk.energinet.health;
 
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 @Component
 public class EnerginetApiHealthIndicator implements HealthIndicator {
-    private final EnerginetCustomerApi api;
+    private final EnerginetCustomerApiClient api;
 
-    public EnerginetApiHealthIndicator(EnerginetCustomerApi api) {
+    public EnerginetApiHealthIndicator(EnerginetCustomerApiClient api) {
         this.api = api;
     }
 

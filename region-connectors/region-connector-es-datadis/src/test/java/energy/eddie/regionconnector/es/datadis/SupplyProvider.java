@@ -1,20 +1,20 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 public class SupplyProvider {
-    public static final ObjectMapper objectMapper = new DatadisBeanConfig().objectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static List<Supply> loadSupply() throws IOException {
         try (InputStream is = SupplyProvider.class.getClassLoader()
                                                   .getResourceAsStream("supply.json")) {
-            return objectMapper.readValue(is, new TypeReference<>() {
+            return OBJECT_MAPPER.readValue(is, new TypeReference<>() {
             });
         }
     }

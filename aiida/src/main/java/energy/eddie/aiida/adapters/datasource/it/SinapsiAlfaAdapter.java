@@ -1,7 +1,5 @@
 package energy.eddie.aiida.adapters.datasource.it;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJson;
@@ -13,8 +11,10 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
                     .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8),
                          e);

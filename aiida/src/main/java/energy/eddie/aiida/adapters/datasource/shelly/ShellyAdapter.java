@@ -1,6 +1,5 @@
 package energy.eddie.aiida.adapters.datasource.shelly;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyComponent;
@@ -12,10 +11,11 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -66,8 +66,8 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
                                         .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
-        } catch (IOException e) {
-            if(payload.equals("true") || payload.equals("false")) {
+        } catch (JacksonException e) {
+            if (payload.equals("true") || payload.equals("false")) {
                 var online = Boolean.parseBoolean(payload);
                 setHealthState(online);
                 return;
@@ -79,8 +79,10 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
     @Override
     public Health health() {
-        if(healthState.getStatus().equals(Status.UNKNOWN) || super.health().getStatus().equals(Status.DOWN)) {
-            return super.health();
+        var health = super.health();
+        if (healthState.getStatus().equals(Status.UNKNOWN)
+            || (health != null && health.getStatus().equals(Status.DOWN))) {
+            return health;
         }
         return healthState;
     }

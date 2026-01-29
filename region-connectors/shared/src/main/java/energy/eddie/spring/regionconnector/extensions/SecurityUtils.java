@@ -1,15 +1,14 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import tools.jackson.databind.ObjectMapper;
 
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
@@ -25,18 +24,18 @@ public class SecurityUtils {
 
     @SuppressWarnings("java:S4502")
     public static SecurityFilterChain securityFilterChain(
-            MvcRequestMatcher.Builder mvcRequestMatcher,
+            PathPatternRequestMatcher.Builder patternRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper,
             Iterable<String> authorizationPaths,
             Iterable<String> publicPaths
-    ) throws Exception {
+    ) {
         return http
-                .securityMatcher(mvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
+                .securityMatcher(patternRequestMatcher.matcher("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> configureAuthorization(mvcRequestMatcher,
+                .authorizeHttpRequests(auth -> configureAuthorization(patternRequestMatcher,
                                                                       jwtHeaderAuthorizationManager,
                                                                       auth,
                                                                       authorizationPaths,
@@ -48,34 +47,33 @@ public class SecurityUtils {
                 .build();
     }
 
-    public static MvcRequestMatcher.Builder mvcRequestMatcher(
-            HandlerMappingIntrospector introspector,
+    public static PathPatternRequestMatcher.Builder pathPatternRequestMatcher(
             String regionConnectorId
     ) {
-        return new MvcRequestMatcher.Builder(introspector)
-                .servletPath("/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + regionConnectorId);
+        return PathPatternRequestMatcher.withDefaults()
+                                        .basePath("/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + regionConnectorId);
     }
 
     private static void configureAuthorization(
-            MvcRequestMatcher.Builder mvcRequestMatcher,
+            PathPatternRequestMatcher.Builder patternRequestMatcher,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth,
             Iterable<String> authorizationPaths,
             Iterable<String> publicPaths
     ) {
-        auth.requestMatchers(mvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll();
+        auth.requestMatchers(patternRequestMatcher.matcher(PATH_PERMISSION_REQUEST)).permitAll();
 
         for (String path : authorizationPaths) {
-            auth.requestMatchers(mvcRequestMatcher.pattern(path)).access(jwtHeaderAuthorizationManager);
+            auth.requestMatchers(patternRequestMatcher.matcher(path)).access(jwtHeaderAuthorizationManager);
         }
 
         for (String path : publicPaths) {
-            auth.requestMatchers(mvcRequestMatcher.pattern(path)).permitAll();
+            auth.requestMatchers(patternRequestMatcher.matcher(path)).permitAll();
         }
 
         auth
-                .requestMatchers(mvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
-                .requestMatchers(mvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
+                .requestMatchers(patternRequestMatcher.matcher("/" + CE_FILE_NAME)).permitAll()
+                .requestMatchers(patternRequestMatcher.matcher("/" + SWAGGER_DOC_PATH)).permitAll()
                 .anyRequest().denyAll();
     }
 }

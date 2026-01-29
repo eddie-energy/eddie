@@ -6,12 +6,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +31,7 @@ class GreenButtonApiHealthIndicatorTest {
         var res = indicator.health();
 
         // Then
+        assertNotNull(res);
         assertEquals(Status.UP, res.getStatus());
     }
 
@@ -42,6 +44,7 @@ class GreenButtonApiHealthIndicatorTest {
         var res = indicator.health();
 
         // Then
+        assertNotNull(res);
         assertEquals(Status.DOWN, res.getStatus());
     }
 
@@ -61,6 +64,7 @@ class GreenButtonApiHealthIndicatorTest {
         var res = indicator.health();
 
         // Then
+        assertNotNull(res);
         assertEquals(Status.DOWN, res.getStatus());
     }
 }

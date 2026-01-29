@@ -1,6 +1,5 @@
 package energy.eddie.aiida.streamers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
 import java.util.Map;

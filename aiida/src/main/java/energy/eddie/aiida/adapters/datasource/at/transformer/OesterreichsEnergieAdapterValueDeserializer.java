@@ -1,27 +1,24 @@
 package energy.eddie.aiida.adapters.datasource.at.transformer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import jakarta.annotation.Nullable;
-
-import java.io.IOException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
 public class OesterreichsEnergieAdapterValueDeserializer extends StdDeserializer<OesterreichsEnergieAdapterJson.AdapterValue> {
-    public OesterreichsEnergieAdapterValueDeserializer(@Nullable Class<?> vc) {
-        super(vc);
+    public OesterreichsEnergieAdapterValueDeserializer() {
+        super(OesterreichsEnergieAdapterJson.AdapterValue.class);
     }
 
     @Override
-    public OesterreichsEnergieAdapterJson.AdapterValue deserialize(JsonParser jp, DeserializationContext context) throws IOException {
-        JsonNode node = jp.getCodec().readTree(jp);
+    public OesterreichsEnergieAdapterJson.AdapterValue deserialize(JsonParser jp, DeserializationContext context) {
+        JsonNode node = jp.readValueAsTree();
 
         // use value either as Integer or String
         JsonNode valueNode = node.get("value");
         Object value = valueNode.isInt()
                 ? valueNode.intValue()
-                : valueNode.asText();
+                : valueNode.asString();
 
         JsonNode timeNode = node.get("time");
         long time = timeNode != null

@@ -1,9 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.jwk.source.JWKSourceBuilder;
@@ -44,6 +40,7 @@ import org.springframework.boot.ssl.SslBundles;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
+import tools.jackson.databind.ObjectMapper;
 
 import javax.net.ssl.X509KeyManager;
 import java.io.IOException;
@@ -126,14 +123,6 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-                .registerModule(new Jdk8Module());
-    }
-
-    @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             DataNeedRuleSet ruleSet
@@ -192,7 +181,7 @@ public class MijnAansluitingBeanConfig {
             MijnAansluitingRegionConnector connector,
             TaskScheduler taskScheduler,
             DataNeedCalculationService<DataNeed> dataNeedCalculationService
-    ){
+    ) {
         return new CommonFutureDataService<>(
                 pollingService,
                 repository,

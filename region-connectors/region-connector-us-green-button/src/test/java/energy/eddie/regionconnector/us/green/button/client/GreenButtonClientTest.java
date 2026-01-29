@@ -1,8 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.api.Pages;
 import energy.eddie.regionconnector.us.green.button.client.dtos.MeterListing;
@@ -20,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -63,7 +61,7 @@ class GreenButtonClientTest {
     private static MockWebServer mockBackEnd;
 
     private static String basePath;
-    private final ObjectMapper mapper = new ObjectMapperConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -206,7 +204,7 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void collectHistoricalData_respondsWithActivatedMeteringPoints() throws JsonProcessingException {
+    void collectHistoricalData_respondsWithActivatedMeteringPoints() {
         // Given
         mockBackEnd.enqueue(
                 new MockResponse()
@@ -247,7 +245,7 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void fetchMeters_withoutSlurp_doesNotExpandAllPages() throws JsonProcessingException {
+    void fetchMeters_withoutSlurp_doesNotExpandAllPages() {
         // Given
         var response = new MockResponse()
                 .setResponseCode(200)
@@ -267,7 +265,7 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void fetchMeters_withSlurp_expandsAllPages() throws JsonProcessingException {
+    void fetchMeters_withSlurp_expandsAllPages() {
         // Given
         var response1 = new MockResponse()
                 .setResponseCode(200)
@@ -318,7 +316,7 @@ class GreenButtonClientTest {
     }
 
     @Test
-    void fetchMeter_returnsMeter() throws JsonProcessingException {
+    void fetchMeter_returnsMeter() {
         // Given
         var response = new MockResponse()
                 .setResponseCode(200)

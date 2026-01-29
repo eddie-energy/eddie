@@ -1,10 +1,9 @@
 package energy.eddie.aiida.adapters.datasource.at.transformer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -14,12 +13,10 @@ class OesterreichsEnergieAdapterJsonTest {
      * Checks that the Jackson annotations are correct and every field of the JSON is deserialized as expected.
      */
     @Test
-    void verify_isProperlyDeserialized() throws JsonProcessingException {
-        ObjectMapper mapper = new AiidaConfiguration().customObjectMapper().build();
-
-        SimpleModule module = new SimpleModule();
-        module.addDeserializer(OesterreichsEnergieAdapterJson.AdapterValue.class, new OesterreichsEnergieAdapterValueDeserializer(null));
-        mapper.registerModule(module);
+    void verify_isProperlyDeserialized() {
+        var builder = JsonMapper.builder();
+        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
+        ObjectMapper mapper = builder.build();
 
 
         String str = "{\"0-0:96.1.0\":{\"value\":\"90296857\"},\"1-0:1.8.0\":{\"value\":83402,\"time\":1697622940},\"1-0:1.7.0\":{\"value\":43,\"time\":1697622940},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2360.4}";

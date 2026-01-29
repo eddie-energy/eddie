@@ -1,34 +1,35 @@
 package energy.eddie.regionconnector.dk.energinet.customer.client;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import energy.eddie.regionconnector.dk.energinet.customer.invoker.RFC3339DateFormat;
-import org.openapitools.jackson.nullable.JsonNullableModule;
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.http.codec.json.JacksonJsonDecoder;
+import org.springframework.http.codec.json.JacksonJsonEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
+@Import(ObjectMapperConfig.class)
 public class WebClientConfiguration {
     @Bean
-    public WebClient webClient(ObjectMapper mapper, WebClient.Builder builder) {
-        mapper.setDateFormat(new RFC3339DateFormat())
-              .registerModule(new JavaTimeModule())
-              .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-              .registerModule(new JsonNullableModule());
-        return builder
-                .codecs(codecs -> {
-                    codecs.defaultCodecs().jackson2JsonEncoder(
-                            new Jackson2JsonEncoder(mapper, MediaType.APPLICATION_JSON)
-                    );
-                    codecs.defaultCodecs().jackson2JsonDecoder(
-                            new Jackson2JsonDecoder(mapper, MediaType.APPLICATION_JSON)
-                    );
-                })
-                .build();
+    public WebClient webClient(JsonMapper mapper) {
+        return WebClient.builder()
+                        .codecs(codecs -> {
+                            codecs.defaultCodecs()
+                                  .jacksonJsonEncoder(new JacksonJsonEncoder(mapper, MediaType.APPLICATION_JSON));
+                            codecs.defaultCodecs().jacksonJsonDecoder(
+                                    new JacksonJsonDecoder(mapper, MediaType.APPLICATION_JSON)
+                            );
+                        })
+                        .build();
+    }
+
+    @Bean
+    public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
+        return builder -> builder
+                .disable(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 }

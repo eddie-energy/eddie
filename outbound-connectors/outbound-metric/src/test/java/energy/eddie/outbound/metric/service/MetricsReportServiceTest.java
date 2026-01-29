@@ -1,20 +1,19 @@
 package energy.eddie.outbound.metric.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.outbound.metric.config.MetricOutboundConnectorConfiguration;
 import energy.eddie.outbound.metric.generated.PermissionRequestMetrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import energy.eddie.outbound.metric.repositories.PermissionRequestMetricsRepository;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import okhttp3.mockwebserver.MockResponse;
-import okhttp3.mockwebserver.MockWebServer;
 import org.springframework.web.reactive.function.client.WebClient;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetricsReportServiceTest {
@@ -62,7 +61,7 @@ class MetricsReportServiceTest {
     }
 
     @Test
-    void testGenerateAndSendReport_Success() throws InterruptedException, JsonProcessingException {
+    void testGenerateAndSendReport_Success() throws InterruptedException {
         // Given
         String eddieId = "EDDIE-Test";
         List<PermissionRequestMetricsModel> metricsList = List.of();

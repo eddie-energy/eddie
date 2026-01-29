@@ -1,4 +1,4 @@
-package energy.eddie.regionconnector.dk.energinet.enums;
+package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
 import org.junit.jupiter.api.Test;

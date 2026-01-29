@@ -1,6 +1,5 @@
 package energy.eddie.aiida.adapters.datasource.fr;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3DataFieldDeserializer;
@@ -21,10 +20,11 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -142,10 +142,10 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
 
     @Override
     public Health health() {
-        if (super.health().getStatus().equals(Status.DOWN)) {
-            return super.health();
+        var health = super.health();
+        if (health != null && health.getStatus().equals(Status.DOWN)) {
+            return health;
         }
-
         return healthState;
     }
 
@@ -181,7 +181,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             throw new MicroTeleinfoV3ModeNotSupportedException(payload,
                                                                List.of(MicroTeleinfoV3Mode.HISTORY,
                                                                        MicroTeleinfoV3Mode.STANDARD));
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             throw new MicroTeleinfoV3ModeNotSupportedException(payload,
                                                                List.of(MicroTeleinfoV3Mode.HISTORY,
                                                                        MicroTeleinfoV3Mode.STANDARD));
@@ -194,7 +194,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
     ) throws MicroTeleinfoV3ModeNotSupportedException {
         try {
             return mapper.readValue(payload, type);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             if (mode.equals(MicroTeleinfoV3Mode.UNKNOWN)) {
                 throw new MicroTeleinfoV3ModeNotSupportedException(payload,
                                                                    List.of(MicroTeleinfoV3Mode.HISTORY,

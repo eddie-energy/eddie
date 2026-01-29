@@ -1,6 +1,7 @@
 package energy.eddie.outbound.admin.console.config;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnectorSecurityConfig;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -14,8 +15,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import static energy.eddie.outbound.shared.utils.CommonPaths.getServletPathForOutboundConnector;
 
@@ -25,25 +25,26 @@ public class AdminConsoleSecurityConfig {
     public static final String ADMIN_CONSOLE_BASE_URL = getServletPathForOutboundConnector("admin-console");
 
     @Bean
-    public MvcRequestMatcher.Builder adminConsoleRequestMatcher(HandlerMappingIntrospector introspector) {
-        return new MvcRequestMatcher.Builder(introspector).servletPath(ADMIN_CONSOLE_BASE_URL);
+    public PathPatternRequestMatcher.Builder adminConsoleRequestMatcher() {
+        return PathPatternRequestMatcher.withDefaults()
+                                        .basePath(ADMIN_CONSOLE_BASE_URL);
     }
 
     @Bean
     @ConditionalOnProperty(value = "outbound-connector.admin.console.login.mode")
     public SecurityFilterChain loginEnabledSecurityFilterChain(
             HttpSecurity http,
-            MvcRequestMatcher.Builder adminConsoleRequestMatcher,
+            @Qualifier("adminConsoleRequestMatcher") PathPatternRequestMatcher.Builder adminConsoleRequestMatcher,
             @Value("${outbound-connector.admin.console.login.mode}") String authMode
-    ) throws Exception {
+    ) {
         http
-                .csrf(csrf -> csrf.requireCsrfProtectionMatcher(
-                        adminConsoleRequestMatcher.pattern("*")
-                ))
+                .securityMatcher(adminConsoleRequestMatcher.matcher("/**"))
                 .authorizeHttpRequests(authorize -> authorize
                         // Allow access to static resources used by the login page
-                        .requestMatchers(adminConsoleRequestMatcher.pattern("/static/**")).permitAll()
-                        .requestMatchers(adminConsoleRequestMatcher.pattern("**")).authenticated()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/static/**")).permitAll()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/favicon.ico")).permitAll()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/favicon.svg")).permitAll()
+                        .requestMatchers(adminConsoleRequestMatcher.matcher("/**")).authenticated()
                         .anyRequest().permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll);
@@ -52,10 +53,8 @@ public class AdminConsoleSecurityConfig {
             case "basic" -> http
                     .httpBasic(Customizer.withDefaults())
                     .formLogin(formLogin -> formLogin
-                            .loginPage(ADMIN_CONSOLE_BASE_URL + "/login")
-                            .defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
-                            .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error")
-                            .permitAll()
+                            .loginPage(ADMIN_CONSOLE_BASE_URL + "/login").defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
+                            .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error").permitAll()
                     );
             case "keycloak" -> http
                     .oauth2Login(Customizer.withDefaults());

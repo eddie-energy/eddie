@@ -1,10 +1,10 @@
 package energy.eddie.regionconnector.cds.providers;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import jakarta.annotation.Nullable;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.function.Function;
 

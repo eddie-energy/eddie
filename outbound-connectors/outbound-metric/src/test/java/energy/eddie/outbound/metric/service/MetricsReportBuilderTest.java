@@ -1,12 +1,11 @@
 package energy.eddie.outbound.metric.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.outbound.metric.generated.PermissionRequestMetrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -16,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MetricsReportBuilderTest {
 
     @Test
-    void testCreateMetricsReport_jsonInput() throws IOException {
+    void testCreateMetricsReport_jsonInput() {
         // Given
         MetricsReportBuilder metricsReportBuilder = new MetricsReportBuilder();
         List<PermissionRequestMetricsModel> inputData = List.of(
@@ -44,7 +43,7 @@ class MetricsReportBuilderTest {
                         3,
                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                         "validated",
-                        "Fluvius" ,
+                        "Fluvius",
                         "be-fluvius"
                 ),
                 new PermissionRequestMetricsModel(

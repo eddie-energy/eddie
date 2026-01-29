@@ -1,14 +1,10 @@
 package energy.eddie.regionconnector.fr.enedis.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.fr.enedis.EnedisBeanConfig;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
-import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -26,7 +22,6 @@ import static org.mockito.Mockito.mock;
 class EnedisApiClientMeterReadingTest {
     private static MockWebServer mockBackEnd;
     private static WebClient webClient;
-    private final ObjectMapper objectMapper = new EnedisBeanConfig().objectMapper();
 
     @BeforeEach
     void setUp() throws IOException {
@@ -35,10 +30,6 @@ class EnedisApiClientMeterReadingTest {
         String basePath = "http://localhost:" + mockBackEnd.getPort();
         webClient = WebClient.builder()
                 .baseUrl(basePath)
-                .codecs(clientCodecConfigurer -> clientCodecConfigurer.defaultCodecs()
-                        .jackson2JsonDecoder(new Jackson2JsonDecoder(
-                                objectMapper,
-                                MediaType.APPLICATION_JSON)))
                 .build();
     }
 

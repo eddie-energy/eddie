@@ -1,6 +1,6 @@
 package energy.eddie.regionconnector.fr.enedis.api;
 
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 
 import java.util.Map;
 

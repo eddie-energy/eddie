@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 
 import java.time.Duration;
 
@@ -33,6 +33,6 @@ class DeletionTaskTest {
         task.delete();
 
         // Then
-        verify(repository).delete(ArgumentMatchers.<Specification<ConnectionStatusMessageModel>>any());
+        verify(repository).delete(ArgumentMatchers.<PredicateSpecification<ConnectionStatusMessageModel>>any());
     }
 }

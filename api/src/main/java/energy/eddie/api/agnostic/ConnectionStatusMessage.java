@@ -1,9 +1,9 @@
 package energy.eddie.api.agnostic;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import jakarta.annotation.Nullable;
+import tools.jackson.databind.JsonNode;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

@@ -1,34 +1,55 @@
 package energy.eddie.outbound.rest;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
-import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.*;
 import energy.eddie.outbound.rest.mixins.AgnosticMessageMixin;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.XmlMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.MapperBuilder;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties(RestOutboundConnectorConfiguration.class)
 public class RestOutboundBeanConfig {
-    @Bean("objectMapper")
-    public ObjectMapper objectMapper(ObjectMapper objectMapper) {
-        return objectMapper.registerModule(new JavaTimeModule())
-                           .registerModule(new Jdk8Module())
-                           .registerModule(new JakartaXmlBindAnnotationModule())
-                           .addMixIn(ConnectionStatusMessages.class, AgnosticMessageMixin.class)
-                           .addMixIn(RawDataMessages.class, AgnosticMessageMixin.class);
+    @Bean
+    @Primary
+    public JsonMapper jsonMapper(List<JsonMapperBuilderCustomizer> customizers) {
+        var builder = JsonMapper.builder();
+        customizers.forEach(customizer -> customizer.customize(builder));
+        return builder.build();
+    }
+
+    @Bean
+    public XmlMapperBuilderCustomizer xmlMapperBuilderCustomizer() {
+        return RestOutboundBeanConfig::builderCustomizer;
+    }
+
+    @Bean
+    public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
+        return RestOutboundBeanConfig::builderCustomizer;
+    }
+
+    private static <M extends ObjectMapper, B extends MapperBuilder<M, B>> void builderCustomizer(MapperBuilder<M, B> builder) {
+        builder
+                .addModule(new JakartaXmlBindAnnotationModule())
+                .addMixIn(ConnectionStatusMessages.class, AgnosticMessageMixin.class)
+                .addMixIn(RawDataMessages.class, AgnosticMessageMixin.class);
     }
 
     @Bean

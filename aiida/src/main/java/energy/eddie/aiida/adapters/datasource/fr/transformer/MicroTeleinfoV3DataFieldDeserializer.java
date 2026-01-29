@@ -1,28 +1,26 @@
 package energy.eddie.aiida.adapters.datasource.fr.transformer;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
-import jakarta.annotation.Nullable;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.deser.std.StdDeserializer;
 
-import java.io.IOException;
 import java.util.Optional;
 
 public class MicroTeleinfoV3DataFieldDeserializer extends StdDeserializer<MicroTeleinfoV3DataField> {
-    public MicroTeleinfoV3DataFieldDeserializer(@Nullable Class<?> vc) {
-        super(vc);
+    public MicroTeleinfoV3DataFieldDeserializer() {
+        super(MicroTeleinfoV3DataField.class);
     }
 
     @Override
-    public MicroTeleinfoV3DataField deserialize(JsonParser jp, DeserializationContext context) throws IOException {
-        JsonNode node = jp.getCodec().readTree(jp);
+    public MicroTeleinfoV3DataField deserialize(JsonParser jp, DeserializationContext context) {
+        JsonNode node = jp.readValueAsTree();
 
-        var raw = node.get("raw").asText();
+        var raw = node.get("raw").asString();
         var valueNode = node.get("value");
-        var value = valueNode.asText();
+        var value = valueNode.asString();
 
         var unit = determineUnit(jp.currentName());
         var obisCode = determineObisCode(jp.currentName());
@@ -37,8 +35,8 @@ public class MicroTeleinfoV3DataFieldDeserializer extends StdDeserializer<MicroT
                  "SMAXIN", "SMAXIN-1", "CCASN", "CCASN-1", "CCAIN", "CCAIN-1", "UMOY1", "UMOY2", "UMOY3", "DPM1",
                  "FPM1", "DPM2", "FPM2", "DPM3", "FPM3" -> {
                 var timestampNode = node.get("timestamp");
-                yield Optional.of(new MicroTeleinfoV3Timestamp(timestampNode.get("dst").asText(),
-                                                               timestampNode.get("date").asText()));
+                yield Optional.of(new MicroTeleinfoV3Timestamp(timestampNode.get("dst").asString(),
+                                                               timestampNode.get("date").asString()));
             }
             default -> Optional.empty();
         };

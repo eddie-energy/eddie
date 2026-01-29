@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.be.fluvius.provider.v0_82;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -19,9 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.openapitools.jackson.nullable.JsonNullableModule;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 
@@ -32,8 +29,7 @@ import static org.mockito.Mockito.when;
 class IntermediateValidatedHistoricalDocumentTest {
 
     private final ClassLoader classLoader = this.getClass().getClassLoader();
-    private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule())
-            .registerModule(new JsonNullableModule());
+    private final ObjectMapper mapper = new ObjectMapper();
     private final CommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
             CodingSchemeTypeList.BELGIUM_NATIONAL_CODING_SCHEME,
             "fallback"
@@ -47,17 +43,17 @@ class IntermediateValidatedHistoricalDocumentTest {
 
     @Test
     @SuppressWarnings("java:S5961")
-    void testGetGasVHD_hourly_differentUnits() throws IOException {
-
+    void testGetGasVHD_hourly_differentUnits() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("gas_data_measurement_hourly_different_units.json");
-        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream, GetEnergyResponseModelApiDataResponse.class);
+        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
+                                                                      GetEnergyResponseModelApiDataResponse.class);
 
         var pr = DefaultFluviusPermissionRequestBuilder.create()
-                .permissionId("pid")
-                .dataNeedId("dnid")
-                .granularity(Granularity.PT1H)
-                .build();
+                                                       .permissionId("pid")
+                                                       .dataNeedId("dnid")
+                                                       .granularity(Granularity.PT1H)
+                                                       .build();
 
         when(dataNeedsService.getById("dnid"))
                 .thenReturn(new ValidatedHistoricalDataDataNeed(
@@ -68,7 +64,9 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig,
+                                                              new IdentifiableMeteringData(pr, json),
+                                                              dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -88,13 +86,13 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(MessageTypeList.MEASUREMENT_VALUE_DOCUMENT, vhd.getType()),
                 () -> assertNotNull(vhd.getCreatedDateTime()),
                 () -> assertEquals(RoleTypeList.METERING_POINT_ADMINISTRATOR,
-                        vhd.getSenderMarketParticipantMarketRoleType()),
+                                   vhd.getSenderMarketParticipantMarketRoleType()),
                 () -> assertEquals(RoleTypeList.CONSUMER, vhd.getReceiverMarketParticipantMarketRoleType()),
                 () -> assertEquals(ProcessTypeList.REALISED, vhd.getProcessProcessType()),
                 () -> assertEquals(cimConfig.eligiblePartyNationalCodingScheme(),
-                        vhd.getReceiverMarketParticipantMRID().getCodingScheme()),
+                                   vhd.getReceiverMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals(CodingSchemeTypeList.BELGIUM_NATIONAL_CODING_SCHEME,
-                        vhd.getSenderMarketParticipantMRID().getCodingScheme()),
+                                   vhd.getSenderMarketParticipantMRID().getCodingScheme()),
                 () -> assertEquals("Fluvius", vhd.getSenderMarketParticipantMRID().getValue()),
                 () -> assertEquals(2, vhd.getTimeSeriesList().getTimeSeries().size())
         );
@@ -104,9 +102,9 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(BusinessTypeList.CONSUMPTION, firstTimeseries.getBusinessType()),
                 () -> assertEquals(EnergyProductTypeList.ACTIVE_ENERGY, firstTimeseries.getProduct()),
                 () -> assertEquals(CommodityKind.NATURALGAS,
-                        firstTimeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
+                                   firstTimeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
                 () -> assertEquals(CodingSchemeTypeList.BELGIUM_NATIONAL_CODING_SCHEME,
-                        firstTimeseries.getMarketEvaluationPointMRID().getCodingScheme()),
+                                   firstTimeseries.getMarketEvaluationPointMRID().getCodingScheme()),
                 () -> assertEquals("0001", firstTimeseries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(DirectionTypeList.DOWN, firstTimeseries.getFlowDirectionDirection()),
                 () -> assertEquals(UnitOfMeasureTypeList.CUBIC_METRE, firstTimeseries.getEnergyMeasurementUnitName()),
@@ -133,12 +131,13 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(BusinessTypeList.CONSUMPTION, secondTimeseries.getBusinessType()),
                 () -> assertEquals(EnergyProductTypeList.ACTIVE_ENERGY, secondTimeseries.getProduct()),
                 () -> assertEquals(CommodityKind.NATURALGAS,
-                        secondTimeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
+                                   secondTimeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
                 () -> assertEquals(CodingSchemeTypeList.BELGIUM_NATIONAL_CODING_SCHEME,
-                        secondTimeseries.getMarketEvaluationPointMRID().getCodingScheme()),
+                                   secondTimeseries.getMarketEvaluationPointMRID().getCodingScheme()),
                 () -> assertEquals("0001", secondTimeseries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(DirectionTypeList.DOWN, secondTimeseries.getFlowDirectionDirection()),
-                () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, secondTimeseries.getEnergyMeasurementUnitName()),
+                () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR,
+                                   secondTimeseries.getEnergyMeasurementUnitName()),
                 () -> assertEquals(1, secondTimeseries.getSeriesPeriodList().getSeriesPeriods().size())
         );
 
@@ -159,11 +158,12 @@ class IntermediateValidatedHistoricalDocumentTest {
     }
 
     @Test
-    void testGetGasVHD_daily_sameUnit() throws IOException {
+    void testGetGasVHD_daily_sameUnit() {
 
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("gas_data_measurement_daily_same_unit.json");
-        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream, GetEnergyResponseModelApiDataResponse.class);
+        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
+                                                                      GetEnergyResponseModelApiDataResponse.class);
 
         when(dataNeedsService.getById("did"))
                 .thenReturn(new ValidatedHistoricalDataDataNeed(
@@ -174,12 +174,14 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         var pr = DefaultFluviusPermissionRequestBuilder.create()
-                .permissionId("pid")
-                .granularity(Granularity.P1D)
-                .build();
+                                                       .permissionId("pid")
+                                                       .granularity(Granularity.P1D)
+                                                       .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig,
+                                                              new IdentifiableMeteringData(pr, json),
+                                                              dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -190,7 +192,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var timeseries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertAll(
                 () -> assertEquals(CommodityKind.NATURALGAS,
-                        timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
+                                   timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
                 () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeseries.getEnergyMeasurementUnitName()),
                 () -> assertEquals(1, timeseries.getSeriesPeriodList().getSeriesPeriods().size())
         );
@@ -205,11 +207,12 @@ class IntermediateValidatedHistoricalDocumentTest {
     }
 
     @Test
-    void testGetGasVHD_daily_empty() throws IOException {
+    void testGetGasVHD_daily_empty() {
 
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("gas_data_measurement_hourly_different_units.json");
-        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream, GetEnergyResponseModelApiDataResponse.class);
+        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
+                                                                      GetEnergyResponseModelApiDataResponse.class);
 
         when(dataNeedsService.getById("did"))
                 .thenReturn(new ValidatedHistoricalDataDataNeed(
@@ -220,12 +223,14 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         var pr = DefaultFluviusPermissionRequestBuilder.create()
-                .permissionId("pid")
-                .granularity(Granularity.P1D)
-                .build();
+                                                       .permissionId("pid")
+                                                       .granularity(Granularity.P1D)
+                                                       .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig,
+                                                              new IdentifiableMeteringData(pr, json),
+                                                              dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -235,11 +240,12 @@ class IntermediateValidatedHistoricalDocumentTest {
     }
 
     @Test
-    void testGetElectricityVHD_quarterHourly() throws IOException {
+    void testGetElectricityVHD_quarterHourly() {
 
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_quarter_hourly.json");
-        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream, GetEnergyResponseModelApiDataResponse.class);
+        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
+                                                                      GetEnergyResponseModelApiDataResponse.class);
 
         when(dataNeedsService.getById("did"))
                 .thenReturn(new ValidatedHistoricalDataDataNeed(
@@ -250,11 +256,13 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         var pr = DefaultFluviusPermissionRequestBuilder.create()
-                .permissionId("pid")
-                .build();
+                                                       .permissionId("pid")
+                                                       .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig,
+                                                              new IdentifiableMeteringData(pr, json),
+                                                              dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -265,7 +273,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var timeseries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertAll(
                 () -> assertEquals(CommodityKind.ELECTRICITYPRIMARYMETERED,
-                        timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
+                                   timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
                 () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeseries.getEnergyMeasurementUnitName()),
                 () -> assertEquals(1, timeseries.getSeriesPeriodList().getSeriesPeriods().size())
         );
@@ -280,11 +288,12 @@ class IntermediateValidatedHistoricalDocumentTest {
     }
 
     @Test
-    void testGetElectricityVHD_daily_empty() throws IOException {
+    void testGetElectricityVHD_daily_empty() {
 
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_quarter_hourly.json");
-        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream, GetEnergyResponseModelApiDataResponse.class);
+        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
+                                                                      GetEnergyResponseModelApiDataResponse.class);
 
         when(dataNeedsService.getById("did"))
                 .thenReturn(new ValidatedHistoricalDataDataNeed(
@@ -295,12 +304,14 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         var pr = DefaultFluviusPermissionRequestBuilder.create()
-                .permissionId("pid")
-                .granularity(Granularity.P1D)
-                .build();
+                                                       .permissionId("pid")
+                                                       .granularity(Granularity.P1D)
+                                                       .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig,
+                                                              new IdentifiableMeteringData(pr, json),
+                                                              dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -310,11 +321,12 @@ class IntermediateValidatedHistoricalDocumentTest {
     }
 
     @Test
-    void testGetElectricityVHD_daily() throws IOException {
+    void testGetElectricityVHD_daily() {
 
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_daily.json");
-        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream, GetEnergyResponseModelApiDataResponse.class);
+        GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
+                                                                      GetEnergyResponseModelApiDataResponse.class);
 
         when(dataNeedsService.getById("did"))
                 .thenReturn(new ValidatedHistoricalDataDataNeed(
@@ -325,12 +337,14 @@ class IntermediateValidatedHistoricalDocumentTest {
                 ));
 
         var pr = DefaultFluviusPermissionRequestBuilder.create()
-                .permissionId("pid")
-                .granularity(Granularity.P1D)
-                .build();
+                                                       .permissionId("pid")
+                                                       .granularity(Granularity.P1D)
+                                                       .build();
 
         // When
-        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, json), dataNeedsService).toVHD();
+        var res = new IntermediateValidatedHistoricalDocument(fluviusConfig,
+                                                              new IdentifiableMeteringData(pr, json),
+                                                              dataNeedsService).toVHD();
 
         // Then
         assertEquals(1, res.size());
@@ -341,7 +355,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var timeseries = vhd.getTimeSeriesList().getTimeSeries().getFirst();
         assertAll(
                 () -> assertEquals(CommodityKind.ELECTRICITYPRIMARYMETERED,
-                        timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
+                                   timeseries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity()),
                 () -> assertEquals(UnitOfMeasureTypeList.KILOWATT_HOUR, timeseries.getEnergyMeasurementUnitName()),
                 () -> assertEquals(1, timeseries.getSeriesPeriodList().getSeriesPeriods().size())
         );

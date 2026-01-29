@@ -1,24 +1,20 @@
 package energy.eddie.aiida.dtos.datasource;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.shelly.ShellyDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 class DataSourceDtoTest {
-    private final ObjectMapper objectMapper = new AiidaConfiguration()
-            .customObjectMapper()
-            .build();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void parseJson_givenSimulation() throws JsonProcessingException {
+    void parseJson_givenSimulation() {
         // Given
         var json = "{\"name\":\"Test Source\",\"type\":\"SIMULATION\", \"pollingInterval\": 12}";
 
@@ -31,7 +27,7 @@ class DataSourceDtoTest {
     }
 
     @Test
-    void parseJson_givenShelly() throws JsonProcessingException {
+    void parseJson_givenShelly() {
         // Given
         var json = "{\"name\":\"Test Source\",\"type\":\"SHELLY\"}";
 
@@ -43,7 +39,7 @@ class DataSourceDtoTest {
     }
 
     @Test
-    void parseJson_givenSinapsi() throws JsonProcessingException {
+    void parseJson_givenSinapsi() {
         // Given
         var json = "{\"name\":\"Test Source\",\"type\":\"SINAPSI_ALFA\", \"activationKey\": \"abc\"}";
 
@@ -56,7 +52,7 @@ class DataSourceDtoTest {
     }
 
     @Test
-    void parseJson_givenModbus() throws JsonProcessingException {
+    void parseJson_givenModbus() {
         // Given
         var ipAddress = "127.0.0.1";
         var json = "{\"name\":\"Test Source\",\"type\":\"MODBUS\", \"ipAddress\": \"" + ipAddress + "\"}";

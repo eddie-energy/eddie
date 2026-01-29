@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
@@ -19,9 +18,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.openapitools.jackson.nullable.JsonNullableModule;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,7 +43,7 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
     @SuppressWarnings("DataFlowIssue")
     @BeforeAll
     static void setUp() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
+        ObjectMapper objectMapper = new ObjectMapper();
         var classLoader = EnerginetValidatedHistoricalDataEnvelopeProviderTest.class.getClassLoader();
         try (InputStream is = classLoader.getResourceAsStream("MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
             var response = objectMapper.readValue(is, MyEnergyDataMarketDocumentResponseListApiResponse.class);

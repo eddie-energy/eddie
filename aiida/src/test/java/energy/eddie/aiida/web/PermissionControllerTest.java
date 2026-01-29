@@ -1,8 +1,6 @@
 package energy.eddie.aiida.web;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
@@ -10,15 +8,19 @@ import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -38,6 +40,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @WebMvcTest(PermissionController.class)
+@ExtendWith(MockitoExtension.class)
 class PermissionControllerTest {
     private final UUID eddieId = UUID.fromString("31d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
@@ -56,7 +59,7 @@ class PermissionControllerTest {
     void setUp() {
         grant = Instant.now();
 
-        mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        mapper = ObjectMapperCreatorUtil.mapper();
     }
 
     @Test
@@ -130,7 +133,6 @@ class PermissionControllerTest {
     void givenIncompletePostBody_permissionRequest_returnsBadRequest() throws Exception {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
-        when(mockPermission.id()).thenReturn(permissionId);
         var requestJson = "{\"permissionId\":\"" + permissionId + "\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
 
         // When
@@ -146,7 +148,6 @@ class PermissionControllerTest {
     void givenValidInput_setupPermission_callsService_andReturnsLocationHeader() throws Exception {
         // Given
         when(permissionService.setupNewPermission(any())).thenReturn(mockPermission);
-        when(mockPermission.eddieId()).thenReturn(eddieId);
         when(mockPermission.id()).thenReturn(permissionId);
         var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
         var expectedLocationHeader = "/permissions/" + permissionId;

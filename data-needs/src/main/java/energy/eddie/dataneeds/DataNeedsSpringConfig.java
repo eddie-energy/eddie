@@ -19,13 +19,18 @@ import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Clock;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -44,6 +49,19 @@ public class DataNeedsSpringConfig {
     @Bean
     public Clock clock() {
         return Clock.systemUTC();
+    }
+
+    @Bean
+    public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
+        return builder -> builder.disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES);
+    }
+
+    @Bean
+    @Primary
+    public JsonMapper jsonMapper(List<JsonMapperBuilderCustomizer> customizers) {
+        var builder = JsonMapper.builder();
+        customizers.forEach(customizer -> customizer.customize(builder));
+        return builder.build();
     }
 
     /**

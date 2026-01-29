@@ -10,6 +10,7 @@ import energy.eddie.outbound.shared.TopicConfiguration;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -55,7 +56,7 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, PermissionEnvelope>> permissionEnvelopeListenerContainerFactory(
+    public KafkaListenerContainerFactory<@NonNull ConcurrentMessageListenerContainer<String, PermissionEnvelope>> permissionEnvelopeListenerContainerFactory(
             ConsumerFactory<String, PermissionEnvelope> consumerFactory
     ) {
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, PermissionEnvelope>();
@@ -75,7 +76,7 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
-    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RTREnvelope>> rtrEnvelopeListenerContainerFactory(
+    public KafkaListenerContainerFactory<@NonNull ConcurrentMessageListenerContainer<String, RTREnvelope>> rtrEnvelopeListenerContainerFactory(
             ConsumerFactory<String, RTREnvelope> consumerFactory
     ) {
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();

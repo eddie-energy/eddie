@@ -1,19 +1,18 @@
 package energy.eddie.regionconnector.shared.agnostic;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.shared.permission.requests.SimplePermissionRequest;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JsonRawDataProviderTest {
-    private final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void rawDataProviderPublishesRawDataMessages() {

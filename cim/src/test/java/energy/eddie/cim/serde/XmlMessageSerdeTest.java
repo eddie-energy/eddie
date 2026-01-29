@@ -368,16 +368,6 @@ class XmlMessageSerdeTest {
     }
 
     @Test
-    void testSerialize_emptyObject_throws() throws SerdeInitializationException {
-        // Given
-        var serde = new XmlMessageSerde();
-        var message = new Object();
-
-        // When & Then
-        assertThrows(SerializationException.class, () -> serde.serialize(message));
-    }
-
-    @Test
     void testSerialize_unknownObject_serializesWithFallback() throws SerdeInitializationException, SerializationException {
         // Given
         var serde = new XmlMessageSerde();

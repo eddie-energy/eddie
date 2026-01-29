@@ -3,8 +3,9 @@ package energy.eddie.aiida.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
-import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientPropertiesMapper;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientProperties;
+import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientPropertiesMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -25,6 +26,7 @@ import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
+@EnableConfigurationProperties(OAuth2ClientProperties.class)
 public class OAuth2SecurityConfiguration {
     private static final Logger LOGGER = LoggerFactory.getLogger(OAuth2SecurityConfiguration.class);
 
@@ -33,7 +35,7 @@ public class OAuth2SecurityConfiguration {
             HttpSecurity http,
             ClientRegistrationRepository clientRegistrationRepository,
             CorsConfigurationSource corsConfigurationSource
-    ) throws Exception {
+    ) {
         return http
                 .csrf(csrf ->
                               csrf.ignoringRequestMatchers("/webhook/event")

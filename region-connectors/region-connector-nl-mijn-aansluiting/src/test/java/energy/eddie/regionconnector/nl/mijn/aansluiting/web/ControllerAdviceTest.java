@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.web;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
@@ -10,12 +9,13 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PermissionReque
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URISyntaxException;
 import java.security.PrivateKey;

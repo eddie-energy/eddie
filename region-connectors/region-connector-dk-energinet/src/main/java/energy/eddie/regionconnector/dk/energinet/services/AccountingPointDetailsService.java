@@ -1,8 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPoints;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
 import energy.eddie.regionconnector.dk.energinet.filter.MeteringDetailsApiResponseFilter;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 
@@ -28,7 +28,7 @@ public class AccountingPointDetailsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountingPointDetailsService.class);
 
     public final MeteringDetailsApiResponseFilter meteringDetailsApiResponseFilter = new MeteringDetailsApiResponseFilter();
-    private final EnerginetCustomerApi energinetCustomerApi;
+    private final EnerginetCustomerApiClient energinetCustomerApi;
     private final ObjectMapper objectMapper;
     private final Outbox outbox;
     private final ApiExceptionService apiExceptionService;
@@ -36,7 +36,7 @@ public class AccountingPointDetailsService {
 
 
     public AccountingPointDetailsService(
-            EnerginetCustomerApi energinetCustomerApi,
+            EnerginetCustomerApiClient energinetCustomerApi,
             ObjectMapper objectMapper,
             Outbox outbox,
             ApiExceptionService apiExceptionService,

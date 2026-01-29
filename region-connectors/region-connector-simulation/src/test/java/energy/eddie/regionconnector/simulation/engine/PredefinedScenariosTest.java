@@ -1,15 +1,14 @@
 package energy.eddie.regionconnector.simulation.engine;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PredefinedScenariosTest {
-    private final ObjectMapper objectMapper = new Jackson2ObjectMapperBuilder().createXmlMapper(false).build();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void testLoadingPredefinedScenarios_withClasspathUri_returnsPredefinedScenarios() {

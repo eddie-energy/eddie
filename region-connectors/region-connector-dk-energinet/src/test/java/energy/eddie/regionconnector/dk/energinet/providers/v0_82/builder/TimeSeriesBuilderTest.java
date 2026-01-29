@@ -1,12 +1,11 @@
 package energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocument;
 import energy.eddie.regionconnector.dk.energinet.customer.model.MyEnergyDataMarketDocumentResponseListApiResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.openapitools.jackson.nullable.JsonNullableModule;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +20,7 @@ class TimeSeriesBuilderTest {
 
     @BeforeAll
     static void setUp() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper().registerModule(new JsonNullableModule());
+        ObjectMapper objectMapper = new ObjectMapper();
         try (InputStream is = TimeSeriesBuilderTest.class.getClassLoader().getResourceAsStream("MyEnergyDataMarketDocumentResponseListApiResponse.json")) {
             MyEnergyDataMarketDocumentResponseListApiResponse response = objectMapper.readValue(is, MyEnergyDataMarketDocumentResponseListApiResponse.class);
             myEnergyDataMarketDocument = response.getResult().getFirst().getMyEnergyDataMarketDocument();

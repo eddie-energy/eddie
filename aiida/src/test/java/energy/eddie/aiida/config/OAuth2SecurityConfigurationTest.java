@@ -5,15 +5,18 @@ import energy.eddie.aiida.web.HomeController;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -89,12 +92,12 @@ class OAuth2SecurityConfigurationTest {
         @WithMockUser
         void givenClientRegistrationRepository_containsEndSessionUri() {
             var clientRegistration = clientRegistrationRepository.findByRegistrationId("keycloak");
-            assertNotEquals(null, clientRegistration);
+            assertNotNull(clientRegistration);
 
             var configurationMetadata = clientRegistration.getProviderDetails().getConfigurationMetadata();
 
-            assertTrue(configurationMetadata.containsKey("end_session_endpoint"));
-            assertEquals("https://auth.aiida.energy/logout", configurationMetadata.get("end_session_endpoint"));
+            assertThat(configurationMetadata)
+                    .containsExactlyEntriesOf(Map.of("end_session_endpoint", "https://auth.aiida.energy/logout"));
         }
     }
 }

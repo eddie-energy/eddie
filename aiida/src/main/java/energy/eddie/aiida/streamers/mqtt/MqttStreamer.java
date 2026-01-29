@@ -1,7 +1,5 @@
 package energy.eddie.aiida.streamers.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.FormatterException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
@@ -22,6 +20,8 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -268,7 +268,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             byte[] jsonBytes = mapper.writeValueAsBytes(statusMessage);
             client.publish(streamingConfig.statusTopic(), jsonBytes, 1, true)
                   .waitForCompletion(Duration.ofMinutes(2).toMillis());
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             LOGGER.atError()
                   .addArgument(streamingConfig.permissionId())
                   .addArgument(statusMessage)

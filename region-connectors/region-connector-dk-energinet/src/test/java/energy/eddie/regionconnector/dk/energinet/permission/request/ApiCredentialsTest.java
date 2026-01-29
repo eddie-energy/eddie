@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.dk.energinet.permission.request;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.dk.energinet.EnerginetBeanConfig;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
@@ -29,7 +28,7 @@ class ApiCredentialsTest {
         );
     }
 
-    private final ObjectMapper mapper = new EnerginetBeanConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Test
     void refreshToken_returnsAccessTokenIfValid() {
@@ -39,7 +38,7 @@ class ApiCredentialsTest {
         String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.%s.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ"
                 .formatted(Base64.getEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8)));
 
-        var customerApi = mock(EnerginetCustomerApi.class);
+        var customerApi = mock(EnerginetCustomerApiClient.class);
         when(customerApi.accessToken("jwt")).thenReturn(Mono.just("validToken"));
         ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken, mapper);
 
@@ -60,7 +59,7 @@ class ApiCredentialsTest {
         String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.%s.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ"
                 .formatted(Base64.getEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8)));
 
-        var customerApi = mock(EnerginetCustomerApi.class);
+        var customerApi = mock(EnerginetCustomerApiClient.class);
         when(customerApi.accessToken("jwt")).thenReturn(Mono.just("validToken"));
         ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken, mapper);
 
@@ -80,7 +79,7 @@ class ApiCredentialsTest {
         String accessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.%s.4Adcj3UFYzPUVaVF43FmMab6RlaQD8A9V8wFzzht-KQ"
                 .formatted(Base64.getEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8)));
 
-        var customerApi = mock(EnerginetCustomerApi.class);
+        var customerApi = mock(EnerginetCustomerApiClient.class);
         when(customerApi.accessToken("jwt")).thenReturn(Mono.just("validToken"));
         ApiCredentials credentials = new ApiCredentials(customerApi, "jwt", accessToken, mapper);
 

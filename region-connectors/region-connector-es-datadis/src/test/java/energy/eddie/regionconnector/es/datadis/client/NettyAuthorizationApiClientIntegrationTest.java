@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
@@ -10,13 +8,14 @@ import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 
 class NettyAuthorizationApiClientIntegrationTest {
-    private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
     private final String requestNif = "replace_me";
     private final DatadisConfiguration config = new DatadisConfiguration("username", "password", "https://datadis.es");
 

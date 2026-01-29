@@ -1,8 +1,6 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
-import energy.eddie.regionconnector.es.datadis.DatadisBeanConfig;
 import energy.eddie.regionconnector.es.datadis.api.ContractApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
@@ -19,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -30,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class NettyContractApiClientTest {
     private static MockWebServer mockBackEnd;
     private static DatadisConfiguration datadisConfig;
-    private final ObjectMapper mapper = new DatadisBeanConfig().objectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeAll
     static void setUp() throws IOException {

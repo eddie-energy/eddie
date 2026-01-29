@@ -1,8 +1,5 @@
 package energy.eddie.regionconnector.es.datadis.client;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.api.DataApi;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
@@ -15,6 +12,9 @@ import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -82,8 +82,7 @@ public class NettyDataApiClient implements DataApi {
                                                                    new TypeReference<>() {
                                                                    });
                                                            return Mono.just(meteringData);
-                                                       } catch (
-                                                               JsonProcessingException e) {
+                                                       } catch (JacksonException e) {
                                                            return Mono.error(e);
                                                        }
                                                    })));

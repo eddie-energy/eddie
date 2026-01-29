@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
@@ -14,12 +13,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import tools.jackson.databind.ObjectMapper;
 
 import static energy.eddie.regionconnector.us.green.button.security.WebhookSecurityConfig.US_GREEN_BUTTON_ENABLED;
-import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.mvcRequestMatcher;
+import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.pathPatternRequestMatcher;
 
 @RegionConnectorSecurityConfig
 @EnableConfigurationProperties(GreenButtonConfiguration.class)
@@ -29,8 +28,8 @@ public class WebhookSecurityConfig {
 
     @Bean
     @ConditionalOnProperty(value = US_GREEN_BUTTON_ENABLED, havingValue = "true")
-    public MvcRequestMatcher.Builder greenButtonMvcRequestMatcher(HandlerMappingIntrospector introspector) {
-        return mvcRequestMatcher(introspector, GreenButtonRegionConnectorMetadata.REGION_CONNECTOR_ID);
+    public PathPatternRequestMatcher.Builder greenButtonRequestMatcher() {
+        return pathPatternRequestMatcher(GreenButtonRegionConnectorMetadata.REGION_CONNECTOR_ID);
     }
 
     @Bean
@@ -38,17 +37,17 @@ public class WebhookSecurityConfig {
     @SuppressWarnings("java:S4502")
     public SecurityFilterChain webhookFilterChain(
             HttpSecurity http,
-            @Qualifier("greenButtonMvcRequestMatcher") MvcRequestMatcher.Builder mvcRequestMatcher,
+            @Qualifier("greenButtonMvcRequestMatcher") PathPatternRequestMatcher.Builder mvcRequestMatcher,
             ObjectMapper mapper,
             CorsConfigurationSource corsConfigurationSource,
             GreenButtonConfiguration config
     ) throws Exception {
         return http
-                .securityMatcher(mvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
+                .securityMatcher(mvcRequestMatcher.matcher("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new RequestBodyCachingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(mvcRequestMatcher.pattern("/webhook"))
+                        .requestMatchers(mvcRequestMatcher.matcher("/webhook"))
                         .access((authorization, object) -> WebhookVerifier.verifySignature(object.getRequest(), config))
                         .anyRequest().permitAll()
                 )

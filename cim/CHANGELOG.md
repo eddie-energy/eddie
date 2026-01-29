@@ -47,3 +47,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.2.0 - 2025-11-07
 
 - Add serialization and deserialization capabilities for CIM messages for JSON and XML format
+
+## 3.2.1 - 2026-01-15
+
+- Update Jackson dependencies to Jackson 3

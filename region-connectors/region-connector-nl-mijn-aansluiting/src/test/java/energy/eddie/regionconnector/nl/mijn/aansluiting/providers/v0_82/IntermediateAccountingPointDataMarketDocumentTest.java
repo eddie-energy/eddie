@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import energy.eddie.api.agnostic.Granularity;
@@ -18,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import tools.jackson.core.type.TypeReference;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -36,7 +35,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     @MethodSource("toAp_returnsAccountingPoints")
     // Mapping code requires that many assertions
     @SuppressWarnings("java:S5961")
-    void toAp_returnsAccountingPoints(MeteringPoint.ProductEnum product, CommodityKind commodity) throws IOException {
+    void toAp_returnsAccountingPoints(MeteringPoint.ProductEnum product, CommodityKind commodity) {
         // Given
         var meteringPoints = apMapper.loadTestJson("codeboek_response.json");
         meteringPoints.getMeteringPoints().getFirst().setProduct(product);
@@ -94,7 +93,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     }
 
     @Test
-    void toAp_withoutAddress_returnsAccountingPoints() throws IOException {
+    void toAp_withoutAddress_returnsAccountingPoints() {
         // Given
         var meteringPoints = apMapper.loadTestJson("codeboek_response_without_address.json");
         var config = createConfig();
@@ -120,7 +119,7 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     }
 
     @Test
-    void toAp_withoutStreetNumber_returnsEmptyDoorNumber() throws IOException {
+    void toAp_withoutStreetNumber_returnsEmptyDoorNumber() {
         // Given
         var meteringPoints = apMapper.loadTestJson("codeboek_response.json");
         Objects.requireNonNull(meteringPoints.getMeteringPoints().getFirst().getAddress()).setStreetNumber(null);

@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.nl.mijn.aansluiting.health;
 
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.ApiClient;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

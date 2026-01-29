@@ -60,7 +60,7 @@ class WebSecurityConfigTest {
     void whenUnauthenticatedUserAccessRoot_thenRedirectToLogin() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(MockMvcResultMatchers.status().is3xxRedirection())
-                .andExpect(MockMvcResultMatchers.redirectedUrlPattern("**/login"));
+               .andExpect(MockMvcResultMatchers.redirectedUrlPattern("/login/**"));
     }
 
     @Test

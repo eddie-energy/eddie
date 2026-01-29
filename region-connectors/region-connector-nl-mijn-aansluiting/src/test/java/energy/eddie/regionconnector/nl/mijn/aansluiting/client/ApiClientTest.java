@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.client;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.model.MijnAansluitingResponse;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.JsonResourceObjectMapper;
 import okhttp3.mockwebserver.MockResponse;
@@ -8,9 +7,10 @@ import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.IOException;
 import java.util.List;

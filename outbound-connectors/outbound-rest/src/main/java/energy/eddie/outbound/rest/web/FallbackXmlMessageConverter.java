@@ -1,13 +1,14 @@
 package energy.eddie.outbound.rest.web;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.http.converter.xml.MappingJackson2XmlHttpMessageConverter;
+import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 
 import java.io.IOException;
@@ -18,23 +19,23 @@ import java.util.List;
 public class FallbackXmlMessageConverter implements HttpMessageConverter<Object> {
 
     private final MarshallingHttpMessageConverter jaxbConverter;
-    private final MappingJackson2XmlHttpMessageConverter jacksonConverter;
+    private final JacksonXmlHttpMessageConverter jacksonConverter;
 
     public FallbackXmlMessageConverter(
             MarshallingHttpMessageConverter jaxbConverter,
-            MappingJackson2XmlHttpMessageConverter jacksonConverter
+            JacksonXmlHttpMessageConverter jacksonConverter
     ) {
         this.jaxbConverter = jaxbConverter;
         this.jacksonConverter = jacksonConverter;
     }
 
     @Override
-    public boolean canRead(Class<?> clazz, MediaType mediaType) {
+    public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
         return jaxbConverter.canRead(clazz, mediaType) || jacksonConverter.canRead(clazz, mediaType);
     }
 
     @Override
-    public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+    public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
         return jaxbConverter.canWrite(clazz, mediaType) || jacksonConverter.canWrite(clazz, mediaType);
     }
 
@@ -61,7 +62,7 @@ public class FallbackXmlMessageConverter implements HttpMessageConverter<Object>
     }
 
     @Override
-    public void write(Object o, MediaType contentType, HttpOutputMessage outputMessage)
+    public void write(Object o, @Nullable MediaType contentType, HttpOutputMessage outputMessage)
             throws IOException, HttpMessageNotWritableException {
         Class<?> clazz = o.getClass();
         if (isJaxbAnnotated(clazz)) {

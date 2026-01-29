@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import energy.eddie.api.agnostic.Granularity;
@@ -18,8 +17,8 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+import tools.jackson.core.type.TypeReference;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -45,7 +44,7 @@ class NlAccountingPointDataEnvelopeProviderTest {
     private PollingService pollingService;
 
     @Test
-    void toAp_returnsAccountingPoints() throws IOException {
+    void toAp_returnsAccountingPoints() {
         // Given
         var meteringPoints = apMapper.loadTestJson("codeboek_response.json");
         var pr = createPermissionRequest();

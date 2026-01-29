@@ -12,7 +12,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.2.0"
+version = "3.2.1"
 
 repositories {
     mavenCentral()
@@ -22,11 +22,10 @@ repositories {
 val jaxb: Configuration by configurations.creating
 
 dependencies {
+    implementation(platform(libs.jackson.bom))
     implementation(libs.jackson.core)
     implementation(libs.jackson.databind)
     implementation(libs.jackson.annotations)
-    implementation(libs.jackson.datatype.jsr310)
-    implementation(libs.jackson.datatype.jdk8)
     implementation(libs.jackson.dataformat.xml)
     implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.jaxb.runtime)

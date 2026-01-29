@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.dk.energinet.permission.handler;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.regionconnector.dk.energinet.customer.api.EnerginetCustomerApi;
+import energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkAcceptedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkSimpleEvent;
@@ -15,20 +15,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.util.retry.Retry;
+import reactor.util.retry.RetryBackoffSpec;
 
 import java.net.UnknownHostException;
+import java.time.Duration;
 
 @Component
 public class SendingEventHandler implements EventHandler<DKValidatedEvent> {
+    public static final RetryBackoffSpec RETRY_BACKOFF_SPEC = Retry.backoff(10, Duration.ofMinutes(1))
+                                                                   .filter(error -> error instanceof WebClientResponseException.TooManyRequests || error instanceof WebClientResponseException.ServiceUnavailable);
     private static final Logger LOGGER = LoggerFactory.getLogger(SendingEventHandler.class);
     private final Outbox outbox;
-    private final EnerginetCustomerApi customerApi;
+    private final EnerginetCustomerApiClient customerApi;
     private final DkPermissionRequestRepository repository;
 
     public SendingEventHandler(
             Outbox outbox,
             EventBus eventBus,
-            EnerginetCustomerApi customerApi,
+            EnerginetCustomerApiClient customerApi,
             DkPermissionRequestRepository repository
     ) {
         this.outbox = outbox;
@@ -43,6 +48,7 @@ public class SendingEventHandler implements EventHandler<DKValidatedEvent> {
         var permissionId = permissionEvent.permissionId();
         var pr = repository.getByPermissionId(permissionId);
         customerApi.accessToken(pr.refreshToken())
+                   .retryWhen(RETRY_BACKOFF_SPEC)
                    .subscribe(
                            accessToken -> commitAccepted(permissionId, accessToken),
                            error -> commitErrorStatus(permissionId, error)

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.nl.mijn.aansluiting.providers.v0_82;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.nimbusds.oauth2.sdk.Scope;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -19,8 +18,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+import tools.jackson.core.type.TypeReference;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
@@ -54,7 +53,7 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
     private PollingService pollingService;
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_emits() throws IOException {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_emits() {
         // Given
         var json = mapper.loadTestJson("single_consumption_data.json");
         when(pollingService.identifiableMeteredDataFlux())
@@ -74,7 +73,7 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
     }
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_emitsNothing_onInvalidDocuments() throws IOException {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_emitsNothing_onInvalidDocuments() {
         // Given
         var json = mapper.loadTestJson("invalid_obis_code_consumption_data.json");
         when(pollingService.identifiableMeteredDataFlux())

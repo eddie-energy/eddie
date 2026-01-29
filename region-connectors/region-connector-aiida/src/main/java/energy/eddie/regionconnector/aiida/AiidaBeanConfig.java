@@ -1,10 +1,5 @@
 package energy.eddie.regionconnector.aiida;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -30,18 +25,22 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionEndIsEnergyDataEndStrategy;
+import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
@@ -52,15 +51,11 @@ import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.RE
 
 @Configuration
 @EnableConfigurationProperties(AiidaConfiguration.class)
+@Import(ObjectMapperConfig.class)
 public class AiidaBeanConfig {
     @Bean
-    @Primary
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper()
-                .registerModule(new JavaTimeModule())
-                .registerModule(new Jdk8Module())
-                .registerModule(new JakartaXmlBindAnnotationModule())
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    public JsonMapperBuilderCustomizer objectMapper() {
+        return builder -> builder.addModule(new JakartaXmlBindAnnotationModule());
     }
 
     @Bean

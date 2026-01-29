@@ -1,9 +1,5 @@
 package energy.eddie.regionconnector.us.green.button.security;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.util.DefaultIndenter;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,6 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.crypto.codec.Hex;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.util.DefaultIndenter;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,14 +72,17 @@ public class WebhookVerifier {
         return new String(Hex.encode(hashBytes));
     }
 
-    private String prettyPrintJson(String uglyJsonString) throws JsonProcessingException {
-        var objectMapper = new ObjectMapper();
+    private String prettyPrintJson(String uglyJsonString) throws JacksonException {
         DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
         var printer = new DefaultPrettyPrinter();
         printer.indentObjectsWith(indenter);
         printer.indentArraysWith(indenter);
+        var objectMapper = JsonMapper.builder()
+                                     .defaultPrettyPrinter(printer)
+                                     .build();
         var jsonObject = objectMapper.readValue(uglyJsonString, Object.class);
-        return objectMapper.writer(printer).writeValueAsString(jsonObject)
+        return objectMapper.writerWithDefaultPrettyPrinter()
+                           .writeValueAsString(jsonObject)
                            // Required since object mapper does not produce canonical json: https://github.com/FasterXML/jackson-core/issues/1037
                            .replace(" :", ":");
     }

@@ -1,7 +1,5 @@
 package energy.eddie.spring.regionconnector.extensions;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -20,6 +18,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,12 +56,12 @@ class RegionConnectorsCommonControllerAdviceTest {
     @Test
     void givenInvalidEnumValue_returnsErrorMessageAndPermittedValues() {
         // mock setup so it appears that the granularity field of TestClassWithGranularity caused the HttpMessageNotReadableException
-        var mockJsonReference = mock(JsonMappingException.Reference.class);
+        var mockJsonReference = mock(JacksonException.Reference.class);
         InvalidFormatException mockInvalidFormatEx = mock(InvalidFormatException.class);
         doReturn(Granularity.class).when(mockInvalidFormatEx).getTargetType();
         doReturn(List.of(mockJsonReference)).when(mockInvalidFormatEx).getPath();
-        doReturn(TestClassWithGranularity.class).when(mockJsonReference).getFrom();
-        doReturn("granularity").when(mockJsonReference).getFieldName();
+        doReturn(TestClassWithGranularity.class).when(mockJsonReference).from();
+        doReturn("granularity").when(mockJsonReference).getPropertyName();
         doReturn(Granularity.P1Y).when(mockInvalidFormatEx).getValue();
 
         // Given
@@ -86,8 +86,8 @@ class RegionConnectorsCommonControllerAdviceTest {
     void givenInvalidParseException_returnsErrorMessage() {
         InvalidFormatException mockInvalidFormatEx = mock(InvalidFormatException.class);
         when(mockInvalidFormatEx.getValue()).thenReturn("foo");
-        when(mockInvalidFormatEx.getPath()).thenReturn(List.of(new JsonMappingException.Reference(null, "duration"),
-                                                               new JsonMappingException.Reference(null, "start")));
+        when(mockInvalidFormatEx.getPath()).thenReturn(List.of(new JacksonException.Reference(null, "duration"),
+                                                               new JacksonException.Reference(null, "start")));
 
         // Given
         var exception = new HttpMessageNotReadableException("", mockInvalidFormatEx, mock(HttpInputMessage.class));

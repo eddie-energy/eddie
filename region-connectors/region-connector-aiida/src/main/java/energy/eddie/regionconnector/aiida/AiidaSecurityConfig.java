@@ -1,18 +1,18 @@
 package energy.eddie.regionconnector.aiida;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RegionConnectorSecurityConfig;
 import energy.eddie.regionconnector.shared.security.JwtAuthorizationManager;
 import energy.eddie.spring.regionconnector.extensions.SecurityExceptionHandler;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.servlet.util.matcher.MvcRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.servlet.handler.HandlerMappingIntrospector;
+import tools.jackson.databind.ObjectMapper;
 
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
@@ -26,29 +26,29 @@ public class AiidaSecurityConfig {
 
     @Bean
     @ConditionalOnProperty(value = AIIDA_ENABLED_PROPERTY, havingValue = "true")
-    public MvcRequestMatcher.Builder aiidaMvcRequestMatcher(HandlerMappingIntrospector introspector) {
-        return new MvcRequestMatcher.Builder(introspector).servletPath(
-                "/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID);
+    public PathPatternRequestMatcher.Builder aiidaMvcRequestMatcher() {
+        return PathPatternRequestMatcher.withDefaults()
+                                        .basePath("/" + ALL_REGION_CONNECTORS_BASE_URL_PATH + "/" + AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID);
     }
 
     @Bean
     @ConditionalOnProperty(value = AIIDA_ENABLED_PROPERTY, havingValue = "true")
     public SecurityFilterChain aiidaSecurityFilterChain(
-            MvcRequestMatcher.Builder aiidaMvcRequestMatcher,
+            @Qualifier("aiidaMvcRequestMatcher") PathPatternRequestMatcher.Builder aiidaRequestMatcher,
             HttpSecurity http,
             JwtAuthorizationManager jwtHeaderAuthorizationManager,
             CorsConfigurationSource corsConfigurationSource,
             ObjectMapper mapper
-    ) throws Exception {
+    ) {
         return http
-                .securityMatcher(aiidaMvcRequestMatcher.pattern("/**"))    // apply following rules only to requests of this DispatcherServlet
+                .securityMatcher(aiidaRequestMatcher.matcher("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
 // @formatter:off   all calls for one request pattern should be on one line
-                        .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_PERMISSION_REQUEST)).permitAll()
-                        .requestMatchers(aiidaMvcRequestMatcher.pattern(PATH_HANDSHAKE_PERMISSION_REQUEST)).access(jwtHeaderAuthorizationManager)
-                        .requestMatchers(aiidaMvcRequestMatcher.pattern("/" + CE_FILE_NAME)).permitAll()
-                        .requestMatchers(aiidaMvcRequestMatcher.pattern("/" + SWAGGER_DOC_PATH)).permitAll()
+                        .requestMatchers(aiidaRequestMatcher.matcher(PATH_PERMISSION_REQUEST)).permitAll()
+                        .requestMatchers(aiidaRequestMatcher.matcher(PATH_HANDSHAKE_PERMISSION_REQUEST)).access(jwtHeaderAuthorizationManager)
+                        .requestMatchers(aiidaRequestMatcher.matcher("/" + CE_FILE_NAME)).permitAll()
+                        .requestMatchers(aiidaRequestMatcher.matcher("/" + SWAGGER_DOC_PATH)).permitAll()
                         .anyRequest().denyAll()
 // @formatter:on
                 )

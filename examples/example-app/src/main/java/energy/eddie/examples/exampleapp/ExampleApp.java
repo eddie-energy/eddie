@@ -1,10 +1,5 @@
 package energy.eddie.examples.exampleapp;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
@@ -19,6 +14,9 @@ import org.flywaydb.core.Flyway;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
@@ -104,13 +102,11 @@ public class ExampleApp {
     private static class Module extends AbstractModule {
         @Override
         protected void configure() {
-            bind(ObjectMapper.class).toInstance(JsonMapper.builder()
-                                                          .addModule(new JavaTimeModule())
-                                                          .addModule(new Jdk8Module())
-                                                          .addModule(new JakartaXmlBindAnnotationModule())
-                                                          .addMixIn(ConnectionStatusMessage.class,
-                                                                    ConnectionStatusMessageMixin.class)
-                                                          .build());
+            bind(ObjectMapper.class)
+                    .toInstance(JsonMapper.builder()
+                                          .addModule(new JakartaXmlBindAnnotationModule())
+                                          .addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class)
+                                          .build());
             var jdbcUserName = Env.JDBC_USER.get();
             var jdbcPassword = Env.JDBC_PASSWORD.get();
             if (jdbcUserName != null && jdbcPassword != null) {

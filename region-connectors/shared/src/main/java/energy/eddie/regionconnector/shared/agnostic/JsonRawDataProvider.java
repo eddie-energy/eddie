@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.shared.agnostic;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
@@ -9,6 +7,8 @@ import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public class JsonRawDataProvider implements RawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(JsonRawDataProvider.class);
@@ -37,7 +37,7 @@ public class JsonRawDataProvider implements RawDataProvider {
         try {
             String rawString = objectMapper.writeValueAsString(pair.payload());
             return new RawDataMessage(pair.permissionRequest(), rawString);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.warn("Error serializing metering data for region-connector {}", regionConnector, e);
             return null;
         }

@@ -1,6 +1,5 @@
 package energy.eddie.examples.exampleapp.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.cim.v0_82.pmd.MktActivityRecordComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
@@ -21,6 +20,7 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;

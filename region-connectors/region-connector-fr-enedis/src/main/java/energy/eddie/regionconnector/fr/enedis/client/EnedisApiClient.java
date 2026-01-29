@@ -11,7 +11,7 @@ import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;

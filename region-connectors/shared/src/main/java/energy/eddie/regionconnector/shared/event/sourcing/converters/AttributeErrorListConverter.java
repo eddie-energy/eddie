@@ -1,13 +1,14 @@
 package energy.eddie.regionconnector.shared.event.sourcing.converters;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
@@ -16,15 +17,17 @@ import java.util.List;
  */
 @Converter
 public class AttributeErrorListConverter implements AttributeConverter<List<AttributeError>, String> {
-    private static final ObjectMapper objectMapper = new ObjectMapperConfig().objectMapper();
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+                                                               .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                                                               .build();
 
     @Override
     @Nullable
     public String convertToDatabaseColumn(List<AttributeError> value) {
         try {
             return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException jpe) {
-            throw new AttributeErrorListConverterException(jpe);
+        } catch (JacksonException je) {
+            throw new AttributeErrorListConverterException(je);
         }
     }
 
@@ -32,10 +35,9 @@ public class AttributeErrorListConverter implements AttributeConverter<List<Attr
     @Nullable
     public List<AttributeError> convertToEntityAttribute(String value) {
         try {
-            return objectMapper.readValue(value, new TypeReference<>() {
-            });
-        } catch (JsonProcessingException jpe) {
-            throw new AttributeErrorListConverterException(jpe);
+            return objectMapper.readValue(value, new TypeReference<>() {});
+        } catch (JacksonException je) {
+            throw new AttributeErrorListConverterException(je);
         }
     }
 }

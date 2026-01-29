@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.cds.providers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -13,6 +12,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.C
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.ZoneOffset;
 

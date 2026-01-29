@@ -13,6 +13,7 @@ repositories {
 dependencies {
     implementation(libs.kafka.clients)
     implementation(libs.playwright)
+    implementation(platform(libs.jackson.bom))
     implementation(libs.jackson.databind)
 
     testImplementation(libs.junit.jupiter)

@@ -1,8 +1,6 @@
 package energy.eddie.aiida.models.permission.dataneed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
 import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
@@ -14,6 +12,8 @@ import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
 import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
 import jakarta.persistence.*;
 import org.springframework.scheduling.support.CronExpression;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Objects;
 import java.util.Set;

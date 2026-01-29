@@ -1,17 +1,24 @@
 package energy.eddie.regionconnector.es.datadis.serializer;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
 import java.time.LocalDate;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
-public class LocalDateToEpochSerializer extends JsonSerializer<LocalDate> {
+public class LocalDateToEpochSerializer extends StdSerializer<LocalDate> {
+    protected LocalDateToEpochSerializer() {
+        super(LocalDate.class);
+    }
+
     @Override
-    public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+    public void serialize(
+            LocalDate value,
+            tools.jackson.core.JsonGenerator gen,
+            SerializationContext provider
+    ) throws JacksonException {
         long timestamp = value.atStartOfDay(ZONE_ID_SPAIN).toInstant().toEpochMilli();
         gen.writeNumber(timestamp);
     }

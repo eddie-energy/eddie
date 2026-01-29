@@ -2,7 +2,10 @@ package energy.eddie.api.v0;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Period;
 import java.time.ZoneId;

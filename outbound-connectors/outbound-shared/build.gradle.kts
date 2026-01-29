@@ -14,6 +14,10 @@ repositories {
 dependencies {
     implementation(project(":api"))
     implementation(libs.jakarta.annotation.api)
+    implementation(libs.hibernate.orm.core)
+    implementation(platform(libs.jackson.bom))
+    implementation(libs.jackson.core)
+    implementation(libs.jackson.databind)
 
     testImplementation(libs.junit.jupiter)
     testImplementation(platform(libs.junit.bom))

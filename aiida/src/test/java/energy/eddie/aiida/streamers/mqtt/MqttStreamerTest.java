@@ -1,7 +1,5 @@
 package energy.eddie.aiida.streamers.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -26,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -256,7 +255,7 @@ class MqttStreamerTest {
 
     @Test
     @SuppressWarnings("java:S2925")
-    void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException, JsonProcessingException {
+    void givenExceptionWhileSending_savesToRepository() throws MqttException, InterruptedException {
         useReflectionToSetPermissionMock();
 
         // Given
@@ -274,7 +273,7 @@ class MqttStreamerTest {
     }
 
     @Test
-    void verify_closeTerminally_publishesSynchronously_andDeletesFailedToSendMessages() throws MqttException, JsonProcessingException {
+    void verify_closeTerminally_publishesSynchronously_andDeletesFailedToSendMessages() throws MqttException {
         // Given
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono()).expectComplete().verifyLater();
         var json = "MyJson".getBytes(StandardCharsets.UTF_8);

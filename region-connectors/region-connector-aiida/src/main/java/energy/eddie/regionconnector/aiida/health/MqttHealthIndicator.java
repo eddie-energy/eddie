@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.aiida.health;
 
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component

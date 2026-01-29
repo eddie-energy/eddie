@@ -14,7 +14,7 @@ public class RequestBodyCachingFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        var wrappedRequest = new ContentCachingRequestWrapper(httpRequest);
+        var wrappedRequest = new ContentCachingRequestWrapper(httpRequest, 0);
         chain.doFilter(wrappedRequest, response);
     }
 }

@@ -2,7 +2,7 @@ package energy.eddie.aiida.web;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -17,20 +17,20 @@ class HomeControllerTest {
     @Test
     void getHomeWithoutAuthentication_isUnauthorized() throws Exception {
         mockMvc.perform(get("/"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/oauth2/authorization/keycloak"));
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrlPattern("/oauth2/authorization/keycloak/**"));
     }
 
     @Test
     void getLogin_isOk() throws Exception {
         mockMvc.perform(get("/login"))
-                .andExpect(status().isOk());
+               .andExpect(status().isOk());
     }
 
     @Test
     void getAccountWithoutAuthentication_isUnauthorized() throws Exception {
         mockMvc.perform(get("/account"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("**/oauth2/authorization/keycloak"));
+               .andExpect(status().is3xxRedirection())
+               .andExpect(redirectedUrlPattern("/oauth2/authorization/keycloak/**"));
     }
 }

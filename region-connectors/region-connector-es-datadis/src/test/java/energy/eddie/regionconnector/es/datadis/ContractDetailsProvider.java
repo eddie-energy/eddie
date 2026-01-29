@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.es.datadis;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,12 +10,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class ContractDetailsProvider {
-    public static final ObjectMapper objectMapper = new DatadisBeanConfig().objectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static List<ContractDetails> loadContractDetails() throws IOException {
         try (InputStream is = ContractDetailsProvider.class.getClassLoader()
                                                            .getResourceAsStream("contractDetails.json")) {
-            return objectMapper.readValue(is, new TypeReference<>() {
+            return OBJECT_MAPPER.readValue(is, new TypeReference<>() {
             });
         }
     }
@@ -23,7 +23,7 @@ public class ContractDetailsProvider {
     public static List<ContractDetails> loadMultipleContractDetails() throws IOException {
         try (InputStream is = ContractDetailsProvider.class.getClassLoader()
                                                            .getResourceAsStream("contractDetails-multiple.json")) {
-            return objectMapper.readValue(is, new TypeReference<>() {
+            return OBJECT_MAPPER.readValue(is, new TypeReference<>() {
             });
         }
     }

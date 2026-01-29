@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.fr.enedis;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import okhttp3.mockwebserver.MockResponse;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +21,7 @@ public class TestResourceProvider {
 
     public static final String ADDRESS = "address.json";
 
-    private static final ObjectMapper objectMapper = new EnedisBeanConfig().objectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static MeterReading readMeterReadingFromFile(String resource) throws IOException {
         try (InputStream is = TestResourceProvider.class.getClassLoader().getResourceAsStream(resource)) {

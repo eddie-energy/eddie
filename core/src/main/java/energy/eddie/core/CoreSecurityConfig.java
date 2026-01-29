@@ -31,7 +31,7 @@ public class CoreSecurityConfig {
     public SecurityFilterChain coreSecurityFilterChain(
             HttpSecurity http,
             CorsConfigurationSource corsConfigurationSource
-    ) throws Exception {
+    ) {
         http.securityMatcher("/lib/**")
             .authorizeHttpRequests(requests -> requests.anyRequest().permitAll())
             .cors(cors -> cors.configurationSource(corsConfigurationSource));

@@ -1,8 +1,8 @@
 package energy.eddie.aiida.streamers;
 
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.application.information.ApplicationInformation;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -71,7 +71,7 @@ class StreamerManagerTest {
 
     @BeforeEach
     void setUp() {
-        var mapper = new AiidaConfiguration().customObjectMapper().build();
+        var mapper = ObjectMapperCreatorUtil.mapper();
         when(applicationInformationMock.aiidaId()).thenReturn(UUID.randomUUID());
         when(applicationInformationServiceMock.applicationInformation()).thenReturn(applicationInformationMock);
 

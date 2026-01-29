@@ -1,4 +1,3 @@
-
 import de.undercouch.gradle.tasks.download.Download
 import de.undercouch.gradle.tasks.download.Verify
 import net.ltgt.gradle.errorprone.CheckSeverity
@@ -32,12 +31,11 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.boot.starter.data.jpa)
     implementation(libs.spring.boot.starter.validation)
-    implementation(libs.spring.boot.starter.webflux)
+    implementation(libs.spring.boot.starter.webclient)
     implementation(libs.spring.boot.starter.actuator)
 
     // Required for openapi generator
     implementation(libs.jackson.databind)
-    implementation(libs.jackson.datatype.jsr310)
     implementation(libs.jackson.databind.nullable)
     implementation(libs.jakarta.annotation.api)
 
@@ -49,6 +47,9 @@ dependencies {
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)
     testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.starter.webmvc.test)
+    testImplementation(libs.spring.boot.starter.data.jpa.test)
+    testImplementation(libs.okhttp3.mockwebserver)
 
     testRuntimeOnly(libs.junit.platform.launcher)
 }
@@ -106,8 +107,6 @@ openApiGenerate {
     outputDir.set(generatedSwaggerJavaDir.get().asFile.absolutePath)
     ignoreFileOverride.set("${projectDir}/src/main/resources/.openapi-generator-ignore")
 
-    apiPackage.set("${customerApiPackagePrefix}.api")
-    invokerPackage.set("${customerApiPackagePrefix}.invoker")
     modelPackage.set("${customerApiPackagePrefix}.model")
 
     generateApiTests.set(false)
@@ -119,6 +118,14 @@ openApiGenerate {
             "sourceFolder" to "/",
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
+            "openApiNullable" to " false"
+        )
+    )
+    globalProperties.set(
+        mapOf(
+            "apis" to "false",
+            "invokers" to "false",
+            "models" to ""
         )
     )
 
@@ -139,7 +146,9 @@ tasks.withType<JavaCompile>().configureEach {
     // Regex fits to Windows and Unix-style path separators. CAVEAT: excludedPaths needs a regex string!
     val regexString = ".*/energy/eddie/regionconnector/dk/energinet/customer/(model|invoker)/.*".replace("/", "[/\\\\]")
     options.errorprone.excludedPaths.set(regexString)
-    if (!name.lowercase(Locale.getDefault()).contains("test") && !name.lowercase(Locale.getDefault()).contains("generated")) {
+    if (!name.lowercase(Locale.getDefault()).contains("test")
+        && !name.lowercase(Locale.getDefault()).contains("generated")
+    ) {
         options.errorprone {
             check("NullAway", CheckSeverity.ERROR)
             option("NullAway:AnnotatedPackages", packagePrefix)

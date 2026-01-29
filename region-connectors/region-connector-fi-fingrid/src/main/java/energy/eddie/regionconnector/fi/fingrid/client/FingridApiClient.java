@@ -5,7 +5,7 @@ import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
 import jakarta.annotation.Nullable;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -37,15 +37,21 @@ public class FingridApiClient {
         return webClient.get()
                         .uri(
                                 "GetTimeSeriesData",
-                                uriBuilder -> uriBuilder
-                                        .queryParam("organisationUser", configuration.organisationUser())
-                                        .queryParam("meteringPointEAN", meteringPointEAN)
-                                        .queryParam("customerIdentification", customerIdentification)
-                                        .queryParam("periodStartTS", start.toString())
-                                        .queryParam("periodEndTS", end.toString())
-                                        .queryParam("productType", productType == null ? null : productType.value())
-                                        .queryParam("resolutionDuration", resolutionDuration)
-                                        .build()
+                                uriBuilder -> {
+                                    uriBuilder = uriBuilder
+                                            .queryParam("organisationUser", configuration.organisationUser())
+                                            .queryParam("meteringPointEAN", meteringPointEAN)
+                                            .queryParam("customerIdentification", customerIdentification)
+                                            .queryParam("periodStartTS", start.toString())
+                                            .queryParam("periodEndTS", end.toString());
+                                    if (productType != null) {
+                                        uriBuilder = uriBuilder.queryParam("productType", productType.value());
+                                    }
+                                    if (resolutionDuration != null) {
+                                        uriBuilder = uriBuilder.queryParam("resolutionDuration", resolutionDuration);
+                                    }
+                                    return uriBuilder.build();
+                                }
                         )
                         .retrieve()
                         .bodyToMono(TimeSeriesResponse.class)

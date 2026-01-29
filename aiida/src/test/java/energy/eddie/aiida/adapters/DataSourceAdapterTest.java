@@ -1,6 +1,6 @@
 package energy.eddie.aiida.adapters;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
@@ -12,7 +12,6 @@ import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.shelly.ShellyAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
@@ -42,7 +42,7 @@ class DataSourceAdapterTest {
 
     @BeforeEach
     void setUp() {
-        mapper = new AiidaConfiguration().customObjectMapper().build();
+        mapper = ObjectMapperCreatorUtil.mapper();
         mqttConfiguration = new MqttConfiguration(
                 "tcp://localhost:1883",
                 "tcp://localhost:1883",

@@ -1,9 +1,8 @@
 package energy.eddie.regionconnector.fi.fingrid;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
-import energy.eddie.regionconnector.shared.utils.ObjectMapperConfig;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
 import java.util.Objects;
@@ -11,7 +10,7 @@ import java.util.Objects;
 public class TestResourceProvider {
     public static final String TIME_SERIES_WITH_ERRORS = "timeSeriesWithErrors.json";
     public static final String TIME_SERIES_WITH_VALUES = "timeSeriesWithValues.json";
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapperConfig().objectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final String CUSTOMER_DATA_JSON = "customerData.json";
     public static final String EMPTY_CUSTOMER_DATA_JSON = "customerDataWithoutData.json";
 

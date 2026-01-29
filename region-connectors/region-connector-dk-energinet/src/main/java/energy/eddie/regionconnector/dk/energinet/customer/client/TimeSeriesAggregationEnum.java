@@ -1,15 +1,17 @@
-package energy.eddie.regionconnector.dk.energinet.enums;
+package energy.eddie.regionconnector.dk.energinet.customer.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.dk.energinet.customer.api.MeterDataApi;
+import energy.eddie.regionconnector.dk.energinet.customer.model.MeteringPointsRequest;
+
+import java.time.LocalDate;
 
 /**
  * Enum for the Aggregation of MeterDataApi's TimeSeries Method
  *
- * @see MeterDataApi
- * @see MeterDataApi#customerapiApiMeterdataGettimeseriesDateFromDateToAggregationPost
+ * @see energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient
+ * @see energy.eddie.regionconnector.dk.energinet.customer.client.EnerginetCustomerApiClient#getTimeSeries(LocalDate, LocalDate, Granularity, MeteringPointsRequest, String)
  */
-public enum TimeSeriesAggregationEnum {
+enum TimeSeriesAggregationEnum {
     ACTUAL("Actual"),
     QUARTER("Quarter"),
     HOUR("Hour"),

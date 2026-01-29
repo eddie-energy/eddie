@@ -1,7 +1,5 @@
 package energy.eddie.regionconnector.aiida.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -21,6 +19,8 @@ import org.eclipse.paho.mqttv5.common.packet.MqttProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Sinks;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -69,7 +69,7 @@ public class MqttMessageCallback implements MqttCallback {
     public void messageArrived(
             String topic,
             MqttMessage message
-    ) throws JsonProcessingException, PermissionNotFoundException, PermissionInvalidException, MqttTopicException {
+    ) throws JacksonException, PermissionNotFoundException, PermissionInvalidException, MqttTopicException {
         try {
             if (topic.endsWith(STATUS_TOPIC_SUFFIX)) {
                 handleStatusMessage(message);
@@ -80,7 +80,7 @@ public class MqttMessageCallback implements MqttCallback {
             } else {
                 LOGGER.warn("Received MQTT message on unknown topic {}", topic);
             }
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Could not process MQTT message on topic {}", topic, e);
             throw e;
         } catch (PermissionNotFoundException | PermissionInvalidException | MqttTopicException e) {
@@ -104,7 +104,7 @@ public class MqttMessageCallback implements MqttCallback {
         // Not needed, as no advanced authentication is required
     }
 
-    private void handleStatusMessage(MqttMessage message) throws JsonProcessingException {
+    private void handleStatusMessage(MqttMessage message) throws JacksonException {
         var statusMessage = objectMapper.readValue(message.toString(), AiidaConnectionStatusMessageDto.class);
         var permissionId = statusMessage.permissionId();
 
@@ -116,7 +116,7 @@ public class MqttMessageCallback implements MqttCallback {
 
     private void handleSmartMeterP1CimMessage(
             MqttMessage message
-    ) throws JsonProcessingException, PermissionNotFoundException, PermissionInvalidException {
+    ) throws JacksonException, PermissionNotFoundException, PermissionInvalidException {
         var nearRealTimeDataEnvelope = objectMapper.readValue(message.toString(), RTDEnvelope.class);
         var permissionId = nearRealTimeDataEnvelope.getMessageDocumentHeaderMetaInformationPermissionId();
         getAndValidatePermissionRequest(permissionId);

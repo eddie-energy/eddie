@@ -9,8 +9,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.boot.actuate.health.HealthContributorRegistry;
-import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.registry.HealthContributorRegistry;
 
 import static java.util.Objects.requireNonNull;
 
@@ -39,8 +39,9 @@ public class HealthIndicatorRegistrar implements BeanPostProcessor {
         if (bean instanceof HealthIndicator healthIndicator) {
             var registry = parentBeanFactory.getBean(HealthContributorRegistry.class);
             if (containsHealthIndicator(beanName, registry)) return bean;
+            var name = beanName == null ? healthIndicator.getClass().getSimpleName() : beanName;
             LOGGER.info("Registering health indicator {}", beanName);
-            registry.registerContributor(beanName, healthIndicator);
+            registry.registerContributor(name, healthIndicator);
         }
         return bean;
     }
@@ -57,7 +58,7 @@ public class HealthIndicatorRegistrar implements BeanPostProcessor {
     ) {
         if (beanName == null) return false;
         for (var healthContributorNamedContributor : registry) {
-            if (beanName.startsWith(healthContributorNamedContributor.getName())) {
+            if (beanName.startsWith(healthContributorNamedContributor.name())) {
                 return true;
             }
         }

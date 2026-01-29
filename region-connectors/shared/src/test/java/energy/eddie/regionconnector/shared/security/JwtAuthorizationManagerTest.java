@@ -57,7 +57,7 @@ class JwtAuthorizationManagerTest {
         when(mockRequest.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(headerValue);
 
         // When, Then
-        assertThrows(AccessDeniedException.class, () -> headerAuthManager.check(null, mockContext));
+        assertThrows(AccessDeniedException.class, () -> headerAuthManager.authorize(null, mockContext));
     }
 
     @Test
@@ -74,6 +74,6 @@ class JwtAuthorizationManagerTest {
                                                                         List.of("foo", "bar")));
 
         // When, Then
-        assertTrue(headerAuthManager.check(null, mockContext).isGranted());
+        assertTrue(headerAuthManager.authorize(null, mockContext).isGranted());
     }
 }
