@@ -16,6 +16,12 @@ repositories {
     mavenCentral()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2024.0.1")
+    }
+}
+
 dependencies {
     implementation(project(":api"))
     implementation(project(":cim"))
@@ -47,6 +53,7 @@ dependencies {
     testImplementation(libs.okhttp3.mockwebserver)
     testImplementation(libs.xmlunit.core)
     testImplementation(libs.opentelemetry.sdk.testing)
+    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner")
 
     testRuntimeOnly(libs.junit.platform.launcher)
     testRuntimeOnly(libs.flyway.core)

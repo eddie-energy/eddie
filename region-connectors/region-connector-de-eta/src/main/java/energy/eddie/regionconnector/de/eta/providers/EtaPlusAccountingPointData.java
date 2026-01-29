@@ -3,25 +3,27 @@ package energy.eddie.regionconnector.de.eta.providers;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
+import javax.annotation.Nullable;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record EtaPlusAccountingPointData(
         String meteringPointId,
-        @JsonProperty("customerId") String customerId,
-        @JsonProperty("streetName") String streetName,
-        @JsonProperty("address") String address, // Keep for backward compatibility
-        @JsonProperty("postalCode") String postalCode,
-        @JsonProperty("city") String city,
-        @JsonProperty("country") String country,
-        @JsonProperty("energyType") String energyType,
-        @JsonProperty("voltageLevel") String voltageLevel,
-        @JsonProperty("connectionDate") LocalDate connectionDate,
-        @JsonProperty("status") String status,
+        @Nullable @JsonProperty("customerId") String customerId,
+        @Nullable @JsonProperty("streetName") String streetName,
+        @Nullable @JsonProperty("address") String address, // Keep for backward compatibility
+        @Nullable @JsonProperty("postalCode") String postalCode,
+        @Nullable @JsonProperty("city") String city,
+        @Nullable @JsonProperty("country") String country,
+        @Nullable @JsonProperty("energyType") String energyType,
+        @Nullable @JsonProperty("voltageLevel") String voltageLevel,
+        @Nullable @JsonProperty("connectionDate") LocalDate connectionDate,
+        @Nullable @JsonProperty("status") String status,
         String rawJson
 ) {
     /**
      * Gets the street name, falling back to address if streetName is null.
      */
+    @Nullable
     public String streetName() {
         return streetName != null ? streetName : address;
     }
@@ -30,16 +32,16 @@ public record EtaPlusAccountingPointData(
      */
     public static EtaPlusAccountingPointData withRawJson(
             String meteringPointId,
-            String customerId,
-            String streetName,
-            String address,
-            String postalCode,
-            String city,
-            String country,
-            String energyType,
-            String voltageLevel,
-            LocalDate connectionDate,
-            String status,
+            @Nullable String customerId,
+            @Nullable String streetName,
+            @Nullable String address,
+            @Nullable String postalCode,
+            @Nullable String city,
+            @Nullable String country,
+            @Nullable String energyType,
+            @Nullable String voltageLevel,
+            @Nullable LocalDate connectionDate,
+            @Nullable String status,
             String rawJson
     ) {
         return new EtaPlusAccountingPointData(

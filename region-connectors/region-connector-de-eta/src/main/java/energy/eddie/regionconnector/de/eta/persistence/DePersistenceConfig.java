@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * JPA Persistence configuration for the German (DE) ETA Plus region connector.
  * This configuration enables Spring Data JPA repository scanning and entity scanning.
  */
-@EnableJpaRepositories
+@EnableJpaRepositories(basePackages = "energy.eddie.regionconnector.de.eta")
 @Configuration
 public class DePersistenceConfig {
 }

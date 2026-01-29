@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
@@ -16,9 +17,9 @@ import java.time.LocalDate;
 @SuppressWarnings({"NullAway", "unused"})
 public class ValidatedEvent extends PersistablePermissionEvent {
 
-    @Column(name = "permission_start")
+    @Column(name = "data_start")
     private LocalDate start;
-    @Column(name = "permission_end")
+    @Column(name = "data_end")
     private LocalDate end;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text")
@@ -28,7 +29,7 @@ public class ValidatedEvent extends PersistablePermissionEvent {
             String permissionId,
             LocalDate start,
             LocalDate end,
-            Granularity granularity
+            @Nullable Granularity granularity
     ) {
         super(permissionId, PermissionProcessStatus.VALIDATED);
         this.start = start;

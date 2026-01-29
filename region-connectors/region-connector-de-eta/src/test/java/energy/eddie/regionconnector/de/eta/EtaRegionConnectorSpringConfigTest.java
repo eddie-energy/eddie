@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.SimpleAsyncTaskScheduler;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -35,6 +34,8 @@ class EtaRegionConnectorSpringConfigTest {
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
+                .withBean(PollingService.class, () -> mock(PollingService.class))
+                .withBean(TaskScheduler.class, SimpleAsyncTaskScheduler::new)
                 .withBean(RegionConnectorMetadata.class, EtaRegionConnectorMetadata::getInstance)
                 .withBean(DataNeedRuleSet.class, EtaDataNeedRuleSet::new)
                 .withBean(CommonInformationModelConfiguration.class, () -> {

@@ -127,17 +127,15 @@ public class EtaRegionConnectorSpringConfig {
      * supports a given data need.
      * 
      * @param dataNeedsService the data needs service
-     * @param metadata the region connector metadata
      * @param ruleSet the data need rule set for this region connector
      * @return the data need calculation service
      */
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            RegionConnectorMetadata metadata,
             DataNeedRuleSet ruleSet
     ) {
-        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
+        return new DataNeedCalculationServiceImpl(dataNeedsService, EtaRegionConnectorMetadata.getInstance(), ruleSet);
     }
 
 

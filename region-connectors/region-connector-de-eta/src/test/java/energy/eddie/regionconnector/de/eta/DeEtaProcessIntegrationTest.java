@@ -156,6 +156,8 @@ class DeEtaProcessIntegrationTest {
         String timestamp = dateString + "T00:00:00Z";
         WireMock.stubFor(get(urlPathMatching("/api/meters/historical"))
                 .withQueryParam("meteringPointId", equalTo(meterId))
+                .withQueryParam("from", WireMock.matching(".*"))
+                .withQueryParam("to", WireMock.matching(".*"))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", "application/json")
                         .withBody(String.format("""

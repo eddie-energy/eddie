@@ -46,14 +46,8 @@ public class LatestMeterReadingEventHandler implements EventHandler<LatestMeterR
         DePermissionRequest pr = optionalPr.get();
         ZonedDateTime latestReading = event.latestReading();
 
-        // 🟢 FIX 1: Update the Entity
-        // We must update the state of the object so the test can see it.
-        pr.setLatestReading(latestReading); // Assuming a setter exists
-
-        // 🟢 FIX 2: Save to Database
-        // Without this, the change is lost, and the test assertion fails.
-        repository.save(pr);
-
+        // No need to save - the view automatically updates from events
+        
         LocalDate end = pr.end();
 
         // Check for fulfillment logic
