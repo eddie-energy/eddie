@@ -7,7 +7,7 @@ For metrics [Prometheus](https://prometheus.io/) is used, for logs [Loki](https:
 `/env/otel` directory](https://github.com/eddie-energy/eddie/tree/main/env/otel/) contains configurations to run the previously mentioned open telemetry services.
 
 > [!NOTE]
-> For alert management set the variables in [.env_grafana](https://github.com/eddie-energy/eddie/tree/main/env/otel/.env_grafana).
+> For alert management set the variables in [.env_grafana](https://github.com/eddie-energy/eddie/blob/main/env/otel/.env_grafana).
 > It contains some defaults for E-Mail alerting, for other options see [Grafana Alerting](https://grafana.com/docs/grafana/latest/alerting/).
 
 The following command starts the open telemetry services.
