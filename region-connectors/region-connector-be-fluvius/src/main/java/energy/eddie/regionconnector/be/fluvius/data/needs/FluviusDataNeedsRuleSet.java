@@ -5,7 +5,6 @@ package energy.eddie.regionconnector.be.fluvius.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
@@ -25,7 +24,7 @@ public class FluviusDataNeedsRuleSet implements DataNeedRuleSet {
     }
 
     @Override
-    public List<DataNeedRule<? extends DataNeed>> dataNeedRules() {
+    public List<DataNeedRule> dataNeedRules() {
         var granularitiesForGas = sandboxEnabled
                 ? List.of(Granularity.PT15M, Granularity.P1D)
                 : List.of(Granularity.PT30M, Granularity.P1D);

@@ -5,7 +5,6 @@ package energy.eddie.regionconnector.fi.fingrid.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
@@ -25,7 +24,7 @@ public class FingridDataNeedRuleSet implements DataNeedRuleSet {
     );
 
     @Override
-    public List<DataNeedRule<? extends DataNeed>> dataNeedRules() {
+    public List<DataNeedRule> dataNeedRules() {
         return List.of(
                 new AccountingPointDataNeedRule(),
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES)

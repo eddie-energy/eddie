@@ -8,6 +8,8 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.application.information.ApplicationInformation;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeeds;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeedsError;
 import energy.eddie.core.security.JwtIssuerFilter;
 import energy.eddie.core.services.ApplicationInformationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
@@ -24,8 +26,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import static org.hamcrest.Matchers.*;
@@ -103,6 +107,39 @@ class PermissionFacadeControllerTest {
     }
 
     @Test
+    void dataNeedCalculationsWithMultipleDataNeeds_returnsDataNeedCalculation() throws Exception {
+        // Given
+        var result = new HashMap<String, DataNeedCalculation>();
+        result.put("dnid1", new DataNeedCalculation(false, ""));
+        result.put("dnid2", null);
+        result.put("dnid3", new DataNeedCalculation(true, null, null, null));
+        when(router.calculateFor("at-eda", Set.of("dnid1", "dnid2", "dnid3")))
+                .thenReturn(new MultipleDataNeeds(result));
+
+        // When
+        mockMvc.perform(get("/api/region-connectors/at-eda/data-needs")
+                                .queryParam("data-need-id", "dnid1", "dnid2", "dnid3"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.dnid1.supportsDataNeed").value(false))
+               .andExpect(jsonPath("$.dnid2").isEmpty())
+               .andExpect(jsonPath("$.dnid3.supportsDataNeed").value(true));
+    }
+
+    @Test
+    void dataNeedCalculationsWithInvalidCombination_returnsError() throws Exception {
+        // Given
+        when(router.calculateFor("at-eda", Set.of("dnid1", "dnid2", "dnid3")))
+                .thenReturn(new MultipleDataNeedsError(Set.of("dnid1", "dnid2"), "Error"));
+
+        // When
+        mockMvc.perform(get("/api/region-connectors/at-eda/data-needs")
+                                .queryParam("data-need-id", "dnid1", "dnid2", "dnid3"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.errors.[0].offendingDataNeedIds").isArray())
+               .andExpect(jsonPath("$.errors.[0].message").value("Error"));
+    }
+
+    @Test
     void regionConnectorsSupportedDataNeeds_withRegionConnectorId_returnsDataNeedRuleSet() throws Exception {
         when(dataNeedRuleSetRouter.dataNeedRuleSets("id"))
                 .thenReturn(() -> List.of(new AccountingPointDataNeedRule()));
@@ -110,7 +147,7 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors/{region-connector}/data-need-rule-set", "id"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasSize(1)))
-               .andExpect(jsonPath("$.[0].type").value("AccountingPointDataNeed"));
+               .andExpect(jsonPath("$.[0].type").value("account"));
     }
 
     @Test
@@ -121,5 +158,16 @@ class PermissionFacadeControllerTest {
         mockMvc.perform(get("/api/region-connectors/data-need-rule-sets"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$", hasKey("id")));
+    }
+
+    @Test
+    void regionConnectorsSupportDataNeeds_returnsAllSupportedRegionConnectors() throws Exception {
+        when(router.findRegionConnectorsSupportingDataNeeds(Set.of("dnid1", "dnid2")))
+                .thenReturn(Set.of("at-eda", "be-fluvius"));
+
+        mockMvc.perform(get("/api/region-connectors/data-needs")
+                                .queryParam("data-need-id", "dnid1", "dnid2"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").value(hasSize(2)));
     }
 }

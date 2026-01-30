@@ -21,9 +21,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -33,7 +35,6 @@ class AuthorizationUpdateFinishedHandlerTest {
     private final EventBusImpl eventBus = new EventBusImpl();
     @Mock
     private HistoricalCollectionService historicalCollectionService;
-    @SuppressWarnings("unused")
     @Mock
     private PermissionRequestService permissionRequestService;
     @Mock
@@ -86,5 +87,13 @@ class AuthorizationUpdateFinishedHandlerTest {
         // Then
         verify(historicalCollectionService)
                 .triggerHistoricalDataCollection(assertArg(res -> assertEquals(1, res.size())), eq(pr));
+        await().atMost(Duration.ofSeconds(10))
+               .ignoreExceptions()
+               .until(
+                       () -> {
+                           verify(permissionRequestService).removeUnfulfillablePermissionRequest("pid");
+                           return true;
+                       }
+               );
     }
 }
