@@ -20,7 +20,7 @@ This setup uses Docker Compose to orchestrate the necessary services. To get sta
 ## Installation
 
 The
-`aiida/docker` folder contains a container configuration inside the [compose file](https://github.com/eddie-energy/eddie/tree/main/aiida/docker/compose.yml).
+`aiida/docker` folder contains a container configuration inside the [compose file](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/compose.yml).
 
 ### Additional Services
 
@@ -32,7 +32,7 @@ AIIDA requires additional services to function properly. The following services 
 | **EMQX**        | An open-source MQTT broker that facilitates communication between data sources and AIIDA.                                          |
 | **Keycloak**    | An open-source identity and access management solution. It is used for authentication and authorization.                           |
 
-A sample configuration for these services is also provided in AIIDA's [compose file](https://github.com/eddie-energy/eddie/tree/main/aiida/docker/compose.yml).
+A sample configuration for these services is also provided in AIIDA's [compose file](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/compose.yml).
 
 ## Configuration
 

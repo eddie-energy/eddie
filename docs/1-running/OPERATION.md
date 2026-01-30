@@ -167,7 +167,7 @@ For more information see [data-needs](./../2-integrating/data-needs.md).
 
 ### Configuring the example app
 
-If you are using the example app and you change configuration parameters for the _core_, you might need to update its configuration as well.
+If you are using the example app, and you change configuration parameters for the _core_, you might need to update its configuration as well.
 Please refer to the [readme.md](example-app.md) of the example app.
 
 ## Internal APIs

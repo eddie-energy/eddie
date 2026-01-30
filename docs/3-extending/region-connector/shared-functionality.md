@@ -259,5 +259,5 @@ The template takes three attributes:
 
 ## CIM Utilities and Helper Classes
 
-There are a few [CIM utilities](https://github.com/eddie-energy/eddie/blob/94e5aa040c0f898f8da2485bb6a8b6c62cc0222b/region-connectors/shared/src/main/java/energy/eddie/regionconnector/shared/cim/v0_82) to help build and interact with CIM documents.
+There are a few [CIM utilities](https://github.com/eddie-energy/eddie/tree/94e5aa040c0f898f8da2485bb6a8b6c62cc0222b/region-connectors/shared/src/main/java/energy/eddie/regionconnector/shared/cim/v0_82) to help build and interact with CIM documents.
 It includes wrappers to build envelopes for CIM documents, helper classes for ESMP date-times, etc.
