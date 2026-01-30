@@ -9,7 +9,7 @@ import energy.eddie.e2etests.E2eTestSetup;
 import org.junit.jupiter.api.Test;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
-import static energy.eddie.e2etests.PlaywrightOptions.BASE_URL;
+import static energy.eddie.e2etests.PlaywrightOptions.EDDIE_URL;
 
 class NlMijnAansluitingTest extends E2eTestSetup {
     @Test
@@ -28,7 +28,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         }
         // Interact with external permission page
         callbackPage.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Deel mijn data")).click();
-        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(BASE_URL));
+        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(EDDIE_URL));
 
         // Check if success message is shown on redirect page
         assertThat(callbackPage.getByText("Access granted. You can close this tab now.")).isVisible();
@@ -46,7 +46,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
             page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Submit")).click();
         });
 
-        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(BASE_URL));
+        callbackPage.evaluate("document.location = document.URL.replace('https://eddie.projekte.fh-hagenberg.at/region-connectors/nl-edsn/authorization-callback','%s/region-connectors/nl-mijn-aansluiting/oauth2/code/mijn-aansluiting');".formatted(EDDIE_URL));
         assertThat(callbackPage.getByText("Invalid answer. Please contact the service provider.")).isVisible();
 
         assertThat(page.getByText("Request was declined as invalid")).isVisible();
