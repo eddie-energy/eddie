@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.cim.v1_04.utils.CimUtil;
 import energy.eddie.aiida.utils.CimUtils;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.cim.v1_04.rtd.*;
 import jakarta.annotation.Nullable;
@@ -80,6 +81,15 @@ public class CimFormatter extends SchemaFormatter {
             AiidaRecord aiidaRecord,
             @Nullable String codingScheme
     ) throws CimFormatterException {
+
+        var deviceId = aiidaRecord.aiidaRecordValues()
+                .stream()
+                .filter(value -> value
+                        .dataTag()
+                        .equals(ObisCode.DEVICE_ID_1))
+                .findFirst();
+        String mRID = deviceId.isPresent() ? deviceId.get().value() : aiidaRecord.dataSourceId().toString();
+
         return new TimeSeries().withDateAndOrTimeDateTime(aiidaRecord.timestamp().atZone(UTC))
                                .withQuantities(aiidaRecord
                                                        .aiidaRecordValues()
@@ -92,9 +102,8 @@ public class CimFormatter extends SchemaFormatter {
                                                                        aiidaRecordValue)))
                                                        .toList())
                                .withRegisteredResourceMRID(new ResourceIDString()
-                                                                   .withCodingScheme(codingScheme)
-                                                                   .withValue(aiidaRecord.dataSourceId()
-                                                                                         .toString()))
+                                                       .withCodingScheme(codingScheme)
+                                                       .withValue(mRID))
                                .withVersion(VERSION);
     }
 
