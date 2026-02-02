@@ -98,17 +98,21 @@
       const inputs = document.querySelectorAll("input, select");
       for (const input of inputs) {
         input.addEventListener("change", (event) => {
-          const { name, type, checked, options } = event.target;
-          let ids = [];
-          for (const option of options) {
-            if (option.selected) {
-              ids = [option.value, ...ids];
-            }
-          }
+          const { name, value, type, checked, options } = event.target;
           // Reselect button as replacing it breaks the reference
           const button = document.querySelector("eddie-connect-button");
+          if (type === "checkbox") {
+            button.setAttribute(name, checked);
+          } else if (type === "select-multiple") {
+            const ids = Array.from(options)
+              .filter((option) => option.selected)
+              .map((option) => option.value)
+              .join(",");
+            button.setAttribute(name, ids);
+          } else {
+            button.setAttribute(name, value);
+          }
           // Recreate over reset to ensure no data is left from the previous button
-          button.setAttribute(name, type === "checkbox" ? checked : ids.join(","));
           button.replaceWith(button.cloneNode());
         });
       }

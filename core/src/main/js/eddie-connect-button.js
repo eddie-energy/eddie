@@ -480,8 +480,7 @@ class EddieConnectButton extends LitElement {
     }
 
     try {
-      const dns = this.dataNeedId.split(",");
-      this._dataNeedAttributes = await getDataNeedsAttributes(dns);
+      this._dataNeedAttributes = await getDataNeedsAttributes(this.dataNeedId);
     } catch (error) {
       throw new Error("Could not fetch data needs.");
     }
@@ -546,7 +545,7 @@ class EddieConnectButton extends LitElement {
   configureAiida() {
     if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
       throw new Error(
-        `Data need with ID ${this.dataNeedId} is a AIIDA data need, but AIIDA is not enabled.`
+        `Data need with ID ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
       );
     }
 

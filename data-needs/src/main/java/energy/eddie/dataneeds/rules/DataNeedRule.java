@@ -6,7 +6,6 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 
@@ -21,7 +20,7 @@ public sealed interface DataNeedRule {
      * For example, if a region connector supports the {@link ValidatedHistoricalDataDataNeed} with a {@link Granularity} of {@code PT15M} and the {@link EnergyType} of {@code ELECTRICITY} it could specify it like this:
      * {@code new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT15M));}
      */
-    sealed interface SpecificDataNeedRule extends DataNeedRule {
+    sealed interface SpecificDataNeedRule<T extends DataNeed> extends DataNeedRule {
         /**
          * This method indicates the type of the {@link DataNeed}.
          * It returns the simple class name of the {@link DataNeed}.
@@ -37,7 +36,7 @@ public sealed interface DataNeedRule {
          *
          * @return the type of data need that is supported by this rule.
          */
-        Class<? extends DataNeed> getDataNeedClass();
+        Class<T> getDataNeedClass();
     }
 
     /**
@@ -49,14 +48,14 @@ public sealed interface DataNeedRule {
     record ValidatedHistoricalDataDataNeedRule(
             @JsonProperty("energyType") EnergyType energyType,
             @JsonProperty("granularities") List<Granularity> granularities
-    ) implements SpecificDataNeedRule {
+    ) implements SpecificDataNeedRule<ValidatedHistoricalDataDataNeed> {
         @Override
         public String getType() {
             return ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE;
         }
 
         @Override
-        public Class<? extends DataNeed> getDataNeedClass() {
+        public Class<ValidatedHistoricalDataDataNeed> getDataNeedClass() {
             return ValidatedHistoricalDataDataNeed.class;
         }
     }
@@ -64,50 +63,45 @@ public sealed interface DataNeedRule {
     /**
      * The AccountingPointDataNeedRule specifies one supported variant of the {@link AccountingPointDataNeed}.
      */
-    record AccountingPointDataNeedRule() implements SpecificDataNeedRule {
+    record AccountingPointDataNeedRule() implements SpecificDataNeedRule<AccountingPointDataNeed> {
         @Override
         public String getType() {
             return AccountingPointDataNeed.DISCRIMINATOR_VALUE;
         }
 
         @Override
-        public Class<? extends DataNeed> getDataNeedClass() {
+        public Class<AccountingPointDataNeed> getDataNeedClass() {
             return AccountingPointDataNeed.class;
         }
     }
 
     /**
-     * The AiidaDataNeedRule specifies one supported variant of either the {@link InboundAiidaDataNeed} or the {@link OutboundAiidaDataNeed}.
+     * The InboundAiidaDataNeedRule specifies one supported variant of the {@link energy.eddie.dataneeds.needs.aiida.AiidaDataNeed}.
      */
-    record AiidaDataNeedRule(AiidaDataNeedTypes type) implements SpecificDataNeedRule {
+    record InboundAiidaDataNeedRule() implements SpecificDataNeedRule<InboundAiidaDataNeed> {
         @Override
         public String getType() {
-            return type.value;
+            return InboundAiidaDataNeed.DISCRIMINATOR_VALUE;
         }
 
         @Override
-        public Class<? extends DataNeed> getDataNeedClass() {
-            return type.clazz;
+        public Class<InboundAiidaDataNeed> getDataNeedClass() {
+            return InboundAiidaDataNeed.class;
+        }
+    }
+
+    /**
+     * The OutboundAiidaDataNeedRule specifies one supported variant of the {@link energy.eddie.dataneeds.needs.aiida.AiidaDataNeed}.
+     */
+    record OutboundAiidaDataNeedRule() implements SpecificDataNeedRule<OutboundAiidaDataNeed> {
+        @Override
+        public String getType() {
+            return OutboundAiidaDataNeed.DISCRIMINATOR_VALUE;
         }
 
-        public enum AiidaDataNeedTypes {
-            INBOUND(InboundAiidaDataNeed.DISCRIMINATOR_VALUE, InboundAiidaDataNeed.class),
-            OUTBOUND(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, OutboundAiidaDataNeed.class);
-            private final String value;
-            private final Class<? extends AiidaDataNeed> clazz;
-
-            AiidaDataNeedTypes(String type, Class<? extends AiidaDataNeed> clazz) {
-                this.value = type;
-                this.clazz = clazz;
-            }
-
-            public String value() {
-                return value;
-            }
-
-            public Class<? extends AiidaDataNeed> clazz() {
-                return clazz;
-            }
+        @Override
+        public Class<OutboundAiidaDataNeed> getDataNeedClass() {
+            return OutboundAiidaDataNeed.class;
         }
     }
 

@@ -2,6 +2,7 @@ package energy.eddie.dataneeds.rules;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRule.SpecificDataNeedRule;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,10 +25,10 @@ public interface DataNeedRuleSet {
         return dataNeedRules().contains(rule);
     }
 
-    default boolean hasRule(DataNeed dataNeed) {
+    default boolean hasRuleFor(DataNeed dataNeed) {
         for (DataNeedRule rule : dataNeedRules()) {
-            if (rule instanceof DataNeedRule.SpecificDataNeedRule specificDataNeedRule && dataNeed.getClass()
-                                                                                                  .equals(specificDataNeedRule.getDataNeedClass())) {
+            if (rule instanceof SpecificDataNeedRule<?> specificDataNeedRule
+                && dataNeed.getClass().equals(specificDataNeedRule.getDataNeedClass())) {
                 return true;
             }
         }
@@ -47,7 +48,7 @@ public interface DataNeedRuleSet {
     default Set<String> supportedDataNeeds() {
         var dataNeeds = new HashSet<String>();
         for (var rule : dataNeedRules()) {
-            if (rule instanceof DataNeedRule.SpecificDataNeedRule dataNeedRule) {
+            if (rule instanceof SpecificDataNeedRule<?> dataNeedRule) {
                 dataNeeds.add(dataNeedRule.getType());
             }
         }

@@ -114,7 +114,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             }
         }
 
-        if (!dataNeedRuleSet.hasRule(dataNeed)) {
+        if (!dataNeedRuleSet.hasRuleFor(dataNeed)) {
             var supportedDataNeeds = dataNeedRuleSet.dataNeedRules(DataNeedRule.SpecificDataNeedRule.class)
                                                     .stream()
                                                     .map(specificDataNeedRule -> specificDataNeedRule.getDataNeedClass()

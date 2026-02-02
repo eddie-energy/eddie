@@ -1,7 +1,12 @@
 package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.utils.CommonPaths;
+import energy.eddie.regionconnector.simulation.data.needs.SimulationDataNeedRuleSet;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -27,5 +32,17 @@ public class SimulationConnectorSpringConfig implements WebMvcConfigurer {
     @Bean
     public Sinks.Many<ConnectionStatusMessage> connectionStatusStreamSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
+            SimulationDataNeedRuleSet simulationDataNeedRuleSet
+    ) {
+        return new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                SimulationConnectorMetadata.getInstance(),
+                simulationDataNeedRuleSet
+        );
     }
 }

@@ -23,12 +23,11 @@ export function getDataNeedAttributes(dataNeedId) {
 
 /**
  * Fetches the data needs attributes for the given data need ID.
- * @param {string[]} dataNeedIds - The ID of the data need to fetch attributes for.
+ * @param {string} dataNeedId - The ID of the data need to fetch attributes for.
  * @returns {Promise<DataNeedAttributes[]>} - The attributes of the data needs.
  */
-export function getDataNeedsAttributes(dataNeedIds) {
-  const queryParams = dataNeedIds.map((dn) => `data-need-id=${dn}`).join("&");
-  return fetchJson(`/data-needs/api/?${queryParams}`);
+export function getDataNeedsAttributes(dataNeedId) {
+  return fetchJson(`/data-needs/api/?data-need-id=${dataNeedId}`);
 }
 
 /**

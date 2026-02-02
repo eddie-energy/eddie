@@ -36,8 +36,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
-import static energy.eddie.dataneeds.rules.DataNeedRule.AiidaDataNeedRule;
-import static energy.eddie.dataneeds.rules.DataNeedRule.AiidaDataNeedRule.AiidaDataNeedTypes.INBOUND;
+import static energy.eddie.dataneeds.rules.DataNeedRule.InboundAiidaDataNeedRule;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
@@ -438,7 +437,7 @@ class DataNeedCalculationServiceImplTest {
         when(dataNeedsService.findById("aiida-dnid")).thenReturn(Optional.of(new InboundAiidaDataNeed()));
         List<DataNeedRule> dataNeedRules = List.of(
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT1H)),
-                new AiidaDataNeedRule(INBOUND),
+                new InboundAiidaDataNeedRule(),
                 new AllowMultipleDataNeedsRule()
         );
         var service = new DataNeedCalculationServiceImpl(dataNeedsService, metadata,
