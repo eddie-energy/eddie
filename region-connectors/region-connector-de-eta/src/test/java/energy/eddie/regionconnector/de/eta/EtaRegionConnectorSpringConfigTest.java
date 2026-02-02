@@ -30,6 +30,14 @@ class EtaRegionConnectorSpringConfigTest {
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
+                .withBean(PlainDeConfiguration.class, () -> new PlainDeConfiguration(
+                        "test-eligible-party-id",
+                        "https://test-url.de",
+                        "test-client-id",
+                        "test-client-secret",
+                        "/api/v1/metered-data",
+                        "/api/v1/permissions/{id}"
+                ))
                 .withBean(RegionConnectorMetadata.class, EtaRegionConnectorMetadata::getInstance)
                 .withBean(DataNeedRuleSet.class, EtaDataNeedRuleSet::new)
                 .withBean(CommonInformationModelConfiguration.class, () -> {
