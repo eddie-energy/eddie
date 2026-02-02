@@ -5,6 +5,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import jakarta.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
+import java.util.List;
 
 /**
  * Metadata for the ETA Plus (Germany) region connector.
@@ -13,25 +14,49 @@ import java.time.ZoneId;
  */
 public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "de-eta";
+
     public static final String COUNTRY_CODE = "DE";
-    
+
     /**
      * Historical data can be requested up to 36 months in the past
      */
-    public static final Period PERIOD_EARLIEST_START = Period.ofMonths(-36);
-    
+    public static final Period PERIOD_EARLIEST_START = Period.ofYears(-100);
+
     /**
-     * Permissions can be granted up to 36 months in the future
+     * Permissions can be granted up to 36 months in the future.
      */
     public static final Period PERIOD_LATEST_END = Period.ofMonths(36);
-    
+
     /**
      * Germany uses Central European Time
      */
     public static final ZoneId DE_ZONE_ID = ZoneId.of("Europe/Berlin");
-    
+
+
     /**
-     * Approximate number of metering points covered in Germany
+     * Supported granularities for metered data in Germany.
+     * PT15M = 15-minute intervals
+     * PT1H = Hourly intervals
+     * P1D = Daily intervals
+     */
+    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(
+            Granularity.PT15M,
+            Granularity.PT1H,
+            Granularity.P1D
+    );
+
+    /**
+     * Supported data need types.
+     * Includes ValidatedHistoricalDataDataNeed for historical metering data.
+     */
+    public static final List<Class<? extends DataNeedInterface>> SUPPORTED_DATA_NEEDS = List.of(
+            ValidatedHistoricalDataDataNeed.class,
+            AccountingPointDataNeed.class
+    );
+
+    /**
+     * Approximate number of metering points covered in Germany.
+     * This is an estimate and should be updated with actual data from ETA Plus.
      */
     private static final long COVERED_METERING_POINTS = 500000;
     
