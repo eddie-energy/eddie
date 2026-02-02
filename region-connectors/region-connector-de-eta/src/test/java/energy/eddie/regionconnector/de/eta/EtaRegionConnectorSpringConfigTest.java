@@ -30,10 +30,12 @@ class EtaRegionConnectorSpringConfigTest {
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
                 .withBean(PlainDeConfiguration.class, () -> new PlainDeConfiguration(
-                        "party-1",
-                        "https://api.eta-plus.de",
-                        "client-id",
-                        "client-secret"
+                        "test-eligible-party-id",
+                        "https://test-url.de",
+                        "test-client-id",
+                        "test-client-secret",
+                        "/api/v1/metered-data",
+                        "/api/v1/permissions/{id}"
                 ))
                 .withBean(CommonInformationModelConfiguration.class, () -> {
                     CommonInformationModelConfiguration cimConfig = mock(CommonInformationModelConfiguration.class);

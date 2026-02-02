@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.de.eta.permission.handlers;
 
+import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
@@ -56,8 +57,7 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
 
         var pr = optionalPr.get();
 
-        // Only request historical data (data in the past)
-        if (pr.start().isAfter(LocalDate.now())) {
+        if (pr.start().isAfter(LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID))) {
             LOGGER.atInfo()
                   .addArgument(pr::permissionId)
                   .log("Permission request {} is for future data only, skipping historical data fetch");
