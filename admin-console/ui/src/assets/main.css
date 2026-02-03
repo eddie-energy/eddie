@@ -10,7 +10,7 @@
   --card-radius: 0.5rem;
   --tile-radius: 0.5rem;
   --table-radius: 0.5rem;
-  --table-padding: 1rem 0.75rem;
+  --table-padding: 0.75rem 1rem;
 
   /* Light mode variables */
   --success: #92c143;
@@ -22,23 +22,21 @@
   --app-background: #eff2f7;
   --sidebar-background: #d0e6ed;
   --panel-background: #fafbfc;
-  --panel-border: 1px solid #fafbfc;
-  --panel-shadow: 0 5px 10px 0 #1e1e1e1a;
+  --panel-border: 1px solid var(--text-color);
   --card-background: #fafbfc;
-  --card-border: 1px solid #017aa040;
+  --card-border: 1px solid rgb(from var(--text-color) r g b / 25%);
   --tile-background: #e5f1f4;
   --chip-text-neutral: #017aa0;
   --chip-text-contrast: #017aa0;
   --chip-text-link: #004cbf;
-  --chip-text-success: #105429;
+  --chip-text-success: #08792e;
   --chip-background-success: #d3ffe3;
-  --chip-text-warn: #975d00;
+  --chip-text-warn: #8a5500;
   --chip-background-warn: #ffe8c3;
   --chip-text-info: #004cbf;
   --chip-background-info: #d7e8ff;
   --chip-text-danger: #c42222;
   --chip-background-danger: #ffdddd;
-  --table-border: 1px solid #017aa040;
 
   /* Dark mode variables */
   @media (prefers-color-scheme: dark) {
@@ -47,13 +45,11 @@
     --sidebar-background: #161616;
     --panel-background: #202022;
     --panel-border: 1px solid #2e2e30;
-    --panel-shadow: 0 5px 10px 0 rgba(0, 0, 0, 0.25);
     --card-background: #161616;
-    --card-border: 1px solid #242424;
+    --card-border: 1px solid #2e2e30;
     --tile-background: #27262b;
     --chip-text-neutral: #606060;
     --chip-text-contrast: #161616;
-    --table-border: 1px solid #2e2e30;
   }
 }
 

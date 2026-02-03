@@ -251,7 +251,8 @@ h3 {
 }
 
 dl {
-  border: var(--table-border);
+  background: var(--card-background);
+  border: var(--card-border);
   border-radius: var(--table-radius);
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -265,7 +266,7 @@ dl {
 
   dd ~ dd,
   dt ~ dt {
-    border-top: var(--table-border);
+    border-top: var(--card-border);
   }
 }
 

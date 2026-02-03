@@ -345,7 +345,6 @@ function getPermissionCountPerRegionConnector() {
   border-radius: var(--panel-radius);
   border: var(--panel-border);
   background: var(--panel-background);
-  box-shadow: var(--panel-shadow);
 
   header {
     display: flex;
