@@ -396,17 +396,20 @@ function getPermissionCountPerRegionConnector() {
 }
 
 .data-need-headline {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto max-content minmax(max-content, 1fr);
   gap: 0.75rem;
   align-items: center;
-  font-size: 0.875rem;
 
   h3 {
     font-weight: 300;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
 .data-need-stats {
+  margin-top: 0.625rem;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -420,7 +423,6 @@ function getPermissionCountPerRegionConnector() {
   border-radius: var(--tile-radius);
   padding: 0.5rem;
   min-width: 14rem;
-  font-size: 0.875rem;
   gap: 0.5rem;
 
   i {
@@ -450,7 +452,6 @@ table {
   padding: 0 1px; /* account for row outline */
 
   th {
-    font-size: 0.75rem;
     text-align: left;
     vertical-align: bottom;
 
@@ -482,8 +483,8 @@ table {
       }
 
       small {
-        font-size: 0.625rem;
-        line-height: 1.2;
+        font-size: 0.875rem;
+        line-height: 0.75rem;
       }
     }
   }

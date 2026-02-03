@@ -15,8 +15,7 @@ defineProps<{
         <slot></slot>
       </div>
       <div>
-        <span class="text">{{ text }}</span>
-        <br />
+        <span>{{ text }}</span>
         <span class="count">{{ count }}</span>
       </div>
     </div>
@@ -25,7 +24,6 @@ defineProps<{
 
 <style scoped>
 .card {
-  font-size: 0.75rem;
   background: var(--card-background);
   border: var(--card-border);
   border-radius: var(--card-radius);
@@ -35,6 +33,7 @@ defineProps<{
   .tooltip {
     display: flex;
     justify-content: end;
+    cursor: default;
   }
 
   .content {
@@ -44,15 +43,18 @@ defineProps<{
   }
 
   .icon {
-    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 1.5rem;
     width: 1.5rem;
     border-radius: 50%;
-    padding: 0.25rem;
     color: white;
   }
 
   .count {
+    display: block;
+    margin-top: 0.25rem;
     font-size: 1.25rem;
     font-weight: 500;
   }

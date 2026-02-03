@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 SPDX-License-Identifier: Apache-2.0
 -->
 
@@ -32,13 +32,16 @@ const { health } = defineProps<{ health: HealthStatus }>()
 <style scoped>
 span {
   display: inline-flex;
+  align-items: center;
+  height: 1.5rem;
+  padding: 0 0.5rem;
   gap: 0.5rem;
-  padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
-span,
 i {
-  font-size: 0.625rem;
+  font-size: 0.75rem;
 }
 </style>
