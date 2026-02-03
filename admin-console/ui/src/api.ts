@@ -74,7 +74,7 @@ export type RegionConnectorHealth = {
 }
 
 export type RegionConnectorFeature =
-  | 'supportsConnectionsStatusMessages'
+  | 'supportsConnectionStatusMessages'
   | 'supportsRawDataMessages'
   | 'supportsTermination'
   | 'supportsAccountingPointMarketDocuments'

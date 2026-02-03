@@ -28,7 +28,7 @@ const unsupportedFeatures = ref<Record<string, string[]>>({})
 const supportedDataNeeds = ref<Record<string, string[]>>({})
 
 const disabledRegionConnectors = computed(() =>
-  regionConnectors.value.filter(({ id }) => !REGION_CONNECTORS.includes(id)).map(({ id }) => id)
+  REGION_CONNECTORS.filter((id) => !regionConnectors.value.some((rc) => rc.id === id))
 )
 
 const SUPPORTED_FEATURES: Record<RegionConnectorFeature, { text: string; link: string }> = {
@@ -198,14 +198,18 @@ onMounted(async () => {
     </div>
   </Panel>
 
-  <Panel
-    class="region-connector-panel"
-    v-for="regionConnector in disabledRegionConnectors"
-    :key="regionConnector"
-    :value="regionConnector"
-    :header="regionConnector"
-    collapsed
-  />
+  <template v-if="disabledRegionConnectors.length > 0">
+    <h2 class="disabled-headline">Disabled</h2>
+    <p>The following region connectors are currently disabled.</p>
+    <Panel
+      class="region-connector-panel"
+      v-for="regionConnector in disabledRegionConnectors"
+      :key="regionConnector"
+      :value="regionConnector"
+      :header="regionConnector"
+      collapsed
+    />
+  </template>
 </template>
 
 <style scoped>
@@ -217,6 +221,12 @@ onMounted(async () => {
   &:first-child {
     margin-top: 1.75rem;
   }
+}
+
+.disabled-headline {
+  margin-top: 2rem;
+  font-size: 1.5rem;
+  font-weight: 500;
 }
 
 header {
