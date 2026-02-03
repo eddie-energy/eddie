@@ -83,6 +83,13 @@ h1 {
   margin-bottom: 0.5rem;
 }
 
+h2,
+h3,
+h4,
+h5 {
+  font-size: inherit;
+}
+
 ul {
   margin: 0;
   padding: 0;

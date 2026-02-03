@@ -223,23 +223,15 @@ header {
   display: grid;
   grid-template-columns: auto minmax(auto, 12.5rem) auto;
   align-items: center;
-  gap: 0.5rem;
-
-  .flag {
-    font-size: 1.125rem;
-    line-height: 1;
-  }
+  gap: 0.75rem;
+  line-height: 0.75rem;
 
   .content {
-    h2 {
-      font-size: 0.75rem;
-      font-weight: 600;
-      line-height: 1;
-    }
+    display: grid;
+    gap: 0.5rem;
 
-    span {
-      font-size: 0.625rem;
-      line-height: 0.75rem;
+    h2 {
+      font-weight: 600;
     }
   }
 }
@@ -247,7 +239,6 @@ header {
 h3 {
   margin: 1.25rem 0;
   font-weight: 600;
-  font-size: 0.875rem;
 }
 
 dl {
@@ -256,7 +247,7 @@ dl {
   border-radius: var(--table-radius);
   display: grid;
   grid-template-columns: 1fr 1fr;
-  font-size: 0.625rem;
+  font-size: 0.875rem;
   line-height: 1;
 
   dd,
@@ -286,24 +277,24 @@ dl {
   border-radius: 0.5rem;
   padding: 1rem;
   color: var(--chip-text-neutral);
+  font-size: 0.875rem;
 
   li,
   li a {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 0.75rem;
-    line-height: 1.25rem;
     margin-top: 0.5rem;
+    line-height: 1.25rem;
   }
 
   i {
-    font-size: 0.625rem;
+    font-size: 1em;
     color: var(--chip-text-success);
   }
 
   i + i {
-    font-size: 0.5rem;
+    font-size: 0.75em;
     color: var(--chip-text-link);
   }
 
@@ -313,7 +304,6 @@ dl {
   }
 
   h4 {
-    font-size: 0.75rem;
     color: var(--chip-text-contrast);
     font-weight: 600;
   }
