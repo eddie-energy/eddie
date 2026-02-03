@@ -21,20 +21,19 @@ CREATE TABLE de_eta.permission_event
 (
     id                       BIGSERIAL PRIMARY KEY,
     permission_id            UUID        NOT NULL,
-    connection_id UUID       NOT NULL,
-    metering_point_id        VARCHAR(255) NOT NULL,
-    permission_start         TIMESTAMP    NOT NULL,
-    permission_end           TIMESTAMP    NOT NULL,
-    data_start               TIMESTAMP    NOT NULL,
-    data_end                 TIMESTAMP    NOT NULL,
-    granularity              VARCHAR(50)  NOT NULL,
-    energy_type              VARCHAR(50)  NOT NULL,
+    connection_id            UUID,
+    metering_point_id        VARCHAR(255),
+    permission_start         TIMESTAMP,
+    permission_end           TIMESTAMP,
+    data_start               TIMESTAMP,
+    data_end                 TIMESTAMP,
+    granularity              VARCHAR(50),
+    energy_type              VARCHAR(50),
     status                   VARCHAR(100) NOT NULL,
-    data_need_id             UUID        NOT NULL,
+    data_need_id             UUID,
     event_created            TIMESTAMP   NOT NULL DEFAULT NOW(),
     message                  TEXT,
-    cause                    TEXT,
-    created                  TIMESTAMP   NOT NULL
+    cause                    TEXT
 );
 
 -- Create indexes for performance
@@ -47,7 +46,7 @@ CREATE INDEX idx_permission_event_metering_point ON de_eta.permission_event (met
 -- This view uses the event sourcing pattern to reconstruct the current state
 CREATE VIEW de_eta.eta_permission_request AS
 SELECT DISTINCT ON (permission_id) permission_id,
-                                   de_eta.firstval_agg(data_source_connection_id) OVER w AS data_source_connection_id,
+                                   de_eta.firstval_agg(connection_id) OVER w             AS connection_id,
                                    de_eta.firstval_agg(metering_point_id) OVER w         AS metering_point_id,
                                    de_eta.firstval_agg(permission_start) OVER w          AS permission_start,
                                    de_eta.firstval_agg(permission_end) OVER w            AS permission_end,
@@ -57,7 +56,7 @@ SELECT DISTINCT ON (permission_id) permission_id,
                                    de_eta.firstval_agg(energy_type) OVER w               AS energy_type,
                                    de_eta.firstval_agg(status) OVER w                    AS status,
                                    de_eta.firstval_agg(data_need_id) OVER w              AS data_need_id,
-                                   de_eta.firstval_agg(created) OVER w                   AS created,
+                                   MIN(event_created) OVER w                             AS created,
                                    de_eta.firstval_agg(message) OVER w                   AS message,
                                    de_eta.firstval_agg(cause) OVER w                     AS cause
 FROM de_eta.permission_event
