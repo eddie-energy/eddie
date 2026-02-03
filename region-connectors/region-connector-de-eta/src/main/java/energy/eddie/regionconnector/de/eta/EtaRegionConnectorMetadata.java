@@ -91,23 +91,4 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
         return DE_ZONE_ID;
     }
 
-    public List<EnergyType> supportedEnergyTypes() {
-        return List.of(EnergyType.ELECTRICITY, EnergyType.NATURAL_GAS);
-    }
-
-    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
-        return List.copyOf(SUPPORTED_DATA_NEEDS);
-    }
-
-    /**
-     * Returns the supported granularities for the given energy type.
-     * For ETA Plus, all supported energy types share the same granularities.
-     */
-    public List<Granularity> granularitiesFor(EnergyType energyType) {
-        // If the energy type is not supported, return an empty list
-        if (!supportedEnergyTypes().contains(energyType)) {
-            return List.of();
-        }
-        return supportedGranularities();
-    }
 }
