@@ -19,6 +19,16 @@ import { ConfirmationService, ToastService, Tooltip } from 'primevue'
 const app = createApp(App)
 
 const EddiePreset = definePreset(Aura, {
+  components: {
+    panel: {
+      toggleableHeader: {
+        padding: '1.25rem 1.5rem'
+      },
+      content: {
+        padding: '1.25rem 1.5rem'
+      }
+    }
+  },
   semantic: {
     primary: palette('#017aa0'),
     colorScheme: {

@@ -132,6 +132,11 @@ onMounted(async () => {
       </header>
     </template>
 
+    <template #toggleicon="toggleIconProps">
+      <i v-if="toggleIconProps.collapsed" class="pi pi-chevron-down"></i>
+      <i v-if="!toggleIconProps.collapsed" class="pi pi-chevron-up"></i>
+    </template>
+
     <h3>Region Connector Metadata</h3>
     <dl>
       <dt>Country</dt>
@@ -214,7 +219,6 @@ onMounted(async () => {
 
 <style scoped>
 .region-connector-panel {
-  padding: 0.5rem;
   border-radius: 0.5rem;
   margin-top: 1rem;
 
@@ -247,8 +251,13 @@ header {
 }
 
 h3 {
-  margin: 1.25rem 0;
+  margin-top: 1.25rem;
+  margin-bottom: 1rem;
   font-weight: 600;
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 dl {
