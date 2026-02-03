@@ -9,9 +9,11 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  */
 @ConfigurationProperties("region-connector.de.eta")
 public record DeEtaPlusConfiguration(
-        String eligiblePartyId,
-        @DefaultValue("https://api.eta-plus.de") String apiBaseUrl,
-        String apiClientId,
-        String apiClientSecret,
-        @DefaultValue("0 0 2 * * *") String pollingCronExpression // Default: Daily at 2 AM
-) {}
+                String eligiblePartyId,
+                String mdaIdentifier,
+                @DefaultValue("https://api.eta-plus.de") String apiBaseUrl,
+                String apiClientId,
+                String apiClientSecret,
+                @DefaultValue("0 0 2 * * *") String pollingCronExpression // Default: Daily at 2 AM
+) {
+}
