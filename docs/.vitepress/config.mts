@@ -180,12 +180,16 @@ export default withMermaid(
                       link: "/2-integrating/messages/cim/permission-market-documents.md",
                     },
                     {
+                      text: "Accounting Point Data Market Documents",
+                      link: "/2-integrating/messages/cim/accounting-point-data-market-documents.md",
+                    },
+                    {
                       text: "Validated Historical Data Market Documents",
                       link: "/2-integrating/messages/cim/validated-historical-data-market-documents.md",
                     },
                     {
-                      text: "Accounting Point Data Market Documents",
-                      link: "/2-integrating/messages/cim/accounting-point-data-market-documents.md",
+                      text: "Near Real Time Data Market Documents",
+                      link: "/2-integrating/messages/cim/near-real-time-data-market-documents.md",
                     },
                     {
                       text: "Redistribution Transaction Request Documents",
@@ -266,5 +270,5 @@ export default withMermaid(
         { icon: "github", link: "https://github.com/eddie-energy/eddie" },
       ],
     },
-  }),
+  })
 );
