@@ -7,7 +7,7 @@ import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
-import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -41,8 +41,7 @@ class EtaRegionConnectorSpringConfigTest {
                         "region-connector.de.eta.eligible-party-id=party-1",
                         "region-connector.de.eta.api-base-url=https://api.eta-plus.de",
                         "region-connector.de.eta.api-client-id=client-id",
-                        "region-connector.de.eta.api-client-secret=client-secret"
-                )
+                        "region-connector.de.eta.api-client-secret=client-secret")
                 .run(context -> {
                     assertThat(context).hasSingleBean(EventBus.class);
                     assertThat(context).hasSingleBean(Outbox.class);
