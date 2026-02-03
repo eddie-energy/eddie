@@ -9,7 +9,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
