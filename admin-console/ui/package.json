@@ -20,7 +20,7 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "tinyduration": "^3.4.1",
-    "vue": "^3.5.26",
+    "vue": "^3.5.27",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
