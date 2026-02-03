@@ -81,7 +81,6 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
     }
 
     private void handleError(Throwable error, String permissionId) {
-        // Forbidden usually indicates that the final customer revoked the permission
         if (error instanceof HttpClientErrorException.Forbidden) {
             LOGGER.atWarn()
                   .addArgument(permissionId)
@@ -92,8 +91,6 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
                   .addArgument(permissionId)
                   .addArgument(error::getMessage)
                   .log("Error fetching metered data for permission request {}: {}");
-            // For other errors, we could implement retry logic or emit an error event
-            // For now, we just log the error
         }
     }
 }
