@@ -21,7 +21,7 @@ CREATE TABLE de_eta.permission_event
 (
     id                       BIGSERIAL PRIMARY KEY,
     permission_id            UUID        NOT NULL,
-    data_source_connection_id UUID       NOT NULL,
+    connection_id UUID       NOT NULL,
     metering_point_id        VARCHAR(255) NOT NULL,
     permission_start         TIMESTAMP    NOT NULL,
     permission_end           TIMESTAMP    NOT NULL,
