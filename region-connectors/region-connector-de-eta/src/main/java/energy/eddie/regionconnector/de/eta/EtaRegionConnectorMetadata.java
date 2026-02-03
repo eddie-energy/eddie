@@ -85,9 +85,6 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
         return PERIOD_LATEST_END;
     }
 
-    public List<Granularity> supportedGranularities() {
-        return SUPPORTED_GRANULARITIES;
-    }
 
     @Override
     public ZoneId timeZone() {
