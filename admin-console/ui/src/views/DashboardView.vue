@@ -14,7 +14,7 @@ import {
   type StatusMessage
 } from '@/api'
 import LineChartPermissions from '@/components/LineChartPermissions.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 import {
   ACTIVE_PERMISSION_STATES,
@@ -89,6 +89,9 @@ onMounted(async () => {
   permissions.value = await getPermissions()
   dataNeeds.value = await getDataNeeds()
   regionConnectors.value = await getRegionConnectors()
+})
+
+watchEffect(async () => {
   for (const { id } of regionConnectors.value) {
     const health = await getRegionConnectorHealth(id)
     regionConnectorHealth.value.set(id, health?.status || HealthStatus.UNKNOWN)
@@ -271,9 +274,7 @@ function getPermissionCountPerRegionConnector() {
             <tbody>
               <tr v-for="{ id, countryCodes } in regionConnectors" :key="id">
                 <th scope="row">
-                  <span>
-                    {{ countryFlag(countryCodes[0]) }}
-                  </span>
+                  {{ countryFlag(countryCodes[0]) }}
                   <span>
                     <b>{{ id }}</b>
                     <br />
