@@ -32,8 +32,8 @@ const disabledRegionConnectors = computed(() =>
 )
 
 const SUPPORTED_FEATURES: Record<RegionConnectorFeature, { text: string; link: string }> = {
-  supportsConnectionsStatusMessages: {
-    text: 'Connections Status Messages',
+  supportsConnectionStatusMessages: {
+    text: 'Connection Status Messages',
     link: 'https://architecture.eddie.energy/framework/2-integrating/messages/agnostic.html#connection-status-messages'
   },
   supportsRawDataMessages: {

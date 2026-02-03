@@ -47,7 +47,7 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
     }
 
     @JsonProperty
-    public boolean supportsConnectionsStatusMessages() {
+    public boolean supportsConnectionStatusMessages() {
         return hasBean(ConnectionStatusMessageProvider.class);
     }
 

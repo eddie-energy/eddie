@@ -67,7 +67,7 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
 
         // When & Then
         assertAll(
-                () -> assertTrue(extension.supportsConnectionsStatusMessages()),
+                () -> assertTrue(extension.supportsConnectionStatusMessages()),
                 () -> assertTrue(extension.supportsTermination()),
                 () -> assertTrue(extension.supportsRawDataMessages()),
                 () -> assertTrue(extension.supportsAccountingPointMarketDocuments()),
@@ -120,7 +120,7 @@ class RegionConnectorSupportedFeatureExtensionWithoutBeansPresentTest {
 
         // When & Then
         assertAll(
-                () -> assertFalse(extension.supportsConnectionsStatusMessages()),
+                () -> assertFalse(extension.supportsConnectionStatusMessages()),
                 () -> assertFalse(extension.supportsTermination()),
                 () -> assertFalse(extension.supportsRawDataMessages()),
                 () -> assertFalse(extension.supportsAccountingPointMarketDocuments()),
