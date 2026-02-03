@@ -37,6 +37,8 @@ export type AiidaDataSource = {
   pollingInterval?: number
   //DatasourceType = SINAPSI_ALFA
   activationKey?: string
+  meterId?: string
+  accountPointIds: string[]
 }
 
 export type AiidaPermission = {
@@ -81,8 +83,8 @@ export type AiidaPermissionRequest = {
 }
 
 export type AiidaDataSourceHealthStatus = {
-    status: string,
-    details: string
+  status: string,
+  details: string
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
