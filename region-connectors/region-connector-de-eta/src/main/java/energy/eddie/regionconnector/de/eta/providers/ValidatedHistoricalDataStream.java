@@ -26,7 +26,6 @@ public class ValidatedHistoricalDataStream implements AutoCloseable {
             .onBackpressureBuffer();
     private final Flux<IdentifiableValidatedHistoricalData> flux;
 
-    // We need the Outbox to emit the LatestMeterReadingEvent
     private final Outbox outbox;
 
     public ValidatedHistoricalDataStream(Outbox outbox) {
@@ -56,17 +55,12 @@ public class ValidatedHistoricalDataStream implements AutoCloseable {
                 .addArgument(data::meteringPointId)
                 .log("Publishing validated historical data for permission request {} with metering point {}");
 
-        // 1. Emit to the reactive stream (for Raw Data & Market Documents)
-        // Using explicit type as requested
         IdentifiableValidatedHistoricalData identifiableData = new IdentifiableValidatedHistoricalData(permissionRequest, data);
         Sinks.EmitResult emitResult = sink.tryEmitNext(identifiableData);
 
         if (emitResult.isFailure()) {
             LOGGER.warn("Failed to emit data to stream: {}", emitResult);
         }
-
-        // 2. Calculate and emit LatestMeterReadingEvent (Task 5)
-        // Using the interface method from your colleague's class
         determineAndEmitLatestReading(identifiableData);
     }
 
@@ -79,7 +73,6 @@ public class ValidatedHistoricalDataStream implements AutoCloseable {
                 .addArgument(latestDate)
                 .log("Identified latest meter reading end date for request {}: {}");
 
-        // Emit event to update the view and trigger fulfillment check
         outbox.commit(new LatestMeterReadingEvent(
                 permissionId,
                 latestDate
