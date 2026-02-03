@@ -37,26 +37,6 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final ZoneId DE_ZONE_ID = ZoneId.of("Europe/Berlin");
     
     /**
-     * Supported granularities for metered data in Germany
-     * PT15M = 15-minute intervals
-     * PT1H = Hourly intervals
-     * P1D = Daily intervals
-     */
-    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(
-        Granularity.PT15M, 
-        Granularity.PT1H, 
-        Granularity.P1D
-    );
-    
-    /**
-     * Supported data need types
-     */
-    public static final List<Class<? extends DataNeedInterface>> SUPPORTED_DATA_NEEDS = List.of(
-        ValidatedHistoricalDataDataNeed.class,
-        AccountingPointDataNeed.class
-    );
-
-    /**
      * Approximate number of metering points covered in Germany
      * This is an estimate and should be updated with actual data from ETA Plus
      */
