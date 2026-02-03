@@ -6,18 +6,21 @@ package energy.eddie.core.web;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculation;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.core.application.information.ApplicationInformation;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeeds;
+import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeedsError;
 import energy.eddie.core.services.*;
 import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 
 @RestController
 @RequestMapping("/api")
@@ -62,6 +65,26 @@ public class PermissionFacadeController {
             @PathVariable("data-need-id") String dataNeedId
     ) throws DataNeedNotFoundException, DataNeedDisabledException {
         return dataNeedCalculationRouter.calculate(dataNeedId);
+    }
+
+    @GetMapping("/region-connectors/{region-connector}/data-needs")
+    public ResponseEntity<Object> dataNeedCalculations(
+            @PathVariable("region-connector") String regionConnector,
+            @RequestParam("data-need-id") Set<String> dataNeedId
+    ) throws UnknownRegionConnectorException {
+        return switch (dataNeedCalculationRouter.calculateFor(regionConnector, dataNeedId)) {
+            case MultipleDataNeeds(Map<String, DataNeedCalculation> result) -> ResponseEntity.ok(result);
+            case MultipleDataNeedsError multipleDataNeedsError -> {
+                var errorMap = Map.of(ERRORS_PROPERTY_NAME, List.of(multipleDataNeedsError));
+                yield ResponseEntity.badRequest()
+                                    .body(errorMap);
+            }
+        };
+    }
+
+    @GetMapping("/region-connectors/data-needs")
+    public Set<String> supportedDataNeeds(@RequestParam("data-need-id") Set<String> dataNeedIds) {
+        return dataNeedCalculationRouter.findRegionConnectorsSupportingDataNeeds(dataNeedIds);
     }
 
     @GetMapping("/region-connectors/data-need-rule-sets")

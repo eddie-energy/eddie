@@ -12,7 +12,7 @@
  */
 
 /**
- * @typedef {"account" | "validated" | "aiida"} DataNeedType
+ * @typedef {"account" | "validated" | "inbound" | "outbound" } DataNeedType
  */
 
 /**

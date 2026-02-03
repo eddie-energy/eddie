@@ -3,6 +3,7 @@
 
 package energy.eddie.dataneeds.needs;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Entity;
@@ -17,6 +18,7 @@ import jakarta.persistence.Table;
 public class AccountingPointDataNeed extends DataNeed {
     public static final String DISCRIMINATOR_VALUE = "account";
 
+    @JsonCreator
     public AccountingPointDataNeed() {}
 
     public AccountingPointDataNeed(

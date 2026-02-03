@@ -3,11 +3,10 @@
 
 package energy.eddie.regionconnector.aiida.data.needs;
 
-import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
-import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
-import energy.eddie.dataneeds.rules.DataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.OutboundAiidaDataNeedRule;
 import org.junit.jupiter.api.Test;
 
+import static energy.eddie.dataneeds.rules.DataNeedRule.InboundAiidaDataNeedRule;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AiidaDataNeedRuleSetTest {
@@ -23,8 +22,8 @@ class AiidaDataNeedRuleSetTest {
         // Then
         assertThat(res)
                 .containsExactlyInAnyOrder(
-                        new DataNeedRule.AiidaDataNeedRule<>(InboundAiidaDataNeed.class),
-                        new DataNeedRule.AiidaDataNeedRule<>(OutboundAiidaDataNeed.class)
+                        new InboundAiidaDataNeedRule(),
+                        new OutboundAiidaDataNeedRule()
                 );
     }
 }

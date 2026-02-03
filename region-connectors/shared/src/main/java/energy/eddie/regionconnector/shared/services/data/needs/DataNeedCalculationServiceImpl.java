@@ -5,6 +5,8 @@ package energy.eddie.regionconnector.shared.services.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
+import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.CalculationResult;
+import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.InvalidDataNeedCombination;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
@@ -12,6 +14,9 @@ import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.RegionConnectorFilter;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -26,7 +31,8 @@ import org.slf4j.LoggerFactory;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link DataNeedCalculationService} that can be customized to fit the requirements of the region connector.
@@ -111,8 +117,13 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             }
         }
 
-        if (!dataNeedRuleSet.supportedDataNeeds().contains(dataNeed.getClass().getSimpleName())) {
-            var classes = String.join(", ", dataNeedRuleSet.supportedDataNeeds());
+        if (!dataNeedRuleSet.hasRuleFor(dataNeed)) {
+            var supportedDataNeeds = dataNeedRuleSet.dataNeedRules(DataNeedRule.SpecificDataNeedRule.class)
+                                                    .stream()
+                                                    .map(specificDataNeedRule -> specificDataNeedRule.getDataNeedClass()
+                                                                                                     .getSimpleName())
+                                                    .toList();
+            var classes = String.join(", ", supportedDataNeeds);
             return new DataNeedNotSupportedResult(
                     "Data need type \"%s\" not supported, region connector supports data needs of types %s"
                             .formatted(dataNeed.getClass().getSimpleName(), classes)
@@ -160,8 +171,100 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
     }
 
     @Override
+    public MultipleDataNeedCalculationResult calculateAll(Set<String> dataNeedIds) {
+        return calculateAll(dataNeedIds, ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    @Override
+    public MultipleDataNeedCalculationResult calculateAll(Set<String> dataNeedIds, ZonedDateTime referenceDateTime) {
+        if (dataNeedIds.size() == 1) {
+            var id = dataNeedIds.iterator().next();
+            return new CalculationResult(Map.of(id, calculate(id, referenceDateTime)));
+        }
+        if (!this.dataNeedRuleSet.hasRule(new DataNeedRule.AllowMultipleDataNeedsRule())) {
+            return new InvalidDataNeedCombination(dataNeedIds, "Multiple data needs not supported");
+        }
+        Map<String, DataNeedCalculationResult> results = new HashMap<>();
+        var dns = new ArrayList<DataNeed>();
+        for (var dataNeedId : dataNeedIds) {
+            var dataNeed = dataNeedsService.findById(dataNeedId);
+            if (dataNeed.isEmpty()) {
+                results.put(dataNeedId, new DataNeedNotFoundResult());
+            } else {
+                dns.add(dataNeed.get());
+            }
+        }
+        var unmixableDataNeedResult = unmixableDataNeedTypes(dns);
+        if (unmixableDataNeedResult.isPresent()) {
+            return unmixableDataNeedResult.get();
+        }
+        var repeatedUniqueDataNeedType = repeatedUniqueDataNeedTypes(dns);
+        if (repeatedUniqueDataNeedType.isPresent()) {
+            return repeatedUniqueDataNeedType.get();
+        }
+        var vhdDns = repeatedEnergyTypes(dns);
+        if (vhdDns.isPresent()) {
+            return vhdDns.get();
+        }
+        for (var dataNeed : dns) {
+            results.put(dataNeed.id(), calculate(dataNeed, referenceDateTime));
+        }
+        return new CalculationResult(results);
+    }
+
+    @Override
     public String regionConnectorId() {
         return regionConnectorMetadata.id();
+    }
+
+    private static Optional<InvalidDataNeedCombination> unmixableDataNeedTypes(List<DataNeed> dataNeeds) {
+        var unmixableDataNeeds = Set.of(InboundAiidaDataNeed.class, OutboundAiidaDataNeed.class);
+        var dnPartition = dataNeeds.stream()
+                                   .collect(Collectors.partitioningBy(dn -> unmixableDataNeeds.contains(dn.getClass())));
+        var aiidaDataNeeds = dnPartition.getOrDefault(true, List.of());
+        var otherDataNeeds = dnPartition.getOrDefault(false, List.of());
+        if (!aiidaDataNeeds.isEmpty() && !otherDataNeeds.isEmpty()) {
+            return Optional.of(
+                    new InvalidDataNeedCombination(aiidaDataNeeds.stream()
+                                                                 .map(DataNeed::id)
+                                                                 .collect(Collectors.toSet()),
+                                                   "These data needs cannot be mixed with data needs of any other type")
+            );
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<InvalidDataNeedCombination> repeatedUniqueDataNeedTypes(List<DataNeed> dns) {
+        var repeatedAccountingPointDns = dns.stream()
+                                            .filter(AccountingPointDataNeed.class::isInstance)
+                                            .map(DataNeed::id)
+                                            .toList();
+        if (repeatedAccountingPointDns.size() > 1) {
+            return Optional.of(
+                    new InvalidDataNeedCombination(new HashSet<>(repeatedAccountingPointDns),
+                                                   "Only one accounting point data need allowed at a time")
+            );
+        }
+        return Optional.empty();
+    }
+
+    private static Optional<InvalidDataNeedCombination> repeatedEnergyTypes(List<DataNeed> dns) {
+        var vhdDns = dns.stream()
+                        .filter(ValidatedHistoricalDataDataNeed.class::isInstance)
+                        .map(ValidatedHistoricalDataDataNeed.class::cast)
+                        .toList();
+        var repeatedVhdDns = vhdDns.stream()
+                                   .map(ValidatedHistoricalDataDataNeed::energyType)
+                                   .distinct()
+                                   .count();
+        if (repeatedVhdDns != vhdDns.size()) {
+            return Optional.of(
+                    new InvalidDataNeedCombination(
+                            vhdDns.stream().map(DataNeed::id).collect(Collectors.toSet()),
+                            "Only one energy type allowed for validated historical data need at a time"
+                    ));
+        }
+        return Optional.empty();
     }
 
     private DataNeedCalculationResult onValidatedHistoricalDataNeed(

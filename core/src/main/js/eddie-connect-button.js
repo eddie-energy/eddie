@@ -25,10 +25,10 @@ import buttonIcon from "../resources/logo.svg?raw";
 import headerImage from "../resources/header.svg?raw";
 
 import {
-  getDataNeedAttributes,
+  getDataNeedsAttributes,
   getPermissionAdministrators,
   getRegionConnectorMetadata,
-  getSupportedRegionConnectors,
+  getSupportedRegionConnectorsFor,
 } from "./api.js";
 import { flagStyles, hasFlag } from "./styles/flags.js";
 import { dataNeedDescription } from "./data-need-util.js";
@@ -244,10 +244,10 @@ class EddieConnectButton extends LitElement {
 
     /**
      * Attributes of the chosen data need.
-     * @type {DataNeedAttributes}
+     * @type {DataNeedAttributes[]}
      * @private
      */
-    this._dataNeedAttributes = undefined;
+    this._dataNeedAttributes = [];
 
     /**
      * Should only be updated through {@link addViewChangeHandlers}.
@@ -339,12 +339,15 @@ class EddieConnectButton extends LitElement {
     element.setAttribute("core-url", this.coreUrl);
     element.setAttribute("base-url", baseUrl);
     element.setAttribute("connection-id", this.connectionId);
-    element.setAttribute("data-need-id", this.dataNeedId);
-    element.setAttribute("data-need-type", this._dataNeedAttributes.type);
     element.setAttribute("country-code", country);
     element.setAttribute("jump-off-url", jumpOffUrl);
     element.setAttribute("company-id", companyId);
     element.setAttribute("company-name", name);
+    element.setAttribute("data-need-id", this.dataNeedId);
+    element.setAttribute(
+      "data-need-type",
+      this._dataNeedAttributes.map((dn) => dn.type).join(",")
+    );
 
     if (this.accountingPointId) {
       element.setAttribute("accounting-point-id", this.accountingPointId);
@@ -479,19 +482,13 @@ class EddieConnectButton extends LitElement {
       throw new Error("EDDIE button loaded without data-need-id.");
     }
 
-    if (this.accountingPointId && !this.permissionAdministratorId) {
-      throw new Error(
-        "Accounting point specified without permission administrator."
-      );
+    try {
+      this._dataNeedAttributes = await getDataNeedsAttributes(this.dataNeedId);
+    } catch (error) {
+      throw new Error("Could not fetch data needs.");
     }
 
-    this._dataNeedAttributes = await getDataNeedAttributes(this.dataNeedId);
-
-    if (!this._dataNeedAttributes) {
-      throw new Error(`No data need is available for id ${this.dataNeedId}`);
-    }
-
-    if (!this._dataNeedAttributes.enabled) {
+    if (!this._dataNeedAttributes.every((dataNeed) => dataNeed.enabled)) {
       return; // No more configuration needed
     }
 
@@ -499,7 +496,7 @@ class EddieConnectButton extends LitElement {
       throw new Error("No enabled region connectors.");
     }
 
-    this._supportedConnectors = await getSupportedRegionConnectors(
+    this._supportedConnectors = await getSupportedRegionConnectorsFor(
       this.dataNeedId
     );
 
@@ -523,7 +520,7 @@ class EddieConnectButton extends LitElement {
 
       if (!pa) {
         throw new Error(
-          `Permission Administrator ${this.permissionAdministratorId} does not support the data need with id ${this.dataNeedId}.`
+          `Permission Administrator ${this.permissionAdministratorId} does not support the data need with the ID ${this.dataNeedId}.`
         );
       }
 
@@ -543,22 +540,21 @@ class EddieConnectButton extends LitElement {
   }
 
   isAiida() {
-    return (
-      this._dataNeedAttributes?.type === "inbound-aiida" ||
-      this._dataNeedAttributes?.type === "outbound-aiida"
+    return this._dataNeedAttributes.every(
+      ({ type }) => type === "inbound-aiida" || type === "outbound-aiida"
     );
   }
 
   configureAiida() {
     if (!this._enabledConnectors.some((rc) => rc.id === "aiida")) {
       throw new Error(
-        `Data need with id ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
+        `Data need with ID ${this.dataNeedId} is an AIIDA data need, but AIIDA is not enabled.`
       );
     }
 
     if (!this._supportedConnectors.includes("aiida")) {
       throw new Error(
-        `AIIDA does not support the data need with id ${this.dataNeedId}.`
+        `AIIDA does not support the data need with ID ${this.dataNeedId}.`
       );
     }
 
@@ -623,7 +619,12 @@ class EddieConnectButton extends LitElement {
   }
 
   dataNeedDescription() {
-    return unsafeHTML(dataNeedDescription(this._dataNeedAttributes));
+    console.debug(this._dataNeedAttributes);
+    return unsafeHTML(
+      this._dataNeedAttributes
+        .map((dataNeed) => dataNeedDescription(dataNeed))
+        .join("<br/>")
+    );
   }
 
   render() {
@@ -640,7 +641,7 @@ class EddieConnectButton extends LitElement {
       `;
     }
 
-    if (!this._dataNeedAttributes.enabled) {
+    if (this._dataNeedAttributes.some((dn) => !dn.enabled)) {
       return html`
         <button class="eddie-connect-button" disabled>
           ${unsafeSVG(buttonIcon)}
@@ -677,11 +678,13 @@ class EddieConnectButton extends LitElement {
             "dn",
             () => html`
               <h3>Confirm the data usage policy</h3>
-              <data-need-summary
-                data-need-id="${this.dataNeedId}"
-              ></data-need-summary>
+              ${this.dataNeedId.split(",").map(
+                (id) => html`
+                  <data-need-summary data-need-id="${id}"></data-need-summary>
+                  <br />
+                `
+              )}
 
-              <br />
               <sl-button
                 @click="${this.handleDataNeedConfirmed}"
                 variant="primary"

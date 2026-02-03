@@ -259,7 +259,7 @@ package energy.eddie.regionconnector.foo.bar.data.needs;
 @Component
 public class FooBarDataNeedRuleSet implements DataNeedRuleSet {
     @Override
-    public List<DataNeedRule<? extends DataNeed>> dataNeedRules() {
+    public List<DataNeedRule> dataNeedRules() {
         return List.of(
                 new AcountingPointDataNeedRule();
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D))

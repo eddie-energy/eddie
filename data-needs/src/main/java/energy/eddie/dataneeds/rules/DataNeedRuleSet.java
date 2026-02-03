@@ -5,6 +5,7 @@ package energy.eddie.dataneeds.rules;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.rules.DataNeedRule.SpecificDataNeedRule;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,17 +18,42 @@ public interface DataNeedRuleSet {
 
     /**
      * Returns all the data need rules
+     *
      * @return all data need rules
      */
     @JsonValue
-    @SuppressWarnings("java:S1452")
-    // It is not possible to completely remove the wildcard type here, since this method might return a non-homogenous list.
-    List<DataNeedRule<? extends DataNeed>> dataNeedRules();
+    List<DataNeedRule> dataNeedRules();
+
+    default boolean hasRule(DataNeedRule rule) {
+        return dataNeedRules().contains(rule);
+    }
+
+    default boolean hasRuleFor(DataNeed dataNeed) {
+        for (DataNeedRule rule : dataNeedRules()) {
+            if (rule instanceof SpecificDataNeedRule<?> specificDataNeedRule
+                && dataNeed.getClass().equals(specificDataNeedRule.getDataNeedClass())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    default <T extends DataNeedRule> Set<T> dataNeedRules(Class<T> clazz) {
+        var result = new HashSet<T>();
+        for (var dataNeedRule : dataNeedRules()) {
+            if (clazz.isAssignableFrom(dataNeedRule.getClass())) {
+                result.add(clazz.cast(dataNeedRule));
+            }
+        }
+        return result;
+    }
 
     default Set<String> supportedDataNeeds() {
         var dataNeeds = new HashSet<String>();
         for (var rule : dataNeedRules()) {
-            dataNeeds.add(rule.getType());
+            if (rule instanceof SpecificDataNeedRule<?> dataNeedRule) {
+                dataNeeds.add(dataNeedRule.getType());
+            }
         }
         return dataNeeds;
     }

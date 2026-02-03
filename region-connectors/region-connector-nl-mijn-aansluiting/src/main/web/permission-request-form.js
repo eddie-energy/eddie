@@ -49,7 +49,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             placeholder="House Number"
             required
           ></sl-input>
-          ${this.dataNeedType === "account"
+          ${this.dataNeedType.includes("account")
             ? html`<sl-input
                 label="Postal Code"
                 type="text"
