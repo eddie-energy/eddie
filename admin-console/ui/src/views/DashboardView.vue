@@ -118,6 +118,9 @@ function getPermissionCountPerRegionConnector() {
       <header>
         <i class="pi pi-check-circle"></i>
         <h2>Permissions <span>Timeline</span></h2>
+        <RouterLink to="/permissions">
+          <i class="pi pi-chevron-right"></i>
+        </RouterLink>
       </header>
 
       <!-- TODO: Calculate with SQL queries for performance -->
@@ -163,6 +166,9 @@ function getPermissionCountPerRegionConnector() {
       <header>
         <i class="pi pi-briefcase"></i>
         <h2>Data Needs <span>Most Popular</span></h2>
+        <RouterLink to="/data-needs">
+          <i class="pi pi-chevron-right"></i>
+        </RouterLink>
       </header>
 
       <div class="cards">
@@ -247,6 +253,9 @@ function getPermissionCountPerRegionConnector() {
         <header>
           <i class="pi pi-globe"></i>
           <h2>Region Connectors</h2>
+          <RouterLink to="/region-connectors">
+            <i class="pi pi-chevron-right"></i>
+          </RouterLink>
         </header>
 
         <div class="table-scroll-wrapper">
@@ -344,7 +353,7 @@ function getPermissionCountPerRegionConnector() {
     align-items: center;
     margin-bottom: 1.5rem;
 
-    i {
+    > i {
       font-size: 1.5em;
     }
 
@@ -355,6 +364,11 @@ function getPermissionCountPerRegionConnector() {
     h2 {
       font-size: 1.5rem;
       font-weight: 500;
+    }
+
+    a {
+      margin-left: 2.25rem;
+      font-size: 0.875rem;
     }
   }
 }
