@@ -1,7 +1,7 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script lang="ts" setup>
 import {
@@ -16,7 +16,7 @@ import {
 import { REGION_CONNECTORS } from '@/constants'
 import { countryFlag, formatCountry } from '@/util/countries'
 
-import { Panel } from 'primevue'
+import { Button, Panel } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 import { formatDuration } from '@/util/duration'
@@ -181,7 +181,11 @@ onMounted(async () => {
         <h4>Supported</h4>
         <ul>
           <li v-for="supportedDataNeed in supportedDataNeeds[id]">
-            <a :href="SUPPORTED_DATA_NEEDS[supportedDataNeed]?.link ?? SUPPORTED_DATA_NEEDS_DEFAULT_LINK">
+            <a
+              :href="
+                SUPPORTED_DATA_NEEDS[supportedDataNeed]?.link ?? SUPPORTED_DATA_NEEDS_DEFAULT_LINK
+              "
+            >
               <i class="pi pi-check-circle"></i>
               {{ SUPPORTED_DATA_NEEDS[supportedDataNeed]?.text ?? supportedDataNeed }}
               <i class="pi pi-external-link"></i>
@@ -230,6 +234,20 @@ onMounted(async () => {
         </ul>
       </div>
     </div>
+
+    <template #footer>
+      <Button
+        class="documentation-link"
+        as="a"
+        :href="`https://architecture.eddie.energy/framework/1-running/region-connectors/region-connector-${id}.html`"
+        target="_blank"
+        rounded
+      >
+        <i class="pi pi-link"></i>
+        <b>Open Documentation</b>
+        <i>https://architecture.eddie.energy/framework</i>
+      </Button>
+    </template>
   </Panel>
 
   <template v-if="disabledRegionConnectors.length > 0">
@@ -248,7 +266,6 @@ onMounted(async () => {
 
 <style scoped>
 .region-connector-panel {
-  border-radius: 0.5rem;
   margin-top: 1rem;
 
   &:first-child {
@@ -354,6 +371,21 @@ dl {
   h4 {
     color: var(--chip-text-contrast);
     font-weight: 600;
+  }
+}
+
+.documentation-link {
+  i:first-child {
+    font-size: 0.75rem;
+  }
+
+  b {
+    font-weight: 500;
+  }
+
+  i:last-child {
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
   }
 }
 
