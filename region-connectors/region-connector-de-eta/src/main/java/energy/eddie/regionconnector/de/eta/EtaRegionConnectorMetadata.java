@@ -1,16 +1,10 @@
 package energy.eddie.regionconnector.de.eta;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
 import jakarta.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
-import java.util.List;
 
 /**
  * Metadata for the ETA Plus (Germany) region connector.
@@ -38,9 +32,8 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     
     /**
      * Approximate number of metering points covered in Germany
-     * This is an estimate and should be updated with actual data from ETA Plus
      */
-    private static final long COVERED_METERING_POINTS = 50000000L; // ~50 million metering points in Germany
+    private static final long COVERED_METERING_POINTS = 500000;
     
     @Nullable
     private static EtaRegionConnectorMetadata instance = null;
