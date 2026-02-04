@@ -31,6 +31,11 @@ const disabledRegionConnectors = computed(() =>
   REGION_CONNECTORS.filter((id) => !regionConnectors.value.some((rc) => rc.id === id))
 )
 
+const SUPPORTED_DATA_NEEDS_DEFAULT_LINK =
+  'https://architecture.eddie.energy/framework/2-integrating/data-needs.html'
+const SUPPORTED_FEATURES_DEFAULT_LINK =
+  'https://architecture.eddie.energy/framework/2-integrating/messages/messages.html'
+
 const SUPPORTED_FEATURES: Record<RegionConnectorFeature, { text: string; link: string }> = {
   supportsConnectionStatusMessages: {
     text: 'Connection Status Messages',
@@ -70,11 +75,23 @@ const SUPPORTED_FEATURES: Record<RegionConnectorFeature, { text: string; link: s
   }
 }
 
-const SUPPORTED_DATA_NEEDS: { [key: string]: string } = {
-  ValidatedHistoricalDataDataNeed: 'Validated Historical Data',
-  AccountingPointDataNeed: 'Accounting Point',
-  OutboundAiidaDataNeed: 'AIIDA Outbound',
-  InboundAiidaDataNeed: 'AIIDA Inbound'
+const SUPPORTED_DATA_NEEDS: Record<string, { text: string; link: string }> = {
+  ValidatedHistoricalDataDataNeed: {
+    text: 'Validated Historical Data',
+    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#validatedhistoricaldatadataneed'
+  },
+  AccountingPointDataNeed: {
+    text: 'Accounting Point',
+    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#accountingpointdataneed'
+  },
+  OutboundAiidaDataNeed: {
+    text: 'AIIDA Outbound',
+    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#aiidadataneed'
+  },
+  InboundAiidaDataNeed: {
+    text: 'AIIDA Inbound',
+    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#aiidadataneed'
+  }
 }
 
 onMounted(async () => {
@@ -164,9 +181,11 @@ onMounted(async () => {
         <h4>Supported</h4>
         <ul>
           <li v-for="supportedDataNeed in supportedDataNeeds[id]">
-            <i class="pi pi-check-circle"></i>
-            {{ SUPPORTED_DATA_NEEDS[supportedDataNeed] ?? supportedDataNeed }}
-            <i class="pi pi-external-link"></i>
+            <a :href="SUPPORTED_DATA_NEEDS[supportedDataNeed]?.link ?? SUPPORTED_DATA_NEEDS_DEFAULT_LINK">
+              <i class="pi pi-check-circle"></i>
+              {{ SUPPORTED_DATA_NEEDS[supportedDataNeed]?.text ?? supportedDataNeed }}
+              <i class="pi pi-external-link"></i>
+            </a>
           </li>
         </ul>
       </div>
@@ -179,7 +198,12 @@ onMounted(async () => {
         <h4>Supported</h4>
         <ul>
           <li v-for="feature in supportedFeatures[id]" :key="feature">
-            <a :href="SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.link">
+            <a
+              :href="
+                SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.link ??
+                SUPPORTED_FEATURES_DEFAULT_LINK
+              "
+            >
               <i class="pi pi-check-circle"></i>
               {{ SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.text ?? feature }}
               <i class="pi pi-external-link"></i>
@@ -192,7 +216,12 @@ onMounted(async () => {
         <h4>Not Supported</h4>
         <ul>
           <li v-for="feature in unsupportedFeatures[id]" :key="feature">
-            <a :href="SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.link">
+            <a
+              :href="
+                SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.link ??
+                SUPPORTED_FEATURES_DEFAULT_LINK
+              "
+            >
               <i class="pi pi-minus-circle"></i>
               {{ SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.text ?? feature }}
               <i class="pi pi-external-link"></i>
