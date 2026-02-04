@@ -1,7 +1,7 @@
 <!--
-SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script lang="ts" setup>
 import {
@@ -13,13 +13,19 @@ import {
   type RegionConnectorFeature,
   type RegionConnectorMetadata
 } from '@/api'
-import { REGION_CONNECTORS } from '@/constants'
 import { countryFlag, formatCountry } from '@/util/countries'
 
 import { Button, Panel } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 import { formatDuration } from '@/util/duration'
+import {
+  DATA_NEEDS,
+  DATA_NEEDS_DEFAULT_LINK,
+  FEATURES,
+  FEATURES_DEFAULT_LINK,
+  REGION_CONNECTORS
+} from '@/constants'
 
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
 const regionConnectorHealth = ref<Record<string, HealthStatus>>({})
@@ -30,69 +36,6 @@ const supportedDataNeeds = ref<Record<string, string[]>>({})
 const disabledRegionConnectors = computed(() =>
   REGION_CONNECTORS.filter((id) => !regionConnectors.value.some((rc) => rc.id === id))
 )
-
-const DATA_NEEDS_DEFAULT_LINK =
-  'https://architecture.eddie.energy/framework/2-integrating/data-needs.html'
-const FEATURES_DEFAULT_LINK =
-  'https://architecture.eddie.energy/framework/2-integrating/messages/messages.html'
-
-const FEATURES: Record<RegionConnectorFeature, { text: string; link: string }> = {
-  supportsConnectionStatusMessages: {
-    text: 'Connection Status Messages',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/agnostic.html#connection-status-messages'
-  },
-  supportsRawDataMessages: {
-    text: 'Raw Data Messages',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/agnostic.html#raw-data-messages'
-  },
-  supportsTermination: {
-    text: 'Termination v0.82',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/permission-market-documents.html#termination-documents'
-  },
-  supportsAccountingPointMarketDocuments: {
-    text: 'Accounting Point Market Documents v0.82',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/accounting-point-data-market-documents.html'
-  },
-  supportsPermissionMarketDocuments: {
-    text: 'Permission Market Documents v0.82',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/permission-market-documents.html'
-  },
-  supportsValidatedHistoricalDataMarketDocuments: {
-    text: 'Validated Historical Data Market Documents v0.82',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/validated-historical-data-market-documents.html'
-  },
-  supportsRetransmissionRequests: {
-    text: 'Retransmission Requests v0.91.08',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/redistribution-transaction-request-documents.html'
-  },
-  supportsValidatedHistoricalDataMarketDocumentsV1_04: {
-    text: 'Validated Historical Data Market Documents v1.04',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/validated-historical-data-market-documents.html'
-  },
-  supportsNearRealTimeDataMarketDocuments: {
-    text: 'Near Real Time Data Market Documents v1.04',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/near-real-time-data-market-documents.html'
-  }
-}
-
-const DATA_NEEDS: Record<string, { text: string; link: string }> = {
-  ValidatedHistoricalDataDataNeed: {
-    text: 'Validated Historical Data',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#validatedhistoricaldatadataneed'
-  },
-  AccountingPointDataNeed: {
-    text: 'Accounting Point',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#accountingpointdataneed'
-  },
-  OutboundAiidaDataNeed: {
-    text: 'AIIDA Outbound',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#aiidadataneed'
-  },
-  InboundAiidaDataNeed: {
-    text: 'AIIDA Inbound',
-    link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#aiidadataneed'
-  }
-}
 
 onMounted(async () => {
   regionConnectors.value = await getRegionConnectors()
