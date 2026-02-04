@@ -19,7 +19,7 @@ class EtaRegionConnectorMetadataTest {
         assertThat(metadata.id()).isEqualTo("de-eta");
         assertThat(metadata.countryCode()).isEqualTo("DE");
         assertThat(metadata.countryCodes()).containsExactly("DE");
-        assertThat(metadata.coveredMeteringPoints()).isEqualTo(50000000L);
+        assertThat(metadata.coveredMeteringPoints()).isEqualTo(500000L);
         assertThat(metadata.earliestStart()).isEqualTo(EtaRegionConnectorMetadata.PERIOD_EARLIEST_START);
         assertThat(metadata.latestEnd()).isEqualTo(EtaRegionConnectorMetadata.PERIOD_LATEST_END);
         assertThat(metadata.timeZone()).isEqualTo(EtaRegionConnectorMetadata.DE_ZONE_ID);
