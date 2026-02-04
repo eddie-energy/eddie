@@ -1,7 +1,7 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script lang="ts" setup>
 import {
@@ -119,9 +119,9 @@ function getPermissionCountPerRegionConnector() {
   <div class="layout">
     <section class="panel">
       <header>
-        <i class="pi pi-check-circle"></i>
-        <h2>Permissions <span>Timeline</span></h2>
         <RouterLink to="/permissions">
+          <i class="pi pi-check-circle"></i>
+          <h2>Permissions <span>Timeline</span></h2>
           <i class="pi pi-chevron-right"></i>
         </RouterLink>
       </header>
@@ -167,9 +167,9 @@ function getPermissionCountPerRegionConnector() {
 
     <section class="panel">
       <header>
-        <i class="pi pi-briefcase"></i>
-        <h2>Data Needs <span>Most Popular</span></h2>
         <RouterLink to="/data-needs">
+          <i class="pi pi-briefcase"></i>
+          <h2>Data Needs <span>Most Popular</span></h2>
           <i class="pi pi-chevron-right"></i>
         </RouterLink>
       </header>
@@ -254,9 +254,9 @@ function getPermissionCountPerRegionConnector() {
     <section class="panel bottom">
       <div>
         <header>
-          <i class="pi pi-globe"></i>
-          <h2>Region Connectors</h2>
           <RouterLink to="/region-connectors">
+            <i class="pi pi-globe"></i>
+            <h2>Region Connectors</h2>
             <i class="pi pi-chevron-right"></i>
           </RouterLink>
         </header>
@@ -347,26 +347,26 @@ function getPermissionCountPerRegionConnector() {
   border: var(--panel-border);
   background: var(--panel-background);
 
-  header {
-    display: flex;
+  header a {
+    display: inline-flex;
     gap: 0.5rem;
     align-items: center;
     margin-bottom: 1.5rem;
 
-    > i {
+    i:first-child {
       font-size: 1.5em;
-    }
-
-    span {
-      font-weight: 300;
     }
 
     h2 {
       font-size: 1.5rem;
       font-weight: 500;
+
+      span {
+        font-weight: 300;
+      }
     }
 
-    a {
+    i:last-child {
       margin-left: 2.25rem;
       font-size: 0.875rem;
     }
