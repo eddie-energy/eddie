@@ -22,7 +22,7 @@ import HealthIcon from '@/components/HealthIcon.vue'
 import { formatDuration } from '@/util/duration'
 
 const regionConnectors = ref<RegionConnectorMetadata[]>([])
-const regionConnectorHealth = ref<Map<string, HealthStatus>>(new Map())
+const regionConnectorHealth = ref<Record<string, HealthStatus>>({})
 const supportedFeatures = ref<Record<string, string[]>>({})
 const unsupportedFeatures = ref<Record<string, string[]>>({})
 const supportedDataNeeds = ref<Record<string, string[]>>({})
@@ -31,12 +31,12 @@ const disabledRegionConnectors = computed(() =>
   REGION_CONNECTORS.filter((id) => !regionConnectors.value.some((rc) => rc.id === id))
 )
 
-const SUPPORTED_DATA_NEEDS_DEFAULT_LINK =
+const DATA_NEEDS_DEFAULT_LINK =
   'https://architecture.eddie.energy/framework/2-integrating/data-needs.html'
-const SUPPORTED_FEATURES_DEFAULT_LINK =
+const FEATURES_DEFAULT_LINK =
   'https://architecture.eddie.energy/framework/2-integrating/messages/messages.html'
 
-const SUPPORTED_FEATURES: Record<RegionConnectorFeature, { text: string; link: string }> = {
+const FEATURES: Record<RegionConnectorFeature, { text: string; link: string }> = {
   supportsConnectionStatusMessages: {
     text: 'Connection Status Messages',
     link: 'https://architecture.eddie.energy/framework/2-integrating/messages/agnostic.html#connection-status-messages'
@@ -75,7 +75,7 @@ const SUPPORTED_FEATURES: Record<RegionConnectorFeature, { text: string; link: s
   }
 }
 
-const SUPPORTED_DATA_NEEDS: Record<string, { text: string; link: string }> = {
+const DATA_NEEDS: Record<string, { text: string; link: string }> = {
   ValidatedHistoricalDataDataNeed: {
     text: 'Validated Historical Data',
     link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#validatedhistoricaldatadataneed'
@@ -96,6 +96,7 @@ const SUPPORTED_DATA_NEEDS: Record<string, { text: string; link: string }> = {
 
 onMounted(async () => {
   regionConnectors.value = await getRegionConnectors()
+
   for (const { regionConnectorId, ...features } of await getRegionConnectorsSupportedFeatures()) {
     const supported: string[] = []
     const unsupported: string[] = []
@@ -107,12 +108,14 @@ onMounted(async () => {
     supportedFeatures.value[regionConnectorId] = supported
     unsupportedFeatures.value[regionConnectorId] = unsupported
   }
+
   for (const { regionConnectorId, dataNeeds } of await getRegionConnectorsSupportedDataNeeds()) {
     supportedDataNeeds.value[regionConnectorId] = dataNeeds
   }
+
   for (const { id } of regionConnectors.value) {
     const health = await getRegionConnectorHealth(id)
-    regionConnectorHealth.value.set(id, health?.status || HealthStatus.UNKNOWN)
+    regionConnectorHealth.value[id] = health?.status || HealthStatus.UNKNOWN
   }
 })
 </script>
@@ -145,7 +148,7 @@ onMounted(async () => {
           <span>{{ formatCountry(countryCodes[0]) }}</span>
         </div>
 
-        <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
+        <HealthIcon :health="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
       </header>
     </template>
 
@@ -155,6 +158,7 @@ onMounted(async () => {
     </template>
 
     <h3>Region Connector Metadata</h3>
+
     <dl>
       <dt>Country</dt>
       <dd>{{ formatCountry(countryCodes[0]) }}</dd>
@@ -162,7 +166,7 @@ onMounted(async () => {
       <dd>{{ timeZone }}</dd>
       <dt>Status</dt>
       <dd>
-        <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
+        <HealthIcon :health="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
       </dd>
       <dt>ID</dt>
       <dd>{{ id }}</dd>
@@ -180,14 +184,10 @@ onMounted(async () => {
       <div class="feature-list">
         <h4>Supported</h4>
         <ul>
-          <li v-for="supportedDataNeed in supportedDataNeeds[id]">
-            <a
-              :href="
-                SUPPORTED_DATA_NEEDS[supportedDataNeed]?.link ?? SUPPORTED_DATA_NEEDS_DEFAULT_LINK
-              "
-            >
+          <li v-for="supportedDataNeed in supportedDataNeeds[id]" :key="supportedDataNeed">
+            <a :href="DATA_NEEDS[supportedDataNeed]?.link ?? DATA_NEEDS_DEFAULT_LINK">
               <i class="pi pi-check-circle"></i>
-              {{ SUPPORTED_DATA_NEEDS[supportedDataNeed]?.text ?? supportedDataNeed }}
+              {{ DATA_NEEDS[supportedDataNeed]?.text ?? supportedDataNeed }}
               <i class="pi pi-external-link"></i>
             </a>
           </li>
@@ -202,32 +202,22 @@ onMounted(async () => {
         <h4>Supported</h4>
         <ul>
           <li v-for="feature in supportedFeatures[id]" :key="feature">
-            <a
-              :href="
-                SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.link ??
-                SUPPORTED_FEATURES_DEFAULT_LINK
-              "
-            >
+            <a :href="FEATURES[feature as RegionConnectorFeature]?.link ?? FEATURES_DEFAULT_LINK">
               <i class="pi pi-check-circle"></i>
-              {{ SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.text ?? feature }}
+              {{ FEATURES[feature as RegionConnectorFeature]?.text ?? feature }}
               <i class="pi pi-external-link"></i>
             </a>
           </li>
         </ul>
       </div>
 
-      <div class="feature-list unsupported">
+      <div class="feature-list feature-list--unsupported">
         <h4>Not Supported</h4>
         <ul>
           <li v-for="feature in unsupportedFeatures[id]" :key="feature">
-            <a
-              :href="
-                SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.link ??
-                SUPPORTED_FEATURES_DEFAULT_LINK
-              "
-            >
+            <a :href="FEATURES[feature as RegionConnectorFeature]?.link ?? FEATURES_DEFAULT_LINK">
               <i class="pi pi-minus-circle"></i>
-              {{ SUPPORTED_FEATURES[feature as RegionConnectorFeature]?.text ?? feature }}
+              {{ FEATURES[feature as RegionConnectorFeature]?.text ?? feature }}
               <i class="pi pi-external-link"></i>
             </a>
           </li>
@@ -374,6 +364,14 @@ dl {
   }
 }
 
+.feature-list--unsupported {
+  background: var(--chip-background-danger);
+
+  i {
+    color: var(--chip-text-danger);
+  }
+}
+
 .documentation-link {
   i:first-child {
     font-size: 0.75rem;
@@ -386,14 +384,6 @@ dl {
   i:last-child {
     font-size: 0.875rem;
     margin-left: 0.5rem;
-  }
-}
-
-.unsupported {
-  background: var(--chip-background-danger);
-
-  i {
-    color: var(--chip-text-danger);
   }
 }
 </style>
