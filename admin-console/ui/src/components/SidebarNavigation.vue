@@ -51,7 +51,7 @@ aside {
     top: 0;
     left: 0;
     float: left;
-    height: 100dvh;
+    height: 100vh;
   }
 }
 

@@ -1,3 +1,8 @@
+<!--
+  - SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
+
 <script setup lang="ts">
 defineProps<{
   text: string
@@ -33,7 +38,7 @@ defineProps<{
   .tooltip {
     display: flex;
     justify-content: end;
-    cursor: default;
+    cursor: help;
   }
 
   .content {
