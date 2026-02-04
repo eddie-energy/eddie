@@ -1,7 +1,16 @@
 <component name="CopyrightManager">
-  <settings>
+  <settings default="Apache 2.0 SPDX">
     <module2copyright>
       <element module="All" copyright="Apache 2.0 SPDX" />
     </module2copyright>
+    <LanguageOptions name="JavaScript">
+      <option name="fileTypeOverride" value="3" />
+      <option name="block" value="false" />
+    </LanguageOptions>
+    <LanguageOptions name="TypeScript">
+      <option name="fileTypeOverride" value="3" />
+      <option name="block" value="false" />
+    </LanguageOptions>
+    <LanguageOptions name="__TEMPLATE__" />
   </settings>
 </component>
