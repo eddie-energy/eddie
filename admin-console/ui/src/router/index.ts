@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-import { createMemoryHistory, createRouter } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import DashboardView from '../views/DashboardView.vue'
 
 const router = createRouter({
-  history: createMemoryHistory(),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',

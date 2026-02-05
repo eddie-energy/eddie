@@ -1,5 +1,7 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-// SPDX-License-Identifier: Apache-2.0
+/*
+ * SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 package energy.eddie.e2etests.adminconsole;
 
@@ -34,8 +36,8 @@ class AdminConsoleTest {
         page.getByLabel("Username").fill("admin");
         page.getByLabel("Password").fill("password");
         page.getByText("Log in").click();
-        page.waitForURL(ADMIN_URL + "?continue");
-        assertThat(page).hasURL(ADMIN_URL + "?continue");
+        page.waitForURL(ADMIN_URL + "/?continue");
+        assertThat(page).hasURL(ADMIN_URL + "/?continue");
         assertThat(page).hasTitle("Admin Console");
     }
 
