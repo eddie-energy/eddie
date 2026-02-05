@@ -73,8 +73,6 @@ public class EtaRegionConnectorSpringConfig {
         return permissionRequest -> null; // Return null for no specific transmission schedule
     }
 
-    // Critical for the Demo Button to determine if the region connector supports a
-    // given data need
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
