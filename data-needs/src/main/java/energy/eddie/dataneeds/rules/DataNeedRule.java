@@ -8,6 +8,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
@@ -105,6 +106,21 @@ public sealed interface DataNeedRule {
         @Override
         public Class<OutboundAiidaDataNeed> getDataNeedClass() {
             return OutboundAiidaDataNeed.class;
+        }
+    }
+
+    /**
+     * The EnergyCommunityDataNeedRule specifies that the region connector supports {@link EnergyCommunityDataNeed}.
+     */
+    record EnergyCommunityDataNeedRule() implements SpecificDataNeedRule<EnergyCommunityDataNeed> {
+        @Override
+        public String getType() {
+            return EnergyCommunityDataNeed.DISCRIMINATOR_VALUE;
+        }
+
+        @Override
+        public Class<EnergyCommunityDataNeed> getDataNeedClass() {
+            return EnergyCommunityDataNeed.class;
         }
     }
 

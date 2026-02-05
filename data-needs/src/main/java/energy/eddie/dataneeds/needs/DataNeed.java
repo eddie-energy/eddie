@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.dataneeds.needs;
@@ -27,12 +27,14 @@ import java.util.UUID;
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
         visible = true,
-        property = "type")
+        property = "type"
+)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = AccountingPointDataNeed.class, name = AccountingPointDataNeed.DISCRIMINATOR_VALUE),
         @JsonSubTypes.Type(value = ValidatedHistoricalDataDataNeed.class, name = ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE),
         @JsonSubTypes.Type(value = InboundAiidaDataNeed.class, name = InboundAiidaDataNeed.DISCRIMINATOR_VALUE),
-        @JsonSubTypes.Type(value = OutboundAiidaDataNeed.class, name = OutboundAiidaDataNeed.DISCRIMINATOR_VALUE)
+        @JsonSubTypes.Type(value = OutboundAiidaDataNeed.class, name = OutboundAiidaDataNeed.DISCRIMINATOR_VALUE),
+        @JsonSubTypes.Type(value = EnergyCommunityDataNeed.class, name = EnergyCommunityDataNeed.DISCRIMINATOR_VALUE),
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DataNeed implements DataNeedInterface {

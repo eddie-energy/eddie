@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
@@ -148,7 +148,12 @@ class DataNeedSummary extends HTMLElement {
   }
 
   durationDescription(duration) {
-    const [start, end] = datesFromDuration(duration);
+    const dates = datesFromDuration(duration);
+    if (dates.length === 1) {
+      const [start] = dates;
+      return `From ${start.toLocaleDateString()}`;
+    }
+    const [start, end] = dates;
     return `From ${start.toLocaleDateString()} to ${end.toLocaleDateString()}`;
   }
 }
