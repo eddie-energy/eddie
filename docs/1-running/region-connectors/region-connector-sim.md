@@ -6,7 +6,7 @@ It offers a few functionalities to send messages via EDDIE to the active [outbou
 > [!DANGER]
 > The simulation region connector should be turned off on production EDDIE instances
 
-![Image of the simulation region connector custom element](./images/region-connector-simulation/ce.png)
+![Image of the simulation region connector custom element](./images/region-connector-sim/ce.png)
 
 ## Configuration
 
@@ -30,7 +30,7 @@ To do this, click "Launch Simulation" in the simulation region connector element
 You will be forwarded to another page where you can send custom status updates for a permission request, as well as custom validated historical data messages.
 The validated historical data will be published on the CIM topic and the custom status updates on both CIM and agnostic topics.
 
-![Image of the simulation page](./images/region-connector-simulation/simulation-page.png)
+![Image of the simulation page](./images/region-connector-sim/simulation-page.png)
 
 ## Scenarios
 

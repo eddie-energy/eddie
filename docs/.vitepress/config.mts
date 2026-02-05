@@ -112,7 +112,7 @@ export default withMermaid(
                 },
                 {
                   text: "Simulation (Dev)",
-                  link: "/1-running/region-connectors/region-connector-simulation.md",
+                  link: "/1-running/region-connectors/region-connector-sim.md",
                 },
               ],
             },
