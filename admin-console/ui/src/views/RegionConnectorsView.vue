@@ -33,6 +33,8 @@ const supportedFeatures = ref<Record<string, string[]>>({})
 const unsupportedFeatures = ref<Record<string, string[]>>({})
 const supportedDataNeeds = ref<Record<string, string[]>>({})
 
+const openPanels = ref(new Set<string>())
+
 const disabledRegionConnectors = computed(() =>
   REGION_CONNECTORS.filter((id) => !regionConnectors.value.some((rc) => rc.id === id))
 )
@@ -80,7 +82,9 @@ onMounted(async () => {
     :key="id"
     :value="id"
     toggleable
-    collapsed
+    :collapsed="!openPanels.has(id)"
+    :pt:header:onClick="() => openPanels.delete(id) || openPanels.add(id)"
+    pt:header:style="border-bottom: var(--panel-border)"
   >
     <template #header>
       <header>
