@@ -39,6 +39,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-at-eda"))
     implementation(project(":region-connectors:region-connector-be-fluvius"))
     implementation(project(":region-connectors:region-connector-dk-energinet"))
+    implementation(project(":region-connectors:region-connector-de-eta"))
     implementation(project(":region-connectors:region-connector-fr-enedis"))
     implementation(project(":region-connectors:region-connector-es-datadis"))
     implementation(project(":region-connectors:region-connector-nl-mijn-aansluiting"))
