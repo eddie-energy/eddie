@@ -1,7 +1,5 @@
-/*
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
-*/
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
 
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
@@ -114,7 +112,7 @@ export default withMermaid(
                 },
                 {
                   text: "Simulation (Dev)",
-                  link: "/1-running/region-connectors/region-connector-simulation.md",
+                  link: "/1-running/region-connectors/region-connector-sim.md",
                 },
               ],
             },
@@ -180,12 +178,16 @@ export default withMermaid(
                       link: "/2-integrating/messages/cim/permission-market-documents.md",
                     },
                     {
+                      text: "Accounting Point Data Market Documents",
+                      link: "/2-integrating/messages/cim/accounting-point-data-market-documents.md",
+                    },
+                    {
                       text: "Validated Historical Data Market Documents",
                       link: "/2-integrating/messages/cim/validated-historical-data-market-documents.md",
                     },
                     {
-                      text: "Accounting Point Data Market Documents",
-                      link: "/2-integrating/messages/cim/accounting-point-data-market-documents.md",
+                      text: "Near Real Time Data Market Documents",
+                      link: "/2-integrating/messages/cim/near-real-time-data-market-documents.md",
                     },
                     {
                       text: "Redistribution Transaction Request Documents",
@@ -266,5 +268,5 @@ export default withMermaid(
         { icon: "github", link: "https://github.com/eddie-energy/eddie" },
       ],
     },
-  }),
+  })
 );

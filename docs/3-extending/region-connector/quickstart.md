@@ -896,7 +896,7 @@ Remember to import all used Shoelace elements to ensure they are loaded correctl
 - Implement health indicators for external APIs and services
   :::
 
-It is rather easy to enable [permission market documents](./shared-functionality.md#permissionmarketdocumentmessagehandler) and [connections status messages](./shared-functionality.md#connectionstatusmessagehandler), since there are already implementations that work across the region connectors.
+It is rather easy to enable [permission market documents](./shared-functionality.md#permissionmarketdocumentmessagehandler) and [connection status messages](./shared-functionality.md#connectionstatusmessagehandler), since there are already implementations that work across the region connectors.
 The implementations just have to be defined as Spring beans in your Spring config.
 
 ```java

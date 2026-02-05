@@ -1,7 +1,7 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script lang="ts" setup>
 import {
@@ -14,7 +14,7 @@ import {
   type StatusMessage
 } from '@/api'
 import LineChartPermissions from '@/components/LineChartPermissions.vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watchEffect } from 'vue'
 import HealthIcon from '@/components/HealthIcon.vue'
 import {
   ACTIVE_PERMISSION_STATES,
@@ -89,6 +89,9 @@ onMounted(async () => {
   permissions.value = await getPermissions()
   dataNeeds.value = await getDataNeeds()
   regionConnectors.value = await getRegionConnectors()
+})
+
+watchEffect(async () => {
   for (const { id } of regionConnectors.value) {
     const health = await getRegionConnectorHealth(id)
     regionConnectorHealth.value.set(id, health?.status || HealthStatus.UNKNOWN)
@@ -116,8 +119,11 @@ function getPermissionCountPerRegionConnector() {
   <div class="layout">
     <section class="panel">
       <header>
-        <i class="pi pi-check-circle"></i>
-        <h2>Permissions <span>Timeline</span></h2>
+        <RouterLink to="/permissions">
+          <i class="pi pi-check-circle"></i>
+          <h2>Permissions <span>Timeline</span></h2>
+          <i class="pi pi-chevron-right"></i>
+        </RouterLink>
       </header>
 
       <!-- TODO: Calculate with SQL queries for performance -->
@@ -161,8 +167,11 @@ function getPermissionCountPerRegionConnector() {
 
     <section class="panel">
       <header>
-        <i class="pi pi-briefcase"></i>
-        <h2>Data Needs <span>Most Popular</span></h2>
+        <RouterLink to="/data-needs">
+          <i class="pi pi-briefcase"></i>
+          <h2>Data Needs <span>Most Popular</span></h2>
+          <i class="pi pi-chevron-right"></i>
+        </RouterLink>
       </header>
 
       <div class="cards">
@@ -245,8 +254,11 @@ function getPermissionCountPerRegionConnector() {
     <section class="panel bottom">
       <div>
         <header>
-          <i class="pi pi-globe"></i>
-          <h2>Region Connectors</h2>
+          <RouterLink to="/region-connectors">
+            <i class="pi pi-globe"></i>
+            <h2>Region Connectors</h2>
+            <i class="pi pi-chevron-right"></i>
+          </RouterLink>
         </header>
 
         <div class="table-scroll-wrapper">
@@ -262,9 +274,7 @@ function getPermissionCountPerRegionConnector() {
             <tbody>
               <tr v-for="{ id, countryCodes } in regionConnectors" :key="id">
                 <th scope="row">
-                  <span>
-                    {{ countryFlag(countryCodes[0]) }}
-                  </span>
+                  {{ countryFlag(countryCodes[0]) }}
                   <span>
                     <b>{{ id }}</b>
                     <br />
@@ -336,25 +346,29 @@ function getPermissionCountPerRegionConnector() {
   border-radius: var(--panel-radius);
   border: var(--panel-border);
   background: var(--panel-background);
-  box-shadow: var(--panel-shadow);
 
-  header {
-    display: flex;
+  header a {
+    display: inline-flex;
     gap: 0.5rem;
     align-items: center;
     margin-bottom: 1.5rem;
 
-    i {
+    i:first-child {
       font-size: 1.5em;
-    }
-
-    span {
-      font-weight: 300;
     }
 
     h2 {
       font-size: 1.5rem;
       font-weight: 500;
+
+      span {
+        font-weight: 300;
+      }
+    }
+
+    i:last-child {
+      margin-left: 2.25rem;
+      font-size: 0.875rem;
     }
   }
 }
@@ -382,17 +396,20 @@ function getPermissionCountPerRegionConnector() {
 }
 
 .data-need-headline {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto max-content minmax(max-content, 1fr);
   gap: 0.75rem;
   align-items: center;
-  font-size: 0.875rem;
 
   h3 {
     font-weight: 300;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
 .data-need-stats {
+  margin-top: 0.625rem;
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
@@ -406,7 +423,6 @@ function getPermissionCountPerRegionConnector() {
   border-radius: var(--tile-radius);
   padding: 0.5rem;
   min-width: 14rem;
-  font-size: 0.875rem;
   gap: 0.5rem;
 
   i {
@@ -436,7 +452,6 @@ table {
   padding: 0 1px; /* account for row outline */
 
   th {
-    font-size: 0.75rem;
     text-align: left;
     vertical-align: bottom;
 
@@ -468,8 +483,8 @@ table {
       }
 
       small {
-        font-size: 0.625rem;
-        line-height: 1.2;
+        font-size: 0.875rem;
+        line-height: 0.75rem;
       }
     }
   }

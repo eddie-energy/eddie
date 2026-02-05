@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.spring.regionconnector.extensions;
@@ -67,7 +67,7 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
 
         // When & Then
         assertAll(
-                () -> assertTrue(extension.supportsConnectionsStatusMessages()),
+                () -> assertTrue(extension.supportsConnectionStatusMessages()),
                 () -> assertTrue(extension.supportsTermination()),
                 () -> assertTrue(extension.supportsRawDataMessages()),
                 () -> assertTrue(extension.supportsAccountingPointMarketDocuments()),
@@ -120,7 +120,7 @@ class RegionConnectorSupportedFeatureExtensionWithoutBeansPresentTest {
 
         // When & Then
         assertAll(
-                () -> assertFalse(extension.supportsConnectionsStatusMessages()),
+                () -> assertFalse(extension.supportsConnectionStatusMessages()),
                 () -> assertFalse(extension.supportsTermination()),
                 () -> assertFalse(extension.supportsRawDataMessages()),
                 () -> assertFalse(extension.supportsAccountingPointMarketDocuments()),

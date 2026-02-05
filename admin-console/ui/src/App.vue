@@ -1,7 +1,7 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
@@ -24,8 +24,7 @@ import { ConfirmDialog, Toast } from 'primevue'
 
 <style scoped>
 .wrapper {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
 }
 
 main {
@@ -35,7 +34,7 @@ main {
 
 @media (width < 80rem) {
   .wrapper {
-    grid-template-columns: auto;
+    flex-direction: column;
   }
 
   main {

@@ -1,7 +1,7 @@
 <!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+  - SPDX-License-Identifier: Apache-2.0
+  -->
 
 <script setup lang="ts">
 import EddieIcon from '@/components/EddieIcon.vue'
@@ -45,6 +45,13 @@ import EddieIcon from '@/components/EddieIcon.vue'
 aside {
   padding: 1.75rem 1.25rem;
   background: var(--sidebar-background);
+
+  @media (width >= 80rem) {
+    position: sticky;
+    top: 0;
+    left: 0;
+    height: 100vh;
+  }
 }
 
 header a {

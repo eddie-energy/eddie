@@ -38,12 +38,11 @@ export type StatusMessage = {
 
 export type RegionConnectorMetadata = {
   id: string
-  timeZone: string
   countryCodes: string[]
   coveredMeteringPoints: number
   earliestStart: string
   latestEnd: string
-  supportedGranularities: string[]
+  timeZone: string
 }
 
 export type DataNeed = {
@@ -74,18 +73,20 @@ export type RegionConnectorHealth = {
   }
 }
 
+export type RegionConnectorFeature =
+  | 'supportsConnectionStatusMessages'
+  | 'supportsRawDataMessages'
+  | 'supportsTermination'
+  | 'supportsAccountingPointMarketDocuments'
+  | 'supportsPermissionMarketDocuments'
+  | 'supportsValidatedHistoricalDataMarketDocuments'
+  | 'supportsRetransmissionRequests'
+  | 'supportsNearRealTimeDataMarketDocuments'
+  | 'supportsValidatedHistoricalDataMarketDocumentsV1_04'
+
 export type RegionConnectorSupportedFeatures = {
   regionConnectorId: string
-  supportsRawDataMessages: boolean
-  supportsTermination: boolean
-  supportsAccountingPointMarketDocuments: boolean
-  supportsPermissionMarketDocuments: boolean
-  supportsValidatedHistoricalDataMarketDocuments: boolean
-  supportsRetransmissionRequests: boolean
-  supportsConnectionsStatusMessages: boolean
-  supportsValidatedHistoricalDataMarketDocumentsV1_04: boolean
-  supportsNearRealTimeDataMarketDocumentsV1_04: boolean
-}
+} & Record<RegionConnectorFeature, boolean>
 
 export type RegionConnectorSupportedDataNeeds = {
   regionConnectorId: string
