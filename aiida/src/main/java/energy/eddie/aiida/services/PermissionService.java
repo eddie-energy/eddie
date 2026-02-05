@@ -25,19 +25,18 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
-import energy.eddie.api.agnostic.aiida.QrCodePermissionDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriTemplate;
 
@@ -156,8 +155,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
-        for(var qrCodePermissionDto : qrCodeDto.permissions()) {
-            permissions.add(setupNewPermission(qrCodeDto, qrCodePermissionDto, currentUserId));
+        for(var permissionId : qrCodeDto.permissionIds()) {
+            permissions.add(setupNewPermission(qrCodeDto, permissionId, currentUserId));
         }
 
         return permissions;
@@ -328,21 +327,18 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     public Permission setupNewPermission(
             QrCodeDto qrCodeDto,
-            QrCodePermissionDto qrCodePermissionDto,
+            UUID permissionId,
             UUID currentUserId
     ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
-        var permissionId = qrCodePermissionDto.permissionId();
-
         if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
 
-        var handshakeUrl = new UriTemplate(qrCodeDto.handshakeUrlTemplate())
+        var handshakeUrl = new UriTemplate(qrCodeDto.handshakeUrl())
                 .expand(permissionId).toString();
 
         var permission = permissionRepository.save(new Permission(qrCodeDto.eddieId(),
                                                                   permissionId,
-                                                                  qrCodePermissionDto.serviceName(),
                                                                   handshakeUrl,
                                                                   qrCodeDto.accessToken(),
                                                                   currentUserId));
@@ -480,7 +476,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission = permissionRepository.save(permission);
 
         handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
-        throw new PermissionUnfulfillableException(permission.serviceName());
+        throw new PermissionUnfulfillableException(permission.id());
     }
 
     private void removeInboundDataSourceIfExists(Permission permission) {

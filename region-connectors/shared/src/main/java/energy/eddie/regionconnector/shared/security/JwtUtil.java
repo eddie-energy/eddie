@@ -85,12 +85,12 @@ public class JwtUtil {
      * returned JWT is to be included by the region connector element to make requests that update the permission.
      *
      * @param regionConnectorId ID of the region connector that created the new permission.
-     * @param permissionId      ID of the newly created permission.
+     * @param permissionId      ID(s) of the newly created permission.
      * @return Serialized JWT.
      * @throws JwtCreationFailedException If for any reason, the creation of the JWT failed.
      */
-    public String createJwt(String regionConnectorId, String permissionId) throws JwtCreationFailedException {
-        var permissions = Map.of(regionConnectorId, List.of(permissionId));
+    public String createJwt(String regionConnectorId, String... permissionId) throws JwtCreationFailedException {
+        var permissions = Map.of(regionConnectorId, permissionId);
 
         JWSHeader header = new JWSHeader.Builder(JWS_ALGORITHM)
                 .type(JOSEObjectType.JWT)

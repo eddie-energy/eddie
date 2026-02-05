@@ -173,7 +173,7 @@ class AiidaPermissionServiceTest {
                                                            HANDSHAKE_URL.indexOf("{permissionId}")) + dto.permissionId();
         assertAll(() -> assertDoesNotThrow(dto::permissionId),
                   () -> assertEquals("Test Service", dto.serviceName()),
-                  () -> assertEquals(expectedHandshakeUrl, dto.handshakeUrl()));
+                  () -> assertEquals(expectedHandshakeUrl, dto.handshakeUrlTemplate()));
     }
 
     @Test

@@ -64,7 +64,7 @@ public class JwtIssuerFilter extends OncePerRequestFilter {
         LOGGER.info("Creating JWT for {}", request.getRequestURI());
 
         var objectNode = getJsonNodes(request, wrappedResponse);
-        if (objectNode == null) {
+        if (objectNode == null || !objectNode.has("bearerToken")) {
             wrappedResponse.copyBodyToResponse();
             return;
         }

@@ -39,9 +39,10 @@ public class Permission {
     @JsonProperty
     private PermissionStatus status;
 
-    @Column(name = "service_name", nullable = false)
+    @Column(name = "service_name")
     @Schema(description = "Name of the EP service that requested near real-time data.", example = "My Energy Visualization Service")
     @JsonProperty
+    @Nullable
     private String serviceName;
 
     @Column(name = "start_time")
@@ -94,7 +95,6 @@ public class Permission {
     @JsonProperty
     private AiidaLocalDataNeed dataNeed;
 
-    @Nullable
     @Column(name = "user_id", nullable = false)
     @Schema(description = "UUID of the user that owns the permission.")
     @JsonProperty
@@ -110,10 +110,9 @@ public class Permission {
      * Create a new permission from the contents of the QR code. The status will be set to
      * {@link PermissionStatus#CREATED}.
      */
-    public Permission(UUID eddieId, UUID permissionId, String serviceName, String handshakeUrl, String accessToken, UUID userId) {
+    public Permission(UUID eddieId, UUID permissionId, String handshakeUrl, String accessToken, UUID userId) {
         this.eddieId = eddieId;
         this.permissionId = permissionId;
-        this.serviceName = serviceName;
         this.handshakeUrl = handshakeUrl;
         this.accessToken = accessToken;
         this.status = PermissionStatus.CREATED;
@@ -185,8 +184,8 @@ public class Permission {
     /**
      * Returns the service name for which this permission is for.
      */
-    public String serviceName() {
-        return serviceName;
+    public @Nullable String serviceName() {
+         return serviceName;
     }
 
     /**
@@ -267,6 +266,7 @@ public class Permission {
 
     public void setDataNeed(AiidaLocalDataNeed dataNeed) {
         this.dataNeed = requireNonNull(dataNeed);
+        this.serviceName = dataNeed.name();
     }
 
     public void setDataSource(@Nullable DataSource dataSource) {
