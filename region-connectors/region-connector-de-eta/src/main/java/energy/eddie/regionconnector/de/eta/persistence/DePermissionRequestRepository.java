@@ -31,7 +31,7 @@ public interface DePermissionRequestRepository extends
                         "data_start, data_end, granularity, energy_type, status, data_need_id, " +
                         "created, latest_meter_reading, message, cause " +
                         "FROM de_eta.eta_permission_request " +
-                        "WHERE status IN ('REQUESTED', 'PENDING_CONSENT') " +
+                        "WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' " +
                         "AND created <= NOW() - :hours * INTERVAL '1 hour'", nativeQuery = true)
         List<DePermissionRequest> findStalePermissionRequests(@Param("hours") int stalenessDuration);
 }
