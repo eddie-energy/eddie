@@ -4,10 +4,13 @@
 package energy.eddie.regionconnector.aiida.dtos;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+
+import java.util.List;
 
 public record PermissionRequestForCreation(@NotBlank(message = "must not be blank")
                                            String connectionId,
-                                           @NotBlank(message = "must not be blank")
-                                           String dataNeedId
+                                           @NotEmpty(message = "must not be empty")
+                                           List<String> dataNeedIds
 ) {
 }

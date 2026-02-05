@@ -159,11 +159,11 @@ class PermissionServiceTest {
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
-        assertThrows(PermissionAlreadyExistsException.class, () -> service.setupNewPermission(qrCodeDto));
+        assertThrows(PermissionAlreadyExistsException.class, () -> service.setupNewPermissions(qrCodeDto));
     }
 
     @Test
-    void givenExceptionFromHandshakeService_setupNewPermission_throwsDetailFetchingFailedException() throws InvalidUserException {
+    void givenExceptionFromHandshakeService_setupNewPermissions_throwsDetailFetchingFailedException() throws InvalidUserException {
         // Given
         var exception = HttpClientErrorException.create(HttpStatus.GONE,
                                                         "Gone",
@@ -175,11 +175,11 @@ class PermissionServiceTest {
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
-        assertThrows(DetailFetchingFailedException.class, () -> service.setupNewPermission(qrCodeDto));
+        assertThrows(DetailFetchingFailedException.class, () -> service.setupNewPermissions(qrCodeDto));
     }
 
     @Test
-    void givenValidQrCodeDto_setupNewPermission_savesToDb_andCallsHandshakeService() throws PermissionUnfulfillableException, PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException {
+    void givenValidQrCodeDto_setupNewPermissions_savesToDb_andCallsHandshakeService() throws PermissionUnfulfillableException, PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
@@ -199,7 +199,7 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When
-        service.setupNewPermission(qrCodeDto);
+        service.setupNewPermissions(qrCodeDto);
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
@@ -227,7 +227,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void setupNewPermission_throwsPermissionUnfulfillableException() throws InvalidUserException {
+    void setupNewPermission_throwsPermissionsUnfulfillableException() throws InvalidUserException {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
@@ -247,7 +247,7 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When Then
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermission(qrCodeDto));
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(qrCodeDto));
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
 
@@ -285,7 +285,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
 
         // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermission(qrCodeDto));
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(qrCodeDto));
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
@@ -299,10 +299,10 @@ class PermissionServiceTest {
 
     @Disabled("// TODO GH-1040")  // TODO GH-1040
     @Test
-    void givenUnfulfillableQrCodeDto_setupNewPermission_updatesStatus() {
+    void givenUnfulfillableQrCodeDto_setupNewPermissions_updatesStatus() {
 
         // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermission(qrCodeDto));
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(qrCodeDto));
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));

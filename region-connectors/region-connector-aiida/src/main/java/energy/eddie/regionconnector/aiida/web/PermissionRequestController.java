@@ -14,15 +14,16 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -44,15 +45,14 @@ public class PermissionRequestController {
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QrCodeDto> createPermissionRequest(
-            @Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
-        var qrCodeDto = permissionService.createValidateAndSendPermissionRequest(permissionRequestForCreation);
+    public ResponseEntity<QrCodeDto> createPermissionRequests(
+            @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+        var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
 
-        var location = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
-                .expand(qrCodeDto.permissionId());
-
-        return ResponseEntity.created(location).body(qrCodeDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(qrCodeDto);
     }
 
     @PatchMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST,

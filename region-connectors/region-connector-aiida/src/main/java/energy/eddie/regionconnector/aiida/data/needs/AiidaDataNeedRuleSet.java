@@ -18,7 +18,8 @@ public class AiidaDataNeedRuleSet implements DataNeedRuleSet {
     public List<DataNeedRule> dataNeedRules() {
         return List.of(
                 new InboundAiidaDataNeedRule(),
-                new OutboundAiidaDataNeedRule()
+                new OutboundAiidaDataNeedRule(),
+                new DataNeedRule.AllowMultipleDataNeedsRule()
         );
     }
 }
