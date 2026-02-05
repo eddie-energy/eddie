@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.services;
@@ -82,13 +82,16 @@ public class PermissionRequestCreationAndValidationService {
                                                        dataNeedId,
                                                        message);
             }
-            case ValidatedHistoricalDataDataNeedResult validatedHistoricalDataDataNeedResult ->
+            case ValidatedHistoricalDataDataNeedResult result ->
                     validateHistoricalValidatedEvent(
-                            permissionId, validatedHistoricalDataDataNeedResult
+                            permissionId, result
                     );
             case AccountingPointDataNeedResult ignored -> validatedEventFactory.createValidatedEvent(
                     permissionId, LocalDate.now(AT_ZONE_ID), null, null
             );
+            case EnergyCommunityDataNeedResult(var start) ->
+                // TODO: Use different Granularity -> how should this be solved, via data need or is there some static granularity for energy communities
+                    validatedEventFactory.createValidatedEvent(permissionId, start, null, AllowedGranularity.PT15M);
         };
         outbox.commit(event);
         return new CreatedPermissionRequest(permissionId);

@@ -3,13 +3,13 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
 
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
-import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
     @Test
     void isActive_on_06_04_2025_returnsFalse() {
         // given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var factory = factory();
 
         // when
         var active = factory.isActive(LocalDate.of(2025, 4, 6));
@@ -43,7 +43,7 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
     @Test
     void isActive_on_13_04_2026_returnsFalse() {
         // given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var factory = factory();
 
         // when
         var active = factory.isActive(LocalDate.of(2026, 4, 13));
@@ -55,7 +55,7 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
     @Test
     void isActive_on_07_04_2025_returnsTrue() {
         // given
-        var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
+        var factory = factory();
 
         // when
         var active = factory.isActive(LocalDate.of(2025, 4, 7));
@@ -72,11 +72,11 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
                                           "cmReqId",
                                           "messageId",
-                                          RequestDataType.METERING_DATA,
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id"),
-                                          ZonedDateTime.now(ZoneOffset.UTC));
+                                          new AtConfiguration("ep-id", null),
+                                          ZonedDateTime.now(ZoneOffset.UTC),
+                                          new AccountingPointDataNeed());
 
         // When
         var res = factory.outboundMetaData(ccmoRequest);

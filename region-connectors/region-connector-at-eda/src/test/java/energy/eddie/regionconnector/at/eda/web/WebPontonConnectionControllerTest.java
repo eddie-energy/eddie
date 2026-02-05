@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.at.eda.web;
 
 import de.ponton.xp.adapter.api.domainvalues.InboundStatusEnum;
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
@@ -262,12 +263,11 @@ class WebPontonConnectionControllerTest {
                 new CCMOTimeFrame(now, now),
                 "cmRequestId",
                 "msg",
-                RequestDataType.METERING_DATA,
                 AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
-                new AtConfiguration("EP100"),
-                now.atStartOfDay(ZoneOffset.UTC)
-        );
+                new AtConfiguration("EP100", null),
+                now.atStartOfDay(ZoneOffset.UTC),
+                new AccountingPointDataNeed());
 
         // When & Then
         assertDoesNotThrow(() -> controller.sendCMRequest(ccmoRequest));
@@ -284,7 +284,7 @@ class WebPontonConnectionControllerTest {
                 now,
                 now,
                 null,
-                new AtConfiguration("EP100")
+                new AtConfiguration("EP100", null)
         );
 
         // When & Then

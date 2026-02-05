@@ -55,7 +55,7 @@ class TerminationHandlerTest {
                                                          PermissionProcessStatus.ACCEPTED, "",
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid"), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null), edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -69,7 +69,7 @@ class TerminationHandlerTest {
     void terminatePermission_unknownPermissionRequest_emitsNothing() {
         // given
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid"), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null), edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -88,7 +88,7 @@ class TerminationHandlerTest {
                                                          PermissionProcessStatus.ACCEPTED, "",
                                                          "consentId", ZonedDateTime.now(ZoneOffset.UTC));
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid"), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null), edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 

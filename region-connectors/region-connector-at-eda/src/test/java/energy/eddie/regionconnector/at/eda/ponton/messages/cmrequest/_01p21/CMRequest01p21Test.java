@@ -3,13 +3,19 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
 
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.requests.*;
+import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
+import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
+import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -27,7 +33,7 @@ class CMRequest01p21Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("");
+        AtConfiguration atConfiguration = new AtConfiguration("", null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();
@@ -35,43 +41,15 @@ class CMRequest01p21Test {
                                                          timeFrame,
                                                          cmRequestId,
                                                          mesageId,
-                                                         RequestDataType.METERING_DATA,
                                                          AllowedGranularity.P1D,
                                                          AllowedTransmissionCycle.D,
                                                          atConfiguration,
-                                                         now));
+                                                         now,
+                                                         new AccountingPointDataNeed()));
 
         // when
         // then
         assertThrows(IllegalArgumentException.class, request::cmRequest);
-    }
-
-    @Test
-    void toCmRequest_withoutPrefixDoesNotAddPrefixToConversationId() {
-        // given
-        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
-        LocalDate end = start.plusMonths(1);
-        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
-        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
-                                                                                "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007");
-        ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
-        var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
-        var cmRequestId = new CMRequestId(messageId).toString();
-        var request = new CMRequest01p21(new CCMORequest(dsoIdAndMeteringPoint,
-                                                         timeFrame,
-                                                         cmRequestId,
-                                                         messageId,
-                                                         RequestDataType.METERING_DATA,
-                                                         AllowedGranularity.P1D,
-                                                         AllowedTransmissionCycle.D,
-                                                         atConfiguration,
-                                                         now));
-
-        // when
-        // then
-        var res = request.cmRequest();
-        assertFalse(res.getProcessDirectory().getConversationId().startsWith("prefix"));
     }
 
     @Test
@@ -82,7 +60,7 @@ class CMRequest01p21Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
@@ -90,15 +68,47 @@ class CMRequest01p21Test {
                                                          timeFrame,
                                                          cmRequestId,
                                                          messageId,
-                                                         RequestDataType.METERING_DATA,
                                                          AllowedGranularity.P1D,
                                                          AllowedTransmissionCycle.D,
                                                          atConfiguration,
-                                                         now));
+                                                         now, new AccountingPointDataNeed()));
 
         // when
-        // then
         var res = request.cmRequest();
+        // then
         assertEquals("01.21", res.getMarketParticipantDirectory().getSchemaVersion());
+    }
+
+    @Test
+    void toCmRequest_setsEnergyCommunityAttributes_correctly() {
+        // Given
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        LocalDate end = start.plusMonths(1);
+        CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
+        DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
+                                                                                "AT9999990699900000000000206868100");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", "ecid");
+        ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
+        var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
+        var cmRequestId = new CMRequestId(messageId).toString();
+        var request = new CMRequest01p21(new CCMORequest(dsoIdAndMeteringPoint,
+                                                         timeFrame,
+                                                         cmRequestId,
+                                                         messageId,
+                                                         AllowedGranularity.P1D,
+                                                         AllowedTransmissionCycle.D,
+                                                         atConfiguration,
+                                                         now,
+                                                         new EnergyCommunityDataNeed(BigDecimal.ONE)));
+
+        // When
+        var res = request.cmRequest();
+
+        // Then
+        var cmRequest = res.getProcessDirectory().getCMRequest();
+        assertAll(
+                () -> assertEquals(BigDecimal.ONE, cmRequest.getECPartFact()),
+                () -> assertEquals("ecid", cmRequest.getECID())
+        );
     }
 }

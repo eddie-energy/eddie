@@ -34,7 +34,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Mock
     private Outbox mockOutbox;
     @Spy
-    private final AtConfiguration configuration = new AtConfiguration("epId");
+    private final AtConfiguration configuration = new AtConfiguration("epId", null);
     @SuppressWarnings("unused")
     @Spy
     private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
@@ -114,5 +114,21 @@ class PermissionRequestCreationAndValidationServiceTest {
 
         // When, Then
         assertThrows(DataNeedNotFoundException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+    }
+
+    @Test
+    void createValidPermissionRequest_forEnergyCommunityDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(now));
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
+
+        // When
+        var res = creationService.createAndValidatePermissionRequest(pr);
+
+        // Then
+        assertNotNull(res);
     }
 }
