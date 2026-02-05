@@ -116,13 +116,16 @@ public class PermissionRequestCreationAndValidationService {
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case ValidatedHistoricalDataDataNeedResult validatedHistoricalDataDataNeedResult ->
+            case ValidatedHistoricalDataDataNeedResult result ->
                     validateHistoricalValidatedEvent(
-                            permissionId, validatedHistoricalDataDataNeedResult
+                            permissionId, result
                     );
             case AccountingPointDataNeedResult ignored -> validatedEventFactory.createValidatedEvent(
                     permissionId, LocalDate.now(AT_ZONE_ID), null, null
             );
+            case EnergyCommunityDataNeedResult(var start) ->
+                // TODO: Use different Granularity -> how should this be solved, via data need or is there some static granularity for energy communities
+                    validatedEventFactory.createValidatedEvent(permissionId, start, null, AllowedGranularity.PT15M);
         };
         outbox.commit(event);
         return permissionId;

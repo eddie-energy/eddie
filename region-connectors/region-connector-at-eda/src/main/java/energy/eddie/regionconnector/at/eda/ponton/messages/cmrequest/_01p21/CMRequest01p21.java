@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
@@ -8,8 +8,8 @@ import at.ebutilities.schemata.customerprocesses.common.types._01p20.AddressType
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.DocumentMode;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingAddress;
 import at.ebutilities.schemata.customerprocesses.common.types._01p20.RoutingHeader;
-import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 import jakarta.annotation.Nullable;
@@ -21,21 +21,19 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("DuplicatedCode")
-public record CMRequest01p21(
-        CCMORequest ccmoRequest
-) {
+public record CMRequest01p21(CCMORequest ccmoRequest) {
 
     public static final String SCHEMA_VERSION_01P21 = "01.21";
 
     public CMRequest cmRequest() {
         return new CMRequest()
-                .withMarketParticipantDirectory(makeMarketParticipantDirectory(ccmoRequest))
-                .withProcessDirectory(makeProcessDirectory(ccmoRequest));
+                .withMarketParticipantDirectory(makeMarketParticipantDirectory())
+                .withProcessDirectory(makeProcessDirectory());
     }
 
-    private MarketParticipantDirectory makeMarketParticipantDirectory(CCMORequest ccmoRequest) {
+    private MarketParticipantDirectory makeMarketParticipantDirectory() {
         return new MarketParticipantDirectory()
-                .withMessageCode(MessageCodes.Request.CODE)
+                .withMessageCode(ccmoRequest.messageCode())
                 .withSector(Sector.ELECTRICITY.value())
                 .withDocumentMode(DocumentMode.PROD)
                 .withDuplicate(false)
@@ -49,11 +47,11 @@ public record CMRequest01p21(
                 );
     }
 
-    private ProcessDirectory makeProcessDirectory(CCMORequest ccmoRequest) {
+    private ProcessDirectory makeProcessDirectory() {
         var messageId = ccmoRequest.messageId();
         String conversationID = ccmoRequest.messageId();
         return new ProcessDirectory()
-                .withCMRequest(makeReqType(ccmoRequest))
+                .withCMRequest(makeReqType())
                 .withCMRequestId(ccmoRequest.cmRequestId())
                 .withMessageId(messageId)
                 .withConversationId(conversationID)
@@ -72,21 +70,32 @@ public record CMRequest01p21(
     }
 
 
-    private ReqType makeReqType(CCMORequest ccmoRequest) {
-        return new ReqType()
-                .withReqDatType(ccmoRequest.requestDataType().toString())
-                .withMeteringIntervall(meteringIntervall(ccmoRequest))
-                .withTransmissionCycle(transmissionCycle(ccmoRequest))
-                .withDateFrom(DateTimeConverter.dateTimeToXml(ccmoRequest.start().atStartOfDay(AT_ZONE_ID)))
-                .withDateTo(ccmoRequest.end()
-                                       .map(end -> end.atStartOfDay(AT_ZONE_ID))
-                                       .map(DateTimeConverter::dateTimeToXml)
-                                       .orElse(null)
-                );
+    private ReqType makeReqType() {
+        return addEnergyCommunityAttributes(
+                new ReqType()
+                        .withReqDatType(ccmoRequest.requestDataType().toString())
+                        .withMeteringIntervall(meteringIntervall())
+                        .withTransmissionCycle(transmissionCycle())
+                        .withDateFrom(DateTimeConverter.dateTimeToXml(ccmoRequest.start().atStartOfDay(AT_ZONE_ID)))
+                        .withDateTo(ccmoRequest.end()
+                                               .map(end -> end.atStartOfDay(AT_ZONE_ID))
+                                               .map(DateTimeConverter::dateTimeToXml)
+                                               .orElse(null)
+                        )
+        );
+    }
+
+    private ReqType addEnergyCommunityAttributes(ReqType reqType) {
+        if (ccmoRequest.requestDataType() == RequestDataType.ENERGY_COMMUNITY_REGISTRATION) {
+            return reqType
+                    .withECPartFact(ccmoRequest.partFact())
+                    .withECID(ccmoRequest.energyCommunityId());
+        }
+        return reqType;
     }
 
     @Nullable
-    private MeteringIntervallType meteringIntervall(CCMORequest ccmoRequest) {
+    private MeteringIntervallType meteringIntervall() {
         return switch (ccmoRequest.granularity()) {
             case PT15M -> MeteringIntervallType.QH;
             case P1D -> MeteringIntervallType.D;
@@ -94,7 +103,7 @@ public record CMRequest01p21(
         };
     }
 
-    private TransmissionCycle transmissionCycle(CCMORequest ccmoRequest) {
+    private TransmissionCycle transmissionCycle() {
         return switch (ccmoRequest.transmissionCycle()) {
             case D -> TransmissionCycle.D;
             case M -> TransmissionCycle.M;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.models;
@@ -58,6 +58,17 @@ public class MessageCodes {
 
         private Request() {
         }
+    }
+
+    /**
+     * Requests for Energy communities.
+     *
+     * @see <a href="https://www.ebutilities.at/prozesse/592">EC_REQ_ONL</a>
+     */
+    public static class EcRequest {
+        public static final String CODE = "ANFORDERUNG_ECON";
+
+        private EcRequest() {}
     }
 
     public static class CPRequest {

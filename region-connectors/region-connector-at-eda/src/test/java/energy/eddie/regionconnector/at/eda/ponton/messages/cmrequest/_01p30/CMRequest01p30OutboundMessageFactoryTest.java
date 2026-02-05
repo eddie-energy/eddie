@@ -3,13 +3,13 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
 
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
-import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import org.junit.jupiter.api.Test;
@@ -60,12 +60,11 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
                                           "cmReqId",
                                           "messageId",
-                                          RequestDataType.METERING_DATA,
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id"),
+                                          new AtConfiguration("ep-id", null),
                                           ZonedDateTime.now(ZoneOffset.UTC),
-                                          "purpose");
+                                          new AccountingPointDataNeed());
 
         // When
         var res = factory.outboundMetaData(ccmoRequest);

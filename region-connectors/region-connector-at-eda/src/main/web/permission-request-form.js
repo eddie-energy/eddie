@@ -19,6 +19,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     companyId: { attribute: "company-id" },
     companyName: { attribute: "company-name" },
     accountingPointId: { attribute: "accounting-point-id" },
+    dataNeedType: { attribute: "data-need-type" },
     _isSubmitDisabled: { type: Boolean },
     _dataNeedIds: { type: Array },
     _createdCount: { type: Number },
@@ -95,6 +96,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               placeholder="${this.companyId}..."
               .value="${this.accountingPointId ?? nothing}"
               .disabled="${!!this.accountingPointId}"
+              .required="${this.dataNeedType.contains("energy-community")}"
             ></sl-input>
 
             <br />

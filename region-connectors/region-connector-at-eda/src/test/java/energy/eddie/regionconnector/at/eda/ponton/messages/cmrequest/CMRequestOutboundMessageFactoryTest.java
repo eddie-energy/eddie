@@ -3,9 +3,13 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest;
 
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
-import energy.eddie.regionconnector.at.eda.requests.*;
+import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
+import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
+import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
@@ -40,7 +44,7 @@ public abstract class CMRequestOutboundMessageFactoryTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();
@@ -48,11 +52,11 @@ public abstract class CMRequestOutboundMessageFactoryTest {
                                       timeFrame,
                                       cmRequestId,
                                       mesageId,
-                                      RequestDataType.METERING_DATA,
                                       AllowedGranularity.P1D,
                                       AllowedTransmissionCycle.D,
                                       atConfiguration,
-                                      ZonedDateTime.now(AT_ZONE_ID));
+                                      ZonedDateTime.now(AT_ZONE_ID),
+                                      new AccountingPointDataNeed());
         // when
         var message = factory().createOutboundMessage(request);
 
