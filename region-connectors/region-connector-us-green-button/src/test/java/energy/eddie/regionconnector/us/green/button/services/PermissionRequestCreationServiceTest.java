@@ -186,6 +186,26 @@ class PermissionRequestCreationServiceTest {
                 .contains("dnid");
     }
 
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation(
+                "cid",
+                "dnid",
+                "http://localhost",
+                "company",
+                "US"
+        );
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> creationService.createPermissionRequest(request));
+        verify(outbox).commit(isA(UsCreatedEvent.class));
+        verify(outbox).commit(isA(UsMalformedEvent.class));
+    }
+
     private static Stream<Arguments> createPermissionRequest_returnsPermissionRequest() {
         var now = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(

@@ -190,6 +190,22 @@ class PermissionRequestCreationServiceTest {
         );
     }
 
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var cdsServer = getCdsServer();
+        when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
+        var request = new PermissionRequestForCreation(0L, "dnid", "cid");
+        when(calculationService.calculate(eq("dnid"), any(), any()))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(CreatedEvent.class));
+        verify(outbox).commit(isA(MalformedEvent.class));
+    }
+
     private static CdsServer getCdsServer() {
         return new CdsServerBuilder().setBaseUri("http://localhost")
                                      .setAdminClientId("client-id")

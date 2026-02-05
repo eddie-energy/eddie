@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.cds.CdsRegionConnectorMetadata.REGION_CONNECTOR_ID;
@@ -79,6 +80,11 @@ public class PermissionRequestCreationService {
             case DataNeedNotSupportedResult(String message) -> {
                 LOGGER.info("Data need {} not supported '{}'", dataNeedId, message);
                 throw unsupportedDataNeed(permissionId, message, dataNeedId);
+            }
+            case EnergyCommunityDataNeedResult ignored -> {
+                var message = "Energy Community Data Need not supported";
+                outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_FIELD, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
             case AccountingPointDataNeedResult ignored ->
                     outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.VALIDATED));

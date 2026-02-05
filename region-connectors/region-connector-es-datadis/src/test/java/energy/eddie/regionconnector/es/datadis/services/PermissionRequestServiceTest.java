@@ -270,6 +270,20 @@ class PermissionRequestServiceTest {
         verify(outbox).commit(assertArg(event -> assertEquals(PermissionProcessStatus.TERMINATED, event.status())));
     }
 
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid", "00000000T", "meteringPointId");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZONE_ID_SPAIN)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createAndSendPermissionRequest(request));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
+    }
+
     private ContractDetails createContractDetails() {
         return new ContractDetails(
                 "",

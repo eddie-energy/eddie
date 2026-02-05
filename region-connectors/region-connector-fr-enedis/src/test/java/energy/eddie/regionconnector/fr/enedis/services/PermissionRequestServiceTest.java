@@ -134,6 +134,20 @@ class PermissionRequestServiceTest {
     }
 
     @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZONE_ID_FR)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrMalformedEvent.class));
+    }
+
+    @Test
     void testCreatePermissionRequest_emitsMalformedOnUnknownDataNeed() {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");

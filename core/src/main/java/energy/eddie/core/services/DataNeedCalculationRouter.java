@@ -127,6 +127,8 @@ public class DataNeedCalculationRouter {
                     Timeframe permissionTimeframe,
                     Timeframe energyTimeframe
             ) -> new DataNeedCalculation(true, granularities, permissionTimeframe, energyTimeframe);
+            case EnergyCommunityDataNeedResult(var start) ->
+                    new DataNeedCalculation(true, null, new Timeframe(start, null), null);
         };
     }
 }

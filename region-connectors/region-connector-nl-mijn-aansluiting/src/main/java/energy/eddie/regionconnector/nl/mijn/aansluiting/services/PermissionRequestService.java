@@ -86,6 +86,11 @@ public class PermissionRequestService {
                                                    List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
+            case EnergyCommunityDataNeedResult ignored -> {
+                var message = "Energy Community Data Need not supported";
+                outbox.commit(new NlMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
             case AccountingPointDataNeedResult(Timeframe permissionTimeframe) ->
                     createAccountingPointDataPermissionRequest(permissionRequest, permissionTimeframe, permissionId);
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {

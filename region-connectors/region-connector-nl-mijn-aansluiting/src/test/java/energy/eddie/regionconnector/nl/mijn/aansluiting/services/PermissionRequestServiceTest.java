@@ -269,6 +269,20 @@ class PermissionRequestServiceTest {
                      () -> permissionRequestService.receiveResponse(URI.create(""), "pid"));
     }
 
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid", "00000000T", "meteringPointId");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
+        verify(outbox).commit(isA(NlCreatedEvent.class));
+        verify(outbox).commit(isA(NlMalformedEvent.class));
+    }
+
     private static MijnAansluitingPermissionRequest createPermissionRequest() {
         return new MijnAansluitingPermissionRequest(
                 "pid",
