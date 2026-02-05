@@ -1,5 +1,5 @@
 <!--
-SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 SPDX-License-Identifier: Apache-2.0
 -->
 
@@ -14,6 +14,7 @@ import {
   Button,
   Column,
   DataTable,
+  type DataTableExpandedRows,
   type DataTableRowExpandEvent,
   IconField,
   InputIcon,
@@ -34,7 +35,7 @@ const totalRecords = ref(0)
 const loading = ref(true)
 
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
-const expandedRows = ref({})
+const expandedRows = ref<DataTableExpandedRows>({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
 
 let loadedPage = 0
@@ -132,13 +133,15 @@ onMounted(async () => {
   <p>The central hub for permission monitoring and management.</p>
 
   <DataTable
-    :value="permissions"
     data-key="permissionId"
-    v-model:expanded-rows="expandedRows"
-    @row-expand="onRowExpand"
-    paginator
+    :value="permissions"
     :rows="50"
     :rows-per-page-options="[50, 100, 250, 500]"
+    paginator
+    removable-sort
+    scrollable
+    @row-expand="onRowExpand"
+    v-model:expanded-rows="expandedRows"
     v-model:filters="filters"
     :global-filter-fields="[
       'country',
@@ -149,8 +152,6 @@ onMounted(async () => {
       'status',
       'cimStatus'
     ]"
-    removable-sort
-    scrollable
   >
     <template #header>
       <IconField>
@@ -173,7 +174,7 @@ onMounted(async () => {
     </template>
 
     <Column expander />
-    <Column field="country" header="Country" sortable>
+    <Column field="country" header="Country">
       <template #body="slotProps">
         <div>
           {{ countryFlag(slotProps.data.country) }}
@@ -181,22 +182,22 @@ onMounted(async () => {
         </div>
       </template>
     </Column>
-    <Column field="regionConnectorId" header="Region Connector" sortable />
-    <Column field="dataNeedId" header="Data Need" sortable />
-    <Column field="permissionId" header="Permission" sortable />
+    <Column field="regionConnectorId" header="Region Connector" />
+    <Column field="dataNeedId" header="Data Need" />
+    <Column field="permissionId" header="Permission" />
     <Column field="startDate" header="Last updated" sortable>
       <template #body="slotProps">
         {{ formatDate(slotProps.data.startDate) }}
       </template>
     </Column>
-    <Column field="status" header="Status" sortable>
+    <Column field="status" header="Status">
       <template #body="slotProps">
         <Tag :severity="getStatusSeverity(slotProps.data.status)">
           <span class="status-tag-value">{{ slotProps.data.status }}</span>
         </Tag>
       </template>
     </Column>
-    <Column field="cimStatus" header="CIM Status" sortable />
+    <Column field="cimStatus" header="CIM Status" />
     <Column header="Actions">
       <template #body="slotProps">
         <Button
