@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.service;
@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata;
 import energy.eddie.regionconnector.be.fluvius.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.be.fluvius.permission.events.CreatedEvent;
@@ -22,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
+
+import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Service
 public class PermissionRequestService {
@@ -38,28 +39,22 @@ public class PermissionRequestService {
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation)
             throws UnsupportedDataNeedException, DataNeedNotFoundException {
         String permissionId = UUID.randomUUID().toString();
+        var dataNeedId = permissionRequestForCreation.dataNeedId();
         outbox.commit(new CreatedEvent(permissionId,
-                                       permissionRequestForCreation.dataNeedId(),
+                                       dataNeedId,
                                        permissionRequestForCreation.connectionId()));
 
-        switch (calculationService.calculate(permissionRequestForCreation.dataNeedId())) {
-            case AccountingPointDataNeedResult ignored -> {
-                outbox.commit(new MalformedEvent(permissionId,
-                                                 new AttributeError(DATA_NEED_ID,
-                                                                    "AccountingPointDataNeedResult not supported!")));
-                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
-                                                       "AccountingPointDataNeedResult not supported!");
-            }
+        var calculation = calculationService.calculate(dataNeedId);
+        switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,
                                                  new AttributeError(DATA_NEED_ID, "DataNeed not found!")));
-                throw new DataNeedNotFoundException(permissionRequestForCreation.dataNeedId());
+                throw new DataNeedNotFoundException(dataNeedId);
             }
             case DataNeedNotSupportedResult(String message) -> {
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
+                                                       dataNeedId,
                                                        message);
             }
             case ValidatedHistoricalDataDataNeedResult(
@@ -74,6 +69,11 @@ public class PermissionRequestService {
                                                  granularities.getFirst(),
                                                  permissionRequestForCreation.flow()));
                 return new CreatedPermissionRequest(permissionId);
+            }
+            default -> {
+                var message = calculation.getClass().getSimpleName() + " not supported";
+                outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
         }
     }

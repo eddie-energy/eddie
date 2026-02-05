@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.services;
@@ -167,6 +167,22 @@ class PermissionRequestCreationServiceTest {
                 () -> assertEquals(today, event.start()),
                 () -> assertEquals(today, event.end())
         );
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var cdsServer = getCdsServer();
+        when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
+        var request = new PermissionRequestForCreation(0L, "dnid", "cid");
+        when(calculationService.calculate(eq("dnid"), any(), any()))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(CreatedEvent.class));
+        verify(outbox).commit(isA(MalformedEvent.class));
     }
 
     private static CdsServer getCdsServer() {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.nl.mijn.aansluiting.services;
@@ -250,6 +250,20 @@ class PermissionRequestServiceTest {
         // Then
         assertThrows(PermissionNotFoundException.class,
                      () -> permissionRequestService.receiveResponse(URI.create(""), "pid"));
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid", "00000000T", "meteringPointId");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
+        verify(outbox).commit(isA(NlCreatedEvent.class));
+        verify(outbox).commit(isA(NlMalformedEvent.class));
     }
 
     private static MijnAansluitingPermissionRequest createPermissionRequest() {

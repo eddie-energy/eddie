@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.services;
@@ -126,6 +126,8 @@ public class DataNeedCalculationRouter {
                     Timeframe permissionTimeframe,
                     Timeframe energyTimeframe
             ) -> new DataNeedCalculation(true, granularities, permissionTimeframe, energyTimeframe);
+            case EnergyCommunityDataNeedResult(var start) ->
+                    new DataNeedCalculation(true, null, new Timeframe(start, null), null);
         };
     }
 }

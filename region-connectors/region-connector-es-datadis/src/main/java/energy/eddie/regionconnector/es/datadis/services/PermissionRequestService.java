@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.services;
@@ -10,7 +10,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
@@ -34,6 +33,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 @Service
@@ -123,9 +123,14 @@ public class PermissionRequestService {
                         permissionId,
                         List.of(new AttributeError(DATA_NEED_ID, message))
                 ));
-                throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
                                                        dataNeedId,
                                                        message);
+            }
+            case EnergyCommunityDataNeedResult ignored -> {
+                var message = "Energy Community Data Need not supported";
+                outbox.commit(new EsMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
             case ValidatedHistoricalDataDataNeedResult vhdResult ->
                     handleValidatedHistoricalDataNeed(vhdResult, permissionId);

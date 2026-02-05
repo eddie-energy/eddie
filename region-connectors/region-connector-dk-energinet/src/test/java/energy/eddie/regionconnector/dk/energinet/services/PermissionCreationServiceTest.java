@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.dk.energinet.services;
@@ -167,5 +167,19 @@ class PermissionCreationServiceTest {
                 () -> assertEquals(now, validated.start()),
                 () -> assertEquals(now, validated.end())
         );
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "token", VALID_REFRESH_TOKEN, "dnid");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(DK_ZONE_ID)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
     }
 }

@@ -7,7 +7,10 @@ import energy.eddie.api.agnostic.ApplicationInformationAware;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
-import energy.eddie.api.agnostic.data.needs.*;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -115,10 +118,6 @@ public class AiidaPermissionService implements ApplicationListener<@NonNull Cont
                     AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                     dataNeedId,
                     message);
-            case AccountingPointDataNeedResult ignored -> throw new UnsupportedDataNeedException(
-                    AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                    dataNeedId,
-                    "Data need not supported");
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
                 var terminationTopic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
                 var createdEvent = new CreatedEvent(permissionId,
@@ -138,6 +137,11 @@ public class AiidaPermissionService implements ApplicationListener<@NonNull Cont
                 var dataNeed = dataNeedsService.getById(dataNeedId);
                 return new QrCodeDto(eddieId, UUID.fromString(permissionId), dataNeed.name(), handshakeUrl);
             }
+            default -> throw new UnsupportedDataNeedException(
+                    AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                    dataNeedId,
+                    "Data need not supported"
+            );
         }
     }
 

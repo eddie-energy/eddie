@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.services;
@@ -109,6 +109,20 @@ class PermissionRequestServiceTest {
         var request = new PermissionRequestForCreation("cid", "dnid");
         when(calculationService.calculate("dnid"))
                 .thenReturn(new DataNeedNotSupportedResult(""));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrMalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnEnergyCommunityDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZONE_ID_FR)));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

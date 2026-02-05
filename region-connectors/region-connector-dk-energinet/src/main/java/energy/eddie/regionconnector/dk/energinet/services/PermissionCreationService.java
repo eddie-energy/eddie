@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.dk.energinet.services;
@@ -10,7 +10,6 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
@@ -20,9 +19,11 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
+import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID;
 import static energy.eddie.regionconnector.shared.jwt.JwtValidations.isValidUntil;
 
 @Service
@@ -61,7 +62,7 @@ public class PermissionCreationService {
             }
             case DataNeedNotSupportedResult(String message) -> {
                 outbox.commit(new DkMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
                                                        dataNeedId,
                                                        message);
             }
@@ -74,6 +75,11 @@ public class PermissionCreationService {
                 createValidatedHistoricalDataEvent(vhdDataNeedResult,
                                                    permissionId,
                                                    vhdDataNeedResult.energyTimeframe());
+            }
+            case EnergyCommunityDataNeedResult ignored -> {
+                var message = "Energy Community Data Need not supported";
+                outbox.commit(new DkMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
         }
         return new CreatedPermissionRequest(permissionId);

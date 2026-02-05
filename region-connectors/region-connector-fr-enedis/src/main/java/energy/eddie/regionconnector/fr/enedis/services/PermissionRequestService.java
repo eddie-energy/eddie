@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.services;
@@ -10,7 +10,6 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
@@ -27,8 +26,11 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 @Service
 public class PermissionRequestService {
@@ -55,22 +57,28 @@ public class PermissionRequestService {
         LOGGER.info("Got request to create a new permission, request was: {}", permissionRequestForCreation);
         var permissionId = UUID.randomUUID().toString();
 
-        var result = calculationService.calculate(permissionRequestForCreation.dataNeedId());
+        var dataNeedId = permissionRequestForCreation.dataNeedId();
+        var result = calculationService.calculate(dataNeedId);
         outbox.commit(new FrCreatedEvent(permissionId,
                                          permissionRequestForCreation.connectionId(),
-                                         permissionRequestForCreation.dataNeedId()));
+                                         dataNeedId));
         var end = switch (result) {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new FrMalformedEvent(permissionId,
                                                    new AttributeError(DATA_NEED_ID, "Data need not found")));
-                throw new DataNeedNotFoundException(permissionRequestForCreation.dataNeedId());
+                throw new DataNeedNotFoundException(dataNeedId);
             }
             case DataNeedNotSupportedResult(String message) -> {
                 outbox.commit(new FrMalformedEvent(permissionId,
                                                    new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
+                                                       dataNeedId,
                                                        message);
+            }
+            case EnergyCommunityDataNeedResult ignored -> {
+                var message = "Energy Community Data Need not supported";
+                outbox.commit(new FrMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
             case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
                 handleAccountingPointDataNeed(permissionId, permissionTimeframe);
