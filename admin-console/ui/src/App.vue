@@ -13,20 +13,30 @@ import { ConfirmDialog, Toast } from 'primevue'
   <Toast></Toast>
   <ConfirmDialog></ConfirmDialog>
 
-  <SidebarNavigation />
+  <div class="wrapper">
+    <SidebarNavigation />
 
-  <main>
-    <RouterView />
-  </main>
+    <main>
+      <RouterView />
+    </main>
+  </div>
 </template>
 
 <style scoped>
+.wrapper {
+  display: flex;
+}
+
 main {
   padding: 7.5rem 2.5rem 3rem;
   overflow: auto;
 }
 
 @media (width < 80rem) {
+  .wrapper {
+    flex-direction: column;
+  }
+
   main {
     padding: 3rem 2rem;
     overflow: initial;

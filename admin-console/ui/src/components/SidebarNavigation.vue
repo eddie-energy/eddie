@@ -50,7 +50,6 @@ aside {
     position: sticky;
     top: 0;
     left: 0;
-    float: left;
     height: 100vh;
   }
 }
