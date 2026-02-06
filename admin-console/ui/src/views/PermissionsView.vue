@@ -26,6 +26,7 @@ import {
 import { onMounted, ref } from 'vue'
 
 import { countryFlag, formatCountry } from '@/util/countries'
+import PermissionStatusCard from '@/components/PermissionStatusCard.vue'
 
 const confirm = useConfirm()
 const toast = useToast()
@@ -83,7 +84,7 @@ function getStatusSeverity(status: string) {
 
 async function onRowExpand(event: DataTableRowExpandEvent) {
   const id = event.data.permissionId
-  rowExpansions.value[id] ||= await getStatusMessages(id)
+  rowExpansions.value[id] ||= (await getStatusMessages(id)).slice().reverse()
 }
 
 function confirmTermination(permissionId: string) {
@@ -212,13 +213,13 @@ onMounted(async () => {
     </Column>
 
     <template #expansion="slotProps">
-      <ul>
-        <template v-for="row in rowExpansions[slotProps.data.permissionId]">
-          <li>
-            <Tag :value="row.status" :severity="getStatusSeverity(row.status)" />
-            <span>{{ formatDate(row.startDate) }}</span>
-          </li>
-        </template>
+      <ul class="permission-states">
+        <li
+          v-for="row in rowExpansions[slotProps.data.permissionId]"
+          :key="row.status + row.startDate"
+        >
+          <PermissionStatusCard :status="row.status" :datetime="row.startDate" />
+        </li>
       </ul>
     </template>
   </DataTable>
@@ -247,6 +248,14 @@ input {
   text-overflow: ellipsis;
   max-width: 10ch;
   overflow: hidden;
+}
+
+.permission-states {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: start;
+  gap: 1rem;
 }
 
 a:hover {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -12,7 +12,7 @@ import {
   REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL,
   TERMINATION_API_URL
 } from '@/config'
-import type { AnyDataNeed } from '@/types'
+import type { AnyDataNeed, PermissionStatus } from '@/types'
 
 export type PageModel<Type> = {
   content: Type[]
@@ -31,7 +31,7 @@ export type StatusMessage = {
   country: string
   dso: string
   startDate: string
-  status: string
+  status: PermissionStatus
   cimStatus: string
   parsedStartDate: string
 }

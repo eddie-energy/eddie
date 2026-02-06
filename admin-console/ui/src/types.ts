@@ -1,7 +1,6 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-// Base types
 export type RegionConnectorFilter = {
   type: 'blocklist' | 'allowlist'
   regionConnectorIds: string[]
@@ -76,3 +75,21 @@ export type AnyDataNeed =
   | ValidatedHistoricalDataDataNeed
 
 export type DataNeedType = AnyDataNeed['type']
+
+export type PermissionStatus =
+  | 'CREATED'
+  | 'VALIDATED'
+  | 'MALFORMED'
+  | 'UNABLE_TO_SEND'
+  | 'SENT_TO_PERMISSION_ADMINISTRATOR'
+  | 'TIMED_OUT'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'INVALID'
+  | 'REVOKED'
+  | 'TERMINATED'
+  | 'FULFILLED'
+  | 'UNFULFILLABLE'
+  | 'REQUIRES_EXTERNAL_TERMINATION'
+  | 'FAILED_TO_TERMINATE'
+  | 'EXTERNALLY_TERMINATED'
