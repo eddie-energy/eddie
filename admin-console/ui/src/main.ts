@@ -50,7 +50,7 @@ const EddiePreset = definePreset(Aura, {
         },
         content: {
           background: '#fafbfc',
-          borderColor: '#fafbfc',
+          borderColor: '#017aa0',
           color: '#017aa0'
         },
         primary: {

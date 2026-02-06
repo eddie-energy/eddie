@@ -1,7 +1,5 @@
-<!--
-  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-  - SPDX-License-Identifier: Apache-2.0
-  -->
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script lang="ts" setup>
 import {
@@ -84,7 +82,7 @@ onMounted(async () => {
     toggleable
     :collapsed="!openPanels.has(id)"
     :pt:header:onClick="() => openPanels.delete(id) || openPanels.add(id)"
-    pt:header:style="border-bottom: var(--panel-border)"
+    pt:content:style="border-top: var(--panel-border)"
   >
     <template #header>
       <header>
