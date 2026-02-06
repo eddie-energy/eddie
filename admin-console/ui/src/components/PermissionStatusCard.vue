@@ -6,49 +6,26 @@ import { useTemplateRef } from 'vue'
 import { Popover } from 'primevue'
 
 import type { PermissionStatus } from '@/types'
+import { STATUS_PRESETS } from '@/constants'
 
-defineProps<{
+const { status, datetime, message } = defineProps<{
   status: PermissionStatus
   datetime: string
   message?: string
 }>()
 
 const popover = useTemplateRef('popover')
-
-const presets: Record<PermissionStatus, { color: string; icon: string }> = {
-  // Request creation states
-  CREATED: { color: 'info', icon: 'pi-plus' },
-  VALIDATED: { color: 'success', icon: 'pi-thumbs-up' },
-  SENT_TO_PERMISSION_ADMINISTRATOR: { color: 'help', icon: 'pi-send' },
-  // Successful completion states
-  ACCEPTED: { color: 'success', icon: 'pi-check' },
-  FULFILLED: { color: 'success', icon: 'pi-file-import' },
-  // Expected terminal states that did not result in data
-  REJECTED: { color: 'warn', icon: 'pi-ban' },
-  REVOKED: { color: 'warn', icon: 'pi-times' },
-  TERMINATED: { color: 'warn', icon: 'pi-stop-circle' },
-  TIMED_OUT: { color: 'warn', icon: 'pi-clock' },
-  // Terminal states the EP might want to investigate
-  MALFORMED: { color: 'danger', icon: 'pi-exclamation-circle' },
-  UNABLE_TO_SEND: { color: 'danger', icon: 'pi-exclamation-triangle' },
-  INVALID: { color: 'danger', icon: 'pi-exclamation-triangle' },
-  UNFULFILLABLE: { color: 'danger', icon: 'pi-ban' },
-  // Termination states
-  REQUIRES_EXTERNAL_TERMINATION: { color: 'warn', icon: 'pi-clock' },
-  EXTERNALLY_TERMINATED: { color: 'success', icon: 'pi-times' },
-  FAILED_TO_TERMINATE: { color: 'danger', icon: 'pi-exclamation-triangle' }
-}
 </script>
 
 <template>
   <div class="card">
     <i
       class="pi icon"
-      :class="[presets[status].icon ?? 'pi-question-circle']"
-      :style="`background: var(--${presets[status].color ?? 'help'})`"
+      :class="[STATUS_PRESETS[status].icon ?? 'pi-question-circle']"
+      :style="`background: var(--${STATUS_PRESETS[status].color ?? 'help'})`"
     ></i>
     <div>
-      <b>{{ status }}</b>
+      <b>{{ STATUS_PRESETS[status].text }}</b>
       <br />
       <span>{{ datetime }}</span>
     </div>

@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 <!--
 SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 SPDX-License-Identifier: Apache-2.0
@@ -19,7 +22,6 @@ import {
   IconField,
   InputIcon,
   InputText,
-  Tag,
   useConfirm,
   useToast
 } from 'primevue'
@@ -27,6 +29,7 @@ import { onMounted, ref } from 'vue'
 
 import { countryFlag, formatCountry } from '@/util/countries'
 import PermissionStatusCard from '@/components/PermissionStatusCard.vue'
+import StatusTag from '@/components/StatusTag.vue'
 
 const confirm = useConfirm()
 const toast = useToast()
@@ -66,20 +69,6 @@ function formatDate(date: string) {
     dateStyle: 'short',
     timeStyle: 'medium'
   }).format(new Date(date))
-}
-
-function getStatusSeverity(status: string) {
-  switch (status) {
-    case 'ACCEPTED':
-      return 'success'
-    case 'MALFORMED':
-    case 'UNABLE_TO_SEND':
-    case 'INVALID':
-    case 'UNFULFILLABLE':
-      return 'danger'
-    default:
-      return 'secondary'
-  }
 }
 
 async function onRowExpand(event: DataTableRowExpandEvent) {
@@ -193,9 +182,7 @@ onMounted(async () => {
     </Column>
     <Column field="status" header="Status">
       <template #body="slotProps">
-        <Tag :severity="getStatusSeverity(slotProps.data.status)">
-          <span class="status-tag-value">{{ slotProps.data.status }}</span>
-        </Tag>
+        <StatusTag :status="slotProps.data.status" />
       </template>
     </Column>
     <Column field="cimStatus" header="CIM Status" />
@@ -241,13 +228,6 @@ li {
 /* Prevent search from overflowing on mobile */
 input {
   max-width: 100%;
-}
-
-/* Prevent long status texts from overflowing table columns */
-.status-tag-value {
-  text-overflow: ellipsis;
-  max-width: 10ch;
-  overflow: hidden;
 }
 
 .permission-states {

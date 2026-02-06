@@ -15,7 +15,7 @@ import { countryFlag, formatCountry } from '@/util/countries'
 
 import { Button, Panel } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
-import HealthIcon from '@/components/HealthIcon.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { formatDuration } from '@/util/duration'
 import {
   DATA_NEEDS,
@@ -93,7 +93,7 @@ onMounted(async () => {
           <span>{{ formatCountry(countryCodes[0]) }}</span>
         </div>
 
-        <HealthIcon :health="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
+        <StatusTag :status="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
       </header>
     </template>
 
@@ -111,7 +111,7 @@ onMounted(async () => {
       <dd>{{ timeZone }}</dd>
       <dt>Status</dt>
       <dd>
-        <HealthIcon :health="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
+        <StatusTag :status="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
       </dd>
       <dt>ID</dt>
       <dd>{{ id }}</dd>
