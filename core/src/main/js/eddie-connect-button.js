@@ -569,7 +569,7 @@ class EddieConnectButton extends LitElement {
     }
 
     this.dispatchEvent(dialogOpenEvent);
-    Function(`"use strict";${this.onOpen}`)();
+    new Function(`"use strict";${this.onOpen}`)();
   }
 
   handleDialogHide(event) {
@@ -579,7 +579,7 @@ class EddieConnectButton extends LitElement {
     }
 
     this.dispatchEvent(dialogCloseEvent);
-    Function(`"use strict";${this.onClose}`)();
+    new Function(`"use strict";${this.onClose}`)();
   }
 
   addRequestStatusHandlers() {
@@ -587,13 +587,13 @@ class EddieConnectButton extends LitElement {
       const status = event.detail.status;
 
       // Execute the onStatusChange handler with the status as an argument
-      Function(`"use strict";${this.onStatusChange}`)(status);
+      new Function(`"use strict";${this.onStatusChange}`)(status);
 
       // Execute the specific status handler if it exists
       const statusHandlerString = status.toLowerCase().replaceAll("_", "");
       const statusHandler = this.getAttribute(`on${statusHandlerString}`);
       if (statusHandler) {
-        Function(`"use strict";${statusHandler}`)();
+        new Function(`"use strict";${statusHandler}`)();
       }
     });
   }
