@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, html, LitElement } from "lit";
@@ -146,9 +146,9 @@ class EddieConnectButton extends LitElement {
         display: flex;
         align-items: center;
         gap: 1rem;
-        background: white;
-        border: 2px solid #017aa0;
-        color: #017aa0;
+        background: var(--eddie-button-background, white);
+        border: 2px solid var(--eddie-button-color, #017aa0);
+        color: var(--eddie-button-color, #017aa0);
         border-radius: 9999px;
         padding: 0.5rem 1.25rem 0.5rem 1rem;
         font-weight: bold;
@@ -631,7 +631,7 @@ class EddieConnectButton extends LitElement {
     if (!this._isValidConfiguration) {
       return html`
         <button class="eddie-connect-button" disabled>
-          ${unsafeSVG(buttonIcon)}
+          <slot name="icon">${unsafeSVG(buttonIcon)}</slot>
           <span>
             ${this._isValidConfiguration === undefined
               ? "Loading"
@@ -644,7 +644,7 @@ class EddieConnectButton extends LitElement {
     if (this._dataNeedAttributes.some((dn) => !dn.enabled)) {
       return html`
         <button class="eddie-connect-button" disabled>
-          ${unsafeSVG(buttonIcon)}
+          <slot name="icon">${unsafeSVG(buttonIcon)}</slot>
           <span>Disabled Configuration</span>
         </button>
       `;
@@ -657,8 +657,8 @@ class EddieConnectButton extends LitElement {
       />
 
       <button class="eddie-connect-button" @click="${this.openDialog}">
-        ${unsafeSVG(buttonIcon)}
-        <span>Connect with EDDIE</span>
+        <slot name="icon">${unsafeSVG(buttonIcon)}</slot>
+        <span><slot>Connect with EDDIE</slot></span>
       </button>
 
       <sl-dialog
@@ -667,7 +667,9 @@ class EddieConnectButton extends LitElement {
         @sl-show="${this.handleDialogShow}"
         @sl-hide="${this.handleDialogHide}"
       >
-        <div slot="label">${unsafeSVG(headerImage)}</div>
+        <div slot="label">
+          <slot name="logo">${unsafeSVG(headerImage)}</slot>
+        </div>
         <eddie-step-indicator
           ${ref(this.stepIndicatorRef)}
           step="1"
