@@ -1,11 +1,6 @@
 <!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-<!--
-SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
-
 <script lang="ts" setup>
 import {
   getPermissionsPaginated,
@@ -39,6 +34,7 @@ const totalRecords = ref(0)
 const loading = ref(true)
 
 const filters = ref({ global: { value: null, matchMode: 'contains' } })
+const selectedRows = ref<StatusMessage[]>([])
 const expandedRows = ref<DataTableExpandedRows>({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
 
@@ -112,6 +108,18 @@ function confirmTermination(permissionId: string) {
   })
 }
 
+function retransmitSelected() {
+  // TODO: GH-1713
+  console.debug(selectedRows.value)
+  alert('Not implemented. See GH-1713.')
+}
+
+function terminateSelected() {
+  for (const row of selectedRows.value) {
+    confirmTermination(row.permissionId)
+  }
+}
+
 onMounted(async () => {
   await fetchPermissions()
   loading.value = false
@@ -131,6 +139,7 @@ onMounted(async () => {
     removable-sort
     scrollable
     @row-expand="onRowExpand"
+    v-model:selection="selectedRows"
     v-model:expanded-rows="expandedRows"
     v-model:filters="filters"
     :global-filter-fields="[
@@ -144,12 +153,23 @@ onMounted(async () => {
     ]"
   >
     <template #header>
-      <IconField>
-        <InputIcon>
-          <i class="pi pi-search" />
-        </InputIcon>
-        <InputText v-model="filters.global.value" placeholder="Keyword Search" />
-      </IconField>
+      <div class="header-actions">
+        <IconField>
+          <InputIcon>
+            <i class="pi pi-search" />
+          </InputIcon>
+          <InputText v-model="filters.global.value" placeholder="Keyword Search" />
+        </IconField>
+
+        <Button label="Retransmit selected" rounded @click="retransmitSelected"></Button>
+
+        <Button
+          label="Terminate selected"
+          severity="danger"
+          rounded
+          @click="terminateSelected"
+        ></Button>
+      </div>
     </template>
 
     <template #empty>No permissions found.</template>
@@ -164,6 +184,7 @@ onMounted(async () => {
     </template>
 
     <Column expander />
+    <Column selectionMode="multiple"></Column>
     <Column field="country" header="Country">
       <template #body="slotProps">
         <div>
@@ -192,8 +213,7 @@ onMounted(async () => {
           v-if="slotProps.data.status === 'ACCEPTED'"
           label="Terminate"
           severity="danger"
-          size="small"
-          outlined
+          rounded
           @click="confirmTermination(slotProps.data.permissionId)"
         />
       </template>
@@ -228,6 +248,15 @@ li {
 /* Prevent search from overflowing on mobile */
 input {
   max-width: 100%;
+}
+
+.header-actions {
+  display: grid;
+  gap: 0.75rem;
+
+  @media (width >= 80rem) {
+    grid-template-columns: 1fr auto auto;
+  }
 }
 
 .permission-states {
