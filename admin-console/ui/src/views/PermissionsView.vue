@@ -187,10 +187,10 @@ onMounted(async () => {
     <Column selectionMode="multiple"></Column>
     <Column field="country" header="Country">
       <template #body="slotProps">
-        <div>
+        <span class="country">
           {{ countryFlag(slotProps.data.country) }}
           {{ formatCountry(slotProps.data.country) }}
-        </div>
+        </span>
       </template>
     </Column>
     <Column field="regionConnectorId" header="Region Connector" />
@@ -257,6 +257,10 @@ input {
   @media (width >= 80rem) {
     grid-template-columns: 1fr auto auto;
   }
+}
+
+.country {
+  text-wrap: nowrap;
 }
 
 .permission-states {
