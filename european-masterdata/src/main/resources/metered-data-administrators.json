@@ -1984,7 +1984,7 @@
     "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
-    "country": "nl ",
+    "country": "nl",
     "company": "Enexis",
     "companyId": "8716879000004",
     "websiteUrl": "https://www.enexis.nl/",
@@ -1992,11 +1992,19 @@
     "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
   },
   {
-    "country": "nl ",
+    "country": "nl",
     "company": "Liander",
     "companyId": "8716871000002",
     "websiteUrl": "https://www.liander.nl/",
     "officialContact": "",
     "permissionAdministrator": "Gegevens Uitwisselings Entiteit (BAS)"
+  },
+  {
+    "country": "de",
+    "company": "ETA+",
+    "companyId": "",
+    "websiteUrl": "https://www.etaplus.energy/",
+    "officialContact": "",
+    "permissionAdministrator": "ETA+"
   }
 ]

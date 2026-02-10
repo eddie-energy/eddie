@@ -1102,5 +1102,13 @@
     "companyId": "SVCE",
     "jumpOffUrl": "https://data.svcleanenergy.org",
     "regionConnector": "us-green-button"
+  },
+  {
+    "country": "de",
+    "company": "ETA+",
+    "name": "ETA+",
+    "companyId": "",
+    "jumpOffUrl": "https://www.etaplus.energy/",
+    "regionConnector": "de-eta"
   }
 ]
