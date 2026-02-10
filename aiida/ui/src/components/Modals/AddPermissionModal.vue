@@ -12,7 +12,7 @@ import { addPermissions } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog'
-import type { QrCode } from '@/types'
+import type { AiidaPermissionRequestDTO } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const { updatePermission } = usePermissionDialog()
@@ -59,14 +59,13 @@ const parseAiidaCode = (aiidaCode: string) => {
   }
 }
 
-const executePermissionRequests = async (qrCode: QrCode) => {
+const executePermissionRequests = async (permissionRequest: AiidaPermissionRequestDTO) => {
   loading.value = true
-  try {
-    const permissions = await addPermissions(qrCode)
-    fetchPermissions()
-    updatePermission(permissions) // TODO: handle multiple permissions
-  } catch {
-    //catch handled by notify from api functions
+
+  const permissions = await addPermissions(permissionRequest)
+  fetchPermissions()
+  for (const permission of permissions) {
+    await updatePermission(permission)
   }
   loading.value = false
   permissionModal.value?.close()
@@ -74,14 +73,14 @@ const executePermissionRequests = async (qrCode: QrCode) => {
 
 const handleAddPermissions = async () => {
   try {
-    const qrCode = parseAiidaCode(aiidaCode.value)
-    executePermissionRequests(qrCode)
+    const permissionRequest = parseAiidaCode(aiidaCode.value)
+    executePermissionRequests(permissionRequest)
   } catch (error: any) {
     aiidaCodeError.value = error?.message ?? error?.toString() ?? t('errors.unexpectedError')
   }
 }
 
-const handleValidQrCode = (qrCode: QrCode) => {
+const handleValidQrCode = (qrCode: AiidaPermissionRequestDTO) => {
   toggleQrCodeModal(false)
   executePermissionRequests(qrCode)
 }

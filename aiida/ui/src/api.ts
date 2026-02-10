@@ -9,7 +9,7 @@ import type {
   AiidaDataSourceHealthStatus,
   AiidaDataSourceType,
   AiidaPermission,
-  QrCode,
+  AiidaPermissionRequestDTO,
 } from './types'
 
 const { danger, success } = useToast()
@@ -139,10 +139,12 @@ export function getApplicationInformation(): Promise<AiidaApplicationInformation
   return fetch('/application-information')
 }
 
-export function addPermissions(qrCode: QrCode): Promise<AiidaPermission[]> {
+export function addPermissions(
+  permissionRequest: AiidaPermissionRequestDTO,
+): Promise<AiidaPermission[]> {
   return fetch('/permissions', {
     method: 'POST',
-    body: JSON.stringify(qrCode),
+    body: JSON.stringify(permissionRequest),
   })
 }
 

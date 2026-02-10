@@ -20,7 +20,7 @@ export async function getSvgUrlIfExists(svg: string) {
       return `${THYMELEAF_AIIDA_PUBLIC_URL ?? import.meta.env.VITE_AIIDA_PUBLIC_URL}${filePath}`
     }
   } catch {
-    return ""
+    return ''
   }
-  return ""
+  return ''
 }

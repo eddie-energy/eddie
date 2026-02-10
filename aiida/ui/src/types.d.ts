@@ -72,7 +72,7 @@ export type AiidaApplicationInformation = {
   aiidaId: string
 }
 
-export type QrCode = {
+export type AiidaPermissionRequestDTO = {
   eddieId: string
   permissionIds: string[]
   handshakeUrl: string
@@ -80,8 +80,8 @@ export type QrCode = {
 }
 
 export type AiidaDataSourceHealthStatus = {
-    status: string,
-    details: string
+  status: string
+  details: string
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'

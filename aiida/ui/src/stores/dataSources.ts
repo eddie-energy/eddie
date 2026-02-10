@@ -7,7 +7,9 @@ import type { AiidaDataSource, AiidaDataSourceHealthStatus } from '@/types'
 
 export const dataSources = ref<AiidaDataSource[]>([])
 export const dataSourceImages = ref<Record<string, string | undefined>>({})
-export const dataSourceHealthStatuses = ref<Record<string, AiidaDataSourceHealthStatus | undefined>>({})
+export const dataSourceHealthStatuses = ref<
+  Record<string, AiidaDataSourceHealthStatus | undefined>
+>({})
 
 export async function fetchDataSourcesFull() {
   await fetchDataSources()
@@ -15,7 +17,7 @@ export async function fetchDataSourcesFull() {
   await fetchDataSourceImages()
 }
 
-export async function fetchDataSources(){
+export async function fetchDataSources() {
   dataSources.value = await getDataSources()
 }
 
