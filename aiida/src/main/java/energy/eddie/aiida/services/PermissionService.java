@@ -416,8 +416,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     private boolean isValidDataNeedType(String dataNeedType) {
-        return dataNeedType.equals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE)
-               || dataNeedType.equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        return OutboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType)
+               || InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType);
     }
 
     private void terminationRequestReceived(UUID permissionId) {
