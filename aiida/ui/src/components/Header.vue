@@ -28,8 +28,8 @@ onMounted(async () => {
 <template>
   <header class="header">
     <RouterLink to="/">
-      <img :src="HeaderLogoUrl" class="logo" />
-      <HeaderLogo v-if="!HeaderLogoUrl" class="logo" />
+      <img v-if="HeaderLogoUrl" :src="HeaderLogoUrl" class="logo" />
+      <HeaderLogo v-else class="logo" />
     </RouterLink>
 
     <nav class="header-nav">
