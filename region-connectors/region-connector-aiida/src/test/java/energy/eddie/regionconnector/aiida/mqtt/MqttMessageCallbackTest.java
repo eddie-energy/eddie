@@ -3,8 +3,6 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
@@ -37,11 +35,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.util.List;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -69,7 +68,6 @@ class MqttMessageCallbackTest {
     private final Sinks.Many<RawDataMessage> rawDataMessageSink = Sinks.many()
                                                                        .unicast()
                                                                        .onBackpressureBuffer();
-    private final ObjectMapper realObjectMapper = new AiidaBeanConfig().objectMapper();
     private final LogCaptor logCaptor = LogCaptor.forClass(MqttMessageCallback.class);
     private MqttMessageCallback mqttMessageCallback;
 
@@ -78,8 +76,14 @@ class MqttMessageCallbackTest {
     @Mock
     private AiidaPermissionRequestViewRepository permissionRequestViewRepository;
 
+    private ObjectMapper realObjectMapper;
+
     @BeforeEach
     void setUp() {
+        var builder = JsonMapper.builder();
+        new AiidaBeanConfig().objectMapperCustomizer().customize(builder);
+        realObjectMapper = builder.build();
+
         // Message Processors
         var messageProcessorRegistry = new AiidaMessageProcessorRegistry(getAiidaMessageProcessors());
         mqttMessageCallback = new MqttMessageCallback(messageProcessorRegistry);
@@ -292,7 +296,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1RawMessage_valid() throws IOException {
+    void messageArrived_smartMeterP1RawMessage_valid() {
         // Given
         var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
@@ -347,7 +351,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1RawMessage_invalidPermission() throws IOException {
+    void messageArrived_smartMeterP1RawMessage_invalidPermission() {
         // Given
         var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
@@ -367,7 +371,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1RawMessage_invalidStatus() throws IOException {
+    void messageArrived_smartMeterP1RawMessage_invalidStatus() {
         // Given
         var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
@@ -392,7 +396,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1RawMessage_beforeStartDate() throws IOException {
+    void messageArrived_smartMeterP1RawMessage_beforeStartDate() {
         // Given
         var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
@@ -425,7 +429,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1RawMessage_afterEndDate() throws IOException {
+    void messageArrived_smartMeterP1RawMessage_afterEndDate() {
         // Given
         var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
@@ -544,12 +548,12 @@ class MqttMessageCallbackTest {
                        cimDataMessageProcessorV106);
     }
 
-    private AiidaRecordDto getAiidaRecordDto() throws JsonProcessingException {
+    private AiidaRecordDto getAiidaRecordDto() {
         var aiidaRecordDtoJson = "{\"asset\":\"SUBMETER\",\"userId\":\"5211ea05-d4ab-48ff-8613-8f4791a56606\",\"dataSourceId\":\"4211ea05-d4ab-48ff-8613-8f4791a56606\",\"permissionId\":\"" + PERMISSION_ID + "\",\"values\":[{\"rawTag\":\"PAPP\",\"dataTag\":\"1-0:1.7.0\",\"rawValue\":\"10\",\"value\":\"10\",\"rawUnitOfMeasurement\":\"VA\",\"unitOfMeasurement\":\"VA\"},{\"rawTag\":\"BASE\",\"dataTag\":\"1-0:1.8.0\",\"rawValue\":\"50\",\"value\":\"50\",\"rawUnitOfMeasurement\":\"Wh\",\"unitOfMeasurement\":\"Wh\"}]}";
         return realObjectMapper.readValue(aiidaRecordDtoJson, AiidaRecordDto.class);
     }
 
-    private AiidaConnectionStatusMessageDto getAiidaConnectionStatusMessage(PermissionProcessStatus status) throws JsonProcessingException {
+    private AiidaConnectionStatusMessageDto getAiidaConnectionStatusMessage(PermissionProcessStatus status) {
         var aiidaConnectionStatusMessageJson = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000001\",\"timestamp\":1725458241.237425343,\"status\":\"" + status + "\",\"permissionId\":\"" + PERMISSION_ID + "\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
         return realObjectMapper.readValue(aiidaConnectionStatusMessageJson, AiidaConnectionStatusMessageDto.class);
     }

@@ -3,8 +3,6 @@
 
 package energy.eddie.aiida.streamers.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
@@ -34,6 +32,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -125,8 +125,10 @@ class MqttStreamerTest {
         when(mockApplicationInformationService.applicationInformation()).thenReturn(applicationInformation);
 
         // Schema Formatter Registry
-        var objectMapper = new AiidaConfiguration().customObjectMapper().build();
-        var rawSchemaFormatter = new RawFormatter(mockApplicationInformationService, objectMapper);
+        var builder = JsonMapper.builder();
+        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
+        var mapper = builder.build();
+        var rawSchemaFormatter = new RawFormatter(mockApplicationInformationService, mapper);
         var schemaFormatterRegistry = new SchemaFormatterRegistry(List.of(rawSchemaFormatter));
 
         streamer = new MqttStreamer(

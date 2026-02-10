@@ -42,7 +42,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reactor.core.publisher.Sinks;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.nio.charset.StandardCharsets;
@@ -57,7 +56,7 @@ import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.RE
 @Import(ObjectMapperConfig.class)
 public class AiidaBeanConfig {
     @Bean
-    public JsonMapperBuilderCustomizer objectMapper() {
+    public JsonMapperBuilderCustomizer objectMapperCustomizer() {
         return builder -> builder.addModule(new JakartaXmlBindAnnotationModule());
     }
 

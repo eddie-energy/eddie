@@ -1,17 +1,17 @@
 package energy.eddie.aiida.schemas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.UUID;
 
 public abstract class BaseSchemaFormatter implements SchemaFormatter {
     protected final UUID aiidaId;
-    protected final ObjectMapper mapper;
+    protected final JsonMapper mapper;
 
     protected BaseSchemaFormatter(
             ApplicationInformationService applicationInformationService,
-            ObjectMapper mapper
+            JsonMapper mapper
     ) {
         this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
         this.mapper = mapper;

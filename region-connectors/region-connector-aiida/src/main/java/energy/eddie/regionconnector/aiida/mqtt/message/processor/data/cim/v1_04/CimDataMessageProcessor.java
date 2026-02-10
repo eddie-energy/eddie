@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_04;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
@@ -11,8 +10,7 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
-
-import java.io.IOException;
+import tools.jackson.databind.ObjectMapper;
 
 @Component(value = "cimDataMessageProcessorV104")
 public class CimDataMessageProcessor extends BaseMessageProcessor {
@@ -28,7 +26,7 @@ public class CimDataMessageProcessor extends BaseMessageProcessor {
     }
 
     @Override
-    public void processMessage(MqttMessage message) throws PermissionNotFoundException, PermissionInvalidException, IOException {
+    public void processMessage(MqttMessage message) throws PermissionNotFoundException, PermissionInvalidException {
         var nearRealTimeDataEnvelope = objectMapper.readValue(message.getPayload(), RTDEnvelope.class);
 
         var permissionId = nearRealTimeDataEnvelope.getMessageDocumentHeaderMetaInformationPermissionId();

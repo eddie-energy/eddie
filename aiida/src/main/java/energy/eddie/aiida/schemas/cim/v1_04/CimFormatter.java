@@ -1,7 +1,5 @@
 package energy.eddie.aiida.schemas.cim.v1_04;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.models.permission.Permission;
@@ -12,6 +10,8 @@ import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Component(value = "cimFormatterVersion104")
 public class CimFormatter extends BaseSchemaFormatter {
@@ -19,7 +19,7 @@ public class CimFormatter extends BaseSchemaFormatter {
 
     public CimFormatter(
             ApplicationInformationService applicationInformationService,
-            ObjectMapper mapper
+            JsonMapper mapper
     ) {
         super(applicationInformationService, mapper);
         cimFormatterStrategy = new CimStrategy();
@@ -39,7 +39,7 @@ public class CimFormatter extends BaseSchemaFormatter {
             return mapper.writeValueAsBytes(cimFormatterStrategy.toRealTimeDataEnvelope(aiidaId,
                                                                                         aiidaRecord,
                                                                                         permission));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new CimSchemaFormatterException(e);
         }
     }

@@ -98,6 +98,8 @@ public class AiidaRecord {
                                   userId,
                                   dataSourceId,
                                   permissionId,
-                                  aiidaRecordValues.stream().map(AiidaRecordValue::toDto).toList());
+                                  aiidaRecordValues.stream()
+                                                   .map(AiidaRecordValue::toDto)
+                                                   .toList());
     }
 }

@@ -8,8 +8,8 @@ import energy.eddie.outbound.rest.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,7 +23,7 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 
-@WebFluxTest(value = CimController.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(value = CimController.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
 @Import({WebTestConfig.class})
 class CimControllerTest {
     @Autowired

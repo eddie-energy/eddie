@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.aiida.mqtt.message.processor.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.BaseMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
@@ -8,8 +7,7 @@ import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPe
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
-
-import java.io.IOException;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class StatusMessageProcessor extends BaseMessageProcessor {
@@ -25,7 +23,7 @@ public class StatusMessageProcessor extends BaseMessageProcessor {
     }
 
     @Override
-    public void processMessage(MqttMessage message) throws IOException {
+    public void processMessage(MqttMessage message) {
         var statusMessage = objectMapper.readValue(message.getPayload(), AiidaConnectionStatusMessageDto.class);
         var permissionId = statusMessage.permissionId();
 

@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.aiida.mqtt.message.processor.data.raw;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -12,8 +11,8 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Component
@@ -32,7 +31,7 @@ public class RawDataMessageProcessor extends BaseMessageProcessor {
     @Override
     public void processMessage(
             MqttMessage message
-    ) throws IOException, PermissionNotFoundException, PermissionInvalidException {
+    ) throws PermissionNotFoundException, PermissionInvalidException {
         var aiidaRecordDto = objectMapper.readValue(message.getPayload(), AiidaRecordDto.class);
 
         var permissionId = aiidaRecordDto.permissionId().toString();

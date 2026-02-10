@@ -3,7 +3,6 @@
 
 package energy.eddie.aiida.streamers.mqtt;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
@@ -26,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;

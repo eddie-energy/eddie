@@ -1,6 +1,5 @@
 package energy.eddie.regionconnector.aiida.mqtt.message.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
@@ -8,6 +7,7 @@ import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPe
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.ZoneId;

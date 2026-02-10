@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.schemas;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
@@ -25,8 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.test.json.JsonAssert;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -38,8 +37,7 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -139,7 +137,6 @@ class SchemaTest {
             )
     );
 
-    private final ObjectMapper objectMapper = new AiidaConfiguration().customObjectMapper().build();
     private final ClassLoader classLoader = getClass().getClassLoader();
 
     @Mock
@@ -148,8 +145,14 @@ class SchemaTest {
     @Mock
     private SchemaFormatterRegistry schemaFormatterRegistry;
 
+    private JsonMapper mapper;
+
     @BeforeEach
     void setUp() {
+        var builder = JsonMapper.builder();
+        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
+        mapper = builder.build();
+
         var applicationInformation = mock(ApplicationInformation.class);
         when(applicationInformationService.applicationInformation()).thenReturn(applicationInformation);
         when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
@@ -160,7 +163,7 @@ class SchemaTest {
         var permissionMock = mock(Permission.class);
         when(permissionMock.id()).thenReturn(PERMISSION_ID);
 
-        var rawFormatter = new RawFormatter(applicationInformationService, objectMapper);
+        var rawFormatter = new RawFormatter(applicationInformationService, mapper);
         when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(rawFormatter);
         var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW);
 
@@ -171,7 +174,7 @@ class SchemaTest {
             var formattedRawRecordBytes = formatter.format(AIIDA_RECORD_AT, permissionMock);
             var actualRecordJson = new String(formattedRawRecordBytes, StandardCharsets.UTF_8);
 
-            assertEquals(objectMapper.readTree(expectedRecordJson), objectMapper.readTree(actualRecordJson));
+            assertEquals(mapper.readTree(expectedRecordJson), mapper.readTree(actualRecordJson));
         }
 
         try (var rawAiidaRecordFRStream = classLoader.getResourceAsStream("aiida/record/fr/raw_record.json")) {
@@ -181,7 +184,7 @@ class SchemaTest {
             var formattedRawRecordBytes = formatter.format(AIIDA_RECORD_FR, permissionMock);
             var actualRecordJson = new String(formattedRawRecordBytes, StandardCharsets.UTF_8);
 
-            assertEquals(objectMapper.readTree(expectedRecordJson), objectMapper.readTree(actualRecordJson));
+            assertEquals(mapper.readTree(expectedRecordJson), mapper.readTree(actualRecordJson));
         }
     }
 
@@ -191,7 +194,7 @@ class SchemaTest {
 
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
         var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
-        var cimFormatter = new CimFormatter(applicationInformationService, objectMapper);
+        var cimFormatter = new CimFormatter(applicationInformationService, mapper);
 
         var permissionMock = mock(Permission.class);
         var dataNeedMock = mock(AiidaLocalDataNeed.class);

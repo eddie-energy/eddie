@@ -4,6 +4,7 @@
 package energy.eddie.outbound.rest.persistence.specifications;
 
 import org.springframework.data.jpa.domain.PredicateSpecification;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.ZonedDateTime;
 import java.util.List;

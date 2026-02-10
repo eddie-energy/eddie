@@ -1,7 +1,5 @@
 package energy.eddie.aiida.schemas.raw;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import energy.eddie.aiida.errors.formatter.RawSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.models.permission.Permission;
@@ -11,12 +9,14 @@ import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 @Component
 public class RawFormatter extends BaseSchemaFormatter {
     public RawFormatter(
             ApplicationInformationService applicationInformationService,
-            ObjectMapper mapper
+            JsonMapper mapper
     ) {
         super(applicationInformationService, mapper);
     }
@@ -38,7 +38,7 @@ public class RawFormatter extends BaseSchemaFormatter {
     private byte[] serializeOrThrow(AiidaRecordDto aiidaRecordDto) throws RawSchemaFormatterException {
         try {
             return mapper.writeValueAsBytes(aiidaRecordDto);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RawSchemaFormatterException(e);
         }
     }
