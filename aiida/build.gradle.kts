@@ -97,6 +97,10 @@ tasks.named<Test>("test") {
 tasks.register<Test>("integrationTest") {
     description = "Runs only integration tests."
     group = "verification"
+
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+
     useJUnitPlatform {
         filter {
             includeTestsMatching("*IntegrationTest")
