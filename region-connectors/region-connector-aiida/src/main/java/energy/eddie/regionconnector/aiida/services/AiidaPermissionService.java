@@ -5,7 +5,7 @@ package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.ApplicationInformationAware;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -111,7 +111,7 @@ public class AiidaPermissionService implements ApplicationListener<@NonNull Cont
         }
     }
 
-    public QrCodeDto createValidateAndSendPermissionRequests(
+    public AiidaPermissionRequestDto createValidateAndSendPermissionRequests(
             PermissionRequestForCreation forCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var permissionIds = new ArrayList<UUID>();
@@ -127,7 +127,7 @@ public class AiidaPermissionService implements ApplicationListener<@NonNull Cont
                                    + "/" + REGION_CONNECTOR_ID
                                    + PATH_HANDSHAKE_PERMISSION_REQUEST;
 
-        return new QrCodeDto(eddieId, permissionIds, handshakeUrlTemplate, accessToken);
+        return new AiidaPermissionRequestDto(eddieId, permissionIds, handshakeUrlTemplate, accessToken);
     }
 
     public void unableToFulfillPermission(

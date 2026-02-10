@@ -4,8 +4,8 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.aiida.PermissionUpdateDto;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionUpdateDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -45,7 +45,7 @@ public class PermissionRequestController {
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<QrCodeDto> createPermissionRequests(
+    public ResponseEntity<AiidaPermissionRequestDto> createPermissionRequests(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
@@ -60,7 +60,7 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> updatePermissionRequest(
             @PathVariable String permissionId,
-            @Valid @RequestBody PermissionUpdateDto updateDto
+            @Valid @RequestBody AiidaPermissionUpdateDto updateDto
     ) throws PermissionNotFoundException, CredentialsAlreadyExistException, PermissionStateTransitionException, DataNeedNotFoundException {
         var aiidaId = updateDto.aiidaId();
 

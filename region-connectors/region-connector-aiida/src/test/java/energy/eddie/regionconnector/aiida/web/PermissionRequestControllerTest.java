@@ -3,7 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -106,7 +106,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalNotNeededInformation_createPermissionRequests_isIgnored() throws Exception {
         // Given
-        var qrCodeDto = new QrCodeDto(UUID.randomUUID(), permissionId, "serviceName", "http://localhost:8080/example");
+        var qrCodeDto = new AiidaPermissionRequestDto(UUID.randomUUID(), permissionId, "serviceName", "http://localhost:8080/example");
         when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(qrCodeDto);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"11\",\"extra\":\"information\"}";
         var expectedLocationHeader = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
@@ -125,10 +125,10 @@ class PermissionRequestControllerTest {
     @Test
     void givenValidInput_createPermissionRequests_asExpected() throws Exception {
         // Given
-        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(new QrCodeDto(eddieId,
-                                                                                                  permissionId,
-                                                                                                  "serviceName",
-                                                                                                  "http://localhost:8080/example"));
+        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(new AiidaPermissionRequestDto(eddieId,
+                                                                                                                  permissionId,
+                                                                                                                  "serviceName",
+                                                                                                                  "http://localhost:8080/example"));
         var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedId\":\"1\"}";
         var expectedLocationHeader = new UriTemplate(PATH_HANDSHAKE_PERMISSION_REQUEST)
                 .expand(permissionId)

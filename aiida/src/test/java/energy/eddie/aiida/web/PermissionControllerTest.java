@@ -7,7 +7,7 @@ import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -262,17 +262,17 @@ class PermissionControllerTest {
 
     private List<Permission> sampleDataForGetAllPermissionsTest() {
         var name = "Service1";
-        var permission1 = new Permission(new QrCodeDto(eddieId, permissionId, name, "https://example.org"), userId);
+        var permission1 = new Permission(new AiidaPermissionRequestDto(eddieId, permissionId, name, "https://example.org"), userId);
         permission1.setGrantTime(grant);
 
         name = "Service2";
         grant = grant.plusSeconds(1000);
-        var permission2 = new Permission(new QrCodeDto(eddieId, permissionId, name, "https://example.org"), userId);
+        var permission2 = new Permission(new AiidaPermissionRequestDto(eddieId, permissionId, name, "https://example.org"), userId);
         permission2.setGrantTime(grant);
 
         name = "Service3";
         grant = grant.plusSeconds(5000);
-        var permission3 = new Permission(new QrCodeDto(eddieId, permissionId, name, "https://example.org"), userId);
+        var permission3 = new Permission(new AiidaPermissionRequestDto(eddieId, permissionId, name, "https://example.org"), userId);
         permission3.setGrantTime(grant);
 
         // grant time order is permission3, permission2, permission1

@@ -13,7 +13,7 @@ import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -63,10 +63,10 @@ public class PermissionController {
             @ApiResponse(responseCode = "400", description = "Request body cannot be read or is missing fields.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "409", description = "Permission(s) cannot be fulfilled, e.g. because the requested data is not available.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Permission>> setupNewPermissions(@Valid @RequestBody QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
-        LOGGER.debug("Got new permission request {}", qrCodeDto);
+    public ResponseEntity<List<Permission>> setupNewPermissions(@Valid @RequestBody AiidaPermissionRequestDto permissionRequest) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
+        LOGGER.debug("Got new permission request {}", permissionRequest);
 
-        var permission = permissionService.setupNewPermissions(qrCodeDto);
+        var permission = permissionService.setupNewPermissions(permissionRequest);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

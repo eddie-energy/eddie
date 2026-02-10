@@ -24,7 +24,7 @@ import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
@@ -142,7 +142,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * After this method, the status of the permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
      * </p>
      *
-     * @param qrCodeDto Data transfer object containing the information for the new permission.
+     * @param permissionRequest Data transfer object containing the information for the new permission.
      * @return Permission object with the details as fetched from EDDIE.
      * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
      * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
@@ -150,13 +150,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      */
     @Transactional
     public List<Permission> setupNewPermissions(
-            QrCodeDto qrCodeDto
+            AiidaPermissionRequestDto permissionRequest
     ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
-        for(var permissionId : qrCodeDto.permissionIds()) {
-            permissions.add(setupNewPermission(qrCodeDto, permissionId, currentUserId));
+        for(var permissionId : permissionRequest.permissionIds()) {
+            permissions.add(setupNewPermission(permissionRequest, permissionId, currentUserId));
         }
 
         return permissions;
@@ -326,7 +326,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     public Permission setupNewPermission(
-            QrCodeDto qrCodeDto,
+            AiidaPermissionRequestDto permissionRequest,
             UUID permissionId,
             UUID currentUserId
     ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
@@ -334,13 +334,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new PermissionAlreadyExistsException(permissionId);
         }
 
-        var handshakeUrl = new UriTemplate(qrCodeDto.handshakeUrl())
+        var handshakeUrl = new UriTemplate(permissionRequest.handshakeUrl())
                 .expand(permissionId).toString();
 
-        var permission = permissionRepository.save(new Permission(qrCodeDto.eddieId(),
+        var permission = permissionRepository.save(new Permission(permissionRequest.eddieId(),
                                                                   permissionId,
                                                                   handshakeUrl,
-                                                                  qrCodeDto.accessToken(),
+                                                                  permissionRequest.accessToken(),
                                                                   currentUserId));
         LOGGER.info("Saved new permission ({}) in database, will fetch details from EDDIE framework ({})",
                     permission.id(),

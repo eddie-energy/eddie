@@ -17,12 +17,12 @@ import java.util.UUID;
  *                      The placeholder {permissionId} is replaced with the actual permission ID.
  * @param accessToken   Access token to be included by AIIDA for the handshake.
  */
-public record QrCodeDto(@JsonProperty UUID eddieId,
-                        @JsonProperty @NotEmpty(message = "must not be empty") List<UUID> permissionIds,
-                        @JsonProperty @NotBlank(message = "must not be blank") String handshakeUrl,
-                        @JsonProperty @NotBlank(message = "must not be blank") String accessToken) {
+public record AiidaPermissionRequestDto(@JsonProperty UUID eddieId,
+                                        @JsonProperty @NotEmpty(message = "must not be empty") List<UUID> permissionIds,
+                                        @JsonProperty @NotBlank(message = "must not be blank") String handshakeUrl,
+                                        @JsonProperty @NotBlank(message = "must not be blank") String accessToken) {
     @SuppressWarnings("unused")
-    private QrCodeDto() {
+    private AiidaPermissionRequestDto() {
         // for deserialization
         this(UUID.randomUUID(), List.of(), "", "");
     }

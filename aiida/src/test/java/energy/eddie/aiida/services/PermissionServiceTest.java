@@ -22,8 +22,8 @@ import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
@@ -78,7 +78,7 @@ class PermissionServiceTest {
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
     private final UUID userId = UUID.randomUUID();
-    private final QrCodeDto qrCodeDto = new QrCodeDto(eddieId, permissionId, serviceName, handshakeUrl);
+    private final AiidaPermissionRequestDto permissionRequest = new AiidaPermissionRequestDto(eddieId, permissionId, serviceName, handshakeUrl);
     @Mock
     private PermissionRepository mockPermissionRepository;
     @Mock
@@ -159,7 +159,7 @@ class PermissionServiceTest {
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
-        assertThrows(PermissionAlreadyExistsException.class, () -> service.setupNewPermissions(qrCodeDto));
+        assertThrows(PermissionAlreadyExistsException.class, () -> service.setupNewPermissions(permissionRequest));
     }
 
     @Test
@@ -175,7 +175,7 @@ class PermissionServiceTest {
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
-        assertThrows(DetailFetchingFailedException.class, () -> service.setupNewPermissions(qrCodeDto));
+        assertThrows(DetailFetchingFailedException.class, () -> service.setupNewPermissions(permissionRequest));
     }
 
     @Test
@@ -199,7 +199,7 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When
-        service.setupNewPermissions(qrCodeDto);
+        service.setupNewPermissions(permissionRequest);
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
@@ -247,7 +247,7 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When Then
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(qrCodeDto));
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequest));
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
 
@@ -285,7 +285,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
 
         // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(qrCodeDto));
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequest));
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
@@ -302,7 +302,7 @@ class PermissionServiceTest {
     void givenUnfulfillableQrCodeDto_setupNewPermissions_updatesStatus() {
 
         // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(qrCodeDto));
+        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequest));
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId)));
@@ -516,10 +516,10 @@ class PermissionServiceTest {
         private ScheduledFuture<?> mockScheduledFuture;
 
         public static Stream<Arguments> onStartupVariousPermissions() {
-            var per = new Permission(new QrCodeDto(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
-                                                   UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
-                                                   "Test Service Name",
-                                                   "https://example.org"), UUID.randomUUID());
+            var per = new Permission(new AiidaPermissionRequestDto(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
+                                                                   UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
+                                                                   "Test Service Name",
+                                                                   "https://example.org"), UUID.randomUUID());
             return Stream.of(Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
                              Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", PermissionStatus.FULFILLED),
                              Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-09-30T00:00:00.000Z", PermissionStatus.FULFILLED),

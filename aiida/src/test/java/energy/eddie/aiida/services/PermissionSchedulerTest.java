@@ -9,7 +9,7 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,10 +38,10 @@ class PermissionSchedulerTest {
     private final UUID permissionId = UUID.fromString("b69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final String serviceName = "My Test Service";
     private final String handshakeUrl = "https://example.org";
-    private final Permission permission = new Permission(new QrCodeDto(eddieId,
-                                                                       permissionId,
-                                                                       serviceName,
-                                                                       handshakeUrl), UUID.randomUUID());
+    private final Permission permission = new Permission(new AiidaPermissionRequestDto(eddieId,
+                                                                                       permissionId,
+                                                                                       serviceName,
+                                                                                       handshakeUrl), UUID.randomUUID());
     @Mock
     private TaskScheduler mockTaskScheduler;
     @Mock
