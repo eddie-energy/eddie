@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, html, LitElement } from "lit";
@@ -119,6 +119,7 @@ class EddieConnectButton extends LitElement {
     _selectedPermissionAdministrator: { type: Object },
     _filteredPermissionAdministrators: { type: Array },
     _activeView: { type: String },
+    _hasCustomLogo: { type: Boolean },
   };
 
   static styles = [
@@ -146,9 +147,9 @@ class EddieConnectButton extends LitElement {
         display: flex;
         align-items: center;
         gap: 1rem;
-        background: white;
-        border: 2px solid #017aa0;
-        color: #017aa0;
+        background: var(--eddie-button-background, white);
+        border: 2px solid var(--eddie-button-color, #017aa0);
+        color: var(--eddie-button-color, #017aa0);
         border-radius: 9999px;
         padding: 0.5rem 1.25rem 0.5rem 1rem;
         font-weight: bold;
@@ -158,6 +159,13 @@ class EddieConnectButton extends LitElement {
       .eddie-connect-button:disabled {
         cursor: default;
         filter: grayscale(100%);
+      }
+      
+      .footer {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
       }
 
       .version-indicator {
@@ -255,6 +263,13 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._activeView = "dn";
+
+    /**
+     * Tracks if a custom logo has been set to place a separate EDDIE logo in the footer.
+     * @type {boolean}
+     * @private
+     */
+    this._hasCustomLogo = false;
   }
 
   connectedCallback() {
@@ -569,7 +584,7 @@ class EddieConnectButton extends LitElement {
     }
 
     this.dispatchEvent(dialogOpenEvent);
-    Function(`"use strict";${this.onOpen}`)();
+    new Function(`"use strict";${this.onOpen}`)();
   }
 
   handleDialogHide(event) {
@@ -579,7 +594,11 @@ class EddieConnectButton extends LitElement {
     }
 
     this.dispatchEvent(dialogCloseEvent);
-    Function(`"use strict";${this.onClose}`)();
+    new Function(`"use strict";${this.onClose}`)();
+  }
+
+  handleLogoSlotChange(event) {
+    this._hasCustomLogo = event.target.assignedNodes().length > 0;
   }
 
   addRequestStatusHandlers() {
@@ -587,13 +606,13 @@ class EddieConnectButton extends LitElement {
       const status = event.detail.status;
 
       // Execute the onStatusChange handler with the status as an argument
-      Function(`"use strict";${this.onStatusChange}`)(status);
+      new Function(`"use strict";${this.onStatusChange}`)(status);
 
       // Execute the specific status handler if it exists
       const statusHandlerString = status.toLowerCase().replaceAll("_", "");
       const statusHandler = this.getAttribute(`on${statusHandlerString}`);
       if (statusHandler) {
-        Function(`"use strict";${statusHandler}`)();
+        new Function(`"use strict";${statusHandler}`)();
       }
     });
   }
@@ -631,7 +650,7 @@ class EddieConnectButton extends LitElement {
     if (!this._isValidConfiguration) {
       return html`
         <button class="eddie-connect-button" disabled>
-          ${unsafeSVG(buttonIcon)}
+          <slot name="icon">${unsafeSVG(buttonIcon)}</slot>
           <span>
             ${this._isValidConfiguration === undefined
               ? "Loading"
@@ -644,7 +663,7 @@ class EddieConnectButton extends LitElement {
     if (this._dataNeedAttributes.some((dn) => !dn.enabled)) {
       return html`
         <button class="eddie-connect-button" disabled>
-          ${unsafeSVG(buttonIcon)}
+          <slot name="icon">${unsafeSVG(buttonIcon)}</slot>
           <span>Disabled Configuration</span>
         </button>
       `;
@@ -657,8 +676,8 @@ class EddieConnectButton extends LitElement {
       />
 
       <button class="eddie-connect-button" @click="${this.openDialog}">
-        ${unsafeSVG(buttonIcon)}
-        <span>Connect with EDDIE</span>
+        <slot name="icon">${unsafeSVG(buttonIcon)}</slot>
+        <span><slot>Connect with EDDIE</slot></span>
       </button>
 
       <sl-dialog
@@ -667,7 +686,11 @@ class EddieConnectButton extends LitElement {
         @sl-show="${this.handleDialogShow}"
         @sl-hide="${this.handleDialogHide}"
       >
-        <div slot="label">${unsafeSVG(headerImage)}</div>
+        <div slot="label">
+          <slot name="logo" @slotchange="${this.handleLogoSlotChange}">
+            ${unsafeSVG(headerImage)}
+          </slot>
+        </div>
         <eddie-step-indicator
           ${ref(this.stepIndicatorRef)}
           step="1"
@@ -1038,7 +1061,8 @@ class EddieConnectButton extends LitElement {
           ],
         ])}
 
-        <div slot="footer">
+        <div slot="footer" class="footer">
+          ${this._hasCustomLogo ? html`${unsafeSVG(headerImage)}` : ""}
           <div class="version-indicator">
             <i>EDDIE Version: __EDDIE_VERSION__</i>
           </div>

@@ -4,6 +4,7 @@ To use the EDDIE Button in an eligible party application, the EP application has
 page. It can be integrated into a frontend based application (e.g. a single-page application) or into a server rendered
 web application as it's implemented using standard HTML custom elements.
 
+<!-- prettier-ignore -->
 ```html
 <script
   type="module"
@@ -36,6 +37,58 @@ Each connection id must be used only once to create a uniquely identifiable conn
 The following pages may help integrate the EDDIE Button in your favorite framework:
 
 - [Angular](angular.md)
+
+## Customize colors and content
+
+The EDDIE button can be customized with slotted content and CSS variables.
+
+<!-- prettier-ignore -->
+```html
+
+<eddie-connect-button style="--eddie-button-color: green">
+  <span slot="icon" style="font-size: 1.5rem">🔌</span>
+  Share accounting point data
+</eddie-connect-button>
+```
+
+<!-- Visual example for the configured button -->
+<button style="display: flex; align-items: center; background: white; border: 2px solid green; color: green; border-radius: 9999px; padding: 0.5rem 1.25rem 0.5rem 1rem; font-size: 14px; font-weight: bold; pointer-events: none;">
+  <span style="font-size: 20px; margin-right: 14px;">🔌</span>
+  Share accounting point data
+</button>
+
+The following slots and variables are available for customization.
+
+| Named Slot | Description                                       |
+|------------|---------------------------------------------------|
+| `default`  | Text content of the EDDIE button.                 |
+| `icon`     | Icon displayed inside the EDDIE button.           |
+| `logo`     | Logo displayed in the header of the EDDIE dialog. |
+
+| CSS Variable                | Description                                |
+|-----------------------------|--------------------------------------------|
+| `--eddie-button-color`      | Color of the EDDIE button text and border. |
+| `--eddie-button-background` | Background of the EDDIE button.            |
+
+### Light and dark mode
+
+With CSS variables, the button can be easily customized to support dark and light modes.
+
+```css
+eddie-connect-button {
+    --eddie-button-color: black;
+    --eddie-button-background: white;
+
+    @media (prefers-color-scheme: dark) {
+        --eddie-button-color: white;
+        --eddie-button-background: black;
+    }
+}
+```
+
+### Dialog styling
+
+The EDDIE dialog uses components from the [Shoelace](https://shoelace.style) library. These components can be themed using CSS variables. If you need to theme the entire dialog, please see https://shoelace.style/getting-started/customizing for customization options.
 
 ## Request status and interaction events
 
