@@ -11,9 +11,14 @@ import AlertToastList from './components/AlertToastList.vue'
 import { onMounted } from 'vue'
 import { checkClipboard } from './stores/clipboardValue'
 import ScrollToTopButton from './components/ScrollToTopButton.vue'
+import { useFavicon } from '@vueuse/core'
+import { getSvgUrlIfExists } from './utils/files'
 
-onMounted(() => {
+const icon = useFavicon()
+
+onMounted(async () => {
   window.addEventListener('focus', checkClipboard)
+  icon.value = (await getSvgUrlIfExists('favicon.svg')) || '/favicon.svg'
 })
 </script>
 
