@@ -119,6 +119,7 @@ class EddieConnectButton extends LitElement {
     _selectedPermissionAdministrator: { type: Object },
     _filteredPermissionAdministrators: { type: Array },
     _activeView: { type: String },
+    _hasCustomLogo: { type: Boolean },
   };
 
   static styles = [
@@ -158,6 +159,13 @@ class EddieConnectButton extends LitElement {
       .eddie-connect-button:disabled {
         cursor: default;
         filter: grayscale(100%);
+      }
+      
+      .footer {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
       }
 
       .version-indicator {
@@ -255,6 +263,13 @@ class EddieConnectButton extends LitElement {
      * @private
      */
     this._activeView = "dn";
+
+    /**
+     * Tracks if a custom logo has been set to place a separate EDDIE logo in the footer.
+     * @type {boolean}
+     * @private
+     */
+    this._hasCustomLogo = false;
   }
 
   connectedCallback() {
@@ -582,6 +597,10 @@ class EddieConnectButton extends LitElement {
     new Function(`"use strict";${this.onClose}`)();
   }
 
+  handleLogoSlotChange(event) {
+    this._hasCustomLogo = event.target.assignedNodes().length > 0;
+  }
+
   addRequestStatusHandlers() {
     this.addEventListener("eddie-request-status", (event) => {
       const status = event.detail.status;
@@ -668,7 +687,9 @@ class EddieConnectButton extends LitElement {
         @sl-hide="${this.handleDialogHide}"
       >
         <div slot="label">
-          <slot name="logo">${unsafeSVG(headerImage)}</slot>
+          <slot name="logo" @slotchange="${this.handleLogoSlotChange}">
+            ${unsafeSVG(headerImage)}
+          </slot>
         </div>
         <eddie-step-indicator
           ${ref(this.stepIndicatorRef)}
@@ -1040,7 +1061,8 @@ class EddieConnectButton extends LitElement {
           ],
         ])}
 
-        <div slot="footer">
+        <div slot="footer" class="footer">
+          ${this._hasCustomLogo ? html`${unsafeSVG(headerImage)}` : ""}
           <div class="version-indicator">
             <i>EDDIE Version: __EDDIE_VERSION__</i>
           </div>
