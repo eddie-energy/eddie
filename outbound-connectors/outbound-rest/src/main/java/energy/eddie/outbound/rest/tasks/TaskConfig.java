@@ -67,21 +67,21 @@ public class TaskConfig {
     }
 
     @Bean
-    DeletionTask<energy.eddie.outbound.rest.model.cim.v1_06.NearRealTimeDataMarketDocumentModel> rtdV106DeletionTask(
-            energy.eddie.outbound.rest.persistence.cim.v1_06.NearRealTimeDataMarketDocumentRepository repository,
+    DeletionTask<energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel> rtdV112DeletionTask(
+            energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository repository,
             RestOutboundConnectorConfiguration config
     ) {
         return new DeletionTask<>(repository, config);
     }
 
     @Bean
-    InsertionTask<energy.eddie.cim.v1_06.rtd.RTDEnvelope, energy.eddie.outbound.rest.model.cim.v1_06.NearRealTimeDataMarketDocumentModel> rtdV106InsertionTask(
-            energy.eddie.outbound.rest.connectors.cim.v1_06.CimConnector cimConnector,
-            energy.eddie.outbound.rest.persistence.cim.v1_06.NearRealTimeDataMarketDocumentRepository repository
+    InsertionTask<energy.eddie.cim.v1_12.rtd.RTDEnvelope, energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel> rtdV112InsertionTask(
+            energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
+            energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository repository
     ) {
         return new InsertionTask<>(cimConnector.getNearRealTimeDataMarketDocumentStream(),
                                    repository,
-                                   energy.eddie.outbound.rest.model.cim.v1_06.NearRealTimeDataMarketDocumentModel::new);
+                                   energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel::new);
     }
 
     @Bean

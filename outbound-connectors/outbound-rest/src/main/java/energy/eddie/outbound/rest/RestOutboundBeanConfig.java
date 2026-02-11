@@ -11,7 +11,7 @@ import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.*;
-import energy.eddie.outbound.rest.dto.v1_06.NearRealTimeDataMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
 import energy.eddie.outbound.rest.mixins.AgnosticMessageMixin;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
@@ -71,7 +71,7 @@ public class RestOutboundBeanConfig {
                 VHDEnvelope.class,
                 energy.eddie.cim.v1_04.rtd.RTDEnvelope.class,
                 // CIM v1.06
-                energy.eddie.cim.v1_06.rtd.RTDEnvelope.class,
+                energy.eddie.cim.v1_12.rtd.RTDEnvelope.class,
                 // DTOs
                 CimCollection.class,
                 ValidatedHistoricalDataMarketDocuments.class,

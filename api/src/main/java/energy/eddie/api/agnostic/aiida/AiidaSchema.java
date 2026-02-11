@@ -9,7 +9,7 @@ import java.util.Locale;
 public enum AiidaSchema {
     SMART_METER_P1_RAW(Identifiers.SMART_METER_P1_RAW, ""),
     SMART_METER_P1_CIM_V1_04(Identifiers.SMART_METER_P1_CIM, "V1-04"),
-    SMART_METER_P1_CIM_V1_06(Identifiers.SMART_METER_P1_CIM, "V1-06");
+    SMART_METER_P1_CIM_V1_12(Identifiers.SMART_METER_P1_CIM, "V1-12");
 
     private final String identifier;
     private final String version;

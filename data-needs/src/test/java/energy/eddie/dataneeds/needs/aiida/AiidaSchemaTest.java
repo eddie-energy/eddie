@@ -17,7 +17,7 @@ class AiidaSchemaTest {
     void forSchema_returnsEnum_whenKnown() {
         assertEquals(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.forSchema("SMART-METER-P1-RAW"));
         assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_04, AiidaSchema.forSchema("SMART-METER-P1-CIM-V1-04"));
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_06, AiidaSchema.forSchema("SMART-METER-P1-CIM-V1-06"));
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, AiidaSchema.forSchema("SMART-METER-P1-CIM-V1-12"));
     }
 
     @Test

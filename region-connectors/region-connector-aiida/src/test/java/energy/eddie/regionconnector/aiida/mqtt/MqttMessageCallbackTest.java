@@ -62,7 +62,7 @@ class MqttMessageCallbackTest {
     private final Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataSinkCimV104 = Sinks.many()
                                                                                                         .unicast()
                                                                                                         .onBackpressureBuffer();
-    private final Sinks.Many<energy.eddie.cim.v1_06.rtd.RTDEnvelope> nearRealTimeDataSinkCimV106 = Sinks.many()
+    private final Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataSinkCimV112 = Sinks.many()
                                                                                                         .unicast()
                                                                                                         .onBackpressureBuffer();
     private final Sinks.Many<RawDataMessage> rawDataMessageSink = Sinks.many()
@@ -537,15 +537,15 @@ class MqttMessageCallbackTest {
                 permissionRequestViewRepository,
                 mockObjectMapper,
                 nearRealTimeDataSinkCimV104);
-        var cimDataMessageProcessorV106 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_06.CimDataMessageProcessor(
+        var cimDataMessageProcessorV112 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_12.CimDataMessageProcessor(
                 permissionRequestViewRepository,
                 mockObjectMapper,
-                nearRealTimeDataSinkCimV106);
+                nearRealTimeDataSinkCimV112);
 
         return List.of(statusMessageProcessor,
                        rawDataMessageProcessor,
                        cimDataMessageProcessorV104,
-                       cimDataMessageProcessorV106);
+                       cimDataMessageProcessorV112);
     }
 
     private AiidaRecordDto getAiidaRecordDto() {

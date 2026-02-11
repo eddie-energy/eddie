@@ -66,7 +66,7 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<energy.eddie.cim.v1_06.rtd.RTDEnvelope> nearRealTimeDataCimV106Sink() {
+    public Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Sink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 

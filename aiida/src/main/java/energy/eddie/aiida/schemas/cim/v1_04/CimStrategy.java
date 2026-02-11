@@ -63,11 +63,14 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
     }
 
     @Override
-    protected RTDMarketDocument toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, @Nullable String codingScheme) {
+    protected RTDMarketDocument toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, String countryCode) {
+        var codingScheme = standardCodingSchemeFromCountryCode(countryCode);
+        var codingSchemeValue = codingScheme != null ? codingScheme.value() : null;
+
         return new RTDMarketDocument()
                 .withCreatedDateTime(ZonedDateTime.now(UTC))
                 .withMRID(UUID.randomUUID().toString())
-                .withTimeSeries(toTimeSeries(aiidaRecord, codingScheme));
+                .withTimeSeries(toTimeSeries(aiidaRecord, codingSchemeValue));
     }
 
     @Override
@@ -113,11 +116,9 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
     ) throws CimSchemaFormatterException {
         var dataNeed = dataNeedOfPermissionOrThrow(permission);
         var countryCode = dataSourceOfPermissionOrThrow(permission).countryCode();
-        var codingScheme = standardCodingSchemeFromCountryCode(countryCode);
-        var codingSchemeValue = codingScheme != null ? codingScheme.value() : null;
 
         return new RTDEnvelope()
-                .withMarketDocument(toRealTimeDataMarketDocument(aiidaRecord, codingSchemeValue))
+                .withMarketDocument(toRealTimeDataMarketDocument(aiidaRecord, countryCode))
                 .withMessageDocumentHeaderCreationDateTime(ZonedDateTime.now(UTC))
                 .withMessageDocumentHeaderMetaInformationAsset(aiidaRecord.asset().toString())
                 .withMessageDocumentHeaderMetaInformationConnectionId(permission.connectionId())

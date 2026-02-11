@@ -61,13 +61,13 @@ class TopicConfigurationTest {
     }
 
     @Test
-    void testNearRealTimeDataMarketDocument_V1_06_returnsCorrectTopicName() {
+    void testNearRealTimeDataMarketDocument_V1_12_returnsCorrectTopicName() {
         // Given
         // When
-        var res = config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_06);
+        var res = config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12);
 
         // Then
-        assertEquals("ep.e123.cim_1_06.near-real-time-data-md", res);
+        assertEquals("ep.e123.cim_1_12.near-real-time-data-md", res);
     }
 
     @Test

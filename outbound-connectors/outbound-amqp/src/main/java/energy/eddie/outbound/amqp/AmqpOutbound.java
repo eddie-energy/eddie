@@ -14,8 +14,8 @@ import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
-import energy.eddie.api.v1_06.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_06;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
@@ -42,7 +42,7 @@ public class AmqpOutbound implements
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         AccountingPointEnvelopeOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_06,
+        NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
         ValidatedHistoricalDataMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpOutbound.class);
     private final Publisher publisher;
@@ -93,8 +93,8 @@ public class AmqpOutbound implements
     }
 
     @Override
-    public void setNearRealTimeDataMarketDocumentStreamV1_06(Flux<energy.eddie.cim.v1_06.rtd.RTDEnvelope> marketDocumentStream) {
-        marketDocumentStream.subscribe(publish(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_06),
+    public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> marketDocumentStream) {
+        marketDocumentStream.subscribe(publish(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
                                                AmqpOutbound::toHeaders));
     }
 
@@ -186,11 +186,13 @@ public class AmqpOutbound implements
         );
     }
 
-    private static Map<String, String> toHeaders(energy.eddie.cim.v1_06.rtd.RTDEnvelope envelope) {
+    private static Map<String, String> toHeaders(energy.eddie.cim.v1_12.rtd.RTDEnvelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+
         return Map.of(
-                Headers.PERMISSION_ID, envelope.getMessageDocumentHeaderMetaInformationPermissionId(),
-                Headers.CONNECTION_ID, envelope.getMessageDocumentHeaderMetaInformationConnectionId(),
-                Headers.DATA_NEED_ID, envelope.getMessageDocumentHeaderMetaInformationDataNeedId()
+                Headers.PERMISSION_ID, metaInformation.getRequestPermissionId(),
+                Headers.CONNECTION_ID, metaInformation.getConnectionId(),
+                Headers.DATA_NEED_ID, metaInformation.getDataNeedId()
         );
     }
 

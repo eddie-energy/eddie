@@ -63,7 +63,7 @@
     "schemas": [
       "SMART-METER-P1-RAW",
       "SMART-METER-P1-CIM-V1-04",
-      "SMART-METER-P1-CIM-V1-06"
+      "SMART-METER-P1-CIM-V1-12"
     ],
     "asset": "CONNECTION-AGREEMENT-POINT",
     "dataTags": [

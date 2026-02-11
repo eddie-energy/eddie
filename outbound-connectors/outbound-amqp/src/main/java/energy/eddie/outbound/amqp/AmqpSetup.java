@@ -24,7 +24,7 @@ public class AmqpSetup {
                 configuration.accountingPointMarketDocument(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82),
                 configuration.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
-                configuration.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_06),
+                configuration.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
                 configuration.terminationMarketDocument(),
                 configuration.redistributionTransactionRequestDocument(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),

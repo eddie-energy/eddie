@@ -11,16 +11,16 @@ import reactor.core.publisher.Sinks;
 @Component
 public class IdentifiableStreams {
     private final Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataCimV104Sink;
-    private final Sinks.Many<energy.eddie.cim.v1_06.rtd.RTDEnvelope> nearRealTimeDataCimV106Sink;
+    private final Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Sink;
     private final Sinks.Many<RawDataMessage> rawDataMessageSink;
 
     public IdentifiableStreams(
             Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataCimV104Sink,
-            Sinks.Many<energy.eddie.cim.v1_06.rtd.RTDEnvelope> nearRealTimeDataCimV106Sink,
+            Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Sink,
             Sinks.Many<RawDataMessage> rawDataMessageSink
     ) {
         this.nearRealTimeDataCimV104Sink = nearRealTimeDataCimV104Sink;
-        this.nearRealTimeDataCimV106Sink = nearRealTimeDataCimV106Sink;
+        this.nearRealTimeDataCimV112Sink = nearRealTimeDataCimV112Sink;
         this.rawDataMessageSink = rawDataMessageSink;
     }
 
@@ -28,8 +28,8 @@ public class IdentifiableStreams {
         return nearRealTimeDataCimV104Sink.asFlux();
     }
 
-    public Flux<energy.eddie.cim.v1_06.rtd.RTDEnvelope> nearRealTimeDataCimV106Flux() {
-        return nearRealTimeDataCimV106Sink.asFlux();
+    public Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Flux() {
+        return nearRealTimeDataCimV112Sink.asFlux();
     }
 
     public Flux<RawDataMessage> rawDataMessageFlux() {

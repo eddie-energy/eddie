@@ -4,7 +4,6 @@
 package energy.eddie.outbound.rest.persistence.specifications;
 
 import org.springframework.data.jpa.domain.PredicateSpecification;
-import org.springframework.data.jpa.domain.Specification;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -106,10 +105,10 @@ public class CimSpecification {
         );
     }
 
-    // TODO: Adapt when CIM v1.06 is finalized
+    // TODO: Adapt when CIM v1.12 is finalized
     // Disable name rule, for readable CIM version
     @SuppressWarnings("java:S100")
-    public static <T> Specification<T> buildQueryForV1_06(
+    public static <T> PredicateSpecification<T> buildQueryForV1_12(
             Optional<String> permissionId,
             Optional<String> connectionId,
             Optional<String> dataNeedId,
@@ -142,10 +141,10 @@ public class CimSpecification {
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
                 to.map(InsertionTimeSpecification::<T>insertedBeforeEquals)
         );
-        return Specification.allOf(
+        return PredicateSpecification.allOf(
                 query.stream()
                      .filter(Optional::isPresent)
-                     .map(spec -> (Specification<T>) spec.get())
+                     .map(spec -> (PredicateSpecification<T>) spec.get())
                      .toList()
         );
     }

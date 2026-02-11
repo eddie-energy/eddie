@@ -81,7 +81,7 @@ public abstract class BaseCimFormatterStrategy<T, S, U, V, W, X> implements CimF
         return obisToQuantityTypeKindMap().get(getDataTag(recordValue));
     }
 
-    protected abstract S toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, @Nullable String codingScheme);
+    protected abstract S toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, String countryCode);
 
     protected abstract U toTimeSeries(AiidaRecord aiidaRecord, @Nullable String codingScheme);
 
