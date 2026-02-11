@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { html, nothing } from "lit";
@@ -9,6 +9,7 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/button/button.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/alert/alert.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/spinner/spinner.js";
+import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/copy-button/copy-button.js";
 
 class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
@@ -18,27 +19,41 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     companyId: { attribute: "company-id" },
     companyName: { attribute: "company-name" },
     accountingPointId: { attribute: "accounting-point-id" },
-    _requestId: { type: String },
-    _requestStatus: { type: String },
     _isSubmitDisabled: { type: Boolean },
+    _dataNeedIds: { type: Array },
+    _createdCount: { type: Number },
+    _sentCount: { type: Number },
+    _cmRequestIds: { type: Array },
   };
 
   constructor() {
     super();
-
     this._isSubmitDisabled = false;
+    this._createdCount = 0;
+    this._sentCount = 0;
+    this._cmRequestIds = [];
   }
 
   connectedCallback() {
     super.connectedCallback();
+    this._dataNeedIds = this.dataNeedId.split(",");
     this.addEventListener("eddie-request-status", (event) => {
       const {
         additionalInformation: { cmRequestId },
         status,
       } = event.detail;
 
-      this._requestId = cmRequestId;
-      this._requestStatus = status;
+      if (status === "CREATED") {
+        this._createdCount += 1;
+      }
+
+      if (status === "SENT_TO_PERMISSION_ADMINISTRATOR") {
+        this._sentCount += 1;
+      }
+
+      if (cmRequestId && !this._cmRequestIds.includes(cmRequestId)) {
+        this._cmRequestIds.push(cmRequestId);
+      }
     });
   }
 
@@ -53,7 +68,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         : null,
       dsoId: this.companyId,
       connectionId: this.connectionId,
-      dataNeedId: this.dataNeedId,
+      dataNeedIds: this._dataNeedIds,
     };
 
     this._isSubmitDisabled = true;
@@ -65,7 +80,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   render() {
-    return this._requestStatus !== "SENT_TO_PERMISSION_ADMINISTRATOR"
+    return this._sentCount === 0
       ? html`
           <form id="request-form">
             <sl-input
@@ -95,16 +110,16 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             </div>
           </form>
 
-          ${this._requestStatus === "CREATED" ||
-          this._requestStatus === "VALIDATED"
+          ${this._createdCount > 0
             ? html`<br />
                 <sl-alert open>
                   <sl-spinner slot="icon"></sl-spinner>
 
                   <p>
-                    Your permission request was created successfully. Please
-                    wait while we are sending the permission request to the
-                    permission administrator.
+                    ${this._createdCount} of ${this._dataNeedIds.length}
+                    permission requests were created successfully. Please wait
+                    while we are sending the permission requests to the
+                    permission administrator. This might take some time.
                   </p>
                 </sl-alert>`
             : ""}
@@ -114,27 +129,41 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             <sl-icon slot="icon" name="info-circle"></sl-icon>
 
             <p>
-              Your request was successfully sent to the permission
-              administrator. The Consent Request ID for this connection is:
-              ${this._requestId}.
+              ${this._sentCount} of ${this._dataNeedIds.length} requests were
+              successfully sent to the permission administrator. The Consent
+              Request IDs for this connection are
+              ${this._cmRequestIds.join(", ")}
             </p>
 
             <p>
               Further steps are required at the website of the permission
               administrator. Visit the website using the button below and look
-              for your provided Zählpunktnummer or the Consent Request with ID
-              ${this._requestId}.
+              for your provided Zählpunktnummer or the Consent Request with one
+              of the following IDs
+
+            <ul>
+              ${this._cmRequestIds.map(
+                (cmRequestId) => html`
+                  <li>
+                    <span id="${cmRequestId}">${cmRequestId}</span>
+                    <sl-copy-button from="${cmRequestId}"></sl-copy-button>
+                  </li>
+                `
+              )}
+            </ul>
             </p>
 
-            ${this.jumpOffUrl
-              ? html`<sl-button
-                  href="${this.jumpOffUrl}"
-                  target="_blank"
-                  variant="primary"
-                >
-                  Continue to ${this.companyName}
-                </sl-button>`
-              : ""}
+            ${
+              this.jumpOffUrl
+                ? html` <sl-button
+                    href="${this.jumpOffUrl}"
+                    target="_blank"
+                    variant="primary"
+                  >
+                    Continue to ${this.companyName}
+                  </sl-button>`
+                : ""
+            }
           </sl-alert>
         `;
   }
