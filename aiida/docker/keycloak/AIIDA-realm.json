@@ -1,5 +1,5 @@
 {
-  "realm": "EDDIE",
+  "realm": "AIIDA",
   "enabled": true,
   "loginTheme": "eddie-theme",
   "defaultRoles": ["manage-account"],
