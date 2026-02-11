@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.web;
@@ -7,6 +7,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.web.DataNeedsAdvice;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.services.PermissionRequestCreationAndValidationService;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorsCommonControllerAdvice;
 import org.junit.jupiter.api.Test;
@@ -23,14 +24,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.util.UriTemplate;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -46,17 +45,6 @@ class PermissionRequestControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private PermissionRequestCreationAndValidationService permissionRequestCreationAndValidationService;
-
-    private static Stream<Arguments> permissionRequestArguments() {
-        return Stream.of(
-                Arguments.of("", "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
-                Arguments.of("cid", "", "dnid", "0".repeat(8), "meteringPointId"),
-                Arguments.of("cid", "0".repeat(33), "", "0".repeat(8), "dataNeedId"),
-                Arguments.of("cid", "0".repeat(33), "dnid", "A", "dsoId"),
-                Arguments.of(null, "0".repeat(33), "dnid", "0".repeat(8), "connectionId"),
-                Arguments.of("cid", "0".repeat(33), null, "0".repeat(8), "dataNeedId")
-        );
-    }
 
     @Test
     void createPermissionRequest_415WhenNotJsonBody() throws Exception {
@@ -95,24 +83,25 @@ class PermissionRequestControllerTest {
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(3)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItems(
-                       "dataNeedId: must not be blank",
+                       "dataNeedIds: must not be empty",
                        "connectionId: must not be blank",
                        "dsoId: must not be blank")));
     }
 
     @Test
     void createPermissionRequest_400WhenFieldsNotExactSize() throws Exception {
-        ObjectNode jsonNode = objectMapper.createObjectNode()
-                                          .put("connectionId", "23")
-                                          .put("dataNeedId", "PT4h")
-                                          .put("dsoId", "123")
-                                          .put("meteringPointId", "456");
+        var dto = new PermissionRequestForCreation(
+                "cid",
+                "123",
+                List.of("dnid"),
+                "456"
+        );
 
         // Given
         mockMvc.perform(
                        MockMvcRequestBuilders.post("/permission-request")
                                              .contentType(MediaType.APPLICATION_JSON)
-                                             .content(objectMapper.writeValueAsString(jsonNode))
+                                             .content(objectMapper.writeValueAsString(dto))
                )
                // Then
                .andExpect(status().isBadRequest())
@@ -125,28 +114,27 @@ class PermissionRequestControllerTest {
     @Test
     void createPermissionRequest_returnsPermissionRequest_andSetsLocationHeader() throws Exception {
         // Given
-        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand("pid").toString();
-        CreatedPermissionRequest expected = new CreatedPermissionRequest("pid");
+        CreatedPermissionRequest expected = new CreatedPermissionRequest(List.of("pid"));
         when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenReturn(expected);
 
-        ObjectNode jsonNode = objectMapper.createObjectNode()
-                                          .put("connectionId", "cid")
-                                          .put("meteringPointId", "0".repeat(33))
-                                          .put("dataNeedId", "dnid")
-                                          .put("dsoId", "0".repeat(8))
-                                          .put("granularity", "PT15M");
+        var dto = new PermissionRequestForCreation(
+                "cid",
+                "0".repeat(33),
+                List.of("dnid"),
+                "0".repeat(8)
+        );
 
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.post("/permission-request")
                                              .contentType(MediaType.APPLICATION_JSON)
-                                             .content(jsonNode.toString())
+                                             .content(objectMapper.writeValueAsString(dto))
                )
                // Then
                .andExpect(status().isCreated())
                .andExpect(content().json(objectMapper.writeValueAsString(expected)))
-               .andExpect(header().string("Location", is(expectedLocationHeader)));
+               .andExpect(header().string("Location", is("/api/connection-status-messages?permission-id=pid")));
     }
 
     @Test
@@ -159,17 +147,18 @@ class PermissionRequestControllerTest {
         when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
                 .thenThrow(exception);
 
-        ObjectNode jsonNode = objectMapper.createObjectNode()
-                                          .put("connectionId", "cid")
-                                          .put("meteringPointId", "0".repeat(33))
-                                          .put("dataNeedId", "dnid")
-                                          .put("dsoId", "0".repeat(8))
-                                          .put("granularity", "P1M");
+        var dto = new PermissionRequestForCreation(
+                "cid",
+                "0".repeat(33),
+                List.of("dnid"),
+                "0".repeat(8)
+        );
+
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.post("/permission-request")
                                              .contentType(MediaType.APPLICATION_JSON)
-                                             .content(jsonNode.toString())
+                                             .content(objectMapper.writeValueAsString(dto))
                )
                // Then
                .andExpect(status().isBadRequest())
@@ -184,28 +173,63 @@ class PermissionRequestControllerTest {
     void createPermissionRequest_400WhenMissingStringParameters(
             String connectionId,
             String meteringPoint,
-            String dataNeedsId,
+            List<String> dataNeedsId,
             String dsoId,
             String errorFieldName
     ) throws Exception {
         // Given
-        ObjectNode jsonNode = objectMapper.createObjectNode()
-                                          .put("connectionId", connectionId)
-                                          .put("meteringPointId", meteringPoint)
-                                          .put("dataNeedId", dataNeedsId)
-                                          .put("dsoId", dsoId)
-                                          .put("granularity", "PT15M");
+        var dto = new PermissionRequestForCreation(
+                connectionId,
+                meteringPoint,
+                dataNeedsId,
+                dsoId
+        );
 
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.post("/permission-request")
                                              .contentType(MediaType.APPLICATION_JSON)
-                                             .content(jsonNode.toString())
+                                             .content(objectMapper.writeValueAsString(dto))
                )
                // Then
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", startsWith(errorFieldName)));
+    }
+
+    @Test
+    void createPermissionRequest_returnsBadRequest_ifNoPermissionWasCreated() throws Exception {
+        // Given
+        CreatedPermissionRequest expected = new CreatedPermissionRequest(List.of());
+        when(permissionRequestCreationAndValidationService.createAndValidatePermissionRequest(any()))
+                .thenReturn(expected);
+
+        var dto = new PermissionRequestForCreation(
+                "cid",
+                "0".repeat(33),
+                List.of("dnid"),
+                "0".repeat(8)
+        );
+
+        // When
+        mockMvc.perform(
+                       MockMvcRequestBuilders.post("/permission-request")
+                                             .contentType(MediaType.APPLICATION_JSON)
+                                             .content(objectMapper.writeValueAsString(dto))
+               )
+               // Then
+               .andExpect(status().isBadRequest());
+    }
+
+    private static Stream<Arguments> permissionRequestArguments() {
+        return Stream.of(
+                Arguments.of("", "0".repeat(33), List.of("dnid"), "0".repeat(8), "connectionId"),
+                Arguments.of("cid", "", List.of("dnid"), "0".repeat(8), "meteringPointId"),
+                Arguments.of("cid", "0".repeat(33), List.of(), "0".repeat(8), "dataNeedId"),
+                Arguments.of("cid", "0".repeat(33), List.of("dnid"), "A", "dsoId"),
+                Arguments.of(null, "0".repeat(33), List.of("dnid"), "0".repeat(8), "connectionId"),
+                Arguments.of("cid", "0".repeat(33), null, "0".repeat(8), "dataNeedId")
+        );
     }
 
     /**
