@@ -24,7 +24,7 @@ import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
-import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
@@ -142,21 +142,21 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * After this method, the status of the permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
      * </p>
      *
-     * @param permissionRequest Data transfer object containing the information for the new permission.
-     * @return Permission object with the details as fetched from EDDIE.
+     * @param permissionRequests Data transfer object containing the information for the new permissions.
+     * @return Permission objects with the details as fetched from EDDIE.
      * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
      * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
      * @throws InvalidUserException             If the id of the current user can not be determined by the token.
      */
     @Transactional
     public List<Permission> setupNewPermissions(
-            AiidaPermissionRequestDto permissionRequest
+            AiidaPermissionRequestsDto permissionRequests
     ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
-        for(var permissionId : permissionRequest.permissionIds()) {
-            permissions.add(setupNewPermission(permissionRequest, permissionId, currentUserId));
+        for (var permissionId : permissionRequests.permissionIds()) {
+            permissions.add(setupNewPermission(permissionRequests, permissionId, currentUserId));
         }
 
         return permissions;
@@ -326,7 +326,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     public Permission setupNewPermission(
-            AiidaPermissionRequestDto permissionRequest,
+            AiidaPermissionRequestsDto permissionRequests,
             UUID permissionId,
             UUID currentUserId
     ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
@@ -334,13 +334,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new PermissionAlreadyExistsException(permissionId);
         }
 
-        var handshakeUrl = new UriTemplate(permissionRequest.handshakeUrl())
+        var handshakeUrl = new UriTemplate(permissionRequests.handshakeUrl())
                 .expand(permissionId).toString();
 
-        var permission = permissionRepository.save(new Permission(permissionRequest.eddieId(),
+        var permission = permissionRepository.save(new Permission(permissionRequests.eddieId(),
                                                                   permissionId,
                                                                   handshakeUrl,
-                                                                  permissionRequest.accessToken(),
+                                                                  permissionRequests.accessToken(),
                                                                   currentUserId));
         LOGGER.info("Saved new permission ({}) in database, will fetch details from EDDIE framework ({})",
                     permission.id(),

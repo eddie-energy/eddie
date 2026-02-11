@@ -12,7 +12,7 @@ import { addPermissions } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog'
-import type { AiidaPermissionRequestDTO } from '@/types'
+import type { AiidaPermissionRequestsDTO } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const { updatePermission } = usePermissionDialog()
@@ -59,10 +59,10 @@ const parseAiidaCode = (aiidaCode: string) => {
   }
 }
 
-const executePermissionRequests = async (permissionRequest: AiidaPermissionRequestDTO) => {
+const executePermissionRequests = async (permissionRequests: AiidaPermissionRequestsDTO) => {
   loading.value = true
 
-  const permissions = await addPermissions(permissionRequest)
+  const permissions = await addPermissions(permissionRequests)
   fetchPermissions()
   for (const permission of permissions) {
     await updatePermission(permission)
@@ -80,9 +80,9 @@ const handleAddPermissions = async () => {
   }
 }
 
-const handleValidQrCode = (qrCode: AiidaPermissionRequestDTO) => {
+const handleValidQrCode = (permissionRequests: AiidaPermissionRequestsDTO) => {
   toggleQrCodeModal(false)
-  executePermissionRequests(qrCode)
+  executePermissionRequests(permissionRequests)
 }
 
 defineExpose({ showModal })

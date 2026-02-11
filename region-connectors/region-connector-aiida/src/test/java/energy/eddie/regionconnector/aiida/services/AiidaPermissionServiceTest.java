@@ -47,6 +47,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static energy.eddie.api.v0.PermissionProcessStatus.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -149,8 +150,9 @@ class AiidaPermissionServiceTest {
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
-                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
-                                                                                                            List.of(dataNeedId))));
+                     () -> service.createValidateAndSendPermissionRequests(
+                             new PermissionRequestForCreation(connectionId,
+                                                              List.of(dataNeedId))));
     }
 
     @Test
@@ -158,20 +160,22 @@ class AiidaPermissionServiceTest {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
-        when(calculationService.calculate(anyString())).thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(),
-                                                                                                             new Timeframe(
-                                                                                                                     start,
-                                                                                                                     end),
-                                                                                                             new Timeframe(
-                                                                                                                     start,
-                                                                                                                     end)));
+        when(calculationService.calculate(anyString())).thenReturn(
+                new ValidatedHistoricalDataDataNeedResult(List.of(),
+                                                          new Timeframe(start, end),
+                                                          new Timeframe(start, end)));
+        when(jwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("jwtToken");
 
         // When
-        var dto = service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
-                                                                                                   List.of(dataNeedId)));
+        var dto = service.createValidateAndSendPermissionRequests(
+                new PermissionRequestForCreation(connectionId,
+                                                 List.of(dataNeedId)));
 
         // Then
         assertAll(() -> assertDoesNotThrow(dto::permissionIds),
+                  () -> assertEquals(1, dto.permissionIds().size()),
+                  () -> assertEquals("jwtToken", dto.accessToken()),
+                  () -> assertThat(dto.handshakeUrl()).endsWith("/region-connectors/aiida/permission-request/{permissionId}"),
                   () -> assertEquals(HANDSHAKE_URL, dto.handshakeUrl()));
     }
 
@@ -181,13 +185,10 @@ class AiidaPermissionServiceTest {
         var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId));
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
-        when(calculationService.calculate(anyString())).thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(),
-                                                                                                             new Timeframe(
-                                                                                                                     start,
-                                                                                                                     end),
-                                                                                                             new Timeframe(
-                                                                                                                     start,
-                                                                                                                     end)));
+        when(calculationService.calculate(anyString())).thenReturn(
+                new ValidatedHistoricalDataDataNeedResult(List.of(),
+                                                          new Timeframe(start, end),
+                                                          new Timeframe(start, end)));
 
         // When
         service.createValidateAndSendPermissionRequests(forCreation);
@@ -196,6 +197,27 @@ class AiidaPermissionServiceTest {
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.VALIDATED));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+    }
+
+    @Test
+    void givenMultipleDataNeeds_createValidateAndSendPermissionRequests_returnsAsExpected() throws Exception {
+        // Given
+        var dataNeedId2 = "testDataNeedId2";
+        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId, dataNeedId2));
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
+        when(calculationService.calculate(anyString())).thenReturn(
+                new ValidatedHistoricalDataDataNeedResult(List.of(),
+                                                          new Timeframe(start, end),
+                                                          new Timeframe(start, end)));
+
+        // When
+        var dto = service.createValidateAndSendPermissionRequests(forCreation);
+
+        // Then
+        assertAll(() -> assertDoesNotThrow(dto::permissionIds),
+                  () -> assertEquals(2, dto.permissionIds().size()),
+                  () -> assertEquals(HANDSHAKE_URL, dto.handshakeUrl()));
     }
 
     @Test

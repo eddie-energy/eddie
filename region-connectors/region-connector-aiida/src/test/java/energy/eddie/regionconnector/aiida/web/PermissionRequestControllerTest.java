@@ -3,7 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -67,7 +67,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PermissionRequestControllerTest {
     static final String HMAC_SECRET = "RbNQrp0Dfd+fNoTalQQTd5MRurblhcDtVYaPGoDsg8Q=";
     private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
-    private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
+    private final UUID permissionId1 = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
+    private final UUID permissionId2 = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde3");
     private final UUID aiidaId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     @Autowired
     private MockMvc mockMvc;
@@ -87,7 +88,7 @@ class PermissionRequestControllerTest {
     private MqttService unusedMqttService;
 
     @Test
-    void givenNoRequestBody_createPermissionRequest_returnsBadRequests() throws Exception {
+    void givenNoRequestBody_createPermissionRequests_returnsBadRequests() throws Exception {
         mockMvc.perform(post("/permission-request").contentType(MediaType.APPLICATION_JSON))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
@@ -95,7 +96,7 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenMissingConnectionId_createPermissionRequest_returnsBadRequests() throws Exception {
+    void givenMissingConnectionId_createPermissionRequests_returnsBadRequests() throws Exception {
         var json = "{\"dataNeedIds\":[\"1\"]}";
 
         mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
@@ -107,36 +108,38 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalNotNeededInformation_createPermissionRequests_isIgnored() throws Exception {
         // Given
-        var qrCodeDto = new AiidaPermissionRequestDto(UUID.randomUUID(),
-                                                      List.of(permissionId),
-                                                      "http://localhost:8080/example",
-                                                      "accessToken");
-        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(qrCodeDto);
+        var permissionRequests = new AiidaPermissionRequestsDto(UUID.randomUUID(),
+                                                                List.of(permissionId1),
+                                                                "http://localhost:8080/example",
+                                                                "accessToken");
+        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(permissionRequests);
         var requestJson = "{\"connectionId\":\"Hello My Test\",\"dataNeedIds\":[\"11\"],\"extra\":\"information\"}";
 
         // When
         mockMvc.perform(post("/permission-request").content(requestJson).contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isCreated())
-               .andExpect(jsonPath("$.permissionIds[0]", is(permissionId.toString())));
+               .andExpect(jsonPath("$.permissionIds[0]", is(permissionId1.toString())));
         verify(mockService).createValidateAndSendPermissionRequests(any());
     }
 
     @Test
     void givenValidInput_createPermissionRequests_asExpected() throws Exception {
         // Given
-        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(new AiidaPermissionRequestDto(
-                eddieId,
-                List.of(permissionId),
-                "http://localhost:8080/example",
-                "accessToken"));
-        var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedIds\":[\"1\"]}";
+        when(mockService.createValidateAndSendPermissionRequests(any())).thenReturn(
+                new AiidaPermissionRequestsDto(
+                        eddieId,
+                        List.of(permissionId1, permissionId2),
+                        "http://localhost:8080/example",
+                        "accessToken"));
+        var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedIds\":[\"1\", \"2\"]}";
 
         // When
         mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isCreated())
-               .andExpect(jsonPath("$.permissionIds[0]", is(permissionId.toString())))
+               .andExpect(jsonPath("$.permissionIds[0]", is(permissionId1.toString())))
+               .andExpect(jsonPath("$.permissionIds[1]", is(permissionId2.toString())))
                .andExpect(jsonPath("$.accessToken", is("accessToken")))
                .andExpect(jsonPath("$.handshakeUrl", is("http://localhost:8080/example")));
 
@@ -144,7 +147,7 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenUnsupportedDataNeedId_createPermissionRequest_returnsBadRequests() throws Exception {
+    void givenUnsupportedDataNeedId_createPermissionRequests_returnsBadRequests() throws Exception {
         // Given
         when(mockService.createValidateAndSendPermissionRequests(any())).thenThrow(new UnsupportedDataNeedException(
                 AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
@@ -166,8 +169,8 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"INVALID_VALUE_BLA\"}";
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
-                                                                              .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
+                                                                               .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
@@ -181,8 +184,8 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"REJECT\"}";
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
-                                                                              .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
+                                                                               .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNoContent());
     }
@@ -193,8 +196,8 @@ class PermissionRequestControllerTest {
         var json = "{\"operation\":\"UNFULFILLABLE\"}";
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
-                                                                              .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
+                                                                               .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isNoContent());
     }
@@ -203,20 +206,20 @@ class PermissionRequestControllerTest {
     void givenAccepted_updatePermissionRequest_callsServiceAndReturnsCredentials() throws Exception {
         // Given
         var json = "{\"operation\":\"ACCEPT\", \"aiidaId\":\"" + aiidaId + "\"}";
-        when(mockService.acceptPermission(permissionId.toString(), aiidaId)).thenReturn(new MqttDto(
+        when(mockService.acceptPermission(permissionId1.toString(), aiidaId)).thenReturn(new MqttDto(
                 "tcp://localhost:1883",
-                permissionId.toString(),
+                permissionId1.toString(),
                 "MySuperSafePassword",
                 "data",
                 "status",
                 "termination"));
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId).content(json)
-                                                                              .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
+                                                                               .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.username", is(permissionId.toString())))
+               .andExpect(jsonPath("$.username", is(permissionId1.toString())))
                .andExpect(jsonPath("$.password", is("MySuperSafePassword")))
                .andExpect(jsonPath("$.dataTopic", is("data")))
                .andExpect(jsonPath("$.statusTopic", is("status")))
@@ -226,16 +229,16 @@ class PermissionRequestControllerTest {
     @Test
     void getPermissionDetails_returnsAsExpected() throws Exception {
         // Given
-        when(mockService.detailsForPermission(permissionId.toString())).thenReturn(new PermissionDetailsDto(eddieId,
-                                                                                                            createDummyRequest(),
-                                                                                                            new DummyAiidaDataNeed()));
+        when(mockService.detailsForPermission(permissionId1.toString())).thenReturn(new PermissionDetailsDto(eddieId,
+                                                                                                             createDummyRequest(),
+                                                                                                             new DummyAiidaDataNeed()));
 
         // When
-        mockMvc.perform(get(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId))
+        mockMvc.perform(get(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1))
                // Then
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.permission_request").exists())
-               .andExpect(jsonPath("$.permission_request.permission_id", is(permissionId.toString())))
+               .andExpect(jsonPath("$.permission_request.permission_id", is(permissionId1.toString())))
                .andExpect(jsonPath("$.permission_request.data_need_id", is("someDataNeedId")))
                .andExpect(jsonPath("$.permission_request.start", is("2000-01-01")))
                .andExpect(jsonPath("$.permission_request.end", is("9999-12-31")))
@@ -251,7 +254,7 @@ class PermissionRequestControllerTest {
 
         AiidaPermissionRequest request = (AiidaPermissionRequest) constructor.newInstance();
 
-        setField(request, "permissionId", permissionId.toString());
+        setField(request, "permissionId", permissionId1.toString());
         setField(request, "connectionId", "someConnectionId");
         setField(request, "dataNeedId", "someDataNeedId");
         setField(request, "start", LocalDate.of(2000, 1, 1));

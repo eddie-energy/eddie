@@ -72,7 +72,7 @@ export type AiidaApplicationInformation = {
   aiidaId: string
 }
 
-export type AiidaPermissionRequestDTO = {
+export type AiidaPermissionRequestsDTO = {
   eddieId: string
   permissionIds: string[]
   handshakeUrl: string

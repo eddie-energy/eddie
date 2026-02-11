@@ -172,7 +172,7 @@ class PermissionRequestFormBase extends LitElement {
 
         const { permissionId, bearerToken } = data;
         this.bearerToken = bearerToken;
-        this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`); // TODO: fix for multiple permissions
+        this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`); // TODO: GH-2335 fix for multiple permissions
       }
 
       return data;

@@ -4,7 +4,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionUpdateDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -45,7 +45,7 @@ public class PermissionRequestController {
     @PostMapping(value = PATH_PERMISSION_REQUEST,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<AiidaPermissionRequestDto> createPermissionRequests(
+    public ResponseEntity<AiidaPermissionRequestsDto> createPermissionRequests(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);

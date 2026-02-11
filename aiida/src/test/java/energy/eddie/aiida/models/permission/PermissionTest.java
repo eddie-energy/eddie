@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.models.permission;
 
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -10,6 +11,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PermissionTest {
     private final UUID eddieId = UUID.fromString("e69f9bc2-e16c-4de4-8c3e-00d219dcd819");
@@ -49,5 +52,25 @@ class PermissionTest {
 
         // When, Then
         assertThrows(IllegalArgumentException.class, () -> permission.setRevokeTime(revokeTime));
+    }
+
+    @Test
+    void setDataNeed_setsDataNeedAndServiceName() {
+        // Given
+        var dataNeed = mock(AiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+
+        // When
+        permission.setDataNeed(dataNeed);
+
+        // Then
+        assertEquals(dataNeed, permission.dataNeed());
+        assertEquals("someDataNeed", permission.serviceName());
+    }
+
+    @Test
+    void givenNull_setDataNeed_throws() {
+        // When, Then
+        assertThrows(NullPointerException.class, () -> permission.setDataNeed(null));
     }
 }

@@ -9,7 +9,7 @@ import type {
   AiidaDataSourceHealthStatus,
   AiidaDataSourceType,
   AiidaPermission,
-  AiidaPermissionRequestDTO,
+  AiidaPermissionRequestsDTO,
 } from './types'
 
 const { danger, success } = useToast()
@@ -140,11 +140,11 @@ export function getApplicationInformation(): Promise<AiidaApplicationInformation
 }
 
 export function addPermissions(
-  permissionRequest: AiidaPermissionRequestDTO,
+  permissionRequests: AiidaPermissionRequestsDTO,
 ): Promise<AiidaPermission[]> {
   return fetch('/permissions', {
     method: 'POST',
-    body: JSON.stringify(permissionRequest),
+    body: JSON.stringify(permissionRequests),
   })
 }
 
