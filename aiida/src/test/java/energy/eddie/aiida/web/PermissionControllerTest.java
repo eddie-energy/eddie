@@ -6,8 +6,8 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.services.PermissionService;
-import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,13 +33,15 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @WebMvcTest(PermissionController.class)
@@ -101,9 +103,12 @@ class PermissionControllerTest {
 
         var response = mapper.readValue(responseString, new TypeReference<List<Permission>>() {});
 
-        assertEquals("Service3", response.get(0).serviceName());
-        assertEquals("Service2", response.get(1).serviceName());
-        assertEquals("Service1", response.get(2).serviceName());
+        assertEquals(3, response.size());
+        assertNull(response.getFirst().handshakeUrl());
+        assertEquals(permissionId, response.getFirst().id());
+        assertEquals(PermissionStatus.CREATED, permissions.get(1).status());
+        assertEquals(eddieId, permissions.get(2).eddieId());
+
     }
 
     @Test
@@ -135,34 +140,30 @@ class PermissionControllerTest {
     @WithMockUser
     void givenIncompletePostBody_permissionRequest_returnsBadRequest() throws Exception {
         // Given
-        when(permissionService.setupNewPermissions(any())).thenReturn(mockPermission);
-        when(mockPermission.id()).thenReturn(permissionId);
-        var requestJson = "{\"permissionId\":\"" + permissionId + "\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
+        when(permissionService.setupNewPermissions(any())).thenReturn(List.of(mockPermission));
+        var requestJson = "{\"permissionIds\":[\"" + permissionId + "\"],\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
 
         // When
         mockMvc.perform(post("/permissions").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(requestJson))
                // Then
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message",
-                                   allOf(iterableWithSize(1), hasItem("serviceName: must not be blank"))));
+                                   allOf(iterableWithSize(1), hasItem("handshakeUrl: must not be blank"))));
     }
 
     @Test
     @WithMockUser
-    void givenValidInput_setupPermission_callsService_andReturnsLocationHeader() throws Exception {
+    void givenValidInput_setupPermission_callsService() throws Exception {
         // Given
-        when(permissionService.setupNewPermissions(any())).thenReturn(mockPermission);
-        when(mockPermission.eddieId()).thenReturn(eddieId);
-        when(mockPermission.id()).thenReturn(permissionId);
-        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionId\":\"" + permissionId + "\",\"serviceName\":\"FUTURE_NEAR_REALTIME_DATA_OUTBOUND\",\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"bearerToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
-        var expectedLocationHeader = "/permissions/" + permissionId;
+        when(permissionService.setupNewPermissions(any())).thenReturn(List.of(mockPermission));
+        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionIds\":[\"" + permissionId + "\"],\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
 
         // When
         mockMvc.perform(post("/permissions").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(requestJson))
-               // Then
-               .andExpect(status().isCreated()).andExpect(header().string("location", expectedLocationHeader));
+                .andExpect(status().isCreated());
 
-        verify(permissionService).setupNewPermissions(argThat(dto -> dto.permissionId().equals(permissionId)));
+        // Then
+        verify(permissionService).setupNewPermissions(argThat(dto -> dto.permissionIds().getFirst().equals(permissionId)));
     }
 
     @Test
@@ -261,18 +262,15 @@ class PermissionControllerTest {
     }
 
     private List<Permission> sampleDataForGetAllPermissionsTest() {
-        var name = "Service1";
-        var permission1 = new Permission(new AiidaPermissionRequestDto(eddieId, permissionId, name, "https://example.org"), userId);
+        var permission1 = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
         permission1.setGrantTime(grant);
 
-        name = "Service2";
         grant = grant.plusSeconds(1000);
-        var permission2 = new Permission(new AiidaPermissionRequestDto(eddieId, permissionId, name, "https://example.org"), userId);
+        var permission2 = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
         permission2.setGrantTime(grant);
 
-        name = "Service3";
         grant = grant.plusSeconds(5000);
-        var permission3 = new Permission(new AiidaPermissionRequestDto(eddieId, permissionId, name, "https://example.org"), userId);
+        var permission3 = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
         permission3.setGrantTime(grant);
 
         // grant time order is permission3, permission2, permission1

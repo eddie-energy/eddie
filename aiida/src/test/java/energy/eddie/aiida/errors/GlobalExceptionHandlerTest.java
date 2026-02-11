@@ -149,7 +149,8 @@ class GlobalExceptionHandlerTest {
     @Test
     void givenPermissionUnfulfillableException_returnsBadRequest() {
         // Given
-        var exception = new PermissionUnfulfillableException("My Service");
+        var permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
+        var exception = new PermissionUnfulfillableException(permissionId);
 
         // When
         var response = advice.handleConflictExceptions(exception);
@@ -160,8 +161,9 @@ class GlobalExceptionHandlerTest {
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).startsWith(
-                "Permission for service 'My Service' cannot be fulfilled");
+        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message())
+                .contains(permissionId.toString())
+                .contains("cannot be fulfilled by your AIIDA.");
     }
 
     @Test

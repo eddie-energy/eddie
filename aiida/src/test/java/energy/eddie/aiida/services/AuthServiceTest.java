@@ -6,7 +6,6 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -30,10 +29,10 @@ import static org.mockito.Mockito.when;
 class AuthServiceTest {
     private final String uuid = "dc9ff3d3-1f1f-445d-a4ee-85c1faffb715";
     private final UUID userId = UUID.fromString(uuid);
-    private final AiidaPermissionRequestDto permissionRequest = new AiidaPermissionRequestDto(UUID.randomUUID(),
-                                                                                              UUID.randomUUID(),
-                                                                                              "Test Service Name",
-                                                                                              "https://example.org");
+    private final UUID eddieId = UUID.randomUUID();
+    private final UUID permissionId = UUID.randomUUID();
+    private final String handshakeUrl = "https://example.org";
+    private final String accessToken = "someAccess";
     private AuthService service;
 
     @BeforeEach
@@ -47,7 +46,7 @@ class AuthServiceTest {
     @Test
     void givenValidPermissionForUser_checkAuthorization_notThrows() {
         // Given
-        Permission permission = new Permission(permissionRequest, userId);
+        var permission = new Permission(eddieId, permissionId, handshakeUrl, accessToken, userId);
 
         // When, Then
         assertDoesNotThrow(() -> service.checkAuthorizationForPermission(permission));
@@ -56,7 +55,7 @@ class AuthServiceTest {
     @Test
     void givenInValidPermissionForUser_checkAuthorization_Throws() {
         // Given
-        Permission permission = new Permission(permissionRequest, UUID.randomUUID());
+        var permission = new Permission(eddieId, permissionId, handshakeUrl, accessToken, UUID.randomUUID());
 
         // When, Then
         assertThrows(UnauthorizedException.class, () -> service.checkAuthorizationForPermission(permission));

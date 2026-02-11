@@ -8,7 +8,6 @@ import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
-import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
 import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -78,7 +77,10 @@ class PermissionServiceTest {
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
     private final UUID userId = UUID.randomUUID();
-    private final AiidaPermissionRequestDto permissionRequest = new AiidaPermissionRequestDto(eddieId, permissionId, serviceName, handshakeUrl);
+    private final AiidaPermissionRequestDto permissionRequest = new AiidaPermissionRequestDto(eddieId,
+                                                                                              List.of(permissionId),
+                                                                                              serviceName,
+                                                                                              handshakeUrl);
     @Mock
     private PermissionRepository mockPermissionRepository;
     @Mock
@@ -163,7 +165,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenExceptionFromHandshakeService_setupNewPermissions_throwsDetailFetchingFailedException() throws InvalidUserException {
+    void givenExceptionFromHandshakeService_setupNewPermissions_throwsDetailFetchingFailedException() throws Exception {
         // Given
         var exception = HttpClientErrorException.create(HttpStatus.GONE,
                                                         "Gone",
@@ -179,7 +181,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidQrCodeDto_setupNewPermissions_savesToDb_andCallsHandshakeService() throws PermissionUnfulfillableException, PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException {
+    void givenValidQrCodeDto_setupNewPermissions_savesToDb_andCallsHandshakeService() throws Exception {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
@@ -326,7 +328,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_rejectPermission_updatesState_andRecordsTimestamp_andCallsHandshakeService() throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException, InvalidUserException {
+    void givenValidPermission_rejectPermission_updatesState_andRecordsTimestamp_andCallsHandshakeService() throws Exception {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
@@ -371,7 +373,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_acceptPermission_updatesState_callsHandshakeService_andPermissionScheduler() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    void givenValidPermission_acceptPermission_updatesState_callsHandshakeService_andPermissionScheduler() throws Exception {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -398,7 +400,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidInboundPermission_createsAndStartsDataSource() throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    void givenValidInboundPermission_createsAndStartsDataSource() throws Exception {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
@@ -450,7 +452,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
+    void givenValidPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws Exception {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
@@ -470,7 +472,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidInboundPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
+    void givenValidInboundPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws Exception {
         // Given
         when(mockPermissionRepository.findById(permissionId)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
@@ -516,14 +518,27 @@ class PermissionServiceTest {
         private ScheduledFuture<?> mockScheduledFuture;
 
         public static Stream<Arguments> onStartupVariousPermissions() {
-            var per = new Permission(new AiidaPermissionRequestDto(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
-                                                                   UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
-                                                                   "Test Service Name",
-                                                                   "https://example.org"), UUID.randomUUID());
-            return Stream.of(Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-12-24T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
-                             Arguments.of(per, "2023-09-01T00:00:00.000Z", "2023-09-19T00:00:00.000Z", PermissionStatus.FULFILLED),
-                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-09-30T00:00:00.000Z", PermissionStatus.FULFILLED),
-                             Arguments.of(per, "2023-09-11T00:00:00.000Z", "2023-10-31T00:00:00.000Z", PermissionStatus.STREAMING_DATA),
+            var per = new Permission(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
+                                     UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
+                                     "https://example.org",
+                                     "accessToken",
+                                     UUID.randomUUID());
+            return Stream.of(Arguments.of(per,
+                                          "2023-09-01T00:00:00.000Z",
+                                          "2023-12-24T00:00:00.000Z",
+                                          PermissionStatus.STREAMING_DATA),
+                             Arguments.of(per,
+                                          "2023-09-01T00:00:00.000Z",
+                                          "2023-09-19T00:00:00.000Z",
+                                          PermissionStatus.FULFILLED),
+                             Arguments.of(per,
+                                          "2023-09-11T00:00:00.000Z",
+                                          "2023-09-30T00:00:00.000Z",
+                                          PermissionStatus.FULFILLED),
+                             Arguments.of(per,
+                                          "2023-09-11T00:00:00.000Z",
+                                          "2023-10-31T00:00:00.000Z",
+                                          PermissionStatus.STREAMING_DATA),
                              Arguments.of(per,
                                           "2023-10-12T00:00:00.000Z",
                                           "2023-10-15T00:00:00.000Z",

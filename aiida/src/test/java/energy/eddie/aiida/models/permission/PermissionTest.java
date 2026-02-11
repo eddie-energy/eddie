@@ -3,7 +3,6 @@
 
 package energy.eddie.aiida.models.permission;
 
-import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestDto;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -15,12 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PermissionTest {
     private final UUID eddieId = UUID.fromString("e69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("f69f9bc2-e16c-4de4-8c3e-00d219dcd819");
-    private final String serviceName = "My Test Service";
     private final String handshakeUrl = "https://example.org";
-    private final Permission permission = new Permission(new AiidaPermissionRequestDto(eddieId,
-                                                                                       permissionId,
-                                                                                       serviceName,
-                                                                                       handshakeUrl), UUID.randomUUID());
+    private final String accessToken = "someAccess";
+    private final Permission permission = new Permission(eddieId,
+                                                         permissionId,
+                                                         handshakeUrl,
+                                                         accessToken,
+                                                         UUID.randomUUID());
 
     @Test
     void constructor_setsStatusToCreated() {

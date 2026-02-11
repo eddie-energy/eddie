@@ -24,6 +24,7 @@ import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredenti
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
+import energy.eddie.regionconnector.shared.security.JwtUtil;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.AfterEach;
@@ -84,6 +85,8 @@ class AiidaPermissionServiceTest {
     private DataNeedCalculationService<DataNeed> calculationService;
     @Mock
     private ApplicationContext applicationContext;
+    @Mock
+    private JwtUtil jwtUtil;
     private AiidaPermissionService service;
     @Captor
     private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
@@ -97,6 +100,7 @@ class AiidaPermissionServiceTest {
                                              calculationService,
                                              Sinks.many().multicast().onBackpressureBuffer(),
                                              applicationContext,
+                                             jwtUtil,
                                              "http://localhost:8080");
     }
 
@@ -133,9 +137,9 @@ class AiidaPermissionServiceTest {
 
         // Then
         assertThrows(DataNeedNotFoundException.class,
-                     // When
+                // When
                      () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation("testConnId",
-                                                                                                            nonExisting)));
+                                                                                                            List.of(nonExisting))));
     }
 
     @Test
@@ -146,16 +150,14 @@ class AiidaPermissionServiceTest {
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
                      () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
-                                                                                                            dataNeedId)));
+                                                                                                            List.of(dataNeedId))));
     }
 
     @Test
-    void givenValidInput_createValidateAndSendPermissionRequests_returnsAsExpected() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void givenValidInput_createValidateAndSendPermissionRequests_returnsAsExpected() throws Exception {
         // Given
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
-        when(mockDataNeed.name()).thenReturn("Test Service");
-        when(mockDataNeedsService.getById(anyString())).thenReturn(mockDataNeed);
         when(calculationService.calculate(anyString())).thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(),
                                                                                                              new Timeframe(
                                                                                                                      start,
@@ -166,23 +168,19 @@ class AiidaPermissionServiceTest {
 
         // When
         var dto = service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
-                                                                                                   dataNeedId));
+                                                                                                   List.of(dataNeedId)));
 
         // Then
-        var expectedHandshakeUrl = HANDSHAKE_URL.substring(0,
-                                                           HANDSHAKE_URL.indexOf("{permissionId}")) + dto.permissionId();
-        assertAll(() -> assertDoesNotThrow(dto::permissionId),
-                  () -> assertEquals("Test Service", dto.serviceName()),
-                  () -> assertEquals(expectedHandshakeUrl, dto.handshakeUrlTemplate()));
+        assertAll(() -> assertDoesNotThrow(dto::permissionIds),
+                  () -> assertEquals(HANDSHAKE_URL, dto.handshakeUrl()));
     }
 
     @Test
-    void givenValidInput_createValidateAndSendPermissionRequests_commitsThreeEvents() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void givenValidInput_createValidateAndSendPermissionRequests_commitsThreeEvents() throws Exception {
         // Given
-        var forCreation = new PermissionRequestForCreation(connectionId, dataNeedId);
+        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId));
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
-        when(mockDataNeedsService.getById(anyString())).thenReturn(mockDataNeed);
         when(calculationService.calculate(anyString())).thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(),
                                                                                                              new Timeframe(
                                                                                                                      start,
