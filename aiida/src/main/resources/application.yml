@@ -65,7 +65,7 @@ aiida:
     url:
       internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}
       external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
-    realm: ${KEYCLOAK_REALM:EDDIE}
+    realm: ${KEYCLOAK_REALM:AIIDA}
     client: ${KEYCLOAK_CLIENT:AIIDA}
     secret: ${KEYCLOAK_CLIENT_SECRET:REPLACE_ME}
     account-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/account
