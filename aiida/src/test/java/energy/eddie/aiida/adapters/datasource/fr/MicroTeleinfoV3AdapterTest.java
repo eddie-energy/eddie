@@ -5,6 +5,7 @@ package energy.eddie.aiida.adapters.datasource.fr;
 
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3ModeNotSupportedException;
+import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.StandardModeEntry;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
@@ -27,6 +28,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -342,6 +345,10 @@ class MicroTeleinfoV3AdapterTest {
                     "raw": "032507388",
                     "value": 32507388
                   },
+                  "EASF02": {
+                    "raw": "000000000",
+                    "value": 0
+                  },
                   "EASF03": {
                     "raw": "000000000",
                     "value": 0
@@ -410,9 +417,25 @@ class MicroTeleinfoV3AdapterTest {
                     "raw": "005",
                     "value": 5
                   },
+                  "IRMS2": {
+                    "raw": "000",
+                    "value": 0
+                  },
+                  "IRMS3": {
+                    "raw": "000",
+                    "value": 0
+                  },
                   "URMS1": {
                     "raw": "236",
                     "value": 236
+                  },
+                  "URMS2": {
+                    "raw": "0",
+                    "value": 0
+                  },
+                  "URMS3": {
+                    "raw": "0",
+                    "value": 0
                   },
                   "PREF": {
                     "raw": "12",
@@ -524,29 +547,45 @@ class MicroTeleinfoV3AdapterTest {
                   }
                 }
                 """;
+
         StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> {
-                                                    var aiidaRecordValues = received.aiidaRecordValues();
-                                                    var hasPositiveActiveTags = aiidaRecordValues.stream()
-                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    POSITIVE_ACTIVE_ENERGY));
+                .expectNextMatches(received -> {
+                    var aiidaRecordValues = received.aiidaRecordValues();
 
-                                                    var hasMeterDeviceId = aiidaRecordValues.stream()
-                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    DEVICE_ID_1));
+                    var allObisCodes = new ArrayList<>(Arrays.asList(ObisCode.values()));
+                    var allStandardModeEntries = new ArrayList<>(Arrays.asList(StandardModeEntry.values()));
+                    var missingStandardModeEntries = allStandardModeEntries
+                            .stream()
+                            .filter(entry -> aiidaRecordValues
+                                    .stream()
+                                    .noneMatch(val -> Objects.equals(val.rawTag(), entry.rawEntryKey())))
+                            .toList();
 
-                                                    return hasPositiveActiveTags && hasMeterDeviceId;
-                                                })
-                                                .then(adapter::close)
-                                                .expectComplete()
-                                                .verifyLater();
+                    var allNotUnknown = aiidaRecordValues
+                            .stream()
+                            .filter(aiidaRecordValue -> !Objects.equals(
+                                    aiidaRecordValue.dataTag(),
+                                    UNKNOWN))
+                            .toList();
 
-        adapter.messageArrived(DATA_SOURCE_TOPIC,
-                               new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
+                    for (var aiidaRecordValue : allNotUnknown) {
+                        StandardModeEntry entry = StandardModeEntry.fromEntryKey(aiidaRecordValue.rawTag()); // throws exception if raw tag doesn't exist
+                        if (!allObisCodes.contains(entry.obisCode())
+                                && entry.obisCode() != DEVICE_ID_1) {
+                            throw new IllegalArgumentException("AiidaRecord contains same standard mode entry twice!");
+                        }
+
+                        allObisCodes.remove(entry.obisCode());
+                    }
+
+                    return allStandardModeEntries.size() - missingStandardModeEntries.size() == aiidaRecordValues.size();
+                })
+                .then(adapter::close)
+                .expectComplete()
+                .verifyLater();
+
+        adapter.messageArrived(DATA_SOURCE.topic(),
+                new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
         assertTrue(LOG_CAPTOR.getDebugLogs().contains("Connected smart meter operates in %s mode.".formatted(

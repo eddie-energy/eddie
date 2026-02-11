@@ -18,7 +18,7 @@ public enum StandardModeEntry {
     /**
      * Meter's secondary address (None)
      */
-    ADSC(ObisCode.DEVICE_ID_1, UnitOfMeasurement.NONE, "ADSC", true),
+    ADSC(ObisCode.METER_SERIAL, UnitOfMeasurement.NONE, "ADSC", true),
     /** TIC version (None) */
     VTIC(ObisCode.UNKNOWN, UnitOfMeasurement.NONE, "VTIC", false),
     /** Current date and time (None) */
@@ -114,11 +114,11 @@ public enum StandardModeEntry {
     /** Injected max. app. power n-1 (VA) */
     SMAXIN_1(ObisCode.UNKNOWN, UnitOfMeasurement.VOLT_AMPERE, "SMAXIN-1", false),
     /** Point n of the extracted active load curve (W) */
-    CCASN(ObisCode.UNKNOWN, UnitOfMeasurement.WATT, "CCASN", false),
+    CCASN(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER, UnitOfMeasurement.WATT, "CCASN", false),
     /** Point n-1 of the extracted active load curve (W) */
     CCASN_1(ObisCode.UNKNOWN, UnitOfMeasurement.WATT, "CCASN-1", false),
     /** Point n of the injected active load curve (W) */
-    CCAIN(ObisCode.UNKNOWN, UnitOfMeasurement.WATT, "CCAIN", false),
+    CCAIN(ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER, UnitOfMeasurement.WATT, "CCAIN", false),
     /** Point n-1 of the injected active load curve (W) */
     CCAIN_1(ObisCode.UNKNOWN, UnitOfMeasurement.WATT, "CCAIN-1", false),
     /** Mean voltage ph. 1 (V) */
