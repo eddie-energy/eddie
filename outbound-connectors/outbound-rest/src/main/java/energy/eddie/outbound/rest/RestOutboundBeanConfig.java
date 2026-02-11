@@ -70,7 +70,7 @@ public class RestOutboundBeanConfig {
                 // CIM v1.04
                 VHDEnvelope.class,
                 energy.eddie.cim.v1_04.rtd.RTDEnvelope.class,
-                // CIM v1.06
+                // CIM v1.12
                 energy.eddie.cim.v1_12.rtd.RTDEnvelope.class,
                 // DTOs
                 CimCollection.class,

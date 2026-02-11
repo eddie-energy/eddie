@@ -36,7 +36,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.ContextRefreshedEvent;
 import reactor.core.publisher.Sinks;
 
 import java.time.LocalDate;
@@ -110,7 +109,7 @@ class AiidaPermissionServiceTest {
     }
 
     @Test
-    void givenContextRefreshedEvent_subscribesToActivePermissions() throws MqttException {
+    void givenActivePermissions_subscribesToActivePermissions() throws MqttException {
         // given
         var permission1 = mock(AiidaPermissionRequest.class);
         var permission2 = mock(AiidaPermissionRequest.class);
@@ -119,7 +118,7 @@ class AiidaPermissionServiceTest {
         when(mockViewRepository.findActivePermissionRequests()).thenReturn(List.of(permission1, permission2));
 
         // when
-        service.onApplicationEvent(mock(ContextRefreshedEvent.class));
+        service.subscribeToAllActivePermissionTopics();
 
         // then
         verify(mockViewRepository).findActivePermissionRequests();

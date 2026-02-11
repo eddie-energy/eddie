@@ -3,6 +3,8 @@
 
 package energy.eddie.regionconnector.aiida.mqtt.callback;
 
+import energy.eddie.regionconnector.aiida.mqtt.events.MqttConnectedEvent;
+import energy.eddie.regionconnector.aiida.publisher.MqttEventPublisher;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttActionListener;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -20,6 +22,7 @@ public class MqttConnectCallback implements MqttActionListener {
     private static final Duration reconnectDelay = Duration.ofSeconds(15);
     private final MqttAsyncClient client;
     private final MqttConnectionOptions connectionOptions;
+    private final MqttEventPublisher eventPublisher;
     private final ThreadPoolTaskScheduler scheduler;
 
     /**
@@ -29,18 +32,23 @@ public class MqttConnectCallback implements MqttActionListener {
     public MqttConnectCallback(
             MqttAsyncClient client,
             MqttConnectionOptions connectionOptions,
+            MqttEventPublisher eventPublisher,
             ThreadPoolTaskScheduler scheduler
     ) {
         this.client = client;
         this.connectionOptions = connectionOptions;
+        this.eventPublisher = eventPublisher;
         this.scheduler = scheduler;
     }
 
     @Override
     public void onSuccess(IMqttToken asyncActionToken) {
+        var serverUri = asyncActionToken.getClient().getServerURI();
         LOGGER.atInfo()
-              .addArgument(asyncActionToken.getClient().getServerURI())
+              .addArgument(serverUri)
               .log("Successfully connected to MQTT broker {}");
+
+        eventPublisher.publishEvent(new MqttConnectedEvent(serverUri));
     }
 
     @Override

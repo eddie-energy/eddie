@@ -43,7 +43,7 @@ class CustomSerializer implements Serializer<Object> {
             // CIM v1.04
             case VHDEnvelope ignored -> serialize(data);
             case energy.eddie.cim.v1_04.rtd.RTDEnvelope ignored -> serialize(data);
-            // CIM v1.06
+            // CIM v1.12
             case energy.eddie.cim.v1_12.rtd.RTDEnvelope ignored -> serialize(data);
             case null -> null;
             default -> {

@@ -30,13 +30,10 @@ import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundExceptio
 import energy.eddie.regionconnector.shared.security.JwtUtil;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
 
@@ -51,7 +48,7 @@ import static energy.eddie.regionconnector.aiida.web.PermissionRequestController
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 
 @Component
-public class AiidaPermissionService implements ApplicationListener<@NonNull ContextRefreshedEvent> {
+public class AiidaPermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaPermissionService.class);
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
@@ -65,7 +62,6 @@ public class AiidaPermissionService implements ApplicationListener<@NonNull Cont
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") // Injected via parent app context
     public AiidaPermissionService(
             Outbox outbox,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")  // defined in core
             DataNeedsService dataNeedsService,
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
@@ -86,9 +82,8 @@ public class AiidaPermissionService implements ApplicationListener<@NonNull Cont
         this.eddiePublicUrl = eddiePublicUrl;
     }
 
-    @Override
     @Transactional
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
+    public void subscribeToAllActivePermissionTopics() {
         var activePermissions = viewRepository.findActivePermissionRequests();
         LOGGER.info("Found {} active permissions on startup", activePermissions.size());
 

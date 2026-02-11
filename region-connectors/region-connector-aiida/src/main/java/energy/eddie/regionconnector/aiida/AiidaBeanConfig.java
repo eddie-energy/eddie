@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessagePro
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
+import energy.eddie.regionconnector.aiida.publisher.MqttEventPublisher;
 import energy.eddie.regionconnector.aiida.services.AiidaTransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -157,6 +158,7 @@ public class AiidaBeanConfig {
     public MqttAsyncClient mqttClient(
             MqttConnectionOptions connectionOptions,
             ThreadPoolTaskScheduler scheduler,
+            MqttEventPublisher eventPublisher,
             AiidaConfiguration configuration
     ) throws MqttException {
         var client = new MqttAsyncClient(configuration.mqttServerUri(), // overridden by connectionOptions
@@ -164,7 +166,7 @@ public class AiidaBeanConfig {
                                          new MqttDefaultFilePersistence("./region-connector-aiida/mqtt-persistence"));
 
         // need to create manually because of circular dependency
-        var connectCallback = new MqttConnectCallback(client, connectionOptions, scheduler);
+        var connectCallback = new MqttConnectCallback(client, connectionOptions, eventPublisher, scheduler);
 
         client.connect(connectionOptions, null, connectCallback);
 
