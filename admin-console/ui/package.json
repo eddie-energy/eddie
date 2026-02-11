@@ -14,19 +14,19 @@
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
-    "@primeuix/themes": "^2.0.2",
+    "@primeuix/themes": "^2.0.3",
     "chart.js": "^4.5.1",
     "modern-normalize": "^3.0.1",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "tinyduration": "^3.4.1",
-    "vue": "^3.5.27",
+    "vue": "^3.5.28",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.15.0",
-    "@tsconfig/node20": "^20.1.8",
-    "@types/node": "^20.19.29",
+    "@tsconfig/node20": "^20.1.9",
+    "@types/node": "^20.19.33",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/eslint-config-prettier": "^9.0.0",
     "@vue/eslint-config-typescript": "^13.0.0",
@@ -34,10 +34,10 @@
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.33.0",
     "npm-run-all2": "^6.2.6",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.1",
     "typescript": "~5.4.5",
     "vite": "7.3.1",
-    "vite-plugin-vue-devtools": "^8.0.1",
+    "vite-plugin-vue-devtools": "^8.0.6",
     "vue-tsc": "^2.2.12"
   }
 }
