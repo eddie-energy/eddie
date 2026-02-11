@@ -170,13 +170,10 @@ class PermissionRequestFormBase extends LitElement {
           duration: 10000,
         });
 
-        const { permissionId, permissionIds, bearerToken } = data;
+        const pollEndpoint = response.headers.get("Location");
+        const { bearerToken } = data;
         this.bearerToken = bearerToken;
-
-        const ids = permissionIds ?? [permissionId];
-        for (const permissionId of ids) {
-          this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`);
-        }
+        this.pollRequestStatus(pollEndpoint);
       }
 
       return data;

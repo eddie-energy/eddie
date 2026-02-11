@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.security;
@@ -85,12 +85,12 @@ public class JwtUtil {
      * returned JWT is to be included by the region connector element to make requests that update the permission.
      *
      * @param regionConnectorId ID of the region connector that created the new permission.
-     * @param permissionId      ID(s) of the newly created permission.
+     * @param permissionIds     ID of the newly created permissions.
      * @return Serialized JWT.
      * @throws JwtCreationFailedException If for any reason, the creation of the JWT failed.
      */
-    public String createJwt(String regionConnectorId, String... permissionId) throws JwtCreationFailedException {
-        var permissions = Map.of(regionConnectorId, permissionId);
+    public String createJwt(String regionConnectorId, String... permissionIds) throws JwtCreationFailedException {
+        var permissions = Map.of(regionConnectorId, permissionIds);
 
         JWSHeader header = new JWSHeader.Builder(JWS_ALGORITHM)
                 .type(JOSEObjectType.JWT)

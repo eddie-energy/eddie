@@ -29,6 +29,7 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 @SuppressWarnings("NullableProblems")
 public class JwtIssuerFilter extends OncePerRequestFilter {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtIssuerFilter.class);
+    public static final String BEARER_TOKEN = "bearerToken";
     private final ObjectMapper objectMapper;
     private final JwtUtil jwtUtil;
 
@@ -65,43 +66,45 @@ public class JwtIssuerFilter extends OncePerRequestFilter {
         LOGGER.info("Creating JWT for {}", request.getRequestURI());
 
         var objectNode = getJsonNodes(request, wrappedResponse);
-        if (objectNode == null) {
+        if (objectNode == null || objectNode.has(BEARER_TOKEN)) {
             wrappedResponse.copyBodyToResponse();
             return;
         }
 
-        var permissionId = objectNode.get("permissionId");
-        if (permissionId != null && permissionId.isString()) {
-            try {
-                String token = jwtUtil.createJwt(rcId, permissionId.asString());
-                objectNode.put("bearerToken", token);
-            } catch (JwtCreationFailedException e) {
-                throw new ServletException("JWT creation failed", e);
-            }
-            wrappedResponse.resetBuffer();
-            wrappedResponse.getWriter().write(objectMapper.writeValueAsString(objectNode));
-        }
-
-        var permissionIds = objectNode.get("permissionIds");
-        if (permissionIds != null && permissionIds.isArray()) {
-            var ids = new ArrayList<String>();
-            for (var node : permissionIds) {
-                if (node.isString()) {
-                    ids.add(node.asString());
-                }
-            }
-
-            try {
-                String token = jwtUtil.createJwt(rcId, ids.toArray(String[]::new));
-                objectNode.put("bearerToken", token);
-            } catch (JwtCreationFailedException e) {
-                throw new ServletException("JWT creation failed", e);
-            }
+        var permissionIds = findPermissionIds(objectNode);
+        if (permissionIds.length > 0) {
+            var token = createToken(rcId, permissionIds);
+            objectNode.put(BEARER_TOKEN, token);
             wrappedResponse.resetBuffer();
             wrappedResponse.getWriter().write(objectMapper.writeValueAsString(objectNode));
         }
 
         wrappedResponse.copyBodyToResponse();
+    }
+
+    private String[] findPermissionIds(ObjectNode objectNode) {
+        var permissionIds = objectNode.get("permissionIds");
+        var permissionId = objectNode.get("permissionId");
+        if (permissionIds != null && permissionIds.isArray()) {
+            var pmIds = new ArrayList<String>();
+            for (var item : permissionIds) {
+                if (item.isString()) {
+                    pmIds.add(item.asString());
+                }
+            }
+            return pmIds.toArray(new String[0]);
+        } else if (permissionId != null && permissionId.isString()) {
+            return new String[]{permissionId.asString()};
+        }
+        return new String[0];
+    }
+
+    private String createToken(String rcId, String... permissionIds) throws ServletException {
+        try {
+            return jwtUtil.createJwt(rcId, permissionIds);
+        } catch (JwtCreationFailedException e) {
+            throw new ServletException("JWT creation failed", e);
+        }
     }
 
     @Nullable

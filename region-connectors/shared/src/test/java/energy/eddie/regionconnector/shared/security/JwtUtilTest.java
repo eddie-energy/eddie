@@ -1,13 +1,16 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.security;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
+import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.text.ParseException;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -111,9 +115,9 @@ class JwtUtilTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void createJwt_returnsJwtWithOnlyNewPermissionId() throws Exception {
+    void createJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
         // Given
-        var newPermissionId = "myTestId";
+        String[] newPermissionId = new String[]{"myTestId1", "myTestId2"};
 
         // When
         var jwt = jwtUtil.createJwt("aiida", newPermissionId);
@@ -122,24 +126,6 @@ class JwtUtilTest {
         JWTClaimsSet claims = processor.process(jwt, null);
         var permissions = (Map<String, List<String>>) claims.getClaim(JWT_PERMISSIONS_CLAIM);
         assertEquals(1, permissions.size());
-        assertEquals(newPermissionId, permissions.get("aiida").getFirst());
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void givenMultiplePermissions_createJwt_returnsJwtWithAllPermissions() throws Exception {
-        // Given
-        var permissionId1 = "myTestId";
-        var permissionId2 = "myOtherTestId";
-
-        // When
-        var jwt = jwtUtil.createJwt("aiida", permissionId1, permissionId2);
-
-        // Then
-        JWTClaimsSet claims = processor.process(jwt, null);
-        var permissions = (Map<String, List<String>>) claims.getClaim(JWT_PERMISSIONS_CLAIM);
-        assertEquals(1, permissions.size());
-        assertEquals(2, permissions.get("aiida").size());
-        assertThat(permissions.get("aiida")).hasSameElementsAs(List.of(permissionId1, permissionId2));
+        assertArrayEquals(newPermissionId, permissions.get("aiida").toArray(new String[0]));
     }
 }
