@@ -22,8 +22,6 @@ services:
       retries: 3
 
   eddie:
-    profiles:
-      - dockerized-eddie
     image: ghcr.io/eddie-energy/eddie:latest
     build:
       dockerfile: src/main/docker/Dockerfile
@@ -42,27 +40,6 @@ services:
     depends_on:
       - kafka
       - db
-
-  eddie-example-app:
-    profiles:
-      - dockerized-eddie
-    image: ghcr.io/eddie-energy/eddie-example-app:latest
-    build:
-      dockerfile: src/main/docker/Dockerfile
-      context: ../examples/example-app
-    environment:
-      JDBC_URL: ${JDBC_URL}
-      JDBC_USER: ${JDBC_USER}
-      JDBC_PASSWORD: ${JDBC_PASSWORD}
-      EDDIE_PUBLIC_URL: ${PUBLIC_CONTEXT_PATH}
-      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
-      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS}
-    restart: always
-    depends_on:
-      db:
-        condition: service_started
-      eddie:
-        condition: service_started
 
   kafka:
     # Docs: https://github.com/apache/kafka/blob/trunk/docker/examples/README.md
@@ -128,12 +105,11 @@ services:
       - ./keycloak/EDDIE-realm.json:/opt/keycloak/data/import/EDDIE-realm.json
       - ../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
 
+  # Used to add security to the management port of EDDIE.
   caddy:
     image: caddy:alpine
     ports:
       - "9000:8080"
-    environment:
-      PUBLIC_CONTEXT_PATH: ${PUBLIC_CONTEXT_PATH}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
