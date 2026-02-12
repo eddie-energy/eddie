@@ -45,7 +45,11 @@ onMounted(async () => {
     const unsupported: string[] = []
 
     for (const [key, value] of Object.entries(features)) {
-      value ? supported.push(key) : unsupported.push(key)
+      if (value) {
+        supported.push(key)
+      } else {
+        unsupported.push(key)
+      }
     }
 
     supportedFeatures.value[regionConnectorId] = supported

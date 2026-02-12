@@ -46,7 +46,7 @@ async function fetchPermissions(page: number = 0, size: number = 500) {
     permissions.value.push(...response.content)
     totalRecords.value = response.page.totalElements
     loadedPage++
-  } catch (error) {
+  } catch {
     toast.add({
       severity: 'error',
       summary: 'Failed to fetch permissions',

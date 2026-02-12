@@ -9,12 +9,12 @@ const { status } = defineProps<{ status: string }>()
 <template>
   <span
     :style="{
-      color: `var(--chip-text-${STATUS_PRESETS[status].color ?? 'neutral'})`,
-      background: `var(--chip-background-${STATUS_PRESETS[status].color ?? 'neutral'})`
+      color: `var(--chip-text-${STATUS_PRESETS[status]?.color ?? 'neutral'})`,
+      background: `var(--chip-background-${STATUS_PRESETS[status]?.color ?? 'neutral'})`
     }"
   >
-    <i class="pi" :class="[STATUS_PRESETS[status].icon ?? 'pi-info-circle']"></i>
-    {{ STATUS_PRESETS[status].text ?? status }}
+    <i class="pi" :class="[STATUS_PRESETS[status]?.icon ?? 'pi-info-circle']"></i>
+    {{ STATUS_PRESETS[status]?.text ?? status }}
   </span>
 </template>
 

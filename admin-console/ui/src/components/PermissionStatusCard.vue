@@ -21,11 +21,11 @@ const popover = useTemplateRef('popover')
   <div class="card">
     <i
       class="pi icon"
-      :class="[STATUS_PRESETS[status].icon ?? 'pi-question-circle']"
-      :style="`background: var(--${STATUS_PRESETS[status].color ?? 'help'})`"
+      :class="[STATUS_PRESETS[status]?.icon ?? 'pi-question-circle']"
+      :style="`background: var(--${STATUS_PRESETS[status]?.color ?? 'help'})`"
     ></i>
     <div>
-      <b>{{ STATUS_PRESETS[status].text }}</b>
+      <b>{{ STATUS_PRESETS[status]?.text ?? status }}</b>
       <br />
       <span>{{ datetime }}</span>
     </div>
