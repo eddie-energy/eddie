@@ -60,11 +60,5 @@ const popover = useTemplateRef('popover')
     border-radius: 50%;
     color: white;
   }
-
-  .message {
-    display: block;
-    margin-top: 1rem;
-    line-height: 1.25rem;
-  }
 }
 </style>
