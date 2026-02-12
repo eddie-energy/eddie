@@ -54,12 +54,6 @@ const popover = useTemplateRef('popover')
     font-weight: 500;
   }
 
-  button {
-    border: unset;
-    background: unset;
-    color: currentColor;
-  }
-
   .icon {
     font-size: 0.75rem;
     padding: 0.375rem;

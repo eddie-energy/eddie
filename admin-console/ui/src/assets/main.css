@@ -100,3 +100,9 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+button {
+  border: unset;
+  background: unset;
+  color: currentColor;
+}
