@@ -4,7 +4,6 @@ import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
-import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
@@ -24,20 +23,20 @@ import java.util.function.Function;
  * Each strategy formats an AIIDA record to a specific CIM version.
  *
  * @param <T> The version-specific RTDEnvelope class.
- * @param <S> The version-specific RTDMarketDocument class.
- * @param <U> The version-specific TimeSeries class.
- * @param <V> The version-specific Quantity class.
- * @param <W> The version-specific StandardCodingSchemeTypeList class.
- * @param <X> The version-specific QuantityTypeKind class.
+ * @param <S> The version-specific TimeSeries class.
+ * @param <V> The version-specific StandardCodingSchemeTypeList class.
+ * @param <W> The version-specific QuantityTypeKind class.
  */
-public abstract class BaseCimFormatterStrategy<T, S, U, V, W, X> implements CimFormatterStrategy<T> {
+public abstract class BaseCimFormatterStrategy<T, S, V, W> implements CimFormatterStrategy<T> {
     protected static final String DOCUMENT_TYPE = "near-real-time-market-document";
     protected static final String REGION_CONNECTOR = "aiida";
     protected static final ZoneId UTC = ZoneId.of("UTC");
     protected static final String VERSION = "1.0";
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseCimFormatterStrategy.class.getName());
 
-    public abstract List<AiidaRecordValue> timeSeriesToAiidaRecordValues(U timeSeries) throws CimSchemaFormatterException;
+    public abstract List<AiidaRecordValue> timeSeriesToAiidaRecordValues(S timeSeries) throws CimSchemaFormatterException;
+
+    protected abstract Map<ObisCode, W> obisToQuantityTypeKindMap();
 
     protected final BigDecimal toBigDecimalOrThrow(AiidaRecordValue aiidaRecordValue) throws CimSchemaFormatterException {
         try {
@@ -77,23 +76,12 @@ public abstract class BaseCimFormatterStrategy<T, S, U, V, W, X> implements CimF
     }
 
     @Nullable
-    protected final X aiidaRecordValueToQuantityTypeKind(AiidaRecordValue recordValue) throws CimSchemaFormatterException {
+    protected final W aiidaRecordValueToQuantityTypeKind(AiidaRecordValue recordValue) throws CimSchemaFormatterException {
         return obisToQuantityTypeKindMap().get(getDataTag(recordValue));
     }
 
-    protected abstract S toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, String countryCode);
-
-    protected abstract U toTimeSeries(AiidaRecord aiidaRecord, @Nullable String codingScheme);
-
-    protected abstract V toQuantity(AiidaRecordValue aiidaRecordValue) throws CimSchemaFormatterException;
-
     @Nullable
-    protected abstract W standardCodingSchemeFromCountryCode(String countryCode);
-
-    protected abstract Map<ObisCode, X> obisToQuantityTypeKindMap();
-
-    @Nullable
-    protected final W standardCodingSchemeFromValue(String countryCode, Function<String, W> fromValue) {
+    protected final V standardCodingSchemeFromValue(String countryCode, Function<String, V> fromValue) {
         try {
             return fromValue.apply("N" + countryCode.toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {

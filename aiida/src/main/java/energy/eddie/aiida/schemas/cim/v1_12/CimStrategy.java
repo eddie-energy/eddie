@@ -11,19 +11,17 @@ import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.v1_12.StandardCodingSchemeTypeList;
 import energy.eddie.cim.v1_12.StandardQualityTypeList;
 import energy.eddie.cim.v1_12.rtd.*;
-import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.ZonedDateTime;
 import java.util.*;
 
-public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarketDocument, TimeSeries, Quantity, StandardCodingSchemeTypeList, QuantityTypeKind> {
+public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSeries, StandardCodingSchemeTypeList, QuantityTypeKind> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimStrategy.class.getName());
 
     private static final Map<ObisCode, QuantityTypeKind> OBIS_TO_QUANTITY_TYPE =
             new EnumMap<>(Map.ofEntries(
-
                     // --- Active Energy (Consumption) ---
                     Map.entry(ObisCode.POSITIVE_ACTIVE_ENERGY,
                               QuantityTypeKind.TOTAL_ACTIVE_ENERGY_CONSUMED_KWH),
@@ -115,6 +113,20 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
 
 
     @Override
+    public RTDEnvelope toRealTimeDataEnvelope(
+            UUID aiidaId,
+            AiidaRecord aiidaRecord,
+            Permission permission
+    ) throws CimSchemaFormatterException {
+        var countryCode = dataSourceOfPermissionOrThrow(permission).countryCode();
+
+        return new RTDEnvelope()
+                .withMessageDocumentHeader(toMessageDocumentHeader(aiidaId, aiidaRecord, permission, countryCode))
+                .withMarketDocument(toRealTimeDataMarketDocument(aiidaRecord, countryCode));
+    }
+
+
+    @Override
     public List<AiidaRecordValue> timeSeriesToAiidaRecordValues(TimeSeries timeSeries) throws CimSchemaFormatterException {
         if (timeSeries == null || timeSeries.getQuantities() == null) {
             throw new CimSchemaFormatterException(new IllegalArgumentException(
@@ -131,18 +143,59 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
     }
 
     @Override
-    protected RTDMarketDocument toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, String countryCode) {
-        var codingScheme = standardCodingSchemeFromCountryCode(countryCode);
-        var codingSchemeValue = codingScheme != null ? codingScheme.value() : null;
+    protected Map<ObisCode, QuantityTypeKind> obisToQuantityTypeKindMap() {
+        return OBIS_TO_QUANTITY_TYPE;
+    }
 
+    private MessageDocumentHeader toMessageDocumentHeader(
+            UUID aiidaId,
+            AiidaRecord aiidaRecord,
+            Permission permission,
+            String countryCode
+    ) throws CimSchemaFormatterException {
+        return new MessageDocumentHeader()
+                .withCreationDateTime(ZonedDateTime.now(UTC))
+                .withMetaInformation(toMetaInformation(aiidaId, aiidaRecord, permission, countryCode));
+    }
+
+    private MetaInformation toMetaInformation(
+            UUID aiidaId,
+            AiidaRecord aiidaRecord,
+            Permission permission,
+            String countryCode
+    ) throws CimSchemaFormatterException {
+        var dataNeed = dataNeedOfPermissionOrThrow(permission);
+
+        return new MetaInformation()
+                .withAsset(toAsset(aiidaRecord))
+                .withConnectionId(permission.connectionId())
+                .withDataNeedId(dataNeed.dataNeedId().toString())
+                .withDataSourceId(aiidaRecord.dataSourceId().toString())
+                .withDocumentType(DOCUMENT_TYPE)
+                .withFinalCustomerId(aiidaId.toString())
+                .withRequestPermissionId(permission.id().toString())
+                .withRegionConnector(REGION_CONNECTOR)
+                .withRegionCountry(countryCode);
+    }
+
+    private Asset toAsset(AiidaRecord aiidaRecord) {
+        return new Asset()
+                .withType(aiidaRecord.asset().toString());
+    }
+
+    private RTDMarketDocument toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, String countryCode) {
         return new RTDMarketDocument()
                 .withCreatedDateTime(ZonedDateTime.now(UTC))
                 .withMRID(UUID.randomUUID().toString())
-                .withTimeSeries(toTimeSeries(aiidaRecord, codingSchemeValue));
+                .withTimeSeries(toTimeSeries(aiidaRecord, countryCode));
     }
 
-    @Override
-    protected TimeSeries toTimeSeries(AiidaRecord aiidaRecord, @Nullable String codingScheme) {
+    private TimeSeries toTimeSeries(AiidaRecord aiidaRecord, String countryCode) {
+        var codingScheme = standardCodingSchemeFromValue(
+                countryCode,
+                StandardCodingSchemeTypeList::fromValue);
+        var codingSchemeValue = codingScheme != null ? codingScheme.value() : null;
+
         return new TimeSeries()
                 .withDateAndOrTimeDateTime(aiidaRecord.timestamp().atZone(UTC))
                 .withQuantities(aiidaRecord
@@ -152,60 +205,16 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, RTDMarket
                                         .map(ThrowingFunction.sneaky(this::toQuantity))
                                         .toList())
                 .withRegisteredResourceMRID(new ResourceIDString()
-                                                    .withCodingScheme(codingScheme)
+                                                    .withCodingScheme(codingSchemeValue)
                                                     .withValue(aiidaRecord.dataSourceId().toString()))
                 .withVersion(VERSION);
     }
 
-    @Override
-    protected Quantity toQuantity(AiidaRecordValue aiidaRecordValue) throws CimSchemaFormatterException {
+    private Quantity toQuantity(AiidaRecordValue aiidaRecordValue) throws CimSchemaFormatterException {
         return new Quantity()
                 .withQuality(StandardQualityTypeList.AS_PROVIDED.toString())
                 .withQuantity(toBigDecimalOrThrow(aiidaRecordValue))
                 .withType(aiidaRecordValueToQuantityTypeKind(aiidaRecordValue));
-    }
-
-    @Override
-    @Nullable
-    protected StandardCodingSchemeTypeList standardCodingSchemeFromCountryCode(String countryCode) {
-        return standardCodingSchemeFromValue(countryCode, StandardCodingSchemeTypeList::fromValue);
-    }
-
-    @Override
-    protected Map<ObisCode, QuantityTypeKind> obisToQuantityTypeKindMap() {
-        return OBIS_TO_QUANTITY_TYPE;
-    }
-
-    @Override
-    public RTDEnvelope toRealTimeDataEnvelope(
-            UUID aiidaId,
-            AiidaRecord aiidaRecord,
-            Permission permission
-    ) throws CimSchemaFormatterException {
-        var dataNeed = dataNeedOfPermissionOrThrow(permission);
-        var countryCode = dataSourceOfPermissionOrThrow(permission).countryCode();
-
-        var asset = new Asset()
-                .withType(aiidaRecord.asset().toString());
-
-        var metaInformation = new MetaInformation()
-                .withAsset(asset)
-                .withConnectionId(permission.connectionId())
-                .withDataNeedId(dataNeed.dataNeedId().toString())
-                .withDataSourceId(aiidaRecord.dataSourceId().toString())
-                .withDocumentType(DOCUMENT_TYPE)
-                .withFinalCustomerId(aiidaId.toString())
-                .withRequestPermissionId(permission.id().toString())
-                .withRegionConnector(REGION_CONNECTOR)
-                .withRegionCountry(countryCode);
-
-        var header = new MessageDocumentHeader()
-                .withCreationDateTime(ZonedDateTime.now(UTC))
-                .withMetaInformation(metaInformation);
-
-        return new RTDEnvelope()
-                .withMessageDocumentHeader(header)
-                .withMarketDocument(toRealTimeDataMarketDocument(aiidaRecord, countryCode));
     }
 
     private Optional<AiidaRecordValue> quantityToAiidaRecordValue(Quantity quantity) {
