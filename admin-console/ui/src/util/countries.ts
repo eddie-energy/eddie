@@ -3,18 +3,26 @@
 
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
 
-export function formatCountry(country: string) {
+export function formatCountry(countryCode?: string) {
+  if (!countryCode) {
+    return 'Global'
+  }
+
   try {
-    return COUNTRY_NAMES.of(country)
+    return COUNTRY_NAMES.of(countryCode)
   } catch {
-    if (country.toLowerCase() === 'aiida' || country === 'Unknown') {
+    if (countryCode.toLowerCase() === 'aiida' || countryCode === 'Unknown') {
       return 'AIIDA'
     }
-    return country
+    return countryCode
   }
 }
 
-export function countryFlag(countryCode: string) {
+export function countryFlag(countryCode?: string) {
+  if (!countryCode) {
+    return '🌍'
+  }
+
   if (countryCode === 'aiida' || countryCode === 'Unknown') {
     return '🤖'
   }
