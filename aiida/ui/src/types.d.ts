@@ -72,17 +72,16 @@ export type AiidaApplicationInformation = {
   aiidaId: string
 }
 
-export type AiidaPermissionRequest = {
+export type AiidaPermissionRequestsDTO = {
   eddieId: string
-  permissionId: string
-  serviceName: string
+  permissionIds: string[]
   handshakeUrl: string
-  bearerToken: string
+  accessToken: string
 }
 
 export type AiidaDataSourceHealthStatus = {
-    status: string,
-    details: string
+  status: string
+  details: string
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'

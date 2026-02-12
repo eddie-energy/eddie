@@ -8,11 +8,11 @@ import Button from '@/components/Button.vue'
 import ModalDialog from '@/components/ModalDialog.vue'
 import ScanQrCodeIcon from '@/assets/icons/ScanQrCodeIcon.svg'
 import { ref } from 'vue'
-import { addPermission } from '@/api'
+import { addPermissions } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog'
-import type { AiidaPermissionRequest } from '@/types'
+import type { AiidaPermissionRequestsDTO } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const { updatePermission } = usePermissionDialog()
@@ -59,31 +59,30 @@ const parseAiidaCode = (aiidaCode: string) => {
   }
 }
 
-const executePermissionRequest = async (permissionRequest: AiidaPermissionRequest) => {
+const executePermissionRequests = async (permissionRequests: AiidaPermissionRequestsDTO) => {
   loading.value = true
-  try {
-    const permission = await addPermission(permissionRequest)
-    fetchPermissions()
-    updatePermission(permission)
-  } catch {
-    //catch handled by notify from api functions
+
+  const permissions = await addPermissions(permissionRequests)
+  fetchPermissions()
+  for (const permission of permissions) {
+    await updatePermission(permission)
   }
   loading.value = false
   permissionModal.value?.close()
 }
 
-const handleAddPermission = async () => {
+const handleAddPermissions = async () => {
   try {
     const permissionRequest = parseAiidaCode(aiidaCode.value)
-    executePermissionRequest(permissionRequest)
+    executePermissionRequests(permissionRequest)
   } catch (error: any) {
     aiidaCodeError.value = error?.message ?? error?.toString() ?? t('errors.unexpectedError')
   }
 }
 
-const handleValidQrCode = (permissionRequest: AiidaPermissionRequest) => {
+const handleValidQrCode = (permissionRequests: AiidaPermissionRequestsDTO) => {
   toggleQrCodeModal(false)
-  executePermissionRequest(permissionRequest)
+  executePermissionRequests(permissionRequests)
 }
 
 defineExpose({ showModal })
@@ -118,7 +117,7 @@ defineExpose({ showModal })
       <Button button-style="error-secondary" @click="permissionModal?.close()">
         {{ t('cancelButton') }}
       </Button>
-      <Button @click="handleAddPermission" class="hide-on-load"> {{ t('addButton') }}</Button>
+      <Button @click="handleAddPermissions" class="hide-on-load"> {{ t('addButton') }}</Button>
     </div>
     <ModalDialog
       :title="t('permissions.modal.qrTitle')"

@@ -24,22 +24,24 @@ import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriTemplate;
 
 import java.time.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -140,44 +142,24 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * After this method, the status of the permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
      * </p>
      *
-     * @param qrCodeDto Data transfer object containing the information for the new permission.
-     * @return Permission object with the details as fetched from EDDIE.
+     * @param permissionRequests Data transfer object containing the information for the new permissions.
+     * @return Permission objects with the details as fetched from EDDIE.
      * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
      * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
      * @throws InvalidUserException             If the id of the current user can not be determined by the token.
      */
     @Transactional
-    public Permission setupNewPermission(QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
+    public List<Permission> setupNewPermissions(
+            AiidaPermissionRequestsDto permissionRequests
+    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        var permissionId = qrCodeDto.permissionId();
 
-        if (permissionRepository.existsById(permissionId)) {
-            throw new PermissionAlreadyExistsException(permissionId);
+        var permissions = new ArrayList<Permission>();
+        for (var permissionId : permissionRequests.permissionIds()) {
+            permissions.add(setupNewPermission(permissionRequests, permissionId, currentUserId));
         }
 
-        var permission = permissionRepository.save(new Permission(qrCodeDto, currentUserId));
-        LOGGER.info("Saved new permission ({}) in database, will fetch details from EDDIE framework ({})",
-                    permission.id(),
-                    permission.eddieId());
-
-        var details = handshakeService.fetchDetailsForPermission(permission)
-                                      .doOnError(error -> LOGGER.atError()
-                                                                .addArgument(qrCodeDto.permissionId())
-                                                                .setCause(error)
-                                                                .log("Error while fetching details for permission {} from the EDDIE framework"))
-                                      .onErrorComplete()
-                                      .block();
-
-        if (details == null) {
-            throw new DetailFetchingFailedException(permissionId);
-        }
-
-        var now = LocalDate.now(ZoneId.systemDefault());
-        if (details.start().isBefore(now)) {
-            markPermissionAsUnfulfillable(permission);
-        }
-
-        return updatePermissionWithDetails(permission, details);
+        return permissions;
     }
 
     /**
@@ -343,6 +325,47 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
     }
 
+    public Permission setupNewPermission(
+            AiidaPermissionRequestsDto permissionRequests,
+            UUID permissionId,
+            UUID currentUserId
+    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
+        if (permissionRepository.existsById(permissionId)) {
+            throw new PermissionAlreadyExistsException(permissionId);
+        }
+
+        var handshakeUrl = new UriTemplate(permissionRequests.handshakeUrl())
+                .expand(permissionId).toString();
+
+        var permission = permissionRepository.save(new Permission(permissionRequests.eddieId(),
+                                                                  permissionId,
+                                                                  handshakeUrl,
+                                                                  permissionRequests.accessToken(),
+                                                                  currentUserId));
+        LOGGER.info("Saved new permission ({}) in database, will fetch details from EDDIE framework ({})",
+                    permission.id(),
+                    permission.eddieId());
+
+        var details = handshakeService.fetchDetailsForPermission(permission)
+                                      .doOnError(error -> LOGGER.atError()
+                                                                .addArgument(permissionId)
+                                                                .setCause(error)
+                                                                .log("Error while fetching details for permission {} from the EDDIE framework"))
+                                      .onErrorComplete()
+                                      .block();
+
+        if (details == null) {
+            throw new DetailFetchingFailedException(permissionId);
+        }
+
+        var now = LocalDate.now(ZoneId.systemDefault());
+        if (details.start().isBefore(now)) {
+            markPermissionAsUnfulfillable(permission);
+        }
+
+        return updatePermissionWithDetails(permission, details);
+    }
+
     /**
      * Updates the passed permission with the details from the passed {@link PermissionDetailsDto} object. Also checks
      * if the permission can be fulfilled by this AIIDA instance. Returns the updated object after it has been saved in
@@ -393,8 +416,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     private boolean isValidDataNeedType(String dataNeedType) {
-        return dataNeedType.equals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE)
-               || dataNeedType.equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        return OutboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType)
+               || InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType);
     }
 
     private void terminationRequestReceived(UUID permissionId) {
@@ -453,7 +476,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission = permissionRepository.save(permission);
 
         handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
-        throw new PermissionUnfulfillableException(permission.serviceName());
+        throw new PermissionUnfulfillableException(permission.id());
     }
 
     private void removeInboundDataSourceIfExists(Permission permission) {

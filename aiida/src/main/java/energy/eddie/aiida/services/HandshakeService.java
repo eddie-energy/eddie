@@ -6,7 +6,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.api.agnostic.aiida.PermissionUpdateDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionUpdateDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +63,7 @@ public class HandshakeService {
 
         LOGGER.info("Sending {} for permission {}", status, permission.id());
 
-        var operation = new PermissionUpdateDto(otherStatus, aiidaId);
+        var operation = new AiidaPermissionUpdateDto(otherStatus, aiidaId);
 
         webClient.patch()
                  .uri(permission.handshakeUrl())
@@ -88,7 +88,7 @@ public class HandshakeService {
     public Mono<MqttDto> fetchMqttDetails(Permission permission) {
         LOGGER.info("Fetching mqtt details for permission {}", permission.id());
 
-        var operation = new PermissionUpdateDto(ACCEPT, aiidaId);
+        var operation = new AiidaPermissionUpdateDto(ACCEPT, aiidaId);
 
         return webClient.patch()
                         .uri(permission.handshakeUrl())

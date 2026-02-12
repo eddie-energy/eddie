@@ -28,8 +28,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   requestPermission(_event) {
     let body = {
-      dataNeedId: this.dataNeedId,
       connectionId: this.connectionId,
+      dataNeedIds: this.dataNeedId.split(","),
     };
 
     this._isSubmitDisabled = true;

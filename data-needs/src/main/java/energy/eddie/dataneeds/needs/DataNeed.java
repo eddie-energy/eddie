@@ -146,4 +146,9 @@ public abstract class DataNeed implements DataNeedInterface {
     public Optional<RegionConnectorFilter> regionConnectorFilter() {
         return Optional.ofNullable(regionConnectorFilter);
     }
+
+    @JsonProperty
+    private void setType(String type) {
+        this.type = type;
+    }
 }
