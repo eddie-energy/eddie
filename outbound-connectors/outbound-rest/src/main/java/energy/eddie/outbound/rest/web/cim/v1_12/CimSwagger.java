@@ -19,7 +19,6 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-// TODO: Adapt when CIM v1.12 is finalized
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "CIM v1.12 Documents", description = "Provides endpoints for CIM v1.12 documents, such as validated historical data market documents.")
 public interface CimSwagger {
@@ -34,44 +33,52 @@ public interface CimSwagger {
                             examples = @ExampleObject(
                                     // language=JSON
                                     value = """
-                                              {
-                                                "messageDocumentHeader.creationDateTime": "2025-07-01T09:44:00.00040249Z",
-                                                "messageDocumentHeader.metaInformation.connectionId": "3",
-                                                "messageDocumentHeader.metaInformation.dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
-                                                "messageDocumentHeader.metaInformation.documentType": "near-real-time-market-document",
-                                                "messageDocumentHeader.metaInformation.permissionId": "150cfd97-64bb-402b-838f-57f8605713b7",
-                                                "messageDocumentHeader.metaInformation.finalCustomerId": "008cf1d6-e118-45a8-bc17-a331dfc57e77",
-                                                "messageDocumentHeader.metaInformation.asset": "CONNECTION-AGREEMENT-POINT",
-                                                "messageDocumentHeader.metaInformation.dataSourceId": "5eef407d-d14f-49d4-b61a-769a20caa540",
-                                                "messageDocumentHeader.metaInformation.regionConnector": "aiida",
-                                                "messageDocumentHeader.metaInformation.regionCountry": "AT",
-                                                "marketDocument": {
-                                                  "mrid": "bff481d5-edd8-4602-9c54-838b386ab4dd",
-                                                  "createdDateTime": "2025-07-01T09:44:00.00032307Z",
-                                                  "timeSeries": [
-                                                    {
-                                                      "version": "1.0",
-                                                      "registeredResourceMRID": {
-                                                        "value": "5eef407d-d14f-49d4-b61a-769a20caa540",
-                                                        "codingScheme": "NAT"
-                                                      },
-                                                      "dateAndOrTimeDateTime": "2025-07-01T07:43:59.073747585Z",
-                                                      "quantities": [
-                                                        {
-                                                          "quantity": 25,
-                                                          "type": "0",
-                                                          "quality": "AS_PROVIDED"
-                                                        },
-                                                        {
-                                                          "quantity": 1750,
-                                                          "type": "2",
-                                                          "quality": "AS_PROVIDED"
-                                                        }
-                                                      ]
-                                                    }
-                                                  ]
+                                            {
+                                              "MessageDocumentHeader": {
+                                                "creationDateTime": "2026-02-11T15:32:25Z",
+                                                "MetaInformation": {
+                                                  "connectionId": "1",
+                                                  "requestPermissionId": "70744400-a059-4fc8-ab36-d68b2bb877e1",
+                                                  "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                                  "documentType": "near-real-time-market-document",
+                                                  "finalCustomerId": "88e0fc2c-4ea7-4850-a736-8b9742757518",
+                                                  "dataSourceId": "7d2b2547-27dd-4fe0-9516-707540e1184f",
+                                                  "regionConnector": "aiida",
+                                                  "regionCountry": "AT",
+                                                  "Asset": {
+                                                    "type": "CONNECTION-AGREEMENT-POINT",
+                                                    "operatorId": "AT003000",
+                                                    "meterId": "003114735"
+                                                  }
                                                 }
+                                              },
+                                              "MarketDocument": {
+                                                "mRID": "bfc16eda-4f05-4711-b319-af17ec0ce6d5",
+                                                "createdDateTime": "2026-02-11T15:32:25Z",
+                                                "TimeSeries": [
+                                                  {
+                                                    "version": "1.0",
+                                                    "dateAndOrTime.dateTime": "2026-02-11T15:32:24Z",
+                                                    "Quantity": [
+                                                      {
+                                                        "quantity": 0.132,
+                                                        "type": "2",
+                                                        "quality": "AS_PROVIDED"
+                                                      },
+                                                      {
+                                                        "quantity": 65238.377,
+                                                        "type": "0",
+                                                        "quality": "AS_PROVIDED"
+                                                      }
+                                                    ],
+                                                    "registeredResource.mRID": {
+                                                      "value": "7d2b2547-27dd-4fe0-9516-707540e1184f",
+                                                      "codingScheme": "NAT"
+                                                    }
+                                                  }
+                                                ]
                                               }
+                                            }
                                             """
                             )
                     )
@@ -93,44 +100,54 @@ public interface CimSwagger {
                                     examples = @ExampleObject(
                                             // language=JSON
                                             value = """
-                                                      [{
-                                                         "messageDocumentHeader.creationDateTime": "2025-07-01T09:44:00.00040249Z",
-                                                         "messageDocumentHeader.metaInformation.connectionId": "3",
-                                                         "messageDocumentHeader.metaInformation.dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
-                                                         "messageDocumentHeader.metaInformation.documentType": "near-real-time-market-document",
-                                                         "messageDocumentHeader.metaInformation.permissionId": "150cfd97-64bb-402b-838f-57f8605713b7",
-                                                         "messageDocumentHeader.metaInformation.finalCustomerId": "008cf1d6-e118-45a8-bc17-a331dfc57e77",
-                                                         "messageDocumentHeader.metaInformation.asset": "CONNECTION-AGREEMENT-POINT",
-                                                         "messageDocumentHeader.metaInformation.dataSourceId": "5eef407d-d14f-49d4-b61a-769a20caa540",
-                                                         "messageDocumentHeader.metaInformation.regionConnector": "aiida",
-                                                         "messageDocumentHeader.metaInformation.regionCountry": "AT",
-                                                         "marketDocument": {
-                                                           "mrid": "bff481d5-edd8-4602-9c54-838b386ab4dd",
-                                                           "createdDateTime": "2025-07-01T09:44:00.00032307Z",
-                                                           "timeSeries": [
-                                                             {
-                                                               "version": "1.0",
-                                                               "registeredResourceMRID": {
-                                                                 "value": "5eef407d-d14f-49d4-b61a-769a20caa540",
-                                                                 "codingScheme": "NAT"
-                                                               },
-                                                               "dateAndOrTimeDateTime": "2025-07-01T07:43:59.073747585Z",
-                                                               "quantities": [
-                                                                 {
-                                                                   "quantity": 25,
-                                                                   "type": "0",
-                                                                   "quality": "AS_PROVIDED"
-                                                                 },
-                                                                 {
-                                                                   "quantity": 1750,
-                                                                   "type": "2",
-                                                                   "quality": "AS_PROVIDED"
-                                                                 }
-                                                               ]
-                                                             }
-                                                           ]
-                                                         }
-                                                       }]
+                                                    [
+                                                      {
+                                                        "MessageDocumentHeader": {
+                                                          "creationDateTime": "2026-02-11T15:32:25Z",
+                                                          "MetaInformation": {
+                                                            "connectionId": "1",
+                                                            "requestPermissionId": "70744400-a059-4fc8-ab36-d68b2bb877e1",
+                                                            "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                                            "documentType": "near-real-time-market-document",
+                                                            "finalCustomerId": "88e0fc2c-4ea7-4850-a736-8b9742757518",
+                                                            "dataSourceId": "7d2b2547-27dd-4fe0-9516-707540e1184f",
+                                                            "regionConnector": "aiida",
+                                                            "regionCountry": "AT",
+                                                            "Asset": {
+                                                              "type": "CONNECTION-AGREEMENT-POINT",
+                                                              "operatorId": "AT003000",
+                                                              "meterId": "003114735"
+                                                            }
+                                                          }
+                                                        },
+                                                        "MarketDocument": {
+                                                          "mRID": "bfc16eda-4f05-4711-b319-af17ec0ce6d5",
+                                                          "createdDateTime": "2026-02-11T15:32:25Z",
+                                                          "TimeSeries": [
+                                                            {
+                                                              "version": "1.0",
+                                                              "dateAndOrTime.dateTime": "2026-02-11T15:32:24Z",
+                                                              "Quantity": [
+                                                                {
+                                                                  "quantity": 0.132,
+                                                                  "type": "2",
+                                                                  "quality": "AS_PROVIDED"
+                                                                },
+                                                                {
+                                                                  "quantity": 65238.377,
+                                                                  "type": "0",
+                                                                  "quality": "AS_PROVIDED"
+                                                                }
+                                                              ],
+                                                              "registeredResource.mRID": {
+                                                                "value": "7d2b2547-27dd-4fe0-9516-707540e1184f",
+                                                                "codingScheme": "NAT"
+                                                              }
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    ]
                                                     """
                                     )
                             ),
@@ -140,43 +157,51 @@ public interface CimSwagger {
                                     examples = @ExampleObject(
                                             // language=XML
                                             value = """
-                                                    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                                                    <NearRealTimeDataMarketDocuments xmlns:ns2="http://www.eddie.energy/RTD/EDD01/20240614">
-                                                        <RTD_Envelope>
-                                                            <messageDocumentHeader.creationDateTime>2025-07-01T09:44:00.00040249Z</messageDocumentHeader.creationDateTime>
-                                                            <messageDocumentHeader.metaInformation.connectionId>3</messageDocumentHeader.metaInformation.connectionId>
-                                                            <messageDocumentHeader.metaInformation.dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84</messageDocumentHeader.metaInformation.dataNeedId>
-                                                            <messageDocumentHeader.metaInformation.documentType>near-real-time-market-document</messageDocumentHeader.metaInformation.documentType>
-                                                            <messageDocumentHeader.metaInformation.permissionId>150cfd97-64bb-402b-838f-57f8605713b7</messageDocumentHeader.metaInformation.permissionId>
-                                                            <messageDocumentHeader.metaInformation.finalCustomerId>008cf1d6-e118-45a8-bc17-a331dfc57e77</messageDocumentHeader.metaInformation.finalCustomerId>
-                                                            <messageDocumentHeader.metaInformation.asset>CONNECTION-AGREEMENT-POINT</messageDocumentHeader.metaInformation.asset>
-                                                            <messageDocumentHeader.metaInformation.dataSourceId>5eef407d-d14f-49d4-b61a-769a20caa540</messageDocumentHeader.metaInformation.dataSourceId>
-                                                            <messageDocumentHeader.metaInformation.regionConnector>aiida</messageDocumentHeader.metaInformation.regionConnector>
-                                                            <messageDocumentHeader.metaInformation.regionCountry>AT</messageDocumentHeader.metaInformation.regionCountry>
-                                                            <marketDocument>
-                                                                <mrid>bff481d5-edd8-4602-9c54-838b386ab4dd</mrid>
-                                                                <createdDateTime>2025-07-01T09:44:00.00032307Z</createdDateTime>
-                                                                <timeSeries>
+                                                    <RTD_Envelope xmlns="https//eddie.energy/CIM/RTD_v1.12">
+                                                        <MessageDocumentHeader>
+                                                            <creationDateTime>2026-02-12T08:03:40Z</creationDateTime>
+                                                            <MetaInformation>
+                                                                <connectionId>1</connectionId>
+                                                                <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+                                                                <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84</dataNeedId>
+                                                                <documentType>near-real-time-market-document</documentType>
+                                                                <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+                                                                <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+                                                                <regionConnector>aiida</regionConnector>
+                                                                <regionCountry>AT</regionCountry>
+                                                                <Asset>
+                                                                    <type>CONNECTION-AGREEMENT-POINT</type>
+                                                                   <operatorId>AT003000</operatorId>
+                                                                   <meterId>003114735</meterId>
+                                                                </Asset>
+                                                            </MetaInformation>
+                                                        </MessageDocumentHeader>
+                                                        <MarketDocument>
+                                                            <mRID>78f93c55-c666-43b3-bbf2-a07059cad002</mRID>
+                                                            <createdDateTime>2026-02-12T08:03:40Z</createdDateTime>
+                                                            <TimeSeries>
+                                                                <TimeSeries>
                                                                     <version>1.0</version>
-                                                                    <registeredResourceMRID>
-                                                                        <value>5eef407d-d14f-49d4-b61a-769a20caa540</value>
-                                                                        <codingScheme>NAT</codingScheme>
-                                                                    </registeredResourceMRID>
-                                                                    <dateAndOrTimeDateTime>2025-07-01T07:43:59.073747585Z</dateAndOrTimeDateTime>
-                                                                    <quantities>
-                                                                        <quantity>25</quantity>
-                                                                        <type>0</type>
-                                                                        <quality>AS_PROVIDED</quality>
-                                                                    </quantities>
-                                                                    <quantities>
-                                                                        <quantity>1750</quantity>
-                                                                        <type>2</type>
-                                                                        <quality>AS_PROVIDED</quality>
-                                                                    </quantities>
-                                                                </timeSeries>
-                                                            </marketDocument>
-                                                        </RTD_Envelope>
-                                                    </NearRealTimeDataMarketDocuments>
+                                                                    <dateAndOrTime.dateTime>2026-02-12T08:03:38Z</dateAndOrTime.dateTime>
+                                                                    <Quantity>
+                                                                        <Quantity>
+                                                                            <quantity>0.117</quantity>
+                                                                            <type>2</type>
+                                                                            <quality>AS_PROVIDED</quality>
+                                                                        </Quantity>
+                                                                        <Quantity>
+                                                                            <quantity>65238.377</quantity>
+                                                                            <type>0</type>
+                                                                            <quality>AS_PROVIDED</quality>
+                                                                        </Quantity>
+                                                                    </Quantity>
+                                                                    <registeredResource.mRID codingScheme="NAT">
+                                                                        0743c9d8-3e5f-4575-999b-34f6f83b2075
+                                                                    </registeredResource.mRID>
+                                                                </TimeSeries>
+                                                            </TimeSeries>
+                                                        </MarketDocument>
+                                                    </RTD_Envelope>
                                                     """
                                     )
 

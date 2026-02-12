@@ -187,7 +187,7 @@ export default withMermaid(
                     },
                     {
                       text: "Near Real Time Data Market Documents",
-                      link: "/2-integrating/messages/cim/near-real-time-data-market-documents.md",
+                      link: "/2-integrating/messages/cim/near-real-time-data-documents.md",
                     },
                     {
                       text: "Redistribution Transaction Request Documents",

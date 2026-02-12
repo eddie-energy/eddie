@@ -35,7 +35,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 - Replace validated historical data market document version `0.91.08` with version `1.04`
 - Move realtime data schemas to its own package and folder
 
-## 3.0.1 - 2025-07-15
+## 3.0.1 - 2025-07-15t
 
 - Truncate datetime to seconds as required by CIM's ESMP datetime
 
@@ -56,10 +56,11 @@ For more information, see [Common Information Model Client Libraries](https://ar
 
 - Add copyright notices to source files
 
-## 3.3.0 - 2025-xx-xx
+## 3.3.0 - 2026-02-13
 - Add (near) real-time data for CIM version `1.12`
 - Fixes wrong wording of `QuantityTypeKind` values
 - Adds additional `QuantityTypeKind` values
+- Separates `MetaInformation` from `MessageDocumentHeader` into own class
+- Adds `Asset` to `MetaInformation` in `MessageDocumentHeader`
+- Adds `Accounting Point` to `TimeSeries`
 - AIIDA now depends on this version of the CIM
-
-[//]: # (TODO: Adapt the changelog before pushing to main)

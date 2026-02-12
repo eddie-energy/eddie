@@ -4,45 +4,50 @@ The CIM provides its schema as XSD files which AIIDA needs to respect when emitt
 
 AIIDA supports exactly one CIM document:
 
-- [Real Time Data Market Document](real-time-data-market-document.md)
+- [Real Time Data Market Document](real-time-data-market-document.md) in versions:
+  - v1.04
+  - v1.12
 
 AIIDA is able to convert near-real time (NRT) data into the Real Time Data Document.
 AIIDA has also the capability to receive data in form of the Time Series provided by the Real Time Data Document with
 the use of the CIM Datasource Adapter.
 
-## CIM envelope for v1.04
+## CIM envelope for v1.12
 
 ```xml
-
-<RTD_Envelope>
+<RTD_Envelope xmlns="https//eddie.energy/CIM/RTD_v1.12">
+  <MessageDocumentHeader>
     <!-- The datetime when the envelope of the document was created  -->
-    <messageDocumentHeader.creationDateTime>2025-07-01T09:44:00.00040249Z</messageDocumentHeader.creationDateTime>
-    <!-- The connection ID is given by the eligible party for one or more permission requests -->
-    <messageDocumentHeader.metaInformation.connectionId>3</messageDocumentHeader.metaInformation.connectionId>
-    <!-- The Data Need ID shows to which Data Need a permission request is related to, and in turn which data is related to it too -->
-    <messageDocumentHeader.metaInformation.dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84
-    </messageDocumentHeader.metaInformation.dataNeedId>
-    <!-- The document type -->
-    <messageDocumentHeader.metaInformation.documentType>near-real-time-market-document
-    </messageDocumentHeader.metaInformation.documentType>
-    <!-- The permission ID uniquely identifies a permission request in AIIDA and EDDIE -->
-    <messageDocumentHeader.metaInformation.permissionId>150cfd97-64bb-402b-838f-57f8605713b7
-    </messageDocumentHeader.metaInformation.permissionId>
-    <!-- The UUID of the AIIDA application -->
-    <messageDocumentHeader.metaInformation.finalCustomerId>008cf1d6-e118-45a8-bc17-a331dfc57e77
-    </messageDocumentHeader.metaInformation.finalCustomerId>
-    <!-- The asset type of the data source  -->
-    <messageDocumentHeader.metaInformation.asset>CONNECTION-AGREEMENT-POINT
-    </messageDocumentHeader.metaInformation.asset>
-    <!-- The UUID of the data source which provided the data -->
-    <messageDocumentHeader.metaInformation.dataSourceId>5eef407d-d14f-49d4-b61a-769a20caa540
-    </messageDocumentHeader.metaInformation.dataSourceId>
-    <!-- The Region Connector used to create the permission -->
-    <messageDocumentHeader.metaInformation.regionConnector>aiida</messageDocumentHeader.metaInformation.regionConnector>
-    <!-- The country the data is from -->
-    <messageDocumentHeader.metaInformation.regionCountry>AT</messageDocumentHeader.metaInformation.regionCountry>
-    <marketDocument>
-        <!-- The Real Time Data Market Document -->
-    </marketDocument>
+    <creationDateTime>2026-02-12T08:03:40Z</creationDateTime>
+    <MetaInformation>
+      <!-- The connection ID is given by the eligible party for one or more permission requests -->
+      <connectionId>1</connectionId>
+      <!-- The permission ID uniquely identifies a permission request in AIIDA and EDDIE -->
+      <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+      <!-- The Data Need ID shows to which Data Need a permission request is related to, and in turn which data is related to it too -->
+      <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84</dataNeedId>
+      <!-- The document type -->
+      <documentType>near-real-time-market-document</documentType>
+      <!-- The UUID of the AIIDA application -->
+      <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+      <!-- The UUID of the data source which provided the data -->
+      <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+      <!-- The Region Connector used to create the permission -->
+      <regionConnector>aiida</regionConnector>
+      <!-- The country the data is from -->
+      <regionCountry>AT</regionCountry>
+      <Asset>
+        <!-- The asset type of the data source  -->
+        <type>CONNECTION-AGREEMENT-POINT</type>
+        <!-- ID of the operator of the asset -->
+        <operatorId>AT003000</operatorId>
+        <!-- The ID of the asset, e.g. the meter ID -->
+        <meterId>003114735</meterId>
+      </Asset>
+    </MetaInformation>
+  </MessageDocumentHeader>
+  <MarketDocument>
+    <!-- The Real Time Data Market Document -->
+  </MarketDocument>
 </RTD_Envelope>
 ```

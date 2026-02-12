@@ -12,8 +12,6 @@ import java.util.Optional;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CimSpecification {
-    private static final String MESSAGE_DOCUMENT_HEADER = "MessageDocumentHeader";
-    private static final String META_INFORMATION = "MessageDocumentHeader_MetaInformation";
 
     private CimSpecification() {
         // No-Op
@@ -30,25 +28,28 @@ public class CimSpecification {
             Optional<ZonedDateTime> from,
             Optional<ZonedDateTime> to
     ) {
+        var header = "MessageDocumentHeader";
+        var metaInformation = "MessageDocumentHeader_MetaInformation";
+
         var query = List.of(
                 permissionId.map(pid -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "permissionid"),
+                        List.of(header, metaInformation, "permissionid"),
                         pid
                 )),
                 connectionId.map(cid -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "connectionid"),
+                        List.of(header, metaInformation, "connectionid"),
                         cid
                 )),
                 dataNeedId.map(did -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "dataNeedid"),
+                        List.of(header, metaInformation, "dataNeedid"),
                         did
                 )),
                 countryCode.map(cc -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "MessageDocumentHeader_Region", "country"),
+                        List.of(header, metaInformation, "MessageDocumentHeader_Region", "country"),
                         cc.toUpperCase(Locale.ROOT)
                 )),
                 regionConnectorId.map(rc -> new JsonPathSpecification<T>(
-                        List.of(MESSAGE_DOCUMENT_HEADER, META_INFORMATION, "MessageDocumentHeader_Region", "connector"),
+                        List.of(header, metaInformation, "MessageDocumentHeader_Region", "connector"),
                         rc
                 )),
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
@@ -73,25 +74,27 @@ public class CimSpecification {
             Optional<ZonedDateTime> from,
             Optional<ZonedDateTime> to
     ) {
+        var prefix = "messageDocumentHeader.metaInformation";
+
         var query = List.of(
                 permissionId.map(pid -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.permissionId"),
+                        List.of("%s.permissionId".formatted(prefix)),
                         pid
                 )),
                 connectionId.map(cid -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.connectionId"),
+                        List.of("%s.connectionId".formatted(prefix)),
                         cid
                 )),
                 dataNeedId.map(did -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.dataNeedId"),
+                        List.of("%s.dataNeedId".formatted(prefix)),
                         did
                 )),
                 countryCode.map(cc -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.region.country"),
+                        List.of("%s.region.country".formatted(prefix)),
                         cc.toUpperCase(Locale.ROOT)
                 )),
                 regionConnectorId.map(rc -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.region.connector"),
+                        List.of("%s.region.connector".formatted(prefix)),
                         rc
                 )),
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
@@ -105,7 +108,6 @@ public class CimSpecification {
         );
     }
 
-    // TODO: Adapt when CIM v1.12 is finalized
     // Disable name rule, for readable CIM version
     @SuppressWarnings("java:S100")
     public static <T> PredicateSpecification<T> buildQueryForV1_12(
@@ -117,25 +119,28 @@ public class CimSpecification {
             Optional<ZonedDateTime> from,
             Optional<ZonedDateTime> to
     ) {
+        var header = "MessageDocumentHeader";
+        var metaInformation = "MetaInformation";
+
         var query = List.of(
                 permissionId.map(pid -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.permissionId"),
+                        List.of(header, metaInformation, "requestPermissionId"),
                         pid
                 )),
                 connectionId.map(cid -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.connectionId"),
+                        List.of(header, metaInformation, "connectionId"),
                         cid
                 )),
                 dataNeedId.map(did -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.dataNeedId"),
+                        List.of(header, metaInformation, "dataNeedId"),
                         did
                 )),
                 countryCode.map(cc -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.region.country"),
+                        List.of(header, metaInformation, "regionCountry"),
                         cc.toUpperCase(Locale.ROOT)
                 )),
                 regionConnectorId.map(rc -> new JsonPathSpecification<T>(
-                        List.of("messageDocumentHeader.metaInformation.region.connector"),
+                        List.of(header, metaInformation, "regionConnector"),
                         rc
                 )),
                 from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
