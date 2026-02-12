@@ -38,10 +38,14 @@ spring:
             provider: keycloak
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health
   endpoint:
     health:
-      show-components: when_authorized
-      show-details: when_authorized
+      show-details: always
+      show-components: always
 
 aiida:
   cleanup:

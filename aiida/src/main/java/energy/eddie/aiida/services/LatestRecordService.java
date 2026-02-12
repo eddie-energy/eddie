@@ -20,8 +20,10 @@ import energy.eddie.aiida.utils.AiidaRecordConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -59,6 +61,28 @@ public class LatestRecordService {
                     dataSource.id());
 
         return AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource);
+    }
+
+    public List<LatestDataSourceRecordDto> latestDataSourceRecords(UUID dataSourceId, int amount)
+            throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException
+    {
+        var dataSource = dataSourceRepository.findById(dataSourceId)
+                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
+                );
+        var aiidaRecords = aiidaRecordRepository.findByDataSourceIdOrderByTimestampDesc(dataSourceId, Pageable.ofSize(amount));
+        if (aiidaRecords.isEmpty()) {
+            throw new LatestAiidaRecordNotFoundException(dataSourceId);
+        }
+
+        LOGGER.info("Found data source record from timestamp: {} until {} for data source: {}",
+                aiidaRecords.getFirst().timestamp(),
+                aiidaRecords.getLast().timestamp(),
+                dataSource.id());
+
+        return aiidaRecords
+                .stream()
+                .map(aiidaRecord -> AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource))
+                .toList();
     }
 
     public LatestOutboundPermissionRecordDto latestOutboundPermissionRecord(UUID permissionId) throws LatestPermissionRecordNotFoundException {

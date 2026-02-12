@@ -39,7 +39,8 @@
       "downloadLatestMessageButton": "Download Latest Message",
       "healthStatus": "Status",
       "healthStatusUp": "Up",
-      "healthStatusDown": "Down"
+      "healthStatusDown": "Down",
+      "healthStatusUnknown": "Unknown"
     },
     "modal": {
       "name": "Name",

@@ -48,12 +48,12 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       throw error
     })
 
-  if (!response.ok) {
+  if (!response.ok && !isHealthEndpoint) {
     const message =
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'errors.unexpectedError'
-    if (!(isImagesEndpoint && response.status == 404 || isHealthEndpoint)) {
+    if (!(isImagesEndpoint && response.status == 404)) {
       danger(message, response.status == 404 ? 5000 : 0, true)
     }
     throw new Error(message)
@@ -120,7 +120,7 @@ export function getModbusVendors(): Promise<{ id: string; name: string }[]> {
 }
 
 export function getDataSourceHealthStatus(id: string): Promise<AiidaDataSourceHealthStatus> {
-    return fetch(`/actuator/health/DATA_SOURCE_${id}`)
+  return fetch(`/actuator/health/DATA_SOURCE_${id}`)
 }
 
 export function getModbusModels(

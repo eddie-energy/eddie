@@ -81,8 +81,10 @@ export type AiidaPermissionRequest = {
 }
 
 export type AiidaDataSourceHealthStatus = {
-    status: string,
-    details: string
+  status: string
+  details?: {
+    [componentName: string]: string
+  }
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
