@@ -10,7 +10,7 @@ public class AiidaLocalDataNeedFactory {
     private AiidaLocalDataNeedFactory() {}
 
     public static AiidaLocalDataNeed create(AiidaDataNeed dataNeed) {
-        return dataNeed.type().equals(InboundAiidaDataNeed.DISCRIMINATOR_VALUE)
+        return InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeed.type())
                 ? new InboundAiidaLocalDataNeed(dataNeed)
                 : new OutboundAiidaLocalDataNeed(dataNeed);
     }

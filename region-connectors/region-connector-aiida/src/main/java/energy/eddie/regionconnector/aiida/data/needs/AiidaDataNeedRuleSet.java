@@ -9,8 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static energy.eddie.dataneeds.rules.DataNeedRule.InboundAiidaDataNeedRule;
-import static energy.eddie.dataneeds.rules.DataNeedRule.OutboundAiidaDataNeedRule;
+import static energy.eddie.dataneeds.rules.DataNeedRule.*;
 
 @Component
 public class AiidaDataNeedRuleSet implements DataNeedRuleSet {
@@ -18,7 +17,8 @@ public class AiidaDataNeedRuleSet implements DataNeedRuleSet {
     public List<DataNeedRule> dataNeedRules() {
         return List.of(
                 new InboundAiidaDataNeedRule(),
-                new OutboundAiidaDataNeedRule()
+                new OutboundAiidaDataNeedRule(),
+                new AllowMultipleDataNeedsRule()
         );
     }
 }

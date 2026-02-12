@@ -9,7 +9,7 @@ import type {
   AiidaDataSourceHealthStatus,
   AiidaDataSourceType,
   AiidaPermission,
-  AiidaPermissionRequest,
+  AiidaPermissionRequestsDTO,
 } from './types'
 
 const { danger, success } = useToast()
@@ -39,7 +39,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
         ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {}),
-        ...(isHealthEndpoint ? { 'Accept': 'application/json' } : {}),
+        ...(isHealthEndpoint ? { Accept: 'application/json' } : {}),
       },
       ...init,
     })
@@ -139,10 +139,12 @@ export function getApplicationInformation(): Promise<AiidaApplicationInformation
   return fetch('/application-information')
 }
 
-export function addPermission(permission: AiidaPermissionRequest): Promise<AiidaPermission> {
+export function addPermissions(
+  permissionRequests: AiidaPermissionRequestsDTO,
+): Promise<AiidaPermission[]> {
   return fetch('/permissions', {
     method: 'POST',
-    body: JSON.stringify(permission),
+    body: JSON.stringify(permissionRequests),
   })
 }
 

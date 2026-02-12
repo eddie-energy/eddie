@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.models.permission;
 
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -11,16 +11,19 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class PermissionTest {
     private final UUID eddieId = UUID.fromString("e69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("f69f9bc2-e16c-4de4-8c3e-00d219dcd819");
-    private final String serviceName = "My Test Service";
     private final String handshakeUrl = "https://example.org";
-    private final Permission permission = new Permission(new QrCodeDto(eddieId,
-                                                                       permissionId,
-                                                                       serviceName,
-                                                                       handshakeUrl), UUID.randomUUID());
+    private final String accessToken = "someAccess";
+    private final Permission permission = new Permission(eddieId,
+                                                         permissionId,
+                                                         handshakeUrl,
+                                                         accessToken,
+                                                         UUID.randomUUID());
 
     @Test
     void constructor_setsStatusToCreated() {
@@ -49,5 +52,25 @@ class PermissionTest {
 
         // When, Then
         assertThrows(IllegalArgumentException.class, () -> permission.setRevokeTime(revokeTime));
+    }
+
+    @Test
+    void setDataNeed_setsDataNeedAndServiceName() {
+        // Given
+        var dataNeed = mock(AiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+
+        // When
+        permission.setDataNeed(dataNeed);
+
+        // Then
+        assertEquals(dataNeed, permission.dataNeed());
+        assertEquals("someDataNeed", permission.serviceName());
+    }
+
+    @Test
+    void givenNull_setDataNeed_throws() {
+        // When, Then
+        assertThrows(NullPointerException.class, () -> permission.setDataNeed(null));
     }
 }

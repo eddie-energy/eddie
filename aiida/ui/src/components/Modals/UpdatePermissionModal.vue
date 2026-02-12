@@ -15,7 +15,7 @@ import CustomSelect from '../CustomSelect.vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
 import { useI18n } from 'vue-i18n'
 
-const { permission, open } = usePermissionDialog()
+const { permission, open, resolveDialog } = usePermissionDialog()
 const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
@@ -43,6 +43,7 @@ const handleInput = async (confirm: boolean) => {
 const handleModalClose = () => {
   open.value = false
   loading.value = false
+  resolveDialog()
 }
 
 const dataSourceOptions = computed(() => {

@@ -6,15 +6,24 @@ import { ref } from 'vue'
 
 const permission = ref<AiidaPermission>()
 const open = ref<boolean>(false)
+let _resolve: (value: boolean) => void
 
 export function usePermissionDialog() {
-  function updatePermission(target: AiidaPermission) {
+  async function updatePermission(target: AiidaPermission) {
     permission.value = target
     open.value = true
+    return new Promise<boolean>((resolve) => {
+      _resolve = resolve
+    })
+  }
+
+  function resolveDialog() {
+    _resolve(true)
   }
 
   return {
     updatePermission,
+    resolveDialog,
     permission,
     open,
   }

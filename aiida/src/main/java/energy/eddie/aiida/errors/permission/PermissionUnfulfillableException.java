@@ -3,8 +3,12 @@
 
 package energy.eddie.aiida.errors.permission;
 
+import jakarta.annotation.Nullable;
+
+import java.util.UUID;
+
 public class PermissionUnfulfillableException extends Exception {
-    public PermissionUnfulfillableException(String serviceName) {
-        super("Permission for service '%s' cannot be fulfilled by your AIIDA.".formatted(serviceName));
+    public PermissionUnfulfillableException(@Nullable UUID permissionId) {
+        super("Permission %s cannot be fulfilled by your AIIDA.".formatted(permissionId));
     }
 }

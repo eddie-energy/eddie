@@ -13,7 +13,7 @@ import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
-import energy.eddie.api.agnostic.aiida.QrCodeDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,10 +28,10 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import java.util.List;
 import java.util.UUID;
@@ -57,20 +57,20 @@ public class PermissionController {
         return ResponseEntity.ok(permissionService.getAllPermissionsSortedByGrantTime());
     }
 
-    @Operation(summary = "Set up new permission", description = "Set up a new permission with data from e.g. a QR code.", operationId = "setupNewPermission", tags = {"permission"})
+    @Operation(summary = "Set up new permissions", description = "Set up a new permissions with data from e.g. a QR code.", operationId = "setupNewPermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),
             @ApiResponse(responseCode = "400", description = "Request body cannot be read or is missing fields.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
-            @ApiResponse(responseCode = "409", description = "Permission cannot be fulfilled, e.g. because the requested data is not available.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
+            @ApiResponse(responseCode = "409", description = "Permission(s) cannot be fulfilled, e.g. because the requested data is not available.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Permission> setupNewPermission(@Valid @RequestBody QrCodeDto qrCodeDto) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
-        LOGGER.debug("Got new permission request {}", qrCodeDto);
+    public ResponseEntity<List<Permission>> setupNewPermissions(@Valid @RequestBody AiidaPermissionRequestsDto permissionRequests) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
+        LOGGER.debug("Got new permission request {}", permissionRequests);
 
-        var permission = permissionService.setupNewPermission(qrCodeDto);
+        var permission = permissionService.setupNewPermissions(permissionRequests);
 
-        var location = new UriTemplate("/permissions/{permissionId}").expand(permission.id());
-
-        return ResponseEntity.created(location).body(permission);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(permission);
     }
 
     @Operation(summary = "Update a permission", description = "Accept, reject or revoke a permission.", operationId = "updatePermission", tags = {"permission"})
