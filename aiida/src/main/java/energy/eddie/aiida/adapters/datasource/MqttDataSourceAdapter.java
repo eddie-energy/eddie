@@ -151,19 +151,24 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
 
     @Override
     public Health health() {
+        final String healthKey = "MqttDataSource";
+
         if (asyncClient == null) {
-            return Health.down().withDetail("MqttDataSource", "Client is null.").build();
+            return Health.down().withDetail(healthKey, "Client is null.").build();
         }
 
-        return (asyncClient.isConnected()
-                ? Health.up()
-                : Health.down().withDetail("MqttDataSource",
-                                           "Client not connected with server " + asyncClient.getServerURI())).build();
+        if (!asyncClient.isConnected()) {
+            return Health.down().withDetail(healthKey,
+                    "Client not connected with server " + asyncClient.getServerURI()).build();
+        }
+
+        return super.health();
     }
 
     public void setKeepAliveInterval(Integer keepAliveInterval) {
         this.keepAliveInterval = keepAliveInterval;
     }
+
 
     protected void subscribeToHealthTopic() {
         // Not needed in MqttDataSource

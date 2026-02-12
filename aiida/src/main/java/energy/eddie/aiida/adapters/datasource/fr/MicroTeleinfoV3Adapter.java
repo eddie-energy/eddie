@@ -146,7 +146,8 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
     @Override
     public Health health() {
         var health = super.health();
-        if (health != null && health.getStatus().equals(Status.DOWN)) {
+        if (health != null && (health.getStatus().equals(Status.DOWN)
+                || health.getStatus().equals(Health.status("WARNING").build().getStatus()))) {
             return health;
         }
         return healthState;

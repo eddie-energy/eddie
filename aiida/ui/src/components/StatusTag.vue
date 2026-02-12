@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
 
 const { statusType = 'healthy', minimalOnMobile } = defineProps<{
-  statusType?: 'healthy' | 'unhealthy'
+  statusType?: 'healthy' | 'partiallyHealthy' | 'unhealthy' | 'unknown'
   minimalOnMobile?: boolean
 }>()
 </script>
@@ -35,10 +35,22 @@ const { statusType = 'healthy', minimalOnMobile } = defineProps<{
   border-radius: 1rem;
   text-wrap: nowrap;
 
+  &.partiallyHealthy {
+    color: var(--eddie-yellow);
+    background-color: #fffdf2;
+    border-color: var(--eddie-yellow);
+  }
+
   &.unhealthy {
     color: var(--eddie-red-medium);
     background-color: #ffeaeb;
     border-color: var(--eddie-red-medium);
+  }
+
+  &.unknown {
+    color: var(--eddie-grey-medium);
+    background-color: var(--eddie-grey-light);
+    border-color: var(--eddie-grey-medium);
   }
 
   &.minimal {

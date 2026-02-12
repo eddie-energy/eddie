@@ -36,13 +36,15 @@ import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
-import java.util.List;
+import java.util.*;
 
 public abstract class DataSourceAdapter<T extends DataSource> implements AutoCloseable, HealthIndicator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceAdapter.class);
+    private static final short MAX_HEALTH_VALIDATION_MESSAGES = 100;
     protected final Sinks.Many<AiidaRecord> recordSink;
     protected final Sinks.Many<Health> healthSink;
     protected final T dataSource;
+    protected final Deque<AiidaRecord> healthValidationMessages;
 
     /**
      * Creates a new {@code DataSourceAdapter} with the specified data source entity.
@@ -51,6 +53,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      */
     protected DataSourceAdapter(T dataSource) {
         this.dataSource = dataSource;
+        this.healthValidationMessages = new ArrayDeque<>(MAX_HEALTH_VALIDATION_MESSAGES);
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
         healthSink = Sinks.many().unicast().onBackpressureBuffer();
     }
@@ -109,6 +112,38 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
         if (result.isFailure()) {
             LOGGER.warn("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
         }
+
+        if (healthValidationMessages.size() >= MAX_HEALTH_VALIDATION_MESSAGES) {
+            healthValidationMessages.removeLast();
+        }
+
+        if (!healthValidationMessages.offerFirst(aiidaRecord)) {
+            LOGGER.warn("Error while acknowledging AiidaRecord {} for health validation", aiidaRecord);
+        }
+    }
+
+    @Override
+    public Health health() {
+        final String healthKey = "DataSource";
+
+        if (healthValidationMessages.isEmpty()) {
+            return Health.unknown().withDetail(healthKey, "No messages received until now.").build();
+        }
+
+        AiidaRecord aiidaRecord = healthValidationMessages.peek();
+        var now = Instant.now();
+        var firstThresholdExceeded = aiidaRecord.timestamp().plusSeconds(90)
+                .compareTo(now) < 0;
+        var lastThresholdExceeded = aiidaRecord.timestamp().plusSeconds(180)
+                .compareTo(now) < 0;
+
+        if (firstThresholdExceeded && lastThresholdExceeded) {
+            return Health.down().withDetail(healthKey, "unhealthy").build();
+        }
+
+        return firstThresholdExceeded
+                ? Health.status("WARNING").withDetail(healthKey, "partiallyHealthy").build()
+                : Health.up().withDetail(healthKey, "healthy").build();
     }
 
     /**

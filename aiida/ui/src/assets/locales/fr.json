@@ -40,7 +40,8 @@
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "healthStatus": "État",
       "healthStatusUp": "Actif",
-      "healthStatusDown": "Inactif"
+      "healthStatusDown": "Inactif",
+      "healthStatusUnknown": "Inconnu"
     },
     "modal": {
       "name": "Nom",

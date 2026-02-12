@@ -84,7 +84,8 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
     public Health health() {
         var health = super.health();
         if (healthState.getStatus().equals(Status.UNKNOWN)
-            || (health != null && health.getStatus().equals(Status.DOWN))) {
+            || (health != null && (health.getStatus().equals(Status.DOWN)
+                                    || health.getStatus().equals(Health.status("WARNING").build().getStatus())))) {
             return health;
         }
         return healthState;

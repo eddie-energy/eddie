@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -60,6 +61,75 @@ class AiidaRecordRepositoryIntegrationTest {
     private final ObjectMapper objectMapper = ObjectMapperCreatorUtil.mapper();
     @Autowired
     private AiidaRecordRepository repository;
+
+    @Test
+    void findByDataSourceIdOrderByTimestampDesc_validRecordsAdded_recordsReturned() {
+        Instant now = Instant.now();
+        AiidaRecord stringRecord1 = new AiidaRecord(now.minusSeconds(5), AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
+                new AiidaRecordValue("0-0:C.1.0",
+                        METER_SERIAL,
+                        "Hello Test1",
+                        UnitOfMeasurement.NONE,
+                        "Hello Test1",
+                        UnitOfMeasurement.NONE)));
+
+        AiidaRecord stringRecord2 = new AiidaRecord(now.minusSeconds(10), AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
+                new AiidaRecordValue("0-0:C.1.0",
+                        METER_SERIAL,
+                        "Hello Test2",
+                        UnitOfMeasurement.NONE,
+                        "Hello Test2",
+                        UnitOfMeasurement.NONE)));
+
+        AiidaRecord stringRecord3 = new AiidaRecord(now, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
+                new AiidaRecordValue("0-0:C.1.0",
+                        METER_SERIAL,
+                        "Hello Test3",
+                        UnitOfMeasurement.NONE,
+                        "Hello Test3",
+                        UnitOfMeasurement.NONE)));
+
+        repository.save(stringRecord1);
+        repository.save(stringRecord2);
+        repository.save(stringRecord3);
+
+        var latest = repository.findByDataSourceIdOrderByTimestampDesc(dataSourceId, Pageable.ofSize(1));
+        var latestTwo = repository.findByDataSourceIdOrderByTimestampDesc(dataSourceId, Pageable.ofSize(2));
+        var latestThree = repository.findByDataSourceIdOrderByTimestampDesc(dataSourceId, Pageable.ofSize(3));
+
+        assertEquals(1, latest.size());
+        AiidaRecord firstOne = latest.getFirst();
+        assertEquals(METER_SERIAL, firstOne.aiidaRecordValues().getFirst().dataTag());
+        assertEquals(now.toEpochMilli(), firstOne.timestamp().toEpochMilli());
+        assertEquals("Hello Test3", firstOne.aiidaRecordValues().getFirst().value());
+
+        assertEquals(2, latestTwo.size());
+        AiidaRecord firstTwo = latestTwo.getFirst();
+        assertEquals(METER_SERIAL, firstTwo.aiidaRecordValues().getFirst().dataTag());
+        assertEquals(now.toEpochMilli(), firstTwo.timestamp().toEpochMilli());
+        assertEquals("Hello Test3", firstTwo.aiidaRecordValues().getFirst().value());
+
+        AiidaRecord secondTwo = latestTwo.get(1);
+        assertEquals(METER_SERIAL, secondTwo.aiidaRecordValues().getFirst().dataTag());
+        assertEquals(now.minusSeconds(5).toEpochMilli(), secondTwo.timestamp().toEpochMilli());
+        assertEquals("Hello Test1", secondTwo.aiidaRecordValues().getFirst().value());
+
+        assertEquals(3, latestThree.size());
+        AiidaRecord firstThree = latestTwo.getFirst();
+        assertEquals(METER_SERIAL, firstThree.aiidaRecordValues().getFirst().dataTag());
+        assertEquals(now.toEpochMilli(), firstThree.timestamp().toEpochMilli());
+        assertEquals("Hello Test3", firstThree.aiidaRecordValues().getFirst().value());
+
+        AiidaRecord secondThree = latestThree.get(1);
+        assertEquals(METER_SERIAL, secondThree.aiidaRecordValues().getFirst().dataTag());
+        assertEquals(now.minusSeconds(5).toEpochMilli(), secondThree.timestamp().toEpochMilli());
+        assertEquals("Hello Test1", secondThree.aiidaRecordValues().getFirst().value());
+
+        AiidaRecord thirdThree = latestThree.get(2);
+        assertEquals(METER_SERIAL, thirdThree.aiidaRecordValues().getFirst().dataTag());
+        assertEquals(now.minusSeconds(10).toEpochMilli(), thirdThree.timestamp().toEpochMilli());
+        assertEquals("Hello Test2", thirdThree.aiidaRecordValues().getFirst().value());
+    }
 
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {

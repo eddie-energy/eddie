@@ -90,7 +90,7 @@ jsonSchema2Pojo {
 sourceSets {
     main {
         java {
-            srcDir("${layout.buildDirectory}/generated-sources")
+            srcDir(layout.buildDirectory.dir("generated-sources"))
         }
     }
 }

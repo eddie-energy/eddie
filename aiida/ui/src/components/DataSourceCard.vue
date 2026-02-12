@@ -68,13 +68,23 @@ const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id
       <div>
         <dt>{{ t('datasources.card.healthStatus') }}</dt>
         <StatusTag
-          :status-type="healthStatus?.status !== 'UP' ? 'unhealthy' : 'healthy'"
+          :status-type="
+            healthStatus?.status === 'UP'
+              ? 'healthy'
+              : healthStatus?.status === 'WARNING'
+                ? 'partiallyHealthy'
+                : healthStatus?.status === 'UNKNOWN'
+                  ? 'unknown'
+                  : 'unhealthy'
+          "
           minimal-on-mobile
         >
           {{
-            healthStatus?.status === 'UP'
-              ? t('datasources.card.healthStatusUp')
-              : t('datasources.card.healthStatusDown')
+            healthStatus?.status === 'DOWN'
+              ? t('datasources.card.healthStatusDown')
+              : healthStatus?.status === 'UNKNOWN'
+                ? t('datasources.card.healthStatusUnknown')
+                : t('datasources.card.healthStatusUp')
           }}
         </StatusTag>
       </div>

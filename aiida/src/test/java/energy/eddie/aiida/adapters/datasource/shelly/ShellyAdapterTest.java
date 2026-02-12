@@ -74,7 +74,7 @@ class ShellyAdapterTest {
             when(mockClient.isConnected()).thenReturn(true);
 
             adapter.start();
-            assertEquals(Status.UP, adapter.health().getStatus());
+            assertEquals(Status.UNKNOWN, adapter.health().getStatus());
 
             adapter.messageArrived(TOPIC, new MqttMessage("true".getBytes(StandardCharsets.UTF_8)));
             assertEquals(Status.UP, adapter.health().getStatus());
