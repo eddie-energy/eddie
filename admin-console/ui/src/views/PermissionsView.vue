@@ -56,8 +56,10 @@ async function fetchPermissions(page: number = 0, size: number = 500) {
   }
 }
 
-function loadMorePermissions() {
-  fetchPermissions(loadedPage)
+async function loadMorePermissions() {
+  loading.value = true
+  await fetchPermissions(loadedPage)
+  loading.value = false
 }
 
 function formatDate(date: string) {
@@ -179,7 +181,13 @@ onMounted(async () => {
     <template #paginatorstart>
       <p>
         Loaded <b>{{ permissions?.length }}</b> out of {{ totalRecords }} permissions.
-        <a v-if="permissions.length < totalRecords" @click="loadMorePermissions()">Load more...</a>
+        <button
+          v-if="permissions.length < totalRecords"
+          @click="loadMorePermissions"
+          :disabled="loading"
+        >
+          Load more...
+        </button>
       </p>
     </template>
 
