@@ -220,4 +220,35 @@ class SchemaTest {
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
                 POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
     }
+
+    @Test
+    void schemaCim_v1_12() throws SchemaFormatterException, SchemaFormatterRegistryException {
+        var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
+        var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
+        var cimFormatter = new energy.eddie.aiida.schemas.cim.v1_12.CimFormatter(applicationInformationService, mapper);
+
+        var permissionMock = mock(Permission.class);
+        var dataNeedMock = mock(AiidaLocalDataNeed.class);
+        var dataSource = mock(DataSource.class);
+
+        when(permissionMock.id()).thenReturn(permissionId);
+        when(permissionMock.dataSource()).thenReturn(dataSource);
+        when(permissionMock.dataNeed()).thenReturn(dataNeedMock);
+        when(permissionMock.connectionId()).thenReturn("connectionId");
+
+        when(dataNeedMock.dataNeedId()).thenReturn(dataNeedId);
+
+        when(dataSource.countryCode()).thenReturn("AT");
+
+        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_12)).thenReturn(cimFormatter);
+
+        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_12);
+        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_AT, permissionMock));
+        assertThrows(CimSchemaFormatterException.class,
+                     () -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+
+        formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
+        assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
+                POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
+    }
 }

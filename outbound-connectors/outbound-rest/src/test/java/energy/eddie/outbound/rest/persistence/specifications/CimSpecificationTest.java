@@ -9,9 +9,11 @@ import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
+import energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.PersistenceConfig;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +49,8 @@ class CimSpecificationTest {
     private PermissionMarketDocumentRepository pmdRepository;
     @Autowired
     private ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository;
+    @Autowired
+    private NearRealTimeDataMarketDocumentRepository rtdRepository;
 
     @Test
     void givenPermissionMarketDocumentsAndSpecification_whenQueryRepository_thenReturnDocument() {
@@ -202,5 +206,43 @@ class CimSpecificationTest {
 
         // Then
         assertThat(res).isEmpty();
+    }
+
+    @Test
+    void givenRealTimeDataMarketDocumentsV1_12AndSpecification_whenQueryRepository_thenReturnDocument() {
+        // Given
+        var pid = UUID.randomUUID().toString();
+        var dnid = UUID.randomUUID().toString();
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var from = now.minusHours(1);
+        var to = now.plusHours(1);
+        var payload = new energy.eddie.cim.v1_12.rtd.RTDEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.rtd.MessageDocumentHeader()
+                                .withCreationDateTime(now)
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.rtd.MetaInformation()
+                                                .withRequestPermissionId(pid)
+                                                .withConnectionId("1")
+                                                .withDataNeedId(dnid)
+                                                .withDocumentType(TopicStructure.DocumentTypes.NEAR_REAL_TIME_DATA_MD.value())
+                                                .withRegionConnector("aiida")
+                                                .withRegionCountry(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())));
+        rtdRepository.save(new NearRealTimeDataMarketDocumentModel(payload));
+        PredicateSpecification<NearRealTimeDataMarketDocumentModel> specs = CimSpecification.buildQueryForV1_12(
+                Optional.of(pid),
+                Optional.of("1"),
+                Optional.of(dnid),
+                Optional.of("NAT"),
+                Optional.of("aiida"),
+                Optional.of(from),
+                Optional.of(to)
+        );
+
+        // When
+        var res = rtdRepository.findAll(specs);
+
+        // Then
+        assertThat(res).hasSize(1);
     }
 }

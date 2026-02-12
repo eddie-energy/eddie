@@ -17,7 +17,7 @@ import tools.jackson.databind.json.JsonMapper;
 public class CimFormatter extends BaseSchemaFormatter {
     private final CimFormatterStrategy<RTDEnvelope> cimFormatterStrategy;
 
-    protected CimFormatter(
+    public CimFormatter(
             ApplicationInformationService applicationInformationService,
             JsonMapper mapper
     ) {
