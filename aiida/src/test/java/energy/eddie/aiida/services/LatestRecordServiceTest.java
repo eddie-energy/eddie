@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.List;
@@ -96,6 +98,76 @@ class LatestRecordServiceTest {
 
         assertTrue(exception.getMessage().contains(DATA_SOURCE_ID.toString()));
         verify(repository, times(1)).findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID);
+    }
+
+    @Test
+    void latestAiidaRecords_shouldReturnLatestRecords_whenFound() throws LatestAiidaRecordNotFoundException {
+        int nRecords = 5;
+
+        var timestamps = new Instant[]{
+                TIMESTAMP,
+                Instant.parse("2026-01-15T10:29:00Z"),
+                Instant.parse("2026-01-15T10:28:00Z"),
+                Instant.parse("2026-01-15T10:27:00Z"),
+                Instant.parse("2026-01-15T10:26:00Z")
+        };
+
+        var aiidaRecords = new AiidaRecord[nRecords];
+        var expectedDtos = new LatestDataSourceRecordDto[nRecords];
+
+        for (int i = 0; i < nRecords; i++) {
+            var aiidaRecord = mock(AiidaRecord.class);
+            var dataSource = mock(DataSource.class);
+
+            var value = new AiidaRecordValue(
+                    "my-raw-tag",
+                    ObisCode.POSITIVE_ACTIVE_ENERGY,
+                    "0.0255",
+                    UnitOfMeasurement.KILO_WATT,
+                    "25.5",
+                    UnitOfMeasurement.WATT
+            );
+
+            when(aiidaRecord.timestamp()).thenReturn(timestamps[i]);
+            when(aiidaRecord.dataSource()).thenReturn(dataSource);
+            when(aiidaRecord.aiidaRecordValues()).thenReturn(List.of(value));
+
+            when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+            when(dataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+            when(dataSource.name()).thenReturn("datasource%d".formatted(i + 1));
+
+            aiidaRecords[i] = aiidaRecord;
+            var expectedDto = new LatestDataSourceRecordDto(timestamps[i],
+                                                            "datasource%d".formatted(i + 1),
+                                                            AiidaAsset.SUBMETER,
+                                                            DATA_SOURCE_ID,
+                                                            List.of(value.toDto()));
+            expectedDtos[i] = expectedDto;
+        }
+
+        when(repository.findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(nRecords)))
+                .thenReturn(List.of(aiidaRecords));
+
+        var resultList = aiidaRecordService.latestDataSourceRecords(DATA_SOURCE_ID, nRecords);
+
+        verify(repository, times(1)).findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(nRecords));
+
+        for (int i = 0; i < nRecords; i++) {
+            assertEquals(expectedDtos[i], resultList.get(i));
+        }
+    }
+
+    @Test
+    void latestAiidaRecords_shouldThrow_whenRecordNotFound() {
+        when(repository.findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(3)))
+                .thenReturn(List.of());
+
+        var exception = assertThrows(LatestAiidaRecordNotFoundException.class, () ->
+                aiidaRecordService.latestDataSourceRecords(DATA_SOURCE_ID, 3)
+        );
+
+        assertTrue(exception.getMessage().contains(DATA_SOURCE_ID.toString()));
+        verify(repository, times(1)).findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(3));
     }
 
     @Test

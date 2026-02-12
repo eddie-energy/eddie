@@ -10,11 +10,12 @@ import DataSourceIcon from '@/components/DataSourceIcon.vue'
 import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import { computed, ref } from 'vue'
-import type { AiidaDataSource } from '@/types'
+import type { AiidaDataSource, StatusTypes } from '@/types'
 import { dataSourceHealthStatuses, dataSourceImages } from '@/stores/dataSources'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import StatusTag from '@/components/StatusTag.vue'
+import Tooltip from '@/components/Tooltip.vue'
 
 const { t } = useI18n()
 const COUNTRY_NAMES = new Intl.DisplayNames(['en'], { type: 'region' })
@@ -42,8 +43,40 @@ const {
   icon,
 } = dataSource
 
+type HealthStatusConfig = {
+  type: StatusTypes
+  label: string
+  tooltip: string
+}
+
 const image = computed(() => dataSourceImages.value[dataSource.id])
 const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id])
+const healthTexts: Record<string, HealthStatusConfig> = {
+  UP: {
+    type: 'healthy',
+    label: t('datasources.card.healthStatusUp'),
+    tooltip: t('datasources.card.healthStatusUpTooltip'),
+  },
+  WARNING: {
+    type: 'partially-healthy',
+    label: t('datasources.card.healthStatusWarning'),
+    tooltip: t('datasources.card.healthStatusWarningTooltip'),
+  },
+  UNKNOWN: {
+    type: 'unknown',
+    label: t('datasources.card.healthStatusUnknown'),
+    tooltip: t('datasources.card.healthStatusUnknownTooltip'),
+  },
+  DOWN: {
+    type: 'unhealthy',
+    label: t('datasources.card.healthStatusDown'),
+    tooltip: t('datasources.card.healthStatusDownTooltip'),
+  },
+}
+
+const healthStatusConfig = computed<HealthStatusConfig>(
+  () => healthTexts[healthStatus?.value?.status || 'DOWN'],
+)
 </script>
 
 <template>
@@ -67,16 +100,11 @@ const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id
 
       <div>
         <dt>{{ t('datasources.card.healthStatus') }}</dt>
-        <StatusTag
-          :status-type="healthStatus?.status !== 'UP' ? 'unhealthy' : 'healthy'"
-          minimal-on-mobile
-        >
-          {{
-            healthStatus?.status === 'UP'
-              ? t('datasources.card.healthStatusUp')
-              : t('datasources.card.healthStatusDown')
-          }}
-        </StatusTag>
+        <Tooltip :enabled="enabled" :text="healthStatusConfig.tooltip">
+          <StatusTag :status-type="healthStatusConfig.type" minimal-on-mobile>
+            {{ healthStatusConfig.label }}
+          </StatusTag>
+        </Tooltip>
       </div>
 
       <template v-if="countryCode">

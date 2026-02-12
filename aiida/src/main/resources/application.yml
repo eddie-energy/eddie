@@ -22,10 +22,14 @@ spring:
           jwk-set-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
 
 management:
+  endpoints:
+    web:
+      exposure:
+        include: health
   endpoint:
     health:
-      show-components: when_authorized
-      show-details: when_authorized
+      show-details: always
+      show-components: always
 
 aiida:
   cleanup:

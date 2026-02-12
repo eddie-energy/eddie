@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource;
@@ -55,7 +55,9 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
 
             MqttConnectionOptions connectOptions = createConnectOptions();
 
-            logger.info("Connecting to broker {} with username {}", dataSource().internalHost(), connectOptions.getUserName());
+            logger.info("Connecting to broker {} with username {}",
+                        dataSource().internalHost(),
+                        connectOptions.getUserName());
 
             asyncClient.connect(connectOptions);
         } catch (MqttException ex) {
@@ -151,14 +153,18 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
 
     @Override
     public Health health() {
+        final String healthKey = "MqttDataSource";
+
         if (asyncClient == null) {
-            return Health.down().withDetail("MqttDataSource", "Client is null.").build();
+            return Health.down().withDetail(healthKey, "Client is null.").build();
         }
 
-        return (asyncClient.isConnected()
-                ? Health.up()
-                : Health.down().withDetail("MqttDataSource",
-                                           "Client not connected with server " + asyncClient.getServerURI())).build();
+        if (!asyncClient.isConnected()) {
+            return Health.down().withDetail(healthKey,
+                                            "Client not connected with server " + asyncClient.getServerURI()).build();
+        }
+
+        return super.health();
     }
 
     public void setKeepAliveInterval(Integer keepAliveInterval) {
