@@ -37,6 +37,8 @@ export type AiidaDataSource = {
   pollingInterval?: number
   //DatasourceType = SINAPSI_ALFA
   activationKey?: string
+  meterId?: string
+  operatorId?: string
 }
 
 export type AiidaPermission = {
