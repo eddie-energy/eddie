@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -16,10 +16,10 @@ import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.utils.AiidaRecordConverter;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -228,7 +228,7 @@ class LatestRecordServiceTest {
         var latestSchema1 = new LatestRecordSchema(TIMESTAMP, "message1");
         var latestSchema2 = new LatestRecordSchema(TIMESTAMP.plusSeconds(10), "message2");
         var messages = new java.util.concurrent.ConcurrentHashMap<AiidaSchema, LatestRecordSchema>();
-        messages.put(AiidaSchema.SMART_METER_P1_CIM, latestSchema1);
+        messages.put(AiidaSchema.SMART_METER_P1_CIM_V1_04, latestSchema1);
         messages.put(AiidaSchema.SMART_METER_P1_RAW, latestSchema2);
 
         when(permissionRecord.topic()).thenReturn(TOPIC);

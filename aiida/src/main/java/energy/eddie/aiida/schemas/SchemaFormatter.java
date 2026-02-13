@@ -1,28 +1,18 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.schemas;
 
-import energy.eddie.aiida.errors.formatter.FormatterException;
+import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.dataneeds.needs.aiida.AiidaSchema;
-import tools.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 
-import java.util.UUID;
+public interface SchemaFormatter {
+    AiidaSchema supportedSchema();
 
-public abstract class SchemaFormatter {
-
-    public static SchemaFormatter getFormatter(UUID aiidaId, AiidaSchema schema) {
-        return switch (schema) {
-            case SMART_METER_P1_CIM -> new CimFormatter(aiidaId);
-            case SMART_METER_P1_RAW -> new RawFormatter();
-        };
-    }
-
-    public abstract byte[] toSchema(
+    byte[] format(
             AiidaRecord aiidaRecord,
-            ObjectMapper mapper,
             Permission permission
-    ) throws FormatterException;
+    ) throws SchemaFormatterException;
 }

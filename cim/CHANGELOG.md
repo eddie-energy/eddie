@@ -55,3 +55,12 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.2.2 - 2026-01-26
 
 - Add copyright notices to source files
+
+## 3.3.0 - 2026-02-13
+- Add (near) real-time data for CIM version `1.12`
+- Fixes wrong wording of `QuantityTypeKind` values
+- Adds additional `QuantityTypeKind` values
+- Separates `MetaInformation` from `MessageDocumentHeader` into own class
+- Adds `Asset` to `MetaInformation` in `MessageDocumentHeader`
+- Adds `Accounting Point` to `TimeSeries`
+- AIIDA now depends on this version of the CIM

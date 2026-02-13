@@ -11,7 +11,7 @@ import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProvider;
+import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProviderV1_04;
 import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.core.services.SupportedFeatureService;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,7 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
     private ValidatedHistoricalDataMarketDocumentProvider validatedHistoricalDataMarketDocumentProvider;
     @MockitoBean
     @SuppressWarnings("unused")
-    private NearRealTimeDataMarketDocumentProvider nearRealTimeDataMarketDocumentProvider;
+    private NearRealTimeDataMarketDocumentProviderV1_04 nearRealTimeDataMarketDocumentProvider;
 
     @Test
     void testSupportedFeatures_returnsTrue_ifFeatureInApplicationContext() {

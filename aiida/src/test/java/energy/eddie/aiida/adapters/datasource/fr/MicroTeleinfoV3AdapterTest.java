@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.fr;
@@ -8,10 +8,12 @@ import energy.eddie.aiida.adapters.datasource.fr.transformer.MicroTeleinfoV3Mode
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.fr.MicroTeleinfoV3DataSource;
+import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.dataneeds.needs.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -27,7 +29,6 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
@@ -155,21 +156,14 @@ class MicroTeleinfoV3AdapterTest {
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
                            .thenReturn(mockClient);
 
-            MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
+            var message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
             StepVerifier.create(adapter.start())
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("teleinfo/data", message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
                                                                .stream()
-                                                               .anyMatch(aiidaRecordValue -> (aiidaRecordValue.dataTag()
-                                                                                                              .equals(METER_SERIAL) &&
-                                                                                              aiidaRecordValue.value()
-                                                                                                              .equals("123456789123")) ||
-                                                                                             (aiidaRecordValue.dataTag()
-                                                                                                              .equals(POSITIVE_ACTIVE_ENERGY) &&
-                                                                                              aiidaRecordValue.value()
-                                                                                                              .equals("6367621"))))
+                                                               .anyMatch(this::hasMessageValues))
                         .then(adapter::close)
                         .expectComplete()
                         .log()
@@ -199,7 +193,6 @@ class MicroTeleinfoV3AdapterTest {
             assertEquals(Status.UP, adapter.health().getStatus());
         }
     }
-
 
     @Test
     void givenStatusFromMqttBroker_HealthDown() {
@@ -258,22 +251,9 @@ class MicroTeleinfoV3AdapterTest {
     @Test
     void givenInvalidJsonMessage_errorIsLogged() {
         var invalidJson = "{\"foo\":\"bar\"}";
-        var validJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
+        var stepVerifier = StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verifyLater();
 
-        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValues()
-                                                                                       .stream()
-                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals(POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || aiidaRecordValue.dataTag()
-                                                                                                                                                                                                     .equals(POSITIVE_ACTIVE_ENERGY)))
-                                                .then(adapter::close)
-                                                .expectComplete()
-                                                .verifyLater();
-
-        adapter.messageArrived(DATA_SOURCE_TOPIC,
-                               new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
-        adapter.messageArrived(DATA_SOURCE_TOPIC,
-                               new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.topic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
                 invalidJson), LOG_CAPTOR, MicroTeleinfoV3ModeNotSupportedException.class);
@@ -284,24 +264,20 @@ class MicroTeleinfoV3AdapterTest {
     @Test
     void givenJsonIsFromHistoryMode() {
         LOG_CAPTOR.setLogLevelToDebug();
+
         var historyModeJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
+        var knownObisCodeCountInMessage = 6;
+        var stepVerifier = StepVerifier.create(adapter.start())
+                                       .expectNextMatches(ar -> hasKnownObisCodeCount(ar, knownObisCodeCountInMessage))
+                                       .then(adapter::close)
+                                       .expectComplete()
+                                       .verifyLater();
 
-        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> received.aiidaRecordValues()
-                                                                                       .stream()
-                                                                                       .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
-                                                                                                                                     .equals(ObisCode.METER_SERIAL) || aiidaRecordValue.dataTag()
-                                                                                                                                                                                       .equals(POSITIVE_ACTIVE_ENERGY)))
-                                                .then(adapter::close)
-                                                .expectComplete()
-                                                .verifyLater();
-
-        adapter.messageArrived(DATA_SOURCE_TOPIC,
-                               new MqttMessage(historyModeJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.topic(), new MqttMessage(historyModeJson.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
-        assertTrue(LOG_CAPTOR.getDebugLogs().contains("Connected smart meter operates in %s mode.".formatted(
-                MicroTeleinfoV3Mode.HISTORY)));
+        assertTrue(LOG_CAPTOR.getDebugLogs()
+                             .contains("Connected smart meter operates in %s mode.".formatted(MicroTeleinfoV3Mode.HISTORY)));
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 
@@ -524,33 +500,19 @@ class MicroTeleinfoV3AdapterTest {
                   }
                 }
                 """;
-        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
-                                                .expectNextMatches(received -> {
-                                                    var aiidaRecordValues = received.aiidaRecordValues();
-                                                    var hasPositiveActiveTags = aiidaRecordValues.stream()
-                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    POSITIVE_ACTIVE_INSTANTANEOUS_POWER) || Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    POSITIVE_ACTIVE_ENERGY));
 
-                                                    var hasMeterDeviceId = aiidaRecordValues.stream()
-                                                            .anyMatch(aiidaRecordValue -> Objects.equals(
-                                                                    aiidaRecordValue.dataTag(),
-                                                                    DEVICE_ID_1));
+        var knownObisCodeCountInMessage = 6;
+        var stepVerifier = StepVerifier.create(adapter.start())
+                                       .expectNextMatches(ar -> hasKnownObisCodeCount(ar, knownObisCodeCountInMessage))
+                                       .then(adapter::close)
+                                       .expectComplete()
+                                       .verifyLater();
 
-                                                    return hasPositiveActiveTags && hasMeterDeviceId;
-                                                })
-                                                .then(adapter::close)
-                                                .expectComplete()
-                                                .verifyLater();
-
-        adapter.messageArrived(DATA_SOURCE_TOPIC,
-                               new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE.topic(), new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
-        assertTrue(LOG_CAPTOR.getDebugLogs().contains("Connected smart meter operates in %s mode.".formatted(
-                MicroTeleinfoV3Mode.STANDARD)));
+        assertTrue(LOG_CAPTOR.getDebugLogs()
+                             .contains("Connected smart meter operates in %s mode.".formatted(MicroTeleinfoV3Mode.STANDARD)));
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 
@@ -558,5 +520,32 @@ class MicroTeleinfoV3AdapterTest {
     void givenConnectionLost_warningIsLogged() {
         adapter.disconnected(new MqttDisconnectResponse(new MqttException(998877)));
         assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
+    }
+
+    private boolean isObisCodeKnown(ObisCode obisCode) {
+        return obisCode != UNKNOWN;
+    }
+
+    private boolean hasKnownObisCodeCount(AiidaRecord aiidaRecord, int knownObisCodeCountInMessage) {
+        var knownObisCodesInAiidaRecord = aiidaRecord.aiidaRecordValues()
+                                                     .stream()
+                                                     .filter(arv -> isObisCodeKnown(arv.dataTag()))
+                                                     .count();
+
+        System.out.println("Known: " + knownObisCodesInAiidaRecord);
+
+        return knownObisCodesInAiidaRecord == knownObisCodeCountInMessage;
+    }
+
+    private boolean hasMessageValues(AiidaRecordValue aiidaRecordValue) {
+        var matchesMeterSerialDataTag = aiidaRecordValue.dataTag() == METER_SERIAL;
+        var matchesMeterSerialValue = aiidaRecordValue.value().equals("123456789123");
+        var matchesMeterSerial = matchesMeterSerialDataTag && matchesMeterSerialValue;
+
+        var matchesPositiveActiveEnergyDataTag = aiidaRecordValue.dataTag() == POSITIVE_ACTIVE_ENERGY;
+        var matchesPositiveActiveEnergyValue = aiidaRecordValue.value().equals("6367621");
+        var matchesPositiveActiveEnergy = matchesPositiveActiveEnergyDataTag && matchesPositiveActiveEnergyValue;
+
+        return matchesMeterSerial || matchesPositiveActiveEnergy;
     }
 }

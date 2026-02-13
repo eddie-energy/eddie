@@ -1,8 +1,11 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttConnectCallback;
+import energy.eddie.regionconnector.aiida.mqtt.events.MqttConnectedEvent;
+import energy.eddie.regionconnector.aiida.publisher.MqttEventPublisher;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttClientInterface;
@@ -17,6 +20,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import java.time.Instant;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -32,11 +36,28 @@ class MqttConnectCallbackTest {
     private IMqttToken mockToken;
     @Mock
     private MqttClientInterface mockClient;
+    @Mock
+    private MqttEventPublisher eventPublisher;
+
+    @Test
+    void onSuccess_publishesMqttConnectedEvent() {
+        // Given
+        var task = new MqttConnectCallback(client, connectionOptions, eventPublisher, scheduler);
+        when(mockToken.getClient()).thenReturn(mockClient);
+        when(mockClient.getServerURI()).thenReturn("fooBar");
+
+        // When
+        task.onSuccess(mockToken);
+
+        // Then
+        verify(eventPublisher).publishEvent(
+                argThat(event -> ((MqttConnectedEvent) event).getServerUri().equals("fooBar")));
+    }
 
     @Test
     void onFailure_schedulesTaskToReconnect() {
         // Given
-        var task = new MqttConnectCallback(client, connectionOptions, scheduler);
+        var task = new MqttConnectCallback(client, connectionOptions, eventPublisher, scheduler);
         when(mockToken.getClient()).thenReturn(mockClient);
         when(mockClient.getServerURI()).thenReturn("fooBar");
 

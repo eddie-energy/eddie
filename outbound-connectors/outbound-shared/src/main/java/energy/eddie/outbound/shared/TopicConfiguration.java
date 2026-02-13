@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.shared;
@@ -57,11 +57,17 @@ public class TopicConfiguration {
     /**
      * Endpoint for CIM near real-time data market documents.
      * Used to emit messages to the eligible party.
+     *
+     * @param cimVersion the version of the CIM that's used
+     * @throws IllegalArgumentException if the cimVersion is not {@code CIM_1_04} or {@code CIM_1_12}
      */
-    public String nearRealTimeDataMarketDocument() {
-        return toTopic(TopicStructure.Direction.EP,
-                       TopicStructure.DataModels.CIM_1_04,
-                       TopicStructure.DocumentTypes.NEAR_REAL_TIME_DATA_MD);
+    public String nearRealTimeDataMarketDocument(TopicStructure.DataModels cimVersion) {
+        return switch (cimVersion) {
+            case CIM_1_04, CIM_1_12 -> toTopic(TopicStructure.Direction.EP,
+                                               cimVersion,
+                                               TopicStructure.DocumentTypes.NEAR_REAL_TIME_DATA_MD);
+            default -> throw new IllegalArgumentException("Invalid cim version: " + cimVersion);
+        };
     }
 
     /**

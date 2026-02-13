@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.provider.v1_04;
@@ -23,7 +23,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
     void getRawDataStream_emitsUnderlyingFlux() {
         var msg1 = mock(RTDEnvelope.class);
         var msg2 = mock(RTDEnvelope.class);
-        when(streams.nearRealTimeDataFlux()).thenReturn(Flux.just(msg1, msg2));
+        when(streams.nearRealTimeDataCimV104Flux()).thenReturn(Flux.just(msg1, msg2));
 
         var provider = new AiidaNearRealTimeDataMarketDocumentProvider(streams);
 
@@ -32,7 +32,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
                     .thenCancel()
                     .verify();
 
-        verify(streams).nearRealTimeDataFlux();
+        verify(streams).nearRealTimeDataCimV104Flux();
         verifyNoMoreInteractions(streams);
     }
 }

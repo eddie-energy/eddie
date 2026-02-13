@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.dataneeds.needs.aiida;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.ObjectMapper;
 
 import java.util.NoSuchElementException;
 
@@ -13,20 +14,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AiidaSchemaTest {
     @Test
-    void forValue_returnsEnum_whenKnown() {
-        assertEquals(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.forValue("SMART-METER-P1-RAW"));
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM, AiidaSchema.forValue("SMART-METER-P1-CIM"));
+    void forSchema_returnsEnum_whenKnown() {
+        assertEquals(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.forSchema("SMART-METER-P1-RAW"));
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_04, AiidaSchema.forSchema("SMART-METER-P1-CIM-V1-04"));
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, AiidaSchema.forSchema("SMART-METER-P1-CIM-V1-12"));
     }
 
     @Test
-    void forValue_throws_whenUnknown() {
-        assertThrows(NoSuchElementException.class, () -> AiidaSchema.forValue("UNKNOWN-SCHEMA"));
+    void forSchema_throws_whenUnknown() {
+        assertThrows(NoSuchElementException.class, () -> AiidaSchema.forSchema("UNKNOWN-SCHEMA"));
     }
 
     @Test
-    void value_and_topicName_and_buildTopicPath_areCorrect() {
+    void schema_and_topicName_and_buildTopicPath_areCorrect() {
         AiidaSchema s = AiidaSchema.SMART_METER_P1_RAW;
-        assertEquals("SMART-METER-P1-RAW", s.value());
+        assertEquals("SMART-METER-P1-RAW", s.schema());
         assertEquals("smart-meter-p1-raw", s.topicName());
         assertEquals("base/smart-meter-p1-raw", s.buildTopicPath("base"));
     }
@@ -34,10 +36,10 @@ class AiidaSchemaTest {
     @Test
     void json_serialization_and_deserialization_respectAnnotations() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        String json = mapper.writeValueAsString(AiidaSchema.SMART_METER_P1_CIM);
-        assertEquals("\"SMART-METER-P1-CIM\"", json);
+        String json = mapper.writeValueAsString(AiidaSchema.SMART_METER_P1_CIM_V1_04);
+        assertEquals("\"SMART-METER-P1-CIM-V1-04\"", json);
 
         AiidaSchema deserialized = mapper.readValue(json, AiidaSchema.class);
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM, deserialized);
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_04, deserialized);
     }
 }

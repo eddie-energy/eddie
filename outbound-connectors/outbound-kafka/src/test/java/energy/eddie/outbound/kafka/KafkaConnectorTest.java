@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.kafka;
@@ -207,12 +207,38 @@ class KafkaConnectorTest {
                 .withMessageDocumentHeaderMetaInformationConnectionId("cid")
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dnid")
                 .withMessageDocumentHeaderMetaInformationDocumentType("near-real-time-data-market-document");
-        kafkaConnector.setNearRealTimeDataMarketDocumentStream(Flux.just(data));
+        kafkaConnector.setNearRealTimeDataMarketDocumentStreamV1_04(Flux.just(data));
         var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
         var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
         consumer.subscribe(Collections.singleton("ep.eddie.cim_1_04.near-real-time-data-md"));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void testCIM_v1_12_NearRealTimeDataMarketDocuments_areProducedToKafka() {
+        // Given
+        var data = new energy.eddie.cim.v1_12.rtd.RTDEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.rtd.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.rtd.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                                .withDocumentType("near-real-time-data-market-document")));
+        kafkaConnector.setNearRealTimeDataMarketDocumentStreamV1_12(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.near-real-time-data-md"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);

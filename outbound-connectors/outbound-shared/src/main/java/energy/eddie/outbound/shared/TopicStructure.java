@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.shared;
@@ -14,6 +14,7 @@ public class TopicStructure {
 
     public static final String REDISTRIBUTION_TRANSACTION_RD_VALUE = "redistribution-transaction-rd";
     public static final String TERMINATION_MD_VALUE = "termination-md";
+    public static final String CIM_1_12_VALUE = "cim_1_12";
     public static final String CIM_1_04_VALUE = "cim_1_04";
     public static final String CIM_0_91_08_VALUE = "cim_0_91_08";
     public static final String CIM_0_82_VALUE = "cim_0_82";
@@ -72,9 +73,13 @@ public class TopicStructure {
          */
         CIM_0_91_08(CIM_0_91_08_VALUE, CommonInformationModelVersions.V0_91_08),
         /**
-         * Common Information Model version 0.1.04
+         * Common Information Model version 1.04
          */
         CIM_1_04(CIM_1_04_VALUE, CommonInformationModelVersions.V1_04),
+        /**
+         * Common Information Model version 1.12
+         */
+        CIM_1_12(CIM_1_12_VALUE, CommonInformationModelVersions.V1_12),
         /**
          * Eddie's internal model.
          */

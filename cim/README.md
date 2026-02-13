@@ -6,7 +6,7 @@
 
 1. If there are imports inside the xsd file (e.g.
    `<xs:import schemaLocation="" namespace="urn:entsoe.eu:wgedi:codelists" />`), copy the necessary files inside the same directory.
-    1. look for `urn-entse-eu-*.xsd` files
+    1. look for `urn-entsoe-eu-*.xsd` files
 2. Inside the import brackets, enter the schema location for the imported file.
     1. e.g.
        `<xs:import schemaLocation="./urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists" />`

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.amqp;
@@ -23,7 +23,8 @@ public class AmqpSetup {
                 configuration.permissionMarketDocument(),
                 configuration.accountingPointMarketDocument(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_0_82),
-                configuration.nearRealTimeDataMarketDocument(),
+                configuration.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
+                configuration.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
                 configuration.terminationMarketDocument(),
                 configuration.redistributionTransactionRequestDocument(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),

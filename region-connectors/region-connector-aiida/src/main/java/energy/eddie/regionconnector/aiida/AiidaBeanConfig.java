@@ -8,17 +8,18 @@ import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.data.needs.AiidaEnergyDataTimeframeStrategy;
-import energy.eddie.regionconnector.aiida.mqtt.MqttConnectCallback;
-import energy.eddie.regionconnector.aiida.mqtt.MqttMessageCallback;
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttConnectCallback;
+import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
+import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessorRegistry;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionEventRepository;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
+import energy.eddie.regionconnector.aiida.publisher.MqttEventPublisher;
 import energy.eddie.regionconnector.aiida.services.AiidaTransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -42,7 +43,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import reactor.core.publisher.Sinks;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.nio.charset.StandardCharsets;
@@ -57,12 +57,17 @@ import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.RE
 @Import(ObjectMapperConfig.class)
 public class AiidaBeanConfig {
     @Bean
-    public JsonMapperBuilderCustomizer objectMapper() {
+    public JsonMapperBuilderCustomizer objectMapperCustomizer() {
         return builder -> builder.addModule(new JakartaXmlBindAnnotationModule());
     }
 
     @Bean
-    public Sinks.Many<RTDEnvelope> nearRealTimeDataSink() {
+    public Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataCimV104Sink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Sink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 
@@ -153,6 +158,7 @@ public class AiidaBeanConfig {
     public MqttAsyncClient mqttClient(
             MqttConnectionOptions connectionOptions,
             ThreadPoolTaskScheduler scheduler,
+            MqttEventPublisher eventPublisher,
             AiidaConfiguration configuration
     ) throws MqttException {
         var client = new MqttAsyncClient(configuration.mqttServerUri(), // overridden by connectionOptions
@@ -160,7 +166,7 @@ public class AiidaBeanConfig {
                                          new MqttDefaultFilePersistence("./region-connector-aiida/mqtt-persistence"));
 
         // need to create manually because of circular dependency
-        var connectCallback = new MqttConnectCallback(client, connectionOptions, scheduler);
+        var connectCallback = new MqttConnectCallback(client, connectionOptions, eventPublisher, scheduler);
 
         client.connect(connectionOptions, null, connectCallback);
 
@@ -182,20 +188,8 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public MqttMessageCallback mqttMessageCallback(
-            AiidaPermissionRequestViewRepository permissionRequestViewRepository,
-            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
-            Sinks.Many<RTDEnvelope> nearRealTimeDataSink,
-            Sinks.Many<RawDataMessage> rawDataMessageSink,
-            ObjectMapper objectMapper
-    ) {
-        return new MqttMessageCallback(
-                permissionRequestViewRepository,
-                statusSink,
-                nearRealTimeDataSink,
-                rawDataMessageSink,
-                objectMapper
-        );
+    public MqttMessageCallback mqttMessageCallback(AiidaMessageProcessorRegistry messageProcessorRegistry) {
+        return new MqttMessageCallback(messageProcessorRegistry);
     }
 
     @Bean

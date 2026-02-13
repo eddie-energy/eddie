@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.kafka;
@@ -125,6 +125,31 @@ class CustomSerializerTest {
                 .withMessageDocumentHeaderMetaInformationPermissionId("permissionId")
                 .withMessageDocumentHeaderMetaInformationConnectionId("connectionId")
                 .withMessageDocumentHeaderMetaInformationDataNeedId("dataNeedId");
+
+        // When
+        byte[] result = customSerializer.serialize(topic, data);
+
+        // Then
+        assertNotNull(result);
+
+        // Clean-Up
+        customSerializer.close();
+    }
+
+    @Test
+    void testSerialize_EddieNearRealTimeMarketDocument_V1_04() throws SerdeInitializationException {
+        // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
+        String topic = "test";
+        var data = new energy.eddie.cim.v1_12.rtd.RTDEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.rtd.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.rtd.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                                .withDocumentType("near-real-time-data-market-document")));
 
         // When
         byte[] result = customSerializer.serialize(topic, data);

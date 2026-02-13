@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.streamers;
@@ -9,7 +9,7 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -34,9 +34,9 @@ import java.util.UUID;
 public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
     private final Aggregator aggregator;
-    private final UUID aiidaId;
     private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
+    private final SchemaFormatterRegistry schemaFormatterRegistry;
     private final Map<UUID, AiidaStreamer> streamers;
     private final Sinks.Many<UUID> terminationRequests;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
@@ -48,14 +48,14 @@ public class StreamerManager implements AutoCloseable {
     @Autowired
     public StreamerManager(
             Aggregator aggregator,
-            ApplicationInformationService applicationInformationService,
             FailedToSendRepository failedToSendRepository,
             ObjectMapper mapper,
+            SchemaFormatterRegistry schemaFormatterRegistry,
             PermissionLatestRecordMap permissionLatestRecordMap
     ) {
         this.mapper = mapper;
         this.aggregator = aggregator;
-        this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
+        this.schemaFormatterRegistry = schemaFormatterRegistry;
         this.failedToSendRepository = failedToSendRepository;
         this.permissionLatestRecordMap = permissionLatestRecordMap;
 
@@ -108,13 +108,15 @@ public class StreamerManager implements AutoCloseable {
                 }
             });
 
-            var streamer = StreamerFactory.getAiidaStreamer(aiidaId,
-                                                            failedToSendRepository,
-                                                            mapper,
-                                                            permission,
-                                                            recordFlux,
-                                                            streamerTerminationRequestSink,
-                                                            permissionLatestRecordMap);
+            var streamer = StreamerFactory.getAiidaStreamer(
+                    failedToSendRepository,
+                    mapper,
+                    permission,
+                    recordFlux,
+                    schemaFormatterRegistry,
+                    streamerTerminationRequestSink,
+                    permissionLatestRecordMap
+            );
             streamer.connect();
             streamers.put(id, streamer);
         } else {

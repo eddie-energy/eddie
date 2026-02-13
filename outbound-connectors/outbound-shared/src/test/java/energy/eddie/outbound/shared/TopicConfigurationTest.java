@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.shared;
@@ -51,13 +51,23 @@ class TopicConfigurationTest {
     }
 
     @Test
-    void testNearRealTimeDataMarketDocument_returnsCorrectTopicName() {
+    void testNearRealTimeDataMarketDocument_V1_04_returnsCorrectTopicName() {
         // Given
         // When
-        var res = config.nearRealTimeDataMarketDocument();
+        var res = config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_04);
 
         // Then
         assertEquals("ep.e123.cim_1_04.near-real-time-data-md", res);
+    }
+
+    @Test
+    void testNearRealTimeDataMarketDocument_V1_12_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12);
+
+        // Then
+        assertEquals("ep.e123.cim_1_12.near-real-time-data-md", res);
     }
 
     @Test

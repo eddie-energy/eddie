@@ -106,6 +106,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         cimSchemaFiles.resolve("v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
         cimSchemaFiles.resolve("v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
         cimSchemaFiles.resolve("v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
+        // V1.12
+        cimSchemaFiles.resolve( "v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd")
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed

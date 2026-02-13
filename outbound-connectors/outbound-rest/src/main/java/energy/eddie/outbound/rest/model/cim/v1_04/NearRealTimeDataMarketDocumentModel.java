@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.model.cim.v1_04;
@@ -11,7 +11,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.time.ZonedDateTime;
 
-@Entity
+@Entity(name = "NearRealTimeDataMarketDocumentModelV1_04")
 @Table(name = "near_real_time_data_marked_document", schema = "rest")
 @SuppressWarnings("NullAway")
 public class NearRealTimeDataMarketDocumentModel implements ModelWithJsonPayload<RTDEnvelope> {
