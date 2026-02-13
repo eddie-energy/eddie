@@ -1,6 +1,7 @@
-name: e2e-tests
+name: eddie-e2e
 services:
   eddie:
+    container_name: eddie
     pull_policy: build
     env_file:
       - .env.e2e

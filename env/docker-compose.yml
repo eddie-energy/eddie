@@ -69,7 +69,7 @@ services:
 
   emqx:
     image: emqx/emqx:5.8
-    container_name: emqx
+    container_name: eddie-emqx
     ports:
       - "1883:1883"
       - "8883:8883"

@@ -1,5 +1,7 @@
+name: aiida-e2e
 services:
   aiida:
+    container_name: aiida
     pull_policy: build
     ports: !override
       - "8081:8080"
