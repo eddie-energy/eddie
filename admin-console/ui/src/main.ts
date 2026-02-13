@@ -27,6 +27,48 @@ const EddiePreset = definePreset(Aura, {
         label: {
           fontWeight: '500'
         }
+      },
+      colorScheme: {
+        light: {
+          root: {
+            primary: {
+              background: '#017aa0',
+              color: '#ffffff',
+              hoverColor: '#ffffff'
+            },
+            danger: {
+              background: 'var(--danger)',
+              color: '#ffffff',
+              hoverColor: '#ffffff'
+            }
+          }
+        },
+        dark: {
+          root: {
+            primary: {
+              color: '#ffffff',
+              hoverColor: '#ffffff',
+              activeColor: '#ffffff',
+              borderColor: '#3865da',
+              hoverBorderColor: '#2954c9',
+              activeBorderColor: '#1a43b8',
+              background: 'linear-gradient(90deg, #3865da 0%, #6e96fb 100%)',
+              hoverBackground: 'linear-gradient(90deg, #2954c9 0%, #5d85ea 100%)',
+              activeBackground: 'linear-gradient(90deg, #1a43b8 0%, #4c74d9 100%)'
+            },
+            danger: {
+              color: '#ffffff',
+              hoverColor: '#ffffff',
+              activeColor: '#ffffff',
+              borderColor: '#5f1010',
+              hoverBorderColor: '#4e0808',
+              activeBorderColor: '#3d0000',
+              background: 'linear-gradient(90deg, #c42222 0%, #5f1010 100%)',
+              hoverBackground: 'linear-gradient(90deg, #b31111 0%, #4e0808 100%)',
+              activeBackground: 'linear-gradient(90deg, #a20000 0%, #3d0000 100%)'
+            }
+          }
+        }
       }
     },
     panel: {
@@ -50,7 +92,7 @@ const EddiePreset = definePreset(Aura, {
         },
         content: {
           background: '#fafbfc',
-          borderColor: '#fafbfc',
+          borderColor: '#017aa0',
           color: '#017aa0'
         },
         primary: {

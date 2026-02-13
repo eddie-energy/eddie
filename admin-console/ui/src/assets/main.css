@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
- * SPDX-License-Identifier: Apache-2.0
- */
+/* SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> */
+/* SPDX-License-Identifier: Apache-2.0 */
 
 @import 'primeicons/primeicons.css';
 
@@ -13,21 +11,22 @@
   --table-padding: 0.75rem 1rem;
 
   /* Light mode variables */
+  --primary: #017aa0;
   --success: #92c143;
   --info: #15a7e0;
   --warn: #fe9719;
   --help: #ea5197;
   --danger: #c42222;
-  --text-color: #017aa0;
+  --text-color: var(--primary);
   --app-background: #eff2f7;
   --sidebar-background: #d0e6ed;
   --panel-background: #fafbfc;
-  --panel-border: 1px solid var(--text-color);
+  --panel-border: 1px solid var(--primary);
   --card-background: #fafbfc;
-  --card-border: 1px solid rgb(from var(--text-color) r g b / 25%);
+  --card-border: 1px solid rgb(from var(--primary) r g b / 25%);
   --tile-background: #e5f1f4;
-  --chip-text-neutral: #017aa0;
-  --chip-text-contrast: #017aa0;
+  --chip-text-neutral: var(--primary);
+  --chip-text-contrast: var(--primary);
   --chip-text-link: #004cbf;
   --chip-text-success: #08792e;
   --chip-background-success: #d3ffe3;
@@ -35,6 +34,8 @@
   --chip-background-warn: #ffe8c3;
   --chip-text-info: #004cbf;
   --chip-background-info: #d7e8ff;
+  --chip-text-help: #c42288;
+  --chip-background-help: #ffe8ff;
   --chip-text-danger: #c42222;
   --chip-background-danger: #ffdddd;
 
@@ -98,4 +99,10 @@ ul {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+button {
+  border: unset;
+  background: unset;
+  color: currentColor;
 }

@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import Chart from 'primevue/chart'
@@ -15,7 +13,7 @@ const { permissions } = defineProps<{
 const chartData = computed(() => {
   const dates: Record<string, number> = {}
 
-  for (let permission of permissions) {
+  for (const permission of permissions) {
     const date = permission.startDate.substring(0, permission.startDate.indexOf('T'))
     dates[date] = (dates[date] || 0) + 1
   }

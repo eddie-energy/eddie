@@ -1,7 +1,5 @@
-<!--
-  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-  - SPDX-License-Identifier: Apache-2.0
-  -->
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script lang="ts" setup>
 import {
@@ -17,7 +15,7 @@ import { countryFlag, formatCountry } from '@/util/countries'
 
 import { Button, Panel } from 'primevue'
 import { computed, onMounted, ref } from 'vue'
-import HealthIcon from '@/components/HealthIcon.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import { formatDuration } from '@/util/duration'
 import {
   DATA_NEEDS,
@@ -47,7 +45,11 @@ onMounted(async () => {
     const unsupported: string[] = []
 
     for (const [key, value] of Object.entries(features)) {
-      value ? supported.push(key) : unsupported.push(key)
+      if (value) {
+        supported.push(key)
+      } else {
+        unsupported.push(key)
+      }
     }
 
     supportedFeatures.value[regionConnectorId] = supported
@@ -84,7 +86,7 @@ onMounted(async () => {
     toggleable
     :collapsed="!openPanels.has(id)"
     :pt:header:onClick="() => openPanels.delete(id) || openPanels.add(id)"
-    pt:header:style="border-bottom: var(--panel-border)"
+    pt:content:style="border-top: var(--panel-border)"
   >
     <template #header>
       <header>
@@ -95,7 +97,7 @@ onMounted(async () => {
           <span>{{ formatCountry(countryCodes[0]) }}</span>
         </div>
 
-        <HealthIcon :health="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
+        <StatusTag :status="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
       </header>
     </template>
 
@@ -113,7 +115,7 @@ onMounted(async () => {
       <dd>{{ timeZone }}</dd>
       <dt>Status</dt>
       <dd>
-        <HealthIcon :health="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
+        <StatusTag :status="regionConnectorHealth[id] || HealthStatus.UNKNOWN" />
       </dd>
       <dt>ID</dt>
       <dd>{{ id }}</dd>

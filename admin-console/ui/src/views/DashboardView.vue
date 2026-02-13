@@ -1,7 +1,5 @@
-<!--
-  - SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-  - SPDX-License-Identifier: Apache-2.0
-  -->
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script lang="ts" setup>
 import {
@@ -15,7 +13,7 @@ import {
 } from '@/api'
 import LineChartPermissions from '@/components/LineChartPermissions.vue'
 import { computed, onMounted, ref, watchEffect } from 'vue'
-import HealthIcon from '@/components/HealthIcon.vue'
+import StatusTag from '@/components/StatusTag.vue'
 import {
   ACTIVE_PERMISSION_STATES,
   FAILED_PERMISSION_STATES,
@@ -288,7 +286,7 @@ function getPermissionCountPerRegionConnector() {
                   {{ permissionCountPerRegionConnector[id] || 0 }}
                 </td>
                 <td>
-                  <HealthIcon :health="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
+                  <StatusTag :status="regionConnectorHealth.get(id) || HealthStatus.UNKNOWN" />
                 </td>
               </tr>
             </tbody>

@@ -104,3 +104,46 @@ export const DATA_NEEDS: Record<string, { text: string; link: string }> = {
     link: 'https://architecture.eddie.energy/framework/2-integrating/data-needs.html#aiidadataneed'
   }
 }
+
+export const STATUS_PRESETS: Record<string, { color: string; icon: string; text: string }> = {
+  // HealthStatus
+  DISABLED: { color: 'danger', icon: 'pi-stop-circle', text: 'Disabled' },
+  DOWN: { color: 'danger', icon: 'pi-exclamation-circle', text: 'Down' },
+  OUT_OF_SERVICE: { color: 'info', icon: 'pi-times-circle', text: 'Unavailable' },
+  UNKNOWN: { color: 'warn', icon: 'pi-question-circle', text: 'Unknown' },
+  UP: { color: 'success', icon: 'pi-check-circle', text: 'Running' },
+
+  // Request creation states
+  CREATED: { color: 'info', icon: 'pi-plus', text: 'Created' },
+  VALIDATED: { color: 'success', icon: 'pi-thumbs-up', text: 'Validated' },
+  SENT_TO_PERMISSION_ADMINISTRATOR: {
+    color: 'help',
+    icon: 'pi-send',
+    text: 'Sent'
+  },
+  // Successful completion states
+  ACCEPTED: { color: 'success', icon: 'pi-check', text: 'Accepted' },
+  FULFILLED: { color: 'success', icon: 'pi-file-import', text: 'Fulfilled' },
+  // Expected terminal states that did not result in data
+  REJECTED: { color: 'warn', icon: 'pi-ban', text: 'Rejected' },
+  REVOKED: { color: 'warn', icon: 'pi-times', text: 'Revoked' },
+  TERMINATED: { color: 'warn', icon: 'pi-stop-circle', text: 'Terminated' },
+  TIMED_OUT: { color: 'warn', icon: 'pi-clock', text: 'Timed out' },
+  // Terminal states the EP might want to investigate
+  MALFORMED: { color: 'danger', icon: 'pi-exclamation-circle', text: 'Malformed' },
+  UNABLE_TO_SEND: { color: 'danger', icon: 'pi-exclamation-triangle', text: 'Unable to send' },
+  INVALID: { color: 'danger', icon: 'pi-exclamation-triangle', text: 'Invalid' },
+  UNFULFILLABLE: { color: 'danger', icon: 'pi-ban', text: 'Unfulfillable' },
+  // Termination states
+  REQUIRES_EXTERNAL_TERMINATION: {
+    color: 'warn',
+    icon: 'pi-clock',
+    text: 'Requires external termination'
+  },
+  EXTERNALLY_TERMINATED: { color: 'success', icon: 'pi-times', text: 'Externally terminated' },
+  FAILED_TO_TERMINATE: {
+    color: 'danger',
+    icon: 'pi-exclamation-triangle',
+    text: 'Failed to terminate'
+  }
+}
