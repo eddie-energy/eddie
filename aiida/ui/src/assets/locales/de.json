@@ -76,9 +76,8 @@
       "isRequired": "ist ein Pflichtfeld",
       "meterId": "Physische Zähler-ID",
       "meterIdLabel": "Physische Zähler-ID eingeben",
-      "accountingPoint": "Abrechnungspunkt-ID",
-      "accountingPoints": "Eine oder mehrere Abrechnungspunkt-IDs eingeben",
-      "accountingPointsError": "Abrechnungspunkt-IDs dürfen nicht leer sein"
+      "operatorId": "Netzbetreiber-ID",
+      "operatorIdLabel": "Geben Sie die ID Ihres Netzbetreibers ein"
     }
   },
   "permissions": {

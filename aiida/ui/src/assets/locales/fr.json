@@ -76,9 +76,8 @@
       "isRequired": "est un champ obligatoire",
       "meterId": "Identifiant du compteur physique",
       "meterIdLabel": "Saisir l’identifiant du compteur physique",
-      "accountingPoint": "Identifiant du point de comptage",
-      "accountingPoints": "Saisir un ou plusieurs identifiants de point de comptage",
-      "accountingPointsError": "Les identifiants de point de comptage ne peuvent pas être vides"
+      "operatorId": "ID de l’opérateur de réseau",
+      "operatorIdLabel": "Saisissez l’ID de votre opérateur de réseau"
     }
   },
   "permissions": {

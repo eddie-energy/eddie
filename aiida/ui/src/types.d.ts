@@ -38,7 +38,7 @@ export type AiidaDataSource = {
   //DatasourceType = SINAPSI_ALFA
   activationKey?: string
   meterId?: string
-  accountPointIds: string[]
+  operatorId?: string
 }
 
 export type AiidaPermission = {

@@ -43,7 +43,7 @@ const getEmptyDataSource = (): AiidaDataSource => {
     deviceId: '',
     icon: '' as AiidaDataSourceIcon,
     meterId: '',
-    accountPointIds: [''],
+    operatorId: '',
   }
 }
 // All EU countries
@@ -237,11 +237,6 @@ const validateForm = () => {
   } else if (imageFile.value && imageFile.value.size > 20 * 1024 * 1024) {
     errors.value['image'] = t('datasources.modal.uploadImageSize')
   }
-  if (dataSource.value.accountPointIds.length >= 2) {
-    if (dataSource.value.accountPointIds.filter((point) => point === '').length > 0) {
-      errors.value['accountingPoints'] = t('datasources.modal.accountingPointsError')
-    }
-  }
 }
 
 const handleFormSubmit = async () => {
@@ -326,18 +321,6 @@ defineExpose({ showModal })
             class="checkbox-input"
           />
           <CheckmarkIcon class="checkbox-icon" />
-        </div>
-        <div class="input-field">
-          <label id="assetType">{{ t('datasources.modal.assetType') }}</label>
-          <CustomSelect
-            v-model="dataSource.asset"
-            :placeholder="t('datasources.modal.assetTypePlaceholder')"
-            :options="assetTypeOptions"
-            :name="'assetType'"
-            required
-            aria-labelledby="assetType"
-          />
-          <p v-if="errors['assetType']" class="error-message">{{ errors['assetType'] }}</p>
         </div>
         <div class="input-field">
           <label id="datasourceType">{{ t('datasources.modal.dataSourceType') }}</label>
@@ -466,8 +449,20 @@ defineExpose({ showModal })
                 !dataSourceTypesWithExtraField.includes(dataSource.type) &&
                 (errors['name'] || errors['icon']),
             }"
-            key="meterId"
+            key="asset-type"
           >
+            <label id="assetType">{{ t('datasources.modal.assetType') }}</label>
+            <CustomSelect
+              v-model="dataSource.asset"
+              :placeholder="t('datasources.modal.assetTypePlaceholder')"
+              :options="assetTypeOptions"
+              :name="'assetType'"
+              required
+              aria-labelledby="assetType"
+            />
+            <p v-if="errors['assetType']" class="error-message">{{ errors['assetType'] }}</p>
+          </div>
+          <div class="input-field" key="meterId">
             <label for="meterId" class="optional">{{ t('datasources.modal.meterIdLabel') }}</label>
             <input
               :placeholder="t('datasources.modal.meterId')"
@@ -479,34 +474,21 @@ defineExpose({ showModal })
             />
             <p v-if="errors['meterId']" class="error-message">{{ errors['meterId'] }}</p>
           </div>
-          <div class="input-field account-points" key="accountPoints">
-            <label for="accountingPoints" class="optional">{{
-              t('datasources.modal.accountingPoints')
+          <div class="input-field" key="operatorId">
+            <label for="operatorId" class="optional">{{
+              t('datasources.modal.operatorIdLabel')
             }}</label>
             <input
-              v-for="(point, index) in dataSource.accountPointIds"
-              :key="`accountingPoint-${index}`"
-              :placeholder="t('datasources.modal.accountingPoint')"
+              :placeholder="t('datasources.modal.operatorId')"
               type="text"
-              :id="`accountingPoint-${index}`"
-              v-model="dataSource.accountPointIds[index]"
+              id="operatorId"
+              v-model="dataSource.operatorId"
               name="meterId"
               autocomplete="off"
             />
-            <p v-if="errors['accountingPoints']" class="error-message">
-              {{ errors['accountingPoints'] }}
+            <p v-if="errors['operatorId']" class="error-message">
+              {{ errors['operatorId'] }}
             </p>
-            <div class="actions">
-              <Button
-                :type="'button'"
-                @click="dataSource.accountPointIds.pop()"
-                :disabled="dataSource.accountPointIds.length == 1"
-                button-style="error"
-              >
-                Remove
-              </Button>
-              <Button :type="'button'" @click="dataSource.accountPointIds.push('')">Add</Button>
-            </div>
           </div>
         </TransitionGroup>
       </div>
