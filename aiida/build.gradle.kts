@@ -50,7 +50,6 @@ dependencies {
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.j2mod)
     implementation(libs.mvel2)
-    implementation(libs.throwing.function)
 
     runtimeOnly(libs.postgresql)
     runtimeOnly(libs.flyway.postgresql)

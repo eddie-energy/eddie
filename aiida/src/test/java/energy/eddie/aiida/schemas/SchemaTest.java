@@ -5,7 +5,6 @@ package energy.eddie.aiida.schemas;
 
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -37,7 +36,8 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.*;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -190,6 +190,9 @@ class SchemaTest {
 
     @Test
     void schemaCim_v1_04() throws SchemaFormatterException, SchemaFormatterRegistryException {
+        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.cim.v1_04.CimStrategy.class);
+        logCaptorStrategy.setLogLevelToInfo();
+
         LOG_CAPTOR.setLogLevelToTrace();
 
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -213,8 +216,8 @@ class SchemaTest {
 
         var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_04);
         assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_AT, permissionMock));
-        assertThrows(CimSchemaFormatterException.class,
-                     () -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+        assertThat(logCaptorStrategy.getErrorLogs()).contains("Error converting AiidaRecordValue to Quantity.");
 
         formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
@@ -223,6 +226,9 @@ class SchemaTest {
 
     @Test
     void schemaCim_v1_12() throws SchemaFormatterException, SchemaFormatterRegistryException {
+        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.cim.v1_12.CimStrategy.class);
+        logCaptorStrategy.setLogLevelToInfo();
+
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
         var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
         var cimFormatter = new energy.eddie.aiida.schemas.cim.v1_12.CimFormatter(applicationInformationService, mapper);
@@ -244,8 +250,8 @@ class SchemaTest {
 
         var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_12);
         assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_AT, permissionMock));
-        assertThrows(CimSchemaFormatterException.class,
-                     () -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+        assertThat(logCaptorStrategy.getErrorLogs()).contains("Error converting AiidaRecordValue to Quantity.");
 
         formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(

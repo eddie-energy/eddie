@@ -3,8 +3,6 @@
 
 package energy.eddie.aiida.schemas.cim.v1_04;
 
-import com.pivovarit.function.ThrowingFunction;
-import com.pivovarit.function.ThrowingPredicate;
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -109,8 +107,8 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                 .withQuantities(aiidaRecord
                                         .aiidaRecordValues()
                                         .stream()
-                                        .filter(ThrowingPredicate.sneaky(this::isAiidaRecordValueSupported))
-                                        .map(ThrowingFunction.sneaky(this::toQuantity))
+                                        .filter(this::isAiidaRecordValueSupported)
+                                        .map(this::toQuantity)
                                         .toList())
                 .withRegisteredResourceMRID(new ResourceIDString()
                                                     .withCodingScheme(codingSchemeValue)
@@ -118,11 +116,17 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                 .withVersion(VERSION);
     }
 
-    private Quantity toQuantity(AiidaRecordValue aiidaRecordValue) throws CimSchemaFormatterException {
-        return new Quantity()
-                .withQuality(StandardQualityTypeList.AS_PROVIDED.toString())
-                .withQuantity(toBigDecimalOrThrow(aiidaRecordValue))
-                .withType(aiidaRecordValueToQuantityTypeKind(aiidaRecordValue));
+    private Quantity toQuantity(AiidaRecordValue aiidaRecordValue) {
+        try {
+            return new Quantity()
+                    .withQuality(StandardQualityTypeList.AS_PROVIDED.toString())
+                    .withQuantity(toBigDecimalOrThrow(aiidaRecordValue))
+                    .withType(aiidaRecordValueToQuantityTypeKind(aiidaRecordValue));
+        } catch (CimSchemaFormatterException e) {
+            LOGGER.error("Error converting AiidaRecordValue to Quantity.", e);
+            return new Quantity()
+                    .withQuality(StandardQualityTypeList.NOT_AVAILABLE.toString());
+        }
     }
 
     private Optional<AiidaRecordValue> quantityToAiidaRecordValue(Quantity quantity) {

@@ -69,13 +69,18 @@ public abstract class BaseCimFormatterStrategy<T, S, V, W> implements CimFormatt
         return dataNeed;
     }
 
-    protected final boolean isAiidaRecordValueSupported(AiidaRecordValue recordValue) throws CimSchemaFormatterException {
-        if (obisToQuantityTypeKindMap().containsKey(getDataTag(recordValue))) {
-            return true;
-        }
+    protected final boolean isAiidaRecordValueSupported(AiidaRecordValue recordValue) {
+        try {
+            if (obisToQuantityTypeKindMap().containsKey(getDataTag(recordValue))) {
+                return true;
+            }
 
-        LOGGER.trace("AIIDA Record Value with data tag {} not supported.", recordValue.dataTag());
-        return false;
+            LOGGER.trace("AIIDA Record Value with data tag {} not supported.", recordValue.dataTag());
+            return false;
+        } catch (CimSchemaFormatterException e) {
+            LOGGER.error("Error checking if AIIDA Record Value is supported.", e);
+            return false;
+        }
     }
 
     @Nullable

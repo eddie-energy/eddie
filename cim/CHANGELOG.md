@@ -35,7 +35,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 - Replace validated historical data market document version `0.91.08` with version `1.04`
 - Move realtime data schemas to its own package and folder
 
-## 3.0.1 - 2025-07-15t
+## 3.0.1 - 2025-07-15
 
 - Truncate datetime to seconds as required by CIM's ESMP datetime
 

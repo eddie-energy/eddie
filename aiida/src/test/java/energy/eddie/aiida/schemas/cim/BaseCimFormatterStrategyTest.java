@@ -105,7 +105,7 @@ class BaseCimFormatterStrategyTest {
     }
 
     @Test
-    void isAiidaRecordValueSupported_returnsTrueForMappedObisCode() throws CimSchemaFormatterException {
+    void isAiidaRecordValueSupported_returnsTrueForMappedObisCode() {
         // Given
         var recordValue = recordValue(POSITIVE_ACTIVE_ENERGY, "1");
 
@@ -114,7 +114,7 @@ class BaseCimFormatterStrategyTest {
     }
 
     @Test
-    void isAiidaRecordValueSupported_returnsFalseForUnmappedObisCode() throws CimSchemaFormatterException {
+    void isAiidaRecordValueSupported_returnsFalseForUnmappedObisCode() {
         // Given
         var recordValue = recordValue(ObisCode.DEVICE_ID_1, "device-id");
 
@@ -123,15 +123,12 @@ class BaseCimFormatterStrategyTest {
     }
 
     @Test
-    void isAiidaRecordValueSupported_throwsWhenDataTagMissing() {
+    void isAiidaRecordValueSupported_returnsFalseWhenDataTagMissing() {
         // Given
         var recordValue = recordValue(null, "42");
 
         // When / Then
-        assertThatThrownBy(() -> strategy.isAiidaRecordValueSupported(recordValue))
-                .isInstanceOf(CimSchemaFormatterException.class)
-                .hasCauseInstanceOf(IllegalArgumentException.class)
-                .hasRootCauseMessage("Data tag is required for CIM formatting in record: " + recordValue);
+        assertThat(strategy.isAiidaRecordValueSupported(recordValue)).isFalse();
     }
 
     @Test
