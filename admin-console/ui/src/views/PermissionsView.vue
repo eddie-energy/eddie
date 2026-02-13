@@ -163,14 +163,8 @@ onMounted(async () => {
           <InputText v-model="filters.global.value" placeholder="Keyword Search" />
         </IconField>
 
-        <Button label="Retransmit selected" rounded @click="retransmitSelected"></Button>
-
-        <Button
-          label="Terminate selected"
-          severity="danger"
-          rounded
-          @click="terminateSelected"
-        ></Button>
+        <Button label="Retransmit selected" rounded @click="retransmitSelected" />
+        <Button label="Terminate selected" severity="danger" rounded @click="terminateSelected" />
       </div>
     </template>
 
@@ -192,7 +186,7 @@ onMounted(async () => {
     </template>
 
     <Column expander />
-    <Column selectionMode="multiple"></Column>
+    <Column selectionMode="multiple" />
     <Column field="country" header="Country">
       <template #body="slotProps">
         <span class="country">
