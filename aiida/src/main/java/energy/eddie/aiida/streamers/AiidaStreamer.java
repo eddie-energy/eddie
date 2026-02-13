@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
+import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
