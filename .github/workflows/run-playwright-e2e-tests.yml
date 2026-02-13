@@ -86,6 +86,9 @@ jobs:
       - name: Gradle build AIIDA jar
         run: ./gradlew :aiida:bootJar
 
+      - name: Create the test network if missing
+        run: docker network create e2e-tests-network || true
+
       - name: Start EDDIE containers
         run: docker compose ${{ env.EDDIE_COMPOSE_FILES }} --env-file ./env/.env --env-file ./env/.env.e2e up -d --wait --build
 
