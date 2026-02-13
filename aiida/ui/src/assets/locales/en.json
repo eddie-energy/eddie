@@ -76,9 +76,8 @@
       "isRequired": "is a required field",
       "meterId": "Physical Meter ID",
       "meterIdLabel": "Enter physical meter ID",
-      "accountingPoint": "Accounting Point ID",
-      "accountingPoints": "Enter one or more accounting point ID",
-      "accountingPointsError": "Accountingpoint IDs can not be empty"
+      "operatorId": "Grid Operator ID",
+      "operatorIdLabel": "Enter the ID of your grid operator"
     }
   },
   "permissions": {
