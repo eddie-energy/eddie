@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.security;
@@ -119,7 +119,7 @@ class JwtIssuerFilterTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "<permissionId>pid</permissionId>", "{\"connectionId\": \"asdf\"}", "{\"permissionId\": []}", "[]"})
+    @ValueSource(strings = {"", "<permissionId>pid</permissionId>", "{\"connectionId\": \"asdf\"}", "{\"permissionId\": []}", "[]", "{\"permissionId\": \"pid\", \"bearerToken\": \"jwt-token\"}"})
     void doFilterInternal_forInvalidContent_keepsOriginalPayload(String payload) throws IOException, ServletException {
         // Given
         var request = new MockHttpServletRequest();
@@ -136,15 +136,15 @@ class JwtIssuerFilterTest {
         assertEquals(payload, response.getContentAsString());
     }
 
-    @Test
-    void doFilterInternal_forValidContent_addsBearerToken() throws IOException, ServletException {
+    @ParameterizedTest
+    @ValueSource(strings = {"{\"permissionId\": \"pid\"}", "{\"permissionIds\": [\"pid\", true ] }", "{\"permissionIds\": true, \"permissionId\": \"pid\" }"})
+    void doFilterInternal_forValidContent_addsBearerToken(String payload) throws IOException, ServletException {
         // Given
         var request = new MockHttpServletRequest();
         request.setMethod("POST");
         request.setRequestURI("/region-connectors/cds/" + PATH_PERMISSION_REQUEST);
         var response = new MockHttpServletResponse();
         response.setStatus(201);
-        var payload = "{\"permissionId\": \"pid\"}";
         var chain = new MockFilterChain(new MockHttpServlet(payload), filter);
 
         // When

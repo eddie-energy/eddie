@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.security;
@@ -15,7 +15,9 @@ import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class JwtAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
@@ -46,6 +48,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
             @Nullable RequestAuthorizationContext context
     ) {
         if (context == null) {
+            LOGGER.debug("No valid authorization context found");
             return new AuthorizationDecision(false);
         }
         String requestURI = context.getRequest().getRequestURI();
@@ -53,7 +56,10 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
 
         var permissions = jwtUtil.getPermissions(jwt);
 
-        String requestedPermissionId = context.getVariables().get("permissionId");
+        var permissionId = context.getVariables().get("permissionId");
+        String[] requestedPermissionId = permissionId == null
+                ? context.getRequest().getParameterValues("permission-id")
+                : new String[]{permissionId};
         String servletName = context.getRequest().getHttpServletMapping().getServletName();
         List<String> permittedPermissionsForRequestedConnector = "dispatcherServlet".equals(servletName)
                 // For API calls to the core
@@ -74,7 +80,7 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
             throw new AccessDeniedException("Not authorized to access the requested resource");
         }
 
-        if (!permittedPermissionsForRequestedConnector.contains(requestedPermissionId)) {
+        if (!new HashSet<>(permittedPermissionsForRequestedConnector).containsAll(Set.of(requestedPermissionId))) {
             LOGGER.trace(
                     "Denying authorization for request URI {} because the requested permissionId is not in the JWT ({})",
                     requestURI,

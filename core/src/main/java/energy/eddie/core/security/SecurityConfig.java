@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.security;
@@ -33,8 +33,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                                                // @formatter:off
-                        .requestMatchers(pathPatternRequestMatcherBuilder.matcher("/api/connection-status-messages/{permissionId}")).access(jwtHeaderAuthorizationManager)
-                        .anyRequest().denyAll()
+                            .requestMatchers(pathPatternRequestMatcherBuilder.matcher("/api/connection-status-messages")).access(jwtHeaderAuthorizationManager)
+                            .requestMatchers(pathPatternRequestMatcherBuilder.matcher("/api/connection-status-messages/{permissionId}")).access(jwtHeaderAuthorizationManager)
+                            .anyRequest().denyAll()
                        // @formatter
                 )
                 .exceptionHandling(new SecurityExceptionHandler(mapper))
