@@ -83,7 +83,7 @@ jobs:
           echo -n "$PONTON_ID_DAT" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
       - name: Start docker containers
-        run: docker compose ${{ env.COMPOSE_FILES }} --profile dockerized-eddie --env-file ./env/.env up -d --wait
+        run: docker compose ${{ env.COMPOSE_FILES }} --env-file ./env/.env up -d --wait
 
       - name: Install playwright dependencies
         run: ./gradlew e2e-tests:install-playwright-deps
@@ -129,7 +129,7 @@ jobs:
       - name: Clean up
         if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
         run: |
-          docker compose ${{ env.COMPOSE_FILES }} --profile dockerized-eddie down
+          docker compose ${{ env.COMPOSE_FILES }} down
           rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           rm -rf ${{ env.PONTON_FOLDER }}
           rm -rf ./env/keys
