@@ -122,7 +122,7 @@ jobs:
         if: ${{ failure() }}  # only store logs when tests failed
         run: |
           mkdir -p ./e2e-tests/build/docker-logs
-          docker logs e2e-tests-eddie-1 &> ./e2e-tests/build/docker-logs/eddie.log
+          docker logs eddie &> ./e2e-tests/build/docker-logs/eddie.log
 
       - name: Archive results
         if: ${{ failure() }}  # we are only interested in failed tests
