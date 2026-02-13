@@ -26,6 +26,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 
 import java.time.Instant;
 import java.util.List;
@@ -220,6 +221,92 @@ class LatestRecordServiceTest {
             verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
             verify(repository, times(1)).findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID);
         }
+    }
+
+    @Test
+    void latestAiidaRecords_shouldReturnLatestRecords_whenFound() throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
+        int nRecords = 5;
+
+        var timestamps = new Instant[] {
+                TIMESTAMP,
+                Instant.parse("2026-01-15T10:29:00Z"),
+                Instant.parse("2026-01-15T10:28:00Z"),
+                Instant.parse("2026-01-15T10:27:00Z"),
+                Instant.parse("2026-01-15T10:26:00Z")
+        };
+
+        var aiidaRecords = new AiidaRecord[nRecords];
+        var expectedDtos = new LatestDataSourceRecordDto[nRecords];
+        var dataSource = mock(DataSource.class);
+
+        for (int i = 0; i < nRecords; i++) {
+            var aiidaRecord = mock(AiidaRecord.class);
+            when(dataSourceRepository.findById(DATA_SOURCE_ID))
+                    .thenReturn(Optional.of(dataSource));
+
+            aiidaRecords[i] = aiidaRecord;
+            var expectedDto = new LatestDataSourceRecordDto(timestamps[i],
+                    "datasource%d".formatted(i + 1),
+                    AiidaAsset.SUBMETER,
+                    DATA_SOURCE_ID,
+                    RECORD_VALUES);
+            expectedDtos[i] = expectedDto;
+        }
+        
+        when(repository.findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(nRecords)))
+                .thenReturn(List.of(aiidaRecords));
+
+        try (MockedStatic<AiidaRecordConverter> mockedConverter = mockStatic(AiidaRecordConverter.class)) {
+            for (int i = 0; i < nRecords; i++) {
+                int finalI = i;
+                mockedConverter.when(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecords[finalI], dataSource))
+                        .thenReturn(expectedDtos[i]);
+            }
+
+            var resultList = aiidaRecordService.latestDataSourceRecords(DATA_SOURCE_ID, nRecords);
+
+            for (int i = 0; i < nRecords; i++) {
+                assertEquals(expectedDtos[i], resultList.get(i));
+            }
+
+            verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
+            verify(repository, times(1)).findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(nRecords));
+            for (int i = 0; i < nRecords; i++) {
+                int finalI = i;
+                mockedConverter.verify(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecords[finalI], dataSource), times(1));
+            }
+        }
+    }
+
+    @Test
+    void latestAiidaRecords_shouldThrow_whenRecordNotFound() {
+        var dataSource = mock(DataSource.class);
+        when(dataSourceRepository.findById(DATA_SOURCE_ID))
+                .thenReturn(Optional.of(dataSource));
+        when(repository.findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(3)))
+                .thenReturn(List.of());
+
+        var exception = assertThrows(LatestAiidaRecordNotFoundException.class, () ->
+                aiidaRecordService.latestDataSourceRecords(DATA_SOURCE_ID, 3)
+        );
+
+        assertTrue(exception.getMessage().contains(DATA_SOURCE_ID.toString()));
+        verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
+        verify(repository, times(1)).findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(3));
+    }
+
+    @Test
+    void latestAiidaRecords_shouldThrow_whenDataSourceNotFound() {
+        when(dataSourceRepository.findById(DATA_SOURCE_ID))
+                .thenReturn(Optional.empty());
+
+        var exception = assertThrows(DataSourceNotFoundException.class, () ->
+                aiidaRecordService.latestDataSourceRecords(DATA_SOURCE_ID, 3)
+        );
+
+        assertTrue(exception.getMessage().contains(DATA_SOURCE_ID.toString()));
+        verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
+        verify(repository, never()).findByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID, Pageable.ofSize(3));
     }
 
     @Test

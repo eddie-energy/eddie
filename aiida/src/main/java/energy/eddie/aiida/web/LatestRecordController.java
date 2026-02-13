@@ -22,11 +22,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -57,6 +55,24 @@ public class LatestRecordController {
         LOGGER.info("Fetching latest data source record for datasource with ID: {}", dataSourceId);
 
         return latestRecordService.latestDataSourceRecord(dataSourceId);
+    }
+
+    @Operation(summary = "Gets the latest data source record for a given datasource ID",
+            operationId = "latestDataSourceRecord",
+            tags = {"dataSourceRecord"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Latest data source record found",
+                    content = @Content(schema = @Schema(implementation = LatestDataSourceRecordDto.class))),
+            @ApiResponse(responseCode = "404", description = "Datasource not found",
+                    content = @Content(schema = @Schema(implementation = String.class)))
+    })
+    @GetMapping(value = "data-source/{id}/latestRecords")
+    public List<LatestDataSourceRecordDto> latestDataSourceRecords(@PathVariable("id") UUID dataSourceId,
+                                                                   @RequestParam("amount") int amount)
+            throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
+        LOGGER.info("Fetching latest {} data source records for datasource with ID: {}", amount, dataSourceId);
+
+        return latestRecordService.latestDataSourceRecords(dataSourceId, amount);
     }
 
     @GetMapping(value = "permission/{id}/outbound/latest")

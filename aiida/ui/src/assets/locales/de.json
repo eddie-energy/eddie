@@ -40,7 +40,8 @@
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "healthStatus": "Status",
       "healthStatusUp": "Aktiv",
-      "healthStatusDown": "Störung"
+      "healthStatusDown": "Störung",
+      "healthStatusUnknown": "Unbekannt"
     },
     "modal": {
       "name": "Name",
