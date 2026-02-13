@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       prettier:
-        specifier: ^3.3.2
-        version: 3.6.2
+        specifier: ^3.8.1
+        version: 3.8.1
 
   admin-console/ui:
     dependencies:
@@ -3599,6 +3599,11 @@ packages:
 
   prettier@3.7.4:
     resolution: {integrity: sha512-v6UNi1+3hSlVvv8fSaoUbggEM5VErKmmpGA7Pl3HF8V6uKY7rvClBOJlH6yNwQtfTueNkGVpOv/mtWL9L4bgRA==}
+    engines: {node: '>=14'}
+    hasBin: true
+
+  prettier@3.8.1:
+    resolution: {integrity: sha512-UOnG6LftzbdaHZcKoPFtOcCKztrQ57WkHDeRD9t/PTQtmT0NHSeWWepj6pS0z/N7+08BHFDQVUrfmfMRcZwbMg==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -7848,6 +7853,8 @@ snapshots:
   prettier@3.6.2: {}
 
   prettier@3.7.4: {}
+
+  prettier@3.8.1: {}
 
   pretty-ms@9.2.0:
     dependencies:
