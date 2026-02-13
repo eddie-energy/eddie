@@ -90,7 +90,7 @@ jobs:
         run: docker compose ${{ env.EDDIE_COMPOSE_FILES }} --env-file ./env/.env --env-file ./env/.env.e2e up -d --wait --build
 
       - name: Start AIIDA containers
-        run: docker compose ${{ env.AIIDA_COMPOSE_FILES }} --profile dockerized-aiida --env-file ./aiida/docker/.env --env-file ./aiida/docker/.env.e2e up -d --wait --build
+        run: docker compose ${{ env.AIIDA_COMPOSE_FILES }} --env-file ./aiida/docker/.env --env-file ./aiida/docker/.env.e2e up -d --wait --build
 
       - name: Install playwright dependencies
         run: ./gradlew e2e-tests:install-playwright-deps
@@ -139,7 +139,7 @@ jobs:
         if: always()  # always clean up, even when other steps failed; a post-job script will delete anything anyway, but be sure to always delete the secrets files
         run: |
           docker compose ${{ env.EDDIE_COMPOSE_FILES }} down
-          docker compose ${{ env.AIIDA_COMPOSE_FILES }} --profile dockerized-aiida down
+          docker compose ${{ env.AIIDA_COMPOSE_FILES }} down
           rm -f ${{ env.E2E_COMPOSE_SECRETS_FILE }}
           rm -rf ${{ env.PONTON_FOLDER }}
           rm -rf ./env/keys

@@ -21,8 +21,6 @@ services:
       retries: 3
 
   aiida:
-    profiles:
-      - dockerized-aiida
     image: ghcr.io/eddie-energy/aiida:latest
     build:
       dockerfile: docker/Dockerfile
