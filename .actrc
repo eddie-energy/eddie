@@ -1,0 +1,2 @@
+-P fh-server-e2e=myoung34/github-runner:ubuntu-noble
+--artifact-server-path $PWD/.artifacts
