@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.kafka;
@@ -9,6 +9,7 @@ import energy.eddie.cim.serde.SerdeFactory;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -88,6 +89,26 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
+    public ConsumerFactory<String, RECMMOEEnvelope> minMaxEnvelopeConsumerFactory(
+            @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
+            MessageSerde serde
+    ) {
+        var config = kafkaProperties(kafkaProperties);
+        return new DefaultKafkaConsumerFactory<>(config,
+                                                 new StringDeserializer(),
+                                                 new CustomDeserializer<>(serde, RECMMOEEnvelope.class));
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<@NonNull ConcurrentMessageListenerContainer<String, RECMMOEEnvelope>> minMaxEnvelopeListenerContainerFactory(
+            ConsumerFactory<String, RECMMOEEnvelope> consumerFactory
+    ) {
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RECMMOEEnvelope>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
     public TopicConfiguration topicConfiguration(@Value("${outbound-connector.kafka.eddie-id}") String eddieId) {
         return new TopicConfiguration(eddieId);
     }
@@ -102,6 +123,12 @@ public class KafkaOutboundConnector {
     @Bean
     public NewTopic retransmissionTopic(TopicConfiguration config) {
         var topic = config.redistributionTransactionRequestDocument();
+        return TopicBuilder.name(topic).build();
+    }
+
+    @Bean
+    public NewTopic minMaxEnvelopeTopic(TopicConfiguration config) {
+        var topic = config.minMaxEnvelopeDocument();
         return TopicBuilder.name(topic).build();
     }
 

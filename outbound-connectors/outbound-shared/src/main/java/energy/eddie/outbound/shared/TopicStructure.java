@@ -11,9 +11,9 @@ import jakarta.annotation.Nullable;
  * Utility class to track different document types that can be consumed or produced by eddie
  */
 public class TopicStructure {
-
     public static final String REDISTRIBUTION_TRANSACTION_RD_VALUE = "redistribution-transaction-rd";
     public static final String TERMINATION_MD_VALUE = "termination-md";
+    public static final String MIN_MAX_ENVELOPE_MD_VALUE = "min-max-envelope-md";
     public static final String CIM_1_12_VALUE = "cim_1_12";
     public static final String CIM_1_04_VALUE = "cim_1_04";
     public static final String CIM_0_91_08_VALUE = "cim_0_91_08";
@@ -121,6 +121,7 @@ public class TopicStructure {
         VALIDATED_HISTORICAL_DATA_MD("validated-historical-data-md"),
         REDISTRIBUTION_TRANSACTION_RD(TopicStructure.REDISTRIBUTION_TRANSACTION_RD_VALUE),
         NEAR_REAL_TIME_DATA_MD("near-real-time-data-md"),
+        MIN_MAX_ENVELOPE_MD(TopicStructure.MIN_MAX_ENVELOPE_MD_VALUE),
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
         CONNECTION_STATUS_MESSAGE(CONNECTION_STATUS_MESSAGE_VALUE),

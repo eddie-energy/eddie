@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.rest.web.cim.v1_12;
 
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
@@ -13,10 +14,7 @@ import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 import java.time.ZonedDateTime;
@@ -75,5 +73,13 @@ public class CimController implements CimSwagger {
         var messages = payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new NearRealTimeDataMarketDocuments(messages));
+    }
+
+    @Override
+    @PostMapping(value = "min-max-envelope-md", consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    public ResponseEntity<Void> minMaxEnvelopeMd(@RequestBody RECMMOEEnvelope minMaxEnvelope) {
+        cimConnector.publish(minMaxEnvelope);
+        return ResponseEntity.accepted()
+                             .build();
     }
 }

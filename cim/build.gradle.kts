@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
- * SPDX-License-Identifier: Apache-2.0
- */
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
 
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
@@ -107,7 +105,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         cimSchemaFiles.resolve("v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
         cimSchemaFiles.resolve("v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
         // V1.12
-        cimSchemaFiles.resolve( "v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd")
+        cimSchemaFiles.resolve("v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd"),
+        cimSchemaFiles.resolve("v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd")
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed

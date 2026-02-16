@@ -1,0 +1,1303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<xs:schema xmlns:ecl="urn:entsoe.eu:wgedi:codelists:1.12" xmlns:sawsdl="http://www.w3.org/ns/sawsdl"
+           xmlns:dl="https//eddie.energy/CIM/RECMMOE_v1.12"
+           xmlns:cimp="http://www.iec.ch/cimprofile" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
+           elementFormDefault="qualified"
+           targetNamespace="https//eddie.energy/CIM/RECMMOE_v1.12">
+    <xs:import schemaLocation="../urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists:1.12"/>
+    <xs:element name="RECMMOE_Envelope" type="dl:RECMMOE_Envelope"/>
+    <xs:complexType name="Asset" sawsdl:modelReference="http://iec.ch/TC57/CIM100#Asset">
+        <xs:annotation>
+            <xs:documentation>asset is an energy data space specific attribute referring to the Asset from which data is
+                being requested
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="Position">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="type" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Asset.type">
+                <xs:annotation>
+                    <xs:documentation>type is an energy data space specific attribute that specifies type of asset
+                        refered to.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="operatorId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Asset.operatorId">
+                <xs:annotation>
+                    <xs:documentation>operatorId is an energy data space specific attribute that specifies the id
+                        operator of the asset refered to.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">1</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="meterId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Asset.meterId">
+                <xs:annotation>
+                    <xs:documentation>meterId is an energy data space specific attribute that specifies the id of the
+                        meter that measures the asset.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">2</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="ESMP_DateTime" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ESMP_DateTime">
+        <xs:annotation>
+            <xs:documentation>In ESMP, the dateTime shall be expressed in UTC as YYYY-MM-DDThh:mm:ssZ.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">MessageDateTimeType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:dateTime">
+            <xs:pattern
+                    value="((([0-9]{4})[\-](0[13578]|1[02])[\-](0[1-9]|[12][0-9]|3[01])|([0-9]{4})[\-]((0[469])|(11))[\-](0[1-9]|[12][0-9]|30))T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])Z)|(([13579][26][02468][048]|[13579][01345789](0)[48]|[13579][01345789][2468][048]|[02468][048][02468][048]|[02468][1235679](0)[48]|[02468][1235679][2468][048]|[0-9][0-9][13579][26])[\-](02)[\-](0[1-9]|1[0-9]|2[0-9])T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])Z)|(([13579][26][02468][1235679]|[13579][01345789](0)[01235679]|[13579][01345789][2468][1235679]|[02468][048][02468][1235679]|[02468][1235679](0)[01235679]|[02468][1235679][2468][1235679]|[0-9][0-9][13579][01345789])[\-](02)[\-](0[1-9]|1[0-9]|2[0-8])T(([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9])Z)"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="MessageDocumentHeader"
+                    sawsdl:modelReference="http://iec.ch/TC57/CIM100#MessageDocumentHeader">
+        <xs:annotation>
+            <xs:documentation>MessageDocumentHeader is an energy data space specific entity with the creationDateTime of
+                this document.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="Position">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="SchemaVersion">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="creationDateTime" type="dl:ESMP_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MessageDocumentHeader.creationDateTime">
+                <xs:annotation>
+                    <xs:documentation>The date and time the MessageDocumenHeader was created.</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="MetaInformation" type="dl:MetaInformation"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MessageDocumentHeader.MetaInformation">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="MetaInformation" sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation">
+        <xs:annotation>
+            <xs:documentation>MetaInformation is an energy data space specific entity referring to the information
+                concerning the technical and functional context of the MarketDocument.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="Position">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="SchemaVersion">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="connectionId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.connectionId">
+                <xs:annotation>
+                    <xs:documentation>connectionId is an energy data space specific attribute referring to the
+                        established connection used for the communication of this document.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="requestPermissionId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.requestPermissionId">
+                <xs:annotation>
+                    <xs:documentation>The requestPermissionId is energy data space specific identification attribute
+                        holding an unique identifier issued by the energy data space to allow for tracing of the
+                        permission through serveral message exchanges.
+                        Note: the requestPermissionId is NOT the identifier issued by the Identity Service Provider as
+                        specified in the EU Implementing Act on access to Metering and Consumption Data.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">1</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="dataNeedId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.dataNeedId">
+                <xs:annotation>
+                    <xs:documentation>dataNeedId is an energy data space specific attribute holding the type of data
+                        need requested, like ‘last 24 hours at 1 hour interval”.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">2</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="documentType" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.documentType">
+                <xs:annotation>
+                    <xs:documentation>documentType is an energy data space specific attribute referring to the type of
+                        document, comparable to the MessageTypeList in the CIM part of the message.
+                        Note:
+                        This is applicable if you have the need to know the content without having to open the complete
+                        document. DocumentType might contain messages not (yet) part of the MessageTypeList.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">3</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="finalCustomerId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.finalCustomerId">
+                <xs:annotation>
+                    <xs:documentation>The finalCustomerId is an energy data space specific attribute identifying the
+                        actor doing the request for data or data sharing.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">4</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="dataSourceId" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.dataSourceId">
+                <xs:annotation>
+                    <xs:documentation>dataSourceId is an energy data space specific attribute referring to the
+                        datasource from which the requested data is being queried.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">5</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="defaultValues" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.defaultValues">
+                <xs:annotation>
+                    <xs:documentation>defaultValues is a energy data space specific attribute to hold relevant default
+                        values. The format to use can freely be chosen based on the implementation. Most commonly you
+                        would expect a semi-colon separated name value pair, like: "minPower=value; maxPower=value;
+                        avgPower=value".
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">6</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="regionConnector" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.regionConnector">
+                <xs:annotation>
+                    <xs:documentation>regionConnector is an energy data space specific attribute that specifies the
+                        regional connector being used to retrieve the data requested.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">7</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="regionCountry" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.regionCountry">
+                <xs:annotation>
+                    <xs:documentation>regionCountry is an energy data space specific attribute that specifies the
+                        country where the regional connector is located.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">8</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="Asset" type="dl:Asset"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MetaInformation.Asset">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="Position_Integer" sawsdl:modelReference="http://iec.ch/TC57/CIM100#Position_Integer">
+        <xs:annotation>
+            <xs:documentation>An integer value, this value is used as a sequential value representing the relative
+                position of an entity within a space such as a time interval.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">PositionType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:integer">
+            <xs:maxInclusive value="999999"/>
+            <xs:minInclusive value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="Quality_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#Quality_String">
+        <xs:annotation>
+            <xs:documentation>The coded identification of the quality of the information.</xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ecl:QualityTypeList"/>
+    </xs:simpleType>
+    <xs:complexType name="Point" sawsdl:modelReference="http://iec.ch/TC57/CIM100#Point">
+        <xs:annotation>
+            <xs:documentation>The identification of the values being addressed within a specific interval of time.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="position" type="dl:Position_Integer"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Point.position">
+                <xs:annotation>
+                    <xs:documentation>A sequential value representing the relative position within a given time
+                        interval.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="min_Quantity.quantity" type="xs:decimal"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Quantity.quantity">
+                <xs:annotation>
+                    <xs:documentation>The quantity value.
+                        The association role provides the information about what is expressed.
+
+                        --- The Quantity information associated with a given Point.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">3</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="min_Quantity.quality" type="dl:Quality_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Quantity.quality">
+                <xs:annotation>
+                    <xs:documentation>The description of the quality of the quantity.
+
+                        --- The Quantity information associated with a given Point.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">4</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="max_Quantity.quantity" type="xs:decimal"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Quantity.quantity">
+                <xs:annotation>
+                    <xs:documentation>The quantity value.
+                        The association role provides the information about what is expressed.
+
+                        --- The Quantity information associated with a given Point.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">5</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="max_Quantity.quality" type="dl:Quality_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Quantity.quality">
+                <xs:annotation>
+                    <xs:documentation>The description of the quality of the quantity.
+
+                        --- The Quantity information associated with a given Point.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">6</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RECMMOE_Envelope" sawsdl:modelReference="http://iec.ch/TC57/CIM100#RECMMOE_Envelope">
+        <xs:annotation>
+            <xs:documentation>The envelope entity is a non-CIM object used in an energy data space environment to serve
+                as a central top-level entity connecting the MarketDocumentHeader (energy data space specific context
+                information block) with the regular CIM MarketDocument.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="Position">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="MessageDocumentHeader" type="dl:MessageDocumentHeader"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#RECMMOE_Envelope.MessageDocumentHeader">
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="MarketDocument" type="dl:RECMMOE_MarketDocument"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#RECMMOE_Envelope.MarketDocument">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="ID_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ID_String">
+        <xs:annotation>
+            <xs:documentation>A code to uniquely distinguish one occurrence of an entity from another.
+
+                In the ESMP context, the code is defined either by:
+                - an emitting company that provides an agreed identification unique within a business context such as
+                capacity auction identification, market agreement identification, etc.
+                - a party (originator of the exchange) that provides a unique identification in the framework of a
+                business exchange such as document identification, time series identification, bid identification, ...
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">IdentificationType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="60"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ESMPVersion_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ESMPVersion_String">
+        <xs:annotation>
+            <xs:documentation>In ESMP, the coded value is restricted to digits.
+
+                A code that distinguishes one evolution of an identified object from another. Information about a
+                specific object may be sent several times, each transmission being identified by a different version
+                number.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">VersionType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[1-9]([0-9]){0,2}"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="PartyID_String-base" sawsdl:modelReference="http://iec.ch/TC57/CIM100#PartyID_String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="16"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="PartyID_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#PartyID_String">
+        <xs:annotation>
+            <xs:documentation>The identification of an actor in the energy market.
+
+                In the ESMP context, it is an authorized issuing office that provides an agreed identification coding
+                scheme for market participant identification.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">PartyType</xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="dl:PartyID_String-base">
+                <xs:attribute name="codingScheme" type="ecl:CodingSchemeTypeList" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="MarketRoleKind_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#MarketRoleKind_String">
+        <xs:annotation>
+            <xs:documentation>The identification of the role played by a party.</xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">RoleType</xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ecl:RoleTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ProcessKind_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ProcessKind_String">
+        <xs:annotation>
+            <xs:documentation>The coded identification of the nature of process.</xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">ProcessType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ecl:ProcessTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="YMDHM_DateTime" sawsdl:modelReference="http://iec.ch/TC57/CIM100#YMDHM_DateTime">
+        <xs:annotation>
+            <xs:documentation>In ESMP, the date and time is expressed as "YYYY-MM-DDThh:mmZ", which conforms with ISO
+                8601 UTC time zone. This date and time is without the seconds.
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:pattern
+                    value="((([0-9]{4})[\-](0[13578]|1[02])[\-](0[1-9]|[12][0-9]|3[01])|([0-9]{4})[\-]((0[469])|(11))[\-](0[1-9]|[12][0-9]|30))T(([01][0-9]|2[0-3]):[0-5][0-9])Z)|(([13579][26][02468][048]|[13579][01345789](0)[48]|[13579][01345789][2468][048]|[02468][048][02468][048]|[02468][1235679](0)[48]|[02468][1235679][2468][048]|[0-9][0-9][13579][26])[\-](02)[\-](0[1-9]|1[0-9]|2[0-9])T(([01][0-9]|2[0-3]):[0-5][0-9])Z)|(([13579][26][02468][1235679]|[13579][01345789](0)[01235679]|[13579][01345789][2468][1235679]|[02468][048][02468][1235679]|[02468][1235679](0)[01235679]|[02468][1235679][2468][1235679]|[0-9][0-9][13579][01345789])[\-](02)[\-](0[1-9]|1[0-9]|2[0-8])T(([01][0-9]|2[0-3]):[0-5][0-9])Z)"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="ESMP_DateTimeInterval"
+                    sawsdl:modelReference="http://iec.ch/TC57/CIM100#ESMP_DateTimeInterval">
+        <xs:annotation>
+            <xs:documentation>This datatype enables to express the start date and time, and the end date and time of a
+                time interval with a specific pattern. This pattern is the YYYY-MM-DDThh:mmZ.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">TimeIntervalType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="Compound">Compound</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="start" type="dl:YMDHM_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#DateTimeInterval.start">
+                <xs:annotation>
+                    <xs:documentation>The start date and time of the interval with a minute resolution.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="end" type="dl:YMDHM_DateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#DateTimeInterval.end">
+                <xs:annotation>
+                    <xs:documentation>The end date and time of the interval with a minute resolution.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="RECMMOE_MarketDocument"
+                    sawsdl:modelReference="http://iec.ch/TC57/CIM100#RECMMOE_MarketDocument">
+        <xs:annotation>
+            <xs:documentation>An electronic document containing the information necessary to satisfy the requirements of
+                a given business process.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="mRID" type="dl:ID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.mRID">
+                <xs:annotation>
+                    <xs:documentation>The unique identification of the document being exchanged within a business
+                        process flow.
+
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides an identification in the context of a business exchange such as document
+                        identification, ...
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="description" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.description">
+                <xs:annotation>
+                    <xs:documentation>The description is a free human readable text describing or naming the object. It
+                        may be non unique and may not correlate to a naming hierarchy.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">1</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="revisionNumber" type="dl:ESMPVersion_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Document.revisionNumber">
+                <xs:annotation>
+                    <xs:documentation>The identification of the version that distinguishes one evolution of a document
+                        from another.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">2</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="lastModifiedDateTime" type="xs:dateTime"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Document.lastModifiedDateTime">
+                <xs:annotation>
+                    <xs:documentation>Date and time this document was last modified. Documents may potentially be
+                        modified many times during their lifetime.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">3</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                    <xs:documentation cimp:category="Stereotype">62746</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="comment" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Document.comment">
+                <xs:annotation>
+                    <xs:documentation>Free text comment.</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">4</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                    <xs:documentation cimp:category="Stereotype">62746</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="sender_MarketParticipant.mRID" type="dl:PartyID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.mRID">
+                <xs:annotation>
+                    <xs:documentation>The identification of a party in the energy market.
+
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
+                        point, resources (generator, lines, substations, etc.) identification.
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+
+                        --- The MarketParticipant associated with an electronic document header.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">5</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="sender_MarketParticipant.name" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.name">
+                <xs:annotation>
+                    <xs:documentation>The name is any free human readable and possibly non unique text naming the
+                        object.
+
+                        --- The MarketParticipant associated with an electronic document header.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">6</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="sender_MarketParticipant.marketRole.type"
+                        type="dl:MarketRoleKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MarketRole.type">
+                <xs:annotation>
+                    <xs:documentation>The identification of the role played by a market player.
+
+
+                        --- The MarketParticipant associated with an electronic document header.
+
+                        --- The role associated with a MarketParticipant.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">7</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="receiver_MarketParticipant.mRID" type="dl:PartyID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.mRID">
+                <xs:annotation>
+                    <xs:documentation>The identification of a party in the energy market.
+
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
+                        point, resources (generator, lines, substations, etc.) identification.
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+
+                        --- The MarketParticipant associated with an electronic document header.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">8</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="receiver_MarketParticipant.name" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.name">
+                <xs:annotation>
+                    <xs:documentation>The name is any free human readable and possibly non unique text naming the
+                        object.
+
+                        --- The MarketParticipant associated with an electronic document header.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">9</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="receiver_MarketParticipant.marketRole.type"
+                        type="dl:MarketRoleKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#MarketRole.type">
+                <xs:annotation>
+                    <xs:documentation>The identification of the role played by a market player.
+
+
+                        --- The MarketParticipant associated with an electronic document header.
+
+                        --- The role associated with a MarketParticipant.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">10</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="process.processType" type="dl:ProcessKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Process.processType">
+                <xs:annotation>
+                    <xs:documentation>The identification of the nature of process that the document addresses.
+
+                        --- The Process associated with an electronic document header that is valid for the whole
+                        document.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">11</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="period.timeInterval" type="dl:ESMP_DateTimeInterval"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Period.timeInterval">
+                <xs:annotation>
+                    <xs:documentation>The start and end date and time for a given interval.
+
+
+                        --- The time interval that is associated with an electronic document and which is valid for the
+                        whole document.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">12</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="TimeSeries_Series" type="dl:TimeSeries_Series"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#RECMMOE_MarketDocument.TimeSeries_Series">
+                <xs:annotation>
+                    <xs:documentation>The time series that is associated with an electronic document.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Series" sawsdl:modelReference="http://iec.ch/TC57/CIM100#Series">
+        <xs:annotation>
+            <xs:documentation>A set of similar physical or conceptual objects defined for the same period or point of
+                time.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="Period" type="dl:Series_Period"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Series.Period">
+                <xs:annotation>
+                    <xs:documentation>The time interval and resolution for a period associated with a TimeSeries.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="Series_Period" sawsdl:modelReference="http://iec.ch/TC57/CIM100#Series_Period">
+        <xs:annotation>
+            <xs:documentation>The identification of the period of time corresponding to a given time interval and
+                resolution.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="1" maxOccurs="1" name="resolution" type="xs:duration"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Period.resolution">
+                <xs:annotation>
+                    <xs:documentation>The definition of the number of units of time that compose an individual step
+                        within a period.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="timeInterval" type="dl:ESMP_DateTimeInterval"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Period.timeInterval">
+                <xs:annotation>
+                    <xs:documentation>The start and end time of the period.</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">1</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="unbounded" name="Point" type="dl:Point"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#Series_Period.Point">
+                <xs:annotation>
+                    <xs:documentation>The Point information associated with a given Series_Period.within a TimeSeries.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="BusinessKind_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#BusinessKind_String">
+        <xs:annotation>
+            <xs:documentation>The coded identification of the business type.</xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">BusinessType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ecl:BusinessTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="CurveType_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#CurveType_String">
+        <xs:annotation>
+            <xs:documentation>The coded identification of the type of curve.</xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">CurveType</xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ecl:CurveTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ScheduleKind" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ScheduleKind">
+        <xs:annotation>
+            <xs:documentation>ScheduleKind is an enumeration that documents two key features for a specific DER
+                operating mode: (a) the energy flow convention for a positive number as either production or consumption
+                of service and (b) the sense of how the bid/offer amount is used as either a target or setpoint or as a
+                relative change to a defined level.
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="Specifies an enumerated type">enumeration
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="generation">
+                <xs:annotation>
+                    <xs:documentation>The resource operates as a generation resource, where a positive amount
+                        corresponds to an injection of energy and/or grid support services to the grid. The amount of
+                        energy is an absolute level understood to be a production setpoint. Negative values are
+                        acceptable and represent an energy withdrawal setpoint. For energy storage resources, a positive
+                        amount represents a setpoint in the discharging state.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="generationIncrease">
+                <xs:annotation>
+                    <xs:documentation>The resource operates as a variable generator, where a positive amount corresponds
+                        to a relative generation increase. The level is relative, generally as an upward offset to a
+                        reference level such as the current generation or a calculated baseline generation. Negative
+                        values are acceptable and represent a generation reduction offset. For energy storage resources,
+                        a positive amount represents a faster rate of discharge, a state change from charging (or
+                        offline) to discharge, or a slower rate of charge.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="generationReduction">
+                <xs:annotation>
+                    <xs:documentation>The resource operates as a flexible generator, where a positive amount corresponds
+                        to a relative generation reduction. The level is relative, generally as an downward offset to a
+                        reference level such as the current generation or a calculated baseline generation. Negative
+                        values are acceptable and represent a generation increase offset. For energy storage resources,
+                        a positive amount represents a slower rate of discharge, a state change from discharging (or
+                        offline) to charging, or a faster rate of charge.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="load">
+                <xs:annotation>
+                    <xs:documentation>The resource operates as a load resource, where a positive amount corresponds to a
+                        withdrawal of energy and/or support services from the grid. The amount of energy is an absolute
+                        level understood to be a consumption setpoint. Negative values are acceptable and represent an
+                        energy injection setpoint. For energy storage resources, a positive amount represents a setpoint
+                        in the charging state.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="loadIncrease">
+                <xs:annotation>
+                    <xs:documentation>The resource operates as a variable load, where a positive amount corresponds to a
+                        relative load increase. The level is relative, generally as an upward offset to a reference
+                        level such as the current consumption or a calculated baseline consumption. Negative values are
+                        acceptable and represent a load reduction offset. For energy storage resources, a positive
+                        amount represents a faster rate of charge, a state change from discharging (or offline) to
+                        charge, or a slower rate of discharge.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+            <xs:enumeration value="loadReduction">
+                <xs:annotation>
+                    <xs:documentation>The resource operates as a curtailable load, where a positive amount corresponds
+                        to a relative load reduction. The level is relative, generally as an downward offset to a
+                        reference level such as the current consumption or a calculated baseline consumption. Negative
+                        values are acceptable and represent a load increase offset. For energy storage resources, a
+                        positive amount represents a slower rate of charge, a state change from charging (or offline) to
+                        discharging, or a faster rate of discharge.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="DirectionKind_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#DirectionKind_String">
+        <xs:annotation>
+            <xs:documentation>The coded identification of the direction of energy flow.</xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">DirectionType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="ecl:DirectionTypeList"/>
+    </xs:simpleType>
+    <xs:simpleType name="ResourceID_String-base" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ResourceID_String">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="60"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:complexType name="ResourceID_String" sawsdl:modelReference="http://iec.ch/TC57/CIM100#ResourceID_String">
+        <xs:annotation>
+            <xs:documentation>The identification of a resource object in the energy market.
+
+                In the ESMP context, it is an authorized issuing office that provides an agreed identification coding
+                scheme for resources (generator, lines, substations, etc.) identification.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">ResourceObjectType
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype" cimp:notes="CIMDatatype">CIMDatatype</xs:documentation>
+        </xs:annotation>
+        <xs:simpleContent>
+            <xs:extension base="dl:ResourceID_String-base">
+                <xs:attribute name="codingScheme" type="ecl:CodingSchemeTypeList" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="TimeSeries_Series" sawsdl:modelReference="http://iec.ch/TC57/CIM100#TimeSeries_Series">
+        <xs:annotation>
+            <xs:documentation>A set of similar physical or conceptual objects defined for the same period or point of
+                time.
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessProcessRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="businessTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="definition">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="dictionaryEntryName">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="example">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="geopoliticalOrRegionContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="industryContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassQualifierTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="objectClassTerm">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="officialConstraintContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="productContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="supportingRoleContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="systemCapabilitiesContextValue">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="uniqueID">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="usageRule">
+            </xs:documentation>
+            <xs:documentation cimp:category="TagValue" cimp:subcategory="version">
+            </xs:documentation>
+            <xs:documentation cimp:category="Stereotype">MBIE</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element minOccurs="0" maxOccurs="1" name="mRID" type="dl:ID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.mRID">
+                <xs:annotation>
+                    <xs:documentation>A unique identification of the time series.
+
+                        In the ESMP context, the "model authority" is defined as a party (originator of the exchange)
+                        that provides a unique identification in the context of a business exchange such as time series
+                        identification, bid identification, ...
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">0</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="businessType" type="dl:BusinessKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#TimeSeries.businessType">
+                <xs:annotation>
+                    <xs:documentation>The identification of the nature of the time series.</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">1</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="curveType" type="dl:CurveType_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#TimeSeries.curveType">
+                <xs:annotation>
+                    <xs:documentation>The identification of the coded representation of the type of curve being
+                        described.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">2</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="resourceTimeSeries.value1ScheduleType" type="dl:ScheduleKind"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#ResourceTimeSeries.value1ScheduleType">
+                <xs:annotation>
+                    <xs:documentation>Value1ScheduleType documents two key features for a specific resource operating
+                        mode: (a) the energy flow convention for a positive number as either production or consumption
+                        of service and (b) the sense of how the resource is planned to be used or was used as either a
+                        target or setpoint or as a relative change to a defined level.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">4</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="1" maxOccurs="1" name="flowDirection.direction" type="dl:DirectionKind_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#FlowDirection.direction">
+                <xs:annotation>
+                    <xs:documentation>The coded identification of the direction of energy flow.
+
+
+                        --- The flow direction associated with a TimeSeries.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">5</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.mRID" type="dl:ResourceID_String"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.mRID">
+                <xs:annotation>
+                    <xs:documentation>The unique identification of a resource.
+
+                        In the ESMP context, the "model authority" is defined as an authorized issuing office that
+                        provides an agreed identification coding scheme for market participant, domain, measurement
+                        point, resources (generator, lines, substations, etc.) identification.
+
+                        Master resource identifier issued by a model authority. The mRID is globally unique within an
+                        exchange context.
+                        Global uniqueness is easily achieved by using a UUID for the mRID. It is strongly recommended to
+                        do this.
+                        For CIMXML data files in RDF syntax, the mRID is mapped to rdf:ID or rdf:about attributes that
+                        identify CIM object elements.
+
+                        --- The identification of a resource associated with a TimeSeries.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">6</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.name" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.name">
+                <xs:annotation>
+                    <xs:documentation>The name is any free human readable and possibly non unique text naming the
+                        object.
+
+                        --- The identification of a resource associated with a TimeSeries.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">7</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="1" name="registeredResource.description" type="xs:string"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#IdentifiedObject.description">
+                <xs:annotation>
+                    <xs:documentation>The description is a free human readable text describing or naming the object. It
+                        may be non unique and may not correlate to a naming hierarchy.
+
+                        --- The identification of a resource associated with a TimeSeries.
+                    </xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ESMPRG">8</xs:documentation>
+                    <xs:documentation cimp:category="TagValue" cimp:subcategory="ETSOBusinessTerm">
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element minOccurs="0" maxOccurs="unbounded" name="Series" type="dl:Series"
+                        sawsdl:modelReference="http://iec.ch/TC57/CIM100#TimeSeries_Series.Series">
+            </xs:element>
+        </xs:sequence>
+    </xs:complexType>
+</xs:schema>
