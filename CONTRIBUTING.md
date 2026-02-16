@@ -114,8 +114,7 @@ If you are not sure if SonarQube was installed, please follow the [instructions]
 
 ### Guidelines
 
-We follow the [SonarRules for Java](https://rules.sonarsource.com/java/), most of which will be highlighted by Sonar.
-Please also consider the following guidelines:
+In addition to the rules highlighted by SonarQube, please also consider the following guidelines:
 
 - Avoid abbreviations in variable names.
 - Use constructor injection for dependencies.
