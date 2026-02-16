@@ -130,7 +130,7 @@ class AiidaUiTests {
     void logout(Page page) {
         page.getByText("Account").click();
         page.getByText("Logout").click();
-        assertThat(page.getByText("Sign in to your account")).isVisible();
+        assertThat(page.getByText("Continue to Login")).isVisible();
     }
 
     @AfterEach
