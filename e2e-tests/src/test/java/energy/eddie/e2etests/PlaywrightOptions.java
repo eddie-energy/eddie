@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.e2etests;
 
 import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
+
+import java.nio.file.Path;
 
 public class PlaywrightOptions implements OptionsFactory {
 
@@ -18,6 +20,7 @@ public class PlaywrightOptions implements OptionsFactory {
     public Options getOptions() {
         return new Options()
                 .setTrace(Options.Trace.RETAIN_ON_FAILURE)
+                .setOutputDir(Path.of("build", "test-results", "test", "traces"))
                 .setChannel("chromium")
                 .setHeadless(HEADLESS);
     }
