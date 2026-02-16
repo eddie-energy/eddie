@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.kafka.v1_12;
 
+import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEMarketDocument;
 import energy.eddie.outbound.kafka.KafkaTestConfig;
@@ -20,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("SpringBootApplicationProperties")
 @SpringBootTest(classes = {MinMaxEnvelopeKafkaConnector.class, KafkaTestConfig.class}, properties = {"outbound-connector.kafka.eddie-id=eddie"})
 @EnableKafka
 @EmbeddedKafka
@@ -31,7 +33,7 @@ class MinMaxEnvelopeKafkaConnectorTest {
     @Autowired
     private KafkaTemplate<String, String> stringKafkaTemplate;
     @Autowired
-    private MinMaxEnvelopeKafkaConnector minMaxConnector;
+    private MinMaxEnvelopeOutboundConnector minMaxConnector;
 
     @SuppressWarnings("DataFlowIssue")
     @Test
@@ -55,10 +57,9 @@ class MinMaxEnvelopeKafkaConnectorTest {
         // Given
         stringKafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_1_12.min-max-envelope-md", "id", "Invalid JSON"))
                            .get();
-        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_1_12.min-max-envelope-md",
-                                                "id",
-                                                new RECMMOEMarketDocument()))
-                     .get();
+        var envelope = new RECMMOEEnvelope()
+                .withMarketDocument(new RECMMOEMarketDocument().withMRID("some-id"));
+        kafkaTemplate.send(new ProducerRecord<>("fw.eddie.cim_1_12.min-max-envelope-md", "id", envelope)).get();
 
         // When
         var result = minMaxConnector.getMinMaxEnvelopes()
