@@ -98,7 +98,7 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
             context.accept();
         } catch (DeserializationException e) {
             context.discard();
-            LOGGER.info("Got invalid message", e);
+            LOGGER.info("Got invalid termination message", e);
         }
     }
 
@@ -113,7 +113,7 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
             context.accept();
         } catch (DeserializationException e) {
             context.discard();
-            LOGGER.info("Got invalid message", e);
+            LOGGER.info("Got invalid retransmission message", e);
         }
     }
 
@@ -127,7 +127,7 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
             context.accept();
         } catch (DeserializationException e) {
             context.discard();
-            LOGGER.info("Got invalid message", e);
+            LOGGER.info("Got invalid min-max envelope message", e);
         }
     }
 }
