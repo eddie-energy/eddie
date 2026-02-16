@@ -3,10 +3,12 @@
 
 package energy.eddie.e2etests;
 
+import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 
 import java.nio.file.Path;
+import java.util.List;
 
 public class PlaywrightOptions implements OptionsFactory {
 
@@ -18,9 +20,14 @@ public class PlaywrightOptions implements OptionsFactory {
 
     @Override
     public Options getOptions() {
+        var launchOptions = new BrowserType.LaunchOptions()
+                .setArgs(List.of(
+                        "--unsafely-treat-insecure-origin-as-secure=http://aiida:8080,http://eddie:8080,http://aiida-keycloak:8888"
+                ));
         return new Options()
                 .setTrace(Options.Trace.RETAIN_ON_FAILURE)
                 .setOutputDir(Path.of("build", "test-results", "test", "traces"))
+                .setLaunchOptions(launchOptions)
                 .setChannel("chromium")
                 .setHeadless(HEADLESS);
     }
