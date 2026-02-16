@@ -77,9 +77,6 @@ jobs:
           mkdir -p ${{ env.PONTON_FOLDER }}
           echo -n "$PONTON_ID_DAT" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
 
-      - name: Gradle clean build directories
-        run: ./gradlew clean
-
       - name: Gradle build EDDIE jar
         run: ./gradlew installDist
 
