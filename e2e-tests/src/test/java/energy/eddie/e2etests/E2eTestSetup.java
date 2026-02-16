@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.e2etests;
@@ -7,11 +7,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.TestInfo;
-
-import java.nio.file.Paths;
 
 import static energy.eddie.e2etests.PlaywrightOptions.EDDIE_URL;
 
@@ -55,13 +51,5 @@ public class E2eTestSetup {
     void navigateToDemoPage(Page page) {
         this.page = page;
         page.navigate(EDDIE_URL + "/demo");
-    }
-
-    @AfterEach
-    void saveScreenshot(TestInfo testInfo) {
-        var screenshotPath = Paths.get("build/test-results/test",
-                                       getClass().getSimpleName(),
-                                       testInfo.getDisplayName() + ".png");
-        page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
     }
 }

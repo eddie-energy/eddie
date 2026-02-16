@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.e2etests.aiida;
 
 import com.microsoft.playwright.BrowserContext;
@@ -6,10 +9,8 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.e2etests.PlaywrightOptions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 
 import java.nio.file.Paths;
 
@@ -131,13 +132,5 @@ class AiidaUiTests {
         page.getByText("Account").click();
         page.getByText("Logout").click();
         assertThat(page.getByText("Continue to Login")).isVisible();
-    }
-
-    @AfterEach
-    void saveScreenshot(Page page, TestInfo testInfo) {
-        var screenshotPath = Paths.get("build/test-results/test",
-                                       getClass().getSimpleName(),
-                                       testInfo.getDisplayName() + ".png");
-        page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
     }
 }
