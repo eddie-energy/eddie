@@ -9,13 +9,13 @@ To create a new schema in AIIDA, typically the following components are required
 
 ## Schema Type
 
-To later parse the needed schema from the DataNeed, it has to be defined in the [AiidaSchema](https://github.com/eddie-energy/eddie/blob/main/data-needs/src/main/java/energy/eddie/dataneeds/needs/aiida/AiidaSchema.java) enum.
+To later parse the needed schema from the DataNeed, it has to be defined in the [AiidaSchema](https://github.com/eddie-energy/eddie/blob/main/api/src/main/java/energy/eddie/api/agnostic/aiida/AiidaSchema.java) enum.
 Add it as enum, like in the example below:
 
 ```java
 public enum AiidaSchema {
     // ... other schemas
-    SMART_METER_P1_CUSTOM("SMART-METER-P1-CUSTOM")
+    SMART_METER_P1_CUSTOM("SMART-METER-P1-CUSTOM")gc
 
     // ... existing code
 }
@@ -24,7 +24,7 @@ public enum AiidaSchema {
 ## Formatter Exception
 
 For logging purposes, a custom exception should be created.
-This exception must extend from the abstract [FormatterException](https://github.com/eddie-energy/eddie/blob/main/aiida/src/main/java/energy/eddie/aiida/errors/formatter/FormatterException.java) class.
+This exception must extend from the abstract [SchemaFormatterException](https://github.com/eddie-energy/eddie/blob/main/aiida/src/main/java/energy/eddie/aiida/errors/formatter/SchemaFormatterException.java) class.
 
 ```java
 package energy.eddie.aiida.errors.formatter;
