@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.amqp;
@@ -11,6 +11,7 @@ import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.ESMPDateTimeInterval;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import org.junit.jupiter.api.*;
 import org.springframework.test.annotation.DirtiesContext;
@@ -142,6 +143,52 @@ class AmqpInboundTest {
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
                                   .queue(config.redistributionTransactionRequestDocument())
+                                  .build();
+        var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testMinMaxEnvelope_acceptsMessage() throws InterruptedException, SerializationException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(config.minMaxEnvelopeDocument())
+                                  .build();
+        var msg = publisher.message(serde.serialize(new RECMMOEEnvelope()));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+        var pair = amqpInbound.getMinMaxEnvelopes().blockFirst();
+        assertNotNull(pair);
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testMinMaxEnvelope_discardsInvalidMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(config.minMaxEnvelopeDocument())
                                   .build();
         var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
         // When

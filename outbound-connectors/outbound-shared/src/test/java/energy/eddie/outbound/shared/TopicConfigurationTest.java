@@ -99,4 +99,14 @@ class TopicConfigurationTest {
         // Then
         assertEquals("fw.e123.cim_0_91_08.redistribution-transaction-rd", res);
     }
+
+    @Test
+    void testMinMaxEnvelopeDocument_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.minMaxEnvelopeDocument();
+
+        // Then
+        assertEquals("fw.e123.cim_1_12.min-max-envelope-md", res);
+    }
 }

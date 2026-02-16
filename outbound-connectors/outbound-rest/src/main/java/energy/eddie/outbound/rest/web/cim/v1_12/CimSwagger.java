@@ -283,9 +283,8 @@ public interface CimSwagger {
                                     schema = @Schema(implementation = PermissionEnvelope.class),
                                     examples = @ExampleObject(
                                             // language=JSON
-                                            """
-                                                    
-                                                            {
+                                            value = """
+                                                    {
                                                       "MessageDocumentHeader": {
                                                         "creationDateTime": "2026-02-16T10:11:58Z",
                                                         "MetaInformation": {
@@ -374,9 +373,8 @@ public interface CimSwagger {
                                     schema = @Schema(implementation = PermissionEnvelope.class),
                                     examples = @ExampleObject(
                                             // language=XML
-                                            """
-                                                    
-                                                            <RECMMOE_Envelope xmlns="https//eddie.energy/CIM/RECMMOE_v1.12">
+                                            value = """
+                                                    <RECMMOE_Envelope xmlns="https//eddie.energy/CIM/RECMMOE_v1.12">
                                                         <MessageDocumentHeader>
                                                             <creationDateTime>2026-02-16T10:17:11Z</creationDateTime>
                                                             <MetaInformation>

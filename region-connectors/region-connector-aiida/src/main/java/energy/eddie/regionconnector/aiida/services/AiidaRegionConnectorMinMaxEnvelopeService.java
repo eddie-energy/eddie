@@ -16,6 +16,6 @@ public class AiidaRegionConnectorMinMaxEnvelopeService implements RegionConnecto
     @Override
     public void minMaxEnvelopeArrived(RECMMOEEnvelope minMaxEnvelope) {
         LOGGER.info("Received MinMaxEnvelope: {}", minMaxEnvelope);
-        // TODO: forward to AIIDA
+        // TODO: GH-2125 forward to AIIDA
     }
 }
