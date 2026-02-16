@@ -45,7 +45,7 @@
       "clientId": "eddie-client",
       "secret": "client-secret",
       "enabled": true,
-      "redirectUris": ["http://localhost:*"],
+      "redirectUris": ["http://localhost:*", "http://127.0.0.1:*", "http://eddie:*"],
       "webOrigins": ["*"],
       "protocol": "openid-connect",
       "publicClient": false,

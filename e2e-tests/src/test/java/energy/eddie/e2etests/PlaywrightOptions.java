@@ -22,7 +22,7 @@ public class PlaywrightOptions implements OptionsFactory {
     public Options getOptions() {
         var launchOptions = new BrowserType.LaunchOptions()
                 .setArgs(List.of(
-                        "--unsafely-treat-insecure-origin-as-secure=http://aiida:8080,http://eddie:8080,http://aiida-keycloak:8888"
+                        "--unsafely-treat-insecure-origin-as-secure=http://aiida:8080,http://eddie:8080"
                 ));
         return new Options()
                 .setTrace(Options.Trace.RETAIN_ON_FAILURE)
