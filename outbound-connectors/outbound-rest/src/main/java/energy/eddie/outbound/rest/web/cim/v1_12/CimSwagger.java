@@ -3,6 +3,8 @@
 
 package energy.eddie.outbound.rest.web.cim.v1_12;
 
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -265,4 +268,192 @@ public interface CimSwagger {
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
     );
+
+    @Operation(
+            operationId = "POST min-max envelope market document",
+            summary = "POST min-max envelope market document stream",
+            description = "POST a min-max envelope market document, that will be forwarded to the region connectors",
+            method = "POST",
+            responses = @ApiResponse(responseCode = "202"),
+            requestBody = @RequestBody(
+                    description = "The min-max envelope market document, which contains the minimum and maximum values for a certain quantity, that will be forwarded to the region connectors",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = PermissionEnvelope.class),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    {
+                                                      "MessageDocumentHeader": {
+                                                        "creationDateTime": "2026-02-16T10:11:58Z",
+                                                        "MetaInformation": {
+                                                          "connectionId": "1",
+                                                          "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
+                                                          "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                                          "documentType": "min-max-envelope",
+                                                          "finalCustomerId": "88e0fc2c-4ea7-4850-a736-8b9742757518",
+                                                          "dataSourceId": "0743c9d8-3e5f-4575-999b-34f6f83b2075",
+                                                          "regionConnector": "aiida",
+                                                          "regionCountry": "AT",
+                                                          "Asset": {
+                                                            "type": "CONNECTION-AGREEMENT-POINT",
+                                                            "operatorId": "AT003000",
+                                                            "meterId": "003114735"
+                                                          }
+                                                        }
+                                                      },
+                                                      "MarketDocument": {
+                                                        "mRID": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                                        "description": "Test Min-Max Envelope",
+                                                        "revisionNumber": "1",
+                                                        "lastModifiedDateTime": "2026-02-16T10:11:58Z",
+                                                        "comment": "This is a test min-max envelope.",
+                                                        "sender_MarketParticipant.mRID": {
+                                                          "value": "AT003000",
+                                                          "codingScheme": "NAT"
+                                                        },
+                                                        "sender_MarketParticipant.name": "Netz Oberösterreich GmbH",
+                                                        "sender_MarketParticipant.marketRole.type": "CONNECTING_SYSTEM_OPERATOR",
+                                                        "receiver_MarketParticipant.mRID": {
+                                                          "value": "88e0fc2c-4ea7-4850-a736-8b9742757518",
+                                                          "codingScheme": "NAT"
+                                                        },
+                                                        "receiver_MarketParticipant.name": "Max Mustermann",
+                                                        "receiver_MarketParticipant.marketRole.type": "FINAL_CUSTOMER",
+                                                        "process.processType": "MIN_MAX_ENVELOPE",
+                                                        "period.timeInterval": {
+                                                          "start": "2026-06-01T00:00:00Z",
+                                                          "end": "2026-06-02T23:59:59Z"
+                                                        },
+                                                        "TimeSeries_Series": [
+                                                          {
+                                                            "mRID": "series-1",
+                                                            "businessType": "MIN_MAX_ENVELOPE",
+                                                            "curveType": "MIN_MAX_ENVELOPE",
+                                                            "resourceTimeSeries.value1ScheduleType": "loadReduction",
+                                                            "flowDirection.direction": "CONSUMPTION",
+                                                            "registeredResource.mRID": {
+                                                              "value": "003114735",
+                                                              "codingScheme": "NAT"
+                                                            },
+                                                            "registeredResource.name": "Test Connection Point",
+                                                            "registeredResource.description": "This is a test connection point for the min-max envelope.",
+                                                            "Series": [
+                                                              {
+                                                                "Period": [
+                                                                  {
+                                                                    "resolution": "P1D",
+                                                                    "timeInterval": {
+                                                                      "start": "2026-06-01T00:00:00Z",
+                                                                      "end": "2026-06-02T23:59:59Z"
+                                                                    },
+                                                                    "Point": [
+                                                                      {
+                                                                        "position": 1,
+                                                                        "min_Quantity.quantity": 1,
+                                                                        "min_Quantity.quality": "1",
+                                                                        "max_Quantity.quantity": 4,
+                                                                        "max_Quantity.quality": "3"
+                                                                      }
+                                                                    ]
+                                                                  }
+                                                                ]
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      }
+                                                    }
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = PermissionEnvelope.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <RECMMOE_Envelope xmlns="https//eddie.energy/CIM/RECMMOE_v1.12">
+                                                        <MessageDocumentHeader>
+                                                            <creationDateTime>2026-02-16T10:17:11Z</creationDateTime>
+                                                            <MetaInformation>
+                                                                <connectionId>1</connectionId>
+                                                                <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+                                                                <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</dataNeedId>
+                                                                <documentType>min-max-envelope</documentType>
+                                                                <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+                                                                <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+                                                                <defaultValues xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                                                                <regionConnector>aiida</regionConnector>
+                                                                <regionCountry>AT</regionCountry>
+                                                                <Asset>
+                                                                    <type>CONNECTION-AGREEMENT-POINT</type>
+                                                                    <operatorId>AT003000</operatorId>
+                                                                    <meterId>003114735</meterId>
+                                                                </Asset>
+                                                            </MetaInformation>
+                                                        </MessageDocumentHeader>
+                                                        <MarketDocument>
+                                                            <mRID>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</mRID>
+                                                            <description>Test Min-Max Envelope</description>
+                                                            <revisionNumber>1</revisionNumber>
+                                                            <lastModifiedDateTime>2026-02-16T10:17:11Z</lastModifiedDateTime>
+                                                            <comment>This is a test min-max envelope.</comment>
+                                                            <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
+                                                            <sender_MarketParticipant.name>Netz Oberösterreich GmbH</sender_MarketParticipant.name>
+                                                            <sender_MarketParticipant.marketRole.type>CONNECTING_SYSTEM_OPERATOR</sender_MarketParticipant.marketRole.type>
+                                                            <receiver_MarketParticipant.mRID codingScheme="NAT">88e0fc2c-4ea7-4850-a736-8b9742757518
+                                                            </receiver_MarketParticipant.mRID>
+                                                            <receiver_MarketParticipant.name>Max Mustermann</receiver_MarketParticipant.name>
+                                                            <receiver_MarketParticipant.marketRole.type>FINAL_CUSTOMER</receiver_MarketParticipant.marketRole.type>
+                                                            <process.processType>MIN_MAX_ENVELOPE</process.processType>
+                                                            <period.timeInterval>
+                                                                <start>2026-06-01T00:00:00Z</start>
+                                                                <end>2026-06-30T23:59:59Z</end>
+                                                            </period.timeInterval>
+                                                            <TimeSeries_Series>
+                                                                <TimeSeries_Series>
+                                                                    <mRID>series-1</mRID>
+                                                                    <businessType>MIN_MAX_ENVELOPE</businessType>
+                                                                    <curveType>MIN_MAX_ENVELOPE</curveType>
+                                                                    <resourceTimeSeries.value1ScheduleType>loadReduction</resourceTimeSeries.value1ScheduleType>
+                                                                    <flowDirection.direction>CONSUMPTION</flowDirection.direction>
+                                                                    <registeredResource.mRID codingScheme="NAT">003114735</registeredResource.mRID>
+                                                                    <registeredResource.name>Test Connection Point</registeredResource.name>
+                                                                    <registeredResource.description>This is a test connection point for the min-max envelope.
+                                                                    </registeredResource.description>
+                                                                    <Series>
+                                                                        <Series>
+                                                                            <Period>
+                                                                                <Period>
+                                                                                    <resolution xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                                                                                    <timeInterval>
+                                                                                        <start>2026-06-01T00:00:00Z</start>
+                                                                                        <end>2026-06-30T23:59:59Z</end>
+                                                                                    </timeInterval>
+                                                                                    <Point>
+                                                                                        <Point>
+                                                                                            <position>1</position>
+                                                                                            <min_Quantity.quantity>1</min_Quantity.quantity>
+                                                                                            <min_Quantity.quality>1</min_Quantity.quality>
+                                                                                            <max_Quantity.quantity>4</max_Quantity.quantity>
+                                                                                            <max_Quantity.quality>3</max_Quantity.quality>
+                                                                                        </Point>
+                                                                                    </Point>
+                                                                                </Period>
+                                                                            </Period>
+                                                                        </Series>
+                                                                    </Series>
+                                                                </TimeSeries_Series>
+                                                            </TimeSeries_Series>
+                                                        </MarketDocument>
+                                                    </RECMMOE_Envelope>
+                                                    """
+                                    )
+                            ),
+                    }
+            )
+    )
+    ResponseEntity<Void> minMaxEnvelopeMd(RECMMOEEnvelope minMaxEnvelope);
 }

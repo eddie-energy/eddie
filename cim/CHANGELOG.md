@@ -64,3 +64,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 - Adds `Asset` to `MetaInformation` in `MessageDocumentHeader`
 - Adds `Accounting Point` to `TimeSeries`
 - AIIDA now depends on this version of the CIM
+
+## 3.4.0 - 2026-02-16
+
+- Add Reference Energy Curve Min Max Operating Envelope Market Document Schema v1.12

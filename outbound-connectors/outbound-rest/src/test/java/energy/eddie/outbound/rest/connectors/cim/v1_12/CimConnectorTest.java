@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.rest.connectors.cim.v1_12;
 
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -21,6 +22,20 @@ class CimConnectorTest {
 
         // Then
         StepVerifier.create(connector.getNearRealTimeDataMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setPublish_producesMinMaxEnvelope() {
+        // Given
+        var minMaxEnvelope = new RECMMOEEnvelope();
+        // When
+        connector.publish(minMaxEnvelope);
+
+        // Then
+        StepVerifier.create(connector.getMinMaxEnvelopes())
                     .then(connector::close)
                     .expectNextCount(1)
                     .verifyComplete();

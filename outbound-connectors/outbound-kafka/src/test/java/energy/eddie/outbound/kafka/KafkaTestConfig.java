@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.kafka;
@@ -8,6 +8,7 @@ import energy.eddie.cim.serde.SerdeFactory;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -84,6 +85,22 @@ public class KafkaTestConfig {
                                                                 new StringDeserializer(),
                                                                 new CustomDeserializer<>(serde, RTREnvelope.class));
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RTREnvelope>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, RECMMOEEnvelope>> minMaxEnvelopeListenerContainerFactory(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EmbeddedKafkaBroker embeddedKafka,
+            MessageSerde serde
+    ) {
+        var props = new HashMap<String, Object>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        var consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                                                                new StringDeserializer(),
+                                                                new CustomDeserializer<>(serde, RECMMOEEnvelope.class));
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RECMMOEEnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
     }

@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.rest.web.cim.v1_12;
 
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel;
@@ -78,5 +79,18 @@ class CimControllerTest {
         StepVerifier.create(result)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+
+    @Test
+    void minMaxEnvelopeMd_returnsAccepted() {
+        var msg = new RECMMOEEnvelope();
+
+        webTestClient.post()
+                     .uri("/cim_1_12/min-max-envelope-md")
+                     .contentType(MediaType.APPLICATION_JSON)
+                     .bodyValue(msg)
+                     .exchange()
+                     .expectStatus()
+                     .isAccepted();
     }
 }

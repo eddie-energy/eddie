@@ -100,6 +100,16 @@ public class TopicConfiguration {
                        TopicStructure.DocumentTypes.REDISTRIBUTION_TRANSACTION_RD);
     }
 
+    /**
+     * Endpoint for CIM min-max envelope.
+     * Used to receive messages from the eligible party.
+     */
+    public String minMaxEnvelopeDocument() {
+        return toTopic(TopicStructure.Direction.FW,
+                       TopicStructure.DataModels.CIM_1_12,
+                       TopicStructure.DocumentTypes.MIN_MAX_ENVELOPE_MD);
+    }
+
     private String toTopic(
             TopicStructure.Direction direction,
             TopicStructure.DataModels dataModel,

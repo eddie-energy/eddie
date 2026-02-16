@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.api.agnostic.outbound;
@@ -20,6 +20,7 @@ import java.lang.annotation.Target;
  * @see energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector
  * @see energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector
  * @see energy.eddie.api.v0_82.outbound.TerminationConnector
+ * @see energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
