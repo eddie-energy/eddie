@@ -79,7 +79,7 @@ class AiidaUiTests {
         page.getByRole(AriaRole.LINK).getByText("Permissions").click();
         // Click "Add Permission"
         page.getByRole(AriaRole.BUTTON).getByText("Add Permission").click();
-        // Fill "AIIDA Code" -> How to generate?
+        // Fill "AIIDA Code"
         page.getByPlaceholder("AIIDA Code").fill(code);
         // Click "Add" button
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
