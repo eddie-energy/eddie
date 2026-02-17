@@ -135,7 +135,7 @@ class PermissionRequestCreationServiceTest {
         assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(creation));
         verify(outbox, times(2)).commit(eventCaptor.capture());
         var malformedEvent = assertInstanceOf(MalformedEvent.class, eventCaptor.getValue());
-        assertEquals(List.of(new AttributeError("dataNeedId", "AiidaDataDataNeedResult not supported!")),
+        assertEquals(List.of(new AttributeError("dataNeedId", "AiidaDataNeedResult not supported!")),
                      malformedEvent.errors());
     }
 

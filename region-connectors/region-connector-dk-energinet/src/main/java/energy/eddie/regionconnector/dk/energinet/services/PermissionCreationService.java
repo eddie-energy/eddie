@@ -56,7 +56,7 @@ public class PermissionCreationService {
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
         switch (calculation) {
             case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataDataNeedResult not supported!";
+                String message = "AiidaDataNeedResult not supported!";
                 outbox.commit(new DkMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(EnerginetRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                        dataNeedId,

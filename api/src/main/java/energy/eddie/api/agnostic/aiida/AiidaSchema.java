@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 public enum AiidaSchema {
     SMART_METER_P1_RAW(Identifiers.SMART_METER_P1_RAW, ""),
@@ -24,24 +25,22 @@ public enum AiidaSchema {
     }
 
     @JsonCreator
-    public static AiidaSchema forSchema(String schema) {
+    public static Optional<AiidaSchema> forSchema(String schema) {
         return Arrays.stream(AiidaSchema.values())
                      .filter(aiidaSchema -> aiidaSchema.schema().equals(schema))
-                     .findFirst()
-                     .orElseThrow();
+                     .findFirst();
     }
 
-    public static AiidaSchema forTopic(String topic) {
+    public static Optional<AiidaSchema> forTopic(String topic) {
         var topicParts = Arrays.stream(topic.split("/")).toList();
         var topicName = topicParts.getLast();
         return forTopicName(topicName);
     }
 
-    public static AiidaSchema forTopicName(String topicName) {
+    public static Optional<AiidaSchema> forTopicName(String topicName) {
         return Arrays.stream(AiidaSchema.values())
                      .filter(aiidaSchema -> aiidaSchema.topicName().equals(topicName))
-                     .findFirst()
-                     .orElseThrow();
+                     .findFirst();
     }
 
     @JsonValue

@@ -61,7 +61,7 @@ public class PermissionRequestService {
                                          permissionRequestForCreation.dataNeedId()));
         var end = switch (result) {
             case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataDataNeedResult not supported!";
+                String message = "AiidaDataNeedResult not supported!";
                 outbox.commit(new FrMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                        permissionRequestForCreation.dataNeedId(),

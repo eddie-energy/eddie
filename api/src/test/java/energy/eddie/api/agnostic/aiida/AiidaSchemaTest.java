@@ -6,6 +6,7 @@ package energy.eddie.api.agnostic.aiida;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AiidaSchemaTest {
     @Test
@@ -41,7 +42,8 @@ class AiidaSchemaTest {
         var schema = AiidaSchema.forSchema(schemaValue);
 
         // Then
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema);
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema.get());
     }
 
     @Test
@@ -53,7 +55,20 @@ class AiidaSchemaTest {
         var schema = AiidaSchema.forSchema(schemaValue);
 
         // Then
-        assertEquals(AiidaSchema.SMART_METER_P1_RAW, schema);
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_RAW, schema.get());
+    }
+
+    @Test
+    void forSchema_returnsEmpty_whenInvalidSchema() {
+        // Given
+        var schemaValue = "INVALID-SCHEMA";
+
+        // When
+        var schema = AiidaSchema.forSchema(schemaValue);
+
+        // Then
+        assertTrue(schema.isEmpty());
     }
 
     @Test
@@ -65,7 +80,20 @@ class AiidaSchemaTest {
         var schema = AiidaSchema.forTopic(topic);
 
         // Then
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema);
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema.get());
+    }
+
+    @Test
+    void forTopic_returnsEmpty_whenInvalidTopic() {
+        // Given
+        var topic = "base/path/invalid-topic";
+
+        // When
+        var schema = AiidaSchema.forTopic(topic);
+
+        // Then
+        assertTrue(schema.isEmpty());
     }
 
     @Test
@@ -77,7 +105,20 @@ class AiidaSchemaTest {
         var schema = AiidaSchema.forTopicName(topicName);
 
         // Then
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema);
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema.get());
+    }
+
+    @Test
+    void forTopicName_returnsEmpty_whenInvalidTopicName() {
+        // Given
+        var topicName = "invalid-topic-name";
+
+        // When
+        var schema = AiidaSchema.forTopicName(topicName);
+
+        // Then
+        assertTrue(schema.isEmpty());
     }
 
     @Test

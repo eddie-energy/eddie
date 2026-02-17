@@ -52,7 +52,7 @@ public class PermissionRequestService {
                                                        "AccountingPointDataNeedResult not supported!");
             }
             case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataDataNeedResult not supported!";
+                String message = "AiidaDataNeedResult not supported!";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                        permissionRequestForCreation.dataNeedId(),

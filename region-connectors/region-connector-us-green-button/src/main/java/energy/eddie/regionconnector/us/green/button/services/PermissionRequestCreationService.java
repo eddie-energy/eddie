@@ -81,7 +81,7 @@ public class PermissionRequestCreationService {
         var calculation = calculationService.calculate(dataNeedId);
         var redirectUri = switch (calculation) {
             case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataDataNeedResult not supported!";
+                String message = "AiidaDataNeedResult not supported!";
                 outbox.commit(new UsMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
