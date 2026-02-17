@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         var inboundRecord = new InboundRecord(
                 Instant.now(),
                 dataSource(),
+                AiidaSchema.forTopic(topic),
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
         inboundRecordSink.tryEmitNext(inboundRecord);

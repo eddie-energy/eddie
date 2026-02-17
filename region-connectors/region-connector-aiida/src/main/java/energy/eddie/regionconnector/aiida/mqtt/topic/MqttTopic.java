@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.mqtt.topic;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.regionconnector.aiida.mqtt.acl.MqttAcl;
 
@@ -11,14 +12,14 @@ public record MqttTopic(
         String permissionId,
         MqttTopicType topicType
 ) {
-    private static final String DEFAULT_PREFIX = "aiida/v1";
+    public static final String DELIMITER = "/";
+    public static final String DEFAULT_PREFIX = "aiida/v1";
+    public static final int MESSAGE_VERSION_LENGTH = DEFAULT_PREFIX.length();
+    public static final int PERMISSION_ID_LENGTH = 36;
+    public static final int DELIMITER_LENGTH = DELIMITER.length();
 
     public static MqttTopic of(String permissionId, MqttTopicType topicType) {
         return new MqttTopic(DEFAULT_PREFIX, permissionId, topicType);
-    }
-
-    public static String defaultPrefix() {
-        return DEFAULT_PREFIX;
     }
 
     public String eddieTopic() {
@@ -30,7 +31,11 @@ public record MqttTopic(
     }
 
     public String baseTopic() {
-        return String.join("/", prefix, permissionId, topicType.baseTopicName());
+        return String.join(DELIMITER, prefix, permissionId, topicType.baseTopicName());
+    }
+
+    public String schemaTopic(AiidaSchema schema) {
+        return schema.buildTopicPath(baseTopic());
     }
 
     public MqttAcl aiidaAcl(String username) {

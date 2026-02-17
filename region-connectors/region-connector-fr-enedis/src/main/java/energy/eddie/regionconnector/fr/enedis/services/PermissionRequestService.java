@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.services;
@@ -60,6 +60,13 @@ public class PermissionRequestService {
                                          permissionRequestForCreation.connectionId(),
                                          permissionRequestForCreation.dataNeedId()));
         var end = switch (result) {
+            case AiidaDataDataNeedResult ignored -> {
+                String message = "AiidaDataDataNeedResult not supported!";
+                outbox.commit(new FrMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       permissionRequestForCreation.dataNeedId(),
+                                                       message);
+            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new FrMalformedEvent(permissionId,
                                                    new AttributeError(DATA_NEED_ID, "Data need not found")));

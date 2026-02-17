@@ -16,9 +16,6 @@ import java.util.Map;
 @Component
 public class AiidaMessageProcessorRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaMessageProcessorRegistry.class);
-    private static final int MESSAGE_VERSION_LENGTH = MqttTopic.defaultPrefix().length();
-    private static final int PERMISSION_ID_LENGTH = 36;
-    private static final int DELIMITER_LENGTH = "/".length();
 
     private final Map<String, AiidaMessageProcessor> messageProcessors = new HashMap<>();
 
@@ -42,6 +39,13 @@ public class AiidaMessageProcessorRegistry {
     }
 
     private String extractTopicSuffix(String topic) {
-        return topic.substring(MESSAGE_VERSION_LENGTH + DELIMITER_LENGTH + PERMISSION_ID_LENGTH + DELIMITER_LENGTH);
+        return topic.substring(prefixLength());
+    }
+
+    private int prefixLength() {
+        return MqttTopic.MESSAGE_VERSION_LENGTH
+               + MqttTopic.DELIMITER_LENGTH
+               + MqttTopic.PERMISSION_ID_LENGTH
+               + MqttTopic.DELIMITER_LENGTH;
     }
 }

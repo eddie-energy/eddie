@@ -148,9 +148,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                             strategy.getClass());
                 yield new DataNeedNotSupportedResult("Could not calculate timeframe for this data need");
             }
-            case AiidaDataNeed ignored -> new ValidatedHistoricalDataDataNeedResult(List.of(),
-                                                                                    permissionStartAndEndDate,
-                                                                                    energyStartAndEndDate);
+            case AiidaDataNeed aiidaDataNeed -> new AiidaDataDataNeedResult(aiidaDataNeed.supportsAllSchemas(),
+                                                                            energyStartAndEndDate);
             case AccountingPointDataNeed ignored -> new AccountingPointDataNeedResult(permissionStartAndEndDate);
             default -> new DataNeedNotSupportedResult("Unknown data need type: %s".formatted(dataNeed.getClass()));
         };

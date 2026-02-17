@@ -47,8 +47,7 @@ public class MqttMessageCallback implements MqttCallback {
             LOGGER.error("Could not process MQTT message on topic {}", topic, exception);
         } catch (PermissionNotFoundException | PermissionInvalidException |
                  AiidaMessageProcessorRegistryException exception) {
-            LOGGER.error(exception.getMessage(),
-                         exception);
+            LOGGER.debug(exception.getMessage());
         }
     }
 

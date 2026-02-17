@@ -6,6 +6,7 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.models.datasource.DataSource;
 import jakarta.persistence.*;
@@ -28,6 +29,9 @@ public class InboundRecord {
     @JoinColumn(name = "data_source_id", referencedColumnName = "id", nullable = false, updatable = false)
     @JsonIgnore
     private DataSource dataSource;
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    protected AiidaSchema schema;
     @Column(nullable = false)
     @JsonProperty
     private String payload;
@@ -35,10 +39,12 @@ public class InboundRecord {
     public InboundRecord(
             Instant timestamp,
             DataSource dataSource,
+            AiidaSchema schema,
             String payload
     ) {
         this.timestamp = timestamp;
         this.dataSource = dataSource;
+        this.schema = schema;
         this.payload = payload;
     }
 
@@ -59,6 +65,10 @@ public class InboundRecord {
 
     public DataSource dataSource() {
         return dataSource;
+    }
+
+    public AiidaSchema schema() {
+        return schema;
     }
 
     public String payload() {
