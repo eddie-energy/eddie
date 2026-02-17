@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fi.fingrid.services;
@@ -74,6 +74,18 @@ class PermissionCreationServiceTest {
                 () -> assertEquals(res.permissionId(), createdCaptor.getValue().permissionId()),
                 () -> assertEquals(res.permissionId(), validatedCaptor.getValue().permissionId())
         );
+    }
+
+    @Test
+    void createAndValidatePermissionRequest_throwsOnAiidaDataNeed() {
+        // Given
+        var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
+        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        when(dataNeedCalculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(true, timeframe));
+
+        // When, Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionCreationService.createAndValidatePermissionRequest(forCreation));
     }
 
     @Test

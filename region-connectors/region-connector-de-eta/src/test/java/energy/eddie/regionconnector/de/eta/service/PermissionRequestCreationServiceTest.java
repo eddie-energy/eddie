@@ -1,8 +1,10 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.de.eta.service;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
-import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.de.eta.dtos.PermissionRequestForCreation;
@@ -72,6 +74,19 @@ class PermissionRequestCreationServiceTest {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
+
+        assertThatThrownBy(() -> service.createPermissionRequest(request))
+                .isInstanceOf(UnsupportedDataNeedException.class);
+
+        verify(outbox).commit(any(CreatedEvent.class));
+        verify(outbox).commit(any(MalformedEvent.class));
+    }
+
+    @Test
+    void createPermissionRequestWhenAiidaDataNeedShouldThrowUnsupportedAndCommitMalformed() {
+        PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
+        Timeframe timeframe = new Timeframe(LocalDate.now(), LocalDate.now().plusDays(1));
+        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AiidaDataNeedResult(true, timeframe));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);

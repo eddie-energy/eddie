@@ -117,7 +117,7 @@ public class DataNeedCalculationRouter {
             String dataNeedId
     ) throws DataNeedNotFoundException {
         return switch (result) {
-            case AiidaDataDataNeedResult(boolean ignored, Timeframe energyTimeframe) ->
+            case AiidaDataNeedResult(boolean ignored, Timeframe energyTimeframe) ->
                     new DataNeedCalculation(true, null, null, energyTimeframe);
             case DataNeedNotFoundResult ignored -> throw new DataNeedNotFoundException(dataNeedId);
             case DataNeedNotSupportedResult(String message) -> new DataNeedCalculation(false, message);

@@ -93,6 +93,20 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
+    void givenAiidaDataNeedResult_createAndValidatePermissionRequest_throwsException() {
+        // Given
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AiidaDataNeedResult(true,
+                                                    new Timeframe(LocalDate.now(AT_ZONE_ID),
+                                                                  LocalDate.now(AT_ZONE_ID))));
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
+
+        // When, Then
+        assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+    }
+
+    @Test
     void givenInvalidGranularity_createAndValidatePermissionRequest_throwsException() {
         // Given
         when(calculationService.calculate("dnid"))

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.web;
@@ -13,6 +13,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.exceptions.DataNeedInvalidException;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -47,7 +48,7 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AiidaPermissionRequestsDto> createPermissionRequests(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedInvalidException, JwtCreationFailedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
 
         return ResponseEntity

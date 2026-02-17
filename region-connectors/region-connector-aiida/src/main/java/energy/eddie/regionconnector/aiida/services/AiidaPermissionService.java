@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.exceptions.DataNeedInvalidException;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
@@ -107,7 +108,7 @@ public class AiidaPermissionService {
 
     public AiidaPermissionRequestsDto createValidateAndSendPermissionRequests(
             PermissionRequestForCreation forCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedInvalidException, JwtCreationFailedException {
         var permissionIds = new ArrayList<UUID>();
         for (var dataNeedId : forCreation.dataNeedIds()) {
             var permissionId = createValidateAndSendPermissionRequest(forCreation.connectionId(), dataNeedId);
@@ -224,7 +225,7 @@ public class AiidaPermissionService {
     private UUID createValidateAndSendPermissionRequest(
             String connectionId,
             String dataNeedId
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedInvalidException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
         var res = calculationService.calculate(dataNeedId);
@@ -242,7 +243,7 @@ public class AiidaPermissionService {
                     AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                     dataNeedId,
                     "Data need not supported");
-            case AiidaDataDataNeedResult aiidaResult -> {
+            case AiidaDataNeedResult aiidaResult -> {
                 var terminationTopic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
                 var createdEvent = new CreatedEvent(permissionId,
                                                     connectionId,
@@ -252,21 +253,20 @@ public class AiidaPermissionService {
                                                     terminationTopic.eddieTopic());
                 outbox.commit(createdEvent);
 
-                if (validatePermissionRequest(aiidaResult)) {
-                    outbox.commit(new SimpleEvent(permissionId, VALIDATED));
-
-                    // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
-                    outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
-                } else {
+                if (!validatePermissionRequest(aiidaResult)) {
                     outbox.commit(new SimpleEvent(permissionId, INVALID));
+                    throw new DataNeedInvalidException(dataNeedId, "Data need does not support all required schemas");
                 }
 
+                outbox.commit(new SimpleEvent(permissionId, VALIDATED));
+                // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
+                outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
                 return UUID.fromString(permissionId);
             }
         }
     }
 
-    private boolean validatePermissionRequest(AiidaDataDataNeedResult aiidaResult) {
+    private boolean validatePermissionRequest(AiidaDataNeedResult aiidaResult) {
         return aiidaResult.supportsAllSchemas();
     }
 

@@ -55,7 +55,7 @@ public class PermissionCreationService {
         ));
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
         var validatedEvent = switch (calculation) {
-            case AiidaDataDataNeedResult ignored -> {
+            case AiidaDataNeedResult ignored -> {
                 String message = "AiidaDataDataNeedResult not supported!";
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);

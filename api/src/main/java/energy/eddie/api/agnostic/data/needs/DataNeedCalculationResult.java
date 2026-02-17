@@ -5,7 +5,7 @@ package energy.eddie.api.agnostic.data.needs;
 
 public sealed interface DataNeedCalculationResult permits
         AccountingPointDataNeedResult,
-        AiidaDataDataNeedResult,
+        AiidaDataNeedResult,
         DataNeedNotFoundResult,
         DataNeedNotSupportedResult,
         ValidatedHistoricalDataDataNeedResult {}

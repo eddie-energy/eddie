@@ -17,6 +17,7 @@ import reactor.core.publisher.Sinks;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.NoSuchElementException;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
@@ -44,10 +45,18 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     public void messageArrived(String topic, MqttMessage message) {
         LOGGER.trace("Topic {} new message: {}", topic, message);
 
+        AiidaSchema schema;
+        try {
+            schema = AiidaSchema.forTopic(topic);
+        } catch (NoSuchElementException e) {
+            LOGGER.error("Received message with invalid topic: {}", topic);
+            return;
+        }
+
         var inboundRecord = new InboundRecord(
                 Instant.now(),
                 dataSource(),
-                AiidaSchema.forTopic(topic),
+                schema,
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
         inboundRecordSink.tryEmitNext(inboundRecord);

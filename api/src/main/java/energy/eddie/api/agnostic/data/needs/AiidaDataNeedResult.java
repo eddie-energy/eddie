@@ -9,7 +9,7 @@ package energy.eddie.api.agnostic.data.needs;
  * @param supportsAllSchemas Indicates whether all given schemas by the data-need are supported by its type.
  * @param energyTimeframe    The start and end date of the requested data.
  */
-public record AiidaDataDataNeedResult(
+public record AiidaDataNeedResult(
         boolean supportsAllSchemas,
         Timeframe energyTimeframe
 ) implements DataNeedCalculationResult {

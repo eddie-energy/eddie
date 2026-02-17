@@ -16,6 +16,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
+import energy.eddie.regionconnector.aiida.exceptions.DataNeedInvalidException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.AiidaIdReceivedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;
@@ -30,6 +31,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -43,6 +47,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static energy.eddie.api.v0.PermissionProcessStatus.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -141,10 +146,22 @@ class AiidaPermissionServiceTest {
                                                                                                             List.of(nonExisting))));
     }
 
-    @Test
-    void givenUnsupportedDataNeed_createValidateAndSendPermissionRequests_throwsException() {
+    public static Stream<Arguments> unsupportedDataNeedResults() {
+        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        return Stream.of(
+                Arguments.of(new DataNeedNotSupportedResult("")),
+                Arguments.of(new ValidatedHistoricalDataDataNeedResult(List.of(), timeframe, timeframe)),
+                Arguments.of(new AccountingPointDataNeedResult(timeframe))
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("unsupportedDataNeedResults")
+    void givenUnsupportedDataNeed_createValidateAndSendPermissionRequests_throwsException(
+            DataNeedCalculationResult calculationResult
+    ) {
         // Given
-        when(calculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult(""));
+        when(calculationService.calculate(anyString())).thenReturn(calculationResult);
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -159,9 +176,8 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new ValidatedHistoricalDataDataNeedResult(List.of(),
-                                                          new Timeframe(start, end),
-                                                          new Timeframe(start, end)));
+                new AiidaDataNeedResult(true,
+                                        new Timeframe(start, end)));
         when(jwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("jwtToken");
 
         // When
@@ -173,8 +189,26 @@ class AiidaPermissionServiceTest {
         assertAll(() -> assertDoesNotThrow(dto::permissionIds),
                   () -> assertEquals(1, dto.permissionIds().size()),
                   () -> assertEquals("jwtToken", dto.accessToken()),
-                  () -> assertThat(dto.handshakeUrl()).endsWith("/region-connectors/aiida/permission-request/{permissionId}"),
+                  () -> assertThat(dto.handshakeUrl()).endsWith(
+                          "/region-connectors/aiida/permission-request/{permissionId}"),
                   () -> assertEquals(HANDSHAKE_URL, dto.handshakeUrl()));
+    }
+
+    @Test
+    void givenInvalidInput_createValidateAndSendPermissionRequests_throws() {
+
+        // Given
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
+        when(calculationService.calculate(anyString())).thenReturn(
+                new AiidaDataNeedResult(false,
+                                        new Timeframe(start, end)));
+
+        // When
+        assertThrows(DataNeedInvalidException.class,
+                     () -> service.createValidateAndSendPermissionRequests(
+                             new PermissionRequestForCreation(connectionId,
+                                                              List.of(dataNeedId))));
     }
 
     @Test
@@ -184,9 +218,8 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new ValidatedHistoricalDataDataNeedResult(List.of(),
-                                                          new Timeframe(start, end),
-                                                          new Timeframe(start, end)));
+                new AiidaDataNeedResult(true,
+                                        new Timeframe(start, end)));
 
         // When
         service.createValidateAndSendPermissionRequests(forCreation);
@@ -205,9 +238,8 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new ValidatedHistoricalDataDataNeedResult(List.of(),
-                                                          new Timeframe(start, end),
-                                                          new Timeframe(start, end)));
+                new AiidaDataNeedResult(true,
+                                        new Timeframe(start, end)));
 
         // When
         var dto = service.createValidateAndSendPermissionRequests(forCreation);

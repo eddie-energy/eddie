@@ -57,6 +57,30 @@ class AiidaSchemaTest {
     }
 
     @Test
+    void forTopic_returnsSchema_whenCim() {
+        // Given
+        var topic = "base/path/smart-meter-p1-cim-v1-12";
+
+        // When
+        var schema = AiidaSchema.forTopic(topic);
+
+        // Then
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema);
+    }
+
+    @Test
+    void forTopicName_returnsSchema_whenCim() {
+        // Given
+        var topicName = "smart-meter-p1-cim-v1-12";
+
+        // When
+        var schema = AiidaSchema.forTopicName(topicName);
+
+        // Then
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema);
+    }
+
+    @Test
     void topicName_returnsLowerCaseSchema() {
         // Given
         var schema = AiidaSchema.SMART_METER_P1_CIM_V1_12;

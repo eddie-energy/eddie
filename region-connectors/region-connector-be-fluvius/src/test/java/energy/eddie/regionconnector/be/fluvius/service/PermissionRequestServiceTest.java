@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.service;
@@ -48,6 +48,7 @@ class PermissionRequestServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(
                 Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now))),
+                Arguments.of(new AiidaDataNeedResult(true, new Timeframe(now, now))),
                 Arguments.of(new DataNeedNotSupportedResult("unsupported"))
         );
     }

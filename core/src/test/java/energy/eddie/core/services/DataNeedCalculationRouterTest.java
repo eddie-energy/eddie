@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.services;
@@ -109,6 +109,23 @@ class DataNeedCalculationRouterTest {
                 () -> assertTrue(res.supportsDataNeed()),
                 () -> assertNull(res.energyDataTimeframe()),
                 () -> assertEquals(timeframe, res.permissionTimeframe()),
+                () -> assertNull(res.granularities())
+        );
+    }
+
+    @Test
+    void testCalulcateFor_returnsCalculation_withAiidaData() throws UnknownRegionConnectorException, DataNeedNotFoundException {
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
+        when(service.calculate("dnid")).thenReturn(new AiidaDataNeedResult(true, timeframe));
+
+        // When
+        var res = router.calculateFor("at-eda", "dnid");
+
+        // Then
+        assertAll(
+                () -> assertTrue(res.supportsDataNeed()),
+                () -> assertEquals(timeframe, res.energyDataTimeframe()),
+                () -> assertNull(res.permissionTimeframe()),
                 () -> assertNull(res.granularities())
         );
     }
