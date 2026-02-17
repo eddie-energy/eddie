@@ -1,7 +1,7 @@
 {
   "realm": "AIIDA",
   "enabled": true,
-  "loginTheme": "eddie-theme",
+  "loginTheme": "aiida-theme",
   "defaultRoles": ["manage-account"],
   "clients": [
     {
