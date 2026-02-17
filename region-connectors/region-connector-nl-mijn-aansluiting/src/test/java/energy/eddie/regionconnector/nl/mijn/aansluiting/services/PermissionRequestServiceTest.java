@@ -41,6 +41,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.nl.mijn.aansluiting.MijnAansluitingRegionConnectorMetadata.NL_ZONE_ID;
@@ -177,7 +178,9 @@ class PermissionRequestServiceTest {
         // Given
         var permissionRequest = new PermissionRequestForCreation("cid", "dnid", "01");
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AiidaDataNeedResult(true, new Timeframe(LocalDate.now(), LocalDate.now())));
+                .thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                    Set.of(),
+                                                    new Timeframe(LocalDate.now(), LocalDate.now())));
 
         // When & Then
         assertThrows(UnsupportedDataNeedException.class,

@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -82,7 +83,7 @@ class PermissionRequestServiceTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid")).thenReturn(
-                new AiidaDataNeedResult(true, new Timeframe(now, now))
+                new AiidaDataNeedResult(Set.of(), Set.of(), new Timeframe(now, now))
         );
 
         // When

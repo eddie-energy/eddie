@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,7 +110,7 @@ class PermissionRequestServiceTest {
         var request = new PermissionRequestForCreation("cid", "dnid");
         var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AiidaDataNeedResult(true, timeframe));
+                .thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

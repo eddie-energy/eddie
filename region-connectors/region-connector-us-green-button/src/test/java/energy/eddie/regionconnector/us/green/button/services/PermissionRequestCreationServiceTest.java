@@ -35,6 +35,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -93,7 +94,7 @@ class PermissionRequestCreationServiceTest {
         // Given
         var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AiidaDataNeedResult(true, timeframe));
+                .thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
 
         // When
         // Then

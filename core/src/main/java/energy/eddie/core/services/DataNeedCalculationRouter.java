@@ -4,6 +4,7 @@
 package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.CalculationResult;
 import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.InvalidDataNeedCombination;
@@ -117,7 +118,7 @@ public class DataNeedCalculationRouter {
             String dataNeedId
     ) throws DataNeedNotFoundException {
         return switch (result) {
-            case AiidaDataNeedResult(boolean ignored, Timeframe energyTimeframe) ->
+            case AiidaDataNeedResult(Set<AiidaSchema> ignored1, Set<AiidaSchema> ignored2, Timeframe energyTimeframe) ->
                     new DataNeedCalculation(true, null, null, energyTimeframe);
             case DataNeedNotFoundResult ignored -> throw new DataNeedNotFoundException(dataNeedId);
             case DataNeedNotSupportedResult(String message) -> new DataNeedCalculation(false, message);

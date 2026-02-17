@@ -8,7 +8,7 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "inbound_aiida_data_need", schema = "data_needs")
@@ -16,7 +16,7 @@ import java.util.List;
 @SuppressWarnings("NullAway")
 public class InboundAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "inbound-aiida";
-    public static final List<AiidaSchema> SUPPORTED_SCHEMAS = List.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
+    public static final Set<AiidaSchema> SUPPORTED_SCHEMAS = Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
 
     @SuppressWarnings("NullAway.Init")
     public InboundAiidaDataNeed() {
@@ -24,7 +24,7 @@ public class InboundAiidaDataNeed extends AiidaDataNeed {
     }
 
     @Override
-    public List<AiidaSchema> supportedSchemas() {
+    public Set<AiidaSchema> supportedSchemas() {
         return SUPPORTED_SCHEMAS;
     }
 }

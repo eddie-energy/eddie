@@ -244,6 +244,10 @@ public class AiidaPermissionService {
                     dataNeedId,
                     "Data need not supported");
             case AiidaDataNeedResult aiidaResult -> {
+                if (!isValidPermissionRequest(aiidaResult)) {
+                    throw new DataNeedInvalidException(dataNeedId, "Data need does not support all required schemas");
+                }
+
                 var terminationTopic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
                 var createdEvent = new CreatedEvent(permissionId,
                                                     connectionId,
@@ -252,12 +256,7 @@ public class AiidaPermissionService {
                                                     aiidaResult.energyTimeframe().end(),
                                                     terminationTopic.eddieTopic());
                 outbox.commit(createdEvent);
-
-                if (!validatePermissionRequest(aiidaResult)) {
-                    outbox.commit(new SimpleEvent(permissionId, INVALID));
-                    throw new DataNeedInvalidException(dataNeedId, "Data need does not support all required schemas");
-                }
-
+                // no validation for AIIDA requests necessary
                 outbox.commit(new SimpleEvent(permissionId, VALIDATED));
                 // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
                 outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
@@ -266,7 +265,7 @@ public class AiidaPermissionService {
         }
     }
 
-    private boolean validatePermissionRequest(AiidaDataNeedResult aiidaResult) {
+    private boolean isValidPermissionRequest(AiidaDataNeedResult aiidaResult) {
         return aiidaResult.supportsAllSchemas();
     }
 

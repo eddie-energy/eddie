@@ -34,6 +34,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -125,10 +126,11 @@ class PermissionRequestCreationServiceTest {
         // Given
         var cdsServer = getCdsServer();
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
-        var today = LocalDate.now(ZoneOffset.UTC);
-        var energyTimeframe = new Timeframe(today, today);
         when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
-                .thenReturn(new AiidaDataNeedResult(true, energyTimeframe));
+                .thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                    Set.of(),
+                                                    new Timeframe(LocalDate.now(ZoneOffset.UTC),
+                                                                  LocalDate.now(ZoneOffset.UTC))));
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
         // When & Then

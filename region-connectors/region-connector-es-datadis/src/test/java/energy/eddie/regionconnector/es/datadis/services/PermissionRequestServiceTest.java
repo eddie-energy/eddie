@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -198,7 +199,7 @@ class PermissionRequestServiceTest {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
         var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
-        when(calculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(true, timeframe));
+        when(calculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,

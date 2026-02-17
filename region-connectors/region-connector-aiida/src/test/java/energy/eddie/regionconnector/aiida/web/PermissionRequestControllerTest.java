@@ -45,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
@@ -329,8 +330,8 @@ class PermissionRequestControllerTest {
 
     private static class DummyAiidaDataNeed extends AiidaDataNeed {
         @Override
-        public List<AiidaSchema> supportedSchemas() {
-            return List.of();
+        public Set<AiidaSchema> supportedSchemas() {
+            return Set.of();
         }
     }
 }

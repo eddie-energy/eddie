@@ -4,6 +4,7 @@
 package energy.eddie.core.services;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.CalculationResult;
 import energy.eddie.api.agnostic.data.needs.MultipleDataNeedCalculationResult.InvalidDataNeedCombination;
@@ -116,7 +117,10 @@ class DataNeedCalculationRouterTest {
     @Test
     void testCalulcateFor_returnsCalculation_withAiidaData() throws UnknownRegionConnectorException, DataNeedNotFoundException {
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
-        when(service.calculate("dnid")).thenReturn(new AiidaDataNeedResult(true, timeframe));
+        when(service.calculate("dnid")).thenReturn(new AiidaDataNeedResult(
+                Set.of(AiidaSchema.SMART_METER_P1_RAW),
+                Set.of(AiidaSchema.SMART_METER_P1_RAW),
+                timeframe));
 
         // When
         var res = router.calculateFor("at-eda", "dnid");

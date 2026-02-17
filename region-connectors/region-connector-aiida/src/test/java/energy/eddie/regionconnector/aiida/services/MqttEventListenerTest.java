@@ -24,6 +24,7 @@ class MqttEventListenerTest {
     private MqttEventPublisher mqttEventPublisher;
     @MockitoBean
     private AiidaPermissionService aiidaPermissionService;
+    @SuppressWarnings("unused")
     @MockitoSpyBean
     @InjectMocks
     private MqttEventListener mqttEventListener;

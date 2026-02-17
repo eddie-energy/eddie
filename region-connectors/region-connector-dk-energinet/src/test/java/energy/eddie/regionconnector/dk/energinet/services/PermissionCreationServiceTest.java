@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
@@ -88,7 +89,9 @@ class PermissionCreationServiceTest {
                                                        "meteringPointId",
                                                        "dnid");
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AiidaDataNeedResult(true, new Timeframe(LocalDate.now(), LocalDate.now())));
+                .thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                    Set.of(),
+                                                    new Timeframe(LocalDate.now(), LocalDate.now())));
 
         // When
         // Then

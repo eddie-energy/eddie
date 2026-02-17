@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -86,7 +87,9 @@ class PermissionRequestCreationServiceTest {
     void createPermissionRequestWhenAiidaDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         Timeframe timeframe = new Timeframe(LocalDate.now(), LocalDate.now().plusDays(1));
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AiidaDataNeedResult(true, timeframe));
+        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                                                                   Set.of(),
+                                                                                                   timeframe));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);

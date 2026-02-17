@@ -28,6 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -48,7 +49,7 @@ class PermissionRequestServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(
                 Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now))),
-                Arguments.of(new AiidaDataNeedResult(true, new Timeframe(now, now))),
+                Arguments.of(new AiidaDataNeedResult(Set.of(), Set.of(), new Timeframe(now, now))),
                 Arguments.of(new DataNeedNotSupportedResult("unsupported"))
         );
     }

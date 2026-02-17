@@ -3,14 +3,28 @@
 
 package energy.eddie.api.agnostic.data.needs;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
+
+import java.util.Set;
+
 /**
  * Result type for the calculation of AIIDA data-needs.
  *
- * @param supportsAllSchemas Indicates whether all given schemas by the data-need are supported by its type.
+ * @param schemas            The schemas that are requested by the data need.
+ * @param supportedSchemas   The schemas that are supported by the data need type.
  * @param energyTimeframe    The start and end date of the requested data.
  */
 public record AiidaDataNeedResult(
-        boolean supportsAllSchemas,
+        Set<AiidaSchema> schemas,
+        Set<AiidaSchema> supportedSchemas,
         Timeframe energyTimeframe
 ) implements DataNeedCalculationResult {
+    public boolean supportsAllSchemas() {
+        for (var schema : schemas) {
+            if (!supportedSchemas().contains(schema)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

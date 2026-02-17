@@ -35,6 +35,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,7 +82,9 @@ class PermissionCreationServiceTest {
         // Given
         var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
         var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
-        when(dataNeedCalculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(true, timeframe));
+        when(dataNeedCalculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                                                              Set.of(),
+                                                                                              timeframe));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,

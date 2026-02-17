@@ -8,7 +8,7 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
-import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "outbound_aiida_data_need", schema = "data_needs")
@@ -16,7 +16,7 @@ import java.util.List;
 @SuppressWarnings("NullAway")
 public class OutboundAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "outbound-aiida";
-    public static final List<AiidaSchema> SUPPORTED_SCHEMAS = List.of(AiidaSchema.SMART_METER_P1_RAW,
+    public static final Set<AiidaSchema> SUPPORTED_SCHEMAS = Set.of(AiidaSchema.SMART_METER_P1_RAW,
                                                                       AiidaSchema.SMART_METER_P1_CIM_V1_04,
                                                                       AiidaSchema.SMART_METER_P1_CIM_V1_12);
 
@@ -26,7 +26,7 @@ public class OutboundAiidaDataNeed extends AiidaDataNeed {
     }
 
     @Override
-    public List<AiidaSchema> supportedSchemas() {
+    public Set<AiidaSchema> supportedSchemas() {
         return SUPPORTED_SCHEMAS;
     }
 }

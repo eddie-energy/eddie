@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -46,6 +47,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -147,7 +149,7 @@ class AiidaPermissionServiceTest {
     }
 
     public static Stream<Arguments> unsupportedDataNeedResults() {
-        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
         return Stream.of(
                 Arguments.of(new DataNeedNotSupportedResult("")),
                 Arguments.of(new ValidatedHistoricalDataDataNeedResult(List.of(), timeframe, timeframe)),
@@ -176,7 +178,11 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new AiidaDataNeedResult(true,
+                new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04,
+                                               AiidaSchema.SMART_METER_P1_CIM_V1_12),
+                                        Set.of(AiidaSchema.SMART_METER_P1_RAW,
+                                               AiidaSchema.SMART_METER_P1_CIM_V1_04,
+                                               AiidaSchema.SMART_METER_P1_CIM_V1_12),
                                         new Timeframe(start, end)));
         when(jwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("jwtToken");
 
@@ -201,7 +207,10 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new AiidaDataNeedResult(false,
+                new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04,
+                                               AiidaSchema.SMART_METER_P1_CIM_V1_12),
+                                        Set.of(AiidaSchema.SMART_METER_P1_RAW,
+                                               AiidaSchema.SMART_METER_P1_CIM_V1_12),
                                         new Timeframe(start, end)));
 
         // When
@@ -218,7 +227,8 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new AiidaDataNeedResult(true,
+                new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
+                                        Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
                                         new Timeframe(start, end)));
 
         // When
@@ -238,7 +248,8 @@ class AiidaPermissionServiceTest {
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
-                new AiidaDataNeedResult(true,
+                new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
+                                        Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
                                         new Timeframe(start, end)));
 
         // When
