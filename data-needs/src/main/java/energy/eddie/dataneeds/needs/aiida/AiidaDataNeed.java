@@ -19,6 +19,7 @@ import org.springframework.scheduling.support.CronExpression;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -82,5 +83,16 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Override
     public CronExpression transmissionSchedule() {
         return transmissionSchedule;
+    }
+
+    public abstract List<AiidaSchema> supportedSchemas();
+
+    public boolean supportsAllSchemas() {
+        for (var schema : schemas) {
+            if (!supportedSchemas().contains(schema)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

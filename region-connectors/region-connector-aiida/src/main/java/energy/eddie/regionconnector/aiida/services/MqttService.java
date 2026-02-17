@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -35,6 +37,7 @@ public class MqttService implements AutoCloseable {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final MqttAsyncClient mqttClient;
     private final AiidaConfiguration aiidaConfiguration;
+    private final ObjectMapper objectMapper;
 
     public MqttService(
             MqttUserRepository userRepository,
@@ -43,7 +46,8 @@ public class MqttService implements AutoCloseable {
             BCryptPasswordEncoder bCryptPasswordEncoder,
             MqttAsyncClient mqttClient,
             AiidaConfiguration aiidaConfiguration,
-            MqttMessageCallback mqttMessageCallback
+            MqttMessageCallback mqttMessageCallback,
+            ObjectMapper objectMapper
     ) {
         this.userRepository = userRepository;
         this.aclRepository = aclRepository;
@@ -52,6 +56,7 @@ public class MqttService implements AutoCloseable {
         this.mqttClient = mqttClient;
         this.mqttClient.setCallback(mqttMessageCallback);
         this.aiidaConfiguration = aiidaConfiguration;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -123,6 +128,15 @@ public class MqttService implements AutoCloseable {
                            permissionRequest.permissionId().getBytes(StandardCharsets.UTF_8),
                            1,
                            true);
+    }
+
+    public <T> void publishInboundData(AiidaSchema schema, String permissionId, T payload) throws MqttException {
+        var topic = MqttTopic.of(permissionId, MqttTopicType.INBOUND_DATA).schemaTopic(schema);
+        LOGGER.info("Publishing inbound data to topic {}", topic);
+
+        var payloadBytes = objectMapper.writeValueAsBytes(payload);
+
+        mqttClient.publish(topic, payloadBytes, 1, false);
     }
 
     /**

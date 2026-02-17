@@ -74,8 +74,8 @@
   {
     "type": "inbound-aiida",
     "id": "f7698978-b9fe-40c8-aebe-c997f7f58f2f",
-    "name": "FUTURE_AIIDA_INBOUND",
-    "description": "Inbound data read by AIIDA",
+    "name": "FUTURE_MIN_MAX_ENVELOPE_INBOUND",
+    "description": "Inbound reference energy curve min-max operating envelopes for flexible connection agreements",
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
     "duration": {
@@ -85,13 +85,10 @@
     },
     "transmissionSchedule": "*/5 * * * * *",
     "schemas": [
-      "SMART-METER-P1-RAW"
+      "MIN-MAX-ENVELOPE-CIM-V1-12"
     ],
     "asset": "CONNECTION-AGREEMENT-POINT",
-    "dataTags": [
-      "1-0:1.8.0",
-      "1-0:1.7.0"
-    ]
+    "dataTags": []
   },
   {
     "type": "validated",

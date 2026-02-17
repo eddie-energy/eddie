@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.services;
@@ -69,6 +69,13 @@ public class PermissionRequestCreationAndValidationService {
 
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
         var event = switch (calculation) {
+            case AiidaDataDataNeedResult ignored -> {
+                String message = "AiidaDataDataNeedResult not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(EdaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       dataNeedId,
+                                                       message);
+            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
                         permissionId,

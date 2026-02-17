@@ -238,23 +238,36 @@ public class AiidaPermissionService {
                     AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                     dataNeedId,
                     "Data need not supported");
-            case ValidatedHistoricalDataDataNeedResult vhdResult -> {
+            case ValidatedHistoricalDataDataNeedResult ignored -> throw new UnsupportedDataNeedException(
+                    AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                    dataNeedId,
+                    "Data need not supported");
+            case AiidaDataDataNeedResult aiidaResult -> {
                 var terminationTopic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
                 var createdEvent = new CreatedEvent(permissionId,
                                                     connectionId,
                                                     dataNeedId,
-                                                    vhdResult.energyTimeframe().start(),
-                                                    vhdResult.energyTimeframe().end(),
+                                                    aiidaResult.energyTimeframe().start(),
+                                                    aiidaResult.energyTimeframe().end(),
                                                     terminationTopic.eddieTopic());
                 outbox.commit(createdEvent);
-                // no validation for AIIDA requests necessary
-                outbox.commit(new SimpleEvent(permissionId, VALIDATED));
-                // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
-                outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
+
+                if (validatePermissionRequest(aiidaResult)) {
+                    outbox.commit(new SimpleEvent(permissionId, VALIDATED));
+
+                    // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
+                    outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
+                } else {
+                    outbox.commit(new SimpleEvent(permissionId, INVALID));
+                }
 
                 return UUID.fromString(permissionId);
             }
         }
+    }
+
+    private boolean validatePermissionRequest(AiidaDataDataNeedResult aiidaResult) {
+        return aiidaResult.supportsAllSchemas();
     }
 
     private String createAccessToken(List<UUID> permissionIds) throws JwtCreationFailedException {
