@@ -33,7 +33,8 @@ class AiidaUiTests {
     @Test
     void dataSourceAndPermissionFlow(Page page, BrowserContext context) {
         var dataSource = "E2E Simulation Data Source";
-        var dataNeed = "FUTURE_NEAR_REALTIME_DATA_OUTBOUND";
+        var dataNeedId = "FUTURE_NEAR_REALTIME_DATA_OUTBOUND";
+        var dataNeedName = "FUTURE_NEAR_REALTIME_DATA";
 
         // Click "Data Sources" tab
         page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
@@ -67,7 +68,7 @@ class AiidaUiTests {
         // Create permission request through the EDDIE button
         var eddie = context.newPage();
         eddie.navigate(EDDIE_URL + "/demo");
-        eddie.getByLabel("Data need").selectOption(dataNeed);
+        eddie.getByLabel("Data need").selectOption(dataNeedId);
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).click();
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue")).click();
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
@@ -97,7 +98,7 @@ class AiidaUiTests {
         // Show details
         permission.getByRole(AriaRole.HEADING).click();
         // Check if permission has the right data need and permission ID
-        assertThat(permission).containsText(dataNeed);
+        assertThat(permission).containsText(dataNeedName);
         assertThat(permission).containsText(permissionId);
         // Check if status is correct
         assertThat(permission).containsText("Streaming Data");
@@ -110,7 +111,7 @@ class AiidaUiTests {
         permission = page.getByRole(AriaRole.LISTITEM).first();
         permission.getByRole(AriaRole.HEADING).click();
         // Check if permission has the right data need and permission ID
-        assertThat(permission).containsText(dataNeed);
+        assertThat(permission).containsText(dataNeedName);
         assertThat(permission).containsText(permissionId);
         // Check if permission has revoked status
         assertThat(permission).containsText("Revoked");
