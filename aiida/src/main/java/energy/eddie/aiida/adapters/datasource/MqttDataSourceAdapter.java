@@ -169,7 +169,6 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
         this.keepAliveInterval = keepAliveInterval;
     }
 
-
     protected void subscribeToHealthTopic() {
         // Not needed in MqttDataSource
     }

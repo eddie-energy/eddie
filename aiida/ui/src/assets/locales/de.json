@@ -40,8 +40,13 @@
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "healthStatus": "Status",
       "healthStatusUp": "Aktiv",
+      "healthStatusWarning": "Warnung",
       "healthStatusDown": "Störung",
-      "healthStatusUnknown": "Unbekannt"
+      "healthStatusUnknown": "Unbekannt",
+      "healthStatusUpTooltip": "Eine oder mehrere Nachrichten wurden in den vergangenen 90 Sekunden empfangen.",
+      "healthStatusWarningTooltip": "Die neueste Nachricht wurde zwischen den vergangenen 90 und 180 Sekunden empfangen.",
+      "healthStatusDownTooltip": "Die neueste Nachricht wurde vor mehr als 180 Sekunden empfangen.",
+      "healthStatusUnknownTooltip": "Es konnten keine Nachrichten gefunden werden, um den Status der Datenquelle zu identifizieren."
     },
     "modal": {
       "name": "Name",

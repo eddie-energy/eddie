@@ -39,8 +39,13 @@
       "downloadLatestMessageButton": "Download Latest Message",
       "healthStatus": "Status",
       "healthStatusUp": "Up",
+      "healthStatusWarning": "Warning",
       "healthStatusDown": "Down",
-      "healthStatusUnknown": "Unknown"
+      "healthStatusUnknown": "Unknown",
+      "healthStatusUpTooltip": "One or more messages were received within the past 90 seconds.",
+      "healthStatusWarningTooltip": "The latest message was received between the past 90 and 180 seconds.",
+      "healthStatusDownTooltip": "The latest message was received longer than 180 seconds ago.",
+      "healthStatusUnknownTooltip": "No messages could be found to determine the status of the Data Source."
     },
     "modal": {
       "name": "Name",

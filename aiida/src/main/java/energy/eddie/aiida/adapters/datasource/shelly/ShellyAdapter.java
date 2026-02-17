@@ -62,11 +62,11 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
             var json = mapper.readValue(payload, ShellyJson.class);
 
             var aiidaRecordValues = json.params().em()
-                                        .entrySet()
-                                        .stream()
-                                        .flatMap(this::componentEntryToMeasurement)
-                                        .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                                        .toList();
+                    .entrySet()
+                    .stream()
+                    .flatMap(this::componentEntryToMeasurement)
+                    .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                    .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (JacksonException e) {
@@ -83,26 +83,30 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
     @Override
     public Health health() {
         var health = super.health();
-        if (healthState.getStatus().equals(Status.UNKNOWN)
-            || (health != null && (health.getStatus().equals(Status.DOWN)
-                                    || health.getStatus().equals(Health.status("WARNING").build().getStatus())))) {
+        if (prioritizeStandardHealthState(health)) {
             return health;
         }
         return healthState;
+    }
+
+    private boolean prioritizeStandardHealthState(Health standardHealth) {
+        return healthState.getStatus().equals(Status.UNKNOWN)
+                || (standardHealth != null && (standardHealth.getStatus().equals(Status.DOWN)
+                || standardHealth.getStatus().equals(Health.status("WARNING").build().getStatus())));
     }
 
     private Stream<ShellyMeasurement> componentEntryToMeasurement(
             Map.Entry<ShellyComponent, Map<String, Number>> componentEntry
     ) {
         return componentEntry.getValue()
-                             .entrySet()
-                             .stream()
-                             .map(entry -> new ShellyMeasurement(
-                                          componentEntry.getKey(),
-                                          entry.getKey(),
-                                          String.valueOf(entry.getValue())
-                                  )
-                             );
+                .entrySet()
+                .stream()
+                .map(entry -> new ShellyMeasurement(
+                                componentEntry.getKey(),
+                                entry.getKey(),
+                                String.valueOf(entry.getValue())
+                        )
+                );
     }
 
     private void setHealthState(boolean online) {

@@ -66,11 +66,6 @@ class MqttDataSourceAdapterTest {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(HealthTestMqttDataSourceAdapter.class);
 
-        /**
-         * Creates a new {@code DataSourceAdapter} with the specified data source entity.
-         *
-         * @param dataSource The entity of the data source.
-         */
         protected HealthTestMqttDataSourceAdapter(MqttDataSource dataSource, MqttConfiguration mqttConfiguration) {
             super(dataSource, LOGGER, mqttConfiguration);
         }

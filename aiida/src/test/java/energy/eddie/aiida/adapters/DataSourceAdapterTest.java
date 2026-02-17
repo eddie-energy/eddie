@@ -42,8 +42,7 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -185,23 +184,16 @@ class DataSourceAdapterTest {
 
         adapter.addTestHealthValidationMessage(record1);
         assertEquals(Status.DOWN, Objects.requireNonNull(adapter.health()).getStatus());
-        assertEquals("unhealthy", Objects.requireNonNull(adapter.health()).getDetails().get("DataSource"));
 
         adapter.addTestHealthValidationMessage(record2);
         assertEquals(Health.status("WARNING").build().getStatus(), Objects.requireNonNull(adapter.health()).getStatus());
-        assertEquals("partiallyHealthy", Objects.requireNonNull(adapter.health()).getDetails().get("DataSource"));
 
         adapter.addTestHealthValidationMessage(record3);
         assertEquals(Status.UP, Objects.requireNonNull(adapter.health()).getStatus());
-        assertEquals("healthy", Objects.requireNonNull(adapter.health()).getDetails().get("DataSource"));
     }
 
     private static class HealthTestDataSourceAdapter extends DataSourceAdapter<DataSource> {
-        /**
-         * Creates a new {@code DataSourceAdapter} with the specified data source entity.
-         *
-         * @param dataSource The entity of the data source.
-         */
+
         protected HealthTestDataSourceAdapter(DataSource dataSource) {
             super(dataSource);
         }

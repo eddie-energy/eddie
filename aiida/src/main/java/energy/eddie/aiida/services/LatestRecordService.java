@@ -50,22 +50,21 @@ public class LatestRecordService {
 
     public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
         var dataSource = dataSourceRepository.findById(dataSourceId)
-                                             .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
-                                             );
+                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
+                );
         var aiidaRecord = aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
-                                               .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId)
-                                               );
+                .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId)
+                );
 
         LOGGER.info("Found latest data source record with timestamp: {}, for data source: {}",
-                    aiidaRecord.timestamp(),
-                    dataSource.id());
+                aiidaRecord.timestamp(),
+                dataSource.id());
 
         return AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource);
     }
 
     public List<LatestDataSourceRecordDto> latestDataSourceRecords(UUID dataSourceId, int amount)
-            throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException
-    {
+            throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
         var dataSource = dataSourceRepository.findById(dataSourceId)
                 .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
                 );
@@ -90,15 +89,15 @@ public class LatestRecordService {
                 .get(permissionId)
                 .orElseThrow(() -> new LatestPermissionRecordNotFoundException(permissionId));
         var messages = permissionRecord.messages()
-                                       .entrySet()
-                                       .stream()
-                                       .map(latestRecord -> {
-                                           var message = latestRecord.getValue();
-                                           return new LatestSchemaRecordDto(latestRecord.getKey(),
-                                                                            message.sentAt(),
-                                                                            message.message());
-                                       })
-                                       .toList();
+                .entrySet()
+                .stream()
+                .map(latestRecord -> {
+                    var message = latestRecord.getValue();
+                    return new LatestSchemaRecordDto(latestRecord.getKey(),
+                            message.sentAt(),
+                            message.message());
+                })
+                .toList();
 
         return new LatestOutboundPermissionRecordDto(
                 permissionId,

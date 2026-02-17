@@ -14,6 +14,7 @@ import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.services.LatestRecordService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -57,17 +58,20 @@ public class LatestRecordController {
         return latestRecordService.latestDataSourceRecord(dataSourceId);
     }
 
-    @Operation(summary = "Gets the latest data source record for a given datasource ID",
-            operationId = "latestDataSourceRecord",
+    @Operation(summary = "Gets the latest data source records for a given datasource ID",
+            operationId = "latestDataSourceRecords",
             tags = {"dataSourceRecord"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Latest data source record found",
+            @ApiResponse(responseCode = "200", description = "No latest data source records found",
                     content = @Content(schema = @Schema(implementation = LatestDataSourceRecordDto.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
     @GetMapping(value = "data-source/{id}/latestRecords")
     public List<LatestDataSourceRecordDto> latestDataSourceRecords(@PathVariable("id") UUID dataSourceId,
+                                                                   @Parameter(
+                                                                           description = "Maximum number of latest records to return"
+                                                                   )
                                                                    @RequestParam("amount") int amount)
             throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
         LOGGER.info("Fetching latest {} data source records for datasource with ID: {}", amount, dataSourceId);

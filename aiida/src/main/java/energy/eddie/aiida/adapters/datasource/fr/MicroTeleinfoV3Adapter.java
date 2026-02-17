@@ -100,11 +100,11 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                             .entrySet()
                             .stream()
                             .map(entry ->
-                                         new MicroTeleinfoV3AdapterHistoryModeMeasurement(
-                                                 entry.getKey(),
-                                                 String.valueOf(
-                                                         entry.getValue()
-                                                              .value())));
+                                    new MicroTeleinfoV3AdapterHistoryModeMeasurement(
+                                            entry.getKey(),
+                                            String.valueOf(
+                                                    entry.getValue()
+                                                            .value())));
 
                     var positiveActiveInstantaneousPower = MicroTeleinfoV3AdapterHistoryModeMeasurement
                             .calculateAiidaPositiveActiveInstantaneousPowerFromHistoryModeData(historyModeData)
@@ -116,38 +116,37 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                     yield Stream.of(historyModeMeasurementsStream,
                                     positiveActiveEnergy,
                                     positiveActiveInstantaneousPower)
-                                .flatMap(stream -> stream)
-                                .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                                .toList();
+                            .flatMap(stream -> stream)
+                            .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                            .toList();
                 }
                 case STANDARD -> readPayload(message.getPayload(), MicroTeleinfoV3StandardModeJson.class)
                         .energyData()
                         .entrySet()
                         .stream()
                         .map(entry ->
-                                     new MicroTeleinfoV3AdapterStandardModeMeasurement(
-                                             entry.getKey(),
-                                             String.valueOf(entry.getValue().sanitizedValue(entry.getKey())))
-                        ).map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                                new MicroTeleinfoV3AdapterStandardModeMeasurement(
+                                        entry.getKey(),
+                                        String.valueOf(entry.getValue().sanitizedValue(entry.getKey()))))
+                        .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                         .toList();
                 case UNKNOWN -> throw new MicroTeleinfoV3ModeNotSupportedException(message.getPayload(),
-                                                                                   List.of(MicroTeleinfoV3Mode.UNKNOWN));
+                        List.of(MicroTeleinfoV3Mode.UNKNOWN));
             };
 
             LOGGER.trace("{} mode message ({} values) deserialized successfully.", mode, aiidaRecordValues.size());
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (MicroTeleinfoV3ModeNotSupportedException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                         e.payload(),
-                         e);
+                    e.payload(),
+                    e);
         }
     }
 
     @Override
     public Health health() {
         var health = super.health();
-        if (health != null && (health.getStatus().equals(Status.DOWN)
-                || health.getStatus().equals(Health.status("WARNING").build().getStatus()))) {
+        if (prioritizeStandardHealthState(health)) {
             return health;
         }
         return healthState;
@@ -167,6 +166,12 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
         }
     }
 
+    private boolean prioritizeStandardHealthState(Health standardHealth) {
+        return standardHealth != null
+                && (standardHealth.getStatus().equals(Status.DOWN)
+                || standardHealth.getStatus().equals(Health.status("WARNING").build().getStatus()));
+    }
+
     private MicroTeleinfoV3Mode determineMode(byte[] payload) throws MicroTeleinfoV3ModeNotSupportedException {
         try {
             LOGGER.debug("Checking type of incoming payload.");
@@ -183,12 +188,12 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             }
 
             throw new MicroTeleinfoV3ModeNotSupportedException(payload,
-                                                               List.of(MicroTeleinfoV3Mode.HISTORY,
-                                                                       MicroTeleinfoV3Mode.STANDARD));
+                    List.of(MicroTeleinfoV3Mode.HISTORY,
+                            MicroTeleinfoV3Mode.STANDARD));
         } catch (JacksonException e) {
             throw new MicroTeleinfoV3ModeNotSupportedException(payload,
-                                                               List.of(MicroTeleinfoV3Mode.HISTORY,
-                                                                       MicroTeleinfoV3Mode.STANDARD));
+                    List.of(MicroTeleinfoV3Mode.HISTORY,
+                            MicroTeleinfoV3Mode.STANDARD));
         }
     }
 
@@ -201,8 +206,8 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
         } catch (JacksonException e) {
             if (mode.equals(MicroTeleinfoV3Mode.UNKNOWN)) {
                 throw new MicroTeleinfoV3ModeNotSupportedException(payload,
-                                                                   List.of(MicroTeleinfoV3Mode.HISTORY,
-                                                                           MicroTeleinfoV3Mode.STANDARD));
+                        List.of(MicroTeleinfoV3Mode.HISTORY,
+                                MicroTeleinfoV3Mode.STANDARD));
             }
 
             throw new MicroTeleinfoV3ModeNotSupportedException(payload, List.of(mode));
@@ -223,9 +228,9 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             healthSink.tryEmitNext(Health.up().build());
         } else if (status.equals(Status.DOWN) && !healthState.getStatus().equals(Status.DOWN)) {
             healthSink.tryEmitNext(Health.down()
-                                         .withDetail(dataSource().id().toString(),
-                                                     "The datasource is not working properly.")
-                                         .build());
+                    .withDetail(dataSource().id().toString(),
+                            "The datasource is not working properly.")
+                    .build());
         }
     }
 }
