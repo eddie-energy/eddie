@@ -4,6 +4,7 @@
 package energy.eddie.api.agnostic.aiida;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,5 +145,15 @@ class AiidaSchemaTest {
 
         // Then
         assertEquals("base/path/smart-meter-p1-raw", topicPath);
+    }
+
+    @Test
+    void json_serialization_and_deserialization_respectAnnotations() {
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(AiidaSchema.SMART_METER_P1_CIM_V1_04);
+        assertEquals("\"SMART-METER-P1-CIM-V1-04\"", json);
+
+        AiidaSchema deserialized = mapper.readValue(json, AiidaSchema.class);
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_04, deserialized);
     }
 }
