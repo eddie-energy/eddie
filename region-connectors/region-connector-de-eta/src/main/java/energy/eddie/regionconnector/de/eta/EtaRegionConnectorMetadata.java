@@ -1,8 +1,13 @@
 package energy.eddie.regionconnector.de.eta;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
-import jakarta.annotation.Nullable;
+import javax.annotation.Nullable;
 import java.time.Period;
 import java.time.ZoneId;
 import java.util.List;
@@ -15,10 +20,9 @@ import java.util.List;
 public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "de-eta";
 
-    public static final String COUNTRY_CODE = "DE";
-
     /**
-     * Historical data can be requested up to 36 months in the past
+     * Historical data can be requested for the entire history.
+     * We set this to 100 years to effectively allow fetching all available past data.
      */
     public static final Period PERIOD_EARLIEST_START = Period.ofYears(-100);
 
@@ -28,10 +32,9 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final Period PERIOD_LATEST_END = Period.ofMonths(36);
 
     /**
-     * Germany uses Central European Time
+     * Germany uses Central European Time.
      */
     public static final ZoneId DE_ZONE_ID = ZoneId.of("Europe/Berlin");
-
 
     /**
      * Supported granularities for metered data in Germany.
@@ -58,8 +61,8 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
      * Approximate number of metering points covered in Germany.
      * This is an estimate and should be updated with actual data from ETA Plus.
      */
-    private static final long COVERED_METERING_POINTS = 500000;
-    
+    private static final long COVERED_METERING_POINTS = 50_000_000L; // ~50 million metering points in Germany
+
     @Nullable
     private static EtaRegionConnectorMetadata instance = null;
 
@@ -68,7 +71,7 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     }
 
     /**
-     * Get the singleton instance of the metadata
+     * Get the singleton instance of the metadata.
      * @return the metadata instance
      */
     public static EtaRegionConnectorMetadata getInstance() {
@@ -85,7 +88,7 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
 
     @Override
     public String countryCode() {
-        return COUNTRY_CODE;
+        return "DE";
     }
 
     @Override
@@ -103,10 +106,23 @@ public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
         return PERIOD_LATEST_END;
     }
 
+    @Override
+    public List<Granularity> supportedGranularities() {
+        return SUPPORTED_GRANULARITIES;
+    }
 
     @Override
     public ZoneId timeZone() {
         return DE_ZONE_ID;
     }
 
+    @Override
+    public List<EnergyType> supportedEnergyTypes() {
+        return List.of(EnergyType.ELECTRICITY, EnergyType.NATURAL_GAS);
+    }
+
+    @Override
+    public List<Class<? extends DataNeedInterface>> supportedDataNeeds() {
+        return List.copyOf(SUPPORTED_DATA_NEEDS);
+    }
 }
