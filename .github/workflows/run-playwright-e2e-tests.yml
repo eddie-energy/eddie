@@ -93,7 +93,7 @@ jobs:
         run: docker compose ${{ env.AIIDA_COMPOSE_FILES }} --env-file ./aiida/docker/.env --env-file ./aiida/docker/.env.e2e up -d --wait --build
 
       - name: Install playwright dependencies
-        run: ./gradlew e2e-tests:install-playwright-deps
+        run: ./gradlew :e2e-tests:install-playwright-deps
 
       - name: Wait for region connectors
         run: |
@@ -116,7 +116,7 @@ jobs:
           E2E_AIIDA_URL: "http://aiida:8080"
           DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
-        run: ./gradlew -Prun-e2e-tests e2e-tests:cleanTest e2e-tests:test
+        run: ./gradlew -Prun-e2e-tests :e2e-tests:cleanTest :e2e-tests:test
 
       - name: Copy docker logs for archiving
         if: ${{ failure() }}  # only store logs when tests failed

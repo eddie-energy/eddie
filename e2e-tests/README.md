@@ -4,7 +4,7 @@ This module contains E2E tests for EDDIE and AIIDA.
 These tests are not run by default when executing `./gradlew test`, but only when the `run-e2e-tests` property is present.
 
 ```sh
-./gradlew e2e-tests:test -Prun-e2e-tests
+./gradlew :e2e-tests:test -Prun-e2e-tests
 ```
 
 For local execution, Playwright needs to be installed.
