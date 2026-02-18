@@ -6,6 +6,7 @@ import { ref } from 'vue'
 
 defineProps<{
   text: string
+  enabled: boolean
 }>()
 
 const isVisible = ref(false)
@@ -24,7 +25,7 @@ function hide() {
     <slot />
 
     <transition name="fade">
-      <div v-if="isVisible" class="tooltip">
+      <div v-if="isVisible && enabled" class="tooltip">
         {{ text }}
       </div>
     </transition>

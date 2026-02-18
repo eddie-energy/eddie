@@ -36,7 +36,9 @@ import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.List;
 
 public abstract class DataSourceAdapter<T extends DataSource> implements AutoCloseable, HealthIndicator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceAdapter.class);
@@ -115,7 +117,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             LOGGER.warn("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
         }
 
-        validateHealthState(aiidaRecord);
+        registerForHealthMonitoring(aiidaRecord);
     }
 
     @Override
@@ -132,12 +134,24 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
         var lastThresholdExceeded = now.isAfter(latestTimestamp.plusSeconds(LAST_HEALTH_THRESHOLD_SECONDS));
 
         if (lastThresholdExceeded) {
-            return Health.down().withDetail(healthKey, "Latest message was received at least %d seconds ago.".formatted(LAST_HEALTH_THRESHOLD_SECONDS)).build();
+            return Health.down()
+                         .withDetail(healthKey,
+                                     "The latest message was received longer than %d seconds ago.".formatted(
+                                             LAST_HEALTH_THRESHOLD_SECONDS))
+                         .build();
         }
 
         return firstThresholdExceeded
-                ? Health.status("WARNING").withDetail(healthKey, "Latest message was received at least %d seconds ago.".formatted(FIRST_HEALTH_THRESHOLD_SECONDS)).build()
-                : Health.up().withDetail(healthKey, "One or more messages were received in the past %d seconds.".formatted(FIRST_HEALTH_THRESHOLD_SECONDS)).build();
+                ? Health.status("WARNING")
+                        .withDetail(healthKey,
+                                    "The latest message was received between the past %d and %s seconds.".formatted(
+                                            FIRST_HEALTH_THRESHOLD_SECONDS, LAST_HEALTH_THRESHOLD_SECONDS))
+                        .build()
+                : Health.up()
+                        .withDetail(healthKey,
+                                    "One or more messages were received in the past %d seconds.".formatted(
+                                            FIRST_HEALTH_THRESHOLD_SECONDS))
+                        .build();
     }
 
     /**
@@ -151,7 +165,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
         return dataSource;
     }
 
-    private void validateHealthState(AiidaRecord aiidaRecord) {
+    private void registerForHealthMonitoring(AiidaRecord aiidaRecord) {
         if (healthValidationMessages.size() >= MAX_HEALTH_VALIDATION_MESSAGES) {
             healthValidationMessages.removeLast();
         }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters;
@@ -42,7 +42,8 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -156,7 +157,7 @@ class DataSourceAdapterTest {
              MockedConstruction<ModbusTcpClient> mockedClient = mockConstruction(ModbusTcpClient.class)) {
 
             mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
-                    .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
+                        .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
 
             var dataSource = mock(ModbusDataSource.class);
 
@@ -186,7 +187,8 @@ class DataSourceAdapterTest {
         assertEquals(Status.DOWN, Objects.requireNonNull(adapter.health()).getStatus());
 
         adapter.addTestHealthValidationMessage(record2);
-        assertEquals(Health.status("WARNING").build().getStatus(), Objects.requireNonNull(adapter.health()).getStatus());
+        assertEquals(Health.status("WARNING").build().getStatus(),
+                     Objects.requireNonNull(adapter.health()).getStatus());
 
         adapter.addTestHealthValidationMessage(record3);
         assertEquals(Status.UP, Objects.requireNonNull(adapter.health()).getStatus());

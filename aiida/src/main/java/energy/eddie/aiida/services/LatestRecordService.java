@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -50,15 +50,13 @@ public class LatestRecordService {
 
     public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
         var dataSource = dataSourceRepository.findById(dataSourceId)
-                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
-                );
+                                             .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
         var aiidaRecord = aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
-                .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId)
-                );
+                                               .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId));
 
         LOGGER.info("Found latest data source record with timestamp: {}, for data source: {}",
-                aiidaRecord.timestamp(),
-                dataSource.id());
+                    aiidaRecord.timestamp(),
+                    dataSource.id());
 
         return AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource);
     }
@@ -66,17 +64,17 @@ public class LatestRecordService {
     public List<LatestDataSourceRecordDto> latestDataSourceRecords(UUID dataSourceId, int amount)
             throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
         var dataSource = dataSourceRepository.findById(dataSourceId)
-                .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId)
-                );
-        var aiidaRecords = aiidaRecordRepository.findByDataSourceIdOrderByTimestampDesc(dataSourceId, Pageable.ofSize(amount));
+                                             .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
+        var aiidaRecords = aiidaRecordRepository.findByDataSourceIdOrderByTimestampDesc(dataSourceId,
+                                                                                        Pageable.ofSize(amount));
         if (aiidaRecords.isEmpty()) {
             throw new LatestAiidaRecordNotFoundException(dataSourceId);
         }
 
         LOGGER.info("Found data source record from timestamp: {} until {} for data source: {}",
-                aiidaRecords.getFirst().timestamp(),
-                aiidaRecords.getLast().timestamp(),
-                dataSource.id());
+                    aiidaRecords.getFirst().timestamp(),
+                    aiidaRecords.getLast().timestamp(),
+                    dataSource.id());
 
         return aiidaRecords
                 .stream()
@@ -89,15 +87,15 @@ public class LatestRecordService {
                 .get(permissionId)
                 .orElseThrow(() -> new LatestPermissionRecordNotFoundException(permissionId));
         var messages = permissionRecord.messages()
-                .entrySet()
-                .stream()
-                .map(latestRecord -> {
-                    var message = latestRecord.getValue();
-                    return new LatestSchemaRecordDto(latestRecord.getKey(),
-                            message.sentAt(),
-                            message.message());
-                })
-                .toList();
+                                       .entrySet()
+                                       .stream()
+                                       .map(latestRecord -> {
+                                           var message = latestRecord.getValue();
+                                           return new LatestSchemaRecordDto(latestRecord.getKey(),
+                                                                            message.sentAt(),
+                                                                            message.message());
+                                       })
+                                       .toList();
 
         return new LatestOutboundPermissionRecordDto(
                 permissionId,

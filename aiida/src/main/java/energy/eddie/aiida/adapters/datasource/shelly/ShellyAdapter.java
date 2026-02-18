@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly;
@@ -62,11 +62,11 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
             var json = mapper.readValue(payload, ShellyJson.class);
 
             var aiidaRecordValues = json.params().em()
-                    .entrySet()
-                    .stream()
-                    .flatMap(this::componentEntryToMeasurement)
-                    .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
-                    .toList();
+                                        .entrySet()
+                                        .stream()
+                                        .flatMap(this::componentEntryToMeasurement)
+                                        .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                                        .toList();
 
             emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
         } catch (JacksonException e) {
@@ -91,22 +91,23 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
     private boolean prioritizeStandardHealthState(Health standardHealth) {
         return healthState.getStatus().equals(Status.UNKNOWN)
-                || (standardHealth != null && (standardHealth.getStatus().equals(Status.DOWN)
-                || standardHealth.getStatus().equals(Health.status("WARNING").build().getStatus())));
+               || (standardHealth != null && (standardHealth.getStatus().equals(Status.DOWN)
+                                              || standardHealth.getStatus()
+                                                               .equals(Health.status("WARNING").build().getStatus())));
     }
 
     private Stream<ShellyMeasurement> componentEntryToMeasurement(
             Map.Entry<ShellyComponent, Map<String, Number>> componentEntry
     ) {
         return componentEntry.getValue()
-                .entrySet()
-                .stream()
-                .map(entry -> new ShellyMeasurement(
-                                componentEntry.getKey(),
-                                entry.getKey(),
-                                String.valueOf(entry.getValue())
-                        )
-                );
+                             .entrySet()
+                             .stream()
+                             .map(entry -> new ShellyMeasurement(
+                                          componentEntry.getKey(),
+                                          entry.getKey(),
+                                          String.valueOf(entry.getValue())
+                                  )
+                             );
     }
 
     private void setHealthState(boolean online) {

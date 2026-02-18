@@ -1,7 +1,5 @@
-<!--
-  - SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-  - SPDX-License-Identifier: Apache-2.0
-  -->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import Button from '@/components/Button.vue'
@@ -103,7 +101,7 @@ const healthStatusConfig = computed<HealthStatusConfig>(() => {
 
       <div>
         <dt>{{ t('datasources.card.healthStatus') }}</dt>
-        <Tooltip :text="healthStatusConfig.tooltip">
+        <Tooltip :enabled="enabled" :text="healthStatusConfig.tooltip">
           <StatusTag :status-type="healthStatusConfig.type" minimal-on-mobile>
             {{ healthStatusConfig.label }}
           </StatusTag>

@@ -100,12 +100,13 @@ local.properties
 build
 
 ### IntelliJ
-.idea
+.idea/*
 !.idea/prettier.xml
 !.idea/vcs.xml
 !.idea/externalDependencies.xml
-#### Copyright Notice
-!.idea/copyright/**
+!.idea/fileTemplates
+!.idea/codeStyles
+!.idea/copyright
 
 ### jte template generated files ###
 **/jte-classes
