@@ -13,8 +13,21 @@ On Arch Linux, Playwright can be installed from the AUR: `yay -S playwright`.
 
 The tests default to http://localhost:8080 for EDDIE and http://localhost:8081 for AIIDA matching the default ports in the development setup.
 EDDIE has to be running with the demo page enabled.
+AIIDA has to be able to access EDDIE using its `EDDIE_PUBLIC_URL`.
+
 Ports can be changed by setting `E2E_EDDIE_URL`, `E2E_AIIDA_URL`, and `E2E_ADMIN_URL` environment variables.
 `E2E_HEADLESS` can be set to `false` to run the tests in headed mode, which can be useful for debugging.
+
+The compose files for EDDIE and AIIDA can be used to set up their respective environments.
+
+```sh
+# EDDIE
+docker compose -f ./env/docker-compose.yml up -d
+# AIIDA
+docker compose -f ./aiida/docker/compose.yml up -d
+```
+
+Compose and environment variable overrides (compose.e2e.yml, .env.e2e) are not required for local execution, but for the GitHub workflow, containing special configuration for the self-hosted runner.
 
 ## Associated workflow file and GitHub secrets
 
