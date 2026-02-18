@@ -33,7 +33,7 @@ services:
       keycloak:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
     env_file:
@@ -42,6 +42,8 @@ services:
         required: false
     volumes:
       - ./svgs:/container-assets/svgs
+    extra_hosts:
+      - "localhost:host-gateway" # access host machine as "localhost"
 
   emqx:
     image: emqx/emqx:5.8.6
@@ -89,7 +91,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.1
     ports:
-      - "8888:8080"
+      - "8889:8080"
     environment:
       KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
@@ -108,10 +110,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-
-networks:
-  default:
-    name: "aiida_bridge"
 
 volumes:
   db_data:

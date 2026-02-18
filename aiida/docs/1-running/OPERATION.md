@@ -10,7 +10,7 @@ This setup uses Docker Compose to orchestrate the necessary services. To get sta
 
 1. Download the quickstart configuration from the provided [aiida/docker](https://github.com/eddie-energy/eddie/tree/main/aiida/docker)
 2. Run `docker compose up -d` in that folder.
-3. Open the browser on `http://localhost:8080` to access the AIIDA web interface.
+3. Open the browser on `http://localhost:8081` to access the AIIDA web interface.
 4. You can log in with the default credentials:
     - Username: `aiida`
     - Password: `aiida`
