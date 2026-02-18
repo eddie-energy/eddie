@@ -38,6 +38,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
     env_file:
       - .env
+      - path: .env.local
+        required: false
     volumes:
       - ./svgs:/container-assets/svgs
 
