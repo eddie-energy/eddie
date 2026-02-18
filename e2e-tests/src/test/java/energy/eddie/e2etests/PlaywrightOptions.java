@@ -3,6 +3,7 @@
 
 package energy.eddie.e2etests;
 
+import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType;
 import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
@@ -20,14 +21,19 @@ public class PlaywrightOptions implements OptionsFactory {
 
     @Override
     public Options getOptions() {
+        // Treat container hostnames as secure origins for Keycloak authentication
         var launchOptions = new BrowserType.LaunchOptions()
                 .setArgs(List.of(
                         "--unsafely-treat-insecure-origin-as-secure=http://aiida:8080,http://eddie:8080"
                 ));
+        // Ensure consistent translations and date formats
+        var contextOptions = new Browser.NewContextOptions().setLocale("en-GB");
+
         return new Options()
                 .setTrace(Options.Trace.RETAIN_ON_FAILURE)
                 .setOutputDir(Path.of("build", "test-results", "test", "traces"))
                 .setLaunchOptions(launchOptions)
+                .setContextOptions(contextOptions)
                 .setChannel("chromium")
                 .setHeadless(HEADLESS);
     }
