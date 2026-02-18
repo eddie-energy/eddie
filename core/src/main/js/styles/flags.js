@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { css } from "lit";
 
-const flags = ["at", "be", "dk", "es", "fi", "fr", "nl", "us", "ca"];
+const flags = ["at", "be", "de", "dk", "es", "fi", "fr", "nl", "si", "us", "ca"];
 
 export function hasFlag(country) {
   return flags.includes(country?.toLowerCase());
@@ -30,6 +30,10 @@ export const flagStyles = css`
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36' xml:space='preserve'%3E%3Cpath fill='%23141414' d='M7 5a4 4 0 0 0-4 4v18a4 4 0 0 0 4 4h6V5H7z'/%3E%3Cpath fill='%23FDDA24' d='M13 5h10v26H13z'/%3E%3Cpath fill='%23EF3340' d='M29 5h-6v26h6a4 4 0 0 0 4-4V9a4 4 0 0 0-4-4z'/%3E%3C/svg%3E");
   }
 
+  .flag-de {
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDM2IDM2Ij48cGF0aCBmaWxsPSIjZmZjZDA1IiBkPSJNMCAyN2E0IDQgMCAwIDAgNCA0aDI4YTQgNCAwIDAgMCA0LTR2LTRIMHoiLz48cGF0aCBmaWxsPSIjZWQxZjI0IiBkPSJNMCAxNGgzNnY5SDB6Ii8+PHBhdGggZmlsbD0iIzE0MTQxNCIgZD0iTTMyIDVINGE0IDQgMCAwIDAtNCA0djVoMzZWOWE0IDQgMCAwIDAtNC00Ii8+PC9zdmc+");
+  }
+
   .flag-dk {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cpath fill='%23C60C30' d='M32 5H15v11h21V9c0-2.209-1.791-4-4-4zM15 31h17c2.209 0 4-1.791 4-4.5V20H15v11zM0 20v6.5C0 29.209 1.791 31 4 31h7V20H0zM11 5H4C1.791 5 0 6.791 0 9v7h11V5z'/%3E%3Cpath fill='%23EEE' d='M15 5h-4v11H0v4h11v11h4V20h21v-4H15z'/%3E%3C/svg%3E");
   }
@@ -48,6 +52,10 @@ export const flagStyles = css`
 
   .flag-nl {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 36'%3E%3Cpath fill='%23EEE' d='M0 14h36v8H0z'/%3E%3Cpath fill='%23AE1F28' d='M32 5H4C1.791 5 0 6.791 0 9v5h36V9c0-2.209-1.791-4-4-4z'/%3E%3Cpath fill='%2320478B' d='M4 31h28c2.209 0 4-1.791 4-4v-5H0v5c0 2.209 1.791 4 4 4z'/%3E%3C/svg%3E");
+  }
+
+  .flag-si {
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzNiIgaGVpZ2h0PSIzNiIgdmlld0JveD0iMCAwIDM2IDM2Ij48cGF0aCBmaWxsPSIjZWQxYzIzIiBkPSJNMzYgMjd2LTRIMHY0YTQgNCAwIDAgMCA0IDRoMjhhNCA0IDAgMCAwIDQtNCIvPjxwYXRoIGZpbGw9IiNlZWUiIGQ9Ik0zNiAyM0gwVjlhNCA0IDAgMCAxIDQtNGgyOGE0IDQgMCAwIDEgNCA0eiIvPjxwYXRoIGZpbGw9IiMwMDVkYTQiIGQ9Ik0wIDEzaDM2djEwSDB6Ii8+PHBhdGggZmlsbD0iI2VkMWMyMyIgZD0iTTExLjEyNSA3LjkxN2MtMi4yNSAwLTMuODMzLjgzMy0zLjgzMy44MzNzLjE0NiAyIC4zMzMgNS4wODNzMy41IDQuMTY3IDMuNSA0LjE2N3MzLjMxMi0xLjA4MyAzLjUtNC4xNjdzLjMzMy01LjA4My4zMzMtNS4wODNzLTEuNTgzLS44MzMtMy44MzMtLjgzMyIvPjxwYXRoIGZpbGw9IiMwMDRhNzciIGQ9Ik0xNC41OTIgOC41ODZjLS41ODgtLjI0Mi0xLjg0OS0uNjctMy40NjctLjY3cy0yLjg3OS40MjgtMy40NjcuNjdjLjAxMS4yMS4xMzcgMi41MDMuMjk5IDUuMTY0Yy4xNyAyLjc5MSAzLjE2NyAzLjc3MSAzLjE2NyAzLjc3MXMyLjk5OC0uOTggMy4xNjctMy43NzFjLjE2NC0yLjY2LjI5LTQuOTU0LjMwMS01LjE2NCIvPjxwYXRoIGZpbGw9IiNmZmYiIGQ9Ik0xMi4xMDQgMTUuOTJjLS4zNTQgMC0uNTIxLjIxMS0xLjA0Mi4yMTFzLS42MDQtLjIxMS0uOTU4LS4yMTFjLS4yNjggMC0uNDM0LjEyLS42MzkuMTc5Yy44MTIuNjEgMS42Ni44NiAxLjY2Ljg2Yy43MTEtLjExOCAxLjI3LS40NjYgMS42OTMtLjg1OWMtLjI2OS0uMDU5LS40NDUtLjE4LS43MTQtLjE4bS0xLjk1OC0xLjM4M2MuMzMzIDAgLjYyNS4yNi45NzkuMjZzLjYwNC0uMjYuOTc5LS4yNmMuMzIxIDAgLjc0My40MTkgMS4zNi4xNzlhNS40IDUuNCAwIDAgMCAuNDExLS44NDFsLTEuMjUtMS43OTJsLS42MjUuNzU5bC0uODc1LTEuNjc1bC0uODMzIDEuNjc1bC0uNjA0LS43OTlzLS41NDIuNjQzLTEuNDM4IDEuODUxYy4xMDcuMjg2LjI1MS41MzQuNDA3Ljc2NmMuNzA5LjM1IDEuMTg3LS4xMjMgMS40ODktLjEyM20yLjk1OC43NTVjLS40NTggMC0uNjQ2LS4yNi0xLS4yNnMtLjUyMS4yNi0xLjA0Mi4yNnMtLjYwNC0uMjYtLjk1OC0uMjZzLS41My4yNi0uODU0LjI2Yy0uMTE3IDAtLjI0OC0uMDM2LS4zNzMtLjA4NWMuMTI3LjE2OC4yNTIuMzQxLjM5LjQ4NGMuMzg2LS4wMzUuNjczLS4yNzMuODc5LS4yNzNjLjMzMyAwIC42MjUuMjc4Ljk3OS4yNzhzLjYwNC0uMjc4Ljk3OS0uMjc4Yy4yMzEgMCAuNTE2LjIzNS44ODcuMjcxcS4xNjItLjIxMy4yOTMtLjQyM2MtLjA1OC4wMDktLjExMy4wMjYtLjE4LjAyNiIvPjxwYXRoIGZpbGw9IiNmZDAiIGQ9Im0xMC4zMTggOC44MDdsLjIxNy4yMzNsLS4zMDktLjA3MmwtLjA5NC4zMDRsLS4wOTItLjMwNGwtLjMxMS4wNzJsLjIxOC0uMjMzbC0uMjE4LS4yMzNsLjMxMS4wNzJsLjA5Mi0uMzA0bC4wOTQuMzA0bC4zMDktLjA3MnptMi4wOTQgMGwuMjE3LjIzM2wtLjMxLS4wNzJsLS4wOTMuMzA0bC0uMDkzLS4zMDRsLS4zMS4wNzJsLjIxNy0uMjMzbC0uMjE3LS4yMzNsLjMxLjA3MmwuMDkzLS4zMDRsLjA5My4zMDRsLjMxLS4wNzJ6bS0xLjA4NCAxLjM5NmwuMjE2LjIzM2wtLjMwOS0uMDcybC0uMDkzLjMwM2wtLjA5My0uMzAzbC0uMzEuMDcybC4yMTctLjIzM2wtLjIxNy0uMjMzbC4zMS4wNzJsLjA5My0uMzA0bC4wOTMuMzA0bC4zMDktLjA3MnoiLz48L3N2Zz4=");
   }
 
   .flag-us {
