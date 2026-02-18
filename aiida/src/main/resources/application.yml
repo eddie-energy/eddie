@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://REPLACE_ME:5433/aiida
+    url: jdbc:postgresql://localhost:5433/aiida
     username: REPLACE_ME
     password: REPLACE_ME
   jpa:
