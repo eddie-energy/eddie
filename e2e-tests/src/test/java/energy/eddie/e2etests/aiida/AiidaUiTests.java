@@ -58,7 +58,7 @@ class AiidaUiTests {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
         // Visible data source with name in list
         var dataSourceCard = page.getByRole(AriaRole.ARTICLE).filter(
-                new Locator.FilterOptions().setHasText(dataSource));
+                new Locator.FilterOptions().setHasText(dataSource)).last();
         assertThat(dataSourceCard).isVisible();
         // Visible image
         assertThat(dataSourceCard.getByAltText("image for data source")).isVisible();
@@ -119,7 +119,7 @@ class AiidaUiTests {
         // Delete data source
         page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
         dataSourceCard = page.getByRole(AriaRole.ARTICLE).filter(
-                new Locator.FilterOptions().setHasText(dataSource));
+                new Locator.FilterOptions().setHasText(dataSource)).last();
         dataSourceCard.getByRole(AriaRole.HEADING).click();
         dataSourceCard.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Delete")).click();
         page.getByRole(AriaRole.DIALOG)
