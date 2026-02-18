@@ -15,7 +15,7 @@ The docker-compose file in the `aiida/docker` directory of the repository includ
 
 The preconfigured Keycloak includes an EDDIE realm with the AIIDA client, that is used for authentication.
 The client secret of the AIIDA client is set to `REPLACE_ME` and can be regenerated in the admin console, 
-which is reachable at http://localhost:8888. The keycloak admin user is configured in the `.env` file and has by default the username
+which is reachable at http://localhost:8889. The keycloak admin user is configured in the `.env` file and has by default the username
 `admin` and the password `admin`.
 
 If a different Keycloak instance should be used, it can be configured in the `application.yml` file or using
@@ -34,7 +34,7 @@ This is only relevant during development, because usually AIIDA and EDDIE servic
 To enable Keycloak usage within a Docker network, several configurations had to be made in the
 `application.yml` file of the Spring application.
 When setting the property `issuer-uri` in the `application.yml`, the application retrieves the URIs from
-`http://localhost:8888/realms/AIIDA/.well-known/openid-configuration`.
+`http://localhost:8889/realms/AIIDA/.well-known/openid-configuration`.
 Since this URI is not accessible within the Docker network, the required URIs must be defined explicitly.
 
 The following properties must be set in the `application.yml` file:
@@ -60,9 +60,9 @@ The provided
 
 For a local development setup these values can be configured as follows (defaults of `.env` file):
 
-- `AIIDA_EXTERNAL_HOST=http://localhost:8080`
+- `AIIDA_EXTERNAL_HOST=http://localhost:8081`
 - `KEYCLOAK_INTERNAL_HOST=http://keycloak:8080`
-- `KEYCLOAK_EXTERNAL_HOST=http://localhost:8888`
+- `KEYCLOAK_EXTERNAL_HOST=http://localhost:8889`
 
 For a production deployment setup these values can be configured as follows assuming keycloak is running on
 `keycloak.eddie.energy` and aiida is running on `aiida.eddie.energy`:
