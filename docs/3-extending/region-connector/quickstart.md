@@ -662,9 +662,9 @@ public class PermissionRequestController {
       case DataNeedNotSupportedResult ignored -> {
         outbox.commit(new MalformedEvent(permissionId,
                                          new AttributeError("dataNeedId", "data need not supported")));
-        throw new DataNeedNotSupportedException(REGION_CONNECTOR_ID,
-                                                dto.dataNeedId(),
-                                                "data need not supported");
+        throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID,
+                                               dto.dataNeedId(),
+                                               "data need not supported");
       }
       case ValidatedHistoricalDataDataNeedResult result -> outbox.commit(new ValidatedEvent(permissionId,
                                                                                             result.energyTimeframe.start(),
