@@ -1,8 +1,11 @@
 {
-  "asset": "SUBMETER",
+  "timestamp": "1970-01-21T00:22:14.059Z",
+  "permissionId": "3211ea05-d4ab-48ff-8613-8f4791a56606",
   "userId": "5211ea05-d4ab-48ff-8613-8f4791a56606",
   "dataSourceId": "4211ea05-d4ab-48ff-8613-8f4791a56606",
-  "permissionId": "3211ea05-d4ab-48ff-8613-8f4791a56606",
+  "asset": "SUBMETER",
+  "meterId": "Meter123",
+  "operatorId": "Operator123",
   "values": [
     {
       "rawTag": "1-0:1.7.0",

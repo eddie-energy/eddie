@@ -28,6 +28,8 @@
       "id": "ID",
       "country": "Country",
       "asset": "Asset",
+      "meterId": "Physical Meter ID",
+      "operatorId": "Grid Operator ID",
       "type": "Type",
       "pollingInterval": "Polling Interval",
       "mqttServerUri": "MQTT Server URI",
@@ -75,9 +77,9 @@
       "activationKey": "Activation Key",
       "isRequired": "is a required field",
       "meterId": "Physical Meter ID",
-      "meterIdLabel": "Enter physical meter ID",
+      "meterIdPlaceholder": "Enter physical meter ID",
       "operatorId": "Grid Operator ID",
-      "operatorIdLabel": "Enter the ID of your grid operator"
+      "operatorIdPlaceholder": "Enter the ID of your grid operator"
     }
   },
   "permissions": {

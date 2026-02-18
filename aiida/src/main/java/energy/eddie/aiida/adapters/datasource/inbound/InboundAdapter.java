@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.inbound;
@@ -45,9 +45,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
         var inboundRecord = new InboundRecord(
                 Instant.now(),
-                dataSource().asset(),
-                dataSource().userId(),
-                dataSource().id(),
+                dataSource(),
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
         inboundRecordSink.tryEmitNext(inboundRecord);

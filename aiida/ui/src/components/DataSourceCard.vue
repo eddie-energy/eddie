@@ -1,7 +1,5 @@
-<!--
-  - SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-  - SPDX-License-Identifier: Apache-2.0
-  -->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import Button from '@/components/Button.vue'
@@ -31,6 +29,8 @@ const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
 const {
   countryCode,
   asset,
+  meterId,
+  operatorId,
   type,
   enabled,
   id,
@@ -89,6 +89,16 @@ const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id
       <div>
         <dt>{{ t('datasources.card.asset') }}</dt>
         <dd>{{ asset }}</dd>
+      </div>
+
+      <div v-if="meterId">
+        <dt>{{ t('datasources.card.meterId') }}</dt>
+        <dd>{{ meterId }}</dd>
+      </div>
+
+      <div v-if="operatorId">
+        <dt>{{ t('datasources.card.operatorId') }}</dt>
+        <dd>{{ operatorId }}</dd>
       </div>
 
       <div>

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.fr;
@@ -135,7 +135,7 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             };
 
             LOGGER.trace("{} mode message ({} values) deserialized successfully.", mode, aiidaRecordValues.size());
-            emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+            emitAiidaRecord(aiidaRecordValues);
         } catch (MicroTeleinfoV3ModeNotSupportedException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          e.payload(),

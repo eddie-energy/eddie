@@ -28,6 +28,8 @@
       "id": "ID",
       "country": "Land",
       "asset": "Asset",
+      "meterId": "Physische Zähler-ID",
+      "operatorId": "Netzbetreiber-ID",
       "type": "Typ",
       "pollingInterval": "Abfrageintervall",
       "mqttServerUri": "MQTT-Server-URI",
@@ -75,9 +77,9 @@
       "activationKey": "Aktivierungsschlüssel",
       "isRequired": "ist ein Pflichtfeld",
       "meterId": "Physische Zähler-ID",
-      "meterIdLabel": "Physische Zähler-ID eingeben",
+      "meterIdPlaceholder": "Physische Zähler-ID eingeben",
       "operatorId": "Netzbetreiber-ID",
-      "operatorIdLabel": "Geben Sie die ID Ihres Netzbetreibers ein"
+      "operatorIdPlaceholder": "Geben Sie die ID Ihres Netzbetreibers ein"
     }
   },
   "permissions": {

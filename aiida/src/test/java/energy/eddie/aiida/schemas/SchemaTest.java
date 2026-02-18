@@ -48,11 +48,10 @@ class SchemaTest {
     private static final UUID PERMISSION_ID = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final DataSource DATA_SOURCE = mock(DataSource.class);
     private static final AiidaRecord AIIDA_RECORD_AT = new AiidaRecord(
             TIMESTAMP,
-            AiidaAsset.SUBMETER,
-            USER_ID,
-            DATA_SOURCE_ID,
+            DATA_SOURCE,
             List.of(new AiidaRecordValue("1-0:1.7.0", POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "10",
                                          KILO_WATT, "10",
                                          KILO_WATT),
@@ -93,9 +92,7 @@ class SchemaTest {
     );
     private static final AiidaRecord AIIDA_RECORD_FR = new AiidaRecord(
             TIMESTAMP,
-            AiidaAsset.SUBMETER,
-            USER_ID,
-            DATA_SOURCE_ID,
+            DATA_SOURCE,
             List.of(new AiidaRecordValue("PAPP",
                                          POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
                                          "10",
@@ -112,9 +109,7 @@ class SchemaTest {
     );
     private static final AiidaRecord AIIDA_RECORD_WITH_FAULTY_RECORD = new AiidaRecord(
             TIMESTAMP,
-            AiidaAsset.SUBMETER,
-            USER_ID,
-            DATA_SOURCE_ID,
+            DATA_SOURCE,
             List.of(new AiidaRecordValue("BASE",
                                          POSITIVE_ACTIVE_ENERGY,
                                          "ten",
@@ -125,9 +120,7 @@ class SchemaTest {
     );
     private static final AiidaRecord AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE = new AiidaRecord(
             TIMESTAMP,
-            AiidaAsset.SUBMETER,
-            USER_ID,
-            DATA_SOURCE_ID,
+            DATA_SOURCE,
             List.of(new AiidaRecordValue("PAPP",
                                          POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
                                          "10",
@@ -156,6 +149,12 @@ class SchemaTest {
         var applicationInformation = mock(ApplicationInformation.class);
         when(applicationInformationService.applicationInformation()).thenReturn(applicationInformation);
         when(applicationInformation.aiidaId()).thenReturn(UUID.randomUUID());
+
+        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
+        when(DATA_SOURCE.userId()).thenReturn(USER_ID);
+        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(DATA_SOURCE.meterId()).thenReturn("Meter123");
+        when(DATA_SOURCE.operatorId()).thenReturn("Operator123");
     }
 
     @Test

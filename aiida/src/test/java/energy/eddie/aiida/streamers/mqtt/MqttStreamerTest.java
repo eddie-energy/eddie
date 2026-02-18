@@ -5,6 +5,7 @@ package energy.eddie.aiida.streamers.mqtt;
 
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -16,7 +17,6 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
 import energy.eddie.aiida.schemas.raw.RawFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
@@ -55,16 +55,13 @@ class MqttStreamerTest {
     private static final String EXPECTED_DATA_TOPIC = DATA_TOPIC + "/smart-meter-p1-raw";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
     private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
-    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID PERMISSION_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final DataSource DATA_SOURCE = mock(DataSource.class);
 
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final Sinks.One<UUID> terminationSink = Sinks.one();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
-                                                        AiidaAsset.SUBMETER,
-                                                        USER_ID,
-                                                        DATA_SOURCE_ID,
+                                                        DATA_SOURCE,
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                                      POSITIVE_ACTIVE_ENERGY,
                                                                                      "444",
@@ -72,9 +69,7 @@ class MqttStreamerTest {
                                                                                      "10",
                                                                                      KILO_WATT_HOUR)));
     private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
-                                                        AiidaAsset.SUBMETER,
-                                                        USER_ID,
-                                                        DATA_SOURCE_ID,
+                                                        DATA_SOURCE,
                                                         List.of(new AiidaRecordValue("1-0:2.8.0",
                                                                                      NEGATIVE_ACTIVE_ENERGY,
                                                                                      "888",

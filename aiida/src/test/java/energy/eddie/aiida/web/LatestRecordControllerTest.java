@@ -3,14 +3,14 @@
 
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.record.*;
+import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
+import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
+import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
+import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.services.LatestRecordService;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
-import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
+import energy.eddie.api.agnostic.aiida.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
@@ -47,16 +47,16 @@ class LatestRecordControllerTest {
                     ObisCode.POSITIVE_ACTIVE_ENERGY.toString(),
                     ObisCode.POSITIVE_ACTIVE_ENERGY,
                     "25.5",
-                    UnitOfMeasurement.WATT,
                     "25.5",
+                    UnitOfMeasurement.WATT,
                     UnitOfMeasurement.WATT
             ),
             new AiidaRecordValueDto(
                     ObisCode.NEGATIVE_ACTIVE_ENERGY.toString(),
                     ObisCode.NEGATIVE_ACTIVE_ENERGY,
                     "60.0",
-                    UnitOfMeasurement.WATT,
                     "60.0",
+                    UnitOfMeasurement.WATT,
                     UnitOfMeasurement.WATT
             )
     );
@@ -232,7 +232,7 @@ class LatestRecordControllerTest {
     void latestInboundPermissionRecord_shouldReturnLatestRecord() throws Exception {
         var inboundRecord = new LatestInboundPermissionRecordDto(
                 TIMESTAMP,
-                AiidaAsset.SUBMETER,
+                UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606"),
                 PAYLOAD
         );
 
@@ -242,7 +242,7 @@ class LatestRecordControllerTest {
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.timestamp").value("2024-01-15T10:30:00Z"))
-               .andExpect(jsonPath("$.asset").value("SUBMETER"))
+               .andExpect(jsonPath("$.dataSourceId").value("5211ea05-d4ab-48ff-8613-8f4791a56606"))
                .andExpect(jsonPath("$.payload").value(PAYLOAD));
 
         verify(service, times(1)).latestInboundPermissionRecord(PERMISSION_ID);

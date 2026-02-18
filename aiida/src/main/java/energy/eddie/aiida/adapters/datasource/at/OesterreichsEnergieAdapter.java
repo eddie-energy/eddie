@@ -66,7 +66,7 @@ public class OesterreichsEnergieAdapter extends MqttDataSourceAdapter<Oesterreic
                 aiidaRecordValues.add(convertNameToAiidaRecordValue(json.name()));
             }
 
-            emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+            emitAiidaRecord(aiidaRecordValues);
         } catch (JacksonException e) {
             LOGGER.error("Topic {}: error while deserializing JSON received from adapter. JSON was {}",
                          topic,

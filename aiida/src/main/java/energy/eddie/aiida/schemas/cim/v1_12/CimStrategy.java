@@ -4,6 +4,7 @@
 package energy.eddie.aiida.schemas.cim.v1_12;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -166,12 +167,13 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
             String countryCode
     ) throws CimSchemaFormatterException {
         var dataNeed = dataNeedOfPermissionOrThrow(permission);
+        var dataSource = aiidaRecord.dataSource();
 
         return new MetaInformation()
-                .withAsset(toAsset(aiidaRecord))
+                .withAsset(toAsset(dataSource))
                 .withConnectionId(permission.connectionId())
                 .withDataNeedId(dataNeed.dataNeedId().toString())
-                .withDataSourceId(aiidaRecord.dataSourceId().toString())
+                .withDataSourceId(dataSource.id().toString())
                 .withDocumentType(DOCUMENT_TYPE)
                 .withFinalCustomerId(aiidaId.toString())
                 .withRequestPermissionId(permission.id().toString())
@@ -179,9 +181,11 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                 .withRegionCountry(countryCode);
     }
 
-    private Asset toAsset(AiidaRecord aiidaRecord) {
+    private Asset toAsset(DataSource dataSource) {
         return new Asset()
-                .withType(aiidaRecord.asset().toString());
+                .withType(dataSource.asset().toString())
+                .withMeterId(dataSource.meterId())
+                .withOperatorId(dataSource.operatorId());
     }
 
     private RTDMarketDocument toRealTimeDataMarketDocument(AiidaRecord aiidaRecord, String countryCode) {
@@ -207,7 +211,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                                         .toList())
                 .withRegisteredResourceMRID(new ResourceIDString()
                                                     .withCodingScheme(codingSchemeValue)
-                                                    .withValue(aiidaRecord.dataSourceId().toString()))
+                                                    .withValue(aiidaRecord.dataSource().id().toString()))
                 .withVersion(VERSION);
     }
 

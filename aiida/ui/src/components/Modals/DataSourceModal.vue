@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import ModalDialog from '@/components/ModalDialog.vue'
@@ -42,8 +40,8 @@ const getEmptyDataSource = (): AiidaDataSource => {
     modelId: '',
     deviceId: '',
     icon: '' as AiidaDataSourceIcon,
-    meterId: '',
-    operatorId: '',
+    meterId: undefined,
+    operatorId: undefined,
   }
 }
 // All EU countries
@@ -463,9 +461,9 @@ defineExpose({ showModal })
             <p v-if="errors['assetType']" class="error-message">{{ errors['assetType'] }}</p>
           </div>
           <div class="input-field" key="meterId">
-            <label for="meterId" class="optional">{{ t('datasources.modal.meterIdLabel') }}</label>
+            <label class="optional" for="meterId">{{ t('datasources.modal.meterId') }}</label>
             <input
-              :placeholder="t('datasources.modal.meterId')"
+              :placeholder="t('datasources.modal.meterIdPlaceholder')"
               type="text"
               id="meterId"
               v-model="dataSource.meterId"
@@ -475,11 +473,9 @@ defineExpose({ showModal })
             <p v-if="errors['meterId']" class="error-message">{{ errors['meterId'] }}</p>
           </div>
           <div class="input-field" key="operatorId">
-            <label for="operatorId" class="optional">{{
-              t('datasources.modal.operatorIdLabel')
-            }}</label>
+            <label class="optional" for="operatorId">{{ t('datasources.modal.operatorId') }}</label>
             <input
-              :placeholder="t('datasources.modal.operatorId')"
+              :placeholder="t('datasources.modal.operatorIdPlaceholder')"
               type="text"
               id="operatorId"
               v-model="dataSource.operatorId"
@@ -649,35 +645,6 @@ defineExpose({ showModal })
   display: flex;
   width: 100%;
   justify-content: space-between;
-}
-
-.extra-column-enter-active,
-.extra-column-leave-active {
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-}
-
-.extra-column-enter-from {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-.extra-column-leave-to {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.extra-column-leave-active {
-  position: absolute;
-  width: 100%;
-  left: 0;
-  top: 0;
-}
-
-.actions {
-  display: flex;
-  gap: var(--spacing-md);
 }
 
 .error-message {

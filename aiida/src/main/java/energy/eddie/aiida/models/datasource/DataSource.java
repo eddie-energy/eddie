@@ -26,8 +26,8 @@ import energy.eddie.aiida.models.image.Image;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.UUID;
@@ -47,12 +47,6 @@ public abstract class DataSource {
     @JsonIgnore
     protected UUID userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Schema(description = "The type of asset this data source is categorized as.")
-    @JsonProperty
-    protected AiidaAsset asset;
-
     @Column(name = "country_code", nullable = false, length = 2)
     @Schema(description = "The country code of the country the data source is located at.")
     @JsonProperty
@@ -68,6 +62,24 @@ public abstract class DataSource {
     @Schema(description = "The icon associated with the data source.")
     @JsonProperty
     protected DataSourceIcon icon;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Schema(description = "The type of asset this data source is categorized as.")
+    @JsonProperty
+    protected AiidaAsset asset;
+
+    @Nullable
+    @Column
+    @Schema(description = "The physical meter ID of the data source.")
+    @JsonProperty
+    protected String meterId;
+
+    @Nullable
+    @Column
+    @Schema(description = "The grid operator ID of the data source.")
+    @JsonProperty
+    protected String operatorId;
 
     @Nullable
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -129,10 +141,6 @@ public abstract class DataSource {
         return userId;
     }
 
-    public AiidaAsset asset() {
-        return asset;
-    }
-
     public String name() {
         return name;
     }
@@ -153,6 +161,20 @@ public abstract class DataSource {
         return icon;
     }
 
+    public AiidaAsset asset() {
+        return asset;
+    }
+
+    @Nullable
+    public String meterId() {
+        return meterId;
+    }
+
+    @Nullable
+    public String operatorId() {
+        return operatorId;
+    }
+
     @Nullable
     public Image image() {
         return image;
@@ -169,12 +191,14 @@ public abstract class DataSource {
     private void applyDto(DataSourceDto dto, UUID userId) {
         this.id = dto.id();
         this.userId = userId;
-        this.asset = dto.asset();
         this.name = dto.name();
         this.enabled = dto.enabled();
         this.type = dto.type();
         this.countryCode = dto.countryCode();
         this.icon = dto.icon();
+        this.asset = dto.asset();
+        this.meterId = dto.meterId();
+        this.operatorId = dto.operatorId();
         this.permissions = List.of();
     }
 

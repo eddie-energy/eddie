@@ -28,6 +28,8 @@
       "id": "ID",
       "country": "Pays",
       "asset": "asset",
+      "meterId": "Identifiant du compteur physique",
+      "operatorId": "ID de l’opérateur de réseau",
       "type": "Type",
       "pollingInterval": "Intervalle d’interrogation",
       "mqttServerUri": "URI du serveur MQTT",
@@ -75,9 +77,9 @@
       "activationKey": "Clé d’activation",
       "isRequired": "est un champ obligatoire",
       "meterId": "Identifiant du compteur physique",
-      "meterIdLabel": "Saisir l’identifiant du compteur physique",
+      "meterIdPlaceholder": "Saisir l’identifiant du compteur physique",
       "operatorId": "ID de l’opérateur de réseau",
-      "operatorIdLabel": "Saisissez l’ID de votre opérateur de réseau"
+      "operatorIdPlaceholder": "Saisissez l’ID de votre opérateur de réseau"
     }
   },
   "permissions": {
