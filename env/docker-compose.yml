@@ -11,6 +11,7 @@ services:
       POSTGRES_DB: ${DATABASE_NAME}
     restart: "always"
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./postgres/create-emqx-user.sql:/tmp/create-emqx-user.sql
       - ./postgres/replace-password-with-env.sh:/docker-entrypoint-initdb.d/00-replace_password_with_env.sh
       - ./create-example-app-db.sql:/docker-entrypoint-initdb.d/create_database.sql
