@@ -6,9 +6,9 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.persistence.*;
 
 import java.time.Instant;
@@ -82,6 +82,7 @@ public class InboundRecord {
                                     dataSource.asset(),
                                     dataSource.meterId(),
                                     dataSource.operatorId(),
+                                    schema,
                                     payload);
     }
 }

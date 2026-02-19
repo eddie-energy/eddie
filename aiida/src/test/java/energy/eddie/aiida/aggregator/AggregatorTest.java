@@ -421,7 +421,11 @@ class AggregatorTest {
 
         aggregator.addNewDataSourceAdapter(inboundAdapter);
 
-        inboundPublisher.next(new InboundRecord(Instant.now(), inboundDataSource, "Test"));
+        var inboundRecord = new InboundRecord(Instant.now(),
+                                       inboundDataSource,
+                                       AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
+                                       "Test");
+        inboundPublisher.next(inboundRecord);
         inboundPublisher.complete();
         recordPublisher.complete();
 
