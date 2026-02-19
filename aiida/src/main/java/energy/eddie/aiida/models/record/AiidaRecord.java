@@ -6,7 +6,7 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import jakarta.persistence.*;
 
@@ -23,31 +23,25 @@ public class AiidaRecord {
     // Used just as JPA ID
     @SuppressWarnings({"unused", "NullAway"})
     private Long id;
+    @Column(nullable = false)
     @JsonProperty
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
     private Instant timestamp;
-    @JsonProperty
-    @Enumerated(EnumType.STRING)
-    private AiidaAsset asset;
-    @JsonProperty
-    private UUID userId;
-    @JsonProperty
-    protected UUID dataSourceId;
+    @ManyToOne
+    @JoinColumn(name = "data_source_id", referencedColumnName = "id", nullable = false, updatable = false)
+    @JsonIgnore
+    private DataSource dataSource;
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("values")
     private List<AiidaRecordValue> aiidaRecordValues;
 
     public AiidaRecord(
             Instant timestamp,
-            AiidaAsset asset,
-            UUID userId,
-            UUID dataSourceId,
+            DataSource dataSource,
             List<AiidaRecordValue> aiidaRecordValues
     ) {
         this.timestamp = timestamp;
-        this.asset = asset;
-        this.userId = userId;
-        this.dataSourceId = dataSourceId;
+        this.dataSource = dataSource;
         this.aiidaRecordValues = aiidaRecordValues;
     }
 
@@ -61,10 +55,12 @@ public class AiidaRecord {
     public AiidaRecord(AiidaRecord aiidaRecord) {
         this.id = aiidaRecord.id;
         this.timestamp = aiidaRecord.timestamp;
-        this.asset = aiidaRecord.asset;
-        this.userId = aiidaRecord.userId;
-        this.dataSourceId = aiidaRecord.dataSourceId;
+        this.dataSource = aiidaRecord.dataSource;
         this.aiidaRecordValues = aiidaRecord.aiidaRecordValues;
+    }
+
+    public Long id() {
+        return id;
     }
 
     public Instant timestamp() {
@@ -79,25 +75,18 @@ public class AiidaRecord {
         this.aiidaRecordValues = aiidaRecordValues;
     }
 
-    public AiidaAsset asset() {
-        return asset;
-    }
-
-    public Long id() {
-        return id;
-    }
-
-    public UUID userId() {return userId;}
-
-    public UUID dataSourceId() {
-        return dataSourceId;
+    public DataSource dataSource() {
+        return dataSource;
     }
 
     public AiidaRecordDto toDto(UUID permissionId) {
-        return new AiidaRecordDto(asset,
-                                  userId,
-                                  dataSourceId,
+        return new AiidaRecordDto(timestamp,
                                   permissionId,
+                                  dataSource.userId(),
+                                  dataSource.id(),
+                                  dataSource.asset(),
+                                  dataSource.meterId(),
+                                  dataSource.operatorId(),
                                   aiidaRecordValues.stream()
                                                    .map(AiidaRecordValue::toDto)
                                                    .toList());

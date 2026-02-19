@@ -26,7 +26,6 @@ import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.health.contributor.Health;
@@ -94,14 +93,14 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      *
      * @param aiidaRecordValues Values for the new aiida record
      */
-    public synchronized void emitAiidaRecord(AiidaAsset asset, List<AiidaRecordValue> aiidaRecordValues) {
+    public synchronized void emitAiidaRecord(List<AiidaRecordValue> aiidaRecordValues) {
         Instant timestamp = Instant.now();
 
-        var aiidaRecord = new AiidaRecord(timestamp, asset, dataSource.userId(), dataSource.id(), aiidaRecordValues);
+        var aiidaRecord = new AiidaRecord(timestamp, dataSource, aiidaRecordValues);
         var invalidTags = AiidaRecordValidator.checkInvalidDataTags(aiidaRecord);
 
         if (!invalidTags.isEmpty()) {
-            LOGGER.trace("Found unknown OBIS-CODES from {}: {}", asset, invalidTags);
+            LOGGER.trace("Found unknown OBIS-CODES from {}: {}", dataSource.id(), invalidTags);
         }
 
         var result = recordSink.tryEmitNext(aiidaRecord);

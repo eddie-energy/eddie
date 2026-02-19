@@ -6,11 +6,11 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.aiida.dtos.record.InboundRecordDto;
+import energy.eddie.aiida.models.datasource.DataSource;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
 public class InboundRecord {
@@ -20,30 +20,25 @@ public class InboundRecord {
     // Used just as JPA ID
     @SuppressWarnings({"unused", "NullAway"})
     private Long id;
+    @Column(nullable = false)
     @JsonProperty
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
     protected Instant timestamp;
-    @JsonProperty
-    @Enumerated(EnumType.STRING)
-    protected AiidaAsset asset;
-    @JsonProperty
-    protected UUID userId;
-    @JsonProperty
-    protected UUID dataSourceId;
+    @ManyToOne
+    @JoinColumn(name = "data_source_id", referencedColumnName = "id", nullable = false, updatable = false)
+    @JsonIgnore
+    private DataSource dataSource;
+    @Column(nullable = false)
     @JsonProperty
     private String payload;
 
     public InboundRecord(
             Instant timestamp,
-            AiidaAsset asset,
-            UUID userId,
-            UUID dataSourceId,
+            DataSource dataSource,
             String payload
     ) {
         this.timestamp = timestamp;
-        this.asset = asset;
-        this.userId = userId;
-        this.dataSourceId = dataSourceId;
+        this.dataSource = dataSource;
         this.payload = payload;
     }
 
@@ -62,17 +57,21 @@ public class InboundRecord {
         return timestamp;
     }
 
-    public AiidaAsset asset() {
-        return asset;
-    }
-
-    public UUID userId() {return userId;}
-
-    public UUID dataSourceId() {
-        return dataSourceId;
+    public DataSource dataSource() {
+        return dataSource;
     }
 
     public String payload() {
         return payload;
+    }
+
+    public InboundRecordDto toDto() {
+        return new InboundRecordDto(timestamp,
+                                    dataSource.userId(),
+                                    dataSource.id(),
+                                    dataSource.asset(),
+                                    dataSource.meterId(),
+                                    dataSource.operatorId(),
+                                    payload);
     }
 }

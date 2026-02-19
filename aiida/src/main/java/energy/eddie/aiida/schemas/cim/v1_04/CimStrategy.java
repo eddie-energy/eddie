@@ -53,14 +53,15 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     ) throws CimSchemaFormatterException {
         var dataNeed = dataNeedOfPermissionOrThrow(permission);
         var countryCode = dataSourceOfPermissionOrThrow(permission).countryCode();
+        var dataSource = aiidaRecord.dataSource();
 
         return new RTDEnvelope()
                 .withMarketDocument(toRealTimeDataMarketDocument(aiidaRecord, countryCode))
                 .withMessageDocumentHeaderCreationDateTime(ZonedDateTime.now(UTC))
-                .withMessageDocumentHeaderMetaInformationAsset(aiidaRecord.asset().toString())
+                .withMessageDocumentHeaderMetaInformationAsset(dataSource.asset().toString())
                 .withMessageDocumentHeaderMetaInformationConnectionId(permission.connectionId())
                 .withMessageDocumentHeaderMetaInformationDataNeedId(dataNeed.dataNeedId().toString())
-                .withMessageDocumentHeaderMetaInformationDataSourceId(aiidaRecord.dataSourceId().toString())
+                .withMessageDocumentHeaderMetaInformationDataSourceId(dataSource.id().toString())
                 .withMessageDocumentHeaderMetaInformationDocumentType(DOCUMENT_TYPE)
                 .withMessageDocumentHeaderMetaInformationFinalCustomerId(aiidaId.toString())
                 .withMessageDocumentHeaderMetaInformationPermissionId(permission.id().toString())
@@ -112,7 +113,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                                         .toList())
                 .withRegisteredResourceMRID(new ResourceIDString()
                                                     .withCodingScheme(codingSchemeValue)
-                                                    .withValue(aiidaRecord.dataSourceId().toString()))
+                                                    .withValue(aiidaRecord.dataSource().id().toString()))
                 .withVersion(VERSION);
     }
 

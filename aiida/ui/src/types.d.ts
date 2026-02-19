@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 export type AiidaDataNeed = {
@@ -18,12 +18,16 @@ export type AiidaDataSourceIcon = 'ELECTRICITY' | 'HEAT' | 'METER' | 'WATER' | '
 export type AiidaDataSource = {
   id: string
   type: string
-  asset: string
   name: string
   countryCode: string
   enabled: boolean
   icon: AiidaDataSourceIcon
+  asset: string
+  meterId?: string
+  operatorId?: string
+  //DatasourceType = INBOUND
   accessCode?: string
+  //DatasourceType = MQTT
   internalHost?: string
   externalHost?: string
   topic?: string

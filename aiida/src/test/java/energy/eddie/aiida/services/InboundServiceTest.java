@@ -13,7 +13,6 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,16 +32,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class InboundServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
-    private static final UUID USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID PERMISSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String ACCESS_CODE = "test-access-code";
     private static final Permission PERMISSION = new Permission();
     private static final InboundDataSource DATA_SOURCE = mock(InboundDataSource.class);
     private static final InboundRecord INBOUND_RECORD = new InboundRecord(
             Instant.now(),
-            AiidaAsset.SUBMETER,
-            USER_ID,
-            DATA_SOURCE_ID,
+            DATA_SOURCE,
             "test"
     );
 
@@ -73,7 +69,7 @@ class InboundServiceTest {
         var inboundRecord = inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE);
 
         // Then
-        assertEquals(DATA_SOURCE_ID, inboundRecord.dataSourceId());
+        assertEquals(DATA_SOURCE_ID, inboundRecord.dataSource().id());
     }
 
     @Test

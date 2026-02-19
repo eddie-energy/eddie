@@ -19,6 +19,7 @@ import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import jakarta.annotation.Nullable;
 
 import java.util.UUID;
 
@@ -45,8 +46,6 @@ public abstract class DataSourceDto {
     @JsonProperty
     protected DataSourceType type;
     @JsonProperty
-    protected AiidaAsset asset;
-    @JsonProperty
     protected String name;
     @JsonProperty
     protected String countryCode;
@@ -54,6 +53,14 @@ public abstract class DataSourceDto {
     protected boolean enabled;
     @JsonProperty
     protected DataSourceIcon icon;
+    @JsonProperty
+    protected AiidaAsset asset;
+    @Nullable
+    @JsonProperty
+    protected String meterId;
+    @Nullable
+    @JsonProperty
+    protected String operatorId;
 
     public UUID id() {
         return id;
@@ -61,10 +68,6 @@ public abstract class DataSourceDto {
 
     public DataSourceType type() {
         return type;
-    }
-
-    public AiidaAsset asset() {
-        return asset;
     }
 
     public String name() {
@@ -81,5 +84,19 @@ public abstract class DataSourceDto {
 
     public DataSourceIcon icon() {
         return icon;
+    }
+
+    public AiidaAsset asset() {
+        return asset;
+    }
+
+    @Nullable
+    public String meterId() {
+        return meterId;
+    }
+
+    @Nullable
+    public String operatorId() {
+        return operatorId;
     }
 }
