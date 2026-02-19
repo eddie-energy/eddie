@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.security;
@@ -137,7 +137,7 @@ class JwtIssuerFilterTest {
     }
 
     @Test
-    void doFilterInternal_forValidContent_addsBearerToken() throws IOException, ServletException {
+    void doFilterInternal_forSinglePermissionId_addsBearerToken() throws IOException, ServletException {
         // Given
         var request = new MockHttpServletRequest();
         request.setMethod("POST");
@@ -145,6 +145,25 @@ class JwtIssuerFilterTest {
         var response = new MockHttpServletResponse();
         response.setStatus(201);
         var payload = "{\"permissionId\": \"pid\"}";
+        var chain = new MockFilterChain(new MockHttpServlet(payload), filter);
+
+        // When
+        chain.doFilter(request, response);
+
+        // Then
+        assertThat(response.getContentAsString())
+                .contains("\"bearerToken\"");
+    }
+
+    @Test
+    void doFilterInternal_forMultiplePermissionIds_addsBearerToken() throws IOException, ServletException {
+        // Given
+        var request = new MockHttpServletRequest();
+        request.setMethod("POST");
+        request.setRequestURI("/region-connectors/aiida/" + PATH_PERMISSION_REQUEST);
+        var response = new MockHttpServletResponse();
+        response.setStatus(201);
+        var payload = "{\"permissionIds\": [\"pid1\",\"pid2\"]}";
         var chain = new MockFilterChain(new MockHttpServlet(payload), filter);
 
         // When
