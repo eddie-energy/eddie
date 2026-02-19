@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <!doctype html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
@@ -12,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- Source remote eddie-components when running with Thymeleaf -->
     <!--/*/
     <base th:href="${publicUrl}">
-    <script type="module" src="/lib/eddie-components.js"></script>
+    <script type="module" th:src="${publicUrl} + '/lib/eddie-components.js'"></script>
     /*/-->
 
     <!-- Source local eddie-components when running with Vite -->
