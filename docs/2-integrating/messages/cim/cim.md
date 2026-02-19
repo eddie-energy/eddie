@@ -10,13 +10,14 @@ Therefore, only compatibility with the XSD files can be guaranteed.
 If an outbound-connector is configured to use any other format than XML, it might emit documents that look like CIM documents, but in another format.
 But the documents might violate the names and structures that are defined in the CIM and can break existing integrations.
 
-There are five types of CIM documents currently supported by EDDIE:
+There are six types of CIM documents currently supported by EDDIE:
 
 - [Permission Market Documents](./permission-market-documents.md)
 - [Accounting Point Market Documents](./accounting-point-data-market-documents.md)
 - [Validated Historical Data Market Documents](./validated-historical-data-market-documents.md)
 - [Near Real Time Data Documents](./near-real-time-data-documents.md)
 - [Retransmission Requests](./redistribution-transaction-request-documents.md)
+- [Min-Max Envelope](./min-max-envelope.md)
 
 ## CIM envelope for v0.82
 

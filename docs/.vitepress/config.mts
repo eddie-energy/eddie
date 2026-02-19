@@ -174,6 +174,10 @@ export default withMermaid(
                   collapsed: true,
                   items: [
                     {
+                      text: "Client Libraries",
+                      link: "/2-integrating/messages/cim/client-libraries.md",
+                    },
+                    {
                       text: "Permission Market Documents",
                       link: "/2-integrating/messages/cim/permission-market-documents.md",
                     },
@@ -194,8 +198,8 @@ export default withMermaid(
                       link: "/2-integrating/messages/cim/redistribution-transaction-request-documents.md",
                     },
                     {
-                      text: "Client Libraries",
-                      link: "/2-integrating/messages/cim/client-libraries.md",
+                      text: "Min-Max Envelope",
+                      link: "/2-integrating/messages/cim/min-max-envelope.md",
                     },
                     {
                       text: "Existing Mappings",
