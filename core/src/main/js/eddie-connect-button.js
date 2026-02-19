@@ -62,20 +62,18 @@ const eventRoutes = new Map([
   ["eddie-view-data-need", { view: "dn", step: 1 }],
   ["eddie-view-permission-administrator", { view: "pa", step: 2 }],
   ["eddie-view-region-connector", { view: "rc", step: 3 }],
+  // Based on permission status, emitted by eddie-request-status-handler
   [
-    "eddie-request-unable-to-send",
+    "eddie-view-unable-to-send",
     { view: "unable-to-send", step: 3, error: true },
   ],
-  ["eddie-request-sent-to-permission-administrator", { view: "rc", step: 4 }],
-  ["eddie-request-accepted", { view: "accepted", step: 5 }],
-  ["eddie-request-rejected", { view: "rejected", step: 5 }],
-  ["eddie-request-timed-out", { view: "timed-out", step: 5, error: true }],
-  ["eddie-request-invalid", { view: "invalid", step: 5, error: true }],
-  [
-    "eddie-request-unfulfillable",
-    { view: "unfulfillable", step: 5, error: true },
-  ],
-  ["eddie-request-fulfilled", { view: "fulfilled", step: 5 }],
+  ["eddie-view-sent-to-permission-administrator", { view: "rc", step: 4 }],
+  ["eddie-view-accepted", { view: "accepted", step: 5 }],
+  ["eddie-view-rejected", { view: "rejected", step: 5 }],
+  ["eddie-view-timed-out", { view: "timed-out", step: 5, error: true }],
+  ["eddie-view-invalid", { view: "invalid", step: 5, error: true }],
+  ["eddie-view-unfulfillable", { view: "unfulfillable", step: 5, error: true }],
+  ["eddie-view-fulfilled", { view: "fulfilled", step: 5 }],
 ]);
 
 const dialogOpenEvent = new Event("eddie-dialog-open", {
@@ -160,7 +158,7 @@ class EddieConnectButton extends LitElement {
         cursor: default;
         filter: grayscale(100%);
       }
-      
+
       .footer {
         display: flex;
         align-items: end;
