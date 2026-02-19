@@ -12,6 +12,8 @@ The Initial Developer of the region-connectors/region-connector-us-green-button/
 is NAESB (https://www.naesb.org/).
 Copyright 2011-2020 North American Energy Standards Board
 
+Flags in core/src/main/js/styles/flags.js were sourced from Twitter Emoji (https://github.com/twitter/twemoji)
+
 Icons in aiida/ui/src/assets/icons were sourced from the following icon sets
 - css.gg by Astrit (https://github.com/astrit/css.gg)
 - IconPark Outline by ByteDance (https://github.com/bytedance/IconPark)
