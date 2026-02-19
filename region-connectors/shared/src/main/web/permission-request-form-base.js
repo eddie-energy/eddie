@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { LitElement } from "lit";
@@ -170,9 +170,13 @@ class PermissionRequestFormBase extends LitElement {
           duration: 10000,
         });
 
-        const { permissionId, bearerToken } = data;
+        const { permissionId, permissionIds, bearerToken } = data;
         this.bearerToken = bearerToken;
-        this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`); // TODO: GH-2335 fix for multiple permissions
+
+        const ids = permissionIds ?? [permissionId];
+        for (const permissionId of ids) {
+          this.pollRequestStatus(`${this.requestStatusUrl}/${permissionId}`);
+        }
       }
 
       return data;

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { html } from "lit";
@@ -36,6 +36,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
     this.createPermissionRequest(body)
       .then((result) => {
+        // Appended token is not needed for the QR code
+        delete result.bearerToken;
         this._aiidaCode = JSON.stringify(result);
       })
       .catch((error) => {
