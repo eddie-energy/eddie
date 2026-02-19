@@ -37,10 +37,9 @@ The CIM library itself is versioned. The changelog can be found in the GitHub re
 > [!INFO]
 > You can find the CIM package in the EDDIE repository here: https://github.com/eddie-energy/eddie/packages/2495238.
 
-#### Maven
+::: code-group
 
-```xml
-
+```xml [Maven (XML)]
 <dependency>
     <groupId>energy.eddie</groupId>
     <artifactId>cim</artifactId>
@@ -48,11 +47,17 @@ The CIM library itself is versioned. The changelog can be found in the GitHub re
 </dependency>
 ```
 
-#### Gradle
-
-```kotlin
-implementation("energy.eddie:cim:1.0.0") // Use the desired version from GitHub Packages
+```kotlin [Gradle (Kotlin)]
+// Use the desired version from GitHub Packages
+implementation("energy.eddie:cim:1.0.0")
 ```
+
+```kotlin [Gradle (Groovy)]
+// Use the desired version from GitHub Packages
+implementation 'energy.eddie:cim:1.0.0'
+```
+
+:::
 
 ### Example code
 
