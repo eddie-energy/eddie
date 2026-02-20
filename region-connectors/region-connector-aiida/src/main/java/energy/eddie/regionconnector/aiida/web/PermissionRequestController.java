@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.web;
@@ -20,15 +20,16 @@ import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM_BASE;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 
 @RestController
@@ -49,10 +50,11 @@ public class PermissionRequestController {
             @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, JwtCreationFailedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(qrCodeDto);
+        var location = UriComponentsBuilder.fromUriString(CONNECTION_STATUS_STREAM_BASE)
+                                           .queryParam("permission-id", qrCodeDto.permissionIds())
+                                           .build()
+                                           .toUri();
+        return ResponseEntity.created(location).body(qrCodeDto);
     }
 
     @PatchMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST,

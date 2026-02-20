@@ -24,20 +24,21 @@ import java.time.ZoneOffset;
 import java.util.List;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
-    @SuppressWarnings("unused")
-    @Mock
-    private Outbox mockOutbox;
     @Spy
     private final AtConfiguration configuration = new AtConfiguration("epId");
     @SuppressWarnings("unused")
     @Spy
     private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
+    @SuppressWarnings("unused")
+    @Mock
+    private Outbox mockOutbox;
     @Mock
     private DataNeedCalculationService<DataNeed> calculationService;
     @InjectMocks
@@ -55,13 +56,37 @@ class PermissionRequestCreationAndValidationServiceTest {
 
 
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                  "dnid", "AT000000");
+                                                  List.of("dnid"), "AT000000");
 
         // When
         var res = creationService.createAndValidatePermissionRequest(pr);
 
         // Then
         assertNotNull(res);
+    }
+
+
+    @Test
+    void createValidPermissionRequestAndInvalidPermissionRequest_forHVDDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        var start = LocalDate.now(AT_ZONE_ID).minusDays(10);
+        var timeframe = new Timeframe(start, start.plusDays(5));
+        when(calculationService.calculate("dnid1"))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                                      timeframe,
+                                                                      timeframe));
+        when(calculationService.calculate("dnid2"))
+                .thenReturn(new DataNeedNotSupportedResult("msg"));
+
+
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  List.of("dnid1", "dnid2"), "AT000000");
+
+        // When
+        var res = creationService.createAndValidatePermissionRequest(pr);
+
+        // Then
+        assertThat(res.permissionIds()).hasSize(1);
     }
 
     @Test
@@ -72,7 +97,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AccountingPointDataNeedResult(timeframe));
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                  "dnid", "AT000000");
+                                                  List.of("dnid"), "AT000000");
 
         // When
         var res = creationService.createAndValidatePermissionRequest(pr);
@@ -87,8 +112,9 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(calculationService.calculate("dnid")).thenReturn(new DataNeedNotSupportedResult("bla"));
 
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                  "dnid", "AT000000");
-        // When & Then
+                                                  List.of("dnid"), "AT000000");
+        // When
+        // Then
         assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
     }
 
@@ -98,7 +124,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(calculationService.calculate("dnid"))
                 .thenReturn(new DataNeedNotSupportedResult("Granularities not supported"));
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                  "dnid", "AT000000");
+                                                  List.of("dnid"), "AT000000");
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
@@ -108,7 +134,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     void givenUnknownDataNeedId_throwsUnknownDataNeedException() {
         // Given
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                  "dnid", "AT000000");
+                                                  List.of("dnid"), "AT000000");
         when(calculationService.calculate("dnid"))
                 .thenReturn(new DataNeedNotFoundResult());
 
