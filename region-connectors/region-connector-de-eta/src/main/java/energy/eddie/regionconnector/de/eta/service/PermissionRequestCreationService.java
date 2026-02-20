@@ -1,9 +1,7 @@
 package energy.eddie.regionconnector.de.eta.service;
 
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-import org.springframework.web.util.UriUtils;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import org.springframework.web.util.UriComponentsBuilder;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -96,30 +94,19 @@ public class PermissionRequestCreationService {
                         energyTimeframe.start(),
                         energyTimeframe.end(),
                         granularities.getFirst()));
-                var redirectUri = buildRedirectUri(permissionId);
-                return new CreatedPermissionRequest(permissionId, redirectUri.toString());
+                return new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
             }
         }
     }
 
-    private URI buildRedirectUri(String permissionId) {
-        String baseUrl = configuration.oauth().authorizationUrl();
-        StringBuilder urlBuilder = new StringBuilder(baseUrl);
-
-        if (!baseUrl.contains("?")) {
-            urlBuilder.append("?");
-        } else {
-            urlBuilder.append("&");
-        }
-
-        urlBuilder.append("response_type=").append(UriUtils.encode("code", StandardCharsets.UTF_8));
-        urlBuilder.append("&client_id=")
-                .append(UriUtils.encode(configuration.oauth().clientId(), StandardCharsets.UTF_8));
-        urlBuilder.append("&state=").append(UriUtils.encode(permissionId, StandardCharsets.UTF_8));
-        urlBuilder.append("&redirect_uri=")
-                .append(UriUtils.encode(configuration.oauth().redirectUri(), StandardCharsets.UTF_8));
-        urlBuilder.append("&scope=").append(UriUtils.encode(configuration.oauth().scope(), StandardCharsets.UTF_8));
-
-        return URI.create(urlBuilder.toString());
+    private String buildRedirectUri(String permissionId) {
+        return UriComponentsBuilder
+                .fromUriString(configuration.oauth().authorizationUrl())
+                .queryParam("response_type", "code")
+                .queryParam("client_id", configuration.oauth().clientId())
+                .queryParam("state", permissionId)
+                .queryParam("redirect_uri", configuration.oauth().redirectUri())
+                .queryParam("scope", configuration.oauth().scope())
+                .toUriString();
     }
 }
