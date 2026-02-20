@@ -1,5 +1,9 @@
 package energy.eddie.regionconnector.de.eta.service;
 
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
+import org.springframework.web.util.UriUtils;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -22,23 +26,26 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 /**
- * Service for creating permission requests for the German (DE) ETA Plus region connector.
+ * Service for creating permission requests for the German (DE) ETA Plus region
+ * connector.
  */
 @Service
 public class PermissionRequestCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
-    
+
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final Outbox outbox;
+    private final DeEtaPlusConfiguration configuration;
 
     public PermissionRequestCreationService(
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
-            Outbox outbox
-    ) {
+            Outbox outbox,
+            DeEtaPlusConfiguration configuration) {
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.outbox = outbox;
+        this.configuration = configuration;
     }
 
     /**
@@ -46,7 +53,7 @@ public class PermissionRequestCreationService {
      *
      * @param requestForCreation the request creation DTO
      * @return the created permission request
-     * @throws DataNeedNotFoundException if the data need is not found
+     * @throws DataNeedNotFoundException    if the data need is not found
      * @throws UnsupportedDataNeedException if the data need is not supported
      */
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation requestForCreation)
@@ -54,15 +61,14 @@ public class PermissionRequestCreationService {
         String permissionId = UUID.randomUUID().toString();
         String dataNeedId = requestForCreation.dataNeedId();
 
-        LOGGER.info("Creating new permission request {} for metering point {}", 
+        LOGGER.info("Creating new permission request {} for metering point {}",
                 permissionId, requestForCreation.meteringPointId());
 
         outbox.commit(new CreatedEvent(
                 permissionId,
                 dataNeedId,
                 requestForCreation.connectionId(),
-                requestForCreation.meteringPointId()
-        ));
+                requestForCreation.meteringPointId()));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
             case AccountingPointDataNeedResult ignored -> {
@@ -74,8 +80,7 @@ public class PermissionRequestCreationService {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
                         permissionId,
-                        List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))
-                ));
+                        List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))));
                 throw new DataNeedNotFoundException(dataNeedId);
             }
 
@@ -84,20 +89,37 @@ public class PermissionRequestCreationService {
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
 
-            case ValidatedHistoricalDataDataNeedResult(
-                    List<Granularity> granularities,
-                    Timeframe ignored,
-                    Timeframe energyTimeframe
-            ) -> {
+            case ValidatedHistoricalDataDataNeedResult(List<Granularity> granularities, Timeframe ignored, Timeframe energyTimeframe) -> {
                 LOGGER.info("Validated permission request {}", permissionId);
                 outbox.commit(new ValidatedEvent(
                         permissionId,
                         energyTimeframe.start(),
                         energyTimeframe.end(),
-                        granularities.getFirst()
-                ));
-                return new CreatedPermissionRequest(permissionId);
+                        granularities.getFirst()));
+                var redirectUri = buildRedirectUri(permissionId);
+                return new CreatedPermissionRequest(permissionId, redirectUri.toString());
             }
         }
+    }
+
+    private URI buildRedirectUri(String permissionId) {
+        String baseUrl = configuration.oauth().authorizationUrl();
+        StringBuilder urlBuilder = new StringBuilder(baseUrl);
+
+        if (!baseUrl.contains("?")) {
+            urlBuilder.append("?");
+        } else {
+            urlBuilder.append("&");
+        }
+
+        urlBuilder.append("response_type=").append(UriUtils.encode("code", StandardCharsets.UTF_8));
+        urlBuilder.append("&client_id=")
+                .append(UriUtils.encode(configuration.oauth().clientId(), StandardCharsets.UTF_8));
+        urlBuilder.append("&state=").append(UriUtils.encode(permissionId, StandardCharsets.UTF_8));
+        urlBuilder.append("&redirect_uri=")
+                .append(UriUtils.encode(configuration.oauth().redirectUri(), StandardCharsets.UTF_8));
+        urlBuilder.append("&scope=").append(UriUtils.encode(configuration.oauth().scope(), StandardCharsets.UTF_8));
+
+        return URI.create(urlBuilder.toString());
     }
 }
