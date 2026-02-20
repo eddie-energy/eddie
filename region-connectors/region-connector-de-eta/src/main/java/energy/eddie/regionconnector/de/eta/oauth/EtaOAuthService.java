@@ -35,7 +35,7 @@ public class EtaOAuthService {
                 .retrieve()
                 .bodyToMono(OAuthTokenResponse.class)
                 .doOnSuccess(response -> {
-                    if (response != null && response.success()) {
+                    if (response.success()) {
                         LOGGER.info("Successfully exchanged token for access token");
                     } else {
                         LOGGER.warn("Token exchange returned unsuccessful response");
