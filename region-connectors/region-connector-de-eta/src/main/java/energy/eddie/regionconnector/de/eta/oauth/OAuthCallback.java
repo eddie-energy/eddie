@@ -20,7 +20,9 @@ public record OAuthCallback(Optional<String> code, Optional<String> error, Strin
     public OAuthCallback {
         if (code.isEmpty() && error.isEmpty()) {
             throw new IllegalArgumentException("Either code or error must be provided");
-        } else if (code.isPresent() && error.isPresent()) {
+        }
+
+        if (code.isPresent() && error.isPresent()) {
             throw new IllegalArgumentException("Only one of code or error must be provided");
         }
     }
