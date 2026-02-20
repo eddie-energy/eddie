@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.de.eta.service;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.oauth.EtaOAuthService;
 import energy.eddie.regionconnector.de.eta.oauth.OAuthCallback;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
@@ -22,14 +23,17 @@ public class PermissionRequestAuthorizationService {
     private final DePermissionRequestRepository permissionRequestRepository;
     private final Outbox outbox;
     private final EtaOAuthService oauthService;
+    private final DeEtaPlusConfiguration configuration;
 
     public PermissionRequestAuthorizationService(
             DePermissionRequestRepository permissionRequestRepository,
             Outbox outbox,
-            EtaOAuthService oauthService) {
+            EtaOAuthService oauthService,
+            DeEtaPlusConfiguration configuration) {
         this.permissionRequestRepository = permissionRequestRepository;
         this.outbox = outbox;
         this.oauthService = oauthService;
+        this.configuration = configuration;
     }
 
     public void authorizePermissionRequest(OAuthCallback callback) throws PermissionNotFoundException {
@@ -63,7 +67,7 @@ public class PermissionRequestAuthorizationService {
         }
 
         LOGGER.info("Authorization callback was successful for permission request {}", permissionId);
-        oauthService.exchangeCodeForToken(callback.code().orElseThrow(), "rc-user-01")
+        oauthService.exchangeCodeForToken(callback.code().orElseThrow(), configuration.oauth().clientId())
                 .subscribe(
                         response -> {
                             if (response != null && response.success()) {
