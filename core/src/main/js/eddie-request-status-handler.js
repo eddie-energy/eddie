@@ -14,36 +14,80 @@ const VARIANT_ICONS = {
   danger: "exclamation-octagon",
 };
 
+const STATUS_VIEWS = {
+  UNABLE_TO_SEND: "unable-to-send",
+  ACCEPTED: "accepted",
+  REJECTED: "rejected",
+  TIMED_OUT: "timed-out",
+  INVALID: "invalid",
+  UNFULFILLABLE: "unfulfillable",
+  FULFILLED: "fulfilled",
+};
+
 class EddieRequestStatusHandler extends LitElement {
   static properties = {
-    status: { type: String },
-    detailMessage: { type: String },
+    permissionStates: { type: Object },
   };
 
   constructor() {
     super();
 
-    this.addEventListener("eddie-request-status", (event) => {
-      this.status = event.detail.status;
-      this.detailMessage = event.detail.message;
-    });
+    /**
+     * Maps permissions to their current status and optional message.
+     * @type {Record<string, { status: string, message?: string }>}
+     */
+    this.permissionStates = {};
+
+    this.addEventListener(
+      "eddie-request-status",
+      ({ detail: { message, permissionId, status } }) => {
+        this.permissionStates[permissionId] = {
+          status: status,
+          message: message,
+        };
+
+        // Lit does not detect mutation
+        this.requestUpdate();
+
+        for (const viewStatus of Object.keys(STATUS_VIEWS)) {
+          if (
+            Object.values(this.permissionStates).every(
+              ({ status }) => status === viewStatus
+            )
+          ) {
+            // Request view change
+            this.dispatchEvent(
+              new Event(`eddie-view-${STATUS_VIEWS[viewStatus]}`, {
+                composed: true,
+                bubbles: true,
+              })
+            );
+            // Skip other status checks as we already know which view to show
+            break;
+          }
+        }
+      }
+    );
   }
 
   render() {
-    if (!this.status) return html`<slot></slot>`;
-
-    const { title, message, variant } = STATUS_MESSAGES[this.status];
-
     return html`
       <slot></slot>
-      <br />
-      <sl-alert variant="${variant}" open>
-        <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
-        <p>
-          <strong>Status: ${title}</strong><br />
-          ${message} ${this.detailMessage ?? ""}
-        </p>
-      </sl-alert>
+      ${Object.entries(this.permissionStates).map(
+        ([_, { message: detailsMessage, status }]) => {
+          const { title, message, variant } = STATUS_MESSAGES[status];
+          return html`
+            <br />
+            <sl-alert variant="${variant}" open>
+              <sl-icon name="${VARIANT_ICONS[variant]}" slot="icon"></sl-icon>
+              <p>
+                <strong>Status: ${title}</strong><br />
+                ${message} ${detailsMessage ?? ""}
+              </p>
+            </sl-alert>
+          `;
+        }
+      )}
     `;
   }
 }
