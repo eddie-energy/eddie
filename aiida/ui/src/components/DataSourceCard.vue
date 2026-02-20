@@ -49,35 +49,32 @@ type HealthStatusConfig = {
 
 const image = computed(() => dataSourceImages.value[dataSource.id])
 const healthStatus = computed(() => dataSourceHealthStatuses.value[dataSource.id])
-const healthStatusConfig = computed<HealthStatusConfig>(() => {
-  switch (healthStatus?.value?.status) {
-    case 'UP':
-      return {
-        type: 'healthy',
-        label: t('datasources.card.healthStatusUp'),
-        tooltip: t('datasources.card.healthStatusUpTooltip'),
-      }
-    case 'WARNING':
-      return {
-        type: 'partially-healthy',
-        label: t('datasources.card.healthStatusWarning'),
-        tooltip: t('datasources.card.healthStatusWarningTooltip'),
-      }
-    case 'UNKNOWN':
-      return {
-        type: 'unknown',
-        label: t('datasources.card.healthStatusUnknown'),
-        tooltip: t('datasources.card.healthStatusUnknownTooltip'),
-      }
-    case 'DOWN':
-    default:
-      return {
-        type: 'unhealthy',
-        label: t('datasources.card.healthStatusDown'),
-        tooltip: t('datasources.card.healthStatusDownTooltip'),
-      }
-  }
-})
+const healthTexts: Record<string, HealthStatusConfig> = {
+  UP: {
+    type: 'healthy',
+    label: t('datasources.card.healthStatusUp'),
+    tooltip: t('datasources.card.healthStatusUpTooltip'),
+  },
+  WARNING: {
+    type: 'partially-healthy',
+    label: t('datasources.card.healthStatusWarning'),
+    tooltip: t('datasources.card.healthStatusWarningTooltip'),
+  },
+  UNKNOWN: {
+    type: 'unknown',
+    label: t('datasources.card.healthStatusUnknown'),
+    tooltip: t('datasources.card.healthStatusUnknownTooltip'),
+  },
+  DOWN: {
+    type: 'unhealthy',
+    label: t('datasources.card.healthStatusDown'),
+    tooltip: t('datasources.card.healthStatusDownTooltip'),
+  },
+}
+
+const healthStatusConfig = computed<HealthStatusConfig>(
+  () => healthTexts[healthStatus?.value?.status || 'DOWN'],
+)
 </script>
 
 <template>

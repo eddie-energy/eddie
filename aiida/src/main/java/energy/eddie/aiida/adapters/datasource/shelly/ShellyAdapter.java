@@ -82,18 +82,19 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
     @Override
     public Health health() {
-        var health = super.health();
-        if (prioritizeStandardHealthState(health)) {
-            return health;
-        }
-        return healthState;
-    }
+        var baseHealth = super.health();
 
-    private boolean prioritizeStandardHealthState(Health standardHealth) {
-        return healthState.getStatus().equals(Status.UNKNOWN)
-               || (standardHealth != null && (standardHealth.getStatus().equals(Status.DOWN)
-                                              || standardHealth.getStatus()
-                                                               .equals(Health.status("WARNING").build().getStatus())));
+        if (baseHealth == null) {
+            return healthState;
+        }
+
+        if (healthState.getStatus().equals(Status.UNKNOWN) ||
+            baseHealth.getStatus().equals(Status.DOWN) ||
+            baseHealth.getStatus().getCode().equals("WARNING")) {
+            return baseHealth;
+        }
+
+        return healthState;
     }
 
     private Stream<ShellyMeasurement> componentEntryToMeasurement(

@@ -145,10 +145,17 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
 
     @Override
     public Health health() {
-        var health = super.health();
-        if (prioritizeStandardHealthState(health)) {
-            return health;
+        var baseHealth = super.health();
+
+        if (baseHealth == null) {
+            return healthState;
         }
+
+        if (baseHealth.getStatus().equals(Status.DOWN) ||
+            baseHealth.getStatus().getCode().equals("WARNING")) {
+            return baseHealth;
+        }
+
         return healthState;
     }
 
@@ -164,12 +171,6 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
             LOGGER.error("Error while subscribing to topic {}", healthTopic, ex);
             healthSink.tryEmitNext(Health.down().withDetail("Error", ex).build());
         }
-    }
-
-    private boolean prioritizeStandardHealthState(Health standardHealth) {
-        return standardHealth != null
-               && (standardHealth.getStatus().equals(Status.DOWN)
-                   || standardHealth.getStatus().equals(Health.status("WARNING").build().getStatus()));
     }
 
     private MicroTeleinfoV3Mode determineMode(byte[] payload) throws MicroTeleinfoV3ModeNotSupportedException {
