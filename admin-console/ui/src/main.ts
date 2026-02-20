@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+import type { Directive, Plugin } from 'vue'
 import { createApp } from 'vue'
 import App from './App.vue'
 import '@fontsource-variable/inter'
@@ -128,9 +129,9 @@ app.use(PrimeVue, {
     preset: EddiePreset
   }
 })
-app.use(ConfirmationService)
-app.use(ToastService)
+app.use(ConfirmationService as unknown as Plugin)
+app.use(ToastService as unknown as Plugin)
 
-app.directive('tooltip', Tooltip)
+app.directive('tooltip', Tooltip as unknown as Directive)
 
 app.mount('#app')
