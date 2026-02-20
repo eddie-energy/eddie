@@ -82,11 +82,18 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
     @Override
     public Health health() {
-        var health = super.health();
-        if (healthState.getStatus().equals(Status.UNKNOWN)
-            || (health != null && health.getStatus().equals(Status.DOWN))) {
-            return health;
+        var baseHealth = super.health();
+
+        if (baseHealth == null) {
+            return healthState;
         }
+
+        if (healthState.getStatus().equals(Status.UNKNOWN) ||
+            baseHealth.getStatus().equals(Status.DOWN) ||
+            baseHealth.getStatus().getCode().equals("WARNING")) {
+            return baseHealth;
+        }
+
         return healthState;
     }
 

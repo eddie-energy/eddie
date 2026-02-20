@@ -127,8 +127,8 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
                         .map(entry ->
                                      new MicroTeleinfoV3AdapterStandardModeMeasurement(
                                              entry.getKey(),
-                                             String.valueOf(entry.getValue().sanitizedValue(entry.getKey())))
-                        ).map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
+                                             String.valueOf(entry.getValue().sanitizedValue(entry.getKey()))))
+                        .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                         .toList();
                 case UNKNOWN -> throw new MicroTeleinfoV3ModeNotSupportedException(message.getPayload(),
                                                                                    List.of(MicroTeleinfoV3Mode.UNKNOWN));
@@ -145,10 +145,17 @@ public class MicroTeleinfoV3Adapter extends MqttDataSourceAdapter<MicroTeleinfoV
 
     @Override
     public Health health() {
-        var health = super.health();
-        if (health != null && health.getStatus().equals(Status.DOWN)) {
-            return health;
+        var baseHealth = super.health();
+
+        if (baseHealth == null) {
+            return healthState;
         }
+
+        if (baseHealth.getStatus().equals(Status.DOWN) ||
+            baseHealth.getStatus().getCode().equals("WARNING")) {
+            return baseHealth;
+        }
+
         return healthState;
     }
 

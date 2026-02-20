@@ -5,9 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 
 <script setup lang="ts">
 import StatusDotIcon from '@/assets/icons/StatusDotIcon.svg'
+import type { StatusTypes } from '@/types'
 
 const { statusType = 'healthy', minimalOnMobile } = defineProps<{
-  statusType?: 'healthy' | 'unhealthy'
+  statusType?: StatusTypes
   minimalOnMobile?: boolean
 }>()
 </script>
@@ -23,22 +24,29 @@ const { statusType = 'healthy', minimalOnMobile } = defineProps<{
 
 <style scoped>
 .status-tag {
+  --status-color: var(--eddie-green);
+
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-md);
   background-color: #fafff2;
-  border: 1px solid var(--eddie-green);
-  color: var(--eddie-green);
+  border: 1px solid var(--status-color);
+  color: var(--status-color);
   width: fit-content;
   height: fit-content;
   border-radius: 1rem;
   text-wrap: nowrap;
 
-  &.unhealthy {
-    color: var(--eddie-red-medium);
-    background-color: #ffeaeb;
-    border-color: var(--eddie-red-medium);
+  &.unhealthy,
+  &.partially-healthy {
+    --status-color: var(--eddie-red-medium);
+    background-color: var(--eddie-red-background);
+  }
+
+  &.unknown {
+    --status-color: var(--eddie-grey-medium);
+    background-color: var(--eddie-grey-light);
   }
 
   &.minimal {

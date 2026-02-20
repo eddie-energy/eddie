@@ -85,8 +85,11 @@ export type AiidaPermissionRequestsDTO = {
 
 export type AiidaDataSourceHealthStatus = {
   status: string
-  details: string
+  details?: {
+    [key: string]: string
+  }
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
+export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'

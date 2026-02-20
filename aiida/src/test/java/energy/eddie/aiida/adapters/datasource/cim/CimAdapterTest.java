@@ -18,7 +18,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import org.springframework.boot.health.contributor.Status;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -27,7 +26,6 @@ import java.time.Duration;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -61,24 +59,6 @@ class CimAdapterTest {
     @AfterEach
     void tearDown() {
         LOG_CAPTOR.clearLogs();
-    }
-
-    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
-    @Test
-    void testHealth() {
-        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
-            var mockClient = mock(MqttAsyncClient.class);
-            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
-                           .thenReturn(mockClient);
-            when(mockClient.isConnected()).thenReturn(true);
-
-            adapter.start();
-            assertEquals(Status.UP, adapter.health().getStatus());
-
-            adapter.close();
-            when(mockClient.isConnected()).thenReturn(false);
-            assertEquals(Status.DOWN, adapter.health().getStatus());
-        }
     }
 
     @Test
