@@ -12,6 +12,7 @@ import energy.eddie.regionconnector.de.eta.permission.request.events.CreatedEven
 import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 
@@ -40,11 +40,14 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private Outbox outbox;
 
+    @Mock
+    private DeEtaPlusConfiguration configuration;
+
     private PermissionRequestCreationService service;
 
     @BeforeEach
     void setUp() {
-        service = new PermissionRequestCreationService(dataNeedCalculationService, outbox);
+        service = new PermissionRequestCreationService(dataNeedCalculationService, outbox, configuration);
     }
 
     @Test
@@ -57,10 +60,13 @@ class PermissionRequestCreationServiceTest {
         ValidatedHistoricalDataDataNeedResult result = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 timeframe,
-                timeframe
-        );
+                timeframe);
 
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(result);
+
+        DeEtaPlusConfiguration.OAuthConfig oauthConfig = new DeEtaPlusConfiguration.OAuthConfig(
+                "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri", "scope");
+        when(configuration.oauth()).thenReturn(oauthConfig);
 
         var response = service.createPermissionRequest(request);
 
@@ -75,8 +81,9 @@ class PermissionRequestCreationServiceTest {
     void createPermissionRequestWhenAccountingPointDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()),
-                                            LocalDate.now(ZoneId.systemDefault()).plusDays(1));
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
+                LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        when(dataNeedCalculationService.calculate(anyString()))
+                .thenReturn(new AccountingPointDataNeedResult(timeframe));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);
@@ -88,7 +95,7 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenAiidaDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC).plusDays(1));
+        Timeframe timeframe = new Timeframe(LocalDate.now(), LocalDate.now().plusDays(1));
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AiidaDataNeedResult(Set.of(),
                                                                                                    Set.of(),
                                                                                                    timeframe));
@@ -115,7 +122,8 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenDataNeedNotSupportedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation("dn-1", CONNECTION_ID, "mp-1");
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult("Unsupported"));
+        when(dataNeedCalculationService.calculate(anyString()))
+                .thenReturn(new DataNeedNotSupportedResult("Unsupported"));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);
