@@ -2,7 +2,6 @@ package energy.eddie.regionconnector.de.eta.service;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
-import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.de.eta.dtos.PermissionRequestForCreation;
@@ -10,6 +9,7 @@ import energy.eddie.regionconnector.de.eta.permission.request.events.CreatedEven
 import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -36,11 +36,14 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private Outbox outbox;
 
+    @Mock
+    private DeEtaPlusConfiguration configuration;
+
     private PermissionRequestCreationService service;
 
     @BeforeEach
     void setUp() {
-        service = new PermissionRequestCreationService(dataNeedCalculationService, outbox);
+        service = new PermissionRequestCreationService(dataNeedCalculationService, outbox, configuration);
     }
 
     @Test
@@ -49,20 +52,23 @@ class PermissionRequestCreationServiceTest {
         LocalDate start = LocalDate.now(ZoneId.systemDefault());
         LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(30);
         Timeframe timeframe = new Timeframe(start, end);
-        
+
         ValidatedHistoricalDataDataNeedResult result = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 timeframe,
-                timeframe
-        );
-        
+                timeframe);
+
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(result);
+
+        DeEtaPlusConfiguration.OAuthConfig oauthConfig = new DeEtaPlusConfiguration.OAuthConfig(
+                "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri", "scope");
+        when(configuration.oauth()).thenReturn(oauthConfig);
 
         var response = service.createPermissionRequest(request);
 
         assertThat(response).isNotNull();
         assertThat(response.permissionId()).isNotNull();
-        
+
         verify(outbox).commit(any(CreatedEvent.class));
         verify(outbox).commit(any(ValidatedEvent.class));
     }
@@ -70,8 +76,10 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenAccountingPointDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()).plusDays(1));
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
+        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()),
+                LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        when(dataNeedCalculationService.calculate(anyString()))
+                .thenReturn(new AccountingPointDataNeedResult(timeframe));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);
@@ -95,7 +103,8 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenDataNeedNotSupportedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation("dn-1", CONNECTION_ID, "mp-1");
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult("Unsupported"));
+        when(dataNeedCalculationService.calculate(anyString()))
+                .thenReturn(new DataNeedNotSupportedResult("Unsupported"));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);
