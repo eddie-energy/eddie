@@ -15,7 +15,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.4.0"
+version = "3.4.1"
 
 repositories {
     mavenCentral()
@@ -106,7 +106,8 @@ val generateCIMSchemaClasses = tasks.register("generateCIMSchemaClasses") {
         cimSchemaFiles.resolve("v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
         // V1.12
         cimSchemaFiles.resolve("v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd"),
-        cimSchemaFiles.resolve("v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd")
+        cimSchemaFiles.resolve("v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd"),
+        cimSchemaFiles.resolve("v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd")
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
