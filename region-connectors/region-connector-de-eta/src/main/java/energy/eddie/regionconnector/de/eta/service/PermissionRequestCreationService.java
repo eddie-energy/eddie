@@ -100,13 +100,17 @@ public class PermissionRequestCreationService {
     }
 
     private String buildRedirectUri(String permissionId) {
-        return UriComponentsBuilder
-                .fromUriString(configuration.oauth().authorizationUrl())
+        String queryParams = UriComponentsBuilder.newInstance()
                 .queryParam("response_type", "code")
                 .queryParam("client_id", configuration.oauth().clientId())
                 .queryParam("state", permissionId)
                 .queryParam("redirect_uri", configuration.oauth().redirectUri())
                 .queryParam("scope", configuration.oauth().scope())
-                .toUriString();
+                .build()
+                .encode()
+                .getQuery();
+
+        String baseUrl = configuration.oauth().authorizationUrl();
+        return baseUrl + (baseUrl.contains("?") ? "&" : "?") + queryParams;
     }
 }
