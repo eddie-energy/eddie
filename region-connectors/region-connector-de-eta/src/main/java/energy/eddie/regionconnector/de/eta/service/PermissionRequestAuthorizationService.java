@@ -67,21 +67,21 @@ public class PermissionRequestAuthorizationService {
         oauthService.exchangeCodeForToken(callback.code().orElseThrow(), configuration.oauth().clientId())
                 .subscribe(
                         response -> {
-                            if (response != null && response.success()) {
-                                String accessToken = response.getAccessToken();
-                                if (accessToken == null) {
-                                    LOGGER.error("Token exchange returned null access token for permission request {}",
-                                            permissionId);
-                                    outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-                                    return;
-                                }
-                                LOGGER.info("Successfully obtained access token for permission request {}",
-                                        permissionId);
-                                outbox.commit(new AcceptedEvent(permissionId, accessToken, response.getRefreshToken()));
-                            } else {
+                            if (response == null || !response.success()) {
                                 LOGGER.error("Token exchange failed for permission request {}", permissionId);
                                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
+                                return;
                             }
+                            var accessToken = response.getAccessToken();
+                            if (accessToken == null) {
+                                LOGGER.error("Token exchange returned null access token for permission request {}",
+                                        permissionId);
+                                outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
+                                return;
+                            }
+                            LOGGER.info("Successfully obtained access token for permission request {}",
+                                    permissionId);
+                            outbox.commit(new AcceptedEvent(permissionId, accessToken, response.getRefreshToken()));
                         },
                         error -> {
                             LOGGER.error("Error during token exchange for permission request " + permissionId, error);
