@@ -7,3 +7,5 @@
 # These are Windows script files and should use crlf
 *.bat           text eol=crlf
 
+# Password replacements fail in Docker Desktop on Windows if CRLF is active, so set it to LF manually
+*.sh            text eol=lf
