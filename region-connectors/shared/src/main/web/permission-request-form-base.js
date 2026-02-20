@@ -48,11 +48,6 @@ class PermissionRequestFormBase extends LitElement {
    * @type {string}
    */
   requestUrl;
-  /**
-   * Endpoint for subscribing to the status of a permission request.
-   * @type {string}
-   */
-  requestStatusUrl;
 
   /**
    * Bearer Token to access endpoints which meant after a permission request has been created.
@@ -67,7 +62,6 @@ class PermissionRequestFormBase extends LitElement {
     this.baseUrl = this.getAttribute("base-url") ?? BASE_URL;
 
     this.requestUrl = this.baseUrl + "/permission-request";
-    this.requestStatusUrl = this.coreUrl + "/api/connection-status-messages";
   }
 
   /**
@@ -170,9 +164,8 @@ class PermissionRequestFormBase extends LitElement {
           duration: 10000,
         });
 
-        const pollEndpoint = response.headers.get("Location");
-        const { bearerToken } = data;
-        this.bearerToken = bearerToken;
+        const pollEndpoint = this.coreUrl + response.headers.get("Location");
+        this.bearerToken = data.bearerToken;
         this.pollRequestStatus(pollEndpoint);
       }
 
