@@ -35,7 +35,7 @@ public class CimAdapter extends MqttDataSourceAdapter<CimDataSource> {
         try {
             var cimTimeSeries = mapper.readValue(message.getPayload(), TimeSeries.class);
 
-            emitAiidaRecord(dataSource.asset(), cimStrategy.timeSeriesToAiidaRecordValues(cimTimeSeries));
+            emitAiidaRecord(cimStrategy.timeSeriesToAiidaRecordValues(cimTimeSeries));
         } catch (JacksonException e) {
             LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
                          new String(message.getPayload(), StandardCharsets.UTF_8),

@@ -30,6 +30,8 @@ const emit = defineEmits(['edit', 'delete', 'reset', 'enableToggle'])
 const {
   countryCode,
   asset,
+  meterId,
+  operatorId,
   type,
   enabled,
   id,
@@ -115,6 +117,16 @@ const healthStatusConfig = computed<HealthStatusConfig>(
       <div>
         <dt>{{ t('datasources.card.asset') }}</dt>
         <dd>{{ asset }}</dd>
+      </div>
+
+      <div v-if="meterId">
+        <dt>{{ t('datasources.card.meterId') }}</dt>
+        <dd>{{ meterId }}</dd>
+      </div>
+
+      <div v-if="operatorId">
+        <dt>{{ t('datasources.card.operatorId') }}</dt>
+        <dd>{{ operatorId }}</dd>
       </div>
 
       <div>

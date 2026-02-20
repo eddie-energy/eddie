@@ -27,11 +27,13 @@ In the information dialog, ready-to-use `curl` command examples can be copied.
 
 ## EP: Publishing Inbound Data
 
-The EP can publish data to the topic `aiida/v1/{PERMISSION_ID}/data/inbound`, 
-where `{PERMISSION_ID}` is the ID of the inbound permission.
-The data can be in any format (e.g. JSON, XML, plain text, binary, etc.).
+The EP can publish data to the respective topic in a desired outbound connector (e.g, in publishing a min-max envelope in Kafka: `fw.eddie.cim_1_12.min-max-envelope-md`).
 
-AIIDA subscribes to this topic and receives any data published to it.
+The following schemas are currently supported for inbound data:
+
+- `MIN_MAX_ENVELOPE_CIM_V1_12` (min-max envelope in CIM v1.12 format)
+
+EDDIE subscribes to these topics and forwards the data to the MQTT broker of the EDDIE instance, where AIIDA subscribes to this topic and receives any data published to it.
 The data is stored in the `inbound_record` database table and can be accessed via a secured REST interface.
 
 ## Accessing Inbound Data
@@ -57,11 +59,14 @@ There are two ways to use this key to retrieve the latest inbound record:
 
 ```json
 {
-  "timestamp": "2025-10-16T11:39:37.495Z",
-  "asset": "CONNECTION-AGREEMENT-POINT",
-  "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "dataSourceId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "payload": "{ \"exampleKey\": \"exampleValue\" }"
+   "timestamp": "2025-10-16T11:39:37.495Z",
+   "userId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+   "dataSourceId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+   "asset": "CONNECTION-AGREEMENT-POINT",
+   "meterId": "123456789",
+   "operatorId": "123456789",
+   "schema": "MIN_MAX_ENVELOPE_CIM_V1_12",
+   "payload": "{\"MessageDocumentHeader\":{..."
 }
 ```
 

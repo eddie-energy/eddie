@@ -68,7 +68,7 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
                                         .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                                         .toList();
 
-            emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+            emitAiidaRecord(aiidaRecordValues);
         } catch (JacksonException e) {
             if (payload.equals("true") || payload.equals("false")) {
                 var online = Boolean.parseBoolean(payload);

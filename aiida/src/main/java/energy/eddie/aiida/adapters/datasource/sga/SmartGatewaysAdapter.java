@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.sga;
@@ -111,7 +111,7 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
         addAiidaRecordValue(aiidaRecordValues, powerCurrentlyDelivered);
         addAiidaRecordValue(aiidaRecordValues, powerCurrentlyReturned);
 
-        emitAiidaRecord(dataSource.asset(), aiidaRecordValues);
+        emitAiidaRecord(aiidaRecordValues);
         batchBuffer.clear();
     }
 

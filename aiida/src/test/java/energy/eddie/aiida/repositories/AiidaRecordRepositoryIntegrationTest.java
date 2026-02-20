@@ -7,10 +7,15 @@ import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTeleinfoV3AdapterStandardModeMeasurement;
 import energy.eddie.aiida.adapters.datasource.fr.transformer.standard.MicroTeleinfoV3StandardModeJson;
+import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
+import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceIcon;
+import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -32,6 +37,8 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.METER_SERIAL;
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DataJpaTest
 // deactivate the default behaviour, instead use testcontainer
@@ -56,11 +63,25 @@ class AiidaRecordRepositoryIntegrationTest {
                             MountableFile.forClasspathResource(TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE),
                             TIMESCALEDB_CONTAINER_PATH
                     );
-    private static final UUID dataSourceId = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID userId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private final ObjectMapper objectMapper = ObjectMapperCreatorUtil.mapper();
     @Autowired
     private AiidaRecordRepository repository;
+    @Autowired
+    private DataSourceRepository dataSourceRepository;
+    private DataSource dataSource;
+
+    @BeforeEach
+    void setUp() {
+        var dto = mock(SimulationDataSourceDto.class);
+        when(dto.enabled()).thenReturn(true);
+        when(dto.name()).thenReturn("SIM");
+        when(dto.countryCode()).thenReturn("AT");
+        when(dto.icon()).thenReturn(DataSourceIcon.ELECTRICITY);
+        when(dto.asset()).thenReturn(AiidaAsset.SUBMETER);
+
+        dataSource = new SimulationDataSource(dto, UUID.randomUUID());
+        dataSource = dataSourceRepository.saveAndFlush(dataSource);
+    }
 
     @Test
     void findByDataSourceIdOrderByTimestampDesc_validRecordsAdded_recordsReturned() {
@@ -134,14 +155,14 @@ class AiidaRecordRepositoryIntegrationTest {
     @Test
     void givenIntegerAndStringRecord_valueIsDeserializedProperly() {
         Instant now = Instant.now();
-        AiidaRecord intRecord = new AiidaRecord(now, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
+        AiidaRecord intRecord = new AiidaRecord(now, dataSource, List.of(
                 new AiidaRecordValue("1-0:1.8.0",
                                      POSITIVE_ACTIVE_ENERGY,
                                      "237",
                                      UnitOfMeasurement.KILO_WATT_HOUR,
                                      "237",
                                      UnitOfMeasurement.KILO_WATT_HOUR)));
-        AiidaRecord stringRecord = new AiidaRecord(now, AiidaAsset.SUBMETER, userId, dataSourceId, List.of(
+        AiidaRecord stringRecord = new AiidaRecord(now, dataSource, List.of(
                 new AiidaRecordValue("0-0:C.1.0",
                                      METER_SERIAL,
                                      "Hello Test",
@@ -399,9 +420,7 @@ class AiidaRecordRepositoryIntegrationTest {
 
         var timestamp = Instant.now();
         var aiidaRecord = new AiidaRecord(timestamp,
-                                          AiidaAsset.CONNECTION_AGREEMENT_POINT,
-                                          UUID.randomUUID(),
-                                          UUID.randomUUID(),
+                                          dataSource,
                                           aiidaRecordValues);
 
         repository.save(aiidaRecord);

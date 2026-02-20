@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+import com.github.gradle.node.pnpm.task.PnpmInstallTask
 import com.github.gradle.node.pnpm.task.PnpmTask
 import com.github.jk1.license.filter.DependencyFilter
 import com.github.jk1.license.filter.LicenseBundleNormalizer
@@ -34,6 +35,10 @@ node {
 licenseReport {
     renderers = arrayOf<ReportRenderer>(InventoryHtmlReportRenderer("report.html", "EDDIE Framework"))
     filters = arrayOf<DependencyFilter>(LicenseBundleNormalizer())
+}
+
+tasks.withType<PnpmInstallTask> {
+    pnpmCommand.set(listOf("install", "--frozen-lockfile"))
 }
 
 tasks.register<PnpmTask>("pnpmBuild") {

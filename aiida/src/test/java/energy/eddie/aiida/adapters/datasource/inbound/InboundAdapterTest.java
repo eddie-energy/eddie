@@ -159,9 +159,7 @@ class InboundAdapterTest {
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
                         .assertNext(received -> {
                             assertThat(received.payload()).isEqualTo(payload);
-                            assertThat(received.dataSourceId()).isEqualTo(DATA_SOURCE_ID);
-                            assertThat(received.userId()).isEqualTo(USER_ID);
-                            assertThat(received.asset()).isEqualTo(AiidaAsset.SUBMETER);
+                            assertThat(received.dataSource().id()).isEqualTo(DATA_SOURCE_ID);
                         })
                         .then(adapter::close)
                         .thenCancel()

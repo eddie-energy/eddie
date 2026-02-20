@@ -28,6 +28,8 @@
       "id": "ID",
       "country": "Country",
       "asset": "Asset",
+      "meterId": "Physical Meter ID",
+      "operatorId": "Grid Operator ID",
       "type": "Type",
       "pollingInterval": "Polling Interval",
       "mqttServerUri": "MQTT Server URI",
@@ -69,7 +71,7 @@
       "requiredFields": "Fields marked with * are required!",
       "localIpInput": "Local IP Address",
       "vendorInput": "Vendor",
-      "vendorPlaceholder": "Select Vendor",
+      "vendorInputPlaceholder": "Select Vendor",
       "modelInput": "Model",
       "modelPlaceholder": "Select Model",
       "deviceInput": "Device",
@@ -79,7 +81,11 @@
       "mqttResetTitle": "Reset Password",
       "mqttResetSuccess": "Successfully reset MQTT password",
       "activationKey": "Activation Key",
-      "isRequired": "is a required field"
+      "isRequired": "is a required field",
+      "meterId": "Physical Meter ID",
+      "meterIdPlaceholder": "Enter physical meter ID",
+      "operatorId": "Grid Operator ID",
+      "operatorIdPlaceholder": "Enter the ID of your grid operator"
     }
   },
   "permissions": {

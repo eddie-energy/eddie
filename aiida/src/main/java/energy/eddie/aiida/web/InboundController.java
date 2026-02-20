@@ -1,13 +1,13 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
 
+import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
-import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.InboundService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -34,12 +34,12 @@ public class InboundController {
 
     @Operation(summary = "Get latest inbound record for permission")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InboundRecord.class))}),
+            @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = InboundRecordDto.class))}),
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content),
             @ApiResponse(responseCode = "404", description = "Entity not found", content = @Content),
     })
     @GetMapping(value = "/latest/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<InboundRecord> latestRecord(
+    public ResponseEntity<InboundRecordDto> latestRecord(
             @PathVariable UUID permissionId,
             @RequestHeader(value = "X-API-Key", required = false) String apiKeyHeader,
             @RequestParam(name = "apiKey", required = false) String apiKeyQuery
@@ -52,6 +52,7 @@ public class InboundController {
             throw new UnauthorizedException("API key missing: provide X-API-Key header or ?apiKey= query param.");
         }
 
-        return ResponseEntity.ok(inboundService.latestRecord(permissionId, apiKey));
+        var inboundRecord = inboundService.latestRecord(permissionId, apiKey);
+        return ResponseEntity.ok(inboundRecord.toDto());
     }
 }

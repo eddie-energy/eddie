@@ -40,12 +40,11 @@ class CimStrategyTest {
     @Test
     void toRealTimeDataEnvelope_mapsMetadataAndSupportedQuantities() throws CimSchemaFormatterException {
         // Given
-        var permission = permission("AT");
+        var dataSource = dataSource("AT");
+        var permission = permission(dataSource);
         var aiidaRecord = new AiidaRecord(
                 TIMESTAMP,
-                AiidaAsset.SUBMETER,
-                AIIDA_ID,
-                DATA_SOURCE_ID,
+                dataSource,
                 List.of(
                         new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "100", KILO_WATT_HOUR, "100", KILO_WATT_HOUR),
                         new AiidaRecordValue("1-0:96.1.0", DEVICE_ID_1, "device", NONE, "device", NONE),
@@ -72,6 +71,8 @@ class CimStrategyTest {
         assertThat(metaInformation.getRegionCountry()).isEqualTo("AT");
         assertThat(metaInformation.getDocumentType()).isEqualTo("near-real-time-market-document");
         assertThat(metaInformation.getAsset().getType()).isEqualTo(AiidaAsset.SUBMETER.toString());
+        assertThat(metaInformation.getAsset().getMeterId()).isEqualTo("meter-123");
+        assertThat(metaInformation.getAsset().getOperatorId()).isNull();
 
         assertThat(envelope.getMarketDocument()).isNotNull();
         assertThat(envelope.getMarketDocument().getTimeSeries()).hasSize(1);
@@ -92,12 +93,11 @@ class CimStrategyTest {
     @Test
     void toRealTimeDataEnvelope_setsNullCodingSchemeForUnknownCountryCode() throws CimSchemaFormatterException {
         // Given
-        var permission = permission("");
+        var dataSource = dataSource("XX");
+        var permission = permission(dataSource);
         var aiidaRecord = new AiidaRecord(
                 TIMESTAMP,
-                AiidaAsset.SUBMETER,
-                AIIDA_ID,
-                DATA_SOURCE_ID,
+                dataSource,
                 List.of(new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "10", KILO_WATT_HOUR, "10", KILO_WATT_HOUR))
         );
 
@@ -146,16 +146,25 @@ class CimStrategyTest {
                 .hasRootCauseMessage("TimeSeries or its quantities cannot be null");
     }
 
-    private static Permission permission(String countryCode) {
-        var permission = mock(Permission.class);
+    private static DataSource dataSource(String countryCode) {
         var dataSource = mock(DataSource.class);
+
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(dataSource.countryCode()).thenReturn(countryCode);
+        when(dataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(dataSource.meterId()).thenReturn("meter-123");
+
+        return dataSource;
+    }
+
+    private static Permission permission(DataSource dataSource) {
+        var permission = mock(Permission.class);
         var dataNeed = mock(AiidaLocalDataNeed.class);
 
         when(permission.id()).thenReturn(PERMISSION_ID);
         when(permission.connectionId()).thenReturn("connection-123");
         when(permission.dataSource()).thenReturn(dataSource);
         when(permission.dataNeed()).thenReturn(dataNeed);
-        when(dataSource.countryCode()).thenReturn(countryCode);
         when(dataNeed.dataNeedId()).thenReturn(DATA_NEED_ID);
 
         return permission;

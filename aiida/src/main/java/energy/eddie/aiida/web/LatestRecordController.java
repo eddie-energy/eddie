@@ -6,7 +6,6 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
-import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -52,7 +51,7 @@ public class LatestRecordController {
     })
     @GetMapping(value = "data-source/{id}/latest")
     public LatestDataSourceRecordDto latestDataSourceRecord(@PathVariable("id") UUID dataSourceId)
-            throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
+            throws LatestAiidaRecordNotFoundException {
         LOGGER.info("Fetching latest data source record for datasource with ID: {}", dataSourceId);
 
         return latestRecordService.latestDataSourceRecord(dataSourceId);

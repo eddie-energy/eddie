@@ -198,27 +198,28 @@ public class Aggregator implements AutoCloseable {
             UUID userId,
             UUID dataSourceId
     ) {
-        return isAllowedAsset(aiidaRecord, allowedAsset) &&
+        var dataSource = aiidaRecord.dataSource();
+        return isAllowedAsset(dataSource, allowedAsset) &&
                areAiidaRecordValuesValid(aiidaRecord.aiidaRecordValues()) &&
                isBeforeExpiration(aiidaRecord, expirationTime) &&
-               doesAiidaRecordBelongToCurrentDataSource(aiidaRecord, dataSourceId) &&
-               doesAiidaRecordBelongToCurrentUser(aiidaRecord, userId);
+               isSameDataSource(dataSource, dataSourceId) &&
+               doesDataSourceBelongToCurrentUser(dataSource, userId);
     }
 
-    private boolean isAllowedAsset(AiidaRecord aiidaRecord, AiidaAsset allowedAsset) {
-        return aiidaRecord.asset() == allowedAsset;
+    private boolean isAllowedAsset(DataSource dataSource, AiidaAsset allowedAsset) {
+        return dataSource.asset() == allowedAsset;
     }
 
     private boolean areAiidaRecordValuesValid(List<AiidaRecordValue> aiidaRecordValues) {
         return !aiidaRecordValues.isEmpty();
     }
 
-    private boolean doesAiidaRecordBelongToCurrentDataSource(AiidaRecord aiidaRecord, UUID dataSourceId) {
-        return aiidaRecord.dataSourceId().equals(dataSourceId);
+    private boolean isSameDataSource(DataSource dataSource, UUID dataSourceId) {
+        return dataSource.id().equals(dataSourceId);
     }
 
-    private boolean doesAiidaRecordBelongToCurrentUser(AiidaRecord aiidaRecord, UUID userId) {
-        return aiidaRecord.userId().equals(userId);
+    private boolean doesDataSourceBelongToCurrentUser(DataSource dataSource, UUID userId) {
+        return dataSource.userId().equals(userId);
     }
 
     private boolean isBeforeExpiration(AiidaRecord aiidaRecord, Instant permissionExpirationTime) {
@@ -240,7 +241,7 @@ public class Aggregator implements AutoCloseable {
     private List<AiidaRecord> aggregateRecords(List<AiidaRecord> aiidaRecords) {
         var aggregatedRecords = aiidaRecords.stream()
                                             .collect(Collectors.toMap(
-                                                    AiidaRecord::dataSourceId,
+                                                    r -> r.dataSource().id(),
                                                     Function.identity(),
                                                     this::mergeRecords,
                                                     LinkedHashMap::new
@@ -261,9 +262,7 @@ public class Aggregator implements AutoCloseable {
 
         return new AiidaRecord(
                 latestRecord.timestamp(),
-                latestRecord.asset(),
-                latestRecord.userId(),
-                latestRecord.dataSourceId(),
+                latestRecord.dataSource(),
                 new ArrayList<>(mergedValues.values())
         );
     }

@@ -9,7 +9,6 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -25,6 +24,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.UUID;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +36,7 @@ class OesterreichsEnergieAdapterTest {
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(OesterreichsEnergieAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final OesterreichsEnergieDataSource DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String DATA_SOURCE_INTERNAL_HOST = "tcp://localhost:1883";
     private static final String DATA_SOURCE_TOPIC = "aiida/test";
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
@@ -47,7 +48,7 @@ class OesterreichsEnergieAdapterTest {
 
         when(DATA_SOURCE.internalHost()).thenReturn(DATA_SOURCE_INTERNAL_HOST);
         when(DATA_SOURCE.topic()).thenReturn(DATA_SOURCE_TOPIC);
-        when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
         var builder = JsonMapper.builder();
@@ -329,7 +330,7 @@ class OesterreichsEnergieAdapterTest {
                     .expectComplete()
                     .verify();
 
-        assertThat(LOG_CAPTOR_ADAPTER.getTraceLogs()).contains("Found unknown OBIS-CODES from " + DATA_SOURCE.asset() + ": [UNKNOWN-OBIS-CODE]");
+        assertThat(LOG_CAPTOR_ADAPTER.getTraceLogs()).contains("Found unknown OBIS-CODES from " + DATA_SOURCE_ID + ": [UNKNOWN-OBIS-CODE]");
     }
 
     @Test

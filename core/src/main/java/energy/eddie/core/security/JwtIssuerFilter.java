@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.security;
@@ -21,6 +21,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 
@@ -80,6 +81,26 @@ public class JwtIssuerFilter extends OncePerRequestFilter {
             wrappedResponse.resetBuffer();
             wrappedResponse.getWriter().write(objectMapper.writeValueAsString(objectNode));
         }
+
+        var permissionIds = objectNode.get("permissionIds");
+        if (permissionIds != null && permissionIds.isArray()) {
+            var ids = new ArrayList<String>();
+            for (var node : permissionIds) {
+                if (node.isString()) {
+                    ids.add(node.asString());
+                }
+            }
+
+            try {
+                String token = jwtUtil.createJwt(rcId, ids.toArray(String[]::new));
+                objectNode.put("bearerToken", token);
+            } catch (JwtCreationFailedException e) {
+                throw new ServletException("JWT creation failed", e);
+            }
+            wrappedResponse.resetBuffer();
+            wrappedResponse.getWriter().write(objectMapper.writeValueAsString(objectNode));
+        }
+
         wrappedResponse.copyBodyToResponse();
     }
 

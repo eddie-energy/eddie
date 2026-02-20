@@ -3,9 +3,6 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.record.AiidaRecordValueDto;
-import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
-import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -14,8 +11,6 @@ import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
-import energy.eddie.aiida.repositories.DataSourceRepository;
-import energy.eddie.aiida.utils.AiidaRecordConverter;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -24,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
 
@@ -44,29 +38,9 @@ class LatestRecordServiceTest {
     private static final String SERVER_URI = "mqtt://test.server.com";
     private static final String PAYLOAD = "test-payload-data";
     private static final Instant TIMESTAMP = Instant.parse("2024-01-15T10:30:00Z");
-    private static final List<AiidaRecordValueDto> RECORD_VALUES = List.of(
-            new AiidaRecordValueDto(
-                    ObisCode.POSITIVE_ACTIVE_ENERGY.toString(),
-                    ObisCode.POSITIVE_ACTIVE_ENERGY,
-                    "25.5",
-                    UnitOfMeasurement.WATT,
-                    "25.5",
-                    UnitOfMeasurement.WATT
-            ),
-            new AiidaRecordValueDto(
-                    ObisCode.NEGATIVE_ACTIVE_ENERGY.toString(),
-                    ObisCode.NEGATIVE_ACTIVE_ENERGY,
-                    "60.0",
-                    UnitOfMeasurement.WATT,
-                    "60.0",
-                    UnitOfMeasurement.WATT
-            )
-    );
 
     @Mock
     private AiidaRecordRepository repository;
-    @Mock
-    private DataSourceRepository dataSourceRepository;
     @Mock
     private PermissionLatestRecordMap permissionLatestRecordMap;
     @Mock
@@ -76,42 +50,44 @@ class LatestRecordServiceTest {
     private LatestRecordService aiidaRecordService;
 
     @Test
-    void latestAiidaRecord_shouldReturnLatestRecord_whenFound() throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
+    void latestAiidaRecord_shouldReturnLatestRecord_whenFound() throws LatestAiidaRecordNotFoundException {
+        // Given
         var aiidaRecord = mock(AiidaRecord.class);
         var dataSource = mock(DataSource.class);
+
+        var value = new AiidaRecordValue(
+                "my-raw-tag",
+                ObisCode.POSITIVE_ACTIVE_ENERGY,
+                "0.0255",
+                UnitOfMeasurement.KILO_WATT,
+                "25.5",
+                UnitOfMeasurement.WATT
+        );
+
         when(aiidaRecord.timestamp()).thenReturn(TIMESTAMP);
+        when(aiidaRecord.dataSource()).thenReturn(dataSource);
+        when(aiidaRecord.aiidaRecordValues()).thenReturn(List.of(value));
+
         when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
-        when(dataSourceRepository.findById(DATA_SOURCE_ID))
-                .thenReturn(Optional.of(dataSource));
+        when(dataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(dataSource.name()).thenReturn("datasource");
+
         when(repository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID))
                 .thenReturn(Optional.of(aiidaRecord));
 
-        var expectedDto = new LatestDataSourceRecordDto(
-                TIMESTAMP,
-                "datasource",
-                AiidaAsset.SUBMETER,
-                DATA_SOURCE_ID,
-                RECORD_VALUES
-        );
+        // When
+        var result = aiidaRecordService.latestDataSourceRecord(DATA_SOURCE_ID);
 
-        try (MockedStatic<AiidaRecordConverter> mockedConverter = mockStatic(AiidaRecordConverter.class)) {
-            mockedConverter.when(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource))
-                           .thenReturn(expectedDto);
-
-            var result = aiidaRecordService.latestDataSourceRecord(DATA_SOURCE_ID);
-
-            assertEquals(expectedDto, result);
-            verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
-            verify(repository, times(1)).findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID);
-            mockedConverter.verify(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource), times(1));
-        }
+        // Then
+        assertEquals(TIMESTAMP, result.timestamp());
+        assertEquals("datasource", result.name());
+        assertEquals(AiidaAsset.SUBMETER, result.asset());
+        assertEquals(DATA_SOURCE_ID, result.dataSourceId());
+        assertEquals(value.toDto(), result.aiidaRecordValues().getFirst());
     }
 
     @Test
     void latestAiidaRecord_shouldThrow_whenRecordNotFound() {
-        var dataSource = mock(DataSource.class);
-        when(dataSourceRepository.findById(DATA_SOURCE_ID))
-                .thenReturn(Optional.of(dataSource));
         when(repository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID))
                 .thenReturn(Optional.empty());
 
@@ -120,107 +96,7 @@ class LatestRecordServiceTest {
         );
 
         assertTrue(exception.getMessage().contains(DATA_SOURCE_ID.toString()));
-        verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
         verify(repository, times(1)).findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID);
-    }
-
-    @Test
-    void latestAiidaRecord_shouldThrow_whenDataSourceNotFound() {
-        when(dataSourceRepository.findById(DATA_SOURCE_ID))
-                .thenReturn(Optional.empty());
-
-        var exception = assertThrows(DataSourceNotFoundException.class, () ->
-                aiidaRecordService.latestDataSourceRecord(DATA_SOURCE_ID)
-        );
-
-        assertTrue(exception.getMessage().contains(DATA_SOURCE_ID.toString()));
-        verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
-        verify(repository, never()).findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID);
-    }
-
-    @Test
-    void latestAiidaRecord_shouldLogTimestamp_whenRecordFound() throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
-        var aiidaRecord = mock(AiidaRecord.class);
-        var dataSource = mock(DataSource.class);
-        when(aiidaRecord.timestamp()).thenReturn(TIMESTAMP);
-        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
-        when(dataSourceRepository.findById(DATA_SOURCE_ID))
-                .thenReturn(Optional.of(dataSource));
-        when(repository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID))
-                .thenReturn(Optional.of(aiidaRecord));
-
-        var expectedDto = new LatestDataSourceRecordDto(
-                TIMESTAMP,
-                "datasource",
-                AiidaAsset.SUBMETER,
-                DATA_SOURCE_ID,
-                RECORD_VALUES
-        );
-
-        try (MockedStatic<AiidaRecordConverter> mockedConverter = mockStatic(AiidaRecordConverter.class)) {
-            mockedConverter.when(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource))
-                           .thenReturn(expectedDto);
-
-            aiidaRecordService.latestDataSourceRecord(DATA_SOURCE_ID);
-
-            verify(aiidaRecord, times(1)).timestamp();
-        }
-    }
-
-    @Test
-    void latestAiidaRecord_shouldHandleDifferentDataSourceIds() throws LatestAiidaRecordNotFoundException, DataSourceNotFoundException {
-        var differentDataSourceId = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-        var aiidaRecord = mock(AiidaRecord.class);
-        var dataSource = mock(DataSource.class);
-        when(aiidaRecord.timestamp()).thenReturn(TIMESTAMP);
-        when(dataSource.id()).thenReturn(differentDataSourceId);
-        when(dataSourceRepository.findById(differentDataSourceId))
-                .thenReturn(Optional.of(dataSource));
-        when(repository.findFirstByDataSourceIdOrderByIdDesc(differentDataSourceId))
-                .thenReturn(Optional.of(aiidaRecord));
-
-        var expectedDto = new LatestDataSourceRecordDto(
-                TIMESTAMP,
-                "datasource",
-                AiidaAsset.SUBMETER,
-                differentDataSourceId,
-                RECORD_VALUES
-        );
-
-        try (MockedStatic<AiidaRecordConverter> mockedConverter = mockStatic(AiidaRecordConverter.class)) {
-            mockedConverter.when(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource))
-                           .thenReturn(expectedDto);
-
-            var result = aiidaRecordService.latestDataSourceRecord(differentDataSourceId);
-
-            assertEquals(expectedDto, result);
-            verify(dataSourceRepository, times(1)).findById(differentDataSourceId);
-            verify(repository, times(1)).findFirstByDataSourceIdOrderByIdDesc(differentDataSourceId);
-        }
-    }
-
-    @Test
-    void latestAiidaRecord_shouldPropagateConverterExceptions() {
-        var aiidaRecord = mock(AiidaRecord.class);
-        var dataSource = mock(DataSource.class);
-        when(aiidaRecord.timestamp()).thenReturn(TIMESTAMP);
-        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
-        when(dataSourceRepository.findById(DATA_SOURCE_ID))
-                .thenReturn(Optional.of(dataSource));
-        when(repository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID))
-                .thenReturn(Optional.of(aiidaRecord));
-
-        try (MockedStatic<AiidaRecordConverter> mockedConverter = mockStatic(AiidaRecordConverter.class)) {
-            mockedConverter.when(() -> AiidaRecordConverter.recordToLatestDto(aiidaRecord, dataSource))
-                           .thenThrow(new RuntimeException("Conversion failed"));
-
-            assertThrows(RuntimeException.class, () ->
-                    aiidaRecordService.latestDataSourceRecord(DATA_SOURCE_ID)
-            );
-
-            verify(dataSourceRepository, times(1)).findById(DATA_SOURCE_ID);
-            verify(repository, times(1)).findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID);
-        }
     }
 
     @Test
@@ -374,8 +250,10 @@ class LatestRecordServiceTest {
     void latestInboundPermissionRecord_shouldReturnLatestRecord_whenFound()
             throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
         var inboundRecord = mock(InboundRecord.class);
+        var dataSource = mock(DataSource.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
-        when(inboundRecord.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(inboundRecord.dataSource()).thenReturn(dataSource);
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(inboundRecord.payload()).thenReturn(PAYLOAD);
 
         when(inboundService.latestRecord(PERMISSION_ID))
@@ -385,7 +263,7 @@ class LatestRecordServiceTest {
 
         assertNotNull(result);
         assertEquals(TIMESTAMP, result.timestamp());
-        assertEquals(AiidaAsset.SUBMETER, result.asset());
+        assertEquals(DATA_SOURCE_ID, result.dataSourceId());
         assertEquals(PAYLOAD, result.payload());
 
         verify(inboundService, times(1)).latestRecord(PERMISSION_ID);
