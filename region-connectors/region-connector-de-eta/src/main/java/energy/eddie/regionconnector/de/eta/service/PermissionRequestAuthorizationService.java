@@ -80,7 +80,7 @@ public class PermissionRequestAuthorizationService {
                                 }
                                 LOGGER.info("Successfully obtained access token for permission request {}",
                                         permissionId);
-                                outbox.commit(new AcceptedEvent(permissionId, accessToken));
+                                outbox.commit(new AcceptedEvent(permissionId, accessToken, response.getRefreshToken()));
                             } else {
                                 LOGGER.error("Token exchange failed for permission request {}", permissionId);
                                 outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.INVALID));
