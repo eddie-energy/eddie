@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 plugins {
@@ -14,30 +14,20 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.kafka.clients)
     implementation(libs.playwright)
-    implementation(platform(libs.jackson.bom))
-    implementation(libs.jackson.databind)
 
+    testImplementation(libs.jackson.databind)
     testImplementation(libs.junit.jupiter)
-    testImplementation(libs.assertj.core)
-    testImplementation(libs.slf4j.simple)
-
     testRuntimeOnly(libs.junit.platform.launcher)
-}
-
-tasks.register("record-test", JavaExec::class) {
-    description = "Record new playwright test"
-    group = "playwright"
-    mainClass.set("com.microsoft.playwright.CLI")
-    classpath = sourceSets["main"].runtimeClasspath
-    args = listOf("codegen", "online.eddie.energy")
 }
 
 tasks.test {
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
+    }
+    onlyIf {
+        project.hasProperty("run-e2e-tests")
     }
 }
 
@@ -47,12 +37,4 @@ tasks.register<JavaExec>("install-playwright-deps") {
     mainClass.set("com.microsoft.playwright.CLI")
     classpath = sourceSets["main"].runtimeClasspath
     args = listOf("install", "--with-deps")
-}
-
-project(":e2e-tests") {
-    tasks.test {
-        onlyIf {
-            project.hasProperty("run-e2e-tests")
-        }
-    }
 }

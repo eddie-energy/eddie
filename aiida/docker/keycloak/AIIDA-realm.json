@@ -1,13 +1,13 @@
 {
-  "realm": "EDDIE",
+  "realm": "AIIDA",
   "enabled": true,
-  "loginTheme": "eddie-theme",
+  "loginTheme": "aiida-theme",
   "defaultRoles": ["manage-account"],
   "clients": [
     {
       "clientId": "AIIDA",
       "enabled": true,
-      "redirectUris": ["http://localhost:*"],
+      "redirectUris": ["http://localhost:*", "http://127.0.0.1:*", "http://aiida:*"],
       "webOrigins": ["*"],
       "publicClient": true,
       "secret": "REPLACE_ME",
