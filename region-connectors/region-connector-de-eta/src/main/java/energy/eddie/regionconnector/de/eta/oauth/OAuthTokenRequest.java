@@ -1,6 +1,3 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers &lt;eddie.developers@fh-hagenberg.at&gt;
-// SPDX-License-Identifier: Apache-2.0
-
 package energy.eddie.regionconnector.de.eta.oauth;
 
 /**
