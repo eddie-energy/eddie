@@ -122,6 +122,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                                                     .stream()
                                                     .map(specificDataNeedRule -> specificDataNeedRule.getDataNeedClass()
                                                                                                      .getSimpleName())
+                                                    .sorted()
                                                     .toList();
             var classes = String.join(", ", supportedDataNeeds);
             return new DataNeedNotSupportedResult(
