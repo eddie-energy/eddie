@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.services;
@@ -34,6 +34,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -118,6 +119,26 @@ class PermissionRequestCreationServiceTest {
                 .isInstanceOf(SimpleEvent.class)
                 .extracting(SimpleEvent::status)
                 .isEqualTo(PermissionProcessStatus.VALIDATED);
+    }
+
+    @Test
+    void testCreatePermissionRequest_withAiidaDataNeed_throws() {
+        // Given
+        var cdsServer = getCdsServer();
+        when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
+        when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
+                .thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                    Set.of(),
+                                                    new Timeframe(LocalDate.now(ZoneOffset.UTC),
+                                                                  LocalDate.now(ZoneOffset.UTC))));
+        var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
+
+        // When & Then
+        assertThrows(UnsupportedDataNeedException.class, () -> service.createPermissionRequest(creation));
+        verify(outbox, times(2)).commit(eventCaptor.capture());
+        var malformedEvent = assertInstanceOf(MalformedEvent.class, eventCaptor.getValue());
+        assertEquals(List.of(new AttributeError("dataNeedId", "AiidaDataNeedResult not supported!")),
+                     malformedEvent.errors());
     }
 
     @Test

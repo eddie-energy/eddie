@@ -8,6 +8,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -176,14 +177,31 @@ class InboundAdapterTest {
             adapter.start().subscribe();
 
             StepVerifier.create(adapter.inboundRecordFlux())
-                        .then(() -> adapter.messageArrived("MyTestTopic", message))
+                        .then(() -> adapter.messageArrived(
+                                "aiida/v1/data/inbound/63176fd9-4e0c-46d2-969a-e9d55928904b/min-max-envelope-cim-v1-12",
+                                message))
                         .assertNext(received -> {
                             assertThat(received.payload()).isEqualTo(payload);
+                            assertThat(received.schema()).isEqualTo(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
                             assertThat(received.dataSource().id()).isEqualTo(DATA_SOURCE_ID);
                         })
                         .then(adapter::close)
                         .thenCancel()
                         .verify();
+        }
+    }
+
+    @Test
+    void givenMessageArrived_withInvalidTopic_errorIsLogged() {
+        var payload = "Hello World";
+
+        try (LogCaptor captor = LogCaptor.forClass(InboundAdapter.class)) {
+            adapter.start().subscribe();
+
+            MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+            adapter.messageArrived("invalid/topic", message);
+
+            assertThat(captor.getErrorLogs()).contains("Received message with invalid topic: invalid/topic");
         }
     }
 

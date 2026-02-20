@@ -83,4 +83,6 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     public CronExpression transmissionSchedule() {
         return transmissionSchedule;
     }
+
+    public abstract Set<AiidaSchema> supportedSchemas();
 }

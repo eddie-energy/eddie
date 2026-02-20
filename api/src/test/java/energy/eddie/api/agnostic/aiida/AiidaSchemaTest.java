@@ -4,8 +4,10 @@
 package energy.eddie.api.agnostic.aiida;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class AiidaSchemaTest {
     @Test
@@ -41,7 +43,8 @@ class AiidaSchemaTest {
         var schema = AiidaSchema.forSchema(schemaValue);
 
         // Then
-        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema);
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema.get());
     }
 
     @Test
@@ -53,7 +56,70 @@ class AiidaSchemaTest {
         var schema = AiidaSchema.forSchema(schemaValue);
 
         // Then
-        assertEquals(AiidaSchema.SMART_METER_P1_RAW, schema);
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_RAW, schema.get());
+    }
+
+    @Test
+    void forSchema_returnsEmpty_whenInvalidSchema() {
+        // Given
+        var schemaValue = "INVALID-SCHEMA";
+
+        // When
+        var schema = AiidaSchema.forSchema(schemaValue);
+
+        // Then
+        assertTrue(schema.isEmpty());
+    }
+
+    @Test
+    void forTopic_returnsSchema_whenCim() {
+        // Given
+        var topic = "base/path/smart-meter-p1-cim-v1-12";
+
+        // When
+        var schema = AiidaSchema.forTopic(topic);
+
+        // Then
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema.get());
+    }
+
+    @Test
+    void forTopic_returnsEmpty_whenInvalidTopic() {
+        // Given
+        var topic = "base/path/invalid-topic";
+
+        // When
+        var schema = AiidaSchema.forTopic(topic);
+
+        // Then
+        assertTrue(schema.isEmpty());
+    }
+
+    @Test
+    void forTopicName_returnsSchema_whenCim() {
+        // Given
+        var topicName = "smart-meter-p1-cim-v1-12";
+
+        // When
+        var schema = AiidaSchema.forTopicName(topicName);
+
+        // Then
+        assertTrue(schema.isPresent());
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_12, schema.get());
+    }
+
+    @Test
+    void forTopicName_returnsEmpty_whenInvalidTopicName() {
+        // Given
+        var topicName = "invalid-topic-name";
+
+        // When
+        var schema = AiidaSchema.forTopicName(topicName);
+
+        // Then
+        assertTrue(schema.isEmpty());
     }
 
     @Test
@@ -79,5 +145,15 @@ class AiidaSchemaTest {
 
         // Then
         assertEquals("base/path/smart-meter-p1-raw", topicPath);
+    }
+
+    @Test
+    void json_serialization_and_deserialization_respectAnnotations() {
+        ObjectMapper mapper = new ObjectMapper();
+        String json = mapper.writeValueAsString(AiidaSchema.SMART_METER_P1_CIM_V1_04);
+        assertEquals("\"SMART-METER-P1-CIM-V1-04\"", json);
+
+        AiidaSchema deserialized = mapper.readValue(json, AiidaSchema.class);
+        assertEquals(AiidaSchema.SMART_METER_P1_CIM_V1_04, deserialized);
     }
 }

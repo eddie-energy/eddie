@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.services;
@@ -40,6 +40,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 import static org.junit.jupiter.api.Assertions.*;
@@ -101,6 +102,21 @@ class PermissionRequestServiceTest {
         // Then
         verify(outbox).commit(isA(FrCreatedEvent.class));
         verify(outbox).commit(isA(FrValidatedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnAiidaDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid");
+        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionRequestService.createPermissionRequest(request));
+        verify(outbox).commit(isA(FrCreatedEvent.class));
+        verify(outbox).commit(isA(FrMalformedEvent.class));
     }
 
     @Test

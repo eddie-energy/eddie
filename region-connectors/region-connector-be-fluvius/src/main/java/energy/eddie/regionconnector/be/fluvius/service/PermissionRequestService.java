@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.service;
@@ -50,6 +50,13 @@ public class PermissionRequestService {
                 throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                        permissionRequestForCreation.dataNeedId(),
                                                        "AccountingPointDataNeedResult not supported!");
+            }
+            case AiidaDataNeedResult ignored -> {
+                String message = "AiidaDataNeedResult not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       permissionRequestForCreation.dataNeedId(),
+                                                       message);
             }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,

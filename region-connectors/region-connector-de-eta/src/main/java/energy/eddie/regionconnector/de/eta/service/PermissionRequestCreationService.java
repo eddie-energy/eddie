@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.de.eta.service;
 
 import energy.eddie.api.agnostic.Granularity;
@@ -65,6 +68,12 @@ public class PermissionRequestCreationService {
         ));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
+            case AiidaDataNeedResult ignored -> {
+                String message = "AiidaDataNeedResult not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
+
             case AccountingPointDataNeedResult ignored -> {
                 String message = "AccountingPointDataNeed not supported by DE-ETA connector";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));

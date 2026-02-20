@@ -13,6 +13,8 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,6 +41,7 @@ class InboundServiceTest {
     private static final InboundRecord INBOUND_RECORD = new InboundRecord(
             Instant.now(),
             DATA_SOURCE,
+            AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
             "test"
     );
 

@@ -14,6 +14,7 @@ import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
@@ -420,7 +421,11 @@ class AggregatorTest {
 
         aggregator.addNewDataSourceAdapter(inboundAdapter);
 
-        inboundPublisher.next(new InboundRecord(Instant.now(), inboundDataSource, "Test"));
+        var inboundRecord = new InboundRecord(Instant.now(),
+                                       inboundDataSource,
+                                       AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
+                                       "Test");
+        inboundPublisher.next(inboundRecord);
         inboundPublisher.complete();
         recordPublisher.complete();
 

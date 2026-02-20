@@ -8,11 +8,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Optional;
 
 public enum AiidaSchema {
     SMART_METER_P1_RAW(Identifiers.SMART_METER_P1_RAW, ""),
     SMART_METER_P1_CIM_V1_04(Identifiers.SMART_METER_P1_CIM, "V1-04"),
-    SMART_METER_P1_CIM_V1_12(Identifiers.SMART_METER_P1_CIM, "V1-12");
+    SMART_METER_P1_CIM_V1_12(Identifiers.SMART_METER_P1_CIM, "V1-12"),
+    MIN_MAX_ENVELOPE_CIM_V1_12(Identifiers.MIN_MAX_ENVELOPE_CIM, "V1-12");
 
     private final String identifier;
     private final String version;
@@ -23,11 +25,22 @@ public enum AiidaSchema {
     }
 
     @JsonCreator
-    public static AiidaSchema forSchema(String schema) {
+    public static Optional<AiidaSchema> forSchema(String schema) {
         return Arrays.stream(AiidaSchema.values())
                      .filter(aiidaSchema -> aiidaSchema.schema().equals(schema))
-                     .findFirst()
-                     .orElseThrow();
+                     .findFirst();
+    }
+
+    public static Optional<AiidaSchema> forTopic(String topic) {
+        var topicParts = Arrays.stream(topic.split("/")).toList();
+        var topicName = topicParts.getLast();
+        return forTopicName(topicName);
+    }
+
+    public static Optional<AiidaSchema> forTopicName(String topicName) {
+        return Arrays.stream(AiidaSchema.values())
+                     .filter(aiidaSchema -> aiidaSchema.topicName().equals(topicName))
+                     .findFirst();
     }
 
     @JsonValue
@@ -50,6 +63,7 @@ public enum AiidaSchema {
     public static class Identifiers {
         public static final String SMART_METER_P1_RAW = "SMART-METER-P1-RAW";
         public static final String SMART_METER_P1_CIM = "SMART-METER-P1-CIM";
+        public static final String MIN_MAX_ENVELOPE_CIM = "MIN-MAX-ENVELOPE-CIM";
 
         private Identifiers() {}
     }

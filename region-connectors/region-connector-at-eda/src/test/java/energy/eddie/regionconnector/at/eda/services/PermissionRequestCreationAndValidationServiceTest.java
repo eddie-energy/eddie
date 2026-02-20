@@ -22,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -89,6 +90,21 @@ class PermissionRequestCreationAndValidationServiceTest {
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                   "dnid", "AT000000");
         // When & Then
+        assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+    }
+
+    @Test
+    void givenAiidaDataNeedResult_createAndValidatePermissionRequest_throwsException() {
+        // Given
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                    Set.of(),
+                                                    new Timeframe(LocalDate.now(AT_ZONE_ID),
+                                                                  LocalDate.now(AT_ZONE_ID))));
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  "dnid", "AT000000");
+
+        // When, Then
         assertThrows(UnsupportedDataNeedException.class, () -> creationService.createAndValidatePermissionRequest(pr));
     }
 
