@@ -68,6 +68,13 @@ class PermissionRequestCreationServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.permissionId()).isNotNull();
+        assertThat(response.redirectUri()).isNotNull();
+        assertThat(response.redirectUri()).startsWith("http://auth.url?");
+        assertThat(response.redirectUri()).contains("response_type=code");
+        assertThat(response.redirectUri()).contains("client_id=client-1");
+        assertThat(response.redirectUri()).contains("state=" + response.permissionId());
+        assertThat(response.redirectUri()).contains("redirect_uri=http://redirect.uri");
+        assertThat(response.redirectUri()).contains("scope=scope");
 
         verify(outbox).commit(any(CreatedEvent.class));
         verify(outbox).commit(any(ValidatedEvent.class));
