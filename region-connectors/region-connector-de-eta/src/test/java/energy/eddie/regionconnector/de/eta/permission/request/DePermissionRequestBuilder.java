@@ -5,7 +5,6 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
 
 import jakarta.annotation.Nullable;
-import org.springframework.lang.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 

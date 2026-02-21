@@ -7,7 +7,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.permission.handlers.AcceptedHandler;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;

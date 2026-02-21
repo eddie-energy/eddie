@@ -3,7 +3,7 @@ package energy.eddie.regionconnector.de.eta.permission.handlers;
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
