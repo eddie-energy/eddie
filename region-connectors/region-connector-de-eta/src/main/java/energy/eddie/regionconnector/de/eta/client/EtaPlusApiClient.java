@@ -1,8 +1,8 @@
 package energy.eddie.regionconnector.de.eta.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
@@ -65,6 +65,7 @@ public class EtaPlusApiClient {
                         .queryParam("end", effectiveEnd)
                         .build())
                 .retrieve()
+
                 .bodyToFlux(EtaPlusReadingDto.class)
                 .collectList()
                 .map(readings -> mapToDomain(readings, permissionRequest, effectiveEnd));
@@ -91,7 +92,7 @@ public class EtaPlusApiClient {
         String rawJson;
         try {
             rawJson = objectMapper.writeValueAsString(readings);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             LOGGER.error("Failed to serialize readings to JSON", e);
             rawJson = "[]";
         }
