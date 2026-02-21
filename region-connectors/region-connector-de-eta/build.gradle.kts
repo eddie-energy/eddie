@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
 
     implementation(libs.jackson.databind)
+    implementation(libs.jackson.datatype.jsr310)
 
     implementation(libs.reactor.core)
     implementation(libs.opentelemetry.sdk.metrics)
