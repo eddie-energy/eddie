@@ -1,5 +1,9 @@
 package energy.eddie.regionconnector.de.eta;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,9 +23,23 @@ class EtaRegionConnectorMetadataTest {
         assertThat(metadata.id()).isEqualTo("de-eta");
         assertThat(metadata.countryCode()).isEqualTo("DE");
         assertThat(metadata.countryCodes()).containsExactly("DE");
-        assertThat(metadata.coveredMeteringPoints()).isEqualTo(500000L);
+        assertThat(metadata.coveredMeteringPoints()).isEqualTo(50000000L);
         assertThat(metadata.earliestStart()).isEqualTo(EtaRegionConnectorMetadata.PERIOD_EARLIEST_START);
         assertThat(metadata.latestEnd()).isEqualTo(EtaRegionConnectorMetadata.PERIOD_LATEST_END);
+        assertThat(metadata.supportedGranularities()).containsExactly(
+                Granularity.PT15M,
+                Granularity.PT1H,
+                Granularity.P1D
+        );
         assertThat(metadata.timeZone()).isEqualTo(EtaRegionConnectorMetadata.DE_ZONE_ID);
+        assertThat(metadata.supportedEnergyTypes()).containsExactlyInAnyOrder(
+                EnergyType.ELECTRICITY,
+                EnergyType.NATURAL_GAS
+        );
+        assertThat(metadata.supportedDataNeeds()).containsExactlyInAnyOrder(
+                ValidatedHistoricalDataDataNeed.class,
+                AccountingPointDataNeed.class
+        );
     }
+
 }

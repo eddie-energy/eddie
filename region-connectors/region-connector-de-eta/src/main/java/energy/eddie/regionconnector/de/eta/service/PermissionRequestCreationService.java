@@ -66,7 +66,7 @@ public class PermissionRequestCreationService {
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
             case AccountingPointDataNeedResult ignored -> {
-                String message = "AccountingPointDataNeed not supported by DE-ETA connector";
+                String message = "AccountingPointDataNeedResult not supported by DE-ETA connector";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }

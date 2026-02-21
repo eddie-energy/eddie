@@ -22,7 +22,7 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 
 /**
  * REST controller for handling permission request creation for the German (DE) ETA Plus region connector.
- * This endpoint is called by the EDDIE Button when a user initiates a connection.
+ * This endpoint is called by the EDDIE Demo Button when a user initiates a connection.
  */
 @RestController
 public class PermissionRequestController {
