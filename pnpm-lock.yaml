@@ -271,6 +271,16 @@ importers:
         specifier: ^4.5.2
         version: 4.5.14(@types/node@22.19.11)
 
+  region-connectors/region-connector-de-eta:
+    dependencies:
+      lit:
+        specifier: ^2.7.5
+        version: 2.8.0
+    devDependencies:
+      vite:
+        specifier: ^4.5.2
+        version: 4.5.14(@types/node@22.19.11)
+
   region-connectors/region-connector-dk-energinet:
     dependencies:
       lit:
