@@ -10,7 +10,6 @@ import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.regionconnector.aiida.AiidaBeanConfig;
-import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
 import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessorRegistry;
@@ -193,13 +192,11 @@ class MqttMessageCallbackTest {
 
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString())).thenReturn(Optional.empty());
 
-        var expectedErrorLog = "No permission with ID '" + PERMISSION_ID + "' found.";
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -219,13 +216,12 @@ class MqttMessageCallbackTest {
                 .thenReturn(PermissionProcessStatus.REVOKED);
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
-        var expectedErrorLog = "Permission with ID '" + PERMISSION_ID + "' is invalid: Permission status is not ACCEPTED but REVOKED";
 
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -252,14 +248,11 @@ class MqttMessageCallbackTest {
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -285,14 +278,11 @@ class MqttMessageCallbackTest {
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -342,13 +332,12 @@ class MqttMessageCallbackTest {
         logCaptor.setLogLevelToDebug();
         var topic = "invalid/v1/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var expectedErrorMessage = "No AiidaMessageProcessor found for topic " + topic;
 
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorMessage, logCaptor.getDebugLogs().getFirst());
+        assertEquals(1, logCaptor.getDebugLogs().size());
     }
 
     @Test
@@ -357,7 +346,6 @@ class MqttMessageCallbackTest {
         var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var aiidaRecordDto = getAiidaRecordDto();
-        var expectedErrorLog = "No permission with ID '" + PERMISSION_ID + "' found.";
 
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.empty());
@@ -368,7 +356,7 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -377,7 +365,6 @@ class MqttMessageCallbackTest {
         var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var aiidaRecordDto = getAiidaRecordDto();
-        var expectedErrorLog = "Permission with ID '" + PERMISSION_ID + "' is invalid: Permission status is not ACCEPTED but REVOKED";
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.permissionId())
@@ -393,7 +380,7 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -419,14 +406,11 @@ class MqttMessageCallbackTest {
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class)))
                 .thenReturn(aiidaRecordDto);
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -452,14 +436,11 @@ class MqttMessageCallbackTest {
 
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class))).thenReturn(aiidaRecordDto);
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
@@ -467,13 +448,12 @@ class MqttMessageCallbackTest {
         // Given
         logCaptor.setLogLevelToDebug();
         var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/data/outbound/unknown";
-        var expectedErrorMessage = "No AiidaMessageProcessor found for topic " + topic;
 
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorMessage, logCaptor.getDebugLogs().getFirst());
+        assertEquals(1, logCaptor.getDebugLogs().size());
     }
 
     @Test

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.api.agnostic.data.needs;
@@ -20,11 +20,6 @@ public record AiidaDataNeedResult(
         Timeframe energyTimeframe
 ) implements DataNeedCalculationResult {
     public boolean supportsAllSchemas() {
-        for (var schema : schemas) {
-            if (!supportedSchemas().contains(schema)) {
-                return false;
-            }
-        }
-        return true;
+        return supportedSchemas().containsAll(schemas);
     }
 }

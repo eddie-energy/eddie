@@ -244,7 +244,7 @@ public class AiidaPermissionService {
                     dataNeedId,
                     "Data need not supported");
             case AiidaDataNeedResult aiidaResult -> {
-                if (!isValidPermissionRequest(aiidaResult)) {
+                if (isInvalidPermissionRequest(aiidaResult)) {
                     throw new DataNeedInvalidException(dataNeedId, "Data need does not support all required schemas");
                 }
 
@@ -265,8 +265,8 @@ public class AiidaPermissionService {
         }
     }
 
-    private boolean isValidPermissionRequest(AiidaDataNeedResult aiidaResult) {
-        return aiidaResult.supportsAllSchemas();
+    private boolean isInvalidPermissionRequest(AiidaDataNeedResult aiidaResult) {
+        return !aiidaResult.supportsAllSchemas();
     }
 
     private String createAccessToken(List<UUID> permissionIds) throws JwtCreationFailedException {

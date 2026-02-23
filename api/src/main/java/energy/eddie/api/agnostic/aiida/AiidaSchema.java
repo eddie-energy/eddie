@@ -32,7 +32,7 @@ public enum AiidaSchema {
     }
 
     public static Optional<AiidaSchema> forTopic(String topic) {
-        var topicParts = Arrays.stream(topic.split("/")).toList();
+        var topicParts = Arrays.asList(topic.split("/"));
         var topicName = topicParts.getLast();
         return forTopicName(topicName);
     }

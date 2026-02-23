@@ -43,12 +43,10 @@ public class MqttMessageCallback implements MqttCallback {
         try {
             var messageProcessor = messageProcessorRegistry.processorFor(topic);
             messageProcessor.processMessage(message);
-        } catch (IOException exception) {
+        } catch (IOException | PermissionNotFoundException | PermissionInvalidException exception) {
             LOGGER.error("Could not process MQTT message on topic {}", topic, exception);
-        } catch (PermissionNotFoundException | PermissionInvalidException exception) {
-            LOGGER.error(exception.getMessage(), exception);
         } catch (AiidaMessageProcessorRegistryException exception) {
-            LOGGER.debug(exception.getMessage());
+            LOGGER.debug("Received MQTT message, but no processor is registered, ignoring message", exception);
         }
     }
 
