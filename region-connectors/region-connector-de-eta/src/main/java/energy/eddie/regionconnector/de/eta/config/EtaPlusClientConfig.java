@@ -20,7 +20,7 @@ public class EtaPlusClientConfig {
     @Bean(name = "etaWebClient")
     public WebClient etaWebClient(
             WebClient.Builder webClientBuilder,
-            PlainDeConfiguration configuration, // Injected configuration
+            DeEtaPlusConfiguration configuration, // Injected configuration
             @Value("${region.connector.de.eta.ssl.enabled:true}") boolean isSslEnabled
     ) throws SSLException {
 

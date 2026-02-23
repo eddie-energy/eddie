@@ -1,7 +1,7 @@
 package energy.eddie.regionconnector.de.eta.client;
 
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
-import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
@@ -40,7 +40,7 @@ class EtaPlusApiClientTest {
     private static JsonMapper jsonMapper;
     private static WebClient webClient;
     private static EtaPlusApiClient apiClient;
-    private static PlainDeConfiguration config;
+    private static DeEtaPlusConfiguration config;
 
     @Mock
     private ObjectMapper mockObjectMapper;
@@ -56,7 +56,7 @@ class EtaPlusApiClientTest {
                 .codecs(c -> c.defaultCodecs()
                         .jacksonJsonDecoder(new JacksonJsonDecoder(jsonMapper, MediaType.APPLICATION_JSON)))
                 .build();
-        config = new PlainDeConfiguration(
+        config = new DeEtaPlusConfiguration(
                 "eligible-party",
                 baseUrl,
                 "client-id",

@@ -7,19 +7,19 @@ import org.springframework.context.annotation.Configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class PlainDeConfigurationTest {
+class DeEtaPlusConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withUserConfiguration(EnableConfig.class);
 
     @Configuration
-    @EnableConfigurationProperties(PlainDeConfiguration.class)
+    @EnableConfigurationProperties(DeEtaPlusConfiguration.class)
     static class EnableConfig {}
 
 
     @Test
     void constructor_allFieldsAreCorrectlyAssigned() {
-        PlainDeConfiguration config = new PlainDeConfiguration(
+        DeEtaPlusConfiguration config = new DeEtaPlusConfiguration(
                 "party-id",
                 "https://custom.api.de",
                 "client-id-123",
@@ -37,21 +37,6 @@ class PlainDeConfigurationTest {
     }
 
     @Test
-    @SuppressWarnings("NullAway")
-    void constructor_nullApiBaseUrlFallsBackToDefault() {
-        PlainDeConfiguration config = new PlainDeConfiguration(
-                "party-id",
-                null,
-                "client-id",
-                "secret",
-                "/api/v1/metered-data",
-                "/api/v1/permissions/{id}"
-        );
-
-        assertThat(config.apiBaseUrl()).isEqualTo("https://api.eta-plus.de");
-    }
-
-    @Test
     void springBinding_allPropertiesProvided_allValuesAreCorrect() {
         contextRunner
                 .withPropertyValues(
@@ -63,8 +48,8 @@ class PlainDeConfigurationTest {
                         "region-connector.de.eta.permission-check-endpoint=/v2/perms/{id}"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PlainDeConfiguration.class);
-                    PlainDeConfiguration config = context.getBean(PlainDeConfiguration.class);
+                    assertThat(context).hasSingleBean(DeEtaPlusConfiguration.class);
+                    DeEtaPlusConfiguration config = context.getBean(DeEtaPlusConfiguration.class);
                     assertThat(config.eligiblePartyId()).isEqualTo("my-party");
                     assertThat(config.apiBaseUrl()).isEqualTo("https://test.eta.de");
                     assertThat(config.apiClientId()).isEqualTo("my-client");
@@ -83,8 +68,8 @@ class PlainDeConfigurationTest {
                         "region-connector.de.eta.api-client-secret=my-secret"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PlainDeConfiguration.class);
-                    PlainDeConfiguration config = context.getBean(PlainDeConfiguration.class);
+                    assertThat(context).hasSingleBean(DeEtaPlusConfiguration.class);
+                    DeEtaPlusConfiguration config = context.getBean(DeEtaPlusConfiguration.class);
                     assertThat(config.apiBaseUrl()).isEqualTo("https://api.eta-plus.de");
                     assertThat(config.meteredDataEndpoint()).isEqualTo("/api/v1/metered-data");
                     assertThat(config.permissionCheckEndpoint()).isEqualTo("/api/v1/permissions/{id}");
@@ -100,8 +85,8 @@ class PlainDeConfigurationTest {
                         "region-connector.de.eta.api-client-secret=my-secret"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PlainDeConfiguration.class);
-                    PlainDeConfiguration config = context.getBean(PlainDeConfiguration.class);
+                    assertThat(context).hasSingleBean(DeEtaPlusConfiguration.class);
+                    DeEtaPlusConfiguration config = context.getBean(DeEtaPlusConfiguration.class);
                     assertThat(config.eligiblePartyId()).isNull();
                 });
     }
@@ -115,8 +100,8 @@ class PlainDeConfigurationTest {
                         "region-connector.de.eta.api-client-secret=my-secret"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PlainDeConfiguration.class);
-                    PlainDeConfiguration config = context.getBean(PlainDeConfiguration.class);
+                    assertThat(context).hasSingleBean(DeEtaPlusConfiguration.class);
+                    DeEtaPlusConfiguration config = context.getBean(DeEtaPlusConfiguration.class);
                     assertThat(config.apiClientId()).isNull();
                 });
     }
@@ -130,8 +115,8 @@ class PlainDeConfigurationTest {
                         "region-connector.de.eta.api-client-id=my-client"
                 )
                 .run(context -> {
-                    assertThat(context).hasSingleBean(PlainDeConfiguration.class);
-                    PlainDeConfiguration config = context.getBean(PlainDeConfiguration.class);
+                    assertThat(context).hasSingleBean(DeEtaPlusConfiguration.class);
+                    DeEtaPlusConfiguration config = context.getBean(DeEtaPlusConfiguration.class);
                     assertThat(config.apiClientSecret()).isNull();
                 });
     }

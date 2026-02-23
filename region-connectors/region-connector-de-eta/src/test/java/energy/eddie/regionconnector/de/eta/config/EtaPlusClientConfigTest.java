@@ -33,8 +33,8 @@ class EtaPlusClientConfigTest {
         server.shutdown();
     }
 
-    private static PlainDeConfiguration configFor(String baseUrl) {
-        return new PlainDeConfiguration(
+    private static DeEtaPlusConfiguration configFor(String baseUrl) {
+        return new DeEtaPlusConfiguration(
                 "eligible-party",
                 baseUrl,
                 "my-client",

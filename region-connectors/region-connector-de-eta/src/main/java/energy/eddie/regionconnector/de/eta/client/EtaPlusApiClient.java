@@ -4,12 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
-import energy.eddie.regionconnector.de.eta.config.PlainDeConfiguration;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -29,14 +28,14 @@ public class EtaPlusApiClient {
 
     private final WebClient webClient;
     private final ObjectMapper objectMapper;
-    private final PlainDeConfiguration configuration;
+    private final DeEtaPlusConfiguration configuration;
 
     public EtaPlusApiClient(
-            @Qualifier("etaWebClient") WebClient etaWebClient,
+            WebClient webClient,
             ObjectMapper objectMapper,
-            PlainDeConfiguration configuration
+            DeEtaPlusConfiguration configuration
     ) {
-        this.webClient = etaWebClient;
+        this.webClient = webClient;
         this.objectMapper = objectMapper;
         this.configuration = configuration;
     }
