@@ -1,9 +1,11 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.dataneeds.rules;
 
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
-import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -65,17 +67,15 @@ class DataNeedRuleSetTest {
 
 
     @Test
-    void givenAllowMultipleDataNeedsAndAccountingPointDataNeedRule_whenDataNeedRulesWithSpecificDataNeedRuleClass_thenAccountingPointDataNeedRules() {
+    void givenMultipleDataNeedRules_whenDataNeedRulesWithAiidaDataNeedRuleClass_thenDataNeedRules() {
         // Given
-        DataNeedRuleSet ruleSet = () -> List.of(new AllowMultipleDataNeedsRule(), new AccountingPointDataNeedRule());
+        DataNeedRuleSet ruleSet = () -> List.of(new InboundAiidaDataNeedRule(), new OutboundAiidaDataNeedRule(), new AllowMultipleDataNeedsRule());
 
         // When
-        var res = ruleSet.dataNeedRules(AccountingPointDataNeedRule.class);
+        var res = ruleSet.dataNeedRules(SpecificDataNeedRule.class);
 
         // Then
-        assertThat(res)
-                .singleElement()
-                .isEqualTo(new AccountingPointDataNeedRule());
+        assertThat(res).containsAll(List.of(new InboundAiidaDataNeedRule(), new OutboundAiidaDataNeedRule()));
     }
 
 
