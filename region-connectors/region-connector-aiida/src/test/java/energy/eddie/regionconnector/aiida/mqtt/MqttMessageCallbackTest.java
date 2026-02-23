@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.aiida.AiidaBeanConfig;
 import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessorRegistry;
+import energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_04.NearRealTimeDataCimMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.data.raw.RawDataMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.status.StatusMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
@@ -515,11 +516,11 @@ class MqttMessageCallbackTest {
         var rawDataMessageProcessor = new RawDataMessageProcessor(permissionRequestViewRepository,
                                                                   mockObjectMapper,
                                                                   rawDataMessageSink);
-        var cimDataMessageProcessorV104 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_04.CimDataMessageProcessor(
+        var cimDataMessageProcessorV104 = new NearRealTimeDataCimMessageProcessor(
                 permissionRequestViewRepository,
                 mockObjectMapper,
                 nearRealTimeDataSinkCimV104);
-        var cimDataMessageProcessorV112 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_12.CimDataMessageProcessor(
+        var cimDataMessageProcessorV112 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_12.NearRealTimeDataCimMessageProcessor(
                 permissionRequestViewRepository,
                 mockObjectMapper,
                 nearRealTimeDataSinkCimV112);
