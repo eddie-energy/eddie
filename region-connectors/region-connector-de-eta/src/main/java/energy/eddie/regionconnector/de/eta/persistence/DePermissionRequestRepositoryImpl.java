@@ -2,7 +2,7 @@ package energy.eddie.regionconnector.de.eta.persistence;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -85,7 +85,6 @@ public class DePermissionRequestRepositoryImpl implements DePermissionRequestRep
         return jdbcTemplate.query(query, rowMapper, threshold);
     }
 
-    @Override
     public void deleteAll() {
         jdbcTemplate.update("DELETE FROM de_eta.permission_event");
     }

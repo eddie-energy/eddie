@@ -5,7 +5,7 @@ import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.providers.cim.EtaToCimMapper;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
