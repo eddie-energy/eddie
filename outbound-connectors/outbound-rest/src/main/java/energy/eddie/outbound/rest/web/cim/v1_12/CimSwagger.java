@@ -4,8 +4,10 @@
 package energy.eddie.outbound.rest.web.cim.v1_12;
 
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.outbound.rest.dto.v1_12.AcknowledgementMarketDocuments;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -260,6 +262,113 @@ public interface CimSwagger {
             }
     )
     ResponseEntity<NearRealTimeDataMarketDocuments> nearRealTimeDataMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
+
+    @Operation(
+            operationId = "GET acknowledgement market document stream",
+            summary = "GET acknowledgement market document stream",
+            description = "Get all new acknowledgement market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(implementation = RTDEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                            TODO
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<AcknowledgementEnvelope>> acknowledgementMdSSE();
+
+
+    @Operation(
+            operationId = "GET acknowledgement market documents",
+            summary = "GET acknowledgement market documents",
+            description = "Get all past acknowledgement market documents",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = RTDEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    [
+                                                      TODO
+                                                    ]
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = NearRealTimeDataMarketDocuments.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    TODO
+                                                    """
+                                    )
+
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by connectionId ID",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the acknowledgement market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<AcknowledgementMarketDocuments> acknowledgementMd(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,

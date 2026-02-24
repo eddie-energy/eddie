@@ -9,6 +9,7 @@ import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
@@ -17,12 +18,14 @@ import energy.eddie.outbound.rest.model.cim.v0_82.AccountingPointDataMarketDocum
 import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
+import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -82,6 +85,24 @@ public class TaskConfig {
         return new InsertionTask<>(cimConnector.getNearRealTimeDataMarketDocumentStream(),
                                    repository,
                                    energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel::new);
+    }
+
+    @Bean
+    DeletionTask<AcknowledgementMarketDocumentModel> ackDeletionTask(
+            AcknowledgementMarketDocumentRepository repository,
+            RestOutboundConnectorConfiguration config
+    ) {
+        return new DeletionTask<>(repository, config);
+    }
+
+    @Bean
+    InsertionTask<AcknowledgementEnvelope, AcknowledgementMarketDocumentModel> ackInsertionTask(
+            energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
+            AcknowledgementMarketDocumentRepository repository
+    ) {
+        return new InsertionTask<>(cimConnector.getAcknowledgementMarketDocumentStream(),
+                                   repository,
+                                   AcknowledgementMarketDocumentModel::new);
     }
 
     @Bean

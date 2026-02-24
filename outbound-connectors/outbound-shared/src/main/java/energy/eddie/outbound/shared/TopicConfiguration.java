@@ -71,6 +71,16 @@ public class TopicConfiguration {
     }
 
     /**
+     * Endpoint for CIM acknowledgement market documents.
+     * Used to emit messages to the eligible party.
+     */
+    public String acknowledgementMarketDocument() {
+        return toTopic(TopicStructure.Direction.EP,
+                       TopicStructure.DataModels.CIM_1_12,
+                       TopicStructure.DocumentTypes.ACKNOWLEDGEMENT_MD);
+    }
+
+    /**
      * Endpoint for CIM accounting point market documents.
      * Used to emit messages to the eligible party.
      */

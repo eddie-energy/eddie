@@ -121,6 +121,7 @@ public class TopicStructure {
         VALIDATED_HISTORICAL_DATA_MD("validated-historical-data-md"),
         REDISTRIBUTION_TRANSACTION_RD(TopicStructure.REDISTRIBUTION_TRANSACTION_RD_VALUE),
         NEAR_REAL_TIME_DATA_MD("near-real-time-data-md"),
+        ACKNOWLEDGEMENT_MD("acknowledgement-md"),
         MIN_MAX_ENVELOPE_MD(TopicStructure.MIN_MAX_ENVELOPE_MD_VALUE),
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
