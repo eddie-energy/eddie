@@ -5,7 +5,7 @@ package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
-import energy.eddie.regionconnector.aiida.exceptions.DataNeedInvalidException;
+import energy.eddie.regionconnector.aiida.exceptions.DataNeedMalformedException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,7 +19,7 @@ import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 public class ControllerAdvice {
     @ExceptionHandler({
             CredentialsAlreadyExistException.class,
-            DataNeedInvalidException.class
+            DataNeedMalformedException.class
     })
     public ResponseEntity<Map<String, List<EddieApiError>>> handleBadRequestException(Exception exception) {
         @SuppressWarnings("NullAway")  // CredentialsAlreadyExistException always has a message

@@ -13,7 +13,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
-import energy.eddie.regionconnector.aiida.exceptions.DataNeedInvalidException;
+import energy.eddie.regionconnector.aiida.exceptions.DataNeedMalformedException;
 import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -48,7 +48,7 @@ public class PermissionRequestController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AiidaPermissionRequestsDto> createPermissionRequests(
             @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
-    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedInvalidException, JwtCreationFailedException {
+    ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedMalformedException, JwtCreationFailedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
 
         return ResponseEntity

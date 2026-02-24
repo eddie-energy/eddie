@@ -43,21 +43,6 @@ public class PermissionRequestService {
                                        permissionRequestForCreation.connectionId()));
 
         switch (calculationService.calculate(permissionRequestForCreation.dataNeedId())) {
-            case AccountingPointDataNeedResult ignored -> {
-                outbox.commit(new MalformedEvent(permissionId,
-                                                 new AttributeError(DATA_NEED_ID,
-                                                                    "AccountingPointDataNeedResult not supported!")));
-                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
-                                                       "AccountingPointDataNeedResult not supported!");
-            }
-            case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataNeedResult not supported!";
-                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
-                                                       message);
-            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,
                                                  new AttributeError(DATA_NEED_ID, "DataNeed not found!")));
@@ -81,6 +66,13 @@ public class PermissionRequestService {
                                                  granularities.getFirst(),
                                                  permissionRequestForCreation.flow()));
                 return new CreatedPermissionRequest(permissionId);
+            }
+            default -> {
+                String message = "DataNeedResult not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       permissionRequestForCreation.dataNeedId(),
+                                                       message);
             }
         }
     }

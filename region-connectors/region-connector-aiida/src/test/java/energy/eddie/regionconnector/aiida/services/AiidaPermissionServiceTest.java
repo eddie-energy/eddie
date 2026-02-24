@@ -17,7 +17,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
-import energy.eddie.regionconnector.aiida.exceptions.DataNeedInvalidException;
+import energy.eddie.regionconnector.aiida.exceptions.DataNeedMalformedException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.AiidaIdReceivedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;
@@ -214,10 +214,12 @@ class AiidaPermissionServiceTest {
                                         new Timeframe(start, end)));
 
         // When
-        assertThrows(DataNeedInvalidException.class,
+        assertThrows(DataNeedMalformedException.class,
                      () -> service.createValidateAndSendPermissionRequests(
                              new PermissionRequestForCreation(connectionId,
                                                               List.of(dataNeedId))));
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));
+        verify(mockOutbox).commit(argThat(event -> event.status() == MALFORMED));
     }
 
     @Test
