@@ -7,7 +7,7 @@ The steps to make it run are:
 
 1. Download the quickstart configuration folder from [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env)
 2. Run `docker compose up -d` in that folder.
-3. Open browser on http://localhost:9000/prototype/main/ and experiment with the provided sample application.
+3. Open browser on http://localhost:8080/demo and experiment with the demo button.
 4. As many permission administrators and metered data administrators require additional installation or registration
    steps, it's best to try out the framework functionality using the permission administrator called _simulation_.
 

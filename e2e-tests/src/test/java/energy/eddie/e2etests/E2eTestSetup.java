@@ -11,11 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 
 import static energy.eddie.e2etests.PlaywrightOptions.EDDIE_URL;
 
-/**
- * This E2E base test class setups the playwright environment and automatically takes a screenshot of <code>page</code>
- * when an error occurs or at the end of the test. Initially, the example app main screen is loaded as
- * <code>page</code>.
- */
 @UsePlaywright(PlaywrightOptions.class)
 public class E2eTestSetup {
     protected Page page;
