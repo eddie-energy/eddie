@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.service;
@@ -43,14 +43,6 @@ public class PermissionRequestService {
                                        permissionRequestForCreation.connectionId()));
 
         switch (calculationService.calculate(permissionRequestForCreation.dataNeedId())) {
-            case AccountingPointDataNeedResult ignored -> {
-                outbox.commit(new MalformedEvent(permissionId,
-                                                 new AttributeError(DATA_NEED_ID,
-                                                                    "AccountingPointDataNeedResult not supported!")));
-                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
-                                                       "AccountingPointDataNeedResult not supported!");
-            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,
                                                  new AttributeError(DATA_NEED_ID, "DataNeed not found!")));
@@ -74,6 +66,13 @@ public class PermissionRequestService {
                                                  granularities.getFirst(),
                                                  permissionRequestForCreation.flow()));
                 return new CreatedPermissionRequest(permissionId);
+            }
+            default -> {
+                String message = "Data need not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                                                       permissionRequestForCreation.dataNeedId(),
+                                                       message);
             }
         }
     }

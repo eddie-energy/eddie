@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.services;
@@ -41,6 +41,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
@@ -191,6 +192,20 @@ class PermissionRequestServiceTest {
                 () -> assertNotNull(createdCaptor.getValue()),
                 () -> assertEquals(today, validatedCaptor.getValue().end())
         );
+    }
+
+    @Test
+    void createAndSendPermissionRequest_withAiidaDataNeed_throws() {
+        // Given
+        var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
+        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        when(calculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
+
+        // When, Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createAndSendPermissionRequest(mockCreationRequest));
+        verify(outbox).commit(isA(EsCreatedEvent.class));
+        verify(outbox).commit(isA(EsMalformedEvent.class));
     }
 
     @Test

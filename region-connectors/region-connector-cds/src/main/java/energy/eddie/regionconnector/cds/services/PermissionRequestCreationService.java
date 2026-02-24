@@ -1,12 +1,9 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.services;
 
-import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
-import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
-import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
-import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -68,6 +65,11 @@ public class PermissionRequestCreationService {
         }
         var calc = calculationService.calculate(dataNeedId, cdsServer.get(), createdEvent.eventCreated());
         switch (calc) {
+            case AiidaDataNeedResult ignored -> {
+                String message = "AiidaDataNeedResult not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_FIELD, message)));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
             case DataNeedNotFoundResult ignored -> {
                 LOGGER.info("Data need {} not found", dataNeedId);
                 outbox.commit(new MalformedEvent(permissionId,

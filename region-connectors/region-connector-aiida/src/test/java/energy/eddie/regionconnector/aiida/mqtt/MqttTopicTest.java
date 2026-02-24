@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
@@ -67,6 +68,16 @@ class MqttTopicTest {
         MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
 
         assertEquals("aiida/v1/perm-abc/termination", topic.aiidaTopic());
+    }
+
+    @Test
+    void schemaTopic_createsCorrectTopic() {
+        var topic = MqttTopic.of("perm-99", MqttTopicType.INBOUND_DATA);
+
+        assertEquals(
+                "aiida/v1/perm-99/data/inbound/smart-meter-p1-cim-v1-04",
+                topic.schemaTopic(AiidaSchema.SMART_METER_P1_CIM_V1_04)
+        );
     }
 
     @Test

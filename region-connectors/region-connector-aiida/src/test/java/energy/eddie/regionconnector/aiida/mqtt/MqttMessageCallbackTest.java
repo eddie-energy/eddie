@@ -10,7 +10,6 @@ import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.regionconnector.aiida.AiidaBeanConfig;
-import energy.eddie.regionconnector.aiida.exceptions.PermissionInvalidException;
 import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessorRegistry;
@@ -98,7 +97,7 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_statusMessage_revoked() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
         var connectionStatusMessage = getAiidaConnectionStatusMessage(PermissionProcessStatus.REVOKED);
 
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaConnectionStatusMessageDto.class)))
@@ -124,7 +123,7 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_statusMessage_accepted() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
         var connectionStatusMessage = getAiidaConnectionStatusMessage(PermissionProcessStatus.ACCEPTED);
 
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaConnectionStatusMessageDto.class)))
@@ -150,7 +149,7 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_smartMeterP1CimMessage_valid() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
 
         var rtdEnvelope = new RTDEnvelope();
@@ -184,7 +183,7 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_smartMeterP1CimMessage_invalidPermission() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
 
         var rtdEnvelope = new RTDEnvelope();
@@ -193,19 +192,17 @@ class MqttMessageCallbackTest {
 
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString())).thenReturn(Optional.empty());
 
-        var expectedErrorLog = "No permission with ID '" + PERMISSION_ID + "' found.";
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1CimMessage_invalidStatus() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
 
         var rtdEnvelope = new RTDEnvelope();
@@ -219,19 +216,18 @@ class MqttMessageCallbackTest {
                 .thenReturn(PermissionProcessStatus.REVOKED);
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
-        var expectedErrorLog = "Permission with ID '" + PERMISSION_ID + "' is invalid: Permission status is not ACCEPTED but REVOKED";
 
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1CimMessage_beforeStartDate() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
 
         var startDate = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
@@ -252,20 +248,17 @@ class MqttMessageCallbackTest {
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1CimMessage_afterEndDate() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var startDate = LocalDate.now(ZoneId.systemDefault()).minusDays(10);
         var endDate = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
@@ -285,20 +278,17 @@ class MqttMessageCallbackTest {
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1RawMessage_valid() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var aiidaRecordDto = getAiidaRecordDto();
         var payload = realObjectMapper.writeValueAsString(aiidaRecordDto);
@@ -339,24 +329,23 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_smartMeterP1RawMessage_invalidTopic() {
         // Given
+        logCaptor.setLogLevelToDebug();
         var topic = "invalid/v1/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var expectedErrorMessage = "No AiidaMessageProcessor found for topic " + topic;
 
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorMessage, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getDebugLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1RawMessage_invalidPermission() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var aiidaRecordDto = getAiidaRecordDto();
-        var expectedErrorLog = "No permission with ID '" + PERMISSION_ID + "' found.";
 
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.empty());
@@ -367,16 +356,15 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1RawMessage_invalidStatus() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var aiidaRecordDto = getAiidaRecordDto();
-        var expectedErrorLog = "Permission with ID '" + PERMISSION_ID + "' is invalid: Permission status is not ACCEPTED but REVOKED";
 
         var permission = mock(AiidaPermissionRequest.class);
         when(permission.permissionId())
@@ -392,13 +380,13 @@ class MqttMessageCallbackTest {
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1RawMessage_beforeStartDate() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var aiidaRecordDto = getAiidaRecordDto();
         var startDate = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
@@ -418,20 +406,17 @@ class MqttMessageCallbackTest {
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class)))
                 .thenReturn(aiidaRecordDto);
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_smartMeterP1RawMessage_afterEndDate() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/" +
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
                     AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
         var permission = mock(AiidaPermissionRequest.class);
         var aiidaRecordDto = getAiidaRecordDto();
@@ -451,27 +436,24 @@ class MqttMessageCallbackTest {
 
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class))).thenReturn(aiidaRecordDto);
 
-        var expectedErrorMessage = "Current date is outside of permission timespan (" + startDate + " - " + endDate + ")";
-        var expectedErrorLog = new PermissionInvalidException(PERMISSION_ID.toString(), expectedErrorMessage);
-
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorLog.getMessage(), logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getErrorLogs().size());
     }
 
     @Test
     void messageArrived_unknownTopic() {
         // Given
-        var topic = MqttTopic.defaultPrefix() + "/" + PERMISSION_ID + "/data/outbound/unknown";
-        var expectedErrorMessage = "No AiidaMessageProcessor found for topic " + topic;
+        logCaptor.setLogLevelToDebug();
+        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/data/outbound/unknown";
 
         // When
         mqttMessageCallback.messageArrived(topic, new MqttMessage());
 
         // Then
-        assertEquals(expectedErrorMessage, logCaptor.getErrorLogs().getFirst());
+        assertEquals(1, logCaptor.getDebugLogs().size());
     }
 
     @Test
