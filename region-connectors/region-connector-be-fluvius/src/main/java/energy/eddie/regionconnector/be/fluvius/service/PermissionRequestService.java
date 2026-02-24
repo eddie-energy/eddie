@@ -68,7 +68,7 @@ public class PermissionRequestService {
                 return new CreatedPermissionRequest(permissionId);
             }
             default -> {
-                String message = "DataNeedResult not supported!";
+                String message = "Data need not supported!";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(FluviusRegionConnectorMetadata.REGION_CONNECTOR_ID,
                                                        permissionRequestForCreation.dataNeedId(),
