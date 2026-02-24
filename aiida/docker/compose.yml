@@ -91,7 +91,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.1
     ports:
-      - "8889:8080"
+      - "8888:8080"
     environment:
       KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
