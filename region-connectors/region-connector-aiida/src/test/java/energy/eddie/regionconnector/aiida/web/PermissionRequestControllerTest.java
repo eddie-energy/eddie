@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.aiida.web;
 
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -44,6 +45,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
@@ -326,5 +328,10 @@ class PermissionRequestControllerTest {
         }
     }
 
-    private static class DummyAiidaDataNeed extends AiidaDataNeed {}
+    private static class DummyAiidaDataNeed extends AiidaDataNeed {
+        @Override
+        public Set<AiidaSchema> supportedSchemas() {
+            return Set.of();
+        }
+    }
 }

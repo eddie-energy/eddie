@@ -34,7 +34,7 @@ This is only relevant during development, because usually AIIDA and EDDIE servic
 To enable Keycloak usage within a Docker network, several configurations had to be made in the
 `application.yml` file of the Spring application.
 When setting the property `issuer-uri` in the `application.yml`, the application retrieves the URIs from
-`http://localhost:8888/realms/EDDIE/.well-known/openid-configuration`.
+`http://localhost:8888/realms/AIIDA/.well-known/openid-configuration`.
 Since this URI is not accessible within the Docker network, the required URIs must be defined explicitly.
 
 The following properties must be set in the `application.yml` file:

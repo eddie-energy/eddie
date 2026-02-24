@@ -1,0 +1,22 @@
+name: aiida-e2e
+services:
+  aiida:
+    container_name: aiida
+    pull_policy: build
+    ports: !override
+      - "8081:8080"
+    env_file:
+      - .env.e2e
+
+  emqx:
+    container_name: aiida-emqx
+
+  keycloak:
+    container_name: aiida-keycloak
+    ports: !override
+      - "8889:8080"
+
+networks:
+  default:
+    external: true
+    name: "e2e-tests-network"

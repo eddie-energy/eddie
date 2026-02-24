@@ -21,8 +21,6 @@ services:
       retries: 3
 
   aiida:
-    profiles:
-      - dockerized-aiida
     image: ghcr.io/eddie-energy/aiida:latest
     build:
       dockerfile: docker/Dockerfile
@@ -40,6 +38,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST}:${SPRING_DATASOURCE_PORT}/${SPRING_DATASOURCE_DATABASE}
     env_file:
       - .env
+      - path: .env.local
+        required: false
     volumes:
       - ./svgs:/container-assets/svgs
 
@@ -92,14 +92,15 @@ services:
       - "8888:8080"
     environment:
       KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
-      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USERNAME}
-      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_HEALTH_ENABLED: true
+    command: -v start-dev --import-realm
     volumes:
-      - ./keycloak/EDDIE-realm.json:/opt/keycloak/data/import/EDDIE-realm.json
+      - keycloak_data:/opt/keycloak/data
+      - ./keycloak/AIIDA-realm.json:/opt/keycloak/data/import/AIIDA-realm.json
       - ../../keycloak-eddie-theme/themes/eddie-theme:/opt/keycloak/themes/eddie-theme
       - ../../keycloak-eddie-theme/themes/aiida-theme:/opt/keycloak/themes/aiida-theme
-    command: -v start-dev --import-realm
     env_file:
       - .env
     healthcheck:
@@ -115,3 +116,4 @@ networks:
 volumes:
   db_data:
   emqx_data:
+  keycloak_data:

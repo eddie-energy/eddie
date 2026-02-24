@@ -5,6 +5,7 @@ package energy.eddie.aiida.dtos.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
 
 import java.time.Instant;
@@ -17,6 +18,7 @@ public record InboundRecordDto(
         @JsonProperty AiidaAsset asset,
         @JsonProperty @Nullable String meterId,
         @JsonProperty @Nullable String operatorId,
+        @JsonProperty AiidaSchema schema,
         @JsonProperty String payload
 ) {
 }

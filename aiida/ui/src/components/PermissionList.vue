@@ -55,7 +55,7 @@ const initialPermissionsCount = 6
 
 watch([selectedTab, permissions, selectedPermissionCategory], () => {
   activePermissionCategory.value = permissions.value.filter(
-    (p) => p.dataNeed.type === selectedPermissionCategory.value,
+    (p) => p.dataNeed?.type === selectedPermissionCategory.value,
   )
   if (selectedTab.value === 'Active') {
     activePermissions.value = activePermissionCategory.value.filter(

@@ -3,9 +3,11 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.mqtt.acl.MqttAcl;
@@ -26,6 +28,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -63,13 +66,15 @@ class MqttServiceTest {
 
     @BeforeEach
     void setUp() {
+        var mapper = new ObjectMapper();
         mqttService = new MqttService(mockUserRepository,
                                       mockAclRepository,
                                       mockPasswordGenerator,
                                       mockEncoder,
                                       mockAsyncClient,
                                       mockConfiguration,
-                                      mqttMessageCallback
+                                      mqttMessageCallback,
+                                      mapper
         );
     }
 
@@ -231,5 +236,26 @@ class MqttServiceTest {
 
         // Then
         verify(mockAsyncClient).subscribe(expected, 1);
+    }
+
+    @Test
+    void publishInboundData() throws Exception {
+        // Given
+        var schema = AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12;
+        var permissionId = "test";
+        var payload = new RECMMOEEnvelope();
+
+        var expectedTopic = "aiida/v1/test/data/inbound/min-max-envelope-cim-v1-12";
+
+        // When
+        mqttService.publishInboundData(schema, permissionId, payload);
+
+        // Then
+        verify(mockAsyncClient).publish(
+                eq(expectedTopic),
+                any(byte[].class),
+                eq(1),
+                eq(false)
+        );
     }
 }

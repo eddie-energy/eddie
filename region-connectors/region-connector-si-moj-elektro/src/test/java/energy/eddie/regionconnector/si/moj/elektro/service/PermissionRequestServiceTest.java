@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.si.moj.elektro.service;
@@ -24,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -67,6 +68,22 @@ class PermissionRequestServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid")).thenReturn(
                 new AccountingPointDataNeedResult(new Timeframe(now, now))
+        );
+
+        // When
+        assertThrows(UnsupportedDataNeedException.class, () -> permissionRequestService.createPermissionRequest(pr));
+
+        // Then
+        verify(outbox).commit(isA(CreatedEvent.class));
+        verify(outbox).commit(isA(MalformedEvent.class));
+    }
+
+    @Test
+    void testCreatePermissionRequest_aiidaDataNeed() {
+        // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(calculationService.calculate("dnid")).thenReturn(
+                new AiidaDataNeedResult(Set.of(), Set.of(), new Timeframe(now, now))
         );
 
         // When

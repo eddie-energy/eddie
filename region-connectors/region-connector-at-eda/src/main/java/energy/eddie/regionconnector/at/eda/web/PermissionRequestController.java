@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.web;
@@ -16,15 +16,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriTemplate;
+import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM_BASE;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 
 @RestController
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionRequestCreationAndValidationService creationService;
+    private final DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory();
 
     public PermissionRequestController(PermissionRequestCreationAndValidationService creationService) {
         this.creationService = creationService;
@@ -38,9 +39,13 @@ public class PermissionRequestController {
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
-        var location = new UriTemplate(CONNECTION_STATUS_STREAM)
-                .expand(createdRequest.permissionId());
-
-        return ResponseEntity.created(location).body(createdRequest);
+        var location = uriBuilderFactory.uriString(CONNECTION_STATUS_STREAM_BASE)
+                                        .queryParam("permission-id", createdRequest.permissionIds())
+                                        .build();
+        if (createdRequest.permissionIds().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        } else {
+            return ResponseEntity.created(location).body(createdRequest);
+        }
     }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.web;
@@ -20,7 +20,7 @@ class ControllerAdviceTest {
         var exception = new CredentialsAlreadyExistException("testId");
 
         // When
-        var response = advice.handleCredentialsAlreadyExistException(exception);
+        var response = advice.handleBadRequestException(exception);
 
         // Then
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fi.fingrid.services;
@@ -55,6 +55,11 @@ public class PermissionCreationService {
         ));
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
         var validatedEvent = switch (calculation) {
+            case AiidaDataNeedResult ignored -> {
+                String message = "AiidaDataNeedResult not supported!";
+                outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
                         permissionId,

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.web;
@@ -34,8 +34,8 @@ class ConnectionStatusMessageControllerTest {
 
     @Test
     void connectionStatusMessageByPermissionId_sendsStatus() {
-        var message1 = statusMessage(PermissionProcessStatus.CREATED);
-        var message2 = statusMessage(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        var message1 = statusMessage("1", PermissionProcessStatus.CREATED);
+        var message2 = statusMessage("1", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         given(permissionService.getConnectionStatusMessageStream())
                 .willReturn(Flux.just(message1, message2));
@@ -55,10 +55,36 @@ class ConnectionStatusMessageControllerTest {
                     .verifyComplete();
     }
 
-    private ConnectionStatusMessage statusMessage(PermissionProcessStatus status) {
+    @Test
+    void connectionStatusMessageByPermissionIds_sendsStatus() {
+        var message1 = statusMessage("1", PermissionProcessStatus.CREATED);
+        var message2 = statusMessage("2", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+        var message3 = statusMessage("3", PermissionProcessStatus.VALIDATED);
+
+        given(permissionService.getConnectionStatusMessageStream())
+                .willReturn(Flux.just(message1, message2, message3));
+
+        var result = webTestClient.get()
+                                  .uri(b -> b.path("/api/connection-status-messages")
+                                             .queryParam("permission-id", "1", "3")
+                                             .build())
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus().isOk()
+                                  .returnResult(ConnectionStatusMessage.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    // only check status to avoid time zone issues
+                    .expectNextMatches(message -> message1.status().equals(message.status()))
+                    .expectNextMatches(message -> message3.status().equals(message.status()))
+                    .verifyComplete();
+    }
+
+    private ConnectionStatusMessage statusMessage(String pid, PermissionProcessStatus status) {
         return new ConnectionStatusMessage(
                 "1",
-                "1",
+                pid,
                 "1",
                 null,
                 status);
