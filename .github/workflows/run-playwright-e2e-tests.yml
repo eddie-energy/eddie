@@ -123,6 +123,7 @@ jobs:
         run: |
           mkdir -p ./e2e-tests/build/docker-logs
           docker logs eddie &> ./e2e-tests/build/docker-logs/eddie.log
+          docker logs aiida &> ./e2e-tests/build/docker-logs/aiida.log
 
       - name: Archive results
         if: ${{ failure() }}  # we are only interested in failed tests
