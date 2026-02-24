@@ -6,11 +6,7 @@ package energy.eddie.e2etests.adminconsole;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import energy.eddie.e2etests.PlaywrightOptions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
-
-import java.nio.file.Paths;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static energy.eddie.e2etests.PlaywrightOptions.ADMIN_URL;
@@ -36,13 +32,5 @@ class AdminConsoleTest {
         page.waitForURL(ADMIN_URL + "/?continue");
         assertThat(page).hasURL(ADMIN_URL + "/?continue");
         assertThat(page).hasTitle("Admin Console");
-    }
-
-    @AfterEach
-    void saveScreenshot(Page page, TestInfo testInfo) {
-        var screenshotPath = Paths.get("build/test-results/test",
-                                       getClass().getSimpleName(),
-                                       testInfo.getDisplayName() + ".png");
-        page.screenshot(new Page.ScreenshotOptions().setPath(screenshotPath));
     }
 }
