@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
@@ -8,12 +8,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.time.Duration;
-
 @Controller
 public class HomeController {
-    public static final Duration MAX_CONNECTION_ID_LIFETIME = Duration.ofHours(24);
-    public static final String CONNECTION_ID_COOKIE_NAME = "connectionId";
 
     // Sonar wants to add a @PathVariable here, but we do NOT need it since we don't consume it
     @SuppressWarnings("java:S6856")
@@ -31,10 +27,5 @@ public class HomeController {
         model.addAttribute("keycloakRealm", keycloakRealm);
         model.addAttribute("keycloakClient", keycloakClient);
         return "index";
-    }
-
-    @GetMapping("/login")
-    public String login() {
-        return "login";
     }
 }

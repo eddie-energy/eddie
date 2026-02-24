@@ -1,11 +1,11 @@
 # Keycloak
 
-Authentication is not handled by AIIDA itself but delegated to Keycloak. 
-[Keycloak](https://www.keycloak.org/) is an open-source Identity and Access Management (IAM) solution for modern applications and services. 
-It offers features such as Single Sign-On (SSO), user federation, identity brokering, and social login. 
+Authentication is not handled by AIIDA itself but delegated to Keycloak.
+[Keycloak](https://www.keycloak.org/) is an open-source Identity and Access Management (IAM) solution for modern applications and services.
+It offers features such as Single Sign-On (SSO), user federation, identity brokering, and social login.
 Supporting standard protocols like OAuth2, OpenID Connect, and SAML 2.0, Keycloak ensures compatibility with a wide range of applications.
 
-AIIDA can be configured to use either a central cloud-based Keycloak instance or a locally deployed one. 
+AIIDA can be configured to use either a central cloud-based Keycloak instance or a locally deployed one.
 When AIIDA runs in the cloud, the role of Keycloak becomes even more significant - allowing the same user accounts and authentication system to seamlessly access multiple AIIDA instances or other EDDIE applications.
 
 ## How is it used?
@@ -13,8 +13,8 @@ When AIIDA runs in the cloud, the role of Keycloak becomes even more significant
 The docker-compose file in the `aiida/docker` directory of the repository includes a keycloak instance with a preconfigured user named
 `aiida`, with the password `aiida`.
 
-The preconfigured Keycloak includes an EDDIE realm with the AIIDA client, that is used for authentication.
-The client secret of the AIIDA client is set to `REPLACE_ME` and can be regenerated in the admin console, 
+The preconfigured Keycloak includes an AIIDA realm with the AIIDA client, that is used for authentication.
+The client secret of the AIIDA client is set to `REPLACE_ME` and can be regenerated in the Keycloak admin console,
 which is reachable at http://localhost:8888. The keycloak admin user is configured in the `.env` file and has by default the username
 `admin` and the password `admin`.
 
@@ -30,29 +30,21 @@ This is only relevant during development, because usually AIIDA and EDDIE servic
 (localhost for the case of development).
 
 ### Keycloak Integration in Docker Network
+ 
+The resource server configuration uses the `issuer-uri` in the `application.yml`.
+This URI is inferred from the external URL and realm properties as `${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}`.
 
-To enable Keycloak usage within a Docker network, several configurations had to be made in the
-`application.yml` file of the Spring application.
-When setting the property `issuer-uri` in the `application.yml`, the application retrieves the URIs from
-`http://localhost:8888/realms/AIIDA/.well-known/openid-configuration`.
-Since this URI is not accessible within the Docker network, the required URIs must be defined explicitly.
+To configure a custom Keycloak instance for AIIDA, the following properties must be set in the `application.yml` file or using environment variables.
 
-The following properties must be set in the `application.yml` file:
+| Property                      | Description                                                                       | Default               |
+|-------------------------------|-----------------------------------------------------------------------------------|-----------------------|
+| `aiida.keycloak.url.internal` | URL of the Keycloak instance within the Docker network.                           | http://localhost:8888 |
+| `aiida.keycloak.url.external` | External URL of the Keycloak instance accessible from outside the Docker network. | http://localhost:8888 |
+| `aiida.keycloak.realm`        | The realm in Keycloak that AIIDA will use for authentication.                     | AIIDA                 |
+| `aiida.keycloak.client`       | The client in Keycloak that the AIIDA UI will use for authentication.             | AIIDA                 |
 
-| Property            | Description                                                   |
-|---------------------|---------------------------------------------------------------|
-| authorization-uri   | URI for redirecting users for authorization.                  |
-| token-uri           | URI to exchange the access code for an access token.          |
-| user-info-uri       | URI to fetch user information.                                |
-| jwk-set-uri         | URI to obtain the public key for verifying JWTs.              |
-| user-name-attribute | JWT claim that contains the username.                         |
-| redirect-uri        | URI for redirecting users back to the application post-login. |
-| end-session-uri     | URI for logging out of Keycloak sessions.                     |
-
-Additionally, Keycloak requires a configured frontend URL to validate the issuer URI. This is specified using the
-`KC_HOSTNAME` variable in the `compose.yml` file.
-The provided
-`compose.yml` file provides a preconfiguration of these values for keycloak, you can configure it using the environments:
+Additionally, Keycloak requires a configured frontend URL to validate the issuer URI. This is specified using the `KC_HOSTNAME` variable in the `compose.yml` file.
+The provided `compose.yml` file provides a preconfiguration of these values for keycloak, you can configure it using the environments:
 
 - `AIIDA_PUBLIC_URL`
 - `KEYCLOAK_INTERNAL_HOST`
@@ -71,7 +63,7 @@ For a production deployment setup these values can be configured as follows assu
 - `KEYCLOAK_INTERNAL_HOST=https://keycloak.eddie.energy`
 - `KEYCLOAK_EXTERNAL_HOST=https://keycloak.eddie.energy`
 
-## Additional Info 
+## Additional Info
 
 ### EDDIE Keycloak Theme
 
