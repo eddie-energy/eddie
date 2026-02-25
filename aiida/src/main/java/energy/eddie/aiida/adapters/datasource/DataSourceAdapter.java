@@ -80,7 +80,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration);
             case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
             case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
-            case InboundDataSource ds -> new InboundAdapter(ds, mqttConfiguration);
+            case InboundDataSource ds -> new InboundAdapter(ds, objectMapper, mqttConfiguration);
             case SimulationDataSource ds -> new SimulationAdapter(ds);
             case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
             case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);

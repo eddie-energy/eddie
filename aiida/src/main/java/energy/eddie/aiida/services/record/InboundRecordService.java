@@ -1,7 +1,7 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.services;
+package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
@@ -19,13 +19,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Service
-public class InboundService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InboundService.class);
+public class InboundRecordService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InboundRecordService.class);
 
     private final InboundRecordRepository inboundRecordRepository;
     private final PermissionRepository permissionRepository;
 
-    public InboundService(
+    public InboundRecordService(
             InboundRecordRepository inboundRecordRepository,
             PermissionRepository permissionRepository
     ) {

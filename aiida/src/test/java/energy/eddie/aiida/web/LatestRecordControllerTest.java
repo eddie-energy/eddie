@@ -9,7 +9,7 @@ import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
-import energy.eddie.aiida.services.LatestRecordService;
+import energy.eddie.aiida.services.record.LatestRecordService;
 import energy.eddie.api.agnostic.aiida.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

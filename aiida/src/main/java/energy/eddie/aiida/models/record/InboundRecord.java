@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
-import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.persistence.*;
 
@@ -28,7 +28,7 @@ public class InboundRecord {
     @ManyToOne
     @JoinColumn(name = "data_source_id", referencedColumnName = "id", nullable = false, updatable = false)
     @JsonIgnore
-    private DataSource dataSource;
+    private InboundDataSource dataSource;
     @JsonProperty
     @Enumerated(EnumType.STRING)
     protected AiidaSchema schema;
@@ -38,7 +38,7 @@ public class InboundRecord {
 
     public InboundRecord(
             Instant timestamp,
-            DataSource dataSource,
+            InboundDataSource dataSource,
             AiidaSchema schema,
             String payload
     ) {
@@ -63,7 +63,7 @@ public class InboundRecord {
         return timestamp;
     }
 
-    public DataSource dataSource() {
+    public InboundDataSource dataSource() {
         return dataSource;
     }
 

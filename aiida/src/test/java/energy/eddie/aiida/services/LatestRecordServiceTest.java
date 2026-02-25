@@ -12,6 +12,8 @@ import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.services.record.InboundRecordService;
+import energy.eddie.aiida.services.record.LatestRecordService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -45,7 +47,7 @@ class LatestRecordServiceTest {
     @Mock
     private PermissionLatestRecordMap permissionLatestRecordMap;
     @Mock
-    private InboundService inboundService;
+    private InboundRecordService inboundRecordService;
 
     @InjectMocks
     private LatestRecordService aiidaRecordService;
@@ -241,7 +243,7 @@ class LatestRecordServiceTest {
         when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(inboundRecord.payload()).thenReturn(PAYLOAD);
 
-        when(inboundService.latestRecord(PERMISSION_ID))
+        when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenReturn(inboundRecord);
 
         var result = aiidaRecordService.latestInboundPermissionRecord(PERMISSION_ID);
@@ -251,32 +253,32 @@ class LatestRecordServiceTest {
         assertEquals(DATA_SOURCE_ID, result.dataSourceId());
         assertEquals(PAYLOAD, result.payload());
 
-        verify(inboundService, times(1)).latestRecord(PERMISSION_ID);
+        verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
     }
 
     @Test
     void latestInboundPermissionRecord_shouldPropagatePermissionNotFoundException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
-        when(inboundService.latestRecord(PERMISSION_ID))
+        when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
 
         assertThrows(PermissionNotFoundException.class, () ->
                 aiidaRecordService.latestInboundPermissionRecord(PERMISSION_ID)
         );
 
-        verify(inboundService, times(1)).latestRecord(PERMISSION_ID);
+        verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
     }
 
     @Test
     void latestInboundPermissionRecord_shouldPropagateInboundRecordNotFoundException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
-        when(inboundService.latestRecord(PERMISSION_ID))
+        when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InboundRecordNotFoundException(UUID.randomUUID()));
 
         assertThrows(InboundRecordNotFoundException.class, () ->
                 aiidaRecordService.latestInboundPermissionRecord(PERMISSION_ID)
         );
 
-        verify(inboundService, times(1)).latestRecord(PERMISSION_ID);
+        verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
     }
 }

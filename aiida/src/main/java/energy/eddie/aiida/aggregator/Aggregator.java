@@ -162,7 +162,7 @@ public class Aggregator implements AutoCloseable {
     }
 
     private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
-        LOGGER.trace("Saving new record to db");
+        LOGGER.trace("Saving new AIIDA record to db");
         for (AiidaRecordValue value : aiidaRecord.aiidaRecordValues()) {
             value.setAiidaRecord(aiidaRecord);
         }
@@ -170,12 +170,12 @@ public class Aggregator implements AutoCloseable {
     }
 
     private void saveInboundRecordToDatabase(InboundRecord inboundRecord) {
-        LOGGER.trace("New raw record saved to the database.");
+        LOGGER.trace("Saving new inbound record to db");
         inboundRecordRepository.save(inboundRecord);
     }
 
     private void handleCombinedSinkError(Throwable throwable) {
-        LOGGER.error("Error from combindes sink", throwable);
+        LOGGER.error("Error from combined sink", throwable);
     }
 
     private synchronized void publishRecordToCombinedFlux(AiidaRecord data) {

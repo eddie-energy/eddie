@@ -25,21 +25,28 @@ public interface AiidaDataNeedInterface {
     UUID dataNeedId();
 
     /**
-     * Returns the set of identifiers for the data that should be shared by the AIIDA instance.
+     * Returns the set of identifiers for the data that should be shared.
      */
     Set<ObisCode> dataTags();
 
     /**
-     * Returns the schema for the outgoing data
+     * Returns the schema for the data
      *
      * @see AiidaSchema
      */
     Set<AiidaSchema> schemas();
 
     /**
-     * Returns the schedule in cron format, at which the AIIDA instance should send data.
+     * Returns the schedule in cron format, at which data should be sent.
      */
     CronExpression transmissionSchedule();
+
+    /**
+     * Returns whether the receiving party should acknowledge the reception of the data.
+     * If true, the receiving party is expected to send an acknowledgment envelope back to the sender after receiving the data.
+     * If false, no acknowledgment is expected.
+     */
+    boolean isAcknowledgementRequired();
 
     /**
      * Returns the type of the Data Need

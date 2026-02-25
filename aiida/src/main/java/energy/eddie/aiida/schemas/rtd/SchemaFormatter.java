@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.schemas;
+package energy.eddie.aiida.schemas.rtd;
 
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.models.permission.Permission;

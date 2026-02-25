@@ -73,7 +73,8 @@ public class MqttService implements AutoCloseable {
      */
     public MqttDto createCredentialsAndAclForPermission(
             String permissionId,
-            boolean isInbound
+            boolean isInbound,
+            boolean isAcknowledgementRequired
     ) throws CredentialsAlreadyExistException {
         LOGGER.info("Creating MQTT credentials and ACLs for permission {}", permissionId);
 
@@ -82,14 +83,15 @@ public class MqttService implements AutoCloseable {
         }
 
         var wrapper = createAndSaveMqttUser(permissionId);
-        var topics = createAclsForUser(wrapper.user, isInbound);
+        var topics = createAclsForUser(wrapper.user, isInbound, isAcknowledgementRequired);
 
         return new MqttDto(aiidaConfiguration.mqttServerUri(),
                            wrapper.user().username(),
                            wrapper.rawPassword(),
                            topics.dataTopic().aiidaTopic(),
                            topics.statusTopic().aiidaTopic(),
-                           topics.terminationTopic().aiidaTopic());
+                           topics.terminationTopic().aiidaTopic(),
+                           topics.acknowledgementTopic().aiidaTopic());
     }
 
     /**
@@ -112,6 +114,13 @@ public class MqttService implements AutoCloseable {
     public void subscribeToOutboundDataTopic(String permissionId) throws MqttException {
         var topic = MqttTopic.of(permissionId, MqttTopicType.OUTBOUND_DATA).eddieTopic();
         LOGGER.info("Subscribing to outbound data topic {}", topic);
+
+        mqttClient.subscribe(topic, 1);
+    }
+
+    public void subscribeToAcknowledgementTopic(String permissionId) throws MqttException {
+        var topic = MqttTopic.of(permissionId, MqttTopicType.ACKNOWLEDGEMENT).eddieTopic();
+        LOGGER.info("Subscribing to acknowledgement topic {}", topic);
 
         mqttClient.subscribe(topic, 1);
     }
@@ -162,21 +171,34 @@ public class MqttService implements AutoCloseable {
      * </ul>
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
-    private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound) {
+    private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound, boolean isAcknowledgementRequired) {
+        var permissionId = mqttUser.permissionId();
+        var username = mqttUser.username();
+
         var dataTopicType = isInbound ? MqttTopicType.INBOUND_DATA : MqttTopicType.OUTBOUND_DATA;
-        var topics = new Topics(MqttTopic.of(mqttUser.permissionId(), dataTopicType),
-                                MqttTopic.of(mqttUser.permissionId(), MqttTopicType.STATUS),
-                                MqttTopic.of(mqttUser.permissionId(), MqttTopicType.TERMINATION));
+
+        var acknowledgementTopicType = isAcknowledgementRequired
+                ? MqttTopicType.ACKNOWLEDGEMENT
+                : MqttTopicType.WITHOUT_ACKNOWLEDGEMENT;
+
+        var topics = new Topics(MqttTopic.of(permissionId, dataTopicType),
+                                MqttTopic.of(permissionId, MqttTopicType.STATUS),
+                                MqttTopic.of(permissionId, MqttTopicType.TERMINATION),
+                                MqttTopic.of(permissionId, acknowledgementTopicType));
 
         aclRepository.saveAll(List.of(
-                topics.dataTopic().aiidaAcl(mqttUser.username()),
-                topics.statusTopic().aiidaAcl(mqttUser.username()),
-                topics.terminationTopic().aiidaAcl(mqttUser.username())));
+                topics.dataTopic().aiidaAcl(username),
+                topics.statusTopic().aiidaAcl(username),
+                topics.terminationTopic().aiidaAcl(username),
+                topics.acknowledgementTopic().aiidaAcl(username)));
 
         return topics;
     }
 
     private record UserPasswordWrapper(MqttUser user, String rawPassword) {}
 
-    private record Topics(MqttTopic dataTopic, MqttTopic statusTopic, MqttTopic terminationTopic) {}
+    private record Topics(MqttTopic dataTopic,
+                          MqttTopic statusTopic,
+                          MqttTopic terminationTopic,
+                          MqttTopic acknowledgementTopic) {}
 }

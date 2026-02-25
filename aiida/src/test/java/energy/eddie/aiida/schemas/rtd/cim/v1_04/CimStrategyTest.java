@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.schemas.cim.v1_12;
+package energy.eddie.aiida.schemas.rtd.cim.v1_04;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -10,9 +10,9 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.cim.v1_12.rtd.Quantity;
-import energy.eddie.cim.v1_12.rtd.QuantityTypeKind;
-import energy.eddie.cim.v1_12.rtd.TimeSeries;
+import energy.eddie.cim.v1_04.rtd.Quantity;
+import energy.eddie.cim.v1_04.rtd.QuantityTypeKind;
+import energy.eddie.cim.v1_04.rtd.TimeSeries;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -54,7 +54,7 @@ class CimStrategyTest {
                                              "100",
                                              KILO_WATT_HOUR),
                         new AiidaRecordValue("1-0:96.1.0", DEVICE_ID_1, obisCodeDeviceId, NONE, obisCodeDeviceId, NONE),
-                        new AiidaRecordValue("1-0:14.7.0", FREQUENCY, "50", HERTZ, "50", HERTZ)
+                        new AiidaRecordValue("1-0:32.7.0", INSTANTANEOUS_VOLTAGE_IN_PHASE_L1, "230", VOLT, "230", VOLT)
                 )
         );
 
@@ -62,23 +62,18 @@ class CimStrategyTest {
         var envelope = strategy.toRealTimeDataEnvelope(AIIDA_ID, aiidaRecord, permission);
 
         // Then
-        assertThat(envelope.getMessageDocumentHeader()).isNotNull();
-        assertThat(envelope.getMessageDocumentHeader().getCreationDateTime()).isNotNull();
-        assertThat(envelope.getMessageDocumentHeader().getCreationDateTime().getZone()).isEqualTo(ZoneId.of("UTC"));
-        assertThat(envelope.getMessageDocumentHeader().getMetaInformation()).isNotNull();
-
-        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
-        assertThat(metaInformation.getConnectionId()).isEqualTo("connection-123");
-        assertThat(metaInformation.getDataNeedId()).isEqualTo(DATA_NEED_ID.toString());
-        assertThat(metaInformation.getRequestPermissionId()).isEqualTo(PERMISSION_ID.toString());
-        assertThat(metaInformation.getDataSourceId()).isEqualTo(DATA_SOURCE_ID.toString());
-        assertThat(metaInformation.getFinalCustomerId()).isEqualTo(AIIDA_ID.toString());
-        assertThat(metaInformation.getRegionConnector()).isEqualTo("aiida");
-        assertThat(metaInformation.getRegionCountry()).isEqualTo("AT");
-        assertThat(metaInformation.getDocumentType()).isEqualTo("near-real-time-market-document");
-        assertThat(metaInformation.getAsset().getType()).isEqualTo(AiidaAsset.SUBMETER.toString());
-        assertThat(metaInformation.getAsset().getMeterId()).isEqualTo("meter-123");
-        assertThat(metaInformation.getAsset().getOperatorId()).isNull();
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationConnectionId()).isEqualTo("connection-123");
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationDataNeedId()).isEqualTo(DATA_NEED_ID.toString());
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationPermissionId()).isEqualTo(PERMISSION_ID.toString());
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationDataSourceId()).isEqualTo(DATA_SOURCE_ID.toString());
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationFinalCustomerId()).isEqualTo(AIIDA_ID.toString());
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationRegionConnector()).isEqualTo("aiida");
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationRegionCountry()).isEqualTo("AT");
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationDocumentType()).isEqualTo(
+                "near-real-time-market-document");
+        assertThat(envelope.getMessageDocumentHeaderMetaInformationAsset()).isEqualTo(AiidaAsset.SUBMETER.toString());
+        assertThat(envelope.getMessageDocumentHeaderCreationDateTime()).isNotNull();
+        assertThat(envelope.getMessageDocumentHeaderCreationDateTime().getZone()).isEqualTo(ZoneId.of("UTC"));
 
         assertThat(envelope.getMarketDocument()).isNotNull();
         assertThat(envelope.getMarketDocument().getTimeSeries()).hasSize(1);
@@ -91,8 +86,8 @@ class CimStrategyTest {
 
         assertThat(timeSeries.getQuantities()).hasSize(2);
         assertThat(timeSeries.getQuantities().stream().map(Quantity::getType)).containsExactly(
-                QuantityTypeKind.TOTAL_ACTIVE_ENERGY_CONSUMED_KWH,
-                QuantityTypeKind.FREQUENCY_HZ
+                QuantityTypeKind.TOTALACTIVEENERGYCONSUMED_IMPORT_KWH,
+                QuantityTypeKind.INSTANTANEOUSVOLTAGE_V_ON_PHASEL1
         );
     }
 
@@ -156,7 +151,7 @@ class CimStrategyTest {
                 null,
                 new Quantity().withQuantity(new BigDecimal("42")),
                 new Quantity()
-                        .withType(QuantityTypeKind.TOTAL_ACTIVE_ENERGY_CONSUMED_KWH)
+                        .withType(QuantityTypeKind.TOTALACTIVEENERGYCONSUMED_IMPORT_KWH)
                         .withQuantity(new BigDecimal("12.34"))
         );
 
@@ -166,7 +161,7 @@ class CimStrategyTest {
         // Then
         assertThat(result).hasSize(1);
         var value = result.getFirst();
-        assertThat(value.rawTag()).isEqualTo("TOTAL_ACTIVE_ENERGY_CONSUMED_KWH");
+        assertThat(value.rawTag()).isEqualTo("TOTALACTIVEENERGYCONSUMED_IMPORT_KWH");
         assertThat(value.dataTag()).isEqualTo(POSITIVE_ACTIVE_ENERGY);
         assertThat(value.value()).isEqualTo("12.34");
         assertThat(value.unitOfMeasurement()).isEqualTo(KILO_WATT_HOUR);
@@ -192,7 +187,6 @@ class CimStrategyTest {
         when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(dataSource.countryCode()).thenReturn(countryCode);
         when(dataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(dataSource.meterId()).thenReturn("meter-123");
 
         return dataSource;
     }

@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import type { AiidaPermission, PermissionTypes } from '@/types'
@@ -123,14 +121,6 @@ onClickOutside(target, () => (showToolTip.value = false))
     <div class="column">
       <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
         <div class="permission-field">
-          <dt>{{ t('permissions.dropdown.schemas') }}</dt>
-          <div class="column schema">
-            <dd v-for="schema in permission.dataNeed.schemas" :key="schema">
-              {{ schema }}
-            </dd>
-          </div>
-        </div>
-        <div class="permission-field">
           <dt>{{ t('permissions.dropdown.asset') }}</dt>
           <dd>
             {{ permission.dataNeed.asset }}
@@ -221,6 +211,14 @@ onClickOutside(target, () => (showToolTip.value = false))
           </Transition>
         </div>
       </template>
+      <div class="permission-field">
+        <dt>{{ t('permissions.dropdown.schemas') }}</dt>
+        <div class="column schema">
+          <dd v-for="schema in permission.dataNeed.schemas" :key="schema">
+            {{ schema }}
+          </dd>
+        </div>
+      </div>
       <div class="permission-field" v-if="permission.permissionId">
         <dt>{{ t('permissions.dropdown.permissionID') }}</dt>
         <dd>{{ permission.permissionId }}</dd>

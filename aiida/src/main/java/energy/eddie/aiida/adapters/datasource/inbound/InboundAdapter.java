@@ -8,12 +8,14 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
+import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -21,6 +23,7 @@ import java.time.Instant;
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
     private final Sinks.Many<InboundRecord> inboundRecordSink;
+    private final InboundAcknowledgementStreamer acknowledgementStreamer;
 
     /**
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
@@ -28,9 +31,12 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      *
      * @param dataSource The entity of the data source.
      */
-    public InboundAdapter(InboundDataSource dataSource, MqttConfiguration mqttConfiguration) {
+    public InboundAdapter(InboundDataSource dataSource, ObjectMapper mapper, MqttConfiguration mqttConfiguration) {
         super(dataSource, LOGGER, mqttConfiguration);
-        inboundRecordSink = Sinks.many().unicast().onBackpressureBuffer();
+        inboundRecordSink = Sinks.many().multicast().onBackpressureBuffer();
+
+        var acknowledgementTopic = dataSource.acknowledgementTopic();
+        acknowledgementStreamer = new InboundAcknowledgementStreamer(mapper, acknowledgementTopic, inboundRecordSink);
     }
 
     /**
@@ -42,7 +48,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.trace("Topic {} new message: {}", topic, message);
+        LOGGER.info("Received message on topic {} from data source {}", topic, dataSource().name());
 
         var schema = AiidaSchema.forTopic(topic);
         if (schema.isEmpty()) {
@@ -59,6 +65,13 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         inboundRecordSink.tryEmitNext(inboundRecord);
     }
 
+    @Override
+    public void deliveryComplete(IMqttToken token) {
+        LOGGER.trace("Message with id {} delivered successfully to broker for data source {}.",
+                     token.getMessageId(),
+                     dataSource().name());
+    }
+
     public Flux<InboundRecord> inboundRecordFlux() {
         return inboundRecordSink.asFlux();
     }
@@ -71,5 +84,13 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         connectOptions.setPassword(dataSource().password().getBytes(StandardCharsets.UTF_8));
 
         return connectOptions;
+    }
+
+    @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        if (dataSource.isAcknowledgementRequired()) {
+            acknowledgementStreamer.start(asyncClient);
+        }
+        super.connectComplete(reconnect, serverURI);
     }
 }

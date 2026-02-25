@@ -11,7 +11,7 @@ import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundExcept
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
-import energy.eddie.aiida.services.LatestRecordService;
+import energy.eddie.aiida.services.record.LatestRecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

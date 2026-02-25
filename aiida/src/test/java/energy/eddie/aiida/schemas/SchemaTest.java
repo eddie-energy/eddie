@@ -12,9 +12,10 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.schemas.cim.BaseCimFormatterStrategy;
-import energy.eddie.aiida.schemas.cim.v1_04.CimFormatter;
-import energy.eddie.aiida.schemas.raw.RawFormatter;
+import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
+import energy.eddie.aiida.schemas.rtd.cim.BaseCimFormatterStrategy;
+import energy.eddie.aiida.schemas.rtd.cim.v1_04.CimFormatter;
+import energy.eddie.aiida.schemas.rtd.raw.RawFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -189,7 +190,7 @@ class SchemaTest {
 
     @Test
     void schemaCim_v1_04() throws SchemaFormatterException, SchemaFormatterRegistryException {
-        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.cim.v1_04.CimStrategy.class);
+        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_04.CimStrategy.class);
         logCaptorStrategy.setLogLevelToInfo();
 
         LOG_CAPTOR.setLogLevelToTrace();
@@ -225,12 +226,13 @@ class SchemaTest {
 
     @Test
     void schemaCim_v1_12() throws SchemaFormatterException, SchemaFormatterRegistryException {
-        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.cim.v1_12.CimStrategy.class);
+        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_12.CimStrategy.class);
         logCaptorStrategy.setLogLevelToInfo();
 
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
         var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
-        var cimFormatter = new energy.eddie.aiida.schemas.cim.v1_12.CimFormatter(applicationInformationService, mapper);
+        var cimFormatter = new energy.eddie.aiida.schemas.rtd.cim.v1_12.CimFormatter(applicationInformationService,
+                                                                                     mapper);
 
         var permissionMock = mock(Permission.class);
         var dataNeedMock = mock(AiidaLocalDataNeed.class);

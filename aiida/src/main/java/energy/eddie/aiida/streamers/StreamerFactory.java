@@ -7,7 +7,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
+import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;

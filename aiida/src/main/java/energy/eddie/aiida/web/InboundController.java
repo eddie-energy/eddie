@@ -8,7 +8,7 @@ import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
-import energy.eddie.aiida.services.InboundService;
+import energy.eddie.aiida.services.record.InboundRecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,10 +26,10 @@ import java.util.UUID;
 @RequestMapping("/inbound")
 @Tag(name = "Inbound Controller")
 public class InboundController {
-    private final InboundService inboundService;
+    private final InboundRecordService inboundRecordService;
 
-    public InboundController(InboundService inboundService) {
-        this.inboundService = inboundService;
+    public InboundController(InboundRecordService inboundRecordService) {
+        this.inboundRecordService = inboundRecordService;
     }
 
     @Operation(summary = "Get latest inbound record for permission")
@@ -52,7 +52,7 @@ public class InboundController {
             throw new UnauthorizedException("API key missing: provide X-API-Key header or ?apiKey= query param.");
         }
 
-        var inboundRecord = inboundService.latestRecord(permissionId, apiKey);
+        var inboundRecord = inboundRecordService.latestRecord(permissionId, apiKey);
         return ResponseEntity.ok(inboundRecord.toDto());
     }
 }

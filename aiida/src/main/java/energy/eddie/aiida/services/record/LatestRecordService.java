@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.services;
+package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
@@ -31,17 +31,17 @@ public class LatestRecordService {
 
     private final AiidaRecordRepository aiidaRecordRepository;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
-    private final InboundService inboundService;
+    private final InboundRecordService inboundRecordService;
 
     @Autowired
     public LatestRecordService(
             AiidaRecordRepository aiidaRecordRepository,
             PermissionLatestRecordMap permissionLatestRecordMap,
-            InboundService inboundService
+            InboundRecordService inboundRecordService
     ) {
         this.aiidaRecordRepository = aiidaRecordRepository;
         this.permissionLatestRecordMap = permissionLatestRecordMap;
-        this.inboundService = inboundService;
+        this.inboundRecordService = inboundRecordService;
     }
 
     public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException {
@@ -101,7 +101,7 @@ public class LatestRecordService {
 
     public LatestInboundPermissionRecordDto latestInboundPermissionRecord(UUID permissionId)
             throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
-        var inboundRecord = inboundService.latestRecord(permissionId);
+        var inboundRecord = inboundRecordService.latestRecord(permissionId);
 
         return new LatestInboundPermissionRecordDto(
                 inboundRecord.timestamp(),

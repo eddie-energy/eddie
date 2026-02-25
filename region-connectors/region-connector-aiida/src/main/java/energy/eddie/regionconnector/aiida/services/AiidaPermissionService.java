@@ -16,6 +16,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata;
@@ -155,9 +156,10 @@ public class AiidaPermissionService {
         outbox.commit(new AiidaIdReceivedEvent(permissionId, ACCEPTED, aiidaId));
 
         var permissionDetails = detailsForPermission(permissionId);
-        var dataNeed = permissionDetails.dataNeed();
+        var dataNeed = (AiidaDataNeed) permissionDetails.dataNeed();
         var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId,
-                                                                       dataNeed instanceof InboundAiidaDataNeed);
+                                                                       dataNeed instanceof InboundAiidaDataNeed,
+                                                                       dataNeed.isAcknowledgementRequired());
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId));
         subscribeToPermissionTopics(permissionId);
 
@@ -306,6 +308,7 @@ public class AiidaPermissionService {
     private void subscribeToPermissionTopics(String permissionId) {
         try {
             mqttService.subscribeToOutboundDataTopic(permissionId);
+            mqttService.subscribeToAcknowledgementTopic(permissionId);
             mqttService.subscribeToStatusTopic(permissionId);
         } catch (MqttException e) {
             LOGGER.error("Something went wrong when subscribing to a topic for permission {}",

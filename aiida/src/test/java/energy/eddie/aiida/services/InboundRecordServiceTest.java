@@ -13,7 +13,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.aiida.services.record.InboundRecordService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class InboundServiceTest {
+class InboundRecordServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
     private static final UUID PERMISSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String ACCESS_CODE = "test-access-code";
@@ -51,7 +51,7 @@ class InboundServiceTest {
     private PermissionRepository permissionRepository;
 
     @InjectMocks
-    private InboundService inboundService;
+    private InboundRecordService inboundRecordService;
 
     @BeforeEach
     void setUp() {
@@ -69,7 +69,7 @@ class InboundServiceTest {
                 INBOUND_RECORD));
 
         // When
-        var inboundRecord = inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE);
+        var inboundRecord = inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE);
 
         // Then
         assertEquals(DATA_SOURCE_ID, inboundRecord.dataSource().id());
@@ -85,7 +85,7 @@ class InboundServiceTest {
 
         // When, Then
         assertThrows(InvalidDataSourceTypeException.class,
-                     () -> inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 
     @Test
@@ -94,7 +94,7 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
 
         // When, Then
-        assertThrows(UnauthorizedException.class, () -> inboundService.latestRecord(PERMISSION_ID, "wrong"));
+        assertThrows(UnauthorizedException.class, () -> inboundRecordService.latestRecord(PERMISSION_ID, "wrong"));
     }
 
     @Test
@@ -103,7 +103,8 @@ class InboundServiceTest {
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
 
         // When, Then
-        assertThrows(PermissionNotFoundException.class, () -> inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+        assertThrows(PermissionNotFoundException.class,
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 
     @Test
@@ -113,6 +114,6 @@ class InboundServiceTest {
 
         // When, Then
         assertThrows(InboundRecordNotFoundException.class,
-                     () -> inboundService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 }

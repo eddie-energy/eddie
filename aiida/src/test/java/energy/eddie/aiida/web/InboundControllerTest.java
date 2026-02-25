@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.aiida.services.InboundService;
+import energy.eddie.aiida.services.record.InboundRecordService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
@@ -35,11 +35,11 @@ class InboundControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private InboundService inboundService;
+    private InboundRecordService inboundRecordService;
 
     @Test
     void latestRecord_withHeader_isOk() throws Exception {
-        when(inboundService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
+        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
                                 .header("X-API-Key", ACCESS_CODE)
@@ -49,7 +49,7 @@ class InboundControllerTest {
 
     @Test
     void latestRecord_withQueryParam_isOk() throws Exception {
-        when(inboundService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
+        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID + "?apiKey=" + ACCESS_CODE))
                .andExpect(status().isOk());

@@ -58,6 +58,10 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @JsonDeserialize(using = CronExpressionDeserializer.class)
     protected CronExpression transmissionSchedule;
 
+    @Column(nullable = false, name = "is_acknowledgement_required")
+    @JsonProperty
+    protected boolean isAcknowledgementRequired;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_schemas", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
     @Column(name = "schema")
@@ -123,6 +127,11 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Override
     public CronExpression transmissionSchedule() {
         return transmissionSchedule;
+    }
+
+    @Override
+    public boolean isAcknowledgementRequired() {
+        return isAcknowledgementRequired;
     }
 
     @Override

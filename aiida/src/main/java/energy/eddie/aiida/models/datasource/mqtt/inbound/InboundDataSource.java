@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.datasource.mqtt.inbound;
@@ -30,6 +30,16 @@ public class InboundDataSource extends MqttDataSource {
     @JsonProperty
     protected String accessCode;
 
+    @Column(name = "acknowledgement_topic", table = TABLE_NAME)
+    @Schema(description = "The MQTT topic to which the EP should publish acknowledgements for received messages.")
+    @JsonProperty
+    protected String acknowledgementTopic;
+
+    @Column(name = "is_acknowledgement_required", table = TABLE_NAME)
+    @Schema(description = "Whether the EP is required to publish acknowledgements for received messages.")
+    @JsonProperty
+    protected boolean isAcknowledgementRequired;
+
     @Transient
     @JsonIgnore
     private MqttStreamingConfig config;
@@ -37,25 +47,41 @@ public class InboundDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, MqttStreamingConfig mqttStreamingConfig) {
-        this(dto, userId, mqttStreamingConfig, SecretGenerator.generate());
+    public InboundDataSource(
+            InboundDataSourceDto dto,
+            UUID userId,
+            MqttStreamingConfig mqttStreamingConfig,
+            boolean isAcknowledgementRequired
+    ) {
+        this(dto, userId, mqttStreamingConfig, isAcknowledgementRequired, SecretGenerator.generate());
     }
 
     public InboundDataSource(
             InboundDataSourceDto dto,
             UUID userId,
             MqttStreamingConfig mqttStreamingConfig,
+            boolean isAcknowledgementRequired,
             String accessCode
     ) {
         super(dto, userId);
         this.config = mqttStreamingConfig;
         this.internalHost = config.serverUri();
         this.externalHost = config.serverUri();
+        this.acknowledgementTopic = config.acknowledgementTopic();
+        this.isAcknowledgementRequired = isAcknowledgementRequired;
         this.accessCode = accessCode;
     }
 
     public String accessCode() {
         return accessCode;
+    }
+
+    public String acknowledgementTopic() {
+        return acknowledgementTopic;
+    }
+
+    public boolean isAcknowledgementRequired() {
+        return isAcknowledgementRequired;
     }
 
     @Override
@@ -72,18 +98,21 @@ public class InboundDataSource extends MqttDataSource {
         private final InboundDataSourceDto dataSourceDto;
         private final UUID userId;
         private final MqttStreamingConfig mqttStreamingConfig;
+        private final boolean isAcknowledgementRequired;
 
         @SuppressWarnings("NullAway")
         public Builder(Permission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
+
+            this.isAcknowledgementRequired = dataNeed.isAcknowledgementRequired();
             this.mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
 
             this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
         }
 
         public InboundDataSource build() {
-            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig);
+            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig, isAcknowledgementRequired);
         }
     }
 }

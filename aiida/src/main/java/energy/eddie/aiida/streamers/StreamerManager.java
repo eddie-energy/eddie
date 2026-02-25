@@ -9,7 +9,7 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.aiida.schemas.SchemaFormatterRegistry;
+import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;

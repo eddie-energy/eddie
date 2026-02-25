@@ -1,14 +1,14 @@
 // SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.schemas.cim.v1_04;
+package energy.eddie.aiida.schemas.rtd.cim.v1_04;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.schemas.BaseSchemaFormatter;
-import energy.eddie.aiida.schemas.cim.CimFormatterStrategy;
+import energy.eddie.aiida.schemas.rtd.BaseSchemaFormatter;
+import energy.eddie.aiida.schemas.rtd.cim.CimFormatterStrategy;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;

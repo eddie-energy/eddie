@@ -44,6 +44,6 @@ public class AcknowledgementCimMessageProcessor extends BaseMessageProcessor {
 
     @Override
     public String forTopicPath() {
-        return AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
+        return AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12.buildTopicPath(MqttTopicType.ACKNOWLEDGEMENT.baseTopicName());
     }
 }
