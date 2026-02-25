@@ -11,7 +11,8 @@ plugins {
     id("java")
     `maven-publish`
     jacoco
-    id("com.vanniktech.maven.publish") version "0.36.0"
+    signing
+    `java-library`
 }
 
 group = "energy.eddie"
@@ -62,9 +63,13 @@ tasks.withType<JacocoReport> {
     }
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 // Directory for generated java files
 val generatedXJCJavaDir = "${project.layout.buildDirectory.asFile.get()}/generated/sources/xjc/main/java"
-
 
 @OptIn(ExperimentalPathApi::class)
 val generateCIMSchemaClasses by tasks.registering {
@@ -132,6 +137,16 @@ tasks.compileJava {
 }
 
 publishing {
+    repositories {
+        maven {
+            name = "ossrh-staging-api"
+            url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("ORG_GRADLE_PROJECT_mavenCentralUsername")
+                password = System.getenv("ORG_GRADLE_PROJECT_mavenCentralPassword")
+            }
+        }
+    }
     publications {
         create<MavenPublication>("cim") {
             from(components["java"])
@@ -168,36 +183,12 @@ publishing {
     }
 }
 
-mavenPublishing {
-    publishToMavenCentral()
-    signAllPublications()
-    coordinates(group.toString(), project.name, version.toString())
-
-    pom {
-        name.set(project.name)
-        description.set("Generated CIM classes and helpers")
-        inceptionYear.set("2025")
-        url.set("https://github.com/eddie-energy/eddie/")
-        licenses {
-            license {
-                name.set("The Apache License, Version 2.0")
-                url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                distribution.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-            }
-        }
-        developers {
-            developer {
-                id.set("eddie-energy")
-                name.set("EDDIE Developers")
-                url.set("https://github.com/eddie-energy/")
-            }
-        }
-        scm {
-            url.set("https://github.com/eddie-energy/eddie/")
-            connection.set("scm:git:git://github.com/eddie-energy/eddie.git")
-            developerConnection.set("scm:git:ssh://git@github.com/eddie-energy/eddie.git")
-        }
-    }
+signing {
+    useInMemoryPgpKeys(
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey"),
+        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword")
+    )
+    sign(publishing.publications["cim"])
 }
 
 tasks.withType<Javadoc>().configureEach {
