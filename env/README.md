@@ -13,7 +13,7 @@ In order to start the application in docker containers you will need to perform 
           container and then inspecting the container with `docker inspect <container_id> | grep Gateway`.
 
 4. Start the application by running `docker-compose up -d` in the root directory of the project.
-5. Access the application via `http://localhost:9000/prototype/main/` in your browser.
+5. Access the application via `http://localhost:8080/demo` in your browser.
 
 If `.env` is configured correctly, the application should start, and you should be able to use all configured region
 connectors.

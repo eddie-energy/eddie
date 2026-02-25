@@ -60,7 +60,7 @@ The provided
 
 For a local development setup these values can be configured as follows (defaults of `.env` file):
 
-- `AIIDA_EXTERNAL_HOST=http://localhost:8080`
+- `AIIDA_EXTERNAL_HOST=http://localhost:8081`
 - `KEYCLOAK_INTERNAL_HOST=http://keycloak:8080`
 - `KEYCLOAK_EXTERNAL_HOST=http://localhost:8888`
 
