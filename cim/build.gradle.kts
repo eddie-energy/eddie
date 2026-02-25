@@ -136,14 +136,16 @@ tasks.compileJava {
     dependsOn(generateCIMSchemaClasses)
 }
 
+val mavenCentralUsername = System.getenv("MAVEN_CENTRAL_USERNAME")
+val mavenCentralPassword = System.getenv("MAVEN_CENTRAL_PASSWORD")
 publishing {
     repositories {
         maven {
-            name = "ossrh-staging-api"
+            name = "MavenCentral"
             url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
             credentials {
-                username = System.getenv("ORG_GRADLE_PROJECT_mavenCentralUsername")
-                password = System.getenv("ORG_GRADLE_PROJECT_mavenCentralPassword")
+                username = mavenCentralUsername
+                password = mavenCentralPassword
             }
         }
     }
@@ -185,10 +187,39 @@ publishing {
 
 signing {
     useInMemoryPgpKeys(
-        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey"),
-        System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword")
+        System.getenv("MAVEN_CENTRAL_SIGNING_KEY"),
+        System.getenv("MAVEN_CENTRAL_SIGNING_KEY_PASSWORD")
     )
     sign(publishing.publications["cim"])
+}
+
+tasks.register("publishCimPublicationToMavenRepository") {
+    group = "publishing"
+    description = "Releases the software from the staging area to the maven central repository"
+    doLast {
+        val token = Base64.getEncoder()
+            .encodeToString(("$mavenCentralUsername:$mavenCentralPassword").toByteArray())
+
+        val url =
+            "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/energy.eddie?publishing_type=automatic"
+
+        val response = HttpClient.newHttpClient().send(
+            HttpRequest.newBuilder()
+                .uri(uri(url))
+                .header("accept", "*/*")
+                .header("Authorization", "Bearer $token")
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build(),
+            HttpResponse.BodyHandlers.ofString()
+        )
+
+        if (response.statusCode() !in 200..299) {
+            logger.error("Upload failed: ${response.statusCode()} ${response.body()}")
+            throw IllegalStateException("Upload failed: ${response.statusCode()} ${response.body()}")
+        }
+
+        logger.info("Upload successful (${response.statusCode()})")
+    }
 }
 
 tasks.withType<Javadoc>().configureEach {
