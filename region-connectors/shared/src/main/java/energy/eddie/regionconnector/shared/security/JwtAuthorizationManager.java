@@ -15,6 +15,7 @@ import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,8 +29,8 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
     /**
      * Creates a new {@link AuthorizationManager} that enforces authorization by checking the JWT that is supplied with
      * the request. It checks whether the combination of region connector ID and permission ID from the request URL are
-     * contained in the JWT and is therefore only suitable for requests where the permissionId is a path parameter of
-     * the request. For example, for a request with the URL
+     * contained in the JWT. It is therefore only suitable for requests where the permissionId is a path variable
+     * permission ids are provided as query parameters of the request. For example, for a request with the URL
      * {@code /region-connectors/es-datadis/permission-request/exampleId/rejected} to be allowed, the list of
      * permissions stored in the JWT has to contain the ID {@code exampleId} associated with the region connector
      * {@code es-datadis}.
@@ -55,8 +56,16 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
         String jwt = getJwtFromHeader(context.getRequest());
 
         var permissions = jwtUtil.getPermissions(jwt);
-        String[] requestedPermissionIds = context.getRequest().getParameterValues("permission-id");
-        String servletName = context.getRequest().getHttpServletMapping().getServletName();
+        Set<String> permissionIds = getPermissionIdsFromContext(context);
+
+        if (permissionIds.isEmpty()) {
+            LOGGER.trace(
+                    "Denying authorization for request URI {} because no permissionId was provided as path variable or query parameter",
+                    requestURI);
+            throw new AccessDeniedException("No permissionId provided in the request");
+        }
+
+        var servletName = context.getRequest().getHttpServletMapping().getServletName();
         List<String> permittedPermissionsForRequestedConnector = "dispatcherServlet".equals(servletName)
                 // For API calls to the core
                 ? permissions.values()
@@ -66,17 +75,16 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
                 // For calls directly to the region connectors
                 : permissions.get(servletName);
 
-        if (requestedPermissionIds == null || servletName == null || permittedPermissionsForRequestedConnector == null) {
+        if (servletName == null || permittedPermissionsForRequestedConnector == null) {
             LOGGER.trace(
-                    "Denying authorization for request URI {} because one of the required fields is null ({} {} {})",
+                    "Denying authorization for request URI {} because the requested region connector ({}) does not permit any permissions ({})",
                     requestURI,
-                    requestedPermissionIds,
                     servletName,
                     permittedPermissionsForRequestedConnector);
             throw new AccessDeniedException("Not authorized to access the requested resource");
         }
 
-        if (!new HashSet<>(permittedPermissionsForRequestedConnector).containsAll(Set.of(requestedPermissionIds))) {
+        if (!new HashSet<>(permittedPermissionsForRequestedConnector).containsAll(permissionIds)) {
             LOGGER.trace(
                     "Denying authorization for request URI {} because the requested permissionId is not in the JWT ({})",
                     requestURI,
@@ -103,5 +111,29 @@ public class JwtAuthorizationManager implements AuthorizationManager<RequestAuth
         }
 
         return authorizationHeader.substring(BEARER_PREFIX.length());
+    }
+
+    /**
+     * Extracts the permission IDs from both the request's path variables and query parameters.
+     *
+     * @param context The authorization context containing the request information.
+     * @return A set of permission IDs contained in either the path variables or query parameters of the request.
+     * Empty set if no permission IDs are found.
+     */
+    private Set<String> getPermissionIdsFromContext(RequestAuthorizationContext context) {
+        var permissionIdVariable = context.getVariables().get("permissionId");
+        var permissionIdParameters = context.getRequest().getParameterValues("permission-id");
+
+        Set<String> permissionIds = new HashSet<>();
+
+        if (permissionIdVariable != null) {
+            permissionIds.add(permissionIdVariable);
+        }
+
+        if (permissionIdParameters != null) {
+            permissionIds.addAll(Arrays.asList(permissionIdParameters));
+        }
+
+        return permissionIds;
     }
 }

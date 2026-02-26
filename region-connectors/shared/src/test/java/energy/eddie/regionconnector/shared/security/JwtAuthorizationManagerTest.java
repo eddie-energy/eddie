@@ -8,8 +8,7 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,7 +22,6 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.BOOLEAN;
@@ -39,7 +37,7 @@ class JwtAuthorizationManagerTest {
     private JwtAuthorizationManager headerAuthManager;
 
     @ParameterizedTest
-    @MethodSource("invalidAuthorizationHeaderValues")
+    @ValueSource(strings = {"Not Bearer Prefix SomeJwt", "Bearer ", "Bearer    "})
     void givenInvalidJwt_headerAuthorizationManager_returnsDenied(String headerValue) {
         // Given
         var mockRequest = new MockHttpServletRequest();
@@ -125,6 +123,25 @@ class JwtAuthorizationManagerTest {
     }
 
     @Test
+    void givenValidJwtAndPermissionIdInPath_headerAuthorizationManager_returnsGranted() {
+        // Given
+        var mockRequest = createMockRequest("aiida");
+        var mockContext = new RequestAuthorizationContext(mockRequest, Map.of("permissionId", "myTestId"));
+        when(mockJwtUtil.getPermissions(anyString()))
+                .thenReturn(Map.of("aiida", List.of("myTestId"),
+                                   "es-datadis", List.of("foo", "bar")));
+
+        // When
+        var res = headerAuthManager.authorize(null, mockContext);
+
+        // Then
+        assertThat(res)
+                .isNotNull()
+                .extracting(AuthorizationResult::isGranted, InstanceOfAssertFactories.BOOLEAN)
+                .isTrue();
+    }
+
+    @Test
     void givenValidJwtAndPermissionIdsInQueryParameters_headerAuthorizationManager_returnsGranted() {
         // Given
         var mockRequest = createMockRequest("aiida");
@@ -161,14 +178,6 @@ class JwtAuthorizationManagerTest {
                 .isNotNull()
                 .extracting(AuthorizationResult::isGranted, InstanceOfAssertFactories.BOOLEAN)
                 .isTrue();
-    }
-
-    private static Stream<Arguments> invalidAuthorizationHeaderValues() {
-        return Stream.of(
-                Arguments.of("Not Bearer Prefix SomeJwt"),
-                Arguments.of("Bearer "),
-                Arguments.of("Bearer    ")
-        );
     }
 
     @SuppressWarnings("DataFlowIssue") // Allow nullable for the servletName
