@@ -30,13 +30,13 @@
   --eddie-secondary: #eff2f7;
   --eddie-blue: #15a7e0;
   --eddie-green: #92c143;
-  --eddie-yellow: #fed119;
   --eddie-red-dark: #9e0b0f;
-  --eddie-red-light: #ff3b30;
   --eddie-red-medium: #b3261e;
+  --eddie-red-light: #ff3b30;
+  --eddie-red-background: #ffeaeb;
   --eddie-primary-900: #017aa0e6;
-  --eddie-primary-100: #017aa01a;
   --eddie-primary-400: #017aa066;
+  --eddie-primary-100: #017aa01a;
   --max-content-width: 1620px;
   --content-padding: 1rem;
   --border-radius: 0.5rem;

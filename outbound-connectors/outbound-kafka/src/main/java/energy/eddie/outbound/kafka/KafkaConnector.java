@@ -12,12 +12,14 @@ import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -43,7 +45,8 @@ public class KafkaConnector implements
         AccountingPointEnvelopeOutboundConnector,
         ValidatedHistoricalDataMarketDocumentOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_12 {
+        NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
+        AcknowledgementMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -132,6 +135,16 @@ public class KafkaConnector implements
                 .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(this::produceNearRealTimeDataMarketDocumentV112)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    @Override
+    public void setAcknowledgementMarketDocumentStream(Flux<AcknowledgementEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceAcknowledgementMarketDocument)
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
     }
@@ -264,6 +277,20 @@ public class KafkaConnector implements
                      metaInformation.getRequestPermissionId());
     }
 
+    private void produceAcknowledgementMarketDocument(AcknowledgementEnvelope marketDocument) {
+        var metaInformation = marketDocument.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.acknowledgementMarketDocument(),
+                null,
+                metaInformation.getConnectionId(),
+                marketDocument,
+                cimToHeaders(marketDocument)
+        );
+        sendToKafka(toSend, "Could not produce acknowledgement market document message");
+        LOGGER.debug("Produced acknowledgement market document message for permission request {}",
+                     metaInformation.getRequestPermissionId());
+    }
+
     private Iterable<Header> cimToHeaders(energy.eddie.cim.v1_04.rtd.RTDEnvelope header) {
         return List.of(
                 new StringHeader(Headers.PERMISSION_ID, header.getMessageDocumentHeaderMetaInformationPermissionId()),
@@ -273,6 +300,15 @@ public class KafkaConnector implements
     }
 
     private Iterable<Header> cimToHeaders(energy.eddie.cim.v1_12.rtd.RTDEnvelope header) {
+        var metaInformation = header.getMessageDocumentHeader().getMetaInformation();
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+        );
+    }
+
+    private Iterable<Header> cimToHeaders(AcknowledgementEnvelope header) {
         var metaInformation = header.getMessageDocumentHeader().getMetaInformation();
         return List.of(
                 new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),

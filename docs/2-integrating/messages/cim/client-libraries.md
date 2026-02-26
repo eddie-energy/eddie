@@ -2,9 +2,7 @@
 
 The Common Information Model (CIM) is a comprehensive and complex model. Generating Java classes directly from the XSD files can therefore be challenging.
 The repository [eddie-energy/eddie](https://github.com/eddie-energy/eddie) provides a Maven artifact that already contains the relevant CIM classes.
-
-If you already have access to the EDDIE repository, follow this [guide](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-apache-maven-registry#authenticating-to-github-packages).
-If you do not have access to the EDDIE repository, contact the developers to gain access.
+Find the latest version on the [Maven Central Repository](https://central.sonatype.com/artifact/energy.eddie/cim).
 
 ## Getting started
 
@@ -30,7 +28,8 @@ The example requires:
 
 ### Versions
 
-The CIM library itself is versioned. The changelog can be found in the GitHub repository here: https://github.com/eddie-energy/eddie/blob/main/cim/CHANGELOG.md
+The CIM library uses semantic versioning.
+The changelog can be found in the GitHub repository here: https://github.com/eddie-energy/eddie/blob/main/cim/CHANGELOG.md
 
 ### Importing the library
 

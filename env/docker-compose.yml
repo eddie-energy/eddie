@@ -95,6 +95,8 @@ services:
     image: quay.io/keycloak/keycloak:26.3.2
     ports:
       - "8888:8080"
+    profiles:
+      - auth
     environment:
       KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
@@ -111,6 +113,8 @@ services:
     image: caddy:alpine
     ports:
       - "9000:8080"
+    profiles:
+      - auth
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data

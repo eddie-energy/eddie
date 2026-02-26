@@ -14,6 +14,7 @@ import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexTyp
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -310,6 +311,44 @@ class AmqpOutboundTest {
         // Then
         var consumer = connection.consumerBuilder()
                                  .queue(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12))
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testAcknowledgementCim_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<AcknowledgementEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setAcknowledgementMarketDocumentStream(publisher.flux());
+        var metaInformation = new energy.eddie.cim.v1_12.ack.MetaInformation()
+                .withRequestPermissionId("pid")
+                .withConnectionId("cid")
+                .withDataNeedId("dnid");
+        var header = new energy.eddie.cim.v1_12.ack.MessageDocumentHeader()
+                .withMetaInformation(metaInformation);
+        var message = new AcknowledgementEnvelope()
+                .withMessageDocumentHeader(header);
+
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.acknowledgementMarketDocument())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),

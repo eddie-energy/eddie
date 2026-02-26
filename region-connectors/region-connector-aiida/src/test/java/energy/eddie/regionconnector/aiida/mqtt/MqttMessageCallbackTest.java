@@ -8,11 +8,12 @@ import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.v0.PermissionProcessStatus;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.regionconnector.aiida.AiidaBeanConfig;
 import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessorRegistry;
+import energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_12.AcknowledgementCimMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.data.raw.RawDataMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.status.StatusMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
@@ -29,8 +30,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.ObjectMapper;
@@ -42,9 +47,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -58,15 +63,18 @@ class MqttMessageCallbackTest {
     private final Sinks.Many<AiidaConnectionStatusMessageDto> statusSink = Sinks.many()
                                                                                 .unicast()
                                                                                 .onBackpressureBuffer();
-    private final Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataSinkCimV104 = Sinks.many()
-                                                                                                        .unicast()
-                                                                                                        .onBackpressureBuffer();
-    private final Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataSinkCimV112 = Sinks.many()
-                                                                                                        .unicast()
-                                                                                                        .onBackpressureBuffer();
-    private final Sinks.Many<RawDataMessage> rawDataMessageSink = Sinks.many()
-                                                                       .unicast()
-                                                                       .onBackpressureBuffer();
+    private static final Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataSinkCimV104 = Sinks.many()
+                                                                                                               .unicast()
+                                                                                                               .onBackpressureBuffer();
+    private static final Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataSinkCimV112 = Sinks.many()
+                                                                                                               .unicast()
+                                                                                                               .onBackpressureBuffer();
+    private static final Sinks.Many<AcknowledgementEnvelope> acknowledgementSinkCim = Sinks.many()
+                                                                                           .unicast()
+                                                                                           .onBackpressureBuffer();
+    private static final Sinks.Many<RawDataMessage> rawDataMessageSink = Sinks.many()
+                                                                              .unicast()
+                                                                              .onBackpressureBuffer();
     private final LogCaptor logCaptor = LogCaptor.forClass(MqttMessageCallback.class);
     private MqttMessageCallback mqttMessageCallback;
 
@@ -97,7 +105,7 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_statusMessage_revoked() {
         // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
+        var topic = statusTopic();
         var connectionStatusMessage = getAiidaConnectionStatusMessage(PermissionProcessStatus.REVOKED);
 
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaConnectionStatusMessageDto.class)))
@@ -105,13 +113,7 @@ class MqttMessageCallbackTest {
 
         // When
         StepVerifier.create(statusSink.asFlux())
-                    .then(() -> {
-                        try {
-                            mqttMessageCallback.messageArrived(topic, new MqttMessage());
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
+                    .then(() -> messageArrived(topic))
                     .assertNext(msg -> {
                         assertEquals(connectionStatusMessage, msg);
                         assertEquals(PermissionProcessStatus.REVOKED, msg.status());
@@ -123,7 +125,7 @@ class MqttMessageCallbackTest {
     @Test
     void messageArrived_statusMessage_accepted() {
         // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
+        var topic = statusTopic();
         var connectionStatusMessage = getAiidaConnectionStatusMessage(PermissionProcessStatus.ACCEPTED);
 
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaConnectionStatusMessageDto.class)))
@@ -131,13 +133,7 @@ class MqttMessageCallbackTest {
 
         // When
         StepVerifier.create(statusSink.asFlux())
-                    .then(() -> {
-                        try {
-                            mqttMessageCallback.messageArrived(topic, new MqttMessage());
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
+                    .then(() -> messageArrived(topic))
                     .assertNext(msg -> {
                         assertEquals(connectionStatusMessage, msg);
                         assertEquals(PermissionProcessStatus.ACCEPTED, msg.status());
@@ -147,161 +143,16 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_smartMeterP1CimMessage_valid() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-
-        var rtdEnvelope = new RTDEnvelope();
-        rtdEnvelope.withMessageDocumentHeaderMetaInformationPermissionId(PERMISSION_ID.toString());
-        when(mockObjectMapper.readValue(any(byte[].class), eq(RTDEnvelope.class))).thenReturn(rtdEnvelope);
-
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start())
-                .thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
-        when(permission.end())
-                .thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
-        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
-                .thenReturn(Optional.of(permission));
-
-        // When
-        StepVerifier.create(nearRealTimeDataSinkCimV104.asFlux())
-                    .then(() -> {
-                        try {
-                            mqttMessageCallback.messageArrived(topic, new MqttMessage());
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
-                    .assertNext(msg -> assertEquals(rtdEnvelope, msg))
-                    .thenCancel()
-                    .verify();
-    }
-
-    @Test
-    void messageArrived_smartMeterP1CimMessage_invalidPermission() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-
-        var rtdEnvelope = new RTDEnvelope();
-        rtdEnvelope.withMessageDocumentHeaderMetaInformationPermissionId(PERMISSION_ID.toString());
-        when(mockObjectMapper.readValue(any(byte[].class), eq(RTDEnvelope.class))).thenReturn(rtdEnvelope);
-
-        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString())).thenReturn(Optional.empty());
-
-        // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
-
-        // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
-    }
-
-    @Test
-    void messageArrived_smartMeterP1CimMessage_invalidStatus() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-
-        var rtdEnvelope = new RTDEnvelope();
-        rtdEnvelope.withMessageDocumentHeaderMetaInformationPermissionId(PERMISSION_ID.toString());
-        when(mockObjectMapper.readValue(any(byte[].class), eq(RTDEnvelope.class))).thenReturn(rtdEnvelope);
-
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.REVOKED);
-        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
-                .thenReturn(Optional.of(permission));
-
-        // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
-
-        // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
-    }
-
-    @Test
-    void messageArrived_smartMeterP1CimMessage_beforeStartDate() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-
-        var startDate = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
-        var endDate = LocalDate.now(ZoneId.systemDefault()).plusDays(10);
-        var rtdEnvelope = new RTDEnvelope();
-        rtdEnvelope.withMessageDocumentHeaderMetaInformationPermissionId(PERMISSION_ID.toString());
-        when(mockObjectMapper.readValue(any(byte[].class), eq(RTDEnvelope.class))).thenReturn(rtdEnvelope);
-
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start())
-                .thenReturn(startDate);
-        when(permission.end())
-                .thenReturn(endDate);
-        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
-                .thenReturn(Optional.of(permission));
-
-        // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
-
-        // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
-    }
-
-    @Test
-    void messageArrived_smartMeterP1CimMessage_afterEndDate() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_CIM_V1_04.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var startDate = LocalDate.now(ZoneId.systemDefault()).minusDays(10);
-        var endDate = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
-        var rtdEnvelope = new RTDEnvelope();
-        rtdEnvelope.withMessageDocumentHeaderMetaInformationPermissionId(PERMISSION_ID.toString());
-        when(mockObjectMapper.readValue(any(byte[].class), eq(RTDEnvelope.class))).thenReturn(rtdEnvelope);
-
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start())
-                .thenReturn(startDate);
-        when(permission.end())
-                .thenReturn(endDate);
-        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
-                .thenReturn(Optional.of(permission));
-
-        // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
-
-        // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
-    }
-
-    @Test
     void messageArrived_smartMeterP1RawMessage_valid() {
         // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
+        var topic = schemaTopic(AiidaSchema.SMART_METER_P1_RAW);
         var aiidaRecordDto = getAiidaRecordDto();
         var payload = realObjectMapper.writeValueAsString(aiidaRecordDto);
 
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start())
-                .thenReturn(LocalDate.now(ZoneId.systemDefault()).minusDays(1));
-        when(permission.end())
-                .thenReturn(LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        var permission = acceptedPermission(LocalDate.now(ZoneId.systemDefault()).minusDays(1),
+                                            LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        when(permission.permissionId()).thenReturn(PERMISSION_ID.toString());
+
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
         when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class)))
@@ -326,121 +177,110 @@ class MqttMessageCallbackTest {
                     .verify();
     }
 
-    @Test
-    void messageArrived_smartMeterP1RawMessage_invalidTopic() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("aiidaSchemaCimScenarios")
+    <T> void messageArrived_aiidaSchemaCim_valid(AiidaSchemaScenario<T> scenario) {
         // Given
-        logCaptor.setLogLevelToDebug();
-        var topic = "invalid/v1/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
+        var topic = schemaTopic(scenario.aiidaSchema());
 
-        // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
+        when(mockObjectMapper.readValue(any(byte[].class),
+                                        eq(scenario.dataClass()))).thenReturn(scenario.data());
 
-        // Then
-        assertEquals(1, logCaptor.getDebugLogs().size());
-    }
-
-    @Test
-    void messageArrived_smartMeterP1RawMessage_invalidPermission() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var aiidaRecordDto = getAiidaRecordDto();
-
-        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
-                .thenReturn(Optional.empty());
-        when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class)))
-                .thenReturn(aiidaRecordDto);
-
-        // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
-
-        // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
-    }
-
-    @Test
-    void messageArrived_smartMeterP1RawMessage_invalidStatus() {
-        // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var aiidaRecordDto = getAiidaRecordDto();
-
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.REVOKED);
+        var permission = acceptedPermission(LocalDate.now(ZoneId.systemDefault()).minusDays(1),
+                                            LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
-        when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class)))
-                .thenReturn(aiidaRecordDto);
 
         // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
-
-        // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
+        StepVerifier.create(scenario.flux())
+                    .then(() -> messageArrived(topic))
+                    .assertNext(msg -> assertEquals(scenario.data(), msg))
+                    .thenCancel()
+                    .verify();
     }
 
-    @Test
-    void messageArrived_smartMeterP1RawMessage_beforeStartDate() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("aiidaSchemaCimScenarios")
+    <T> void messageArrived_aiidaSchemaCim_invalidPermission(AiidaSchemaScenario<T> scenario) {
         // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var aiidaRecordDto = getAiidaRecordDto();
+        var topic = schemaTopic(scenario.aiidaSchema());
+
+        when(mockObjectMapper.readValue(any(byte[].class),
+                                        eq(scenario.dataClass()))).thenReturn(scenario.data());
+
+        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString())).thenReturn(Optional.empty());
+
+        // When
+        messageArrived(topic);
+
+        // Then
+        assertFalse(logCaptor.getErrorLogs().isEmpty());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("aiidaSchemaCimScenarios")
+    <T> void messageArrived_aiidaSchemaCim_invalidStatus(AiidaSchemaScenario<T> scenario) {
+        // Given
+        var topic = schemaTopic(scenario.aiidaSchema());
+
+        when(mockObjectMapper.readValue(any(byte[].class),
+                                        eq(scenario.dataClass()))).thenReturn(scenario.data());
+
+        var permission = mock(AiidaPermissionRequest.class);
+        when(permission.status()).thenReturn(PermissionProcessStatus.REVOKED);
+        when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
+                .thenReturn(Optional.of(permission));
+
+        // When
+        messageArrived(topic);
+
+        // Then
+        assertFalse(logCaptor.getErrorLogs().isEmpty());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("aiidaSchemaCimScenarios")
+    <T> void messageArrived_aiidaSchemaCim_beforeStartDate(AiidaSchemaScenario<T> scenario) {
+        // Given
+        var topic = schemaTopic(scenario.aiidaSchema());
+
         var startDate = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
         var endDate = LocalDate.now(ZoneId.systemDefault()).plusDays(10);
 
-        var permission = mock(AiidaPermissionRequest.class);
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start())
-                .thenReturn(startDate);
-        when(permission.end())
-                .thenReturn(endDate);
+        when(mockObjectMapper.readValue(any(byte[].class),
+                                        eq(scenario.dataClass()))).thenReturn(scenario.data());
+
+        var permission = acceptedPermission(startDate, endDate);
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
-        when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class)))
-                .thenReturn(aiidaRecordDto);
 
         // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
+        messageArrived(topic);
 
         // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
+        assertFalse(logCaptor.getErrorLogs().isEmpty());
     }
 
-    @Test
-    void messageArrived_smartMeterP1RawMessage_afterEndDate() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("aiidaSchemaCimScenarios")
+    <T> void messageArrived_aiidaSchemaCim_afterEndDate(AiidaSchemaScenario<T> scenario) {
         // Given
-        var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
-                    AiidaSchema.SMART_METER_P1_RAW.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
-        var permission = mock(AiidaPermissionRequest.class);
-        var aiidaRecordDto = getAiidaRecordDto();
+        var topic = schemaTopic(scenario.aiidaSchema());
         var startDate = LocalDate.now(ZoneId.systemDefault()).minusDays(10);
         var endDate = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
 
-        when(permission.permissionId())
-                .thenReturn(PERMISSION_ID.toString());
-        when(permission.status())
-                .thenReturn(PermissionProcessStatus.ACCEPTED);
-        when(permission.start())
-                .thenReturn(startDate);
-        when(permission.end())
-                .thenReturn(endDate);
+        when(mockObjectMapper.readValue(any(byte[].class),
+                                        eq(scenario.dataClass()))).thenReturn(scenario.data());
+
+        var permission = acceptedPermission(startDate, endDate);
         when(permissionRequestViewRepository.findByPermissionId(PERMISSION_ID.toString()))
                 .thenReturn(Optional.of(permission));
 
-        when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaRecordDto.class))).thenReturn(aiidaRecordDto);
-
         // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
+        messageArrived(topic);
 
         // Then
-        assertEquals(1, logCaptor.getErrorLogs().size());
+        assertFalse(logCaptor.getErrorLogs().isEmpty());
     }
 
     @Test
@@ -450,10 +290,10 @@ class MqttMessageCallbackTest {
         var topic = MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/data/outbound/unknown";
 
         // When
-        mqttMessageCallback.messageArrived(topic, new MqttMessage());
+        messageArrived(topic);
 
         // Then
-        assertEquals(1, logCaptor.getDebugLogs().size());
+        assertFalse(logCaptor.getDebugLogs().isEmpty());
     }
 
     @Test
@@ -469,7 +309,7 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void mqttErrorOccured() {
+    void mqttErrorOccurred() {
         // Given
         var mqttException = mock(MqttException.class);
 
@@ -508,6 +348,39 @@ class MqttMessageCallbackTest {
         assertTrue(logCaptor.getInfoLogs().stream().anyMatch(log -> log.startsWith("Connected to MQTT broker")));
     }
 
+    private static Stream<Arguments> aiidaSchemaCimScenarios() {
+        var rtdEnvelopeV104 = new energy.eddie.cim.v1_04.rtd.RTDEnvelope()
+                .withMessageDocumentHeaderMetaInformationPermissionId(PERMISSION_ID.toString());
+
+        var rtdEnvelopeV112 = new energy.eddie.cim.v1_12.rtd.RTDEnvelope().withMessageDocumentHeader(
+                new energy.eddie.cim.v1_12.rtd.MessageDocumentHeader().withMetaInformation(
+                        new energy.eddie.cim.v1_12.rtd.MetaInformation()
+                                .withRequestPermissionId(PERMISSION_ID.toString())));
+
+        var ackEnvelope = new AcknowledgementEnvelope().withMessageDocumentHeader(
+                new energy.eddie.cim.v1_12.ack.MessageDocumentHeader().withMetaInformation(
+                        new energy.eddie.cim.v1_12.ack.MetaInformation()
+                                .withRequestPermissionId(PERMISSION_ID.toString())));
+
+        return Stream.of(
+                Arguments.of(new AiidaSchemaScenario<>(
+                        AiidaSchema.SMART_METER_P1_CIM_V1_04,
+                        nearRealTimeDataSinkCimV104.asFlux(),
+                        rtdEnvelopeV104,
+                        energy.eddie.cim.v1_04.rtd.RTDEnvelope.class)),
+                Arguments.of(new AiidaSchemaScenario<>(
+                        AiidaSchema.SMART_METER_P1_CIM_V1_12,
+                        nearRealTimeDataSinkCimV112.asFlux(),
+                        rtdEnvelopeV112,
+                        energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)),
+                Arguments.of(new AiidaSchemaScenario<>(
+                        AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12,
+                        acknowledgementSinkCim.asFlux(),
+                        ackEnvelope,
+                        AcknowledgementEnvelope.class))
+        );
+    }
+
     private @NotNull List<AiidaMessageProcessor> getAiidaMessageProcessors() {
         var statusMessageProcessor = new StatusMessageProcessor(permissionRequestViewRepository,
                                                                 mockObjectMapper,
@@ -515,19 +388,29 @@ class MqttMessageCallbackTest {
         var rawDataMessageProcessor = new RawDataMessageProcessor(permissionRequestViewRepository,
                                                                   mockObjectMapper,
                                                                   rawDataMessageSink);
-        var cimDataMessageProcessorV104 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_04.CimDataMessageProcessor(
+        var rtdCimDataMessageProcessorV104 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_04.NearRealTimeDataCimMessageProcessor(
                 permissionRequestViewRepository,
                 mockObjectMapper,
                 nearRealTimeDataSinkCimV104);
-        var cimDataMessageProcessorV112 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_12.CimDataMessageProcessor(
+        var rtdCimDataMessageProcessorV112 = new energy.eddie.regionconnector.aiida.mqtt.message.processor.data.cim.v1_12.NearRealTimeDataCimMessageProcessor(
                 permissionRequestViewRepository,
                 mockObjectMapper,
                 nearRealTimeDataSinkCimV112);
+        var ackCimDataMessageProcessor = new AcknowledgementCimMessageProcessor(
+                permissionRequestViewRepository,
+                mockObjectMapper,
+                acknowledgementSinkCim);
 
         return List.of(statusMessageProcessor,
                        rawDataMessageProcessor,
-                       cimDataMessageProcessorV104,
-                       cimDataMessageProcessorV112);
+                       rtdCimDataMessageProcessorV104,
+                       rtdCimDataMessageProcessorV112,
+                       ackCimDataMessageProcessor);
+    }
+
+    private AiidaConnectionStatusMessageDto getAiidaConnectionStatusMessage(PermissionProcessStatus status) {
+        var aiidaConnectionStatusMessageJson = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000001\",\"timestamp\":1725458241.237425343,\"status\":\"" + status + "\",\"permissionId\":\"" + PERMISSION_ID + "\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
+        return realObjectMapper.readValue(aiidaConnectionStatusMessageJson, AiidaConnectionStatusMessageDto.class);
     }
 
     private AiidaRecordDto getAiidaRecordDto() {
@@ -535,8 +418,36 @@ class MqttMessageCallbackTest {
         return realObjectMapper.readValue(aiidaRecordDtoJson, AiidaRecordDto.class);
     }
 
-    private AiidaConnectionStatusMessageDto getAiidaConnectionStatusMessage(PermissionProcessStatus status) {
-        var aiidaConnectionStatusMessageJson = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000001\",\"timestamp\":1725458241.237425343,\"status\":\"" + status + "\",\"permissionId\":\"" + PERMISSION_ID + "\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
-        return realObjectMapper.readValue(aiidaConnectionStatusMessageJson, AiidaConnectionStatusMessageDto.class);
+    private String statusTopic() {
+        return MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" + MqttTopicType.STATUS.baseTopicName();
+    }
+
+    private String schemaTopic(AiidaSchema aiidaSchema) {
+        return MqttTopic.DEFAULT_PREFIX + "/" + PERMISSION_ID + "/" +
+               aiidaSchema.buildTopicPath(MqttTopicType.OUTBOUND_DATA.baseTopicName());
+    }
+
+    private AiidaPermissionRequest acceptedPermission(LocalDate startDate, LocalDate endDate) {
+        var permission = mock(AiidaPermissionRequest.class);
+        when(permission.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
+        when(permission.start()).thenReturn(startDate);
+        when(permission.end()).thenReturn(endDate);
+        return permission;
+    }
+
+    private void messageArrived(String topic) {
+        try {
+            mqttMessageCallback.messageArrived(topic, new MqttMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private record AiidaSchemaScenario<T>(
+            AiidaSchema aiidaSchema,
+            Flux<T> flux,
+            T data,
+            Class<T> dataClass
+    ) {
     }
 }

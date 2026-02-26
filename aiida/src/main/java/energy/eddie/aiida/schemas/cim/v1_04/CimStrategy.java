@@ -103,6 +103,8 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                 StandardCodingSchemeTypeList::fromValue);
         var codingSchemeValue = codingScheme != null ? codingScheme.value() : null;
 
+        var registeredResourceMRID = getRegisteredResourceMRIDValue(aiidaRecord);
+
         return new TimeSeries()
                 .withDateAndOrTimeDateTime(aiidaRecord.timestamp().atZone(UTC))
                 .withQuantities(aiidaRecord
@@ -113,8 +115,20 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                                         .toList())
                 .withRegisteredResourceMRID(new ResourceIDString()
                                                     .withCodingScheme(codingSchemeValue)
-                                                    .withValue(aiidaRecord.dataSource().id().toString()))
+                                                    .withValue(registeredResourceMRID))
                 .withVersion(VERSION);
+    }
+
+    private String getRegisteredResourceMRIDValue(AiidaRecord aiidaRecord) {
+        var deviceId = aiidaRecord.aiidaRecordValues()
+                                  .stream()
+                                  .filter(value -> value
+                                          .dataTag()
+                                          .equals(ObisCode.DEVICE_ID_1))
+                                  .findFirst();
+        return deviceId.isPresent()
+                ? deviceId.get().value()
+                : aiidaRecord.dataSource().id().toString();
     }
 
     private Quantity toQuantity(AiidaRecordValue aiidaRecordValue) {

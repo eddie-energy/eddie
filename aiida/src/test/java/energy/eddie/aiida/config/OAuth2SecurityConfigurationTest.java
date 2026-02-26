@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.config;
@@ -11,20 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SuppressWarnings("unused")
 class OAuth2SecurityConfigurationTest {
     @Nested
     @WebMvcTest(controllers = HomeController.class)
@@ -33,9 +26,6 @@ class OAuth2SecurityConfigurationTest {
     class NoCorsPropertyTest {
         @Autowired
         private MockMvc mockMvc;
-
-        @MockitoBean
-        private ClientRegistrationRepository unusedClientRegistrationRepository;
 
         @Test
         @WithMockUser
@@ -52,9 +42,6 @@ class OAuth2SecurityConfigurationTest {
     class GivenCorsPropertyTest {
         @Autowired
         private MockMvc mockMvc;
-
-        @MockitoBean
-        private ClientRegistrationRepository unusedClientRegistrationRepository;
 
         @Test
         @WithMockUser
@@ -77,30 +64,6 @@ class OAuth2SecurityConfigurationTest {
             mockMvc.perform(get("/").header("Origin", "https://example.com"))
                    .andExpect(status().isOk())
                    .andExpect(header().string("Access-Control-Expose-Headers", "Location"));
-        }
-    }
-
-    @Nested
-    @WebMvcTest(controllers = HomeController.class)
-    @AutoConfigureMockMvc
-    @Import(OAuth2SecurityConfiguration.class)
-    class LogoutTest {
-        @Autowired
-        private MockMvc mockMvc;
-
-        @Autowired
-        private ClientRegistrationRepository clientRegistrationRepository;
-
-        @Test
-        @WithMockUser
-        void givenClientRegistrationRepository_containsEndSessionUri() {
-            var clientRegistration = clientRegistrationRepository.findByRegistrationId("keycloak");
-            assertNotNull(clientRegistration);
-
-            var configurationMetadata = clientRegistration.getProviderDetails().getConfigurationMetadata();
-
-            assertThat(configurationMetadata)
-                    .containsExactlyEntriesOf(Map.of("end_session_endpoint", "https://auth.aiida.energy/logout"));
         }
     }
 }

@@ -3,8 +3,8 @@
 
 package energy.eddie.spring.outboundconnector.extensions.v1_12;
 
-import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
-import energy.eddie.core.services.v1_12.NearRealTimeDataMarketDocumentService;
+import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
+import energy.eddie.core.services.v1_12.AcknowledgementMarketDocumentService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,21 +19,21 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 @SuppressWarnings({"DataFlowIssue", "java:S114"})
 @ExtendWith(MockitoExtension.class)
-class NearRealTImeDataOutboundRegistrarV1_12Test {
+class AcknowledgementOutboundRegistrarTest {
     @Mock
-    private NearRealTimeDataMarketDocumentOutboundConnectorV1_12 rtdConnector;
+    private AcknowledgementMarketDocumentOutboundConnector ackConnector;
     @Mock
-    private NearRealTimeDataMarketDocumentService service;
+    private AcknowledgementMarketDocumentService service;
 
     @Test
     void givenNull_constructor_throws() {
         // Given
-        var optional = Optional.of(rtdConnector);
+        var optional = Optional.of(ackConnector);
         // When, Then
         assertThrows(NullPointerException.class,
-                     () -> new NearRealTimeDataOutboundRegistrarV1_12(null, service));
+                     () -> new AcknowledgementOutboundRegistrar(null, service));
         assertThrows(NullPointerException.class,
-                     () -> new NearRealTimeDataOutboundRegistrarV1_12(optional, null));
+                     () -> new AcknowledgementOutboundRegistrar(optional, null));
     }
 
     @Test
@@ -41,7 +41,7 @@ class NearRealTImeDataOutboundRegistrarV1_12Test {
         // Given
 
         // When
-        new NearRealTimeDataOutboundRegistrarV1_12(Optional.empty(), service);
+        new AcknowledgementOutboundRegistrar(Optional.empty(), service);
 
         // Then
         verifyNoInteractions(service);
@@ -52,10 +52,10 @@ class NearRealTImeDataOutboundRegistrarV1_12Test {
         // Given
 
         // When
-        new NearRealTimeDataOutboundRegistrarV1_12(Optional.of(rtdConnector), service);
+        new AcknowledgementOutboundRegistrar(Optional.of(ackConnector), service);
 
         // Then
-        verify(service).getNearRealTimeDataMarketDocumentStream();
-        verify(rtdConnector).setNearRealTimeDataMarketDocumentStreamV1_12(any());
+        verify(service).getAcknowledgementMarketDocumentStream();
+        verify(ackConnector).setAcknowledgementMarketDocumentStream(any());
     }
 }

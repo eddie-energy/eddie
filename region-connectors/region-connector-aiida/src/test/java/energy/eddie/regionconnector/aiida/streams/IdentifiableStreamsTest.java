@@ -5,6 +5,8 @@
 package energy.eddie.regionconnector.aiida.streams;
 
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -20,14 +22,23 @@ class IdentifiableStreamsTest {
     @Mock
     RawDataMessage rawMsg2;
 
+    private Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> rtdCimV104Sink;
+    private Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> rtdCimV112Sink;
+    private Sinks.Many<AcknowledgementEnvelope> ackSink;
+    private Sinks.Many<RawDataMessage> rawSink;
+    private IdentifiableStreams streams;
+
+    @BeforeEach
+    void setUp() {
+        rtdCimV104Sink = Sinks.many().unicast().onBackpressureBuffer();
+        rtdCimV112Sink = Sinks.many().unicast().onBackpressureBuffer();
+        ackSink = Sinks.many().unicast().onBackpressureBuffer();
+        rawSink = Sinks.many().unicast().onBackpressureBuffer();
+        streams = new IdentifiableStreams(rtdCimV104Sink, rtdCimV112Sink, ackSink, rawSink);
+    }
+
     @Test
     void nearRealTimeDataCimV112Flux_forwardsEmittedEnvelopes() {
-        Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> rtdCimV104Sink = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> rtdCimV112Sink = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<RawDataMessage> rawSink = Sinks.many().unicast().onBackpressureBuffer();
-
-        var streams = new IdentifiableStreams(rtdCimV104Sink, rtdCimV112Sink, rawSink);
-
         var one = new energy.eddie.cim.v1_12.rtd.RTDEnvelope();
         var two = new energy.eddie.cim.v1_12.rtd.RTDEnvelope();
 
@@ -43,12 +54,6 @@ class IdentifiableStreamsTest {
 
     @Test
     void nearRealTimeDataCimV104Flux_forwardsEmittedEnvelopes() {
-        Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> rtdCimV104Sink = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> rtdCimV112Sink = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<RawDataMessage> rawSink = Sinks.many().unicast().onBackpressureBuffer();
-
-        var streams = new IdentifiableStreams(rtdCimV104Sink, rtdCimV112Sink, rawSink);
-
         var one = new energy.eddie.cim.v1_04.rtd.RTDEnvelope();
         var two = new energy.eddie.cim.v1_04.rtd.RTDEnvelope();
 
@@ -63,13 +68,22 @@ class IdentifiableStreamsTest {
     }
 
     @Test
+    void acknowledgementFlux_forwardsEmittedEnvelopes() {
+        var one = new AcknowledgementEnvelope();
+        var two = new AcknowledgementEnvelope();
+
+        StepVerifier.create(streams.acknowledgementCimFlux())
+                    .then(() -> {
+                        ackSink.tryEmitNext(one);
+                        ackSink.tryEmitNext(two);
+                    })
+                    .expectNext(one, two)
+                    .thenCancel()
+                    .verify();
+    }
+
+    @Test
     void rawDataMessageFlux_forwardsEmittedMessages() {
-        Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> rtdCimV104Sink = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> rtdCimV112Sink = Sinks.many().unicast().onBackpressureBuffer();
-        Sinks.Many<RawDataMessage> rawSink = Sinks.many().unicast().onBackpressureBuffer();
-
-        var streams = new IdentifiableStreams(rtdCimV104Sink, rtdCimV112Sink, rawSink);
-
         StepVerifier.create(streams.rawDataMessageFlux())
                     .then(() -> {
                         rawSink.tryEmitNext(rawMsg1);

@@ -35,13 +35,19 @@ import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 public abstract class DataSourceAdapter<T extends DataSource> implements AutoCloseable, HealthIndicator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceAdapter.class);
+    private static final short MAX_HEALTH_VALIDATION_MESSAGES = 100;
+    private static final short FIRST_HEALTH_THRESHOLD_SECONDS = 90;
+    private static final short LAST_HEALTH_THRESHOLD_SECONDS = 180;
     protected final Sinks.Many<AiidaRecord> recordSink;
     protected final Sinks.Many<Health> healthSink;
     protected final T dataSource;
+    protected final Deque<AiidaRecord> healthValidationMessages;
 
     /**
      * Creates a new {@code DataSourceAdapter} with the specified data source entity.
@@ -50,6 +56,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      */
     protected DataSourceAdapter(T dataSource) {
         this.dataSource = dataSource;
+        this.healthValidationMessages = new ArrayDeque<>(MAX_HEALTH_VALIDATION_MESSAGES);
         recordSink = Sinks.many().unicast().onBackpressureBuffer();
         healthSink = Sinks.many().unicast().onBackpressureBuffer();
     }
@@ -108,6 +115,42 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
         if (result.isFailure()) {
             LOGGER.warn("Error while emitting new AiidaRecord {}. Error was {}", aiidaRecord, result);
         }
+
+        registerForHealthMonitoring(aiidaRecord);
+    }
+
+    @Override
+    public Health health() {
+        final String healthKey = "DataSource";
+
+        if (healthValidationMessages.isEmpty()) {
+            return Health.unknown().withDetail(healthKey, "No messages received until now.").build();
+        }
+
+        var latestTimestamp = healthValidationMessages.peek().timestamp();
+        var now = Instant.now();
+        var firstThresholdExceeded = now.isAfter(latestTimestamp.plusSeconds(FIRST_HEALTH_THRESHOLD_SECONDS));
+        var lastThresholdExceeded = now.isAfter(latestTimestamp.plusSeconds(LAST_HEALTH_THRESHOLD_SECONDS));
+
+        if (lastThresholdExceeded) {
+            return Health.down()
+                         .withDetail(healthKey,
+                                     "The latest message was received longer than %d seconds ago.".formatted(
+                                             LAST_HEALTH_THRESHOLD_SECONDS))
+                         .build();
+        }
+
+        return firstThresholdExceeded
+                ? Health.status("WARNING")
+                        .withDetail(healthKey,
+                                    "The latest message was received between the past %d and %s seconds.".formatted(
+                                            FIRST_HEALTH_THRESHOLD_SECONDS, LAST_HEALTH_THRESHOLD_SECONDS))
+                        .build()
+                : Health.up()
+                        .withDetail(healthKey,
+                                    "One or more messages were received in the past %d seconds.".formatted(
+                                            FIRST_HEALTH_THRESHOLD_SECONDS))
+                        .build();
     }
 
     /**
@@ -119,5 +162,15 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
 
     public T dataSource() {
         return dataSource;
+    }
+
+    private void registerForHealthMonitoring(AiidaRecord aiidaRecord) {
+        if (healthValidationMessages.size() >= MAX_HEALTH_VALIDATION_MESSAGES) {
+            healthValidationMessages.removeLast();
+        }
+
+        if (!healthValidationMessages.offerFirst(aiidaRecord)) {
+            LOGGER.warn("Error while acknowledging AiidaRecord {} for health validation", aiidaRecord);
+        }
     }
 }

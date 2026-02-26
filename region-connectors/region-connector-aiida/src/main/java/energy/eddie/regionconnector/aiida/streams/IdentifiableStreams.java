@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.aiida.streams;
 
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -12,15 +13,18 @@ import reactor.core.publisher.Sinks;
 public class IdentifiableStreams {
     private final Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataCimV104Sink;
     private final Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Sink;
+    private final Sinks.Many<AcknowledgementEnvelope> acknowledgementCimSink;
     private final Sinks.Many<RawDataMessage> rawDataMessageSink;
 
     public IdentifiableStreams(
             Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataCimV104Sink,
             Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Sink,
+            Sinks.Many<AcknowledgementEnvelope> acknowledgementCimSink,
             Sinks.Many<RawDataMessage> rawDataMessageSink
     ) {
         this.nearRealTimeDataCimV104Sink = nearRealTimeDataCimV104Sink;
         this.nearRealTimeDataCimV112Sink = nearRealTimeDataCimV112Sink;
+        this.acknowledgementCimSink = acknowledgementCimSink;
         this.rawDataMessageSink = rawDataMessageSink;
     }
 
@@ -30,6 +34,10 @@ public class IdentifiableStreams {
 
     public Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> nearRealTimeDataCimV112Flux() {
         return nearRealTimeDataCimV112Sink.asFlux();
+    }
+
+    public Flux<AcknowledgementEnvelope> acknowledgementCimFlux() {
+        return acknowledgementCimSink.asFlux();
     }
 
     public Flux<RawDataMessage> rawDataMessageFlux() {

@@ -148,6 +148,8 @@ jobs:
       - name: Build and publish CIM maven package
         if: steps.check.outputs.changed == 'true' && github.ref_name == 'main'
         env:
-          GPR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GPR_USER: ${{ env.GITHUB_ACTOR }}
-        run: ./gradlew cim:publish
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          MAVEN_CENTRAL_SIGNING_KEY: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY }}
+          MAVEN_CENTRAL_SIGNING_KEY_PASSWORD: ${{ secrets.MAVEN_CENTRAL_SIGNING_KEY_PASSWORD }}
+        run: ./gradlew cim:publishAllPublicationsMavenCentralRepository cim:publishCimPublicationToMavenRepository

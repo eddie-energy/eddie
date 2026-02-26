@@ -71,6 +71,16 @@ class TopicConfigurationTest {
     }
 
     @Test
+    void testAcknowledgementMessage_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.acknowledgementMarketDocument();
+
+        // Then
+        assertEquals("ep.e123.cim_1_12.acknowledgement-md", res);
+    }
+
+    @Test
     void testAccountingPointDataMarketDocument_returnsCorrectTopicName() {
         // Given
         // When

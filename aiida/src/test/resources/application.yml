@@ -16,22 +16,6 @@ spring:
         jwt:
           issuer-uri: https://auth.aiida.energy/iam/realms/AIIDA
           jwk-set-uri: https://auth.aiida.energy/iam/realms/AIIDA/protocol/openid-connect/certs
-      client:
-        provider:
-          keycloak:
-            authorization-uri: https://auth.aiida.energy/auth
-            token-uri: https://auth.aiida.energy/token
-            user-info-uri: https://auth.aiida.energy/userinfo
-            jwk-set-uri: https://auth.aiida.energy/certs
-            user-name-attribute: preferred_username
-        registration:
-          keycloak:
-            client-id: AIIDA
-            client-secret: Test123!
-            authorization-grant-type: authorization_code
-            redirect-uri: https://aiida.energy/login/oauth2/code/keycloak
-            scope: openid
-            provider: keycloak
 
 aiida:
   cleanup:
@@ -46,6 +30,3 @@ aiida:
   mqtt:
     bcrypt-salt-rounds: 12
     password: Test123!
-  keycloak:
-    account-uri: https://auth.aiida.energy/account
-    end-session-uri: https://auth.aiida.energy/logout

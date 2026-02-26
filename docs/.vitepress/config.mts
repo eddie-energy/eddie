@@ -202,6 +202,10 @@ export default withMermaid(
                       link: "/2-integrating/messages/cim/min-max-envelope.md",
                     },
                     {
+                      text: "Acknowledgement Market Documents",
+                      link: "/2-integrating/messages/cim/acknowledgement-market-documents.md",
+                    },
+                    {
                       text: "Existing Mappings",
                       link: "/2-integrating/messages/cim/mappings.md",
                     },

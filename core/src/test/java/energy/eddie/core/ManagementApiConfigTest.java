@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core;
@@ -24,7 +24,7 @@ class ManagementApiConfigInternalEndpointsFilterTest {
         // Given
         var req = new MockHttpServletRequest();
         req.setRequestURI(reqUri);
-        req.setServerPort(9090);
+        req.setLocalPort(9090);
         var resp = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         var config = new ManagementApiConfig(9090, "management");
@@ -45,7 +45,7 @@ class ManagementApiConfigInternalEndpointsFilterTest {
         // Given
         var req = new MockHttpServletRequest();
         req.setRequestURI("/region-connectors/us-green-button/callback");
-        req.setServerPort(8080);
+        req.setLocalPort(8080);
         var resp = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         var config = new ManagementApiConfig(9090, "management");
@@ -66,7 +66,7 @@ class ManagementApiConfigInternalEndpointsFilterTest {
         // Given
         var req = new MockHttpServletRequest();
         req.setRequestURI("/management");
-        req.setServerPort(8080);
+        req.setLocalPort(8080);
         var resp = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         var config = new ManagementApiConfig(9090, "management");
@@ -84,7 +84,7 @@ class ManagementApiConfigInternalEndpointsFilterTest {
         // Given
         var req = new MockHttpServletRequest();
         req.setRequestURI("/region-connectors/us-green-button/callback");
-        req.setServerPort(9090);
+        req.setLocalPort(9090);
         var resp = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         var config = new ManagementApiConfig(9090, "management");

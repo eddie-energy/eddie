@@ -6,13 +6,16 @@ package energy.eddie.outbound.rest.persistence.specifications;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.cim.v1_04.StandardCodingSchemeTypeList;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
+import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.PersistenceConfig;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.junit.jupiter.api.Test;
@@ -51,6 +54,8 @@ class CimSpecificationTest {
     private ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository;
     @Autowired
     private NearRealTimeDataMarketDocumentRepository rtdRepository;
+    @Autowired
+    private AcknowledgementMarketDocumentRepository ackRepository;
 
     @Test
     void givenPermissionMarketDocumentsAndSpecification_whenQueryRepository_thenReturnDocument() {
@@ -241,6 +246,44 @@ class CimSpecificationTest {
 
         // When
         var res = rtdRepository.findAll(specs);
+
+        // Then
+        assertThat(res).hasSize(1);
+    }
+
+    @Test
+    void givenAcknowledgementMarketDocumentsAndSpecification_whenQueryRepository_thenReturnDocument() {
+        // Given
+        var pid = UUID.randomUUID().toString();
+        var dnid = UUID.randomUUID().toString();
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var from = now.minusHours(1);
+        var to = now.plusHours(1);
+        var payload = new AcknowledgementEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.ack.MessageDocumentHeader()
+                                .withCreationDateTime(now)
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.ack.MetaInformation()
+                                                .withRequestPermissionId(pid)
+                                                .withConnectionId("1")
+                                                .withDataNeedId(dnid)
+                                                .withDocumentType(TopicStructure.DocumentTypes.NEAR_REAL_TIME_DATA_MD.value())
+                                                .withRegionConnector("aiida")
+                                                .withRegionCountry(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())));
+        ackRepository.save(new AcknowledgementMarketDocumentModel(payload));
+        PredicateSpecification<AcknowledgementMarketDocumentModel> specs = CimSpecification.buildQueryForV1_12(
+                Optional.of(pid),
+                Optional.of("1"),
+                Optional.of(dnid),
+                Optional.of("NAT"),
+                Optional.of("aiida"),
+                Optional.of(from),
+                Optional.of(to)
+        );
+
+        // When
+        var res = ackRepository.findAll(specs);
 
         // Then
         assertThat(res).hasSize(1);

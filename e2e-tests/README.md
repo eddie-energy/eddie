@@ -27,6 +27,17 @@ docker compose -f ./env/docker-compose.yml up -d
 docker compose -f ./aiida/docker/compose.yml up -d
 ```
 
+AIIDA will use EDDIE's public URL to access it, which is usually set to `http://localhost:8080` for local development.
+Since AIIDA is running in a container, `localhost` will refer to the container itself, and not the host where EDDIE is running.
+To allow AIIDA to access EDDIE using `localhost`, an extra host entry can map `localhost` to the host gateway in the AIIDA container.
+
+```yaml
+services:
+  aiida:
+    extra_hosts:
+      - "localhost:host-gateway" # access "eddie" container as "localhost" via host network
+```
+
 Compose and environment variable overrides (compose.e2e.yml, .env.e2e) are not required for local execution, but for the GitHub workflow, containing special configuration for the self-hosted runner.
 
 ## Associated workflow file and GitHub secrets

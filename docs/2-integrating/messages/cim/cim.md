@@ -18,6 +18,7 @@ There are six types of CIM documents currently supported by EDDIE:
 - [Near Real Time Data Documents](./near-real-time-data-documents.md)
 - [Retransmission Requests](./redistribution-transaction-request-documents.md)
 - [Min-Max Envelope](./min-max-envelope.md)
+- [Acknowledgement Envelope](./acknowledgement-market-documents.md)
 
 ## CIM envelope for v0.82
 

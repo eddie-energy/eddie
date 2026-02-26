@@ -42,7 +42,13 @@
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "healthStatus": "État",
       "healthStatusUp": "Actif",
-      "healthStatusDown": "Inactif"
+      "healthStatusWarning": "Avertissement",
+      "healthStatusDown": "Inactif",
+      "healthStatusUnknown": "Inconnu",
+      "healthStatusUpTooltip": "Un ou plusieurs messages ont été reçus au cours des 90 dernières secondes.",
+      "healthStatusWarningTooltip": "Le dernier message a été reçu il y a entre 90 et 180 secondes.",
+      "healthStatusDownTooltip": "Le dernier message a été reçu il y a plus de 180 secondes.",
+      "healthStatusUnknownTooltip": "Aucun message n'a pu être trouvé pour déterminer l'état de la source de données."
     },
     "modal": {
       "name": "Nom",

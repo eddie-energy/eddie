@@ -82,7 +82,7 @@ public class ManagementApiConfig {
                 FilterChain chain
         ) throws IOException, ServletException {
             var httpRequest = (HttpServletRequest) request;
-            var isRequestOnManagementPort = httpRequest.getServerPort() == managementPort;
+            var isRequestOnManagementPort = httpRequest.getLocalPort() == managementPort;
             var requestURI = httpRequest.getRequestURI();
             var isRequestOnManagementUrl = requestURI.startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
                                            || requestURI.startsWith("/outbound-connectors")

@@ -87,7 +87,7 @@ The following instructions can be used to perform a local test run with compilin
    docker compose -f ./env/docker-compose.yml up -d
    ```
 
-4. The example app should be available on http://localhost:9000/prototype/main/.
+4. A demo button should be available on http://localhost:8080/demo
 
 ## Configuration
 

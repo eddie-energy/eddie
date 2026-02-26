@@ -20,7 +20,7 @@ class AiidaNearRealTimeDataMarketDocumentProviderTest {
     IdentifiableStreams streams;
 
     @Test
-    void getRawDataStream_emitsUnderlyingFlux() {
+    void getNearRealTimeDataMarketDocumentsStream_emitsUnderlyingFlux() {
         var msg1 = mock(RTDEnvelope.class);
         var msg2 = mock(RTDEnvelope.class);
         when(streams.nearRealTimeDataCimV104Flux()).thenReturn(Flux.just(msg1, msg2));

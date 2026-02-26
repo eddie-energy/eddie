@@ -10,7 +10,7 @@ This setup uses Docker Compose to orchestrate the necessary services. To get sta
 
 1. Download the quickstart configuration from the provided [aiida/docker](https://github.com/eddie-energy/eddie/tree/main/aiida/docker)
 2. Run `docker compose up -d` in that folder.
-3. Open the browser on `http://localhost:8080` to access the AIIDA web interface.
+3. Open the browser on `http://localhost:8081` to access the AIIDA web interface.
 4. You can log in with the default credentials:
     - Username: `aiida`
     - Password: `aiida`
@@ -43,7 +43,6 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 |-----------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | AIIDA_EXTERNAL_HOST                                 | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                                    |
 | AIIDA_CORS_ALLOWED_ORIGINS                          | The origins that are allowed to communicate with AIIDA (see [reverse proxy deployments](#reverse-proxy-deployment))                  |
-| AIIDA_KEYCLOAK_ACCOUNT_URI                          | Specifies the URI to which users are redirected for account settings. By default, this points to Keycloak's account management page. |
 | AIIDA_CLEANUP_INTERVAL                              | Specifies in which fixed duration the cleanup task is scheduled (default: P1D)                                                       |
 | AIIDA_CLEANUP_ENTITIES_AIIDARECORD_RETENTION        | Specifies the time-to-live for an AIIDA_RECORD (default: P1D)                                                                        |
 | AIIDA_CLEANUP_ENTITIES_FAILEDTOSENDENTITY_RETENTION | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY (default: P1D)                                                                |
@@ -65,7 +64,6 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 | KEYCLOAK_INTERNAL_HOST                              | The hostname for docker internal communication                                                                                       |
 | KEYCLOAK_REALM                                      | The Keycloak realm used for AIIDA                                                                                                    |
 | KEYCLOAK_CLIENT ID                                  | The Keycloak client ID used for AIIDA                                                                                                |
-| KEYCLOAK_CLIENT_SECRET                              | The Keycloak client secret used for AIIDA                                                                                            |
 
 ### Reverse Proxy Deployment
 

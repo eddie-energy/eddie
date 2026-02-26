@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.rest.connectors.cim.v1_12;
 
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,21 @@ class CimConnectorTest {
 
         // Then
         StepVerifier.create(connector.getNearRealTimeDataMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setAcknowledgement_producesAcknowledgements() {
+        // Given
+        var ackFlux = Flux.just(new AcknowledgementEnvelope());
+
+        // When
+        connector.setAcknowledgementMarketDocumentStream(ackFlux);
+
+        // Then
+        StepVerifier.create(connector.getAcknowledgementMarketDocumentStream())
                     .then(connector::close)
                     .expectNextCount(1)
                     .verifyComplete();
