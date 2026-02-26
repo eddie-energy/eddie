@@ -42,12 +42,18 @@ class CimStrategyTest {
         // Given
         var dataSource = dataSource("AT");
         var permission = permission(dataSource);
+        var obisCodeDeviceId = "device";
         var aiidaRecord = new AiidaRecord(
                 TIMESTAMP,
                 dataSource,
                 List.of(
-                        new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "100", KILO_WATT_HOUR, "100", KILO_WATT_HOUR),
-                        new AiidaRecordValue("1-0:96.1.0", DEVICE_ID_1, "device", NONE, "device", NONE),
+                        new AiidaRecordValue("1-0:1.8.0",
+                                             POSITIVE_ACTIVE_ENERGY,
+                                             "100",
+                                             KILO_WATT_HOUR,
+                                             "100",
+                                             KILO_WATT_HOUR),
+                        new AiidaRecordValue("1-0:96.1.0", DEVICE_ID_1, obisCodeDeviceId, NONE, obisCodeDeviceId, NONE),
                         new AiidaRecordValue("1-0:14.7.0", FREQUENCY, "50", HERTZ, "50", HERTZ)
                 )
         );
@@ -80,7 +86,7 @@ class CimStrategyTest {
         var timeSeries = envelope.getMarketDocument().getTimeSeries().getFirst();
         assertThat(timeSeries.getVersion()).isEqualTo("1.0");
         assertThat(timeSeries.getDateAndOrTimeDateTime()).isEqualTo(TIMESTAMP.atZone(ZoneId.of("UTC")));
-        assertThat(timeSeries.getRegisteredResourceMRID().getValue()).isEqualTo(DATA_SOURCE_ID.toString());
+        assertThat(timeSeries.getRegisteredResourceMRID().getValue()).isEqualTo(obisCodeDeviceId);
         assertThat(timeSeries.getRegisteredResourceMRID().getCodingScheme()).isEqualTo("NAT");
 
         assertThat(timeSeries.getQuantities()).hasSize(2);
@@ -91,6 +97,35 @@ class CimStrategyTest {
     }
 
     @Test
+    void toRealTimeDataEnvelope_noDeviceIdRecordValueGiven_mRIDMapsToDataSourceId() throws CimSchemaFormatterException {
+        // Given
+        var dataSource = dataSource("AT");
+        var permission = permission(dataSource);
+        var aiidaRecord = new AiidaRecord(
+                TIMESTAMP,
+                dataSource,
+                List.of(
+                        new AiidaRecordValue("1-0:1.8.0",
+                                             POSITIVE_ACTIVE_ENERGY,
+                                             "100",
+                                             KILO_WATT_HOUR,
+                                             "100",
+                                             KILO_WATT_HOUR),
+                        new AiidaRecordValue("1-0:14.7.0", FREQUENCY, "50", HERTZ, "50", HERTZ)
+                )
+        );
+
+        // When
+        var envelope = strategy.toRealTimeDataEnvelope(AIIDA_ID, aiidaRecord, permission);
+
+        // Then
+        var timeSeries = envelope.getMarketDocument().getTimeSeries().getFirst();
+        assertThat(timeSeries.getVersion()).isEqualTo("1.0");
+        assertThat(timeSeries.getDateAndOrTimeDateTime()).isEqualTo(TIMESTAMP.atZone(ZoneId.of("UTC")));
+        assertThat(timeSeries.getRegisteredResourceMRID().getValue()).isEqualTo(DATA_SOURCE_ID.toString());
+    }
+
+    @Test
     void toRealTimeDataEnvelope_setsNullCodingSchemeForUnknownCountryCode() throws CimSchemaFormatterException {
         // Given
         var dataSource = dataSource("XX");
@@ -98,7 +133,12 @@ class CimStrategyTest {
         var aiidaRecord = new AiidaRecord(
                 TIMESTAMP,
                 dataSource,
-                List.of(new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "10", KILO_WATT_HOUR, "10", KILO_WATT_HOUR))
+                List.of(new AiidaRecordValue("1-0:1.8.0",
+                                             POSITIVE_ACTIVE_ENERGY,
+                                             "10",
+                                             KILO_WATT_HOUR,
+                                             "10",
+                                             KILO_WATT_HOUR))
         );
 
         // When
