@@ -3,7 +3,12 @@
 
 import org.w3c.dom.Element
 import org.w3c.dom.NodeList
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.util.Base64
 import javax.xml.parsers.DocumentBuilderFactory
+import kotlin.collections.ArrayDeque
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.Path
 
@@ -17,7 +22,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.5.0"
+version = "3.5.1"
 
 repositories {
     mavenCentral()
