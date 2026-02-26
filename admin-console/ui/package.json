@@ -20,23 +20,23 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "tinyduration": "^3.4.1",
-    "vue": "^3.5.28",
+    "vue": "^3.5.29",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.5",
-    "@types/node": "^22.19.11",
+    "@types/node": "^22.19.12",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vue/eslint-config-prettier": "^10.2.0",
-    "@vue/eslint-config-typescript": "^14.6.0",
+    "@vue/eslint-config-typescript": "^14.7.0",
     "@vue/tsconfig": "^0.8.1",
-    "eslint": "^10.0.0",
-    "eslint-plugin-vue": "^10.7.0",
+    "eslint": "^10.0.2",
+    "eslint-plugin-vue": "^10.8.0",
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
     "vite": "7.3.1",
     "vite-plugin-vue-devtools": "^8.0.6",
-    "vue-tsc": "^3.2.4"
+    "vue-tsc": "^3.2.5"
   }
 }

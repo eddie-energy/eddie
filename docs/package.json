@@ -9,13 +9,13 @@
     "preview": "vitepress preview"
   },
   "devDependencies": {
-    "@mdit/plugin-figure": "^0.22.2",
-    "@shikijs/vitepress-twoslash": "^1.24.0",
+    "@mdit/plugin-figure": "^0.22.3",
+    "@shikijs/vitepress-twoslash": "^1.29.2",
     "@types/markdown-it": "^14.1.2",
     "markdown-it-mathjax3": "^4.3.2",
-    "mermaid": "^11.4.0",
-    "vitepress": "^1.4.2",
+    "mermaid": "^11.12.3",
+    "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17",
-    "vue": "^3.5.12"
+    "vue": "^3.5.29"
   }
 }
