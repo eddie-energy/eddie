@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.us.green.button.web;
@@ -17,12 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PermissionRequestController {
@@ -46,8 +45,7 @@ public class PermissionRequestController {
         var createdPermissionRequest = permissionRequestCreationService.createPermissionRequest(
                 permissionRequest
         );
-        URI location = new UriTemplate(CONNECTION_STATUS_STREAM)
-                .expand(createdPermissionRequest.permissionId());
+        URI location = connectionStatusMessagesStreamFor(createdPermissionRequest.permissionId());
         return ResponseEntity
                 .created(location)
                 .body(createdPermissionRequest);

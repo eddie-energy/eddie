@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.web;
@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
@@ -44,7 +43,7 @@ public class PermissionRequestController {
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(@Valid @RequestBody PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionRequest = permissionRequestService.createPermissionRequest(permissionRequestForCreation);
-        return ResponseEntity.created(new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionRequest.permissionId()))
+        return ResponseEntity.created(connectionStatusMessagesStreamFor(permissionRequest.permissionId()))
                              .body(permissionRequest);
     }
 

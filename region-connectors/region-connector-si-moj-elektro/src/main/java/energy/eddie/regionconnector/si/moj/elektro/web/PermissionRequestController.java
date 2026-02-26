@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.si.moj.elektro.web;
@@ -16,10 +16,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.util.UriTemplate;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @Controller
 public class PermissionRequestController {
@@ -40,7 +39,7 @@ public class PermissionRequestController {
             throws DataNeedNotFoundException, UnsupportedDataNeedException {
         var permissionRequest = permissionRequestService.createPermissionRequest(permissionRequestForCreation);
         return ResponseEntity.created(
-                new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionRequest.permissionId())
+                connectionStatusMessagesStreamFor(permissionRequest.permissionId())
         ).body(permissionRequest);
     }
 }

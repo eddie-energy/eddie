@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.web;
@@ -18,10 +18,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.util.UriTemplate;
 import tools.jackson.databind.ObjectMapper;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -45,7 +44,7 @@ class PermissionRequestControllerTest {
     @Test
     void testCreatePermissionRequest_createsPermissionRequest() throws Exception {
         // Given
-        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand("pid").toString();
+        var expectedLocationHeader = connectionStatusMessagesStreamFor("pid").toString();
         var created = new CreatedPermissionRequest("pid");
         when(service.createPermissionRequest(any())).thenReturn(created);
         var jsonNode = objectMapper.createObjectNode()

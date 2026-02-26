@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.de.eta.web;
 
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -15,10 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.UriTemplate;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 /**
  * REST controller for handling permission request creation for the German (DE) ETA Plus region connector.
@@ -50,7 +52,7 @@ public class PermissionRequestController {
         var permissionRequest = permissionRequestCreationService.createPermissionRequest(permissionRequestForCreation);
         
         return ResponseEntity.created(
-                new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionRequest.permissionId())
+                connectionStatusMessagesStreamFor(permissionRequest.permissionId())
         ).body(permissionRequest);
     }
 }

@@ -33,29 +33,6 @@ class ConnectionStatusMessageControllerTest {
     private WebTestClient webTestClient;
 
     @Test
-    void connectionStatusMessageByPermissionId_sendsStatus() {
-        var message1 = statusMessage("1", PermissionProcessStatus.CREATED);
-        var message2 = statusMessage("1", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
-
-        given(permissionService.getConnectionStatusMessageStream())
-                .willReturn(Flux.just(message1, message2));
-
-        var result = webTestClient.get()
-                                  .uri("/api/connection-status-messages/1")
-                                  .accept(MediaType.TEXT_EVENT_STREAM)
-                                  .exchange()
-                                  .expectStatus().isOk()
-                                  .returnResult(ConnectionStatusMessage.class)
-                                  .getResponseBody();
-
-        StepVerifier.create(result)
-                    // only check status to avoid time zone issues
-                    .expectNextMatches(message -> message1.status().equals(message.status()))
-                    .expectNextMatches(message -> message2.status().equals(message.status()))
-                    .verifyComplete();
-    }
-
-    @Test
     void connectionStatusMessageByPermissionIds_sendsStatus() {
         var message1 = statusMessage("1", PermissionProcessStatus.CREATED);
         var message2 = statusMessage("2", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
