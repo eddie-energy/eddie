@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.admin.console.web;
@@ -6,6 +6,7 @@ package energy.eddie.outbound.admin.console.web;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
 import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.services.RetransmissionAdminConsoleOutboundConnector;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +21,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static energy.eddie.outbound.admin.console.config.AdminConsoleSecurityConfig.ADMIN_CONSOLE_BASE_URL;
@@ -69,6 +72,8 @@ class HomeControllerTest {
     private StatusMessageRepository statusMessageRepository;
     @MockitoBean
     private TerminationAdminConsoleConnector terminationConnector;
+    @MockitoBean
+    private RetransmissionAdminConsoleOutboundConnector retransmissionConnector;
     @Value("${eddie.public.url}")
     private String publicUrl;
     @Value("${eddie.management.url}")
@@ -138,6 +143,38 @@ class HomeControllerTest {
         ArgumentCaptor<String> regionConnectorIdCaptor = ArgumentCaptor.forClass(String.class);
         verify(terminationConnector, times(1)).terminate(permissionIdCaptor.capture(),
                                                          regionConnectorIdCaptor.capture());
+    }
+
+    @Test
+    void testRetransmitPermission() throws Exception {
+        // Given
+        StatusMessage testStatusMessage = new StatusMessage("testPermissionId",
+                                                            "testCountry",
+                                                            "testRegionConnectorId",
+                                                            "testDataNeedId",
+                                                            "testDso",
+                                                            "2024-05-22T08:20:03+02:00",
+                                                            "A05",
+                                                            "ACCEPTED");
+        when(statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc("testPermissionId"))
+                .thenReturn(List.of(testStatusMessage));
+        // When
+        mockMvc.perform(post("/retransmit/testPermissionId").with(csrf()))
+               .andExpect(status().isOk());
+        // Then
+        var permissionIdCaptor = ArgumentCaptor.forClass(String.class);
+        var regionConnectorIdCaptor = ArgumentCaptor.forClass(String.class);
+        var startDateCaptor = ArgumentCaptor.forClass(LocalDate.class);
+        var endDateCaptor = ArgumentCaptor.forClass(LocalDate.class);
+        verify(retransmissionConnector, times(1))
+                .retransmit(permissionIdCaptor.capture(),
+                            regionConnectorIdCaptor.capture(),
+                            startDateCaptor.capture(),
+                            endDateCaptor.capture());
+        assertEquals(testStatusMessage.getPermissionId(), permissionIdCaptor.getValue());
+        assertEquals(testStatusMessage.getRegionConnectorId(), regionConnectorIdCaptor.getValue());
+        assertEquals(LocalDate.parse("2024-05-22"), startDateCaptor.getValue());
+        assertEquals(LocalDate.now(ZoneId.systemDefault()).minusDays(1), endDateCaptor.getValue());
     }
 
     @Test

@@ -5,6 +5,7 @@
 import {
   getPermissionsPaginated,
   getStatusMessages,
+  retransmitPermission,
   type StatusMessage,
   terminatePermission
 } from '@/api'
@@ -74,6 +75,26 @@ async function onRowExpand(event: DataTableRowExpandEvent) {
   rowExpansions.value[id] ||= (await getStatusMessages(id)).slice().reverse()
 }
 
+function handleRetransmit(permissionId: string) {
+  retransmitPermission(permissionId)
+    .then(() => {
+      toast.add({
+        severity: 'success',
+        summary: 'Created retransmission request.',
+        detail: `Retransmission was requested for permission with ID ${permissionId}.`,
+        life: 3000
+      })
+    })
+    .catch(() => {
+      toast.add({
+        severity: 'error',
+        summary: 'Failed to reqeuest retransmission.',
+        detail: `Failed to request retransmission for permission with ID ${permissionId}.`,
+        life: 3000
+      })
+    })
+}
+
 function confirmTermination(permissionId: string) {
   confirm.require({
     message: 'Are you sure you want to terminate this permission?',
@@ -111,9 +132,9 @@ function confirmTermination(permissionId: string) {
 }
 
 function retransmitSelected() {
-  // TODO: GH-1713
-  console.debug(selectedRows.value)
-  alert('Not implemented. See GH-1713.')
+  for (const row of selectedRows.value) {
+    handleRetransmit(row.permissionId)
+  }
 }
 
 function terminateSelected() {
@@ -211,13 +232,21 @@ onMounted(async () => {
     <Column field="cimStatus" header="CIM Status" />
     <Column header="Actions">
       <template #body="slotProps">
-        <Button
-          v-if="slotProps.data.status === 'ACCEPTED'"
-          label="Terminate"
-          severity="danger"
-          rounded
-          @click="confirmTermination(slotProps.data.permissionId)"
-        />
+        <div class="column-actions">
+          <Button
+            v-if="slotProps.data.status === 'ACCEPTED' || slotProps.data.status === 'FULFILLED'"
+            label="Retransmit"
+            rounded
+            @click="handleRetransmit(slotProps.data.permissionId)"
+          />
+          <Button
+            v-if="slotProps.data.status === 'ACCEPTED'"
+            label="Terminate"
+            severity="danger"
+            rounded
+            @click="confirmTermination(slotProps.data.permissionId)"
+          />
+        </div>
       </template>
     </Column>
 
@@ -259,6 +288,12 @@ input {
   @media (width >= 80rem) {
     grid-template-columns: 1fr auto auto;
   }
+}
+
+.column-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .country {

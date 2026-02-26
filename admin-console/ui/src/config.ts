@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 const {
@@ -19,6 +19,7 @@ export const CSRF_TOKEN = THYMELEAF_CSRF_TOKEN
 
 export const PERMISSIONS_API_URL = `${ADMIN_URL}/statusMessages`
 export const TERMINATION_API_URL = `${ADMIN_URL}/terminate`
+export const RETRANSMISSION_API_URL = `${ADMIN_URL}/retransmit`
 export const REGION_CONNECTOR_API_URL = `${CORE_URL}/api/region-connectors-metadata`
 export const REGION_CONNECTOR_HEALTH_API_URL = `${CORE_URL}/actuator/health`
 export const REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL = `${MANAGEMENT_URL}/${MANAGEMENT_URL_PREFIX}/region-connectors/supported-features`

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.admin.console.web;
@@ -7,6 +7,7 @@ import energy.eddie.cim.v0_82.pmd.StatusTypeList;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
 import energy.eddie.outbound.admin.console.data.StatusMessageDTO;
 import energy.eddie.outbound.admin.console.data.StatusMessageRepository;
+import energy.eddie.outbound.admin.console.services.RetransmissionAdminConsoleOutboundConnector;
 import energy.eddie.outbound.admin.console.services.TerminationAdminConsoleConnector;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static energy.eddie.outbound.admin.console.config.AdminConsoleSecurityConfig.ADMIN_CONSOLE_BASE_URL;
@@ -29,14 +32,17 @@ public class HomeController {
 
     private final StatusMessageRepository statusMessageRepository;
     private final TerminationAdminConsoleConnector terminationConnector;
+    private final RetransmissionAdminConsoleOutboundConnector retransmissionConnector;
 
     @Autowired
     public HomeController(
             StatusMessageRepository statusMessageRepository,
-            TerminationAdminConsoleConnector terminationConnector
+            TerminationAdminConsoleConnector terminationConnector,
+            RetransmissionAdminConsoleOutboundConnector retransmissionConnector
     ) {
         this.statusMessageRepository = statusMessageRepository;
         this.terminationConnector = terminationConnector;
+        this.retransmissionConnector = retransmissionConnector;
     }
 
     @GetMapping("/statusMessages")
@@ -71,6 +77,17 @@ public class HomeController {
         var statusMessages = statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId);
         var statusMessage = statusMessages.getFirst();
         terminationConnector.terminate(statusMessage.getPermissionId(), statusMessage.getRegionConnectorId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/retransmit/{permissionId}")
+    public ResponseEntity<Void> retransmitPermission(@PathVariable String permissionId) {
+        var statusMessages = statusMessageRepository.findByPermissionIdOrderByStartDateDescIdDesc(permissionId);
+        var statusMessage = statusMessages.getFirst();
+        retransmissionConnector.retransmit(statusMessage.getPermissionId(),
+                                           statusMessage.getRegionConnectorId(),
+                                           LocalDate.parse(statusMessage.getStartDate(), DateTimeFormatter.ISO_DATE_TIME),
+                                           LocalDate.now().minusDays(1));
         return ResponseEntity.ok().build();
     }
 
