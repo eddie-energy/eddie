@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MqttService implements AutoCloseable {
@@ -91,7 +93,9 @@ public class MqttService implements AutoCloseable {
                            topics.dataTopic().aiidaTopic(),
                            topics.statusTopic().aiidaTopic(),
                            topics.terminationTopic().aiidaTopic(),
-                           topics.acknowledgementTopic().aiidaTopic());
+                           topics.acknowledgementTopic()
+                                 .map(MqttTopic::aiidaTopic)
+                                 .orElse(null));
     }
 
     /**
@@ -177,20 +181,22 @@ public class MqttService implements AutoCloseable {
 
         var dataTopicType = isInbound ? MqttTopicType.INBOUND_DATA : MqttTopicType.OUTBOUND_DATA;
 
-        var acknowledgementTopicType = isAcknowledgementRequired
-                ? MqttTopicType.ACKNOWLEDGEMENT
-                : MqttTopicType.WITHOUT_ACKNOWLEDGEMENT;
-
         var topics = new Topics(MqttTopic.of(permissionId, dataTopicType),
                                 MqttTopic.of(permissionId, MqttTopicType.STATUS),
                                 MqttTopic.of(permissionId, MqttTopicType.TERMINATION),
-                                MqttTopic.of(permissionId, acknowledgementTopicType));
+                                isAcknowledgementRequired
+                                        ? Optional.of(MqttTopic.of(permissionId, MqttTopicType.ACKNOWLEDGEMENT))
+                                        : Optional.empty());
 
-        aclRepository.saveAll(List.of(
+        var acls = new ArrayList<>(List.of(
                 topics.dataTopic().aiidaAcl(username),
                 topics.statusTopic().aiidaAcl(username),
-                topics.terminationTopic().aiidaAcl(username),
-                topics.acknowledgementTopic().aiidaAcl(username)));
+                topics.terminationTopic().aiidaAcl(username)));
+
+        topics.acknowledgementTopic()
+              .ifPresent(topic -> acls.add(topic.aiidaAcl(username)));
+
+        aclRepository.saveAll(acls);
 
         return topics;
     }
@@ -200,5 +206,5 @@ public class MqttService implements AutoCloseable {
     private record Topics(MqttTopic dataTopic,
                           MqttTopic statusTopic,
                           MqttTopic terminationTopic,
-                          MqttTopic acknowledgementTopic) {}
+                          Optional<MqttTopic> acknowledgementTopic) {}
 }

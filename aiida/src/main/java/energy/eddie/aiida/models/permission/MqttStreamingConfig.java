@@ -5,6 +5,7 @@ package energy.eddie.aiida.models.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -30,7 +31,8 @@ public class MqttStreamingConfig {
     private String statusTopic;
     @Column(name = "termination_topic", nullable = false)
     private String terminationTopic;
-    @Column(name = "acknowledgement_topic", nullable = false)
+    @Nullable
+    @Column(name = "acknowledgement_topic")
     private String acknowledgementTopic;
 
     @SuppressWarnings("NullAway.Init") // required by JPA
@@ -75,6 +77,7 @@ public class MqttStreamingConfig {
         return terminationTopic;
     }
 
+    @Nullable
     public String acknowledgementTopic() {
         return acknowledgementTopic;
     }

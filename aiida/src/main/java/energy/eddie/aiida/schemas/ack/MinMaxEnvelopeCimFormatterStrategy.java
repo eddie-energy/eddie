@@ -30,7 +30,7 @@ public class MinMaxEnvelopeCimFormatterStrategy implements CimFormatterStrategy 
                 .withMetaInformation(toMetaInformation(minMaxMetaInformation, inboundRecord.dataSource()));
 
         var marketDocument = toMarketDocument(now, minMaxEnvelope.getMarketDocument())
-                .withCreatedDateTime(minMaxHeader.getCreationDateTime())
+                .withReceivedMarketDocumentCreatedDateTime(minMaxHeader.getCreationDateTime())
                 .withReceivedMarketDocumentType(minMaxMetaInformation.getDocumentType());
 
         return new AcknowledgementEnvelope()

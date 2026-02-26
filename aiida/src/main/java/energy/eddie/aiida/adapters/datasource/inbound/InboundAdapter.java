@@ -67,9 +67,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
     @Override
     public void deliveryComplete(IMqttToken token) {
-        LOGGER.trace("Message with id {} delivered successfully to broker for data source {}.",
-                     token.getMessageId(),
-                     dataSource().name());
+        LOGGER.trace("Delivery complete for MqttToken {}", token);
     }
 
     public Flux<InboundRecord> inboundRecordFlux() {
@@ -88,9 +86,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
-        if (dataSource.isAcknowledgementRequired()) {
-            acknowledgementStreamer.start(asyncClient);
-        }
+        acknowledgementStreamer.start(asyncClient);
         super.connectComplete(reconnect, serverURI);
     }
 }

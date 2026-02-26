@@ -21,12 +21,13 @@ public class InboundAcknowledgementStreamer {
     private static final AiidaSchema ACK_SCHEMA = AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12;
 
     private final ObjectMapper objectMapper;
+    @Nullable
     private final String acknowledgementTopic;
     private final Sinks.Many<InboundRecord> inboundRecordSink;
 
     public InboundAcknowledgementStreamer(
             ObjectMapper objectMapper,
-            String acknowledgementTopic,
+            @Nullable String acknowledgementTopic,
             Sinks.Many<InboundRecord> inboundRecordSink
     ) {
         this.objectMapper = objectMapper;
@@ -35,20 +36,20 @@ public class InboundAcknowledgementStreamer {
     }
 
     public void start(@Nullable IMqttAsyncClient mqttClient) {
-        inboundRecordSink.asFlux().subscribe(record -> publishAcknowledgement(mqttClient, record));
+        if (mqttClient != null && acknowledgementTopic != null) {
+            inboundRecordSink.asFlux().subscribe(record -> publishAcknowledgement(mqttClient, record));
+        }
     }
 
-    private void publishAcknowledgement(@Nullable IMqttAsyncClient mqttClient, InboundRecord inboundRecord) {
+    private void publishAcknowledgement(IMqttAsyncClient mqttClient, InboundRecord inboundRecord) {
         try {
-            if (mqttClient != null) {
-                LOGGER.info("Publishing acknowledgement for record {}", inboundRecord.id());
+            LOGGER.info("Publishing acknowledgement for record {}", inboundRecord.id());
 
-                var acknowledgementEnvelope = createToAcknowledgementEnvelope(inboundRecord);
-                var payload = objectMapper.writeValueAsBytes(acknowledgementEnvelope);
-                var topic = ACK_SCHEMA.buildTopicPath(acknowledgementTopic);
+            var acknowledgementEnvelope = createToAcknowledgementEnvelope(inboundRecord);
+            var payload = objectMapper.writeValueAsBytes(acknowledgementEnvelope);
+            var topic = ACK_SCHEMA.buildTopicPath(acknowledgementTopic);
 
-                mqttClient.publish(topic, payload, 0, false);
-            }
+            mqttClient.publish(topic, payload, 0, false);
         } catch (CimSchemaFormatterException | MqttException e) {
             LOGGER.error("Failed to publish acknowledgement for record {}", inboundRecord.id(), e);
         }

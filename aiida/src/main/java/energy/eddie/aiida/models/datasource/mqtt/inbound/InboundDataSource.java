@@ -14,6 +14,7 @@ import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.util.Objects;
@@ -30,15 +31,11 @@ public class InboundDataSource extends MqttDataSource {
     @JsonProperty
     protected String accessCode;
 
+    @Nullable
     @Column(name = "acknowledgement_topic", table = TABLE_NAME)
     @Schema(description = "The MQTT topic to which the EP should publish acknowledgements for received messages.")
     @JsonProperty
     protected String acknowledgementTopic;
-
-    @Column(name = "is_acknowledgement_required", table = TABLE_NAME)
-    @Schema(description = "Whether the EP is required to publish acknowledgements for received messages.")
-    @JsonProperty
-    protected boolean isAcknowledgementRequired;
 
     @Transient
     @JsonIgnore
@@ -50,17 +47,15 @@ public class InboundDataSource extends MqttDataSource {
     public InboundDataSource(
             InboundDataSourceDto dto,
             UUID userId,
-            MqttStreamingConfig mqttStreamingConfig,
-            boolean isAcknowledgementRequired
+            MqttStreamingConfig mqttStreamingConfig
     ) {
-        this(dto, userId, mqttStreamingConfig, isAcknowledgementRequired, SecretGenerator.generate());
+        this(dto, userId, mqttStreamingConfig, SecretGenerator.generate());
     }
 
     public InboundDataSource(
             InboundDataSourceDto dto,
             UUID userId,
             MqttStreamingConfig mqttStreamingConfig,
-            boolean isAcknowledgementRequired,
             String accessCode
     ) {
         super(dto, userId);
@@ -68,7 +63,6 @@ public class InboundDataSource extends MqttDataSource {
         this.internalHost = config.serverUri();
         this.externalHost = config.serverUri();
         this.acknowledgementTopic = config.acknowledgementTopic();
-        this.isAcknowledgementRequired = isAcknowledgementRequired;
         this.accessCode = accessCode;
     }
 
@@ -76,12 +70,9 @@ public class InboundDataSource extends MqttDataSource {
         return accessCode;
     }
 
+    @Nullable
     public String acknowledgementTopic() {
         return acknowledgementTopic;
-    }
-
-    public boolean isAcknowledgementRequired() {
-        return isAcknowledgementRequired;
     }
 
     @Override
@@ -98,21 +89,19 @@ public class InboundDataSource extends MqttDataSource {
         private final InboundDataSourceDto dataSourceDto;
         private final UUID userId;
         private final MqttStreamingConfig mqttStreamingConfig;
-        private final boolean isAcknowledgementRequired;
 
         @SuppressWarnings("NullAway")
         public Builder(Permission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
 
-            this.isAcknowledgementRequired = dataNeed.isAcknowledgementRequired();
             this.mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
 
             this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
         }
 
         public InboundDataSource build() {
-            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig, isAcknowledgementRequired);
+            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig);
         }
     }
 }

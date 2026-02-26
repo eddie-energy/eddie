@@ -45,6 +45,7 @@ class CustomSerializer implements Serializer<Object> {
             case energy.eddie.cim.v1_04.rtd.RTDEnvelope ignored -> serialize(data);
             // CIM v1.12
             case energy.eddie.cim.v1_12.rtd.RTDEnvelope ignored -> serialize(data);
+            case energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope ignored -> serialize(data);
             case energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope ignored -> serialize(data);
             case null -> null;
             default -> {
