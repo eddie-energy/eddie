@@ -5,6 +5,7 @@ package energy.eddie.aiida.models.datasource.mqtt.cim;
 
 import energy.eddie.aiida.dtos.datasource.mqtt.cim.CimDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -24,7 +25,8 @@ public class CimDataSource extends MqttDataSource {
     }
 
     @Override
-    protected String topicFormattedForUi() {
-        return super.topicFormattedForUi() + TOPIC_SUFFIX;
+    public void createAccessControlEntry() {
+        var topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+        accessControlEntry = new MqttAccessControlEntry(id, topic);
     }
 }
