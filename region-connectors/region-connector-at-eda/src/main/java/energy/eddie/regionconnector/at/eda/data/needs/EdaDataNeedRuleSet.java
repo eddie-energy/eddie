@@ -7,8 +7,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -34,11 +34,11 @@ public class EdaDataNeedRuleSet implements DataNeedRuleSet {
         dataNeedRules.add(new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES));
         dataNeedRules.add(new AllowMultipleDataNeedsRule());
         if (config.energyCommunityId() != null) {
-            LOGGER.info(
+            LOGGER.debug(
                     "Energy Community ID present, enabling the energy community data need for the AT EDA Region Connector");
-            dataNeedRules.add(new EnergyCommunityDataNeedRule());
+            dataNeedRules.add(new EnergyCommunityDataNeedRule(SUPPORTED_GRANULARITIES));
         } else {
-            LOGGER.info(
+            LOGGER.debug(
                     "Energy Community ID not present, disabling the energy community data need for the AT EDA Region Connector");
         }
         return dataNeedRules;

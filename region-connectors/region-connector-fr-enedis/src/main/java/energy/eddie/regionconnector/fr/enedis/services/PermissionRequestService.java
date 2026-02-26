@@ -63,13 +63,6 @@ public class PermissionRequestService {
                                          permissionRequestForCreation.connectionId(),
                                          dataNeedId));
         var end = switch (result) {
-            case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataNeedResult not supported!";
-                outbox.commit(new FrMalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       permissionRequestForCreation.dataNeedId(),
-                                                       message);
-            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new FrMalformedEvent(permissionId,
                                                    new AttributeError(DATA_NEED_ID, "Data need not found")));
@@ -82,11 +75,6 @@ public class PermissionRequestService {
                                                        dataNeedId,
                                                        message);
             }
-            case EnergyCommunityDataNeedResult ignored -> {
-                var message = "Energy Community Data Need not supported";
-                outbox.commit(new FrMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
-            }
             case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
                 handleAccountingPointDataNeed(permissionId, permissionTimeframe);
                 yield permissionTimeframe.end();
@@ -94,6 +82,11 @@ public class PermissionRequestService {
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
                 handleValidatedHistoricalDataNeed(vhdResult, permissionId);
                 yield vhdResult.permissionTimeframe().end();
+            }
+            default -> {
+                var message = "Data Need not supported";
+                outbox.commit(new FrMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
         };
         var redirectUri = buildRedirectUri(permissionId, end);

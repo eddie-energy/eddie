@@ -197,7 +197,7 @@ class PermissionRequestCreationServiceTest {
                 "US"
         );
         when(calculationService.calculate("dnid"))
-                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC), List.of()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

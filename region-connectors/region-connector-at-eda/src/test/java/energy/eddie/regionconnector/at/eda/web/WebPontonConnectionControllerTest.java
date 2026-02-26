@@ -265,7 +265,7 @@ class WebPontonConnectionControllerTest {
                 "msg",
                 AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
-                new AtConfiguration("EP100", null),
+                new AtConfiguration("EP100", null, null),
                 now.atStartOfDay(ZoneOffset.UTC),
                 new AccountingPointDataNeed());
 
@@ -284,7 +284,7 @@ class WebPontonConnectionControllerTest {
                 now,
                 now,
                 null,
-                new AtConfiguration("EP100", null)
+                new AtConfiguration("EP100", null, null)
         );
 
         // When & Then

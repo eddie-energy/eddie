@@ -12,13 +12,12 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
-import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("DuplicatedCode")
 public record CMRequest01p21(CCMORequest ccmoRequest) {
@@ -39,7 +38,7 @@ public record CMRequest01p21(CCMORequest ccmoRequest) {
                 .withDuplicate(false)
                 .withSchemaVersion(SCHEMA_VERSION_01P21)
                 .withRoutingHeader(new RoutingHeader()
-                                           .withSender(toRoutingAddress(ccmoRequest.eligiblePartyId()))
+                                           .withSender(toRoutingAddress(ccmoRequest.senderId()))
                                            .withReceiver(toRoutingAddress(ccmoRequest.dsoId()))
                                            .withDocumentCreationDateTime(
                                                    DateTimeConverter.dateTimeToXml(LocalDateTime.now(AT_ZONE_ID))
@@ -60,9 +59,8 @@ public record CMRequest01p21(CCMORequest ccmoRequest) {
     }
 
     private static RoutingAddress toRoutingAddress(String address) {
-        requireNonNull(address);
         if (address.isBlank()) {
-            throw new IllegalArgumentException("Address must not be null");
+            throw new IllegalArgumentException("Address must not be blank");
         }
         return new RoutingAddress()
                 .withAddressType(AddressType.EC_NUMBER)
@@ -81,8 +79,17 @@ public record CMRequest01p21(CCMORequest ccmoRequest) {
                                                .map(end -> end.atStartOfDay(AT_ZONE_ID))
                                                .map(DateTimeConverter::dateTimeToXml)
                                                .orElse(null)
-                        )
+                        ).withEnergyDirection(getEnergyDirection())
         );
+    }
+
+    @Nullable
+    private EnergyDirection getEnergyDirection() {
+        return switch (ccmoRequest.energyDirection()) {
+            case CONSUMPTION -> EnergyDirection.CONSUMPTION;
+            case PRODUCTION -> EnergyDirection.GENERATION;
+            case null -> null;
+        };
     }
 
     private ReqType addEnergyCommunityAttributes(ReqType reqType) {

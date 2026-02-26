@@ -3,7 +3,11 @@
 
 package energy.eddie.api.agnostic.data.needs;
 
-import java.time.LocalDate;
+import energy.eddie.api.agnostic.Granularity;
 
-public record EnergyCommunityDataNeedResult(LocalDate start) implements DataNeedCalculationResult {
+import java.time.LocalDate;
+import java.util.List;
+
+public record EnergyCommunityDataNeedResult(LocalDate start,
+                                            List<Granularity> supportedGranularities) implements DataNeedCalculationResult {
 }

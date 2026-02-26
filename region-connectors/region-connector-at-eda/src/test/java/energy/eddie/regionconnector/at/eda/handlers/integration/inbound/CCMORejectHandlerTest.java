@@ -47,7 +47,9 @@ class CCMORejectHandlerTest {
     private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     @Spy
     @SuppressWarnings("unused") // injected
-    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new AtConfiguration("test", null));
+    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new AtConfiguration("test",
+                                                                                                        null,
+                                                                                                        null));
     @Mock
     private Outbox outbox;
 

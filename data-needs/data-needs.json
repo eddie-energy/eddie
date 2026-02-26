@@ -130,6 +130,9 @@
     "description": "Adds the final customer to an energy community",
     "purpose": "Some purpose",
     "policyLink": "https://example.com/toc",
-    "participationFactor": 1
+    "participationFactor": 1,
+    "energyDirection": "CONSUMPTION",
+    "minGranularity": "PT15M",
+    "maxGranularity": "P1D"
   }
 ]

@@ -50,7 +50,7 @@ class SendingEventHandlerTest {
             null,
             ZonedDateTime.now(AT_ZONE_ID)
     );
-    private final AtConfiguration configuration = new AtConfiguration("AT00000", null);
+    private final AtConfiguration configuration = new AtConfiguration("AT00000", null, null);
     @Mock
     private EdaAdapter edaAdapter;
     @Mock

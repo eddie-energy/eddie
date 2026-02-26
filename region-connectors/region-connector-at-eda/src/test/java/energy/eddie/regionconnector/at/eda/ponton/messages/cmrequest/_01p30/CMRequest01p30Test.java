@@ -3,8 +3,10 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
+import energy.eddie.dataneeds.needs.EnergyDirection;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
@@ -33,7 +35,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("", null);
+        AtConfiguration atConfiguration = new AtConfiguration("", null, null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();
@@ -59,7 +61,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
@@ -86,7 +88,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
@@ -119,10 +121,14 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", "ecid");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", "ecid", "ecid");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
+        var dataNeed = new EnergyCommunityDataNeed(1,
+                                                   Granularity.PT1H,
+                                                   Granularity.PT1H,
+                                                   EnergyDirection.CONSUMPTION);
         var request = new CMRequest01p30(new CCMORequest(dsoIdAndMeteringPoint,
                                                          timeFrame,
                                                          cmRequestId,
@@ -131,7 +137,7 @@ class CMRequest01p30Test {
                                                          AllowedTransmissionCycle.D,
                                                          atConfiguration,
                                                          now,
-                                                         new EnergyCommunityDataNeed(BigDecimal.ONE)));
+                                                         dataNeed));
 
         // When
         var res = request.cmRequest();
@@ -140,7 +146,10 @@ class CMRequest01p30Test {
         var cmRequest = res.getProcessDirectory().getCMRequest();
         assertAll(
                 () -> assertEquals(BigDecimal.ONE, cmRequest.getECPartFact()),
-                () -> assertEquals("ecid", cmRequest.getECID())
+                () -> assertEquals("ecid", cmRequest.getECID()),
+                () -> assertEquals(at.ebutilities.schemata.customerconsent.cmrequest._01p30.EnergyDirection.CONSUMPTION,
+                                   cmRequest.getEnergyDirection())
+
         );
     }
 }

@@ -6,8 +6,8 @@ package energy.eddie.regionconnector.at.eda.data.needs;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ class EdaDataNeedRuleSetTest {
     @Test
     void testDataNeedRuleSet() {
         // Given
-        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", "ec"));
+        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", "ec", "ec-party-id"));
 
         // When
         var res = ruleSet.dataNeedRules();
@@ -31,7 +31,7 @@ class EdaDataNeedRuleSetTest {
                         new AccountingPointDataNeedRule(),
                         new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY,
                                                                 List.of(Granularity.PT15M, Granularity.P1D)),
-                        new EnergyCommunityDataNeedRule(),
+                        new EnergyCommunityDataNeedRule(List.of(Granularity.PT15M, Granularity.P1D)),
                         new AllowMultipleDataNeedsRule()
                 );
     }
@@ -39,7 +39,7 @@ class EdaDataNeedRuleSetTest {
     @Test
     void testDataNeedRuleSet_withoutEnergyCommunityId_doesNotContainEnergyCommunityDataNeedRule() {
         // Given
-        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", null));
+        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", null, null));
 
         // When
         var res = ruleSet.dataNeedRules();

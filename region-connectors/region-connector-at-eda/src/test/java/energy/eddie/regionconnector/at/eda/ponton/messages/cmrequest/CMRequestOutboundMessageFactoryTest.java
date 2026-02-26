@@ -44,7 +44,7 @@ public abstract class CMRequestOutboundMessageFactoryTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();

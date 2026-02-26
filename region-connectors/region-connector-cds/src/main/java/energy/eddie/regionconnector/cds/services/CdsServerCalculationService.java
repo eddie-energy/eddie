@@ -13,6 +13,8 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.dtos.CdsServerMasterData;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
@@ -20,6 +22,7 @@ import java.util.Set;
 
 @Service
 public class CdsServerCalculationService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CdsServerCalculationService.class);
     private final DataNeedsService dataNeedsService;
     private final DataNeedCalculationService<DataNeed> calculationService;
     private final CdsServerClientFactory factory;
@@ -43,7 +46,14 @@ public class CdsServerCalculationService {
         if (!(calc instanceof ValidatedHistoricalDataDataNeedResult)) {
             return calc;
         }
-        var dn = (ValidatedHistoricalDataDataNeed) dataNeedsService.getById(dataNeedId);
+        var dataNeed = dataNeedsService.getById(dataNeedId);
+        if (!(dataNeed instanceof ValidatedHistoricalDataDataNeed dn)) {
+            LOGGER.warn("Mismatch between actual data need {} of type {} and data need calculation {}",
+                        dataNeedId,
+                        dataNeed.getClass().getSimpleName(),
+                        calc);
+            return calc;
+        }
         var energyTypes = factory.get(cdsServer)
                                  .masterData()
                                  .blockOptional()

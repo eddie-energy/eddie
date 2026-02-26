@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import de.undercouch.gradle.tasks.download.Download
@@ -192,7 +192,7 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
         "-encoding",
         "UTF-8",
         "-extension",
-        "-Xfluent-api"
+        "-Xfluent-api",
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed

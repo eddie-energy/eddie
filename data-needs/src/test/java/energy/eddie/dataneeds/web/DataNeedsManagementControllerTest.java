@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.dataneeds.web;
@@ -297,7 +297,8 @@ class DataNeedsManagementFullTest {
                 "http://localhost:" + port + "/management",
                 HttpMethod.POST,
                 entity,
-                DataNeed.class);
+                DataNeed.class
+        );
 
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(response.getBody()));

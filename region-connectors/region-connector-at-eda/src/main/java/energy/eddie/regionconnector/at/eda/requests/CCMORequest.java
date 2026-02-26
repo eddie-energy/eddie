@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.at.eda.requests;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
+import energy.eddie.dataneeds.needs.EnergyDirection;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -54,10 +55,24 @@ public record CCMORequest(
         return configuration.energyCommunityId();
     }
 
-    public String purpose() {
-        return dataNeed.purpose();
+    /**
+     * Returns either the eligible party ID or the energy community ID depending on whether this is a request for an energy community process or not.
+     *
+     * @return either the eligble party ID or the energy community ID depending on the market process.
+     * @see CCMORequest#requestDataType()
+     */
+    public String senderId() {
+        return requestDataType().equals(RequestDataType.ENERGY_COMMUNITY_REGISTRATION)
+                ? configuration.partyIdFor(AtConfiguration.PartyIdType.ENERGY_COMMUNITY)
+                : configuration.partyIdFor(AtConfiguration.PartyIdType.ELIGIBLE_PARTY);
     }
 
+    /**
+     * Returns the {@link RequestDataType} depending on the given data need.
+     * The RequestDataType determines in which kind of ebutilities process the CCMO Request is going to be used in.
+     *
+     * @return the {@link RequestDataType} depending on the given data need.
+     */
     public RequestDataType requestDataType() {
         if (dataNeed instanceof EnergyCommunityDataNeed) {
             return RequestDataType.ENERGY_COMMUNITY_REGISTRATION;
@@ -77,7 +92,15 @@ public record CCMORequest(
     @Nullable
     public BigDecimal partFact() {
         if (dataNeed instanceof EnergyCommunityDataNeed ec) {
-            return ec.participationFactor();
+            return BigDecimal.valueOf(ec.participationFactor());
+        }
+        return null;
+    }
+
+    @Nullable
+    public EnergyDirection energyDirection() {
+        if (dataNeed instanceof EnergyCommunityDataNeed ec) {
+            return ec.energyDirection();
         }
         return null;
     }

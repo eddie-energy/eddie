@@ -46,7 +46,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
 
     public static final LocalDate TODAY = LocalDate.now(ZoneOffset.UTC);
     public static final String PERMISSION_ID = "id";
-    private final AtConfiguration atConfiguration = new AtConfiguration("ep", null);
+    private final AtConfiguration atConfiguration = new AtConfiguration("ep", null, null);
     @Mock
     private AtPermissionRequestRepository atPermissionRequestRepository;
     @Mock

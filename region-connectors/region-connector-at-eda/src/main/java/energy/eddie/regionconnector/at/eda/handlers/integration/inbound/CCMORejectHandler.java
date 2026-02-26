@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
@@ -61,6 +62,7 @@ public class CCMORejectHandler {
     private void handlePermissionRequestReject(CMRequestStatus cmRequestStatus, AtPermissionRequest permissionRequest) {
         var permissionId = permissionRequest.permissionId();
         var message = cmRequestStatus.message();
+        var calc = dataNeedCalculationService.calculate(permissionRequest.dataNeedId());
         for (Integer statusCode : cmRequestStatus.consentData().getFirst().responseCodes()) {
             var handled = switch (statusCode) {
                 case ResponseCode.CmReqOnl.REJECTED -> emitEvent(new EdaAnswerEvent(permissionId,
@@ -71,13 +73,14 @@ public class CCMORejectHandler {
                                 permissionRequest.permissionId(),
                                 permissionRequest.start(),
                                 permissionRequest.end(),
-                                permissionRequest.granularity()
+                                permissionRequest.granularity(),
+                                calc
                         ));
                 case ResponseCode.CmReqOnl.TIMEOUT -> emitEvent(new EdaAnswerEvent(permissionId,
                                                                                    PermissionProcessStatus.TIMED_OUT,
                                                                                    message));
                 case ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE ->
-                        retryWithHigherGranularity(permissionRequest);
+                        retryWithHigherGranularity(permissionRequest, calc);
                 default -> false;
             };
             if (handled) return;
@@ -91,11 +94,10 @@ public class CCMORejectHandler {
         return true;
     }
 
-    private boolean retryWithHigherGranularity(AtPermissionRequest permissionRequest) {
+    private boolean retryWithHigherGranularity(AtPermissionRequest permissionRequest, DataNeedCalculationResult calc) {
         if (permissionRequest.granularity() != AllowedGranularity.PT15M) {
             return false;
         }
-        var calc = dataNeedCalculationService.calculate(permissionRequest.dataNeedId());
         if (!(calc instanceof ValidatedHistoricalDataDataNeedResult(
                 List<Granularity> granularities,
                 // False positive
@@ -110,7 +112,8 @@ public class CCMORejectHandler {
                 permissionRequest.permissionId(),
                 permissionRequest.start(),
                 permissionRequest.end(),
-                AllowedGranularity.P1D
+                AllowedGranularity.P1D,
+                calc
         ));
         return true;
     }

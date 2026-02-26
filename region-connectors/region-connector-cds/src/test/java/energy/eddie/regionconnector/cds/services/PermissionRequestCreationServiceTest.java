@@ -197,7 +197,7 @@ class PermissionRequestCreationServiceTest {
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
         var request = new PermissionRequestForCreation(0L, "dnid", "cid");
         when(calculationService.calculate(eq("dnid"), any(), any()))
-                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC)));
+                .thenReturn(new EnergyCommunityDataNeedResult(LocalDate.now(ZoneOffset.UTC), List.of()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

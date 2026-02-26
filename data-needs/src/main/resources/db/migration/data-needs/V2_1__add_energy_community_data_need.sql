@@ -9,5 +9,11 @@ CREATE TABLE energy_community_data_need
     name                 text                        NOT NULL,
     policy_link          text                        NOT NULL,
     purpose              text                        NOT NULL,
-    participation_factor double precision            NOT NULL
+    enabled         bool        NOT NULL DEFAULT TRUE,
+    max_granularity varchar(15) NOT NULL,
+    min_granularity varchar(15) NOT NULL,
+    participation_factor int         NOT NULL
+        CHECK ( participation_factor BETWEEN 1 AND 100),
+    energy_direction     varchar(11) NOT NULL
+        CHECK ( energy_direction IN ('CONSUMPTION', 'PRODUCTION') )
 );

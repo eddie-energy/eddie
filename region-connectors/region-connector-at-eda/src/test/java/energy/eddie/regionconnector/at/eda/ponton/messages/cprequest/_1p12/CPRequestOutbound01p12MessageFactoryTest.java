@@ -30,7 +30,7 @@ class CPRequestOutbound01p12MessageFactoryTest {
     void createOutboundMessage() {
         // given
         var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
         var request = new CPRequestCR(
                 "dsoid",
                 "meteringpoint",

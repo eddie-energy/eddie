@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.dataneeds.validation;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import jakarta.validation.ConstraintValidatorContext;
 import org.junit.jupiter.api.DisplayName;
@@ -14,8 +16,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,11 +25,11 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IsValidValidatedHistoricalDataDataNeedValidatorTest {
+    private final IsValidValidatedHistoricalDataDataNeedValidator validator = new IsValidValidatedHistoricalDataDataNeedValidator();
     @Mock
     private ConstraintValidatorContext mockContext;
     @Mock
     private ConstraintValidatorContext.ConstraintViolationBuilder mockBuilder;
-    private final IsValidValidatedHistoricalDataDataNeedValidator validator = new IsValidValidatedHistoricalDataDataNeedValidator();
 
     public static Stream<Arguments> granularityCombinations() {
         return Stream.of(
@@ -51,7 +51,7 @@ class IsValidValidatedHistoricalDataDataNeedValidatorTest {
             Granularity minGranularity,
             Granularity maxGranularity,
             boolean expectedResult
-    ) throws Exception {
+    ) {
         // Given
         if (!expectedResult) {
             when(mockContext.buildConstraintViolationWithTemplate(any())).thenReturn(mockBuilder);
@@ -74,20 +74,12 @@ class IsValidValidatedHistoricalDataDataNeedValidatorTest {
     private ValidatedHistoricalDataDataNeed createVhdDataNeedUsingReflection(
             Granularity minGranularity,
             Granularity maxGranularity
-    ) throws Exception {
-        Constructor<?> constructor = Class.forName(ValidatedHistoricalDataDataNeed.class.getName())
-                                          .getDeclaredConstructor();
-        constructor.setAccessible(true);
-
-        ValidatedHistoricalDataDataNeed dataNeed = (ValidatedHistoricalDataDataNeed) constructor.newInstance();
-
-        Field minField = dataNeed.getClass().getDeclaredField("minGranularity");
-        Field maxField = dataNeed.getClass().getDeclaredField("maxGranularity");
-        minField.setAccessible(true);
-        maxField.setAccessible(true);
-
-        minField.set(dataNeed, minGranularity);
-        maxField.set(dataNeed, maxGranularity);
-        return dataNeed;
+    ) {
+        return new ValidatedHistoricalDataDataNeed(
+                new RelativeDuration(null, null, null),
+                EnergyType.ELECTRICITY,
+                minGranularity,
+                maxGranularity
+        );
     }
 }

@@ -96,7 +96,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
               placeholder="${this.companyId}..."
               .value="${this.accountingPointId ?? nothing}"
               .disabled="${!!this.accountingPointId}"
-              .required="${this.dataNeedType.contains("energy-community")}"
+              .required="${this.dataNeedType.includes("energy-community")}"
             ></sl-input>
 
             <br />

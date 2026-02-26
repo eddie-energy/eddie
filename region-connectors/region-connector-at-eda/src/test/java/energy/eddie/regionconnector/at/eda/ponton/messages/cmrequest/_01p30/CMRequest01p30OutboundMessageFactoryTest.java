@@ -62,7 +62,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", null),
+                                          new AtConfiguration("ep-id", null, null),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 

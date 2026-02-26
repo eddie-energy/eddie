@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
     @Spy
-    private final AtConfiguration configuration = new AtConfiguration("epId", null);
+    private final AtConfiguration configuration = new AtConfiguration("epId", "ecid", "ecid");
     @SuppressWarnings("unused")
     @Spy
     private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
@@ -165,9 +165,9 @@ class PermissionRequestCreationAndValidationServiceTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new EnergyCommunityDataNeedResult(now));
+                .thenReturn(new EnergyCommunityDataNeedResult(now, List.of(Granularity.PT15M, Granularity.P1D)));
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
-                                                  "dnid", "AT000000");
+                                                  List.of("dnid"), "AT000000");
 
         // When
         var res = creationService.createAndValidatePermissionRequest(pr);

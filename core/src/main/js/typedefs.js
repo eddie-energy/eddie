@@ -73,6 +73,18 @@
  */
 
 /**
+ * @typedef {"CONSUMPTION", "PRODUCTION" } EnergyDirection
+ */
+
+/**
+ * @typedef {DataNeed} EnergyCommunityDataNeed
+ * @property {string} minGranularity - The minimum granularity of the data.
+ * @property {string} maxGranularity - The maximum granularity of the data.
+ * @property {string} participationFactor - The amount with which the final customer will participate in the energy community .
+ * @property {EnergyDirection} energyDirection - Indicates whether the final customer should produce or consume energy.
+ */
+
+/**
  * @typedef {"SMART_METER_P1_RAW", "SMART_METER_P1_CIM"} AiidaSchema
  */
 

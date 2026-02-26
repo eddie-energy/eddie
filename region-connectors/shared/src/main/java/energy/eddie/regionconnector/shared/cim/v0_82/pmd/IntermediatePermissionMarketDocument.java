@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.cim.v0_82.pmd;
@@ -8,6 +8,7 @@ import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.regionconnector.shared.cim.v0_82.*;
@@ -155,12 +156,13 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
     }
 
     private ProcessTypeList getProcessTypeList() {
-        if (dataNeed instanceof ValidatedHistoricalDataDataNeed || dataNeed instanceof AiidaDataNeed) {
-            return ProcessTypeList.ACCESS_TO_METERED_DATA;
-        } else if (dataNeed instanceof AccountingPointDataNeed) {
-            return ProcessTypeList.ACCOUNTINGPOINT_DATA;
-        }
-        throw new IllegalArgumentException("Unsupported data need type: " + dataNeed);
+        return switch (dataNeed) {
+            case ValidatedHistoricalDataDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
+            case AiidaDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
+            case EnergyCommunityDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
+            case AccountingPointDataNeed ignored -> ProcessTypeList.ACCOUNTINGPOINT_DATA;
+            default -> throw new IllegalArgumentException("Unsupported data need type: " + dataNeed);
+        };
     }
 
     @Nullable

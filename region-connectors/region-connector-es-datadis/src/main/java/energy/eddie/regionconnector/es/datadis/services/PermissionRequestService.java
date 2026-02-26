@@ -111,13 +111,6 @@ public class PermissionRequestService {
         }
         var calculation = calculationService.calculate(dataNeedId);
         switch (calculation) {
-            case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataNeedResult not supported!";
-                outbox.commit(new EsMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
-                throw new UnsupportedDataNeedException(DatadisRegionConnectorMetadata.REGION_CONNECTOR_ID,
-                                                       dataNeedId,
-                                                       message);
-            }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new EsMalformedEvent(
                         permissionId,
@@ -134,14 +127,14 @@ public class PermissionRequestService {
                                                        dataNeedId,
                                                        message);
             }
-            case EnergyCommunityDataNeedResult ignored -> {
-                var message = "Energy Community Data Need not supported";
-                outbox.commit(new EsMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
-            }
             case ValidatedHistoricalDataDataNeedResult vhdResult ->
                     handleValidatedHistoricalDataNeed(vhdResult, permissionId);
             case AccountingPointDataNeedResult ignored -> handleAccountingPointDataNeed(permissionId);
+            default -> {
+                var message = "Data Need not supported";
+                outbox.commit(new EsMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            }
         }
         return new CreatedPermissionRequest(permissionId);
     }

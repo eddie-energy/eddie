@@ -27,7 +27,7 @@ class CCMORequestTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), dt).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();
@@ -57,20 +57,21 @@ class CCMORequestTest {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
         ZonedDateTime dt = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var mesageId = new MessageId(atConfiguration.eligiblePartyId(), dt).toString();
-        var requestId = new CMRequestId(mesageId).toString();
+        var messageId = new MessageId(atConfiguration.eligiblePartyId(), dt).toString();
+        var requestId = new CMRequestId(messageId).toString();
         CCMORequest ccmoRequest = new CCMORequest(
                 dsoIdAndMeteringPoint,
                 timeFrame,
                 requestId,
-                mesageId,
+                messageId,
                 AllowedGranularity.P1D,
                 AllowedTransmissionCycle.D,
                 atConfiguration,
                 dt,
-                new AccountingPointDataNeed());
+                new AccountingPointDataNeed()
+        );
 
         // when
         String cmRequestId = ccmoRequest.cmRequestId();

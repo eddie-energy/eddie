@@ -48,6 +48,8 @@ class DataNeedSummary extends HTMLElement {
       schemas,
       asset,
       dataTags,
+      energyDirection,
+      participationFactor,
     } = dataNeed;
 
     const [title, details] = DATA_NEED_TOOLTIPS[type];
@@ -134,6 +136,19 @@ class DataNeedSummary extends HTMLElement {
               `
             : ""}
 
+          <!-- For Energy Community data needs -->
+          ${energyDirection
+            ? /* HTML */ `
+                <dt>Energy Direction</dt>
+                <dd>${energyDirection}</dd>
+              `
+            : ""}
+          ${participationFactor
+            ? /* HTML */ `
+                <dt>Participation Factor</dt>
+                <dd>${participationFactor}%</dd>
+              `
+            : ""}
           <dt>Purpose</dt>
           <dd>${purpose}</dd>
         </dl>

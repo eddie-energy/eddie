@@ -112,7 +112,9 @@ public sealed interface DataNeedRule {
     /**
      * The EnergyCommunityDataNeedRule specifies that the region connector supports {@link EnergyCommunityDataNeed}.
      */
-    record EnergyCommunityDataNeedRule() implements SpecificDataNeedRule<EnergyCommunityDataNeed> {
+    record EnergyCommunityDataNeedRule(
+            @JsonProperty("granularities") List<Granularity> granularities
+    ) implements SpecificDataNeedRule<EnergyCommunityDataNeed> {
         @Override
         public String getType() {
             return EnergyCommunityDataNeed.DISCRIMINATOR_VALUE;
