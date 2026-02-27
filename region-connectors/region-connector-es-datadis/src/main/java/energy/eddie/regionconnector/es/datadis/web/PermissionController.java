@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.web;
@@ -18,7 +18,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import java.beans.PropertyEditorSupport;
 import java.time.LocalDate;
@@ -26,8 +25,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PermissionController {
@@ -72,8 +71,7 @@ public class PermissionController {
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("New Permission Request created with PermissionId {}", permissionId);
 
-        var location = new UriTemplate(CONNECTION_STATUS_STREAM)
-                .expand(permissionId);
+        var location = connectionStatusMessagesStreamFor(permissionId);
         return ResponseEntity.created(location).body(permissionRequest);
     }
 

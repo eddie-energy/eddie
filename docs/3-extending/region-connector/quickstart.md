@@ -564,7 +564,7 @@ public class PermissionRequestController {
     outbox.commit(new CreatedEvent(permissionId, dto.dataNeedId(), dto.connectionId()));
     // TODO: Validation
     var pr = new CreatedPermissionRequest(permissionId);
-    return ResponseEntity.created(new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId))
+    return ResponseEntity.created(connectionStatusMessagesStreamFor(permissionId))
                          .body(pr);
   }
 
@@ -675,7 +675,7 @@ public class PermissionRequestController {
     }
     // new code end
     var pr = new CreatedPermissionRequest(permissionId);
-    return ResponseEntity.created(new UriTemplate(PATH_PERMISSION_STATUS_WITH_PATH_PARAM).expand(permissionId))
+    return ResponseEntity.created(connectionStatusMessagesStreamFor(permissionId))
                          .body(pr);
   }
 

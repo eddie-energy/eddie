@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.nl.mijn.aansluiting.web;
@@ -22,13 +22,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PkceClientController {
@@ -47,8 +46,7 @@ public class PkceClientController {
             HttpServletResponse response
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, NlValidationException {
         var newPermission = service.createPermissionRequest(permissionRequest);
-        URI location = new UriTemplate(CONNECTION_STATUS_STREAM)
-                .expand(newPermission.permissionId());
+        URI location = connectionStatusMessagesStreamFor(newPermission.permissionId());
 
         Cookie cookie = new Cookie(SESSION_ID, newPermission.permissionId());
         cookie.setHttpOnly(true);
