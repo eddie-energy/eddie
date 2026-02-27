@@ -57,7 +57,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.info("Received message on topic {} from data source {}", topic, dataSource().name());
+        LOGGER.trace("Received message on topic {} from data source {}", topic, dataSource().name());
 
         var schema = AiidaSchema.forTopic(topic);
         if (schema.isEmpty()) {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -84,6 +84,7 @@
  * @typedef {DataNeed} AiidaDataNeed
  * @property {Array<string>} dataTags - The tags associated with the data.
  * @property {string} transmissionSchedule - The schedule at which data is transmitted.
+ * @property {boolean} isAcknowledgementRequired - Indicates if an acknowledgement is required for the data.
  * @property {Array<AiidaSchema>} schemas - The schemas in which the data will be provided.
  * @property {AiidaAsset} asset - The asset type.
  */

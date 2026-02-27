@@ -20,8 +20,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -74,38 +73,43 @@ class MinMaxEnvelopeCimFormatterStrategyTest {
             var asset = metaInfo.getAsset();
             var marketDocument = envelope.getMarketDocument();
 
-            assertNotNull(header.getCreationDateTime());
+            assertAll(
+                    () -> assertNotNull(header.getCreationDateTime()),
+                    () -> assertEquals("1", metaInfo.getConnectionId()),
+                    () -> assertEquals("00213495-bdbf-4497-8695-5d811e45aa64", metaInfo.getRequestPermissionId()),
+                    () -> assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12", metaInfo.getDataNeedId()),
+                    () -> assertEquals("acknowledgement-market-document", metaInfo.getDocumentType()),
+                    () -> assertEquals("88e0fc2c-4ea7-4850-a736-8b9742757518", metaInfo.getFinalCustomerId()),
+                    () -> assertEquals(DATA_SOURCE_ID.toString(), metaInfo.getDataSourceId()),
+                    () -> assertEquals("ES", metaInfo.getRegionCountry()),
+                    () -> assertEquals("aiida", metaInfo.getRegionConnector())
+            );
 
-            assertEquals("1", metaInfo.getConnectionId());
-            assertEquals("00213495-bdbf-4497-8695-5d811e45aa64", metaInfo.getRequestPermissionId());
-            assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12", metaInfo.getDataNeedId());
-            assertEquals("acknowledgement-market-document", metaInfo.getDocumentType());
-            assertEquals("88e0fc2c-4ea7-4850-a736-8b9742757518", metaInfo.getFinalCustomerId());
-            assertEquals(DATA_SOURCE_ID.toString(), metaInfo.getDataSourceId());
-            assertEquals("ES", metaInfo.getRegionCountry());
-            assertEquals("aiida", metaInfo.getRegionConnector());
+            assertAll(
+                    () -> assertEquals("CONNECTION-AGREEMENT-POINT", asset.getType()),
+                    () -> assertEquals("test-meter-id", asset.getMeterId()),
+                    () -> assertEquals("test-operator-id", asset.getOperatorId())
+            );
 
-            assertEquals("CONNECTION-AGREEMENT-POINT", asset.getType());
-            assertEquals("test-meter-id", asset.getMeterId());
-            assertEquals("test-operator-id", asset.getOperatorId());
-
-            assertNotNull(marketDocument.getCreatedDateTime());
-            assertNotNull(marketDocument.getMRID());
-
-            assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12", marketDocument.getReceivedMarketDocumentMRID());
-            assertEquals("min-max-envelope", marketDocument.getReceivedMarketDocumentType());
-            assertEquals("MIN_MAX_ENVELOPE", marketDocument.getReceivedMarketDocumentProcessProcessType());
-            assertEquals(ZonedDateTime.parse("2026-02-16T10:11:58Z"),
-                         marketDocument.getReceivedMarketDocumentCreatedDateTime());
-
-            assertEquals("AT003000", marketDocument.getSenderMarketParticipantMRID().getValue());
-            assertEquals("NAT", marketDocument.getSenderMarketParticipantMRID().getCodingScheme());
-            assertEquals("CONNECTING_SYSTEM_OPERATOR", marketDocument.getSenderMarketParticipantMarketRoleType());
-
-            assertEquals("88e0fc2c-4ea7-4850-a736-8b9742757518",
-                         marketDocument.getReceiverMarketParticipantMRID().getValue());
-            assertEquals("NAT", marketDocument.getReceiverMarketParticipantMRID().getCodingScheme());
-            assertEquals("FINAL_CUSTOMER", marketDocument.getReceiverMarketParticipantMarketRoleType());
+            assertAll(
+                    () -> assertNotNull(marketDocument.getCreatedDateTime()),
+                    () -> assertNotNull(marketDocument.getMRID()),
+                    () -> assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                       marketDocument.getReceivedMarketDocumentMRID()),
+                    () -> assertEquals("min-max-envelope", marketDocument.getReceivedMarketDocumentType()),
+                    () -> assertEquals("MIN_MAX_ENVELOPE",
+                                       marketDocument.getReceivedMarketDocumentProcessProcessType()),
+                    () -> assertEquals(ZonedDateTime.parse("2026-02-16T10:11:58Z"),
+                                       marketDocument.getReceivedMarketDocumentCreatedDateTime()),
+                    () -> assertEquals("AT003000", marketDocument.getSenderMarketParticipantMRID().getValue()),
+                    () -> assertEquals("NAT", marketDocument.getSenderMarketParticipantMRID().getCodingScheme()),
+                    () -> assertEquals("CONNECTING_SYSTEM_OPERATOR",
+                                       marketDocument.getSenderMarketParticipantMarketRoleType()),
+                    () -> assertEquals("88e0fc2c-4ea7-4850-a736-8b9742757518",
+                                       marketDocument.getReceiverMarketParticipantMRID().getValue()),
+                    () -> assertEquals("NAT", marketDocument.getReceiverMarketParticipantMRID().getCodingScheme()),
+                    () -> assertEquals("FINAL_CUSTOMER", marketDocument.getReceiverMarketParticipantMarketRoleType())
+            );
         }
     }
 }

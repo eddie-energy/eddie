@@ -28,6 +28,7 @@ classDiagram
 
     class AiidaDataNeed {
         +String~CronExpression~ transmissionSchedule
+        +boolean isAcknowledgementRequired
         +Set~AiidaSchema~ schemas
         +AiidaAsset asset
         +Set~String~ dataTags
