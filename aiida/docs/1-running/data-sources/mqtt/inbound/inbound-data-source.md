@@ -31,7 +31,7 @@ The EP can publish data to the respective topic in a desired outbound connector 
 
 The following schemas are currently supported for inbound data:
 
-- `MIN_MAX_ENVELOPE_CIM_V1_12` (min-max envelope in CIM v1.12 format)
+- `MIN_MAX_ENVELOPE_CIM_V1_12` (min-max envelope in CIM v1.12 format - see [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/min-max-envelope.html))
 
 EDDIE subscribes to these topics and forwards the data to the MQTT broker of the EDDIE instance, where AIIDA subscribes to this topic and receives any data published to it.
 The data is stored in the `inbound_record` database table and can be accessed via a secured REST interface.
@@ -69,6 +69,13 @@ There are two ways to use this key to retrieve the latest inbound record:
    "payload": "{\"MessageDocumentHeader\":{..."
 }
 ```
+
+## EP: Subscribing to Acknowledgement
+
+AIIDA data needs can be configured to send an acknowledgement back to the EP after receiving data.
+This is done by the flag `isAcknowledgementRequired` in the data need of the inbound permission.
+
+The EP can subscribe to the respective topic in a desired outbound connector (e.g, in Kafka: `fw.eddie.cim_1_12.acknowledgement-md`).
 
 ## Revocation
 

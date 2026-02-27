@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest;
@@ -94,8 +94,11 @@ public class RestSecurityConfig {
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/accounting-point-data-md")).hasAuthority("SCOPE_cim-accounting-point-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_04/near-real-time-data-md")).hasAuthority("SCOPE_cim-near-real-time-data-md:read")
+                .requestMatchers(restRequestMatcher.matcher("/cim_1_12/near-real-time-data-md")).hasAuthority("SCOPE_cim-near-real-time-data-md:read")
+                .requestMatchers(restRequestMatcher.matcher("/cim_1_12/acknowledgement-md")).hasAuthority("SCOPE_cim-acknowledgement-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/termination-md")).hasAuthority("SCOPE_cim-termination-md:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_91_08/redistribution-transaction-rd")).hasAuthority("SCOPE_cim-redistribution-transaction-rd:write")
+                .requestMatchers(restRequestMatcher.matcher("/cim_1_12/min-max-envelope-md")).hasAuthority("SCOPE_cim-min-max-envelope-md:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_04/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/v3/api-docs")).permitAll() // Allow requests to the swagger file
                 .anyRequest().denyAll();

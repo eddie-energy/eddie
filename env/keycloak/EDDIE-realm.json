@@ -31,11 +31,19 @@
       "protocol": "openid-connect"
     },
     {
+      "name": "cim-acknowledgement-md:read",
+      "protocol": "openid-connect"
+    },
+    {
       "name": "cim-termination-md:write",
       "protocol": "openid-connect"
     },
     {
       "name": "cim-redistribution-transaction-rd:write",
+      "protocol": "openid-connect"
+    },
+    {
+      "name": "cim-min-max-envelope-md:write",
       "protocol": "openid-connect"
     }
   ],
@@ -60,8 +68,10 @@
         "cim-accounting-point-data-md:read",
         "cim-validated-historical-data-md:read",
         "cim-near-real-time-data-md:read",
+        "cim-acknowlegement-md:read",
         "cim-termination-md:write",
-        "cim-redistribution-transaction-rd:write"
+        "cim-redistribution-transaction-rd:write",
+        "cim-min-max-envelope-,d:write"
       ]
     }
   ],

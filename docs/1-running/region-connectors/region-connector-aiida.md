@@ -117,9 +117,10 @@ The ACLs are used to authorize the AIIDA instance to publish and subscribe.
 
 The `<schema>` part must use the `topicName()` defined in the corresponding `AiidaSchema` (for example, `AiidaSchema.SMART_METER_P1_CIM.topicName()`).
 
-| topic_name                                       | action      | acl_type | data_need_type |
-|--------------------------------------------------|-------------|----------|----------------|
-| `aiida/v1/<permissionId>/data/outbound/<schema>` | `publish`   | `allow`  | outbound-aiida |
-| `aiida/v1/<permissionId>/data/inbound/<schema>`  | `subscribe` | `allow`  | inbound-aiida  |
-| `aiida/v1/<permissionId>/status`                 | `publish`   | `allow`  | all            |
-| `aiida/v1/<permissionId>/termination`            | `subscribe` | `allow`  | all            |
+| topic_name                                         | action      | acl_type | data_need_type | note       |
+|----------------------------------------------------|-------------|----------|----------------|------------|
+| `aiida/v1/<permissionId>/data/outbound/<schema>`   | `publish`   | `allow`  | outbound-aiida |            |
+| `aiida/v1/<permissionId>/data/inbound/<schema>`    | `subscribe` | `allow`  | inbound-aiida  |            |
+| `aiida/v1/<permissionId>/status`                   | `publish`   | `allow`  | all            |            |
+| `aiida/v1/<permissionId>/termination`              | `subscribe` | `allow`  | all            |            |
+| `aiida/v1/<permissionId>/acknowledgement/<schema>` | `publish`   | `allow`  | all            | if enabled |
