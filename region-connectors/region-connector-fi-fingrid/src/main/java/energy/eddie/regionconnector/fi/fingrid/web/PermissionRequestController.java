@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fi.fingrid.web;
@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriTemplate;
 
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.*;
 
@@ -52,8 +51,7 @@ public class PermissionRequestController {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
         var permissionId = createdRequest.permissionId();
-        var location = new UriTemplate(CONNECTION_STATUS_STREAM)
-                .expand(permissionId);
+        var location = connectionStatusMessagesStreamFor(permissionId);
 
         return ResponseEntity.created(location).body(createdRequest);
     }

@@ -15,6 +15,8 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.web.cors.CorsConfigurationSource;
 import tools.jackson.databind.ObjectMapper;
 
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM_BASE;
+
 @Configuration
 @SuppressWarnings("java:S4502")
 public class SecurityConfig {
@@ -29,12 +31,11 @@ public class SecurityConfig {
         var pathPatternRequestMatcherBuilder = PathPatternRequestMatcher.withDefaults();
 
         return http
-                .securityMatcher("/api/connection-status-messages/**")
+                .securityMatcher(CONNECTION_STATUS_STREAM_BASE + "/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                                                // @formatter:off
-                            .requestMatchers(pathPatternRequestMatcherBuilder.matcher("/api/connection-status-messages")).access(jwtHeaderAuthorizationManager)
-                            .requestMatchers(pathPatternRequestMatcherBuilder.matcher("/api/connection-status-messages/{permissionId}")).access(jwtHeaderAuthorizationManager)
+                            .requestMatchers(pathPatternRequestMatcherBuilder.matcher(CONNECTION_STATUS_STREAM_BASE)).access(jwtHeaderAuthorizationManager)
                             .anyRequest().denyAll()
                        // @formatter
                 )

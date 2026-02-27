@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.dk.energinet.web;
@@ -25,14 +25,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
-import org.springframework.web.util.UriTemplate;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -147,7 +146,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenAdditionalFields_areIgnored() throws Exception {
         var permissionId = UUID.randomUUID().toString();
-        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionId).toString();
+        var expectedLocationHeader = connectionStatusMessagesStreamFor(permissionId).toString();
 
         when(creationService.createPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(permissionId));
 
@@ -172,7 +171,7 @@ class PermissionRequestControllerTest {
     @Test
     void givenValidInput_returnsLocationAndPermissionRequestId() throws Exception {
         var permissionId = UUID.randomUUID().toString();
-        var expectedLocationHeader = new UriTemplate(CONNECTION_STATUS_STREAM).expand(permissionId).toString();
+        var expectedLocationHeader = connectionStatusMessagesStreamFor(permissionId).toString();
 
         when(creationService.createPermissionRequest(any())).thenReturn(new CreatedPermissionRequest(permissionId));
 

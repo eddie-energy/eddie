@@ -11,4 +11,3 @@ There are some common endpoints that should be implemented by each region connec
 They are listed in [RestApiPaths](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/web/RestApiPaths.html).
 Two always need to be implemented.
 First, the `PATH_PERMISSION_REQUEST` endpoint to create permission requests.
-Second, the `PATH_PERMISSION_STATUS_WITH_PATH_PARAM` to request the current status of a permission request.

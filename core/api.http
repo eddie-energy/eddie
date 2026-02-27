@@ -32,11 +32,7 @@ GET http://localhost:9090/management/region-connectors/supported-data-needs
 @dataNeedId = 9bd0668f-cc19-40a8-99db-dc2cb2802b17
 GET http://localhost:8080/api/region-connectors/data-needs/{{dataNeedId}}
 
-### SSE connection status message by permission ID only used by the frontend with the correct authorization for the permission request
-# @timeout 10 min
-@permissionId = replace-me
-GET http://localhost:8080/api/connection-status-messages/{{permissionId}}
-
 ### SSE
 # @timeout 10 min
+@permissionId = replace-me
 GET http://localhost:8080/api/connection-status-messages?permission-id={{permissionId}}

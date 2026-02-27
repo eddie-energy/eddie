@@ -24,14 +24,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 import java.util.Map;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM_BASE;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PermissionRequestController {
@@ -51,10 +50,7 @@ public class PermissionRequestController {
             @Valid @RequestBody PermissionRequestForCreation permissionRequestsForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedMalformedException, JwtCreationFailedException {
         var qrCodeDto = permissionService.createValidateAndSendPermissionRequests(permissionRequestsForCreation);
-        var location = UriComponentsBuilder.fromUriString(CONNECTION_STATUS_STREAM_BASE)
-                                           .queryParam("permission-id", qrCodeDto.permissionIds())
-                                           .build()
-                                           .toUri();
+        var location = connectionStatusMessagesStreamFor(qrCodeDto.permissionIds().toArray());
         return ResponseEntity.created(location).body(qrCodeDto);
     }
 

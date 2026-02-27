@@ -16,16 +16,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.util.DefaultUriBuilderFactory;
 
-import static energy.eddie.regionconnector.shared.web.RestApiPaths.CONNECTION_STATUS_STREAM_BASE;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PermissionRequestController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
     private final PermissionRequestCreationAndValidationService creationService;
-    private final DefaultUriBuilderFactory uriBuilderFactory = new DefaultUriBuilderFactory();
 
     public PermissionRequestController(PermissionRequestCreationAndValidationService creationService) {
         this.creationService = creationService;
@@ -39,9 +37,7 @@ public class PermissionRequestController {
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
         LOGGER.info("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
-        var location = uriBuilderFactory.uriString(CONNECTION_STATUS_STREAM_BASE)
-                                        .queryParam("permission-id", createdRequest.permissionIds())
-                                        .build();
+        var location = connectionStatusMessagesStreamFor(createdRequest.permissionIds().toArray());
         if (createdRequest.permissionIds().isEmpty()) {
             return ResponseEntity.badRequest().build();
         } else {
