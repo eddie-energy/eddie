@@ -40,13 +40,16 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private Outbox outbox;
 
-    @Mock
-    private DeEtaPlusConfiguration configuration;
-
     private PermissionRequestCreationService service;
 
     @BeforeEach
     void setUp() {
+        DeEtaPlusConfiguration.OAuthConfig oauthConfig = new DeEtaPlusConfiguration.OAuthConfig(
+                "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri", "scope"
+        );
+        DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
+                "partner", "http://api.url", oauthConfig, null
+        );
         service = new PermissionRequestCreationService(dataNeedCalculationService, outbox, configuration);
     }
 
@@ -60,15 +63,9 @@ class PermissionRequestCreationServiceTest {
         ValidatedHistoricalDataDataNeedResult result = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 timeframe,
-                timeframe
-        );
+                timeframe);
 
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(result);
-
-        DeEtaPlusConfiguration.OAuthConfig oauthConfig = new DeEtaPlusConfiguration.OAuthConfig(
-                "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri", "scope"
-        );
-        when(configuration.oauth()).thenReturn(oauthConfig);
 
         var response = service.createPermissionRequest(request);
 
@@ -91,8 +88,10 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenAccountingPointDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()),
-                                            LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        Timeframe timeframe = new Timeframe(
+                LocalDate.now(ZoneId.systemDefault()),
+                LocalDate.now(ZoneId.systemDefault()).plusDays(1)
+        );
         when(dataNeedCalculationService.calculate(anyString()))
                 .thenReturn(new AccountingPointDataNeedResult(timeframe));
 
