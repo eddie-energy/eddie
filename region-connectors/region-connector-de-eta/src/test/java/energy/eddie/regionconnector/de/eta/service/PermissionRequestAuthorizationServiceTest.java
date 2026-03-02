@@ -48,7 +48,8 @@ class PermissionRequestAuthorizationServiceTest {
                                                    "redirectUri",
                                                    "scope"),
             new DeEtaPlusConfiguration.ApiConfig(
-                    new DeEtaPlusConfiguration.ApiConfig.ClientConfig("id", "secret")));
+                    new DeEtaPlusConfiguration.ApiConfig.ClientConfig("id", "secret"))
+    );
 
     @InjectMocks
     private PermissionRequestAuthorizationService service;

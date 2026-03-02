@@ -25,10 +25,12 @@ class EtaOAuthServiceTest {
 
         String tokenUrl = mockWebServer.url("/token").toString();
         DeEtaPlusConfiguration.OAuthConfig oauthConfig = new DeEtaPlusConfiguration.OAuthConfig(
-                "client", "secret", tokenUrl, "http://auth.url", "http://redirect.uri", "scope");
+                "client", "secret", tokenUrl, "http://auth.url", "http://redirect.uri", "scope"
+        );
 
         DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
-                "partner", "http://api.url", oauthConfig, null);
+                "partner", "http://api.url", oauthConfig, null
+        );
 
         service = new EtaOAuthService(configuration);
     }
@@ -45,7 +47,9 @@ class EtaOAuthServiceTest {
                         .setResponseCode(200)
                         .setHeader("Content-Type", "application/json")
                         .setBody(
-                                "{\"success\": true, \"data\": {\"token\": \"acc-token\", \"refreshToken\": \"ref-token\"}}"));
+                                "{\"success\": true, \"data\": {\"token\": \"acc-token\", \"refreshToken\": \"ref-token\"}}"
+                        )
+        );
 
         Mono<OAuthTokenResponse> resultMono = service.exchangeCodeForToken("auth-code", "client-id");
 
