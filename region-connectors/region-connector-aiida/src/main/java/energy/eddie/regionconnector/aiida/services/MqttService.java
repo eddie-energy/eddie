@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.aiida.mqtt.user.MqttUser;
 import energy.eddie.regionconnector.aiida.mqtt.user.MqttUserRepository;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -130,7 +131,16 @@ public class MqttService implements AutoCloseable {
                            true);
     }
 
-    public <T> void publishInboundData(AiidaSchema schema, String permissionId, T payload) throws MqttException {
+    public <T> void publishInboundData(
+            AiidaSchema schema,
+            @Nullable String permissionId,
+            T payload
+    ) throws MqttException {
+        if (permissionId == null || permissionId.isBlank()) {
+            LOGGER.warn("Permission ID is null or blank, cannot publish inbound data");
+            return;
+        }
+
         var topic = MqttTopic.of(permissionId, MqttTopicType.INBOUND_DATA).schemaTopic(schema);
         LOGGER.info("Publishing inbound data to topic {}", topic);
 
