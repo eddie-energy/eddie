@@ -17,20 +17,20 @@ Devices can send data to the MQTT broker of the AIIDA instance on the dedicated 
 ```json
 {
   "version": "1.0",
-  "registeredResourceMRID": {
-    "value": "5eef407d-d14f-49d4-b61a-769a20caa540",
+  "registeredResource.mRID": {
+    "value": "7d2b2547-27dd-4fe0-9516-707540e1184f",
     "codingScheme": "NAT"
   },
-  "dateAndOrTimeDateTime": "2025-07-01T07:43:59.073747585Z",
-  "quantities": [
+  "dateAndOrTime.dateTime": "2026-02-11T15:32:24Z",
+  "Quantity": [
     {
-      "quantity": 25,
-      "type": "0",
+      "quantity": 0.132,
+      "type": "2",
       "quality": "AS_PROVIDED"
     },
     {
-      "quantity": 1750,
-      "type": "2",
+      "quantity": 65238.377,
+      "type": "0",
       "quality": "AS_PROVIDED"
     }
   ]

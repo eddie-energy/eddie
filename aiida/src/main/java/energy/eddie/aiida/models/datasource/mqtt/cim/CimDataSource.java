@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.datasource.mqtt.cim;
 
 import energy.eddie.aiida.dtos.datasource.mqtt.cim.CimDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -14,10 +15,18 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.CIM_ADAPTER)
 public class CimDataSource extends MqttDataSource {
+    private static final String TOPIC_SUFFIX = "/data";
+
     @SuppressWarnings("NullAway")
     protected CimDataSource() {}
 
     public CimDataSource(CimDataSourceDto dto, UUID userId) {
         super(dto, userId);
+    }
+
+    @Override
+    public void createAccessControlEntry() {
+        var topic = TOPIC_PREFIX + id + TOPIC_SUFFIX;
+        accessControlEntry = new MqttAccessControlEntry(id, topic);
     }
 }

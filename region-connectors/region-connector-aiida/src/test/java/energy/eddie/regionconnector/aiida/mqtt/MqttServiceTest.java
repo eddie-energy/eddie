@@ -36,8 +36,7 @@ import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MqttServiceTest {
@@ -257,5 +256,20 @@ class MqttServiceTest {
                 eq(1),
                 eq(false)
         );
+    }
+
+    @Test
+    void publishInboundData_withNullOrBlankPermissionId_doesNotPublish() throws Exception {
+        // Given
+        var schema = AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12;
+        var payload = new RECMMOEEnvelope();
+
+        // When
+        mqttService.publishInboundData(schema, null, payload);
+        mqttService.publishInboundData(schema, "", payload);
+        mqttService.publishInboundData(schema, "   ", payload);
+
+        // Then
+        verify(mockAsyncClient, times(0)).publish(anyString(), any(byte[].class), anyInt(), anyBoolean());
     }
 }
