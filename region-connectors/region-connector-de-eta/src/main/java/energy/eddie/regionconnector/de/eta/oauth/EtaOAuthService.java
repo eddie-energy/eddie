@@ -47,7 +47,7 @@ public class EtaOAuthService {
                 .build()
                 .toUri();
 
-        HTTPRequest request = new HTTPRequest(HTTPRequest.Method.PUT, tokenEndpoint);
+        HTTPRequest request = new HTTPRequest(HTTPRequest.Method.POST, tokenEndpoint);
         request.setAccept("application/json");
 
         HTTPResponse response = request.send();
