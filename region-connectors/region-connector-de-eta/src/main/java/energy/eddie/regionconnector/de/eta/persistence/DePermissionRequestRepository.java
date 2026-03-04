@@ -29,7 +29,7 @@ public interface DePermissionRequestRepository extends
         @Override
         @Query(value = "SELECT permission_id, data_source_connection_id, metering_point_id, " +
                         "data_start, data_end, granularity, energy_type, status, data_need_id, " +
-                        "created, latest_meter_reading, message, cause " +
+                        "created, message, cause " +
                         "FROM de_eta.eta_permission_request " +
                         "WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' " +
                         "AND created <= NOW() - :hours * INTERVAL '1 hour'", nativeQuery = true)
