@@ -2,6 +2,21 @@
 
 This region connector allows the EDDIE platform to interact with the German ETA Plus standard.
 
+## Registration and User Setup
+
+Before requesting an account, please prepare the following information:
+- Company name
+- Technical contact person (full name)
+- Contact email address
+- Intended purpose (e.g., EDDIE - German Region Connector)
+
+1. Submit the required information to the ETA+ contact email info@etaplus.energy.
+2. The platform administrator creates the user account.
+3. Login credentials (username and password) will be securely shared with your technical contact.
+4. Perform an initial login to validate access.
+
+As accounts are manually provisioned, the turnaround time is typically 1-2 business days.
+
 ## Configuration of the Region Connector
 
 The region connector needs a set of configuration values to function properly. You can configure these values using Spring properties or environment variables.
