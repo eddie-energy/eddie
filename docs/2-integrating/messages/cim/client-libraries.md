@@ -61,43 +61,28 @@ implementation 'energy.eddie:cim:1.0.0'
 ### Example code
 
 ```java
-// All CIM documents:
-import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.cim.v0_91_08.RTREnvelope;
-// -----
+import energy.eddie.cim.serde.DeserializationException;
+import energy.eddie.cim.serde.SerdeFactory;
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBException;
-import jakarta.xml.bind.Marshaller;
-import jakarta.xml.bind.Unmarshaller;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamException;
-import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 
-class CimDeserializer {
-    private final Marshaller marshaller;
-    private final Unmarshaller unmarshaller;
+public class MyClass {
+    public void serdeExample() throws SerdeInitializationException, SerializationException, DeserializationException {
+        var serdeFactory = SerdeFactory.getInstance();
+        var serde = serdeFactory.create("xml");
+        // var serde = serdeFactory.create("json"); // also works for JSON
 
-    public XmlMessageSerde() throws JAXBException {
-        var ctx = JAXBContext.newInstance(
-                PermissionEnvelope.class,
-                AccountingPointEnvelope.class,
-                ValidatedHistoricalDataEnvelope.class,
-                RTREnvelope.class
-        );
-        marshaller = ctx.createMarshaller();
-        unmarshaller = ctx.createUnmarshaller();
-    }
+        var rtdEnvelope = new RTDEnvelope();
 
-    private PermissionEnvelope deserializePermissionEnvelope(byte[] message) throws JAXBException, XMLStreamException {
-        XMLInputFactory factory = XMLInputFactory.newInstance();
-        var reader = factory.createXMLStreamReader(new StringReader(new String(message, StandardCharsets.UTF_8)));
-        return unmarshaller.unmarshal(reader, PermissionEnvelope.class).getValue();
+        // SERIALIZATION
+        var payloadBytes = serde.serialize(rtdEnvelope);
+        var payload = new String(payloadBytes, StandardCharsets.UTF_8);
+
+        // DESERIALIZATION
+        rtdEnvelope = serde.deserialize(payload.getBytes(StandardCharsets.UTF_8), RTDEnvelope.class);
     }
 }
 ```
