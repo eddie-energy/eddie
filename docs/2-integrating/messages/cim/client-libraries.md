@@ -34,7 +34,7 @@ The changelog can be found in the GitHub repository here: https://github.com/edd
 ### Importing the library
 
 > [!INFO]
-> You can find the CIM package in the EDDIE repository here: https://github.com/eddie-energy/eddie/packages/2495238.
+> You can find the CIM package in the EDDIE repository here: https://central.sonatype.com/artifact/energy.eddie/cim.
 
 ::: code-group
 
@@ -42,17 +42,17 @@ The changelog can be found in the GitHub repository here: https://github.com/edd
 <dependency>
     <groupId>energy.eddie</groupId>
     <artifactId>cim</artifactId>
-    <version>1.0.0</version> <!-- Use the desired version from GitHub Packages -->
+    <version>1.0.0</version> <!-- Use the desired version from Maven Central -->
 </dependency>
 ```
 
 ```kotlin [Gradle (Kotlin)]
-// Use the desired version from GitHub Packages
+// Use the desired version from Maven Central
 implementation("energy.eddie:cim:1.0.0")
 ```
 
 ```kotlin [Gradle (Groovy)]
-// Use the desired version from GitHub Packages
+// Use the desired version from Maven Central
 implementation 'energy.eddie:cim:1.0.0'
 ```
 
