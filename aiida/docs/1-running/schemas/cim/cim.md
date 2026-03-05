@@ -5,8 +5,8 @@ The CIM provides its schema as XSD files which AIIDA needs to respect when emitt
 AIIDA supports exactly one CIM document:
 
 - [Real Time Data Market Document](real-time-data-market-document.md) in versions:
-  - v1.04
-  - v1.12
+  - v1.04 (schema: `SMART-METER-P1-CIM-V1-04`)
+  - v1.12 (schema: `SMART-METER-P1-CIM-V1-12`)
 
 AIIDA is able to convert near-real time (NRT) data into the Real Time Data Document.
 AIIDA has also the capability to receive data in form of the Time Series provided by the Real Time Data Document with

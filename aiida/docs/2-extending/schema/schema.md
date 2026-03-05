@@ -39,7 +39,7 @@ public class SchemaFormatterException extends FormatterException {
 ## Schema Formatter
 
 Create a class for the formatter of the newly created schema (e.g. `CustomSchemaFormatter`).
-This class must extend from the abstract [SchemaFormatter](https://github.com/eddie-energy/eddie/blob/main/aiida/src/main/java/energy/eddie/aiida/schemas/SchemaFormatter.java) class.
+This class must extend from the abstract [SchemaFormatter](https://github.com/eddie-energy/eddie/blob/main/aiida/src/main/java/energy/eddie/aiida/schemas/rtd/SchemaFormatter.java) class.
 
 Inside the `SchemaFormatter` class, the subclass must now be mapped to its schema.
 

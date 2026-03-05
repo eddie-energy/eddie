@@ -11,12 +11,12 @@ import java.util.Locale;
 import java.util.Optional;
 
 public enum AiidaSchema {
+    RAW(Identifiers.RAW, ""),
     SMART_METER_P1_RAW(Identifiers.SMART_METER_P1_RAW, ""),
     SMART_METER_P1_CIM_V1_04(Identifiers.SMART_METER_P1_CIM, CimVersions.V1_04),
     SMART_METER_P1_CIM_V1_12(Identifiers.SMART_METER_P1_CIM, CimVersions.V1_12),
     ACKNOWLEDGEMENT_CIM_V1_12(Identifiers.ACKNOWLEDGEMENT_CIM, CimVersions.V1_12),
     MIN_MAX_ENVELOPE_CIM_V1_12(Identifiers.MIN_MAX_ENVELOPE_CIM, CimVersions.V1_12);
-
 
     private final String identifier;
     private final String version;
@@ -63,6 +63,7 @@ public enum AiidaSchema {
     }
 
     public static class Identifiers {
+        public static final String RAW = "RAW";
         public static final String SMART_METER_P1_RAW = "SMART-METER-P1-RAW";
         public static final String SMART_METER_P1_CIM = "SMART-METER-P1-CIM";
         public static final String ACKNOWLEDGEMENT_CIM = "ACKNOWLEDGEMENT-CIM";

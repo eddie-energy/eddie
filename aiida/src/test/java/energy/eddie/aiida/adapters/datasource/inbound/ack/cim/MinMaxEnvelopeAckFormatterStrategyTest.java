@@ -5,6 +5,8 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack.cim;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +26,19 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class MinMaxEnvelopeCimFormatterStrategyTest {
+class MinMaxEnvelopeAckFormatterStrategyTest {
+    private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final UUID PERMISSION_ID = UUID.fromString("00213495-bdbf-4497-8695-5d811e45aa64");
+    private static final UUID DATA_NEED_ID = UUID.fromString("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12");
 
-    private static final UUID DATA_SOURCE_ID =
-            UUID.fromString("00000000-0000-0000-0000-000000000000");
     private final ClassLoader classLoader = getClass().getClassLoader();
-    private final MinMaxEnvelopeCimFormatterStrategy strategy =
-            new MinMaxEnvelopeCimFormatterStrategy();
+    private final MinMaxEnvelopeAckFormatterStrategy strategy = new MinMaxEnvelopeAckFormatterStrategy(AIIDA_ID);
+
+    @Mock
+    private Permission permission;
+    @Mock
+    private AiidaLocalDataNeed dataNeed;
     @Mock
     private InboundDataSource inboundDataSource;
     @Mock
@@ -50,6 +58,12 @@ class MinMaxEnvelopeCimFormatterStrategyTest {
         when(inboundDataSource.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
         when(inboundDataSource.meterId()).thenReturn("test-meter-id");
         when(inboundDataSource.operatorId()).thenReturn("test-operator-id");
+        when(inboundDataSource.permission()).thenReturn(permission);
+
+        when(permission.id()).thenReturn(PERMISSION_ID);
+        when(permission.dataNeed()).thenReturn(dataNeed);
+
+        when(dataNeed.dataNeedId()).thenReturn(DATA_NEED_ID);
     }
 
     @Test
@@ -76,10 +90,10 @@ class MinMaxEnvelopeCimFormatterStrategyTest {
             assertAll(
                     () -> assertNotNull(header.getCreationDateTime()),
                     () -> assertEquals("1", metaInfo.getConnectionId()),
-                    () -> assertEquals("00213495-bdbf-4497-8695-5d811e45aa64", metaInfo.getRequestPermissionId()),
-                    () -> assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12", metaInfo.getDataNeedId()),
+                    () -> assertEquals(PERMISSION_ID.toString(), metaInfo.getRequestPermissionId()),
+                    () -> assertEquals(DATA_NEED_ID.toString(), metaInfo.getDataNeedId()),
                     () -> assertEquals("acknowledgement-market-document", metaInfo.getDocumentType()),
-                    () -> assertEquals("88e0fc2c-4ea7-4850-a736-8b9742757518", metaInfo.getFinalCustomerId()),
+                    () -> assertEquals(AIIDA_ID.toString(), metaInfo.getFinalCustomerId()),
                     () -> assertEquals(DATA_SOURCE_ID.toString(), metaInfo.getDataSourceId()),
                     () -> assertEquals("ES", metaInfo.getRegionCountry()),
                     () -> assertEquals("aiida", metaInfo.getRegionConnector())

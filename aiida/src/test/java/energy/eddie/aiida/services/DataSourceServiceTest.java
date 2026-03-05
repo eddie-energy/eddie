@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -6,6 +6,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
@@ -27,6 +28,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,12 +51,15 @@ class DataSourceServiceTest {
     private static final DataSource OUTBOUND_DATA_SOURCE = mock(SimulationDataSource.class);
     private static final MqttDataSource MQTT_OUTBOUND_DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
     private static final DataSource INBOUND_DATA_SOURCE = mock(InboundDataSource.class);
+    private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
+    @Mock
+    private ApplicationInformationService applicationInformationService;
     @Mock
     private DataSourceRepository repository;
     @Mock
@@ -70,6 +75,13 @@ class DataSourceServiceTest {
 
     @InjectMocks
     private DataSourceService dataSourceService;
+
+    @BeforeEach
+    void setUp() {
+        var appInfo = mock(ApplicationInformation.class);
+        lenient().when(applicationInformationService.applicationInformation()).thenReturn(appInfo);
+        lenient().when(appInfo.aiidaId()).thenReturn(AIIDA_ID);
+    }
 
     @Test
     void shouldReturndataSourceByIdOrThrow() throws DataSourceNotFoundException {

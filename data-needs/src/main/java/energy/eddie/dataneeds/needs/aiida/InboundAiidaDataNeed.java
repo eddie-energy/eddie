@@ -16,7 +16,10 @@ import java.util.Set;
 @SuppressWarnings("NullAway")
 public class InboundAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "inbound-aiida";
-    public static final Set<AiidaSchema> SUPPORTED_SCHEMAS = Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
+    public static final Set<AiidaSchema> SUPPORTED_SCHEMAS = Set.of(
+            AiidaSchema.RAW,
+            AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12
+    );
 
     @SuppressWarnings("NullAway.Init")
     public InboundAiidaDataNeed() {

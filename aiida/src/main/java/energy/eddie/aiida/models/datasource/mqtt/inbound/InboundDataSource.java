@@ -31,11 +31,8 @@ public class InboundDataSource extends MqttDataSource {
     @JsonProperty
     protected String accessCode;
 
-    @Nullable
-    @Column(name = "acknowledgement_topic", table = TABLE_NAME)
-    @Schema(description = "The MQTT topic to which the EP should publish acknowledgements for received messages.")
-    @JsonProperty
-    protected String acknowledgementTopic;
+    @OneToOne(mappedBy = "dataSource")
+    protected Permission permission;
 
     @Transient
     @JsonIgnore
@@ -44,25 +41,19 @@ public class InboundDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
-    public InboundDataSource(
-            InboundDataSourceDto dto,
-            UUID userId,
-            MqttStreamingConfig mqttStreamingConfig
-    ) {
-        this(dto, userId, mqttStreamingConfig, SecretGenerator.generate());
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission) {
+        this(dto, userId, permission, SecretGenerator.generate());
     }
 
-    public InboundDataSource(
-            InboundDataSourceDto dto,
-            UUID userId,
-            MqttStreamingConfig mqttStreamingConfig,
-            String accessCode
-    ) {
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission, String accessCode) {
         super(dto, userId);
-        this.config = mqttStreamingConfig;
+        this.permission = permission;
+
+        this.config = Objects.requireNonNull(permission.mqttStreamingConfig());
+
         this.internalHost = config.serverUri();
         this.externalHost = config.serverUri();
-        this.acknowledgementTopic = config.acknowledgementTopic();
+
         this.accessCode = accessCode;
     }
 
@@ -70,9 +61,13 @@ public class InboundDataSource extends MqttDataSource {
         return accessCode;
     }
 
+    public Permission permission() {
+        return permission;
+    }
+
     @Nullable
     public String acknowledgementTopic() {
-        return acknowledgementTopic;
+        return config != null ? config.acknowledgementTopic() : null;
     }
 
     @Override
@@ -88,20 +83,20 @@ public class InboundDataSource extends MqttDataSource {
     public static class Builder {
         private final InboundDataSourceDto dataSourceDto;
         private final UUID userId;
-        private final MqttStreamingConfig mqttStreamingConfig;
+        private final Permission permission;
 
         @SuppressWarnings("NullAway")
         public Builder(Permission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
+
+            this.permission = Objects.requireNonNull(permission);
+
             var dataNeed = Objects.requireNonNull(permission.dataNeed());
-
-            this.mqttStreamingConfig = Objects.requireNonNull(permission.mqttStreamingConfig());
-
             this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
         }
 
         public InboundDataSource build() {
-            return new InboundDataSource(dataSourceDto, userId, mqttStreamingConfig);
+            return new InboundDataSource(dataSourceDto, userId, permission);
         }
     }
 }

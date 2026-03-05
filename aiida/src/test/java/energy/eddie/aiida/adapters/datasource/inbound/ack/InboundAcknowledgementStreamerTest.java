@@ -3,8 +3,6 @@
 
 package energy.eddie.aiida.adapters.datasource.inbound.ack;
 
-import energy.eddie.aiida.adapters.datasource.inbound.ack.cim.CimFormatterStrategy;
-import energy.eddie.aiida.adapters.datasource.inbound.ack.cim.CimFormatterStrategyRegistry;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.record.InboundRecord;
@@ -25,6 +23,7 @@ import reactor.test.publisher.TestPublisher;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,6 +32,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class InboundAcknowledgementStreamerTest {
     private static final String ACK_TOPIC_PREFIX = "ack/topic";
+    private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
     @Captor
     private ArgumentCaptor<byte[]> payloadCaptor;
@@ -42,9 +42,9 @@ class InboundAcknowledgementStreamerTest {
     @Mock
     private IMqttAsyncClient mqttClient;
     @Mock
-    private CimFormatterStrategyRegistry cimFormatterStrategyRegistry;
+    private AckFormatterStrategyRegistry ackFormatterStrategyRegistry;
     @Mock
-    private CimFormatterStrategy cimFormatterStrategy;
+    private AckFormatterStrategy ackFormatterStrategy;
 
     private TestPublisher<InboundRecord> publisher;
     private ObjectMapper objectMapper;
@@ -62,7 +62,7 @@ class InboundAcknowledgementStreamerTest {
     @Test
     void start_subscribesToFlux() {
         // Given
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(objectMapper, ACK_TOPIC_PREFIX, mockFlux);
+        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
 
         // When
         inboundAckStreamer.start(mqttClient);
@@ -75,7 +75,7 @@ class InboundAcknowledgementStreamerTest {
     @Test
     void start_doesNotSubscribe_withoutMqttClient() {
         // Given
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(objectMapper, ACK_TOPIC_PREFIX, mockFlux);
+        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
 
         // When
         inboundAckStreamer.start(null);
@@ -88,7 +88,7 @@ class InboundAcknowledgementStreamerTest {
     @Test
     void start_doesNotSubscribe_withoutAckTopic() {
         // Given
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(objectMapper, null, mockFlux);
+        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, null, mockFlux);
 
         // When
         inboundAckStreamer.start(mqttClient);
@@ -102,10 +102,11 @@ class InboundAcknowledgementStreamerTest {
         // Given
         var expectedTopic = AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12.buildTopicPath(ACK_TOPIC_PREFIX);
         var inboundAckStreamer = new InboundAcknowledgementStreamer(
+                AIIDA_ID,
                 objectMapper,
                 ACK_TOPIC_PREFIX,
                 publisher.flux(),
-                cimFormatterStrategyRegistry
+                ackFormatterStrategyRegistry
         );
         var inboundRecord = mock(InboundRecord.class);
         var ackEnvelope = new AcknowledgementEnvelope().withMessageDocumentHeader(
@@ -114,9 +115,9 @@ class InboundAcknowledgementStreamerTest {
                 ));
 
         when(inboundRecord.schema()).thenReturn(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
-        when(cimFormatterStrategyRegistry.strategyFor(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12))
-                .thenReturn(cimFormatterStrategy);
-        when(cimFormatterStrategy.convert(any(), any())).thenReturn(ackEnvelope);
+        when(ackFormatterStrategyRegistry.strategyFor(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12, AIIDA_ID))
+                .thenReturn(ackFormatterStrategy);
+        when(ackFormatterStrategy.convert(any(), any())).thenReturn(ackEnvelope);
 
         inboundAckStreamer.start(mqttClient);
 
@@ -138,14 +139,15 @@ class InboundAcknowledgementStreamerTest {
         var inboundRecord = mock(InboundRecord.class);
 
         when(inboundRecord.schema()).thenReturn(AiidaSchema.SMART_METER_P1_RAW);
-        when(cimFormatterStrategyRegistry.strategyFor(AiidaSchema.SMART_METER_P1_RAW))
+        when(ackFormatterStrategyRegistry.strategyFor(AiidaSchema.SMART_METER_P1_RAW, AIIDA_ID))
                 .thenThrow(new CimSchemaFormatterException(new IllegalArgumentException("No strategy found")));
 
         var inboundAckStreamer = new InboundAcknowledgementStreamer(
+                AIIDA_ID,
                 objectMapper,
                 ACK_TOPIC_PREFIX,
                 publisher.flux(),
-                cimFormatterStrategyRegistry
+                ackFormatterStrategyRegistry
         );
 
         // When

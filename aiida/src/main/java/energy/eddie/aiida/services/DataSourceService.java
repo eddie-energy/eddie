@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 public class DataSourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceService.class);
 
+    private final ApplicationInformationService applicationInformationService;
     private final DataSourceRepository repository;
     private final AiidaEventPublisher aiidaEventPublisher;
     private final Aggregator aggregator;
@@ -55,6 +56,7 @@ public class DataSourceService {
 
     @Autowired
     public DataSourceService(
+            ApplicationInformationService applicationInformationService,
             DataSourceRepository repository,
             Aggregator aggregator,
             AuthService authService,
@@ -64,6 +66,7 @@ public class DataSourceService {
             SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
             AiidaEventPublisher aiidaEventPublisher
     ) {
+        this.applicationInformationService = applicationInformationService;
         this.repository = repository;
         this.aggregator = aggregator;
         this.authService = authService;
@@ -84,7 +87,9 @@ public class DataSourceService {
     }
 
     public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration);
+        var aiidaId = applicationInformationService.applicationInformation().aiidaId();
+
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration, aiidaId);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {

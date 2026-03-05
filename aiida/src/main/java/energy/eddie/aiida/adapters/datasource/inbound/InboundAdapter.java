@@ -20,6 +20,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.UUID;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
@@ -30,17 +31,25 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
      * EP publishes its messages on the specified topic.
      *
-     * @param dataSource The entity of the data source.
+     * @param dataSource        The entity of the data source.
+     * @param mapper            The object mapper to use for parsing the messages and formatting the acknowledgements.
+     * @param mqttConfiguration The MQTT configuration to use for connecting to the broker.
+     * @param aiidaId           The ID of the AiiDA instance, used for formatting the acknowledgements.
      */
-    public InboundAdapter(InboundDataSource dataSource, ObjectMapper mapper, MqttConfiguration mqttConfiguration) {
+    public InboundAdapter(
+            InboundDataSource dataSource,
+            ObjectMapper mapper,
+            MqttConfiguration mqttConfiguration,
+            UUID aiidaId
+    ) {
         super(dataSource, LOGGER, mqttConfiguration);
         inboundRecordSink = Sinks.many().multicast().onBackpressureBuffer();
 
         acknowledgementStreamer = new InboundAcknowledgementStreamer(
+                aiidaId,
                 mapper,
                 dataSource.acknowledgementTopic(),
-                inboundRecordSink.asFlux()
-        );
+                inboundRecordSink.asFlux());
     }
 
     @Override

@@ -3,18 +3,21 @@
 
 package energy.eddie.aiida.adapters.datasource.inbound.ack.cim;
 
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.cim.v1_12.ack.*;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementMarketDocument;
+import energy.eddie.cim.v1_12.ack.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.ack.PartyIDString;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public class MinMaxEnvelopeCimFormatterStrategy implements CimFormatterStrategy {
-    protected static final String DOCUMENT_TYPE = "acknowledgement-market-document";
-    protected static final ZoneId UTC = ZoneId.of("UTC");
+public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy {
+    public MinMaxEnvelopeAckFormatterStrategy(UUID aiidaId) {
+        super(aiidaId);
+    }
 
     @Override
     public AcknowledgementEnvelope convert(ObjectMapper objectMapper, InboundRecord inboundRecord) {
@@ -27,7 +30,8 @@ public class MinMaxEnvelopeCimFormatterStrategy implements CimFormatterStrategy 
 
         var header = new MessageDocumentHeader()
                 .withCreationDateTime(now)
-                .withMetaInformation(toMetaInformation(minMaxMetaInformation, inboundRecord.dataSource()));
+                .withMetaInformation(toMetaInformation(inboundRecord.dataSource(),
+                                                       minMaxMetaInformation.getConnectionId()));
 
         var marketDocument = toMarketDocument(now, minMaxEnvelope.getMarketDocument())
                 .withReceivedMarketDocumentCreatedDateTime(minMaxHeader.getCreationDateTime())
@@ -38,28 +42,6 @@ public class MinMaxEnvelopeCimFormatterStrategy implements CimFormatterStrategy 
                 .withMarketDocument(marketDocument);
     }
 
-    private MetaInformation toMetaInformation(
-            energy.eddie.cim.v1_12.recmmoe.MetaInformation metaInformation,
-            InboundDataSource dataSource
-    ) {
-        return new MetaInformation()
-                .withAsset(toAsset(dataSource))
-                .withConnectionId(metaInformation.getConnectionId())
-                .withDataNeedId(metaInformation.getDataNeedId())
-                .withDataSourceId(dataSource.id().toString())
-                .withDocumentType(DOCUMENT_TYPE)
-                .withFinalCustomerId(metaInformation.getFinalCustomerId())
-                .withRequestPermissionId(metaInformation.getRequestPermissionId())
-                .withRegionConnector(metaInformation.getRegionConnector())
-                .withRegionCountry(dataSource.countryCode());
-    }
-
-    private Asset toAsset(InboundDataSource dataSource) {
-        return new Asset()
-                .withType(dataSource.asset().toString())
-                .withMeterId(dataSource.meterId())
-                .withOperatorId(dataSource.operatorId());
-    }
 
     private AcknowledgementMarketDocument toMarketDocument(
             ZonedDateTime now,

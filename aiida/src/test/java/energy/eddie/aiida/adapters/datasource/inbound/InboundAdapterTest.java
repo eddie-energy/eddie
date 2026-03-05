@@ -36,6 +36,7 @@ class InboundAdapterTest {
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final String INTERNAL_HOST = "tcp://localhost:1883";
     private static final String TOPIC = "aiida/test";
+    private static final UUID AIIDA_ID = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID MQTT_USERNAME = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -63,7 +64,7 @@ class InboundAdapterTest {
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
         var mapper = builder.build();
-        adapter = new InboundAdapter(dataSource, mapper, MQTT_CONFIGURATION);
+        adapter = new InboundAdapter(dataSource, mapper, MQTT_CONFIGURATION, AIIDA_ID);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
