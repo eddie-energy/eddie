@@ -5,15 +5,14 @@ import energy.eddie.regionconnector.de.eta.service.PermissionRequestAuthorizatio
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Optional;
 
-@Controller
+@RestController
 public class AuthorizationCallbackController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthorizationCallbackController.class);
 
@@ -24,7 +23,6 @@ public class AuthorizationCallbackController {
     }
 
     @GetMapping(value = "/authorization-callback", produces = MediaType.TEXT_HTML_VALUE)
-    @ResponseBody
     public String handleCallback(
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String error,
