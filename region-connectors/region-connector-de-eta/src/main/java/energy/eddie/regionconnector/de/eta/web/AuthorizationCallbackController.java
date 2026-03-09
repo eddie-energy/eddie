@@ -27,7 +27,7 @@ public class AuthorizationCallbackController {
             @RequestParam(required = false) String token,
             @RequestParam(required = false) String error,
             @RequestParam String state) {
-        LOGGER.info("Received Auth callback for permission request {}", state);
+        LOGGER.info("Received Auth callback for permission request");
 
         boolean success;
         String message;
