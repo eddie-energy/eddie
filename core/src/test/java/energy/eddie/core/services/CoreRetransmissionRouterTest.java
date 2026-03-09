@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.services;
@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionServiceNotFound;
 import energy.eddie.api.agnostic.retransmission.result.Success;
+import energy.eddie.core.services.agnostic.CoreRetransmissionRouter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

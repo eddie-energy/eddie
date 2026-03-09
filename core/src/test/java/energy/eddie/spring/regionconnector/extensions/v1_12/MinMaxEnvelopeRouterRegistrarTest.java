@@ -3,7 +3,7 @@
 
 package energy.eddie.spring.regionconnector.extensions.v1_12;
 
-import energy.eddie.api.v1_12.outbound.RegionConnectorMinMaxEnvelopeService;
+import energy.eddie.api.v1_12.RegionConnectorMinMaxEnvelopeService;
 import energy.eddie.core.services.v1_12.MinMaxEnvelopeRouter;
 import org.junit.jupiter.api.Test;
 

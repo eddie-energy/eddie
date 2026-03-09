@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.kafka;
 
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerdeFactory;
@@ -109,6 +110,26 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
+    public ConsumerFactory<String, OpaqueEnvelope> opaqueEnvelopeConsumerFactory(
+            @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
+            MessageSerde serde
+    ) {
+        var config = kafkaProperties(kafkaProperties);
+        return new DefaultKafkaConsumerFactory<>(config,
+                                                 new StringDeserializer(),
+                                                 new CustomDeserializer<>(serde, OpaqueEnvelope.class));
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<@NonNull ConcurrentMessageListenerContainer<String, OpaqueEnvelope>> opaqueEnvelopeListenerContainerFactory(
+            ConsumerFactory<String, OpaqueEnvelope> consumerFactory
+    ) {
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, OpaqueEnvelope>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
     public TopicConfiguration topicConfiguration(@Value("${outbound-connector.kafka.eddie-id}") String eddieId) {
         return new TopicConfiguration(eddieId);
     }
@@ -129,6 +150,12 @@ public class KafkaOutboundConnector {
     @Bean
     public NewTopic minMaxEnvelopeTopic(TopicConfiguration config) {
         var topic = config.minMaxEnvelopeDocument();
+        return TopicBuilder.name(topic).build();
+    }
+
+    @Bean
+    public NewTopic opaqueEnvelopeTopic(TopicConfiguration config) {
+        var topic = config.opaqueEnvelope();
         return TopicBuilder.name(topic).build();
     }
 

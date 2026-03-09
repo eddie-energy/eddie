@@ -21,6 +21,7 @@ public class TopicStructure {
     public static final String AGNOSTIC_VALUE = "agnostic";
 
     public static final String CONNECTION_STATUS_MESSAGE_VALUE = "connection-status-message";
+    public static final String OPAQUE_ENVELOPE_VALUE = "opaque-envelope";
 
     private TopicStructure() {
         // No-Op
@@ -125,7 +126,8 @@ public class TopicStructure {
         MIN_MAX_ENVELOPE_MD(TopicStructure.MIN_MAX_ENVELOPE_MD_VALUE),
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
-        CONNECTION_STATUS_MESSAGE(CONNECTION_STATUS_MESSAGE_VALUE),
+        CONNECTION_STATUS_MESSAGE(TopicStructure.CONNECTION_STATUS_MESSAGE_VALUE),
+        OPAQUE_ENVELOPE(TopicStructure.OPAQUE_ENVELOPE_VALUE)
         ;
         private final String value;
 

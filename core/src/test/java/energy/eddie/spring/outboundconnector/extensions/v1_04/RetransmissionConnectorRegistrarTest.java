@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.spring.outboundconnector.extensions.v1_04;
 
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
-import energy.eddie.core.services.CoreRetransmissionRouter;
+import energy.eddie.core.services.agnostic.CoreRetransmissionRouter;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 

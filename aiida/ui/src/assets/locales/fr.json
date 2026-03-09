@@ -124,6 +124,7 @@
       "asset": "Actif",
       "obisCodes": "Codes OBIS",
       "dataSource": "Source de données",
+      "isAcknowledgementRequired": "Confirmation requise",
       "permissionId": "ID d’autorisation",
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "inboundTooltip": "Il existe deux façons d’utiliser cette clé API pour récupérer les dernières données entrantes :",

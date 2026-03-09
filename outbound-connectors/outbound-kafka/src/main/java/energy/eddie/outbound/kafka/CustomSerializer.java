@@ -5,6 +5,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -47,6 +48,7 @@ class CustomSerializer implements Serializer<Object> {
             case energy.eddie.cim.v1_12.rtd.RTDEnvelope ignored -> serialize(data);
             case energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope ignored -> serialize(data);
             case energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope ignored -> serialize(data);
+            case OpaqueEnvelope ignored -> serialize(data);
             case null -> null;
             default -> {
                 LOGGER.warn("Got invalid type to serialize {}", data.getClass());

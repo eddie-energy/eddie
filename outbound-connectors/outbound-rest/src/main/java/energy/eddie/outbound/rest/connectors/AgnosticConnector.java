@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.connectors;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.agnostic.outbound.OpaqueEnvelopeOutboundConnector;
 import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +18,11 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 
 @Component
-public class AgnosticConnector implements ConnectionStatusMessageOutboundConnector, RawDataOutboundConnector, AutoCloseable {
+public class AgnosticConnector implements
+        ConnectionStatusMessageOutboundConnector,
+        RawDataOutboundConnector,
+        OpaqueEnvelopeOutboundConnector,
+        AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgnosticConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many()
                                                                      .replay()
@@ -24,6 +30,9 @@ public class AgnosticConnector implements ConnectionStatusMessageOutboundConnect
     private final Sinks.Many<RawDataMessage> rdSink = Sinks.many()
                                                            .replay()
                                                            .limit(Duration.ofSeconds(10));
+    private final Sinks.Many<OpaqueEnvelope> opaqueEnvelopeSink = Sinks.many()
+                                                                       .multicast()
+                                                                       .onBackpressureBuffer();
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return csmSink.asFlux();
@@ -48,8 +57,18 @@ public class AgnosticConnector implements ConnectionStatusMessageOutboundConnect
     }
 
     @Override
+    public Flux<OpaqueEnvelope> getOpaqueEnvelopes() {
+        return opaqueEnvelopeSink.asFlux();
+    }
+
+    public void publish(OpaqueEnvelope envelope) {
+        opaqueEnvelopeSink.tryEmitNext(envelope);
+    }
+
+    @Override
     public void close() {
         csmSink.tryEmitComplete();
         rdSink.tryEmitComplete();
+        opaqueEnvelopeSink.tryEmitComplete();
     }
 }

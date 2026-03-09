@@ -5,7 +5,7 @@ package energy.eddie.spring.regionconnector.extensions.v1_12;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.api.v1_12.outbound.RegionConnectorMinMaxEnvelopeService;
+import energy.eddie.api.v1_12.RegionConnectorMinMaxEnvelopeService;
 import energy.eddie.core.services.v1_12.MinMaxEnvelopeRouter;
 import energy.eddie.spring.regionconnector.extensions.RegionConnectorNameExtension;
 import org.springframework.beans.factory.annotation.Qualifier;
