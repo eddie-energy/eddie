@@ -22,4 +22,4 @@ More information about inbound data can be found in the [inbound data source doc
 Currently, the following schemas are supported for inbound data:
 
 - `MIN_MAX_ENVELOPE_CIM_V1_12`: See [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/min-max-envelope.html))
-- `RAW`: Any data in raw format                                                                                             
+- `OPAQUE`: Any undefined payload.

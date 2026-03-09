@@ -87,7 +87,8 @@
     "transmissionSchedule": "*/5 * * * * *",
     "isAcknowledgementRequired": true,
     "schemas": [
-      "MIN-MAX-ENVELOPE-CIM-V1-12"
+      "MIN-MAX-ENVELOPE-CIM-V1-12",
+      "OPAQUE"
     ],
     "asset": "CONNECTION-AGREEMENT-POINT",
     "dataTags": []

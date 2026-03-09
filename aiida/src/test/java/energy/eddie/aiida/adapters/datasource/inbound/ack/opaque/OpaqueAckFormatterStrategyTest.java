@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.adapters.datasource.inbound.ack.raw;
+package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
@@ -22,13 +22,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class RawAckFormatterStrategyTest {
+class OpaqueAckFormatterStrategyTest {
     private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
     private static final UUID PERMISSION_ID = UUID.fromString("00213495-bdbf-4497-8695-5d811e45aa64");
     private static final UUID DATA_NEED_ID = UUID.fromString("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12");
 
-    private final RawAckFormatterStrategy strategy = new RawAckFormatterStrategy(AIIDA_ID);
+    private final OpaqueAckFormatterStrategy strategy = new OpaqueAckFormatterStrategy(AIIDA_ID);
 
     @Mock
     private Permission permission;

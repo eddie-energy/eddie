@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.adapters.datasource.inbound.ack.raw;
+package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 
 import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
 import energy.eddie.aiida.models.record.InboundRecord;
@@ -14,8 +14,8 @@ import tools.jackson.databind.ObjectMapper;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-public class RawAckFormatterStrategy extends BaseAckFormatterStrategy {
-    public RawAckFormatterStrategy(UUID aiidaId) {
+public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
+    public OpaqueAckFormatterStrategy(UUID aiidaId) {
         super(aiidaId);
     }
 

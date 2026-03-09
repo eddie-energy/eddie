@@ -4,7 +4,7 @@
 package energy.eddie.aiida.adapters.datasource.inbound.ack;
 
 import energy.eddie.aiida.adapters.datasource.inbound.ack.cim.MinMaxEnvelopeAckFormatterStrategy;
-import energy.eddie.aiida.adapters.datasource.inbound.ack.raw.RawAckFormatterStrategy;
+import energy.eddie.aiida.adapters.datasource.inbound.ack.opaque.OpaqueAckFormatterStrategy;
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
@@ -20,10 +20,10 @@ class AckFormatterStrategyRegistryTest {
     @Test
     void strategyFor_returnsRawAckFormatterStrategy_forRawCimV1_12() throws Exception {
         // When
-        var strategy = registry.strategyFor(AiidaSchema.RAW, UUID.randomUUID());
+        var strategy = registry.strategyFor(AiidaSchema.OPAQUE, UUID.randomUUID());
 
         // Then
-        assertInstanceOf(RawAckFormatterStrategy.class, strategy);
+        assertInstanceOf(OpaqueAckFormatterStrategy.class, strategy);
     }
 
     @Test

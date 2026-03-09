@@ -17,7 +17,7 @@ import java.util.Set;
 public class InboundAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "inbound-aiida";
     public static final Set<AiidaSchema> SUPPORTED_SCHEMAS = Set.of(
-            AiidaSchema.RAW,
+            AiidaSchema.OPAQUE,
             AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12
     );
 
