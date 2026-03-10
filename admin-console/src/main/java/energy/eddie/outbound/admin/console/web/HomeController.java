@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -82,10 +83,22 @@ public class HomeController {
     public ResponseEntity<Void> retransmitPermission(@PathVariable String permissionId) {
         var statusMessages = statusMessageRepository.findByPermissionIdOrderByIdDesc(permissionId);
         var statusMessage = statusMessages.getFirst();
+
+        var fromDate = LocalDate.parse(statusMessage.getStartDate(), DateTimeFormatter.ISO_DATE_TIME);
+        var toDate = LocalDate.now(ZoneId.systemDefault()).minusDays(1);
+
+        if (statusMessage.getEndDate() != null) {
+            var endDate = LocalDate.parse(statusMessage.getEndDate(), DateTimeFormatter.ISO_DATE_TIME);
+
+            if (toDate.isAfter(endDate)) {
+                toDate = endDate;
+            }
+        }
+
         retransmissionConnector.retransmit(statusMessage.getPermissionId(),
                                            statusMessage.getRegionConnectorId(),
-                                           LocalDate.parse(statusMessage.getStartDate(), DateTimeFormatter.ISO_DATE_TIME),
-                                           LocalDate.now().minusDays(1));
+                                           fromDate,
+                                           toDate);
         return ResponseEntity.ok().build();
     }
 
