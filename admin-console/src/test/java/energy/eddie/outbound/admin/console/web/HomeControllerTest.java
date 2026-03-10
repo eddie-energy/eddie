@@ -106,7 +106,7 @@ class HomeControllerTest {
     @Test
     void testGetStatusMessagesByPermissionId() throws Exception {
         // Given
-        when(statusMessageRepository.findByPermissionIdOrderByIdDesc("testPermissionId"))
+        when(statusMessageRepository.findByPermissionIdOrderByCreationDateDescIdDesc("testPermissionId"))
                 .thenReturn(statusMessages);
 
         // When
@@ -119,7 +119,7 @@ class HomeControllerTest {
         List<StatusMessageDTO> result = objectMapper.readValue(json, new TypeReference<>() {});
 
         // Then
-        verify(statusMessageRepository, times(1)).findByPermissionIdOrderByIdDesc("testPermissionId");
+        verify(statusMessageRepository, times(1)).findByPermissionIdOrderByCreationDateDescIdDesc("testPermissionId");
         assertEquals(2, result.size());
         assertEquals("Available", result.get(0).cimStatus());
         assertEquals("Active", result.get(1).cimStatus());
@@ -139,7 +139,7 @@ class HomeControllerTest {
                                                             "A05",
                                                             "ACCEPTED",
                                                             null);
-        when(statusMessageRepository.findByPermissionIdOrderByIdDesc("testPermissionId"))
+        when(statusMessageRepository.findByPermissionIdOrderByCreationDateDescIdDesc("testPermissionId"))
                 .thenReturn(List.of(testStatusMessage));
 
         // When
@@ -167,7 +167,7 @@ class HomeControllerTest {
                                                             "A05",
                                                             "ACCEPTED",
                                                             null);
-        when(statusMessageRepository.findByPermissionIdOrderByIdDesc("testPermissionId"))
+        when(statusMessageRepository.findByPermissionIdOrderByCreationDateDescIdDesc("testPermissionId"))
                 .thenReturn(List.of(testStatusMessage));
         // When
         mockMvc.perform(post("/retransmit/testPermissionId").with(csrf()))

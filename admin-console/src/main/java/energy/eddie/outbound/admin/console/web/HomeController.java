@@ -63,7 +63,7 @@ public class HomeController {
 
     @GetMapping("/statusMessages/{permissionId}")
     public ResponseEntity<List<StatusMessageDTO>> getStatusMessages(@PathVariable String permissionId) {
-        var statusMessages = statusMessageRepository.findByPermissionIdOrderByIdDesc(permissionId);
+        var statusMessages = statusMessageRepository.findByPermissionIdOrderByCreationDateDescIdDesc(permissionId);
         var statusMessageDTOs = statusMessages.stream()
                                               .map(HomeController::dtoFromStatusMessage)
                                               .toList();
@@ -73,7 +73,7 @@ public class HomeController {
 
     @PostMapping("/terminate/{permissionId}")
     public ResponseEntity<Void> terminatePermission(@PathVariable String permissionId) {
-        var statusMessages = statusMessageRepository.findByPermissionIdOrderByIdDesc(permissionId);
+        var statusMessages = statusMessageRepository.findByPermissionIdOrderByCreationDateDescIdDesc(permissionId);
         var statusMessage = statusMessages.getFirst();
         terminationConnector.terminate(statusMessage.getPermissionId(), statusMessage.getRegionConnectorId());
         return ResponseEntity.ok().build();
@@ -81,7 +81,7 @@ public class HomeController {
 
     @PostMapping("/retransmit/{permissionId}")
     public ResponseEntity<Void> retransmitPermission(@PathVariable String permissionId) {
-        var statusMessages = statusMessageRepository.findByPermissionIdOrderByIdDesc(permissionId);
+        var statusMessages = statusMessageRepository.findByPermissionIdOrderByCreationDateDescIdDesc(permissionId);
         var statusMessage = statusMessages.getFirst();
 
         var fromDate = LocalDate.parse(statusMessage.getStartDate(), DateTimeFormatter.ISO_DATE_TIME);
