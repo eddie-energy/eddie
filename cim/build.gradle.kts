@@ -18,11 +18,12 @@ plugins {
     jacoco
     signing
     `java-library`
+    alias(libs.plugins.gradleup.shadow)
 }
 
 group = "energy.eddie"
 
-version = "3.5.1"
+version = "3.5.2"
 
 repositories {
     mavenCentral()
@@ -141,6 +142,22 @@ tasks.compileJava {
     dependsOn(generateCIMSchemaClasses)
 }
 
+tasks.shadowJar {
+    archiveClassifier.set("")
+    // Shade Jackson dependencies to prevent spring boot 3.x conflicts with newer jackson versions
+    relocate("tools", "energy.eddie.cim.shaded.tools.jackson")
+    relocate("com.fasterxml", "energy.eddie.cim.shaded.com.fasterxml")
+    minimize()
+}
+
+tasks.build {
+    dependsOn(tasks.shadowJar)
+}
+
+tasks.jar {
+    enabled = false
+}
+
 val mavenCentralUsername = System.getenv("MAVEN_CENTRAL_USERNAME")
 val mavenCentralPassword = System.getenv("MAVEN_CENTRAL_PASSWORD")
 publishing {
@@ -156,7 +173,9 @@ publishing {
     }
     publications {
         create<MavenPublication>("cim") {
-            from(components["java"])
+            from(components["shadow"])
+            artifact(tasks.named("javadocJar"))
+            artifact(tasks.named("sourcesJar"))
             groupId = group.toString()
             artifactId = project.name
 

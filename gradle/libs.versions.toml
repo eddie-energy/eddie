@@ -23,7 +23,7 @@ jakarta-transaction = "2.0.1"
 jakarta-persistence-api = "3.2.0"
 sonar = "7.2.0.6526"
 commons-codec = "1.15"
-jackson = "3.0.3"
+jackson = "3.1.0"
 jackson2-short = "2.20"
 h2database = "2.3.232"
 postgresql = "42.7.3"
@@ -64,6 +64,7 @@ mvel2 = "2.5.2.Final"
 opentelemetry-instrumentation-bom = "2.18.1"
 
 undercouch-download = "5.6.0"
+gradleup-shadow = "9.3.2"
 
 [libraries]
 # Static analysis
@@ -210,6 +211,8 @@ opentelemetry-sdk-testing = { module = "io.opentelemetry:opentelemetry-sdk-testi
 
 [plugins]
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorprone" }
+# used by CIM
+gradleup-shadow = { id = "com.gradleup.shadow", version.ref = "gradleup-shadow" }
 # used by example-app
 jte-gradle = { id = "gg.jte.gradle", version.ref = "jte" }
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
