@@ -13,10 +13,12 @@ import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEv
 import energy.eddie.regionconnector.de.eta.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-import org.junit.jupiter.api.BeforeEach;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -39,18 +41,18 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private Outbox outbox;
 
+    @InjectMocks
     private PermissionRequestCreationService service;
 
-    @BeforeEach
-    void setUp() {
-        DeEtaPlusConfiguration.AuthConfig authConfig = new DeEtaPlusConfiguration.AuthConfig(
-                "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri", "scope"
-        );
-        DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
-                "partner", "http://api.url", authConfig, null
-        );
-        service = new PermissionRequestCreationService(dataNeedCalculationService, outbox, configuration);
-    }
+    @Spy
+    private DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
+            "partner", "http://api.url",
+            new DeEtaPlusConfiguration.AuthConfig(
+                    "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri",
+                    "scope"
+            ),
+            null
+    );
 
     @Test
     void createPermissionRequestWhenDataNeedIsValidatedShouldReturnCreatedPermissionRequest() throws Exception {
@@ -62,7 +64,8 @@ class PermissionRequestCreationServiceTest {
         ValidatedHistoricalDataDataNeedResult result = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 timeframe,
-                timeframe);
+                timeframe
+        );
 
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(result);
 
@@ -89,8 +92,7 @@ class PermissionRequestCreationServiceTest {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
         Timeframe timeframe = new Timeframe(
                 LocalDate.now(ZoneId.systemDefault()),
-                LocalDate.now(ZoneId.systemDefault()).plusDays(1)
-        );
+                LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(dataNeedCalculationService.calculate(anyString()))
                 .thenReturn(new AccountingPointDataNeedResult(timeframe));
 
