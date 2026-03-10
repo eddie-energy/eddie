@@ -34,6 +34,18 @@ classDiagram
     }
     note for AiidaDataNeed "<a href='https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/support/CronExpression.html'>Uses Spring CronExpression Syntax</a>"
 
+    class CESUJoinRequestDataNeed {
+        +Granularity minGranularity
+        +Granularity maxGranularity
+        +Integer participationFactor
+        +EnergyDirection energyDirection
+    }
+    class EnergyDirection {
+        <<enumeration>>
+        CONSUMPTION
+        PRODUCTION
+    }
+
     class EnergyType {
         <<enumeration>>
         ELECTRICITY
@@ -90,5 +102,7 @@ classDiagram
     AiidaDataNeed *-- AiidaAsset
     AiidaDataNeed *-- AiidaSchema
     TimeframedDataNeed <|-- AiidaDataNeed
+    DataNeed <|-- CESUJoinRequestDataNeed
+    CESUJoinRequestDataNeed *-- EnergyDirection
     DataNeed *-- RegionConnectorFilter
     RegionConnectorFilter *-- Type

@@ -33,6 +33,11 @@ If an MDA cannot provide the data in the requested min-max granularity interval,
 This data need is used to request [accounting point data](./messages/cim/accounting-point-data-market-documents.md) from an MDA for a final customer.
 Accounting point data is related to the metering points owned by a final customer.
 
+### CESUJoinRequestDataNeed
+
+This data need is used to request adding a metering point to an existing CESU(Collective Energy Sharing Unit).
+Furthermore, it will request [validated historical data](#validatedhistoricaldatadataneed) for the maximum time into the future.
+
 ## Data need configuration
 
 A data need describes a configuration for the _Connect Button_. By using that button, the type of data and time frame is
