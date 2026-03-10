@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.web;
@@ -57,6 +57,8 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     private MasterDataHandler masterDataHandler;
     @Nullable
     private CPNotificationHandler cpNotificationHandler;
+    @Nullable
+    private ECMPListHandler ecmpListHandler;
 
     public WebPontonConnectionController(
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
@@ -291,6 +293,36 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
         return ResponseEntity.ok(cpRequestCrStream.asFlux());
     }
 
+    @PostMapping(value = "/ecmp-list", produces = MediaType.APPLICATION_XML_VALUE)
+    @Operation(
+            requestBody = @RequestBody(
+                    content = {
+                            @Content(
+                                    mediaType = MediaType.APPLICATION_XML_VALUE,
+                                    schema = @Schema(implementation = at.ebutilities.schemata.customerprocesses.ecmplist._01p10.ECMPList.class)
+                            ),
+                    }
+            )
+    )
+    public ResponseEntity<Void> ecmpList(HttpServletRequest request) throws IOException {
+        if (ecmpListHandler == null) {
+            LOGGER.warn("Received ECMPList, but no handler is available.");
+            return ResponseEntity.unprocessableContent().build();
+        }
+        try {
+            LOGGER.debug("Received ECMPList");
+            EdaECMPList ecmpList = inboundMessageFactoryCollection
+                    .activeECMPListFactory()
+                    .parseInputStream(request.getInputStream());
+            var res = ecmpListHandler.handle(ecmpList);
+            LOGGER.debug("Published ECMPList with result {} and message {}", res.status(), res.statusMessage());
+            return resultToResponseEntity(res);
+        } catch (XmlMappingException e) {
+            LOGGER.info("Got an XML exception while parsing ECMPList", e);
+            return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).build();
+        }
+    }
+
     @Override
     public MessengerStatus messengerStatus() {
         return new MessengerStatus(Map.of(), true);
@@ -383,6 +415,12 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     @Override
     public PontonMessengerConnection withCPNotificationHandler(CPNotificationHandler cpNotificationHandler) {
         this.cpNotificationHandler = cpNotificationHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withECMPListHandler(ECMPListHandler ecmpListHandler) {
+        this.ecmpListHandler = ecmpListHandler;
         return this;
     }
 

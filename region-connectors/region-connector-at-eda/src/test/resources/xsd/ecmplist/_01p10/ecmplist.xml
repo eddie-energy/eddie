@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<ns0:ECMPList xmlns:ns0="http://www.ebutilities.at/schemata/customerprocesses/ecmplist/01p10"
+              xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.10">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>AT000000</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>CC000000</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2025-10-06T07:04:58.0988510Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>ABSCHLUSS_ECON</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns0:MessageId>AT000000000000000000000000000000000</ns0:MessageId>
+        <ns0:ConversationId>CC000000000000000000000000000000000</ns0:ConversationId>
+        <ns0:ProcessDate>2025-10-06</ns0:ProcessDate>
+        <ns0:ECID>ATCC0000DYNAMCC000000000000000000</ns0:ECID>
+        <ns0:ECType>CC</ns0:ECType>
+        <ns0:ECDisModel>D</ns0:ECDisModel>
+        <ns0:MPListData>
+            <ns0:MeteringPoint>AT0000000000000000000000000000000</ns0:MeteringPoint>
+            <ns0:ConsentId>AT0000000000000000000000000000000</ns0:ConsentId>
+            <ns0:MPTimeData>
+                <ns0:DateFrom>2025-10-06</ns0:DateFrom>
+                <ns0:DateTo>9999-12-31</ns0:DateTo>
+                <ns0:EnergyDirection>CONSUMPTION</ns0:EnergyDirection>
+                <ns0:ECPartFact>100</ns0:ECPartFact>
+                <ns0:DateActivate>2025-10-06</ns0:DateActivate>
+                <ns0:ECShare>0.0000</ns0:ECShare>
+            </ns0:MPTimeData>
+        </ns0:MPListData>
+    </ns0:ProcessDirectory>
+</ns0:ECMPList>

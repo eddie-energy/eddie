@@ -1,9 +1,13 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -14,6 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DatadisStrategyTest {
+    private final ValidatedHistoricalDataDataNeed dataNeed = new ValidatedHistoricalDataDataNeed(
+            new RelativeDuration(null, null, null),
+            EnergyType.ELECTRICITY,
+            Granularity.PT15M,
+            Granularity.P1D
+    );
 
     @Test
     void testCalculation_withEmptyTimeframe() {
@@ -22,7 +32,7 @@ class DatadisStrategyTest {
         var strategy = new DatadisStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(null, ZonedDateTime.now(ZONE_ID_SPAIN));
+        var res = strategy.permissionTimeframe(null, dataNeed, ZonedDateTime.now(ZONE_ID_SPAIN));
 
         // Then
         assertAll(
@@ -39,7 +49,7 @@ class DatadisStrategyTest {
         var strategy = new DatadisStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZONE_ID_SPAIN));
+        var res = strategy.permissionTimeframe(timeframe, dataNeed, ZonedDateTime.now(ZONE_ID_SPAIN));
 
         // Then
         assertAll(
@@ -56,7 +66,7 @@ class DatadisStrategyTest {
         var strategy = new DatadisStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZONE_ID_SPAIN));
+        var res = strategy.permissionTimeframe(timeframe, dataNeed, ZonedDateTime.now(ZONE_ID_SPAIN));
 
         // Then
         assertAll(

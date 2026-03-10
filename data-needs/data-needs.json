@@ -124,9 +124,9 @@
     "enabled": false
   },
   {
-    "type": "energy-community",
+    "type": "cesu-join-request",
     "id": "3dd39c06-253e-4c95-a255-e3eefc69f613",
-    "name": "Energy Community data need",
+    "name": "CESU Join Request data need",
     "description": "Adds the final customer to an energy community",
     "purpose": "Some purpose",
     "policyLink": "https://example.com/toc",

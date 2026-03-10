@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies;
@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class EdaStrategyTest {
+class EdaDataTimeframeStrategyTest {
     @Mock
     private TimeframedDataNeed timeframedDataNeed;
     @Mock
@@ -41,7 +41,7 @@ class EdaStrategyTest {
     void energyDataTimeframe_throwsIfDateExceedMaxPast(DataNeedDuration duration, String message) {
         // Given
         when(timeframedDataNeed.duration()).thenReturn(duration);
-        EdaStrategy edaStrategy = new EdaStrategy();
+        EdaDataTimeframeStrategy edaStrategy = new EdaDataTimeframeStrategy();
 
         // When & Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -57,7 +57,7 @@ class EdaStrategyTest {
         LocalDate endDate = now.plusMonths(1);
         var duration = new AbsoluteDuration(startDate, endDate);
         when(timeframedDataNeed.duration()).thenReturn(duration);
-        EdaStrategy edaStrategy = new EdaStrategy();
+        EdaDataTimeframeStrategy edaStrategy = new EdaDataTimeframeStrategy();
 
         // When
         var timeFrame = edaStrategy.energyDataTimeframe(
@@ -83,7 +83,7 @@ class EdaStrategyTest {
     ) throws UnsupportedDataNeedException {
         // Given
         when(timeframedDataNeed.duration()).thenReturn(duration);
-        EdaStrategy edaStrategy = new EdaStrategy();
+        EdaDataTimeframeStrategy edaStrategy = new EdaDataTimeframeStrategy();
 
         // When
         var timeFrame = edaStrategy.energyDataTimeframe(timeframedDataNeed, ZonedDateTime.now(AT_ZONE_ID));
@@ -99,7 +99,7 @@ class EdaStrategyTest {
     @Test
     void energyDataTimeframe_returnsNullIfAccountingPointDataNeed() throws UnsupportedDataNeedException {
         // Given
-        EdaStrategy edaStrategy = new EdaStrategy();
+        EdaDataTimeframeStrategy edaStrategy = new EdaDataTimeframeStrategy();
 
         // When
         var timeFrame = edaStrategy.energyDataTimeframe(accountingPointDataNeed, ZonedDateTime.now(ZoneOffset.UTC));

@@ -38,6 +38,10 @@ public class MessageCodes {
         public static final String ANSWER = "ANTWORT_CCMO";
         public static final String ACCEPT = "ZUSTIMMUNG_CCMO";
         public static final String REJECT = "ABLEHNUNG_CCMO";
+        public static final String REJECT_ECON = "ABLEHNUNG_ECON";
+        public static final String ANSWER_ECON = "ANTWORT_ECON";
+        public static final String ACCEPT_ECON = "ZUSTIMMUNG_ECON";
+        public static final String CANCEL_ECON = "ABBRUCH_ECON";
 
         private Notification() {
         }
@@ -78,5 +82,11 @@ public class MessageCodes {
 
         private CPRequest() {
         }
+    }
+
+    public static class ECMPList {
+        public static final String CONCLUSION_ECON = "ABSCHLUSS_ECON";
+
+        private ECMPList() {}
     }
 }

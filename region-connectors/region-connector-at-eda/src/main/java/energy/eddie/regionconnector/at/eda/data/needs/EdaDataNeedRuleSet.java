@@ -8,7 +8,6 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -36,7 +35,7 @@ public class EdaDataNeedRuleSet implements DataNeedRuleSet {
         if (config.energyCommunityId() != null) {
             LOGGER.debug(
                     "Energy Community ID present, enabling the energy community data need for the AT EDA Region Connector");
-            dataNeedRules.add(new EnergyCommunityDataNeedRule(SUPPORTED_GRANULARITIES));
+            dataNeedRules.add(new DataNeedRule.CESUJoinRequestDataNeedRule(SUPPORTED_GRANULARITIES));
         } else {
             LOGGER.debug(
                     "Energy Community ID not present, disabling the energy community data need for the AT EDA Region Connector");

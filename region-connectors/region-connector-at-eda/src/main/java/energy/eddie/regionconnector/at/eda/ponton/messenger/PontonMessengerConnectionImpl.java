@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
@@ -15,6 +15,7 @@ import de.ponton.xp.adapter.api.messages.InboundMessageStatusUpdate;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.EdaECMPList;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
@@ -54,6 +55,8 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     private MasterDataHandler masterDataHandler;
     @Nullable
     private CPNotificationHandler cpNotificationHandler;
+    @Nullable
+    private ECMPListHandler ecmpListHandler;
     private MessengerConnection messengerConnection;
 
     public PontonMessengerConnectionImpl(
@@ -131,6 +134,12 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     @Override
     public PontonMessengerConnection withCPNotificationHandler(CPNotificationHandler cpNotificationHandler) {
         this.cpNotificationHandler = cpNotificationHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withECMPListHandler(ECMPListHandler ecmpListHandler) {
+        this.ecmpListHandler = ecmpListHandler;
         return this;
     }
 
@@ -224,6 +233,15 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
                         handleCPNotification(inputStream, CPNotificationMessageType.ANTWORT_PT);
                 case MessageCodes.CPNotification.REJECT ->
                         handleCPNotification(inputStream, CPNotificationMessageType.ABLEHNUNG_PT);
+                case MessageCodes.Notification.REJECT_ECON ->
+                        handleNotification(inputStream, NotificationMessageType.ECON_REJECT);
+                case MessageCodes.Notification.ANSWER_ECON ->
+                        handleNotification(inputStream, NotificationMessageType.ECON_ANSWER);
+                case MessageCodes.Notification.ACCEPT_ECON ->
+                        handleNotification(inputStream, NotificationMessageType.ECON_ACCEPT);
+                case MessageCodes.Notification.CANCEL_ECON ->
+                        handleNotification(inputStream, NotificationMessageType.ECON_CANCEL);
+                case MessageCodes.ECMPList.CONCLUSION_ECON -> handleECMPList(inputStream);
                 default -> {
                     LOGGER.warn("Received message type '{}' (version '{}') is not supported.",
                                 messageType,
@@ -256,6 +274,20 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
                                              .setStatusText(e.getMessage())
                                              .build();
         }
+    }
+
+    private InboundMessageResult handleECMPList(InputStream inputStream) {
+        if (ecmpListHandler == null) {
+            LOGGER.warn("Received ECMPList message, but no handler is available.");
+            return new InboundMessageResult(
+                    InboundStatusEnum.REJECTED,
+                    "No handler available for ECMPList message."
+            );
+        }
+        EdaECMPList ecmpList = inboundMessageFactoryCollection
+                .activeECMPListFactory()
+                .parseInputStream(inputStream);
+        return ecmpListHandler.handle(ecmpList);
     }
 
     private InboundMessageResult handleNotification(

@@ -8,6 +8,6 @@ import energy.eddie.api.agnostic.Granularity;
 import java.time.LocalDate;
 import java.util.List;
 
-public record EnergyCommunityDataNeedResult(LocalDate start,
+public record CESUJoinRequestDataNeedResult(LocalDate start,
                                             List<Granularity> supportedGranularities) implements DataNeedCalculationResult {
 }

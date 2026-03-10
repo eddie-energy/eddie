@@ -86,7 +86,7 @@ public class PermissionRequestService {
                                                    List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case EnergyCommunityDataNeedResult ignored -> {
+            case CESUJoinRequestDataNeedResult ignored -> {
                 var message = "Energy Community Data Need not supported";
                 outbox.commit(new NlMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);

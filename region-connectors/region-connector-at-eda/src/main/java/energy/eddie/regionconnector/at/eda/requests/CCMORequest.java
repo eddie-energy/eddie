@@ -4,8 +4,8 @@
 package energy.eddie.regionconnector.at.eda.requests;
 
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
 import energy.eddie.dataneeds.needs.EnergyDirection;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
@@ -74,7 +74,7 @@ public record CCMORequest(
      * @return the {@link RequestDataType} depending on the given data need.
      */
     public RequestDataType requestDataType() {
-        if (dataNeed instanceof EnergyCommunityDataNeed) {
+        if (dataNeed instanceof CESUJoinRequestDataNeed) {
             return RequestDataType.ENERGY_COMMUNITY_REGISTRATION;
         }
         if (dataNeed instanceof AccountingPointDataNeed) {
@@ -91,7 +91,7 @@ public record CCMORequest(
 
     @Nullable
     public BigDecimal partFact() {
-        if (dataNeed instanceof EnergyCommunityDataNeed ec) {
+        if (dataNeed instanceof CESUJoinRequestDataNeed ec) {
             return BigDecimal.valueOf(ec.participationFactor());
         }
         return null;
@@ -99,7 +99,7 @@ public record CCMORequest(
 
     @Nullable
     public EnergyDirection energyDirection() {
-        if (dataNeed instanceof EnergyCommunityDataNeed ec) {
+        if (dataNeed instanceof CESUJoinRequestDataNeed ec) {
             return ec.energyDirection();
         }
         return null;

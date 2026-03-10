@@ -18,6 +18,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p00.EdaCM
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41.EdaConsumptionRecord01p41InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification._1p13.EdaCPNotification01p13InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12.CPRequestOutbound01p12MessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10.EdaECMPList01p10InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.EdaMasterData01p32InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.CPNotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.InboundMessageResult;
@@ -66,7 +67,8 @@ class WebPontonConnectionControllerTest {
                   .withConsumptionRecordHandler(null)
                   .withCPNotificationHandler(null)
                   .withMasterDataHandler(null)
-                  .withOutboundMessageStatusUpdateHandler(null);
+                  .withOutboundMessageStatusUpdateHandler(null)
+                  .withECMPListHandler(null);
     }
 
     @Test
@@ -182,13 +184,35 @@ class WebPontonConnectionControllerTest {
         xml.close();
     }
 
+    @Test
+    void givenECMPList_whenPostToEndpoint_thenReturnNoContent() throws Exception {
+        // Given
+        InputStream xml = classLoader.getResourceAsStream("xsd/ecmplist/_01p10/ecmplist.xml");
+        assert xml != null;
+        controller.withECMPListHandler(message -> {
+            assertNotNull(message);
+            return new InboundMessageResult(InboundStatusEnum.SUCCESS, "");
+        });
+
+        // When
+        mockMvc.perform(post("/ponton/ecmp-list")
+                                .contentType(MediaType.APPLICATION_XML)
+                                .content(xml.readAllBytes()))
+               // Then
+               .andExpect(status().isNoContent());
+
+        // Clean Up
+        xml.close();
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
             "/ponton/cm-notification/CCMO_ACCEPT",
             "/ponton/cm-revoke",
             "/ponton/consumption-record",
             "/ponton/master-data",
-            "/ponton/cp-notification/ANTWORT_PT"
+            "/ponton/cp-notification/ANTWORT_PT",
+            "/ponton/ecmp-list"
     })
     void givenMessageWithoutHandler_whenPostToEndpoint_thenReturnUnprocessableEntity(String endpoint) throws Exception {
         // Given
@@ -207,16 +231,19 @@ class WebPontonConnectionControllerTest {
             "/ponton/cm-revoke",
             "/ponton/consumption-record",
             "/ponton/master-data",
-            "/ponton/cp-notification/ANTWORT_PT"
+            "/ponton/cp-notification/ANTWORT_PT",
+            "/ponton/ecmp-list"
     })
     void givenInvalidMessageFormat_whenPostToEndpoint_thenReturnUnsupportedMediaType(String endpoint) throws Exception {
         // Given
-        controller.withCMNotificationHandler(this::inboundMessageResultBiFunction);
-        controller.withCMRevokeHandler(this::inboundMessageResultFunction);
-        controller.withCPNotificationHandler(this::inboundMessageResultBiFunction);
-        controller.withMasterDataHandler(this::inboundMessageResultFunction);
-        controller.withOutboundMessageStatusUpdateHandler(this::inboundMessageResultFunction);
-        controller.withConsumptionRecordHandler(this::inboundMessageResultFunction);
+        controller.withCMNotificationHandler(this::inboundMessageResultBiFunction)
+                  .withCMRevokeHandler(this::inboundMessageResultFunction)
+                  .withCPNotificationHandler(this::inboundMessageResultBiFunction)
+                  .withMasterDataHandler(this::inboundMessageResultFunction)
+                  .withOutboundMessageStatusUpdateHandler(this::inboundMessageResultFunction)
+                  .withConsumptionRecordHandler(this::inboundMessageResultFunction)
+                  .withOutboundMessageStatusUpdateHandler(this::inboundMessageResultFunction)
+                  .withECMPListHandler(this::inboundMessageResultFunction);
         var invalidXml = "INVALID XML";
 
         // When
@@ -308,7 +335,8 @@ class WebPontonConnectionControllerTest {
                     List.of(new EdaMasterData01p32InboundMessageFactory(jaxb2Marshaller)),
                     List.of(new EdaCMNotification01p12InboundMessageFactory(jaxb2Marshaller)),
                     List.of(new EdaCMRevoke01p00InboundMessageFactory(jaxb2Marshaller)),
-                    List.of(new EdaCPNotification01p13InboundMessageFactory(jaxb2Marshaller))
+                    List.of(new EdaCPNotification01p13InboundMessageFactory(jaxb2Marshaller)),
+                    List.of(new EdaECMPList01p10InboundMessageFactory(jaxb2Marshaller))
             );
         }
 

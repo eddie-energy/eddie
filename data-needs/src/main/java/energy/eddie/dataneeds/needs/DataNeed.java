@@ -34,7 +34,7 @@ import java.util.UUID;
         @JsonSubTypes.Type(value = ValidatedHistoricalDataDataNeed.class, name = ValidatedHistoricalDataDataNeed.DISCRIMINATOR_VALUE),
         @JsonSubTypes.Type(value = InboundAiidaDataNeed.class, name = InboundAiidaDataNeed.DISCRIMINATOR_VALUE),
         @JsonSubTypes.Type(value = OutboundAiidaDataNeed.class, name = OutboundAiidaDataNeed.DISCRIMINATOR_VALUE),
-        @JsonSubTypes.Type(value = EnergyCommunityDataNeed.class, name = EnergyCommunityDataNeed.DISCRIMINATOR_VALUE),
+        @JsonSubTypes.Type(value = CESUJoinRequestDataNeed.class, name = CESUJoinRequestDataNeed.DISCRIMINATOR_VALUE),
 })
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class DataNeed implements DataNeedInterface {

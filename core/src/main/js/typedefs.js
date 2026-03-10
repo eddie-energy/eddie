@@ -12,7 +12,7 @@
  */
 
 /**
- * @typedef {"account" | "validated" | "inbound" | "outbound" | "energy-community" } DataNeedType
+ * @typedef {"account" | "validated" | "inbound" | "outbound" | "cesu-join-request" } DataNeedType
  */
 
 /**
@@ -77,7 +77,7 @@
  */
 
 /**
- * @typedef {DataNeed} EnergyCommunityDataNeed
+ * @typedef {DataNeed} CESUJoinRequestDataNeed
  * @property {string} minGranularity - The minimum granularity of the data.
  * @property {string} maxGranularity - The maximum granularity of the data.
  * @property {string} participationFactor - The amount with which the final customer will participate in the energy community .

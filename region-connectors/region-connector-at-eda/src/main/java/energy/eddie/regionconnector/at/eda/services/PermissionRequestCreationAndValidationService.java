@@ -122,7 +122,7 @@ public class PermissionRequestCreationAndValidationService {
             case AccountingPointDataNeedResult ignored -> validatedEventFactory.createValidatedEvent(
                     permissionId, LocalDate.now(AT_ZONE_ID), null, null, calculation
             );
-            case EnergyCommunityDataNeedResult(
+            case CESUJoinRequestDataNeedResult(
                     var start, var supportedGranularities
             ) when permissionRequest.meteringPointId() != null -> validatedEventFactory.createValidatedEvent(
                     permissionId,
@@ -131,7 +131,7 @@ public class PermissionRequestCreationAndValidationService {
                     AllowedGranularity.valueOf(supportedGranularities.getFirst().name()),
                     calculation
             );
-            case EnergyCommunityDataNeedResult ignored -> {
+            case CESUJoinRequestDataNeedResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,
                                                  new AttributeError("meteringPointId",
                                                                     "Must be present for the energy community data need.")));

@@ -1,73 +1,98 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.models;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This record represents a response code from EDA in the context of "Consent Management". The documentation for the
  * response codes can be found <a href="https://www.ebutilities.at/responsecodes">here</a>
  *
  * @param responseCode The response code
- * @param message      The message associated with the response code
  */
-public record ResponseCode(int responseCode, String message) {
-
-
-    public ResponseCode(int responseCode) {
-        this(responseCode, getMessage(responseCode));
-    }
-
-    private static String getMessage(int responseCode) {
-        return switch (responseCode) {
-            case CmReqOnl.METERING_POINT_NOT_FOUND -> "Metering point not found";
-            case CmReqOnl.METERING_POINT_NOT_SUPPLIED -> "Metering point not supplied";
-            case CmReqOnl.INVALID_REQUEST -> "Invalid request data";
-            case CmRevSP.INVALID_PROCESSDATE -> "Invalid process dates";
-            case CmReqOnl.RECEIVED -> "Message received";
-            case CmReqOnl.REJECTED -> "Customer rejected the request";
-            case CmReqOnl.TIMEOUT -> "Customer did not respond to the request";
-            case CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE -> "Requested data not deliverable";
-            case CmReqOnl.ACCEPTED -> "Customer accepted the request";
-            case CmRevSP.TERMINATION_SUCCESSFUL -> "Consent successfully withdrawn";
-            case CmRevSP.NO_CONSENT_PRESENT -> "No data sharing available";
-            case CmReqOnl.CONSENT_ALREADY_EXISTS -> "Consent already exists";
-            case CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS -> "ConsentId already exists";
-            case CmRevSP.CONSENT_ID_EXPIRED -> "ConsentId expired";
-            case CmRevSP.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH -> "ConsentId and MeteringPointId are not associated";
-            default -> "Unknown response code";
-        };
-    }
+public record ResponseCode(int responseCode) {
+    private static final Map<Integer, String> LOOKUP =
+            Arrays.stream(KnownResponseCodes.values())
+                  .collect(Collectors.toUnmodifiableMap(
+                          KnownResponseCodes::getCode,
+                          KnownResponseCodes::getMessage
+                  ));
 
     @Override
+    @NonNull
     public String toString() {
-        return message + " (response code " + responseCode + ")";
+        return getMessage() + " (response code " + responseCode + ")";
     }
 
-    public static class CmRevSP {
-        public static final int TERMINATION_SUCCESSFUL = 176;
-        public static final int NO_CONSENT_PRESENT = 177;
-        public static final int CONSENT_ID_EXPIRED = 180;
-        public static final int INVALID_PROCESSDATE = 82;
-        public static final int CONSENT_AND_METERINGPOINT_DO_NOT_MATCH = 187;
+    private String getMessage() {
+        return LOOKUP.getOrDefault(responseCode, "Unknown response code");
+    }
 
-        private CmRevSP() {
+    /**
+     * This enumeration contains all well known response codes with description that might be returned by a DSO in Austria.
+     *
+     * @see <a href="https://www.ebutilities.at/responsecodes">https://www.ebutilities.at/responsecodes</a>
+     */
+    public enum KnownResponseCodes {
+        METERING_POINT_NOT_FOUND(56, "Metering point not found"),
+        METERING_POINT_NOT_SUPPLIED(57, "Metering point not supplied"),
+        INVALID_REQUEST(76, "Invalid request data"),
+        RECEIVED(99, "Message received"),
+        INVALID_PROCESSDATE(82, "Invalid process dates"),
+        COMPETING_PROCESSES(86, "Competing processes ongoing"),
+        INVALID_ENERGY_DIRECTION(104, "Invalid energy direction"),
+        ZP_ALREADY_ASSIGNED(156, "Metering point already assigned"),
+        METERING_POINT_NOT_ELIGIBLE_TO_PARTICIPATE(158, "Metering point not eligible to participate"),
+        METERING_POINT_INACTIVE(159, "Metering point inactive/not installed at process date"),
+        DISTRIBUTION_MODEL_NOT_CORRESPONDING_TO_AGREEMENT(160,
+                                                          "Distribution model does not correspond to the agreement"),
+        REJECTED(172, "Customer rejected the request"),
+        TIMEOUT(173, "Customer did not respond to the request"),
+        REQUESTED_DATA_NOT_DELIVERABLE(174, "Requested data not deliverable"),
+        ACCEPTED(175, "Customer accepted the request"),
+        TERMINATION_SUCCESSFUL(176, "Consent successfully withdrawn"),
+        NO_CONSENT_PRESENT(177, "No data sharing available"),
+        CONSENT_ALREADY_EXISTS(178, "Consent already exists"),
+        CONSENT_REQUEST_ID_ALREADY_EXISTS(179, "ConsentId already exists"),
+        CONSENT_ID_EXPIRED(180, "ConsentId expired"),
+        COMMUNITY_ID_NOT_FOUND(181, "Community ID not found"),
+        CUSTOMER_HAS_OPTED(184, "Customer has opted"),
+        METERING_POINT_NOT_IN_AREA_OF_ENERGY_COMMUNITY(185, "Metering point not in area of the energy community"),
+        CONSENT_AND_METERINGPOINT_DO_NOT_MATCH(187, "ConsentId and MeteringPointId are not associated"),
+        PARTICIPATION_FACTOR_EXCEEDED(188, "Participation rate of 100% would be exceeded"),
+        PARTICIPATION_LIMIT_EXCEEDED(196, "Participation limit exceeded"),
+        UNSTABLE_COMMUNICATION(204, "No sufficiently stable communication available for metering point"),
+        ;
+
+        private final int code;
+        private final String message;
+
+        KnownResponseCodes(int code, String message) {
+            this.code = code;
+            this.message = message;
         }
-    }
 
-    public static class CmReqOnl {
-        public static final int RECEIVED = 99;
+        public static ResponseCode.@Nullable KnownResponseCodes fromCode(int code) {
+            for (KnownResponseCodes value : values()) {
+                if (value.code == code) {
+                    return value;
+                }
+            }
+            return null;
+        }
 
-        public static final int ACCEPTED = 175;
-        public static final int TIMEOUT = 173;
-        public static final int REJECTED = 172;
-        public static final int METERING_POINT_NOT_FOUND = 56;
-        public static final int METERING_POINT_NOT_SUPPLIED = 57;
-        public static final int INVALID_REQUEST = 76;
-        public static final int REQUESTED_DATA_NOT_DELIVERABLE = 174;
-        public static final int CONSENT_ALREADY_EXISTS = 178;
-        public static final int CONSENT_REQUEST_ID_ALREADY_EXISTS = 179;
+        public int getCode() {
+            return code;
+        }
 
-        private CmReqOnl() {
+        public String getMessage() {
+            return message;
         }
     }
 }

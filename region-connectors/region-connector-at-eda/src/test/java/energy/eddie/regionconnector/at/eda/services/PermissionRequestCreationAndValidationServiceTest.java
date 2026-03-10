@@ -161,11 +161,11 @@ class PermissionRequestCreationAndValidationServiceTest {
     }
 
     @Test
-    void createValidPermissionRequest_forEnergyCommunityDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+    void createValidPermissionRequest_forCESUJoinRequestDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new EnergyCommunityDataNeedResult(now, List.of(Granularity.PT15M, Granularity.P1D)));
+                .thenReturn(new CESUJoinRequestDataNeedResult(now, List.of(Granularity.PT15M, Granularity.P1D)));
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                   List.of("dnid"), "AT000000");
 

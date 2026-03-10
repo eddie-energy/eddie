@@ -25,14 +25,14 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class CCMORejectHandler {
+public class CMRejectHandler {
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final ValidatedEventFactory validatedEventFactory;
     private final AtPermissionRequestRepository repository;
 
     private final Outbox outbox;
 
-    public CCMORejectHandler(
+    public CMRejectHandler(
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
             ValidatedEventFactory validatedEventFactory,
             AtPermissionRequestRepository repository,
@@ -44,7 +44,7 @@ public class CCMORejectHandler {
         this.outbox = outbox;
     }
 
-    public void handleCCMOReject(
+    public void handleCMReject(
             CMRequestStatus cmRequestStatus
     ) {
         var permissionRequests = repository.findByConversationIdOrCMRequestId(
@@ -64,11 +64,11 @@ public class CCMORejectHandler {
         var message = cmRequestStatus.message();
         var calc = dataNeedCalculationService.calculate(permissionRequest.dataNeedId());
         for (Integer statusCode : cmRequestStatus.consentData().getFirst().responseCodes()) {
-            var handled = switch (statusCode) {
-                case ResponseCode.CmReqOnl.REJECTED -> emitEvent(new EdaAnswerEvent(permissionId,
-                                                                                    PermissionProcessStatus.REJECTED,
-                                                                                    message));
-                case ResponseCode.CmReqOnl.CONSENT_REQUEST_ID_ALREADY_EXISTS ->
+            var handled = switch (ResponseCode.KnownResponseCodes.fromCode(statusCode)) {
+                case ResponseCode.KnownResponseCodes.REJECTED -> emitEvent(new EdaAnswerEvent(permissionId,
+                                                                                              PermissionProcessStatus.REJECTED,
+                                                                                              message));
+                case ResponseCode.KnownResponseCodes.CONSENT_REQUEST_ID_ALREADY_EXISTS ->
                         emitEvent(validatedEventFactory.createValidatedEvent(
                                 permissionRequest.permissionId(),
                                 permissionRequest.start(),
@@ -76,12 +76,12 @@ public class CCMORejectHandler {
                                 permissionRequest.granularity(),
                                 calc
                         ));
-                case ResponseCode.CmReqOnl.TIMEOUT -> emitEvent(new EdaAnswerEvent(permissionId,
-                                                                                   PermissionProcessStatus.TIMED_OUT,
-                                                                                   message));
-                case ResponseCode.CmReqOnl.REQUESTED_DATA_NOT_DELIVERABLE ->
+                case ResponseCode.KnownResponseCodes.TIMEOUT -> emitEvent(new EdaAnswerEvent(permissionId,
+                                                                                             PermissionProcessStatus.TIMED_OUT,
+                                                                                             message));
+                case ResponseCode.KnownResponseCodes.REQUESTED_DATA_NOT_DELIVERABLE ->
                         retryWithHigherGranularity(permissionRequest, calc);
-                default -> false;
+                case null, default -> false;
             };
             if (handled) return;
         }

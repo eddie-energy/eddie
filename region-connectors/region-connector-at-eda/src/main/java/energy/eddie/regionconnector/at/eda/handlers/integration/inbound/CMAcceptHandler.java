@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
@@ -22,17 +22,17 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
-public class CCMOAcceptHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CCMOAcceptHandler.class);
+public class CMAcceptHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CMAcceptHandler.class);
     private final AtPermissionRequestRepository repository;
     private final Outbox outbox;
 
-    public CCMOAcceptHandler(AtPermissionRequestRepository repository, Outbox outbox) {
+    public CMAcceptHandler(AtPermissionRequestRepository repository, Outbox outbox) {
         this.repository = repository;
         this.outbox = outbox;
     }
 
-    public void handleCCMOAccept(CMRequestStatus cmRequestStatus) {
+    public void handleCMAccept(CMRequestStatus cmRequestStatus) {
         var permissionRequests = repository.findByConversationIdOrCMRequestId(
                 cmRequestStatus.conversationId(),
                 cmRequestStatus.cmRequestId()
@@ -82,17 +82,23 @@ public class CCMOAcceptHandler {
                   .log("Consent ID is missing in ACCEPTED CMRequestStatus message for permission request {}");
             return;
         }
+        var cmConsentId = consentId.get();
+        LOGGER.atInfo()
+              .addArgument(permissionRequest::permissionId)
+              .addArgument(cmConsentId)
+              .log("Accepting permission request {} with CCMO_ACCEPT with Consent ID '{}'");
         var meteringPoint = consentData.meteringPoint();
         if (meteringPoint.isEmpty()) {
             LOGGER.atWarn()
+                  .addArgument(cmConsentId)
                   .addArgument(permissionRequest::permissionId)
-                  .log("Metering point id is missing in ACCEPTED CMRequestStatus message for permission request {}");
+                  .log("Metering point id is missing in ACCEPTED CMRequestStatus message with Consent ID {} for permission request {}");
             return;
         }
         outbox.commit(new AcceptedEvent(
                 permissionRequest.permissionId(),
                 meteringPoint.get(),
-                consentId.get(),
+                cmConsentId,
                 consentData.message()
         ));
     }

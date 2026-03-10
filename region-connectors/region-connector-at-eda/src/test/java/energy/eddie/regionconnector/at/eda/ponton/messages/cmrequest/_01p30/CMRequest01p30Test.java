@@ -5,7 +5,7 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
-import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.EnergyDirection;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -125,7 +125,7 @@ class CMRequest01p30Test {
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
-        var dataNeed = new EnergyCommunityDataNeed(1,
+        var dataNeed = new CESUJoinRequestDataNeed(1,
                                                    Granularity.PT1H,
                                                    Granularity.PT1H,
                                                    EnergyDirection.CONSUMPTION);

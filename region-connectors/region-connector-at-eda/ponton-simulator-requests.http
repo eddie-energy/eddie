@@ -1,21 +1,32 @@
+@metering-point-id=AT0010000000000000000000000000000
+@data-need-id=3dd39c06-253e-4c95-a255-e3eefc69f613
 ### POST Setup permission request
 POST http://localhost:8080/region-connectors/at-eda/permission-request
 Content-Type: application/json
 
 {
   "connectionId": "1",
-  "meteringPointId": null,
-  "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+  "meteringPointId": "{{metering-point-id}}",
+  "dataNeedIds": [
+    "{{data-need-id}}"
+  ],
   "dsoId": "AT001000"
 }
 
 > {%
-  client.global.set("permission-id", response.body.permissionId)
+  const permissionId = response.body.permissionIds[0];
+  console.log(`Permission Request created with ID: ${permissionId}`)
+  client.global.set("permission-id", permissionId)
 %}
 
-### POST CM Notification
-@request-id=2AJN3NIR
-POST http://localhost:8080/region-connectors/at-eda/ponton/cm-notification/CCMO_ANSWER
+### GET CM Request
+# @timeout=10min
+GET http://localhost:8080/region-connectors/at-eda/ponton/cm-request
+
+### POST CM Notification - Answer
+@request-id=QDST6OXZ
+@conversation-id=CC100855T1773139352125
+POST http://localhost:8080/region-connectors/at-eda/ponton/cm-notification/ECON_ANSWER
 accept: */*
 Content-Type: application/xml
 
@@ -33,24 +44,25 @@ Content-Type: application/xml
             <ns1:DocumentCreationDateTime>2024-04-02T14:40:42.2259660Z</ns1:DocumentCreationDateTime>
         </ns1:RoutingHeader>
         <ns1:Sector>01</ns1:Sector>
-        <ns0:MessageCode>ANTWORT_CCMO</ns0:MessageCode>
+        <ns0:MessageCode>ANTWORT_ECON</ns0:MessageCode>
     </ns0:MarketParticipantDirectory>
     <ns0:ProcessDirectory>
         <ns1:MessageId>AT000000000000000000000000000000000</ns1:MessageId>
-        <ns1:ConversationId>EP00000000000000000000</ns1:ConversationId>
+        <ns1:ConversationId>{{conversation-id}}</ns1:ConversationId>
         <ns0:CMRequestId>{{request-id}}</ns0:CMRequestId>
         <ns0:ResponseData>
-            <ns0:MeteringPoint>ATXXXXXX00000000000000000XXXXXXXX</ns0:MeteringPoint>
+            <ns0:MeteringPoint>{{metering-point-id}}</ns0:MeteringPoint>
             <ns0:ResponseCode>99</ns0:ResponseCode>
         </ns0:ResponseData>
     </ns0:ProcessDirectory>
 </ns0:CMNotification>
 
-### GET CM Request
-GET http://localhost:8080/region-connectors/at-eda/ponton/cm-request
-
-### POST CM Notification
-POST http://localhost:8080/region-connectors/at-eda/ponton/cm-notification/CCMO_ACCEPT
+### POST CM Notification - ACCEPT for CESUJoinRequestDataNeed
+< {%
+  client.global.set("consent-id", $uuid)
+  console.log(`consent-id is ${client.global.get("consent-id")}`)
+%}
+POST http://localhost:8080/region-connectors/at-eda/ponton/cm-notification/ECON_ACCEPT
 accept: */*
 Content-Type: application/xml
 
@@ -75,16 +87,99 @@ Content-Type: application/xml
         <ns1:ConversationId>EP00000000000000000000</ns1:ConversationId>
         <ns0:CMRequestId>{{request-id}}</ns0:CMRequestId>
         <ns0:ResponseData>
-            <ns0:MeteringPoint>ATXXXXXX00000000000000000XXXXXXXX</ns0:MeteringPoint>
-            <ns0:ResponseCode>99</ns0:ResponseCode>
-            <ns0:ConsentId>CONSENTID20251124</ns0:ConsentId>
+            <ns0:MeteringPoint>{{metering-point-id}}</ns0:MeteringPoint>
+            <ns0:ResponseCode>175</ns0:ResponseCode>
+            <ns0:ConsentId>{{consent-id}}</ns0:ConsentId>
         </ns0:ResponseData>
     </ns0:ProcessDirectory>
 </ns0:CMNotification>
 
 ### POST consumption record
+@start=2026-03-11T00:00:00+01:00
+@end=2026-03-11T00:15:00+01:00
 POST http://localhost:8080/region-connectors/at-eda/ponton/consumption-record
 accept: */*
 Content-Type: application/xml
 
-< /home/florian/workspaces/repos/eddie/region-connectors/region-connector-at-eda/src/test/resources/xsd/consumptionrecord/_01p41/consumptionrecord_large.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:ConsumptionRecord xmlns:ns0="http://www.ebutilities.at/schemata/customerprocesses/consumptionrecord/01p41"
+                       xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.41">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>ATXXXXXX</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>EPXXXXXX</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2024-04-03T05:52:15.5391430Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>DATEN_CRMSG</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns1:MessageId>ATXXXXXX202404030752132560263752458</ns1:MessageId>
+        <ns1:ConversationId>{{conversation-id}}</ns1:ConversationId>
+        <ns1:ProcessDate>2024-04-03</ns1:ProcessDate>
+        <ns1:MeteringPoint>{{metering-point-id}}</ns1:MeteringPoint>
+        <ns0:Energy>
+            <ns0:MeteringReason>00</ns0:MeteringReason>
+            <ns0:MeteringPeriodStart>{{start}}</ns0:MeteringPeriodStart>
+            <ns0:MeteringPeriodEnd>{{end}}</ns0:MeteringPeriodEnd>
+            <ns0:MeteringIntervall>QH</ns0:MeteringIntervall>
+            <ns0:NumberOfMeteringIntervall>96</ns0:NumberOfMeteringIntervall>
+            <ns0:EnergyData MeterCode="1-1:2.9.0 P.01" UOM="KWH">
+                <ns0:EP>
+                    <ns0:DTF>{{start}}</ns0:DTF>
+                    <ns0:DTT>{{end}}</ns0:DTT>
+                    <ns0:MM>L1</ns0:MM>
+                    <ns0:BQ>0.001000</ns0:BQ>
+                </ns0:EP>
+            </ns0:EnergyData>
+        </ns0:Energy>
+    </ns0:ProcessDirectory>
+</ns0:ConsumptionRecord>
+
+### POST ECMPList
+POST http://localhost:8080/region-connectors/at-eda/ponton/ecmp-list
+accept: */*
+Content-Type: application/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:ECMPList xmlns:ns0="http://www.ebutilities.at/schemata/customerprocesses/ecmplist/01p10"
+              xmlns:ns1="http://www.ebutilities.at/schemata/customerprocesses/common/types/01p20">
+    <ns0:MarketParticipantDirectory DocumentMode="PROD" Duplicate="false" SchemaVersion="01.10">
+        <ns1:RoutingHeader>
+            <ns1:Sender AddressType="ECNumber">
+                <ns1:MessageAddress>AT000000</ns1:MessageAddress>
+            </ns1:Sender>
+            <ns1:Receiver AddressType="ECNumber">
+                <ns1:MessageAddress>CC000000</ns1:MessageAddress>
+            </ns1:Receiver>
+            <ns1:DocumentCreationDateTime>2025-10-06T07:04:58.0988510Z</ns1:DocumentCreationDateTime>
+        </ns1:RoutingHeader>
+        <ns1:Sector>01</ns1:Sector>
+        <ns0:MessageCode>ABSCHLUSS_ECON</ns0:MessageCode>
+    </ns0:MarketParticipantDirectory>
+    <ns0:ProcessDirectory>
+        <ns0:MessageId>AT000000000000000000000000000000000</ns0:MessageId>
+        <ns0:ConversationId>{{conversation-id}}</ns0:ConversationId>
+        <ns0:ProcessDate>2026-03-01</ns0:ProcessDate>
+        <ns0:ECID>ATCC0000DYNAMCC000000000000000000</ns0:ECID>
+        <ns0:ECType>CC</ns0:ECType>
+        <ns0:ECDisModel>D</ns0:ECDisModel>
+        <ns0:MPListData>
+            <ns0:MeteringPoint>AT0010000000000000000000000000000</ns0:MeteringPoint>
+            <ns0:ConsentId>AT0000000000000000000000000000000</ns0:ConsentId>
+            <ns0:MPTimeData>
+                <ns0:DateFrom>2026-03-11</ns0:DateFrom>
+                <ns0:DateTo>9999-12-31</ns0:DateTo>
+                <ns0:EnergyDirection>CONSUMPTION</ns0:EnergyDirection>
+                <ns0:ECPartFact>100</ns0:ECPartFact>
+                <ns0:DateActivate>2026-03-10</ns0:DateActivate>
+                <ns0:ECShare>0.0000</ns0:ECShare>
+            </ns0:MPTimeData>
+        </ns0:MPListData>
+    </ns0:ProcessDirectory>
+</ns0:ECMPList>
+

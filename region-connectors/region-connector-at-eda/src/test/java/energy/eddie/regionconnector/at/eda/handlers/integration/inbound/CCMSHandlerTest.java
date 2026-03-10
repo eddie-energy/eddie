@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
@@ -54,19 +54,19 @@ class CCMSHandlerTest {
         return Stream.of(
                 Arguments.of(NotificationMessageType.CCMS_REJECT,
                              PermissionProcessStatus.EXTERNALLY_TERMINATED,
-                             List.of(ResponseCode.CmRevSP.TERMINATION_SUCCESSFUL)),
+                             List.of(ResponseCode.KnownResponseCodes.TERMINATION_SUCCESSFUL.getCode())),
                 Arguments.of(NotificationMessageType.CCMS_REJECT,
                              PermissionProcessStatus.EXTERNALLY_TERMINATED,
-                             List.of(ResponseCode.CmRevSP.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH)),
+                             List.of(ResponseCode.KnownResponseCodes.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH.getCode())),
                 Arguments.of(NotificationMessageType.CCMS_REJECT,
                              PermissionProcessStatus.EXTERNALLY_TERMINATED,
-                             List.of(ResponseCode.CmRevSP.INVALID_PROCESSDATE)),
+                             List.of(ResponseCode.KnownResponseCodes.INVALID_PROCESSDATE.getCode())),
                 Arguments.of(NotificationMessageType.CCMS_REJECT,
                              PermissionProcessStatus.EXTERNALLY_TERMINATED,
-                             List.of(ResponseCode.CmRevSP.CONSENT_ID_EXPIRED)),
+                             List.of(ResponseCode.KnownResponseCodes.CONSENT_ID_EXPIRED.getCode())),
                 Arguments.of(NotificationMessageType.CCMS_REJECT,
                              PermissionProcessStatus.EXTERNALLY_TERMINATED,
-                             List.of(ResponseCode.CmRevSP.NO_CONSENT_PRESENT))
+                             List.of(ResponseCode.KnownResponseCodes.NO_CONSENT_PRESENT.getCode()))
         );
     }
 
@@ -122,7 +122,7 @@ class CCMSHandlerTest {
         // Given
         var permissionRequest = projection(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
         CMRequestStatus cmRequestStatus = cmRequestStatus(NotificationMessageType.CCMS_ANSWER,
-                                                          List.of(ResponseCode.CmRevSP.TERMINATION_SUCCESSFUL));
+                                                          List.of(ResponseCode.KnownResponseCodes.TERMINATION_SUCCESSFUL.getCode()));
 
         var accepted = projection(PermissionProcessStatus.ACCEPTED);
         when(repository.findByConversationIdOrCMRequestId(cmRequestStatus.conversationId(),

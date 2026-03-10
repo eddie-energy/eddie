@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
@@ -28,37 +28,42 @@ class EdaEventsHandlerTest {
     @Mock
     private CCMSHandler ccmsHandler;
     @Mock
-    private CCMORejectHandler ccmoRejectHandler;
+    private CMRejectHandler cmRejectHandler;
     @Mock
-    private CCMOAcceptHandler ccmoAcceptedHandler;
+    private CMAcceptHandler ccmoAcceptedHandler;
     @Mock
-    private CCMOAnswerHandler ccmoAnswerHandler;
+    private CMAnswerHandler cmAnswerHandler;
     @Mock
     private PontonErrorHandler pontonErrorHandler;
-    @SuppressWarnings("unused")
-    private EdaEventsHandler edaEventsHandler;
+    @Mock
+    private ECONCancelHandler econCancelHandler;
 
     public static Stream<NotificationMessageType> testCmRequestStatusMessage_emitsCorrectEvent() {
         return Stream.of(
                 NotificationMessageType.CCMO_ACCEPT,
+                NotificationMessageType.ECON_ACCEPT,
                 NotificationMessageType.CCMO_REJECT,
+                NotificationMessageType.ECON_REJECT,
                 NotificationMessageType.CCMO_ANSWER,
+                NotificationMessageType.ECON_ANSWER,
                 NotificationMessageType.PONTON_ERROR,
                 NotificationMessageType.CCMS_ANSWER,
-                NotificationMessageType.CCMS_REJECT
+                NotificationMessageType.CCMS_REJECT,
+                NotificationMessageType.ECON_CANCEL
         );
     }
 
     @BeforeEach
     void setUp() {
         when(edaAdapter.getCMRequestStatusStream()).thenReturn(publisher.flux());
-        edaEventsHandler = new EdaEventsHandler(
+        new EdaEventsHandler(
                 edaAdapter,
                 ccmoAcceptedHandler,
-                ccmoRejectHandler,
-                ccmoAnswerHandler,
+                cmRejectHandler,
+                cmAnswerHandler,
                 ccmsHandler,
-                pontonErrorHandler
+                pontonErrorHandler,
+                econCancelHandler
         );
     }
 
@@ -75,12 +80,13 @@ class EdaEventsHandlerTest {
 
         // Then
         switch (notificationMessageType) {
-            case CCMO_ACCEPT -> verify(ccmoAcceptedHandler).handleCCMOAccept(cmRequestStatus);
-            case CCMO_REJECT -> verify(ccmoRejectHandler).handleCCMOReject(cmRequestStatus);
-            case CCMO_ANSWER -> verify(ccmoAnswerHandler).handleCCMOAnswer(cmRequestStatus);
+            case CCMO_ACCEPT, ECON_ACCEPT -> verify(ccmoAcceptedHandler).handleCMAccept(cmRequestStatus);
+            case CCMO_REJECT, ECON_REJECT -> verify(cmRejectHandler).handleCMReject(cmRequestStatus);
+            case CCMO_ANSWER, ECON_ANSWER -> verify(cmAnswerHandler).handleCMAnswer(cmRequestStatus);
             case PONTON_ERROR -> verify(pontonErrorHandler).handlePontonError(cmRequestStatus);
             case CCMS_ANSWER -> verify(ccmsHandler).handleCCMSAnswer(cmRequestStatus);
             case CCMS_REJECT -> verify(ccmsHandler).handleCCMSReject(cmRequestStatus);
+            case ECON_CANCEL -> verify(econCancelHandler).handleECONCancel(cmRequestStatus);
         }
     }
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.dtos;
@@ -22,6 +22,7 @@ public class AuthorizationRequestFactory {
     public AuthorizationRequest from(String nif, String meteringPointId, LocalDate end) {
         LocalDate permissionStart = LocalDate.now(ZONE_ID_SPAIN);
         LocalDate permissionEnd = strategy.permissionTimeframe(new Timeframe(permissionStart, end),
+                                                               null,
                                                                ZonedDateTime.now(ZONE_ID_SPAIN)).end();
 
         return new AuthorizationRequest(

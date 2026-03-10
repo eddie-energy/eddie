@@ -1,11 +1,13 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers;
 
 import energy.eddie.api.v0.PermissionProcessStatus;
+import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.events.DataReceivedEvent;
+import energy.eddie.regionconnector.at.eda.permission.request.projections.MeterReadingTimeframe;
 import energy.eddie.regionconnector.at.eda.persistence.MeterReadingTimeframeRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -69,9 +71,24 @@ public class DataReceivedHandler implements EventHandler<DataReceivedEvent> {
         var timeframe = timeframes.getFirst();
         // if we request quarter hourly data up to the 24.01.2024, the last consumption record we get will have a meteringPeriodStart of 24.01.2024T23:45:00 and a meteringPeriodEnd of 25.01.2024T00:00:00
         // so if the permissionEnd is before the meteringPeriodEnd the permission request is fulfilled
-        if (isBeforeOrEquals(timeframe.start(), pr.start()) && timeframe.end().isAfter(pr.end())) {
+        if (isBeforeOrEquals(timeframe.start(), pr.start()) && isAfter(timeframe, pr)) {
             fulfillmentService.tryFulfillPermissionRequest(pr);
         }
+    }
+
+    /**
+     * Checks whether the timeframe end is after the end of the permission request.
+     * If the permission request does not have an end, as is the case for permissions for energy communities.
+     *
+     * @param timeframe of the received data
+     * @param pr        the permission request
+     * @return true, if end of timeframe is after end of permission, otherwise returns false
+     */
+    private static boolean isAfter(MeterReadingTimeframe timeframe, AtPermissionRequest pr) {
+        if (timeframe.end() == null) {
+            return false;
+        }
+        return timeframe.end().isAfter(pr.end());
     }
 
     private boolean isStatusAfterAccepted(PermissionProcessStatus status) {

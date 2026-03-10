@@ -7,8 +7,8 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.pmd.*;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.EnergyCommunityDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.regionconnector.shared.cim.v0_82.*;
@@ -159,7 +159,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
         return switch (dataNeed) {
             case ValidatedHistoricalDataDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
             case AiidaDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
-            case EnergyCommunityDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
+            case CESUJoinRequestDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
             case AccountingPointDataNeed ignored -> ProcessTypeList.ACCOUNTINGPOINT_DATA;
             default -> throw new IllegalArgumentException("Unsupported data need type: " + dataNeed);
         };

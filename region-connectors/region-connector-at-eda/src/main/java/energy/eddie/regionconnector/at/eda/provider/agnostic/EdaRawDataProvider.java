@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.provider.agnostic;
@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.at.eda.provider.agnostic;
 import energy.eddie.api.agnostic.RawDataMessage;
 import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
@@ -33,20 +34,23 @@ public class EdaRawDataProvider implements RawDataProvider {
         this(
                 marshaller,
                 streams.consumptionRecordStream(),
-                streams.masterDataStream()
+                streams.masterDataStream(),
+                streams.ecmpListStream()
         );
     }
 
     EdaRawDataProvider(
             Jaxb2Marshaller marshaller,
             Flux<IdentifiableConsumptionRecord> identifiableConsumptionRecordFlux,
-            Flux<IdentifiableMasterData> identifiableMasterDataFlux
+            Flux<IdentifiableMasterData> identifiableMasterDataFlux,
+            Flux<IdentifiableECMPList> ecmpListStream
     ) {
         this.marshaller = marshaller;
         // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
         this.rawDataStream = Flux.merge(
                 identifiableConsumptionRecordFlux.flatMap(this::mapToRawDataMessage),
-                identifiableMasterDataFlux.flatMap(this::mapToRawDataMessage)
+                identifiableMasterDataFlux.flatMap(this::mapToRawDataMessage),
+                ecmpListStream.flatMap(this::mapToRawDataMessage)
         );
     }
 
@@ -86,6 +90,19 @@ public class EdaRawDataProvider implements RawDataProvider {
         String rawXml = writer.toString();
         var permissionRequest = identifiableMasterData.permissionRequest();
         var msg = new RawDataMessage(permissionRequest, rawXml);
+        return Mono.just(msg);
+    }
+
+    private Mono<RawDataMessage> mapToRawDataMessage(IdentifiableECMPList ecmpList) {
+        var writer = new StringWriter();
+        try {
+            marshaller.marshal(ecmpList.ecmpList().getOriginal(), new StreamResult(writer));
+        } catch (XmlMappingException e) {
+            LOGGER.error("Error while marshalling MasterData back into XML for raw data output", e);
+            return Mono.empty();
+        }
+        String rawXml = writer.toString();
+        var msg = new RawDataMessage(ecmpList.permissionRequest(), rawXml);
         return Mono.just(msg);
     }
 }

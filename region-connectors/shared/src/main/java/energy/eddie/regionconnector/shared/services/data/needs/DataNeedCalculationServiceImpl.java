@@ -14,7 +14,6 @@ import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.SpecificDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
@@ -138,6 +137,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
         }
 
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate,
+                                                                     dataNeed,
                                                                      ZonedDateTime.now(ZoneOffset.UTC));
         return switch (dataNeed) {
             case ValidatedHistoricalDataDataNeed vhdDataNeed when energyStartAndEndDate != null ->
@@ -152,11 +152,12 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                                                                         aiidaDataNeed.supportedSchemas(),
                                                                         energyStartAndEndDate);
             case AccountingPointDataNeed ignored -> new AccountingPointDataNeedResult(permissionStartAndEndDate);
-            case EnergyCommunityDataNeed need -> {
-                var rule = List.copyOf(dataNeedRuleSet.dataNeedRules(EnergyCommunityDataNeedRule.class)).getFirst();
+            case CESUJoinRequestDataNeed need -> {
+                var rule = List.copyOf(dataNeedRuleSet.dataNeedRules(DataNeedRule.CESUJoinRequestDataNeedRule.class))
+                               .getFirst();
                 var choice = new GranularityChoice(rule.granularities());
                 var supportedGranularities = choice.findAll(need.minGranularity(), need.maxGranularity());
-                yield new EnergyCommunityDataNeedResult(permissionStartAndEndDate.start(), supportedGranularities);
+                yield new CESUJoinRequestDataNeedResult(permissionStartAndEndDate.start(), supportedGranularities);
             }
             default -> new DataNeedNotSupportedResult("Unknown data need type: %s".formatted(dataNeed.getClass()));
         };

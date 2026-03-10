@@ -5,9 +5,9 @@ package energy.eddie.regionconnector.at.eda.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
-import energy.eddie.dataneeds.rules.DataNeedRule.EnergyCommunityDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class EdaDataNeedRuleSetTest {
                         new AccountingPointDataNeedRule(),
                         new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY,
                                                                 List.of(Granularity.PT15M, Granularity.P1D)),
-                        new EnergyCommunityDataNeedRule(List.of(Granularity.PT15M, Granularity.P1D)),
+                        new DataNeedRule.CESUJoinRequestDataNeedRule(List.of(Granularity.PT15M, Granularity.P1D)),
                         new AllowMultipleDataNeedsRule()
                 );
     }

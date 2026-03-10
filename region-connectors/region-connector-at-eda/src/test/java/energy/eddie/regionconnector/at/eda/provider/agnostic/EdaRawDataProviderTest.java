@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.provider.agnostic;
@@ -9,10 +9,7 @@ import at.ebutilities.schemata.customerprocesses.consumptionrecord._01p41.Proces
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
-import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
-import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.EdaMasterData01p32;
 import org.junit.jupiter.api.Test;
@@ -48,6 +45,7 @@ class EdaRawDataProviderTest {
         // Given
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         TestPublisher<IdentifiableMasterData> masterDataTestPublisher = TestPublisher.create();
+        TestPublisher<IdentifiableECMPList> ecmpListTestPublisher = TestPublisher.create();
         String expectedString1 = "expectedString1";
         String expectedString2 = "expectedString2";
         String expectedString3 = "expectedString3";
@@ -57,7 +55,10 @@ class EdaRawDataProviderTest {
                 createPermissionRequest(expectedString3)
         );
 
-        var provider = new EdaRawDataProvider(marshaller, testPublisher.flux(), masterDataTestPublisher.flux());
+        var provider = new EdaRawDataProvider(marshaller,
+                                              testPublisher.flux(),
+                                              masterDataTestPublisher.flux(),
+                                              ecmpListTestPublisher.flux());
 
         var source = provider.getRawDataStream();
 
@@ -70,6 +71,7 @@ class EdaRawDataProviderTest {
                                                                              null));
                         testPublisher.complete();
                         masterDataTestPublisher.complete();
+                        ecmpListTestPublisher.complete();
                     })
                     // Then
                     .assertNext(rawData -> {
@@ -102,10 +104,14 @@ class EdaRawDataProviderTest {
         // Given
         TestPublisher<IdentifiableConsumptionRecord> testPublisher = TestPublisher.create();
         TestPublisher<IdentifiableMasterData> masterDataTestPublisher = TestPublisher.create();
+        TestPublisher<IdentifiableECMPList> ecmpListTestPublisher = TestPublisher.create();
         String expectedString = "expectedString";
         var permissionRequest = createPermissionRequest(expectedString);
 
-        var provider = new EdaRawDataProvider(marshaller, testPublisher.flux(), masterDataTestPublisher.flux());
+        var provider = new EdaRawDataProvider(marshaller,
+                                              testPublisher.flux(),
+                                              masterDataTestPublisher.flux(),
+                                              ecmpListTestPublisher.flux());
 
         var source = provider.getRawDataStream();
 
@@ -124,6 +130,7 @@ class EdaRawDataProviderTest {
                                                                              null));
                         testPublisher.complete();
                         masterDataTestPublisher.complete();
+                        ecmpListTestPublisher.complete();
                     })
                     // Then
                     .assertNext(rawData -> {

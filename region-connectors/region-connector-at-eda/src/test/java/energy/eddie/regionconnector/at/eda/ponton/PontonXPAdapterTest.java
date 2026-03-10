@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton;
@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.*;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.models.ConsentData;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist.TestEdaECMPList;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.CPNotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.PontonMessengerConnectionTestImpl;
@@ -24,6 +25,7 @@ import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
+import energy.eddie.regionconnector.at.eda.tasks.IdentifyECMPListTask;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -70,6 +72,8 @@ class PontonXPAdapterTest {
     private IdentifiableConsumptionRecordService identifiableConsumptionRecordService;
     @Mock
     private IdentifiableMasterDataService identifiableMasterDataService;
+    @Mock
+    private IdentifyECMPListTask identifyECMPListTask;
     @Mock
     @SuppressWarnings("unused")
     private TaskScheduler taskScheduler;
@@ -557,6 +561,35 @@ class PontonXPAdapterTest {
         verify(pontonMessengerConnection).start();
         pontonXPAdapter.close();
     }
+
+    public static EdaECMPList createECMPList() {
+        return new TestEdaECMPList("messageId", "conversationId", "ecId");
+    }
+
+    @Test
+    void handleECMPListMessage_whenECMPListHasCorrespondingPermission_thenReturnsSuccess() {
+        // Given
+        EdaECMPList ecmpList = createECMPList();
+
+        var pr = new SimplePermissionRequest("pid",
+                                             "cid",
+                                             "dnid",
+                                             "cmRequestId",
+                                             "convId",
+                                             PermissionProcessStatus.ACCEPTED);
+        when(identifyECMPListTask.identify(ecmpList))
+                .thenReturn(Optional.of(new IdentifiableECMPList(ecmpList, pr)));
+
+        // When
+        var messageResult = pontonMessengerConnection.ecmpListHandler
+                .handle(ecmpList);
+
+        // Then
+        assertAll(
+                () -> assertEquals(InboundStatusEnum.SUCCESS, messageResult.status()),
+                () -> assertEquals("Successfully emitted object to backend.", messageResult.statusMessage())
+        );
+    }
 //endregion
 
     @Test
@@ -733,6 +766,25 @@ class PontonXPAdapterTest {
                 return null;
             }
         };
+    }
+
+    @Test
+    void handleECMPListMessage_whenECMPListHasNoPermission_thenReturnsTemporaryError() {
+        // Given
+        EdaECMPList ecmpList = createECMPList();
+        when(identifyECMPListTask.identify(ecmpList)).thenReturn(Optional.empty());
+
+        // When
+        var messageResult = pontonMessengerConnection.ecmpListHandler
+                .handle(ecmpList);
+
+        // Then
+        assertAll(
+                () -> assertEquals(InboundStatusEnum.TEMPORARY_ERROR, messageResult.status()),
+                () -> assertEquals(
+                        "Received unknown ECMPLIST with conversation ID 'conversationId' and message ID 'messageId'",
+                        messageResult.statusMessage())
+        );
     }
 
     private ResponseData createResponseData(String consentId) {

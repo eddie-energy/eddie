@@ -3,8 +3,8 @@
 
 package energy.eddie.regionconnector.at.eda.permission.request.events;
 
+import energy.eddie.api.agnostic.data.needs.CESUJoinRequestDataNeedResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationResult;
-import energy.eddie.api.agnostic.data.needs.EnergyCommunityDataNeedResult;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
@@ -31,7 +31,7 @@ public class ValidatedEventFactory {
             DataNeedCalculationResult dataNeedCalculation
     ) {
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
-        var type = dataNeedCalculation instanceof EnergyCommunityDataNeedResult
+        var type = dataNeedCalculation instanceof CESUJoinRequestDataNeedResult
                 ? AtConfiguration.PartyIdType.ENERGY_COMMUNITY
                 : AtConfiguration.PartyIdType.ELIGIBLE_PARTY;
         var messageId = new MessageId(configuration.partyIdFor(type), created).toString();

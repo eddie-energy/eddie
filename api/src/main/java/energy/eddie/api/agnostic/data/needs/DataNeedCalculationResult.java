@@ -9,4 +9,4 @@ public sealed interface DataNeedCalculationResult permits
         DataNeedNotFoundResult,
         DataNeedNotSupportedResult,
         ValidatedHistoricalDataDataNeedResult,
-        EnergyCommunityDataNeedResult {}
+        CESUJoinRequestDataNeedResult {}

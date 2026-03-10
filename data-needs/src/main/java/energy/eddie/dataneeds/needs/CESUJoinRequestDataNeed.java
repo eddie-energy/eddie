@@ -13,10 +13,10 @@ import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Range;
 
 @Entity
-@Table(name = "energy_community_data_need", schema = "data_needs")
+@Table(name = "cesu_join_request_data_need", schema = "data_needs")
 @Schema(description = "Data need for adding a new final customer to an existing energy community")
-public class EnergyCommunityDataNeed extends DataNeed {
-    public static final String DISCRIMINATOR_VALUE = "energy-community";
+public class CESUJoinRequestDataNeed extends DataNeed {
+    public static final String DISCRIMINATOR_VALUE = "cesu-join-request";
     @Column(name = "participation_factor", nullable = false)
     @JsonProperty(required = true)
     @NotNull(groups = BasicValidationsGroup.class)
@@ -39,14 +39,14 @@ public class EnergyCommunityDataNeed extends DataNeed {
     private final EnergyDirection energyDirection;
 
     @SuppressWarnings("NullAway")
-    protected EnergyCommunityDataNeed() {
+    protected CESUJoinRequestDataNeed() {
         this.minGranularity = null;
         this.maxGranularity = null;
         this.participationFactor = null;
         this.energyDirection = null;
     }
 
-    public EnergyCommunityDataNeed(
+    public CESUJoinRequestDataNeed(
             Integer participationFactor,
             Granularity minGranularity,
             Granularity maxGranularity,
