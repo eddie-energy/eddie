@@ -27,7 +27,6 @@ import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 import static energy.eddie.cim.CommonInformationModelVersions.V0_82;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -219,13 +218,13 @@ class CustomSerializerTest {
     void givenOpaqueEnvelope_serializes_asExpected() throws SerdeInitializationException {
         // Given
         var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
-        var expectedString = "{\"regionConnectorId\":\"aiida\",\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"messageId\":\"00000000-0000-0000-0000-000000000000\",\"timestamp\":\"2024-01-16T12:00:00Z\",\"payload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
+        var expectedString = "{\"regionConnectorId\":\"aiida\",\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"messageId\":\"msg-1\",\"timestamp\":\"2024-01-16T12:00:00Z\",\"payload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
         var topic = "myTest";
         var message = new OpaqueEnvelope("aiida",
                                          "foo",
                                          "bar",
                                          "id1",
-                                         UUID.fromString("00000000-0000-0000-0000-000000000000"),
+                                         "msg-1",
                                          ZonedDateTime.parse("2024-01-16T12:00:00Z"),
                                          "rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters");
 

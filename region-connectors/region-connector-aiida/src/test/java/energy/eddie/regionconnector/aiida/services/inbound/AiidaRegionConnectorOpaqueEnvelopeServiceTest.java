@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 import static org.mockito.Mockito.verify;
 
@@ -28,20 +27,13 @@ class AiidaRegionConnectorOpaqueEnvelopeServiceTest {
     @Test
     void opaqueEnvelopeArrived_publishesToMqtt() throws Exception {
         // Given
-        var id = UUID.fromString("00000000-0000-0000-0000-000000000001");
-        var idString = id.toString();
-        var envelope = new OpaqueEnvelope(idString,
-                                          idString,
-                                          idString,
-                                          idString,
-                                          id,
-                                          ZonedDateTime.now(),
-                                          "test-payload");
+        var id = "test-id";
+        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
 
         // When
         service.opaqueEnvelopeArrived(envelope);
 
         // Then
-        verify(mqttService).publishInboundData(AiidaSchema.OPAQUE, idString, envelope);
+        verify(mqttService).publishInboundData(AiidaSchema.OPAQUE, id, envelope);
     }
 }

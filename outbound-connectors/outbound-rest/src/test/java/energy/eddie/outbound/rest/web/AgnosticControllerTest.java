@@ -31,7 +31,6 @@ import reactor.test.StepVerifier;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -150,14 +149,13 @@ class AgnosticControllerTest {
 
     @Test
     void opaqueEnvelope_returnsAccepted() {
-        var id = UUID.randomUUID();
-        var idString = id.toString();
-        var msg = new OpaqueEnvelope(idString, idString, idString, idString, id, ZonedDateTime.now(), "test-payload");
+        var id = "test-id";
+        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
 
         webTestClient.post()
                      .uri("/agnostic/opaque-envelope")
                      .contentType(MediaType.APPLICATION_JSON)
-                     .bodyValue(msg)
+                     .bodyValue(envelope)
                      .exchange()
                      .expectStatus()
                      .isAccepted();

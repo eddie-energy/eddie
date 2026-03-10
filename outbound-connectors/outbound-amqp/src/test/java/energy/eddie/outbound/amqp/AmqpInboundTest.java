@@ -21,7 +21,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -216,15 +215,8 @@ class AmqpInboundTest {
                                   .queue(config.opaqueEnvelope())
                                   .build();
 
-        var id = UUID.randomUUID();
-        var idString = id.toString();
-        var envelope = new OpaqueEnvelope(idString,
-                                          idString,
-                                          idString,
-                                          idString,
-                                          id,
-                                          ZonedDateTime.now(),
-                                          "test-payload");
+        var id = "test-id";
+        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
 
         var msg = publisher.message(serde.serialize(envelope));
         // When

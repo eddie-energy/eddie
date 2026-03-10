@@ -6,14 +6,13 @@ package energy.eddie.api.agnostic.opaque;
 import energy.eddie.api.agnostic.MessageWithHeaders;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 public record OpaqueEnvelope(
         String regionConnectorId,
         String permissionId,
         String connectionId,
         String dataNeedId,
-        UUID messageId,
+        String messageId,
         ZonedDateTime timestamp,
         String payload
 ) implements MessageWithHeaders {

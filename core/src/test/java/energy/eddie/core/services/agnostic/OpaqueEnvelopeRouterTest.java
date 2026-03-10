@@ -14,7 +14,6 @@ import reactor.core.publisher.Flux;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 
 import static org.mockito.Mockito.*;
 
@@ -89,16 +88,8 @@ class OpaqueEnvelopeRouterTest {
     }
 
     private static OpaqueEnvelope envelopeFor(String regionConnectorId) {
-        var id = UUID.randomUUID();
-        var idString = id.toString();
-
-        return new OpaqueEnvelope(regionConnectorId,
-                                  idString,
-                                  idString,
-                                  idString,
-                                  id,
-                                  ZonedDateTime.now(),
-                                  "test-payload");
+        var id = "test-id";
+        return new OpaqueEnvelope(regionConnectorId, id, id, id, id, ZonedDateTime.now(), "test-payload");
     }
 
     private record PlainOpaqueEnvelopeOutboundConnector(

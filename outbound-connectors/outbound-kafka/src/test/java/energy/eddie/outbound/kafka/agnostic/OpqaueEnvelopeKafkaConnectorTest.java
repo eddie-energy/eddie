@@ -17,7 +17,6 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.ZonedDateTime;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,12 +28,11 @@ import static org.junit.jupiter.api.Assertions.*;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Tag("Integration")
 class OpaqueEnvelopeKafkaConnectorTest {
-    private static final UUID ID = UUID.randomUUID();
-    private static final String ID_STRING = ID.toString();
-    private static final OpaqueEnvelope ENVELOPE = new OpaqueEnvelope(ID_STRING,
-                                                                      ID_STRING,
-                                                                      ID_STRING,
-                                                                      ID_STRING,
+    private static final String ID = "test-id";
+    private static final OpaqueEnvelope ENVELOPE = new OpaqueEnvelope(ID,
+                                                                      ID,
+                                                                      ID,
+                                                                      ID,
                                                                       ID,
                                                                       ZonedDateTime.now(),
                                                                       "test-payload");
