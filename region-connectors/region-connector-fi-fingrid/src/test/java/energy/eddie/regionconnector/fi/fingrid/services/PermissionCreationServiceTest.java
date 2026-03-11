@@ -81,7 +81,7 @@ class PermissionCreationServiceTest {
     void createAndValidatePermissionRequest_throwsOnAiidaDataNeed() {
         // Given
         var forCreation = new PermissionRequestForCreation("cid", "dnid", "identifier");
-        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
         when(dataNeedCalculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(),
                                                                                               Set.of(),
                                                                                               timeframe));

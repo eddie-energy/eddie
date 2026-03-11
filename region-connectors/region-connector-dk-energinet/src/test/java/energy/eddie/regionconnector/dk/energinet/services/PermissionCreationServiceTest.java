@@ -91,7 +91,8 @@ class PermissionCreationServiceTest {
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AiidaDataNeedResult(Set.of(),
                                                     Set.of(),
-                                                    new Timeframe(LocalDate.now(), LocalDate.now())));
+                                                    new Timeframe(LocalDate.now(DK_ZONE_ID),
+                                                                  LocalDate.now(DK_ZONE_ID))));
 
         // When
         // Then

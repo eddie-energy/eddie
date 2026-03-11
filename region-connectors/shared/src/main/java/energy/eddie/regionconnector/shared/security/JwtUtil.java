@@ -81,7 +81,7 @@ public class JwtUtil {
     }
 
     /**
-     * Creates a new signed JWT and adds the supplied {@code permissionId} to the map of permitted permissions. The
+     * Creates a new signed JWT and adds the supplied {@code permissionIds} to the map of permitted permissions. The
      * returned JWT is to be included by the region connector element to make requests that update the permission.
      *
      * @param regionConnectorId ID of the region connector that created the new permission.

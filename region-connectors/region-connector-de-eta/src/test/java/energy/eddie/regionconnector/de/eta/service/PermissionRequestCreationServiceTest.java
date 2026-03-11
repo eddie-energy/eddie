@@ -20,6 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Set;
 
@@ -52,20 +53,20 @@ class PermissionRequestCreationServiceTest {
         LocalDate start = LocalDate.now(ZoneId.systemDefault());
         LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(30);
         Timeframe timeframe = new Timeframe(start, end);
-        
+
         ValidatedHistoricalDataDataNeedResult result = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 timeframe,
                 timeframe
         );
-        
+
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(result);
 
         var response = service.createPermissionRequest(request);
 
         assertThat(response).isNotNull();
         assertThat(response.permissionId()).isNotNull();
-        
+
         verify(outbox).commit(any(CreatedEvent.class));
         verify(outbox).commit(any(ValidatedEvent.class));
     }
@@ -73,7 +74,8 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenAccountingPointDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()), LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()),
+                                            LocalDate.now(ZoneId.systemDefault()).plusDays(1));
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
@@ -86,7 +88,7 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenAiidaDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(), LocalDate.now().plusDays(1));
+        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC).plusDays(1));
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AiidaDataNeedResult(Set.of(),
                                                                                                    Set.of(),
                                                                                                    timeframe));

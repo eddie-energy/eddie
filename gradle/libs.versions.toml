@@ -19,6 +19,7 @@ jakarta-xml-bind = "4.0.0"
 rometools = "2.1.0"
 jakarta-annotation = "2.1.0"
 jakarta-validation = "3.0.2"
+jakarta-transaction = "2.0.1"
 jakarta-persistence-api = "3.2.0"
 sonar = "7.2.0.6526"
 commons-codec = "1.15"
@@ -32,7 +33,6 @@ reactor = "3.7.0"
 slf4j = "2.0.7"
 guice = "7.0.0"
 jte = "3.1.15"
-kafka-clients = "3.4.0"
 kafka-streams = "3.9.0"
 rabbitmq-amqp-client = "0.3.0"
 hibernate-validator = "8.0.1.Final"
@@ -105,6 +105,7 @@ jaxb-plugin-annotate = { module = "org.jvnet.jaxb:jaxb-plugin-annotate", version
 jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml-bind" }
 jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakarta-annotation" }
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
+jakarta-transaction-api = { module = "jakarta.transaction:jakarta.transaction-api", version.ref = "jakarta-transaction" }
 
 reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
 reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
@@ -114,7 +115,6 @@ commons-codec = { module = "commons-codec:commons-codec", version.ref = "commons
 xmlunit-core = { module = "org.xmlunit:xmlunit-core", version.ref = "xmlunit" }
 
 # dependencies required by outbound-kafka
-kafka-clients = { module = "org.apache.kafka:kafka-clients", version.ref = "kafka-clients" }
 testcontainers-kafka = { module = "org.testcontainers:testcontainers-kafka", version.ref = "testcontainers" }
 
 # dpendencies required by outbound-amqp
