@@ -19,6 +19,7 @@ import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import nl.altindag.log.LogCaptor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -121,8 +122,8 @@ class SchemaTest {
     private static final AiidaRecord AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE = new AiidaRecord(
             TIMESTAMP,
             DATA_SOURCE,
-            List.of(new AiidaRecordValue("PAPP",
-                                         POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
+            List.of(new AiidaRecordValue("TARIFF",
+                                         NEGATIVE_REACTIVE_ENERGY_IN_TARIFF,
                                          "10",
                                          VOLT_AMPERE,
                                          "10",
@@ -155,6 +156,12 @@ class SchemaTest {
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(DATA_SOURCE.meterId()).thenReturn("Meter123");
         when(DATA_SOURCE.operatorId()).thenReturn("Operator123");
+    }
+
+    @AfterEach
+    void tearDown() {
+        LOG_CAPTOR.clearLogs();
+        LOG_CAPTOR.resetLogLevel();
     }
 
     @Test
@@ -220,13 +227,15 @@ class SchemaTest {
 
         formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
-                POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
+                NEGATIVE_REACTIVE_ENERGY_IN_TARIFF));
     }
 
     @Test
     void schemaCim_v1_12() throws SchemaFormatterException, SchemaFormatterRegistryException {
         var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_12.CimStrategy.class);
         logCaptorStrategy.setLogLevelToInfo();
+
+        LOG_CAPTOR.setLogLevelToTrace();
 
         var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
         var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -255,6 +264,6 @@ class SchemaTest {
 
         formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
         assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
-                POSITIVE_REACTIVE_INSTANTANEOUS_POWER));
+                NEGATIVE_REACTIVE_ENERGY_IN_TARIFF));
     }
 }
