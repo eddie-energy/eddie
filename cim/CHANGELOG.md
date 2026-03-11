@@ -76,3 +76,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.5.1 - 2026-02-26
 
 - Improve Javadoc in the `CommonInformationModelVersions` class.
+
+## 3.7.0 - 2026-03-11
+
+- Add Java classes for agnostic schemas 

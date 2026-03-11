@@ -22,7 +22,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.5.1"
+version = "3.7.0"
 
 repositories {
     mavenCentral()
@@ -82,37 +82,53 @@ val generateCIMSchemaClasses by tasks.registering {
     group = "Build"
 
     // Path to XSD files
-    val cimSchemaFiles: File = file("src/main/schemas/cim/xsd/")
+    val agnosticSchemaDir: File = file("src/main/schemas/agnostic/xsd/")
+    val cimSchemaDir: File = file("src/main/schemas/cim/xsd/")
+
     // ordered schema files to prevent repeated generation of Java classes.
-    val orderedSchemaFiles = setOf(
+    val orderedAgnosticSchemas = setOf(
+        agnosticSchemaDir.resolve("all.xsd")
+    )
+
+    val orderedCimSchemas = setOf(
         // V0.82
-        cimSchemaFiles.resolve("v0_82/vhd/ValidatedHistoricalData_MarketDocument_2024-06-21T12.10.53.xsd"),
-        cimSchemaFiles.resolve("v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd"),
-        cimSchemaFiles.resolve("v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
+        cimSchemaDir.resolve("v0_82/vhd/ValidatedHistoricalData_MarketDocument_2024-06-21T12.10.53.xsd"),
+        cimSchemaDir.resolve("v0_82/ap/AccountingPoint_MarketDocument_2024-06-21T11.38.58.xsd"),
+        cimSchemaDir.resolve("v0_82/pmd/Permission_Envelope_2024-06-21T11.51.02.xsd"),
         // V0.91.08
-        cimSchemaFiles.resolve("v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
+        cimSchemaDir.resolve("v0_91_08/RedistributionTransactionRequest Document_Annotated.xsd"),
         // V1.04
-        cimSchemaFiles.resolve("v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
-        cimSchemaFiles.resolve("v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
-        cimSchemaFiles.resolve("v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
-        cimSchemaFiles.resolve("v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
+        cimSchemaDir.resolve("v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd"),
+        cimSchemaDir.resolve("v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd"),
+        cimSchemaDir.resolve("v1_04/pmd/Permission Document_v1.04_annotated.xsd"),
+        cimSchemaDir.resolve("v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd"),
         // V1.12
-        cimSchemaFiles.resolve("v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd"),
-        cimSchemaFiles.resolve("v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd"),
-        cimSchemaFiles.resolve("v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd")
+        cimSchemaDir.resolve("v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd"),
+        cimSchemaDir.resolve("v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd"),
+        cimSchemaDir.resolve("v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd")
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed
-    inputs.dir(cimSchemaFiles)
+    inputs.dir(agnosticSchemaDir)
+    inputs.dir(cimSchemaDir)
     outputs.dir(generatedXJCJavaDir)
 
     doLast {
+        val agnosticTempDir = temporaryDir.resolve("agnostic")
+
         // Create a copy of the source file to not accidentally manipulate the real file
-        copy {
-            from(cimSchemaFiles)
-            into(temporaryDir)
+        listOf(
+            agnosticSchemaDir to agnosticTempDir,
+            cimSchemaDir to temporaryDir,
+        ).forEach { (src, dest) ->
+            copy {
+                from(src)
+                into(dest)
+            }
         }
-        generateJavaClassesFromCimXsds(cimSchemaFiles, orderedSchemaFiles, temporaryDir)
+
+        generateJavaClassesFromXsds(agnosticSchemaDir, orderedAgnosticSchemas, agnosticTempDir)
+        generateJavaClassesFromXsds(cimSchemaDir, orderedCimSchemas, temporaryDir)
     }
 }
 
@@ -233,7 +249,7 @@ tasks.withType<Javadoc>().configureEach {
     opt.addStringOption("Xdoclint/package:-energy.eddie.cim.*", "-quiet")
 }
 
-fun generateJavaClassesFromCimXsds(originalDirectory: File, entryPointFiles: Set<File>, workDirectory: File) {
+fun generateJavaClassesFromXsds(originalDirectory: File, entryPointFiles: Set<File>, workDirectory: File) {
     val xsdToGenerate = ArrayList<Triple<File, File, File>>()
     // Copy all files first, so they exist in the target directory
     for (srcFile in originalDirectory.walkTopDown()) {
