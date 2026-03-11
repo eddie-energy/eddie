@@ -7,8 +7,6 @@ import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.opaque.RegionConnectorOpaqueEnvelopeService;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.core.services.agnostic.OpaqueEnvelopeRouter;
-import energy.eddie.spring.regionconnector.extensions.RegionConnectorNameExtension;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Optional;
 
@@ -24,11 +22,11 @@ public class OpaqueEnvelopeRouterRegistrar {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     // In this case the opaque envelope router might be nullable.
     public OpaqueEnvelopeRouterRegistrar(
-            @Qualifier(RegionConnectorNameExtension.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName,
+            RegionConnector regionConnector,
             Optional<RegionConnectorOpaqueEnvelopeService> opaqueEnvelopeService,
             Optional<OpaqueEnvelopeRouter> opaqueEnvelopeRouter
     ) {
-        requireNonNull(regionConnectorName);
+        requireNonNull(regionConnector);
         requireNonNull(opaqueEnvelopeService);
         requireNonNull(opaqueEnvelopeRouter);
 
@@ -37,7 +35,7 @@ public class OpaqueEnvelopeRouterRegistrar {
         }
 
         opaqueEnvelopeRouter.get().registerOpaqueEnvelopeService(
-                regionConnectorName,
+                regionConnector.getMetadata().id(),
                 opaqueEnvelopeService.get()
         );
     }

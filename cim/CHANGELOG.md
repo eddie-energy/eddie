@@ -77,6 +77,6 @@ For more information, see [Common Information Model Client Libraries](https://ar
 
 - Improve Javadoc in the `CommonInformationModelVersions` class.
 
-## 3.5.2 - 2026-03-10
+## 3.6.0 - 2026-03-10
 
 - Add schema definitions for agnostic opaque envelopes
