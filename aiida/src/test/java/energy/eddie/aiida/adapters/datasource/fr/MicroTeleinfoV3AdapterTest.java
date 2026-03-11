@@ -257,7 +257,7 @@ class MicroTeleinfoV3AdapterTest {
         var invalidJson = "{\"foo\":\"bar\"}";
         var stepVerifier = StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(), new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE_TOPIC, new MqttMessage(invalidJson.getBytes(StandardCharsets.UTF_8)));
 
         TestUtils.verifyErrorLogStartsWith("Error while deserializing JSON received from adapter. JSON was %s".formatted(
                 invalidJson), LOG_CAPTOR, MicroTeleinfoV3ModeNotSupportedException.class);
@@ -277,7 +277,7 @@ class MicroTeleinfoV3AdapterTest {
                                        .expectComplete()
                                        .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(), new MqttMessage(historyModeJson.getBytes(StandardCharsets.UTF_8)));
+        adapter.messageArrived(DATA_SOURCE_TOPIC, new MqttMessage(historyModeJson.getBytes(StandardCharsets.UTF_8)));
 
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
         assertTrue(LOG_CAPTOR.getDebugLogs()
@@ -288,6 +288,7 @@ class MicroTeleinfoV3AdapterTest {
     @Test
     void givenJsonIsFromStandardMode() {
         LOG_CAPTOR.setLogLevelToDebug();
+        // language=JSON
         var standardModeJson = """
                 {
                   "ADSC": {
@@ -565,7 +566,7 @@ class MicroTeleinfoV3AdapterTest {
                                                 .expectComplete()
                                                 .verifyLater();
 
-        adapter.messageArrived(DATA_SOURCE.topic(),
+        adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(standardModeJson.getBytes(StandardCharsets.UTF_8)));
         assertEquals(3, LOG_CAPTOR.getDebugLogs().size());
         assertTrue(LOG_CAPTOR.getDebugLogs()

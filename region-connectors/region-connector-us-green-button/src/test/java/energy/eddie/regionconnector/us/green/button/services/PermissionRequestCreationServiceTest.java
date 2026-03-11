@@ -92,7 +92,7 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequest_throwsOnAiidaDataNeed() {
         // Given
-        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
 

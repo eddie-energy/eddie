@@ -6,7 +6,6 @@ package energy.eddie.aiida.schemas.rtd;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
-import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -17,7 +16,6 @@ import energy.eddie.aiida.schemas.rtd.cim.v1_04.CimFormatter;
 import energy.eddie.aiida.schemas.rtd.raw.RawFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -136,9 +134,6 @@ class SchemaTest {
     @Mock
     private ApplicationInformationService applicationInformationService;
 
-    @Mock
-    private SchemaFormatterRegistry schemaFormatterRegistry;
-
     private JsonMapper mapper;
 
     @BeforeEach
@@ -165,19 +160,17 @@ class SchemaTest {
     }
 
     @Test
-    void schemaRaw() throws SchemaFormatterRegistryException, SchemaFormatterException, IOException {
+    void schemaRaw() throws SchemaFormatterException, IOException {
         var permissionMock = mock(Permission.class);
         when(permissionMock.id()).thenReturn(PERMISSION_ID);
 
         var rawFormatter = new RawFormatter(applicationInformationService, mapper);
-        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW)).thenReturn(rawFormatter);
-        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_RAW);
 
         try (var rawRecordStreamAT = classLoader.getResourceAsStream("aiida/record/at/raw_record.json")) {
             var rawRecordBytes = Objects.requireNonNull(rawRecordStreamAT).readAllBytes();
             var expectedRecordJson = new String(rawRecordBytes, StandardCharsets.UTF_8);
 
-            var formattedRawRecordBytes = formatter.format(AIIDA_RECORD_AT, permissionMock);
+            var formattedRawRecordBytes = rawFormatter.format(AIIDA_RECORD_AT, permissionMock);
             var actualRecordJson = new String(formattedRawRecordBytes, StandardCharsets.UTF_8);
 
             assertEquals(mapper.readTree(expectedRecordJson), mapper.readTree(actualRecordJson));
@@ -187,7 +180,7 @@ class SchemaTest {
             var rawRecordBytes = Objects.requireNonNull(rawAiidaRecordFRStream).readAllBytes();
             var expectedRecordJson = new String(rawRecordBytes, StandardCharsets.UTF_8);
 
-            var formattedRawRecordBytes = formatter.format(AIIDA_RECORD_FR, permissionMock);
+            var formattedRawRecordBytes = rawFormatter.format(AIIDA_RECORD_FR, permissionMock);
             var actualRecordJson = new String(formattedRawRecordBytes, StandardCharsets.UTF_8);
 
             assertEquals(mapper.readTree(expectedRecordJson), mapper.readTree(actualRecordJson));
@@ -195,75 +188,72 @@ class SchemaTest {
     }
 
     @Test
-    void schemaCim_v1_04() throws SchemaFormatterException, SchemaFormatterRegistryException {
-        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_04.CimStrategy.class);
-        logCaptorStrategy.setLogLevelToInfo();
+    void schemaCim_v1_04() throws SchemaFormatterException {
+        try (var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_04.CimStrategy.class)) {
+            logCaptorStrategy.setLogLevelToInfo();
 
-        LOG_CAPTOR.setLogLevelToTrace();
+            LOG_CAPTOR.setLogLevelToTrace();
 
-        var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
-        var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
-        var cimFormatter = new CimFormatter(applicationInformationService, mapper);
+            var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
+            var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
+            var cimFormatter = new CimFormatter(applicationInformationService, mapper);
 
-        var permissionMock = mock(Permission.class);
-        var dataNeedMock = mock(AiidaLocalDataNeed.class);
-        var dataSource = mock(DataSource.class);
+            var permissionMock = mock(Permission.class);
+            var dataNeedMock = mock(AiidaLocalDataNeed.class);
+            var dataSource = mock(DataSource.class);
 
-        when(permissionMock.id()).thenReturn(permissionId);
-        when(permissionMock.dataSource()).thenReturn(dataSource);
-        when(permissionMock.dataNeed()).thenReturn(dataNeedMock);
-        when(permissionMock.connectionId()).thenReturn("connectionId");
+            when(permissionMock.id()).thenReturn(permissionId);
+            when(permissionMock.dataSource()).thenReturn(dataSource);
+            when(permissionMock.dataNeed()).thenReturn(dataNeedMock);
+            when(permissionMock.connectionId()).thenReturn("connectionId");
 
-        when(dataNeedMock.dataNeedId()).thenReturn(dataNeedId);
+            when(dataNeedMock.dataNeedId()).thenReturn(dataNeedId);
 
-        when(dataSource.countryCode()).thenReturn("AT");
+            when(dataSource.countryCode()).thenReturn("AT");
 
-        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_04)).thenReturn(cimFormatter);
+            assertDoesNotThrow(() -> cimFormatter.format(AIIDA_RECORD_AT, permissionMock));
+            assertDoesNotThrow(() -> cimFormatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+            assertThat(logCaptorStrategy.getErrorLogs()).contains("Error converting AiidaRecordValue to Quantity.");
 
-        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_04);
-        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_AT, permissionMock));
-        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
-        assertThat(logCaptorStrategy.getErrorLogs()).contains("Error converting AiidaRecordValue to Quantity.");
-
-        formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
-        assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
-                NEGATIVE_REACTIVE_ENERGY_IN_TARIFF));
+            cimFormatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
+            assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
+                    NEGATIVE_REACTIVE_ENERGY_IN_TARIFF));
+        }
     }
 
     @Test
-    void schemaCim_v1_12() throws SchemaFormatterException, SchemaFormatterRegistryException {
-        var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_12.CimStrategy.class);
-        logCaptorStrategy.setLogLevelToInfo();
+    void schemaCim_v1_12() throws SchemaFormatterException {
+        try (var logCaptorStrategy = LogCaptor.forClass(energy.eddie.aiida.schemas.rtd.cim.v1_12.CimStrategy.class)) {
+            logCaptorStrategy.setLogLevelToInfo();
 
-        LOG_CAPTOR.setLogLevelToTrace();
+            LOG_CAPTOR.setLogLevelToTrace();
 
-        var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
-        var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
-        var cimFormatter = new energy.eddie.aiida.schemas.rtd.cim.v1_12.CimFormatter(applicationInformationService,
-                                                                                     mapper);
+            var dataNeedId = UUID.fromString("1211ea05-d4ab-48ff-8613-8f4791a56606");
+            var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
+            var cimFormatter = new energy.eddie.aiida.schemas.rtd.cim.v1_12.CimFormatter(applicationInformationService,
+                                                                                         mapper);
 
-        var permissionMock = mock(Permission.class);
-        var dataNeedMock = mock(AiidaLocalDataNeed.class);
-        var dataSource = mock(DataSource.class);
+            var permissionMock = mock(Permission.class);
+            var dataNeedMock = mock(AiidaLocalDataNeed.class);
+            var dataSource = mock(DataSource.class);
 
-        when(permissionMock.id()).thenReturn(permissionId);
-        when(permissionMock.dataSource()).thenReturn(dataSource);
-        when(permissionMock.dataNeed()).thenReturn(dataNeedMock);
-        when(permissionMock.connectionId()).thenReturn("connectionId");
+            when(permissionMock.id()).thenReturn(permissionId);
+            when(permissionMock.dataSource()).thenReturn(dataSource);
+            when(permissionMock.dataNeed()).thenReturn(dataNeedMock);
+            when(permissionMock.connectionId()).thenReturn("connectionId");
 
-        when(dataNeedMock.dataNeedId()).thenReturn(dataNeedId);
+            when(dataNeedMock.dataNeedId()).thenReturn(dataNeedId);
 
-        when(dataSource.countryCode()).thenReturn("AT");
+            when(dataSource.countryCode()).thenReturn("AT");
 
-        when(schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_12)).thenReturn(cimFormatter);
 
-        var formatter = schemaFormatterRegistry.formatterFor(AiidaSchema.SMART_METER_P1_CIM_V1_12);
-        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_AT, permissionMock));
-        assertDoesNotThrow(() -> formatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
-        assertThat(logCaptorStrategy.getErrorLogs()).contains("Error converting AiidaRecordValue to Quantity.");
+            assertDoesNotThrow(() -> cimFormatter.format(AIIDA_RECORD_AT, permissionMock));
+            assertDoesNotThrow(() -> cimFormatter.format(AIIDA_RECORD_WITH_FAULTY_RECORD, permissionMock));
+            assertThat(logCaptorStrategy.getErrorLogs()).contains("Error converting AiidaRecordValue to Quantity.");
 
-        formatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
-        assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
-                NEGATIVE_REACTIVE_ENERGY_IN_TARIFF));
+            cimFormatter.format(AIIDA_RECORD_WITH_UNSUPPORTED_QUANTITY_TYPE, permissionMock);
+            assertThat(LOG_CAPTOR.getTraceLogs()).contains("AIIDA Record Value with data tag %s not supported.".formatted(
+                    NEGATIVE_REACTIVE_ENERGY_IN_TARIFF));
+        }
     }
 }

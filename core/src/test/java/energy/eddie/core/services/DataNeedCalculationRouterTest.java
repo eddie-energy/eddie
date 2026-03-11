@@ -250,7 +250,7 @@ class DataNeedCalculationRouterTest {
     }
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("invalidResults")
     void testFindRegionConnectorsSupportingDataNeedsMultipleDataNeedsAndAllRegionConnectors_withInvalidCombinationOfDataNeeds_returnsSupportedRegionConnectors(
             MultipleDataNeedCalculationResult result
     ) {
@@ -263,7 +263,7 @@ class DataNeedCalculationRouterTest {
         assertThat(res).isEmpty();
     }
 
-    private static Stream<Arguments> testFindRegionConnectorsSupportingDataNeedsMultipleDataNeedsAndAllRegionConnectors_withInvalidCombinationOfDataNeeds_returnsSupportedRegionConnectors() {
+    private static Stream<Arguments> invalidResults() {
         return Stream.of(
                 Arguments.of(new CalculationResult(Map.of("dnid", new DataNeedNotSupportedResult("Error")))),
                 Arguments.of(new InvalidDataNeedCombination(Set.of("dnid"), "error"))

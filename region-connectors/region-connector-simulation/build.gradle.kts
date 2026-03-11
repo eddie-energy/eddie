@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import energy.eddie.configureJavaCompileWithErrorProne
@@ -29,6 +29,7 @@ dependencies {
     implementation(libs.spring.boot.starter.actuator)
     implementation(libs.reactor.core)
     implementation(libs.jakarta.persistence.api)
+    implementation(libs.jakarta.transaction.api)
 
     testImplementation(libs.junit.mockito)
     testImplementation(libs.junit.jupiter)

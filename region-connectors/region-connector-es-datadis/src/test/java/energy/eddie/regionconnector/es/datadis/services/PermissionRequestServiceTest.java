@@ -198,7 +198,7 @@ class PermissionRequestServiceTest {
     void createAndSendPermissionRequest_withAiidaDataNeed_throws() {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", "dnid", "00000000T", "mid");
-        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        var timeframe = new Timeframe(LocalDate.now(ZONE_ID_SPAIN), LocalDate.now(ZONE_ID_SPAIN));
         when(calculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
 
         // When, Then

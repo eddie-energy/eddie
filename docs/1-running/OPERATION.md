@@ -194,3 +194,4 @@ The endpoint to query the supported data needs per region connector is available
 
 Each region connector declares which data need types are supported in what configuration.
 This API returns these rules for each region connector.
+

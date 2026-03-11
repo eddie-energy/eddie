@@ -180,7 +180,8 @@ class PermissionRequestServiceTest {
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AiidaDataNeedResult(Set.of(),
                                                     Set.of(),
-                                                    new Timeframe(LocalDate.now(), LocalDate.now())));
+                                                    new Timeframe(LocalDate.now(NL_ZONE_ID),
+                                                                  LocalDate.now(NL_ZONE_ID))));
 
         // When & Then
         assertThrows(UnsupportedDataNeedException.class,

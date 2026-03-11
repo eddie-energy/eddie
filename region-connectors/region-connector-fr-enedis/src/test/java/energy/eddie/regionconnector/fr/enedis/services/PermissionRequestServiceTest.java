@@ -108,7 +108,7 @@ class PermissionRequestServiceTest {
     void testCreatePermissionRequest_emitsMalformedOnAiidaDataNeed() {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
-        var timeframe = new Timeframe(LocalDate.now(), LocalDate.now());
+        var timeframe = new Timeframe(LocalDate.now(ZONE_ID_FR), LocalDate.now(ZONE_ID_FR));
         when(calculationService.calculate("dnid"))
                 .thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
         // When
