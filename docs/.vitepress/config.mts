@@ -91,6 +91,10 @@ export default withMermaid(
                   link: "/1-running/region-connectors/region-connector-dk-energinet.md",
                 },
                 {
+                  text: "ETA+ (Germany)",
+                  link: "/1-running/region-connectors/region-connector-de-eta.md",
+                },
+                {
                   text: "Fingrid (Finland)",
                   link: "/1-running/region-connectors/region-connector-fi-fingrid.md",
                 },

@@ -12,17 +12,18 @@ import energy.eddie.regionconnector.de.eta.permission.request.events.CreatedEven
 import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import org.junit.jupiter.api.BeforeEach;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,12 +41,18 @@ class PermissionRequestCreationServiceTest {
     @Mock
     private Outbox outbox;
 
+    @InjectMocks
     private PermissionRequestCreationService service;
 
-    @BeforeEach
-    void setUp() {
-        service = new PermissionRequestCreationService(dataNeedCalculationService, outbox);
-    }
+    @Spy
+    private final DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
+            "partner", "http://api.url",
+            new DeEtaPlusConfiguration.AuthConfig(
+                    "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri",
+                    "scope"
+            ),
+            null
+    );
 
     @Test
     void createPermissionRequestWhenDataNeedIsValidatedShouldReturnCreatedPermissionRequest() throws Exception {
@@ -66,6 +73,15 @@ class PermissionRequestCreationServiceTest {
 
         assertThat(response).isNotNull();
         assertThat(response.permissionId()).isNotNull();
+        assertThat(response.redirectUri()).isNotNull();
+        String expectedRedirectUri = "http://auth.url?" +
+                                     "response_type=code&" +
+                                     "redirect_uri=http%3A%2F%2Fredirect.uri&" +
+                                     "state=" + response.permissionId() + "&" +
+                                     "client_id=client-1&" +
+                                     "scope=scope";
+
+        assertThat(response.redirectUri()).isEqualTo(expectedRedirectUri);
 
         verify(outbox).commit(any(CreatedEvent.class));
         verify(outbox).commit(any(ValidatedEvent.class));
@@ -74,24 +90,11 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenAccountingPointDataNeedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneId.systemDefault()),
-                                            LocalDate.now(ZoneId.systemDefault()).plusDays(1));
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AccountingPointDataNeedResult(timeframe));
-
-        assertThatThrownBy(() -> service.createPermissionRequest(request))
-                .isInstanceOf(UnsupportedDataNeedException.class);
-
-        verify(outbox).commit(any(CreatedEvent.class));
-        verify(outbox).commit(any(MalformedEvent.class));
-    }
-
-    @Test
-    void createPermissionRequestWhenAiidaDataNeedShouldThrowUnsupportedAndCommitMalformed() {
-        PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
-        Timeframe timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC).plusDays(1));
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new AiidaDataNeedResult(Set.of(),
-                                                                                                   Set.of(),
-                                                                                                   timeframe));
+        Timeframe timeframe = new Timeframe(
+                LocalDate.now(ZoneId.systemDefault()),
+                LocalDate.now(ZoneId.systemDefault()).plusDays(1));
+        when(dataNeedCalculationService.calculate(anyString()))
+                .thenReturn(new AccountingPointDataNeedResult(timeframe));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);
@@ -115,7 +118,8 @@ class PermissionRequestCreationServiceTest {
     @Test
     void createPermissionRequestWhenDataNeedNotSupportedShouldThrowUnsupportedAndCommitMalformed() {
         PermissionRequestForCreation request = new PermissionRequestForCreation("dn-1", CONNECTION_ID, "mp-1");
-        when(dataNeedCalculationService.calculate(anyString())).thenReturn(new DataNeedNotSupportedResult("Unsupported"));
+        when(dataNeedCalculationService.calculate(anyString()))
+                .thenReturn(new DataNeedNotSupportedResult("Unsupported"));
 
         assertThatThrownBy(() -> service.createPermissionRequest(request))
                 .isInstanceOf(UnsupportedDataNeedException.class);

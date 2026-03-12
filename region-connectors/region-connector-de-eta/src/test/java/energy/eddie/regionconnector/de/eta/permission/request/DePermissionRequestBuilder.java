@@ -5,12 +5,14 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.v0.PermissionProcessStatus;
 
 import jakarta.annotation.Nullable;
+
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 /**
  * Test builder for DePermissionRequest.
- * This builder is only used in tests since production instances are created by JPA.
+ * This builder is only used in tests since production instances are created by
+ * JPA.
  */
 @SuppressWarnings("NullAway") // Builder pattern allows null until build() is called
 public class DePermissionRequestBuilder {
@@ -34,8 +36,6 @@ public class DePermissionRequestBuilder {
     private ZonedDateTime created;
     @Nullable
     private String dataNeedId;
-    @Nullable
-    private LocalDate latestMeterReadingEndDate;
     @Nullable
     private String message;
     @Nullable
@@ -91,11 +91,6 @@ public class DePermissionRequestBuilder {
         return this;
     }
 
-    public DePermissionRequestBuilder latestMeterReadingEndDate(LocalDate latestMeterReadingEndDate) {
-        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
-        return this;
-    }
-
     public DePermissionRequestBuilder message(String message) {
         this.message = message;
         return this;
@@ -118,7 +113,6 @@ public class DePermissionRequestBuilder {
                 status,
                 created,
                 dataNeedId,
-                latestMeterReadingEndDate,
                 message,
                 cause
         );

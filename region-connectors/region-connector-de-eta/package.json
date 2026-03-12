@@ -1,0 +1,16 @@
+{
+  "name": "eddie-de-eta",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "dependencies": {
+    "lit": "^2.8.0"
+  },
+  "devDependencies": {
+    "vite": "^7.3.1"
+  }
+}

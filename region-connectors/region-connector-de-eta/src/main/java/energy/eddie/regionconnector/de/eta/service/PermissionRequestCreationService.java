@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.de.eta.service;
 
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
@@ -19,29 +20,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.nimbusds.oauth2.sdk.AuthorizationRequest;
+import com.nimbusds.oauth2.sdk.ResponseType;
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.id.ClientID;
+import com.nimbusds.oauth2.sdk.id.State;
+
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
 /**
- * Service for creating permission requests for the German (DE) ETA Plus region connector.
+ * Service for creating permission requests for the German (DE) ETA Plus region
+ * connector.
  */
 @Service
 public class PermissionRequestCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
-    
+
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final Outbox outbox;
+    private final DeEtaPlusConfiguration configuration;
 
     public PermissionRequestCreationService(
             DataNeedCalculationService<DataNeed> dataNeedCalculationService,
-            Outbox outbox
+            Outbox outbox,
+            DeEtaPlusConfiguration configuration
     ) {
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.outbox = outbox;
+        this.configuration = configuration;
     }
 
     /**
@@ -49,7 +61,7 @@ public class PermissionRequestCreationService {
      *
      * @param requestForCreation the request creation DTO
      * @return the created permission request
-     * @throws DataNeedNotFoundException if the data need is not found
+     * @throws DataNeedNotFoundException    if the data need is not found
      * @throws UnsupportedDataNeedException if the data need is not supported
      */
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation requestForCreation)
@@ -57,15 +69,14 @@ public class PermissionRequestCreationService {
         String permissionId = UUID.randomUUID().toString();
         String dataNeedId = requestForCreation.dataNeedId();
 
-        LOGGER.info("Creating new permission request {} for metering point {}", 
-                permissionId, requestForCreation.meteringPointId());
+        LOGGER.info("Creating new permission request {} for metering point {}",
+                    permissionId, requestForCreation.meteringPointId());
 
         outbox.commit(new CreatedEvent(
                 permissionId,
                 dataNeedId,
                 requestForCreation.connectionId(),
-                requestForCreation.meteringPointId()
-        ));
+                requestForCreation.meteringPointId()));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
             case AiidaDataNeedResult ignored -> {
@@ -83,8 +94,7 @@ public class PermissionRequestCreationService {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
                         permissionId,
-                        List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))
-                ));
+                        List.of(new AttributeError(DATA_NEED_ID, "Unknown dataNeedId"))));
                 throw new DataNeedNotFoundException(dataNeedId);
             }
 
@@ -94,19 +104,33 @@ public class PermissionRequestCreationService {
             }
 
             case ValidatedHistoricalDataDataNeedResult(
-                    List<Granularity> granularities,
-                    Timeframe ignored,
-                    Timeframe energyTimeframe
+                    List<Granularity> granularities, Timeframe ignored, Timeframe energyTimeframe
             ) -> {
                 LOGGER.info("Validated permission request {}", permissionId);
                 outbox.commit(new ValidatedEvent(
                         permissionId,
                         energyTimeframe.start(),
                         energyTimeframe.end(),
-                        granularities.getFirst()
-                ));
-                return new CreatedPermissionRequest(permissionId);
+                        granularities.getFirst()));
+                return new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
             }
+        }
+    }
+
+    private String buildRedirectUri(String permissionId) {
+        try {
+            AuthorizationRequest request = new AuthorizationRequest.Builder(
+                    new ResponseType(ResponseType.Value.CODE),
+                    new ClientID(configuration.auth().clientId()))
+                    .endpointURI(new URI(configuration.auth().authorizationUrl()))
+                    .state(new State(permissionId))
+                    .redirectionURI(new URI(configuration.auth().redirectUri()))
+                    .scope(Scope.parse(configuration.auth().scope()))
+                    .build();
+            return request.toURI().toString();
+        } catch (Exception e) {
+            LOGGER.error("Failed to build authorization URI for permissionId: {}", permissionId, e);
+            return "";
         }
     }
 }

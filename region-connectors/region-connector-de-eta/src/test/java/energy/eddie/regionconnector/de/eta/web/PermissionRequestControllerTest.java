@@ -16,7 +16,6 @@ import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSI
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,14 +36,18 @@ class PermissionRequestControllerTest {
 
     @Test
     void createPermissionRequestShouldReturnCreated() throws Exception {
-        CreatedPermissionRequest response = new CreatedPermissionRequest("perm-1");
+        CreatedPermissionRequest response = new CreatedPermissionRequest("perm-1", "https://redirect.uri");
         when(service.createPermissionRequest(any())).thenReturn(response);
 
         mockMvc.perform(post(PATH_PERMISSION_REQUEST)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"connectionId\": \"conn-1\", \"dataNeedId\": \"dn-1\", \"meteringPointId\": \"mp-1\"}"))
-                .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.permissionId").value("perm-1"));
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        // language=JSON
+                                        "{\"connectionId\": \"conn-1\", \"dataNeedId\": \"dn-1\", \"meteringPointId\": \"mp-1\"}"
+                                )
+               )
+               .andExpect(status().isCreated())
+               .andExpect(jsonPath("$.permissionId").value("perm-1"))
+               .andExpect(jsonPath("$.redirectUri").value("https://redirect.uri"));
     }
 }
