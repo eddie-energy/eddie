@@ -3,14 +3,12 @@ package energy.eddie.regionconnector.de.eta.web;
 import energy.eddie.regionconnector.de.eta.auth.AuthCallback;
 import energy.eddie.regionconnector.de.eta.service.PermissionRequestAuthorizationService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
@@ -20,27 +18,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-@ExtendWith(MockitoExtension.class)
+@WebMvcTest(AuthorizationCallbackController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class AuthorizationCallbackControllerTest {
 
+    @Autowired
     private MockMvc mockMvc;
 
-    @Mock
+    @MockitoBean
     private PermissionRequestAuthorizationService authorizationService;
-
-    @InjectMocks
-    private AuthorizationCallbackController controller;
-
-    @BeforeEach
-    void setUp() {
-        org.springframework.web.servlet.view.InternalResourceViewResolver viewResolver = new org.springframework.web.servlet.view.InternalResourceViewResolver();
-        viewResolver.setPrefix("/templates/");
-        viewResolver.setSuffix(".html");
-
-        mockMvc = MockMvcBuilders.standaloneSetup(controller)
-                                 .setViewResolvers(viewResolver)
-                                 .build();
-    }
 
     @Test
     void callback_successful_returnsOk() throws Exception {
