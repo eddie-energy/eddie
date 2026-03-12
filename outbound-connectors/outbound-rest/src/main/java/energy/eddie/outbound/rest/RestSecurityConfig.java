@@ -90,6 +90,7 @@ public class RestSecurityConfig {
                 // @formatter:off
                 .requestMatchers(restRequestMatcher.matcher("/agnostic/connection-status-messages")).hasAuthority("SCOPE_agnostic-connection-status-messages:read")
                 .requestMatchers(restRequestMatcher.matcher("/agnostic/raw-data-messages")).hasAuthority("SCOPE_agnostic-raw-data-messages:read")
+                .requestMatchers(restRequestMatcher.matcher("/agnostic/opaque-envelope")).hasAuthority("SCOPE_agnostic-opaque-envelope:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/permission-md")).hasAuthority("SCOPE_cim-permission-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/accounting-point-data-md")).hasAuthority("SCOPE_cim-accounting-point-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")

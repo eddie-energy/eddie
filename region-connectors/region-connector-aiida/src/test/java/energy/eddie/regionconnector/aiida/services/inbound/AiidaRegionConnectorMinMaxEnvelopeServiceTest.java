@@ -1,12 +1,13 @@
 // SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.regionconnector.aiida.services;
+package energy.eddie.regionconnector.aiida.services.inbound;
 
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_12.recmmoe.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.recmmoe.MetaInformation;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.regionconnector.aiida.services.MqttService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

@@ -98,6 +98,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.schemas = dataNeed.schemas();
         this.asset = dataNeed.asset();
         this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
+        this.isAcknowledgementRequired = dataNeed.isAcknowledgementRequired();
     }
 
     public String name() {

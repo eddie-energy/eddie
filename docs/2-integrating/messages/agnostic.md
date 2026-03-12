@@ -60,3 +60,23 @@ classDiagram
 
     RawDataMessage "1" --> "1" DataSourceInformation: contains
 ```
+
+## Opaque Envelopes
+
+Opaque envelopes are used to transfer any data without parsing the payload of it.
+They contain some meta information concerning the related permission request and a payload.
+The JSON schema and XSD files can be found [here](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/agnostic).
+The `payload` attribute might contain any data format, e.g. JSON, XML, or any other format.
+
+```mermaid
+classDiagram
+    class OpaqueEnvelope {
+        +String regionConnectorId
+        +String connectionId
+        +UUID permissionId
+        +UUID dataNeedId
+        +UUID messageId
+        +String timestamp
+        +String payload
+    }
+```

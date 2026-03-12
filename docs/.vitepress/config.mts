@@ -166,6 +166,10 @@ export default withMermaid(
                       text: "Raw Data Messages",
                       link: "/2-integrating/messages/agnostic.md#raw-data-messages",
                     },
+                    {
+                      text: "Opaque Envelopes",
+                      link: "/2-integrating/messages/agnostic.md#opaque-envelopes",
+                    },
                   ],
                 },
                 {

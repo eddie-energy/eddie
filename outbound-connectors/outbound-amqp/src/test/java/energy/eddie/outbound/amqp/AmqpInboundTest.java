@@ -5,6 +5,7 @@ package energy.eddie.outbound.amqp;
 
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.serde.XmlMessageSerde;
@@ -19,6 +20,7 @@ import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -189,6 +191,56 @@ class AmqpInboundTest {
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()
                                   .queue(config.minMaxEnvelopeDocument())
+                                  .build();
+        var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testOpaqueEnvelope_acceptsMessage() throws InterruptedException, SerializationException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(config.opaqueEnvelope())
+                                  .build();
+
+        var id = "test-id";
+        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
+
+        var msg = publisher.message(serde.serialize(envelope));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+        var pair = amqpInbound.getOpaqueEnvelopes().blockFirst();
+        assertNotNull(pair);
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testOpaqueEnvelope_discardsInvalidMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(config.opaqueEnvelope())
                                   .build();
         var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
         // When

@@ -5,6 +5,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerdeFactory;
@@ -186,7 +187,6 @@ class CustomSerializerTest {
         customSerializer.close();
     }
 
-
     @Test
     void givenRawDataMessage_serializes_asExpected() throws SerdeInitializationException {
         // Given
@@ -198,6 +198,33 @@ class CustomSerializerTest {
                                          "bar",
                                          "id1",
                                          dataSourceInformation,
+                                         ZonedDateTime.parse("2024-01-16T12:00:00Z"),
+                                         "rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters");
+
+        // When
+        var result = customSerializer.serialize(topic, message);
+
+        // Then
+        assertThat(result)
+                .isNotNull()
+                .asString(StandardCharsets.UTF_8)
+                .isEqualTo(expectedString);
+
+        // Clean-Up
+        customSerializer.close();
+    }
+
+    @Test
+    void givenOpaqueEnvelope_serializes_asExpected() throws SerdeInitializationException {
+        // Given
+        var customSerializer = new CustomSerializer(SerdeFactory.getInstance().create("json"));
+        var expectedString = "{\"regionConnectorId\":\"aiida\",\"permissionId\":\"foo\",\"connectionId\":\"bar\",\"dataNeedId\":\"id1\",\"messageId\":\"msg-1\",\"timestamp\":\"2024-01-16T12:00:00Z\",\"payload\":\"rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters\"}";
+        var topic = "myTest";
+        var message = new OpaqueEnvelope("aiida",
+                                         "foo",
+                                         "bar",
+                                         "id1",
+                                         "msg-1",
                                          ZonedDateTime.parse("2024-01-16T12:00:00Z"),
                                          "rawPayload with <xml> and <html> stuff and special Ϸ ϲ ℻ characters");
 

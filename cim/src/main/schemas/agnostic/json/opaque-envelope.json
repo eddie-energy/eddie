@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "regionConnectorId": {
+      "description": "ID of the region connector that should receive the message",
+      "type": "string"
+    },
+    "connectionId": {
+      "description": "ID given by the eligible party to the permission request",
+      "type": "string"
+    },
+    "permissionId": {
+      "description": "Unique ID of the permission request",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "dataNeedId": {
+      "description": "Data need related to the permission request",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "messageId": {
+      "description": "Unique ID of the message",
+      "$ref": "shared.json#/$defs/uuid"
+    },
+    "timestamp": {
+      "description": "Creation timestamp of this message",
+      "type": "string",
+      "format": "date-time"
+    },
+    "payload": {
+      "description": "Opaque payload that the eligible party wants to send to the region connector",
+      "type": "string"
+    }
+  },
+  "required": [
+    "regionConnectorId",
+    "permissionId",
+    "connectionId",
+    "dataNeedId",
+    "messageId",
+    "timestamp",
+    "payload"
+  ]
+}
+

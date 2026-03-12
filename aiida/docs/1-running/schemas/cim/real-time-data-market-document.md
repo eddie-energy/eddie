@@ -1,4 +1,7 @@
-# Real Time Data Market Document
+# Near Real-Time Data Market Document
+
+> [!NOTE]
+> Further information about the CIM envelope can be found in the [EDDIE documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/near-real-time-data-documents.html).
 
 The Real Time Data (RTD) Market Document contains near-real time (NRT) data that is received from a data source in AIIDA.
 The RTD Market Document is sent as JSON document over MQTT from AIIDA to EDDIE.

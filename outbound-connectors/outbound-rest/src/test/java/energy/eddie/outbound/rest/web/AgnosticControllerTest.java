@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.api.v0.PermissionProcessStatus;
 import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
@@ -144,6 +145,20 @@ class AgnosticControllerTest {
                         assertEquals(msg.payload().permissionId(), next.getFirst().permissionId());
                     })
                     .verifyComplete();
+    }
+
+    @Test
+    void opaqueEnvelope_returnsAccepted() {
+        var id = "test-id";
+        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
+
+        webTestClient.post()
+                     .uri("/agnostic/opaque-envelope")
+                     .contentType(MediaType.APPLICATION_JSON)
+                     .bodyValue(envelope)
+                     .exchange()
+                     .expectStatus()
+                     .isAccepted();
     }
 
     private ConnectionStatusMessage statusMessage(PermissionProcessStatus status) {

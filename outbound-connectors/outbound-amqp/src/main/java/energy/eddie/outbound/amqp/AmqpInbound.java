@@ -6,6 +6,8 @@ package energy.eddie.outbound.amqp;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Consumer;
 import com.rabbitmq.client.amqp.Message;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
+import energy.eddie.api.agnostic.outbound.OpaqueEnvelopeOutboundConnector;
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
@@ -26,11 +28,17 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
-public class AmqpInbound implements TerminationConnector, RetransmissionOutboundConnector, MinMaxEnvelopeOutboundConnector, AutoCloseable {
+public class AmqpInbound implements
+        TerminationConnector,
+        RetransmissionOutboundConnector,
+        MinMaxEnvelopeOutboundConnector,
+        OpaqueEnvelopeOutboundConnector,
+        AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpInbound.class);
     private final Consumer terminationsConsumer;
     private final Consumer retransmissionRequestsConsumer;
     private final Consumer minMaxEnvelopeConsumer;
+    private final Consumer opaqueEnvelopeConsumer;
     private final Sinks.Many<Pair<String, PermissionEnvelope>> terminations = Sinks.many()
                                                                                    .multicast()
                                                                                    .onBackpressureBuffer();
@@ -40,6 +48,9 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
     private final Sinks.Many<RECMMOEEnvelope> minMaxEnvelopes = Sinks.many()
                                                                      .multicast()
                                                                      .onBackpressureBuffer();
+    private final Sinks.Many<OpaqueEnvelope> opaqueEnvelopes = Sinks.many()
+                                                                    .multicast()
+                                                                    .onBackpressureBuffer();
     private final MessageSerde serde;
 
     public AmqpInbound(Connection connection, MessageSerde serde, TopicConfiguration config) {
@@ -55,6 +66,10 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
                                            .queue(config.minMaxEnvelopeDocument())
                                            .messageHandler(this::consumeMinMaxEnvelope)
                                            .build();
+        opaqueEnvelopeConsumer = connection.consumerBuilder()
+                                           .queue(config.opaqueEnvelope())
+                                           .messageHandler(this::consumeOpaqueEnvelope)
+                                           .build();
 
         this.serde = serde;
     }
@@ -64,6 +79,7 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
         terminationsConsumer.close();
         retransmissionRequestsConsumer.close();
         minMaxEnvelopeConsumer.close();
+        opaqueEnvelopeConsumer.close();
         terminations.tryEmitComplete();
         retransmissionRequests.tryEmitComplete();
     }
@@ -86,6 +102,11 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
     @Override
     public Flux<RECMMOEEnvelope> getMinMaxEnvelopes() {
         return minMaxEnvelopes.asFlux();
+    }
+
+    @Override
+    public Flux<OpaqueEnvelope> getOpaqueEnvelopes() {
+        return opaqueEnvelopes.asFlux();
     }
 
     private void consumeTerminationDocuments(Consumer.Context context, Message message) {
@@ -127,7 +148,19 @@ public class AmqpInbound implements TerminationConnector, RetransmissionOutbound
             context.accept();
         } catch (DeserializationException e) {
             context.discard();
-            LOGGER.info("Got invalid min-max envelope message", e);
+            LOGGER.info("Got invalid min-max envelope", e);
+        }
+    }
+
+    private void consumeOpaqueEnvelope(Consumer.Context context, Message message) {
+        try {
+            var envelope = serde.deserialize(message.body(), OpaqueEnvelope.class);
+            LOGGER.debug("Got new opaque envelope");
+            opaqueEnvelopes.tryEmitNext(envelope);
+            context.accept();
+        } catch (DeserializationException e) {
+            context.discard();
+            LOGGER.info("Got invalid opaque envelope", e);
         }
     }
 }

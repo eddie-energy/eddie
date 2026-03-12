@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -14,19 +15,40 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OpaqueAckFormatterStrategyTest {
     private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
+    private static final String CONNECTION_ID = "1";
     private static final UUID PERMISSION_ID = UUID.fromString("00213495-bdbf-4497-8695-5d811e45aa64");
     private static final UUID DATA_NEED_ID = UUID.fromString("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12");
+    private static final UUID MESSAGE_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
+    private static final String TIMESTAMP_STRING = "2024-01-01T12:00:00Z";
+    private static final ZonedDateTime TIMESTAMP = ZonedDateTime.parse(TIMESTAMP_STRING);
+
+    private static final String PAYLOAD = """
+            {
+              "regionConnectorId":"aiida",
+              "permissionId":"%s",
+              "connectionId":"%s",
+              "dataNeedId":"%s",
+              "messageId":"%s",
+              "timestamp":"%s",
+              "payload":"test-payload"
+            }
+            """.formatted(PERMISSION_ID.toString(),
+                          CONNECTION_ID,
+                          DATA_NEED_ID.toString(),
+                          MESSAGE_ID.toString(),
+                          TIMESTAMP_STRING);
 
     private final OpaqueAckFormatterStrategy strategy = new OpaqueAckFormatterStrategy(AIIDA_ID);
 
@@ -38,9 +60,14 @@ class OpaqueAckFormatterStrategyTest {
     private InboundDataSource inboundDataSource;
     @Mock
     private InboundRecord inboundRecord;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        var builder = JsonMapper.builder();
+        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
+        objectMapper = builder.build();
+
         when(inboundRecord.dataSource()).thenReturn(inboundDataSource);
 
         when(inboundDataSource.countryCode()).thenReturn("ES");
@@ -58,12 +85,10 @@ class OpaqueAckFormatterStrategyTest {
 
     @Test
     void convert_convertsInboundRecordToAcknowledgementEnvelope() {
-        var payload = "{\"greeting\": \"Hello World!\"}";
-
-        when(inboundRecord.payload()).thenReturn(payload);
+        when(inboundRecord.payload()).thenReturn(PAYLOAD);
 
         // When
-        var envelope = strategy.convert(mock(ObjectMapper.class), inboundRecord);
+        var envelope = strategy.convert(objectMapper, inboundRecord);
 
         // Then
         var header = envelope.getMessageDocumentHeader();
@@ -73,7 +98,7 @@ class OpaqueAckFormatterStrategyTest {
 
         assertAll(
                 () -> assertNotNull(header.getCreationDateTime()),
-                () -> assertNull(metaInfo.getConnectionId()),
+                () -> assertEquals(CONNECTION_ID, metaInfo.getConnectionId()),
                 () -> assertEquals(PERMISSION_ID.toString(), metaInfo.getRequestPermissionId()),
                 () -> assertEquals(DATA_NEED_ID.toString(), metaInfo.getDataNeedId()),
                 () -> assertEquals("acknowledgement-market-document", metaInfo.getDocumentType()),
@@ -92,8 +117,8 @@ class OpaqueAckFormatterStrategyTest {
         assertAll(
                 () -> assertNotNull(marketDocument.getCreatedDateTime()),
                 () -> assertNotNull(marketDocument.getMRID()),
-                () -> assertEquals("7e21cebad7229fdee4ca592ba243686c9ef1b457be6202ff78c3a5b96693956f",
-                                   marketDocument.getReceivedMarketDocumentMRID())
+                () -> assertEquals(TIMESTAMP, marketDocument.getReceivedMarketDocumentCreatedDateTime()),
+                () -> assertEquals(MESSAGE_ID.toString(), marketDocument.getReceivedMarketDocumentMRID())
         );
     }
 }

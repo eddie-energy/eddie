@@ -1,7 +1,5 @@
-/*
- * SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
- * SPDX-License-Identifier: Apache-2.0
- */
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
 import { defineConfig } from "vitepress";
 import { withMermaid } from "vitepress-plugin-mermaid";
 import { transformerTwoslash } from "@shikijs/vitepress-twoslash";
@@ -142,6 +140,7 @@ export default withMermaid(
             },
             {
               text: "Schemas",
+              link: "/1-running/schemas/schemas.md",
               collapsed: true,
               items: [
                 {

@@ -120,6 +120,17 @@ public class TopicConfiguration {
                        TopicStructure.DocumentTypes.MIN_MAX_ENVELOPE_MD);
     }
 
+    /**
+     * Endpoint for opaque envelope with any payload.
+     * Used to receive messages from the eligible party.
+     */
+    public String opaqueEnvelope() {
+        return toTopic(TopicStructure.Direction.FW,
+                       TopicStructure.DataModels.AGNOSTIC,
+                       TopicStructure.DocumentTypes.OPAQUE_ENVELOPE);
+    }
+
+
     private String toTopic(
             TopicStructure.Direction direction,
             TopicStructure.DataModels dataModel,

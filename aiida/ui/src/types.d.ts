@@ -8,6 +8,7 @@ export type AiidaDataNeed = {
   policyLink: string
   transmissionSchedule: string
   schemas: string[]
+  isAcknowledgementRequired: boolean
   asset: string
   dataTags: string[]
   type: 'outbound-aiida' | 'inbound-aiida'

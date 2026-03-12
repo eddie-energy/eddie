@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.spring.regionconnector.extensions;
+package energy.eddie.spring.regionconnector.extensions.agnostic;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService;
-import energy.eddie.core.services.CoreRetransmissionRouter;
+import energy.eddie.core.services.agnostic.CoreRetransmissionRouter;
+import energy.eddie.spring.regionconnector.extensions.RegionConnectorNameExtension;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Optional;

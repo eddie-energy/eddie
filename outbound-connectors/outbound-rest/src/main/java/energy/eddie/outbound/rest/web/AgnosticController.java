@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.web;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
 import energy.eddie.api.agnostic.RawDataMessage;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
 import energy.eddie.outbound.rest.dto.RawDataMessages;
@@ -29,10 +30,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
 import java.time.ZonedDateTime;
@@ -216,12 +214,12 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
         PredicateSpecification<ConnectionStatusMessageModel> specification = buildQuery(permissionId,
-                                                                               connectionId,
-                                                                               dataNeedId,
-                                                                               countryCode,
-                                                                               regionConnectorId,
-                                                                               from,
-                                                                               to);
+                                                                                        connectionId,
+                                                                                        dataNeedId,
+                                                                                        countryCode,
+                                                                                        regionConnectorId,
+                                                                                        from,
+                                                                                        to);
         var all = csmRepository.findAll(specification);
         var messages = ModelWithJsonPayload.payloadsOf(all);
         return ResponseEntity.ok()
@@ -377,16 +375,67 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<ZonedDateTime> to
     ) {
         PredicateSpecification<RawDataMessageModel> specification = buildQuery(permissionId,
-                                                                      connectionId,
-                                                                      dataNeedId,
-                                                                      countryCode,
-                                                                      regionConnectorId,
-                                                                      from,
-                                                                      to);
+                                                                               connectionId,
+                                                                               dataNeedId,
+                                                                               countryCode,
+                                                                               regionConnectorId,
+                                                                               from,
+                                                                               to);
         var all = rawDataRepository.findAll(specification);
         var messages = ModelWithJsonPayload.payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new RawDataMessages(messages));
+    }
+
+    @Operation(
+            operationId = "POST opaque envelope",
+            summary = "POST opaque envelope",
+            description = "POST a opaque envelope, that will be forwarded to the region connectors",
+            method = "POST",
+            responses = @ApiResponse(responseCode = "202"),
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "The opaque envelope, which contains any payload and metadata, that will be forwarded to the region connectors",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = OpaqueEnvelope.class),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    {
+                                                      "connectionId": "1",
+                                                      "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                      "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                      "regionConnectorId": "aiida",
+                                                      "payload": "{}"
+                                                    }
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = OpaqueEnvelope.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <OpaqueEnvelope>
+                                                      <connectionId>1</connectionId>
+                                                      <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                      <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                      <regionConnectorId>aiida</regionConnectorId>
+                                                      <payload>{}</payload>
+                                                    </OpaqueEnvelope>
+                                                    """
+                                    )
+                            )
+                    }
+            )
+    )
+    @PostMapping(value = "opaque-envelope", consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    public ResponseEntity<Void> opaqueEnvelope(@RequestBody OpaqueEnvelope opaqueEnvelope) {
+        agnosticConnector.publish(opaqueEnvelope);
+        return ResponseEntity.accepted()
+                             .build();
     }
 
     private static <T> PredicateSpecification<T> buildQuery(

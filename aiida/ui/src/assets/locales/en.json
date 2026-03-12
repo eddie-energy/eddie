@@ -124,6 +124,7 @@
       "asset": "Asset",
       "obisCodes": "OBIS-Codes",
       "dataSource": "Data Source",
+      "isAcknowledgementRequired": "Acknowledgement Required",
       "permissionId": "Permission ID",
       "downloadLatestMessageButton": "Download Latest Message",
       "inboundTooltip": "There are two ways to use this API Key to retrieve the latest inbound data:",

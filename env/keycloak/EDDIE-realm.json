@@ -15,6 +15,10 @@
       "protocol": "openid-connect"
     },
     {
+      "name": "agnostic-opaque_envelope:write",
+      "protocol": "openid-connect"
+    },
+    {
       "name": "cim-permission-md:read",
       "protocol": "openid-connect"
     },
@@ -64,6 +68,7 @@
         "offline_access",
         "agnostic-connection-status-messages:read",
         "agnostic-raw-data-messages:read",
+        "agnostic-opaque_envelope:write",
         "cim-permission-md:read",
         "cim-accounting-point-data-md:read",
         "cim-validated-historical-data-md:read",

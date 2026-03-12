@@ -29,6 +29,7 @@ public class AmqpSetup {
                 configuration.terminationMarketDocument(),
                 configuration.redistributionTransactionRequestDocument(),
                 configuration.minMaxEnvelopeDocument(),
+                configuration.opaqueEnvelope(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
         };
         try (var management = connection.management()) {

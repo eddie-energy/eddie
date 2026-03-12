@@ -5,10 +5,8 @@ package energy.eddie.spring.regionconnector.extensions.v1_12;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.v0.RegionConnector;
-import energy.eddie.api.v1_12.outbound.RegionConnectorMinMaxEnvelopeService;
+import energy.eddie.api.v1_12.RegionConnectorMinMaxEnvelopeService;
 import energy.eddie.core.services.v1_12.MinMaxEnvelopeRouter;
-import energy.eddie.spring.regionconnector.extensions.RegionConnectorNameExtension;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Optional;
 
@@ -24,11 +22,11 @@ public class MinMaxEnvelopeRouterRegistrar {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     // In this case the min-max envelope router might be nullable.
     public MinMaxEnvelopeRouterRegistrar(
-            @Qualifier(RegionConnectorNameExtension.REGION_CONNECTOR_NAME_BEAN_NAME) String regionConnectorName,
+            RegionConnector regionConnector,
             Optional<RegionConnectorMinMaxEnvelopeService> minMaxEnvelopeService,
             Optional<MinMaxEnvelopeRouter> minMaxEnvelopeRouter
     ) {
-        requireNonNull(regionConnectorName);
+        requireNonNull(regionConnector);
         requireNonNull(minMaxEnvelopeService);
         requireNonNull(minMaxEnvelopeRouter);
 
@@ -37,7 +35,7 @@ public class MinMaxEnvelopeRouterRegistrar {
         }
 
         minMaxEnvelopeRouter.get().registerMinMaxEnvelopeService(
-                regionConnectorName,
+                regionConnector.getMetadata().id(),
                 minMaxEnvelopeService.get()
         );
     }

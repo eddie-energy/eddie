@@ -31,7 +31,7 @@ The EP can publish data to the respective topic in a desired outbound connector 
 
 The following schemas are currently supported for inbound data:
 
-- `OPAQUE` (any undefined payload)
+- `OPAQUE` (any undefined payload with metadata - see [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/agnostic.html#opaque-envelopes))
 - `MIN_MAX_ENVELOPE_CIM_V1_12` (min-max envelope in CIM v1.12 format - see [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/min-max-envelope.html))
 
 EDDIE subscribes to these topics and forwards the data to the MQTT broker of the EDDIE instance, where AIIDA subscribes to this topic and receives any data published to it.
@@ -79,7 +79,6 @@ This is done by the flag `isAcknowledgementRequired` in the data need of the inb
 The EP can subscribe to the respective topic in a desired outbound connector (e.g, in Kafka: `fw.eddie.cim_1_12.acknowledgement-md`).
 
 The received market document MRID is identical to the one sent by the EP, allowing the EP to correlate the acknowledgement with the transmitted data.
-For the `OPAQUE` schema, the MRID contains the SHA-256 hash of the received data, enabling the EP to verify that the data was received correctly by AIIDA.
 
 ## Revocation
 

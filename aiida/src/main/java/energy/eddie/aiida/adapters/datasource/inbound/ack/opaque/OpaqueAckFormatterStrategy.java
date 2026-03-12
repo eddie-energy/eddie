@@ -5,10 +5,10 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 
 import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementMarketDocument;
 import energy.eddie.cim.v1_12.ack.MessageDocumentHeader;
-import org.apache.commons.codec.digest.DigestUtils;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.ZonedDateTime;
@@ -21,25 +21,24 @@ public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
 
     @Override
     public AcknowledgementEnvelope convert(ObjectMapper objectMapper, InboundRecord inboundRecord) {
+        var payload = inboundRecord.payload();
+        var opaqueEnvelope = objectMapper.readValue(payload, OpaqueEnvelope.class);
         var now = ZonedDateTime.now(UTC);
 
         var header = new MessageDocumentHeader()
                 .withCreationDateTime(now)
-                .withMetaInformation(toMetaInformation(inboundRecord.dataSource(), null));
+                .withMetaInformation(toMetaInformation(inboundRecord.dataSource(), opaqueEnvelope.connectionId()));
 
         return new AcknowledgementEnvelope()
                 .withMessageDocumentHeader(header)
-                .withMarketDocument(toMarketDocument(now, inboundRecord.payload()));
+                .withMarketDocument(toMarketDocument(now, opaqueEnvelope));
     }
 
-    private AcknowledgementMarketDocument toMarketDocument(ZonedDateTime now, String payload) {
+    private AcknowledgementMarketDocument toMarketDocument(ZonedDateTime now, OpaqueEnvelope opaqueEnvelope) {
         return new AcknowledgementMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
                 .withCreatedDateTime(now)
-                .withReceivedMarketDocumentMRID(hashPayload(payload));
-    }
-
-    private String hashPayload(String payload) {
-        return DigestUtils.sha256Hex(payload);
+                .withReceivedMarketDocumentCreatedDateTime(opaqueEnvelope.timestamp())
+                .withReceivedMarketDocumentMRID(opaqueEnvelope.messageId());
     }
 }

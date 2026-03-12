@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns:ns1="http://www.eddie.energy/agnostic"
@@ -9,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
            elementFormDefault="qualified">
     <xs:element name="RawDataMessage" type="ns1:rawDataMessage"/>
     <xs:element name="ConnectionStatusMessage" type="ns1:connectionStatusMessage"/>
+    <xs:element name="OpaqueEnvelope" type="ns1:opaqueEnvelope"/>
 
     <!-- connection status message types -->
     <xs:complexType name="connectionStatusMessage">
@@ -59,6 +58,19 @@ SPDX-License-Identifier: Apache-2.0
             <xs:element name="dataSourceInformation" type="ns1:dataSourceInformation"/>
             <xs:element type="xs:dateTime" name="timestamp"/>
             <xs:element name="rawPayload" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!-- opaque envelope types -->
+    <xs:complexType name="opaqueEnvelope">
+        <xs:all>
+            <xs:element type="xs:string" name="regionConnectorId"/>
+            <xs:element type="xs:string" name="connectionId"/>
+            <xs:element type="ns1:uuid" name="permissionId"/>
+            <xs:element type="ns1:uuid" name="dataNeedId"/>
+            <xs:element type="ns1:uuid" name="messageId"/>
+            <xs:element type="xs:dateTime" name="timestamp"/>
+            <xs:element name="payload" type="xs:string"/>
         </xs:all>
     </xs:complexType>
 

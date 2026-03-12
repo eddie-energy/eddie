@@ -4,6 +4,7 @@
 package energy.eddie.outbound.rest;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessage;
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -61,6 +62,7 @@ public class RestOutboundBeanConfig {
         marshaller.setClassesToBeBound(
                 // Agnostic
                 ConnectionStatusMessage.class,
+                OpaqueEnvelope.class,
                 // CIM v0.82
                 ValidatedHistoricalDataEnvelope.class,
                 PermissionEnvelope.class,

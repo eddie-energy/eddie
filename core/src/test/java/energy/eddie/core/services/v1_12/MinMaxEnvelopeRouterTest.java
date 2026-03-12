@@ -3,8 +3,8 @@
 
 package energy.eddie.core.services.v1_12;
 
+import energy.eddie.api.v1_12.RegionConnectorMinMaxEnvelopeService;
 import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
-import energy.eddie.api.v1_12.outbound.RegionConnectorMinMaxEnvelopeService;
 import energy.eddie.cim.v1_12.recmmoe.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.recmmoe.MetaInformation;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;

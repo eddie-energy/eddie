@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.kafka;
 
+import energy.eddie.api.agnostic.opaque.OpaqueEnvelope;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerdeFactory;
 import energy.eddie.cim.serde.SerdeInitializationException;
@@ -101,6 +102,22 @@ public class KafkaTestConfig {
                                                                 new StringDeserializer(),
                                                                 new CustomDeserializer<>(serde, RECMMOEEnvelope.class));
         var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, RECMMOEEnvelope>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, OpaqueEnvelope>> opaqueEnvelopeListenerContainerFactory(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") EmbeddedKafkaBroker embeddedKafka,
+            MessageSerde serde
+    ) {
+        var props = new HashMap<String, Object>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        var consumerFactory = new DefaultKafkaConsumerFactory<>(props,
+                                                                new StringDeserializer(),
+                                                                new CustomDeserializer<>(serde, OpaqueEnvelope.class));
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, OpaqueEnvelope>();
         listenerContainerFactory.setConsumerFactory(consumerFactory);
         return listenerContainerFactory;
     }
