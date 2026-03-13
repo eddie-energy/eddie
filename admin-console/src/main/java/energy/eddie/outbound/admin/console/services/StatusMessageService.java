@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.admin.console.services;
@@ -64,8 +64,11 @@ public class StatusMessageService implements PermissionMarketDocumentOutboundCon
                 country,
                 message.getReceiverMarketParticipantMRID().getValue(),
                 permission.getCreatedDateTime(),
+                message.getPeriodTimeInterval().getStart(),
+                message.getPeriodTimeInterval().getEnd(),
                 permission.getStatus().toString(),
-                permission.getDescription()
+                permission.getDescription(),
+                permission.getReason()
         );
     }
 }

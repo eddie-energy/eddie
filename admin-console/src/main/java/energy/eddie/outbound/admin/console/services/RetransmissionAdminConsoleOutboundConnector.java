@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.admin.console.services;
@@ -14,6 +14,8 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
+import java.time.LocalDate;
+
 @Component
 public class RetransmissionAdminConsoleOutboundConnector implements RetransmissionOutboundConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(RetransmissionAdminConsoleOutboundConnector.class);
@@ -23,6 +25,13 @@ public class RetransmissionAdminConsoleOutboundConnector implements Retransmissi
                                                                                       .onBackpressureBuffer();
     @Nullable
     private Disposable subscription = null;
+
+    public void retransmit(String permissionId, String regionConnectorId, LocalDate from, LocalDate to) {
+        LOGGER.debug("Requesting retransmission for permission with id {} for region connector with id {} from {} to {}",
+                     permissionId, regionConnectorId, from, to);
+        var request = new RetransmissionRequest(regionConnectorId, permissionId, from, to);
+        retransmissionRequestsSink.tryEmitNext(request);
+    }
 
     @Override
     public Flux<RetransmissionRequest> retransmissionRequests() {

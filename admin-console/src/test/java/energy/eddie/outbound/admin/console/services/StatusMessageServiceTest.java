@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.admin.console.services;
@@ -34,6 +34,9 @@ class StatusMessageServiceTest {
                                                                            .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
                                                                            .withValue("Enedis"))
                                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
+                                .withPeriodTimeInterval(new ESMPDateTimeIntervalComplexType()
+                                                                .withStart("2021-01-01T00:00:00Z")
+                                                                .withEnd("2021-01-02T00:00:00Z"))
                                 .withPermissionList(new PermissionMarketDocumentComplexType.PermissionList()
                                                             .withPermissions(new PermissionComplexType()
                                                                                      .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
@@ -56,7 +59,7 @@ class StatusMessageServiceTest {
                         () -> assertEquals("mrid", message.getPermissionId()),
                         () -> assertEquals("NFR", message.getCountry()),
                         () -> assertEquals("Enedis", message.getDso()),
-                        () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
+                        () -> assertEquals("2021-01-01T00:00:00Z", message.getCreationDate()),
                         () -> assertEquals("A05", message.getStatus())
                 )));
     }
@@ -72,6 +75,9 @@ class StatusMessageServiceTest {
                                                                            .withCodingScheme(null)
                                                                            .withValue("Aiida"))
                                 .withType(MessageTypeList.PERMISSION_TERMINATION_DOCUMENT)
+                                .withPeriodTimeInterval(new ESMPDateTimeIntervalComplexType()
+                                                                .withStart("2021-01-01T00:00:00Z")
+                                                                .withEnd("2021-01-02T00:00:00Z"))
                                 .withPermissionList(new PermissionMarketDocumentComplexType.PermissionList()
                                                             .withPermissions(new PermissionComplexType()
                                                                                      .withMktActivityRecordList(new PermissionComplexType.MktActivityRecordList()
@@ -95,7 +101,7 @@ class StatusMessageServiceTest {
                         () -> assertEquals("mrid", message.getPermissionId()),
                         () -> assertEquals("Unknown", message.getCountry()),
                         () -> assertEquals("Aiida", message.getDso()),
-                        () -> assertEquals("2021-01-01T00:00:00Z", message.getStartDate()),
+                        () -> assertEquals("2021-01-01T00:00:00Z", message.getCreationDate()),
                         () -> assertEquals("A05", message.getStatus())
                 )));
     }

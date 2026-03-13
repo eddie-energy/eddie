@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.admin.console.data;
@@ -29,26 +29,50 @@ public class StatusMessage {
     @Column(name = "dso")
     private final String dso;
 
+    @Column(name = "creation_date")
+    private final String creationDate;
+
     @Column(name = "start_date")
-    private String startDate;
+    private final String startDate;
+
+    @Column(name = "end_date")
+    private final String endDate;
 
     @Column(name = "status")
-    private String status;
+    private final String status;
 
     @Column(name = "description")
-    private String description;
+    private final String description;
+
+    @Column(name = "reason")
+    private final String reason;
 
     // Constructors
-    public StatusMessage(String permissionId, String regionConnectorId, String dataNeedId, String country, String dso, String startDate, String status, String description) {
+    public StatusMessage(
+            String permissionId,
+            String regionConnectorId,
+            String dataNeedId,
+            String country,
+            String dso,
+            String creationDate,
+            String startDate,
+            String endDate,
+            String status,
+            String description,
+            String reason
+    ) {
         this.id = null;
         this.permissionId = permissionId;
         this.regionConnectorId = regionConnectorId;
         this.dataNeedId = dataNeedId;
         this.country = country;
         this.dso = dso;
+        this.creationDate = creationDate;
         this.startDate = startDate;
+        this.endDate = endDate;
         this.status = status;
         this.description = description;
+        this.reason = reason;
     }
 
     protected StatusMessage() {
@@ -58,9 +82,12 @@ public class StatusMessage {
         this.dataNeedId = null;
         this.country = null;
         this.dso = null;
+        this.creationDate = null;
         this.startDate = null;
+        this.endDate = null;
         this.status = null;
         this.description = null;
+        this.reason = null;
     }
 
     public Long getId() {
@@ -87,13 +114,27 @@ public class StatusMessage {
         return dso;
     }
 
+    public String getCreationDate() {
+        return creationDate;
+    }
+
     public String getStartDate() {
         return startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public String getDescription() { return description; }
+    public String getDescription() {
+        return description;
+    }
+
+    public String getReason() {
+        return reason;
+    }
 }

@@ -4,7 +4,9 @@
 <script lang="ts" setup>
 import {
   getPermissionsPaginated,
+  getRegionConnectorsSupportedFeatures,
   getStatusMessages,
+  retransmitPermission,
   type StatusMessage,
   terminatePermission
 } from '@/api'
@@ -37,6 +39,8 @@ const filters = ref({ global: { value: null, matchMode: 'contains' } })
 const selectedRows = ref<StatusMessage[]>([])
 const expandedRows = ref<DataTableExpandedRows>({})
 const rowExpansions = ref<{ [key: string]: StatusMessage[] }>({})
+
+const retransmissionRegionConnectors = ref<string[]>([])
 
 let loadedPage = 0
 
@@ -72,6 +76,26 @@ function formatDate(date: string) {
 async function onRowExpand(event: DataTableRowExpandEvent) {
   const id = event.data.permissionId
   rowExpansions.value[id] ||= (await getStatusMessages(id)).slice().reverse()
+}
+
+function handleRetransmit(permissionId: string) {
+  retransmitPermission(permissionId)
+    .then(() => {
+      toast.add({
+        severity: 'success',
+        summary: 'Created retransmission request.',
+        detail: `Retransmission was requested for permission with ID ${permissionId}.`,
+        life: 3000
+      })
+    })
+    .catch(() => {
+      toast.add({
+        severity: 'error',
+        summary: 'Failed to request retransmission.',
+        detail: `Failed to request retransmission for permission with ID ${permissionId}.`,
+        life: 3000
+      })
+    })
 }
 
 function confirmTermination(permissionId: string) {
@@ -111,9 +135,11 @@ function confirmTermination(permissionId: string) {
 }
 
 function retransmitSelected() {
-  // TODO: GH-1713
-  console.debug(selectedRows.value)
-  alert('Not implemented. See GH-1713.')
+  for (const row of selectedRows.value) {
+    if (canRetransmit(row)) {
+      handleRetransmit(row.permissionId)
+    }
+  }
 }
 
 function terminateSelected() {
@@ -122,8 +148,22 @@ function terminateSelected() {
   }
 }
 
+function canRetransmit(permission: StatusMessage) {
+  return (
+    retransmissionRegionConnectors.value.includes(permission.regionConnectorId) &&
+    (permission.status === 'ACCEPTED' || permission.status === 'FULFILLED')
+  )
+}
+
 onMounted(async () => {
   await fetchPermissions()
+
+  for (const connector of await getRegionConnectorsSupportedFeatures()) {
+    if (connector.supportsRetransmissionRequests) {
+      retransmissionRegionConnectors.value.push(connector.regionConnectorId)
+    }
+  }
+
   loading.value = false
 })
 </script>
@@ -198,9 +238,9 @@ onMounted(async () => {
     <Column field="regionConnectorId" header="Region Connector" />
     <Column field="dataNeedId" header="Data Need" />
     <Column field="permissionId" header="Permission" />
-    <Column field="startDate" header="Last updated" sortable>
+    <Column field="creationDate" header="Last updated" sortable>
       <template #body="slotProps">
-        {{ formatDate(slotProps.data.startDate) }}
+        {{ formatDate(slotProps.data.creationDate) }}
       </template>
     </Column>
     <Column field="status" header="Status">
@@ -211,13 +251,21 @@ onMounted(async () => {
     <Column field="cimStatus" header="CIM Status" />
     <Column header="Actions">
       <template #body="slotProps">
-        <Button
-          v-if="slotProps.data.status === 'ACCEPTED'"
-          label="Terminate"
-          severity="danger"
-          rounded
-          @click="confirmTermination(slotProps.data.permissionId)"
-        />
+        <div class="column-actions">
+          <Button
+            v-if="canRetransmit(slotProps.data)"
+            label="Retransmit"
+            rounded
+            @click="handleRetransmit(slotProps.data.permissionId)"
+          />
+          <Button
+            v-if="slotProps.data.status === 'ACCEPTED'"
+            label="Terminate"
+            severity="danger"
+            rounded
+            @click="confirmTermination(slotProps.data.permissionId)"
+          />
+        </div>
       </template>
     </Column>
 
@@ -225,9 +273,13 @@ onMounted(async () => {
       <ul class="permission-states">
         <li
           v-for="row in rowExpansions[slotProps.data.permissionId]"
-          :key="row.status + row.startDate"
+          :key="row.status + row.creationDate"
         >
-          <PermissionStatusCard :status="row.status" :datetime="row.startDate" />
+          <PermissionStatusCard
+            :status="row.status"
+            :datetime="row.creationDate"
+            :message="row.reason"
+          />
         </li>
       </ul>
     </template>
@@ -259,6 +311,12 @@ input {
   @media (width >= 80rem) {
     grid-template-columns: 1fr auto auto;
   }
+}
+
+.column-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .country {

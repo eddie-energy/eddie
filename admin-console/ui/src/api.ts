@@ -10,6 +10,7 @@ import {
   REGION_CONNECTOR_HEALTH_API_URL,
   REGION_CONNECTORS_SUPPORTED_DATA_NEEDS_API_URL,
   REGION_CONNECTORS_SUPPORTED_FEATURES_API_URL,
+  RETRANSMISSION_API_URL,
   TERMINATION_API_URL
 } from '@/config'
 import type { AnyDataNeed, PermissionStatus } from '@/types'
@@ -30,10 +31,12 @@ export type StatusMessage = {
   dataNeedId: string
   country: string
   dso: string
+  creationDate: string
   startDate: string
+  endDate: string
   status: PermissionStatus
   cimStatus: string
-  parsedStartDate: string
+  reason: string
 }
 
 export type RegionConnectorMetadata = {
@@ -119,6 +122,20 @@ export async function terminatePermission(permissionId: string) {
 
   if (!response.ok) {
     throw new Error('Failed to terminate permission')
+  }
+}
+
+export async function retransmitPermission(permissionId: string) {
+  const response = await fetch(`${RETRANSMISSION_API_URL}/${permissionId}`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      [CSRF_HEADER]: CSRF_TOKEN
+    }
+  })
+
+  if (!response.ok) {
+    throw new Error('Failed to retransmit permission')
   }
 }
 
