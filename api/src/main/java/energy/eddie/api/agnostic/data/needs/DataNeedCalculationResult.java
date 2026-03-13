@@ -8,4 +8,5 @@ public sealed interface DataNeedCalculationResult permits
         AiidaDataNeedResult,
         DataNeedNotFoundResult,
         DataNeedNotSupportedResult,
-        ValidatedHistoricalDataDataNeedResult {}
+        ValidatedHistoricalDataDataNeedResult,
+        CESUJoinRequestDataNeedResult {}

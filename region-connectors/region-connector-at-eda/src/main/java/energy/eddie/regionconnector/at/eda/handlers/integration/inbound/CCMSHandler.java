@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
@@ -32,15 +32,15 @@ public class CCMSHandler {
      * Handle a CCMS_REJECT message. We mark the permission request as externally terminated no matter the reason. This
      * means even if we still receive data from the DSO we will not process it.
      * <p>
-     * We do this, since the response codes {@link ResponseCode.CmRevSP#NO_CONSENT_PRESENT} and
-     * {@link ResponseCode.CmRevSP#CONSENT_ID_EXPIRED} both indicate that the consent is not valid anymore, so we should
+     * We do this, since the response codes {@link ResponseCode.KnownResponseCodes#NO_CONSENT_PRESENT} and
+     * {@link ResponseCode.KnownResponseCodes#CONSENT_ID_EXPIRED} both indicate that the consent is not valid anymore, so we should
      * not receive any data anymore. This case should only occur if the eligible party tries to terminate a permission
      * request that has already been {@link PermissionProcessStatus#FULFILLED}.
      * <p>
-     * The response code {@link ResponseCode.CmRevSP#INVALID_PROCESSDATE} should never occur since we set the process
+     * The response code {@link ResponseCode.KnownResponseCodes#INVALID_PROCESSDATE} should never occur since we set the process
      * date of the {@link CCMORevoke} to the current date.
      * <p>
-     * The last option {@link ResponseCode.CmRevSP#CONSENT_AND_METERINGPOINT_DO_NOT_MATCH} should never occur, if this
+     * The last option {@link ResponseCode.KnownResponseCodes#CONSENT_AND_METERINGPOINT_DO_NOT_MATCH} should never occur, if this
      * occurs we have a bug in our system.
      */
     public void handleCCMSReject(CMRequestStatus cmRequestStatus) {
@@ -58,11 +58,11 @@ public class CCMSHandler {
 
             var permissionId = permissionRequest.permissionId();
             for (Integer statusCode : cmRequestStatus.consentData().getFirst().responseCodes()) {
-                if (statusCode == ResponseCode.CmRevSP.INVALID_PROCESSDATE) {
+                if (statusCode == ResponseCode.KnownResponseCodes.INVALID_PROCESSDATE.getCode()) {
                     LOGGER.error(
                             "Received a message that indicates that we send an invalid process date for the CMRevoke message for permission request '{}', this should never happen",
                             permissionId);
-                } else if (statusCode == ResponseCode.CmRevSP.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH) {
+                } else if (statusCode == ResponseCode.KnownResponseCodes.CONSENT_AND_METERINGPOINT_DO_NOT_MATCH.getCode()) {
                     LOGGER.error(
                             "Received a message that indicates that the consent id and metering point id provided in the CMRevoke message do not match for permission request '{}', this should never happen",
                             permissionId);

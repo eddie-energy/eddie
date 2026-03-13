@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers;
@@ -15,13 +15,10 @@ import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEv
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
-import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
-import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
-import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -68,6 +65,7 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
     }
 
     private CCMORequest ccmoRequest(AtPermissionRequest permissionRequest, ValidatedEvent event) {
+        var dataNeed = dataNeedsService.getById(permissionRequest.dataNeedId());
         return new CCMORequest(
                 new DsoIdAndMeteringPoint(
                         permissionRequest.dataSourceInformation().permissionAdministratorId(),
@@ -76,16 +74,12 @@ public class SendingEventHandler implements EventHandler<ValidatedEvent> {
                 new CCMOTimeFrame(permissionRequest.start(), permissionRequest.end()),
                 permissionRequest.cmRequestId(),
                 permissionRequest.conversationId(),
-                requestDataType(permissionRequest.granularity()),
                 event.granularity() == null ? permissionRequest.granularity() : event.granularity(),
                 AllowedTransmissionCycle.D,
                 configuration,
                 permissionRequest.created(),
-                dataNeedsService.getById(permissionRequest.dataNeedId()).purpose()
+                dataNeed
         );
     }
 
-    private static RequestDataType requestDataType(@Nullable AllowedGranularity granularity) {
-        return granularity == null ? RequestDataType.MASTER_DATA : RequestDataType.METERING_DATA;
-    }
 }

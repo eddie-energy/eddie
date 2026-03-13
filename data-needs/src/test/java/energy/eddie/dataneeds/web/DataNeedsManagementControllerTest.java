@@ -297,7 +297,8 @@ class DataNeedsManagementFullTest {
                 "http://localhost:" + port + "/management",
                 HttpMethod.POST,
                 entity,
-                DataNeed.class);
+                DataNeed.class
+        );
 
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.writeValueAsString(response.getBody()));

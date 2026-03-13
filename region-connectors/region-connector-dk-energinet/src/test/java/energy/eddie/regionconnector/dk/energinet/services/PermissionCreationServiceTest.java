@@ -189,4 +189,18 @@ class PermissionCreationServiceTest {
                 () -> assertEquals(now, validated.end())
         );
     }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnCESUJoinRequestDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "token", VALID_REFRESH_TOKEN, "dnid");
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(DK_ZONE_ID), List.of()));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> service.createPermissionRequest(request));
+        verify(outbox).commit(isA(DkCreatedEvent.class));
+        verify(outbox).commit(isA(DkMalformedEvent.class));
+    }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages;
@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification.EdaCMN
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke.EdaCMRevokeInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord.EdaConsumptionRecordInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification.EdaCPNotificationInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist.EdaECMPListInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MultiMasterDataInboundMessageFactory;
 import org.junit.jupiter.api.Test;
@@ -29,41 +30,54 @@ class InboundMessageFactoryCollectionTest {
 
     public static Stream<Arguments> noActiveFactoriesCtrArguments() {
         return Stream.of(
-                Arguments.of(List.of(), List.of(), List.of(), List.of(), List.of()),
+                Arguments.of(List.of(), List.of(), List.of(), List.of(), List.of(), List.of()),
                 Arguments.of(
                         List.of(simpleEdaConsumptionRecordFactory(false)),
                         List.of(simpleEdaMasterFactory(true)),
                         List.of(simpleEdaCMNotificationFactory(true)),
                         List.of(simpleEdaCMRevokeFactory(true)),
-                        List.of(simpleEdaCPNotificationFactory(true))
+                        List.of(simpleEdaCPNotificationFactory(true)),
+                        List.of(simpleEdaECMPListFactory(true))
                 ),
                 Arguments.of(
                         List.of(simpleEdaConsumptionRecordFactory(true)),
                         List.of(simpleEdaMasterFactory(false)),
                         List.of(simpleEdaCMNotificationFactory(true)),
                         List.of(simpleEdaCMRevokeFactory(true)),
-                        List.of(simpleEdaCPNotificationFactory(true))
+                        List.of(simpleEdaCPNotificationFactory(true)),
+                        List.of(simpleEdaECMPListFactory(true))
                 ),
                 Arguments.of(
                         List.of(simpleEdaConsumptionRecordFactory(true)),
                         List.of(simpleEdaMasterFactory(true)),
                         List.of(simpleEdaCMNotificationFactory(false)),
                         List.of(simpleEdaCMRevokeFactory(true)),
-                        List.of(simpleEdaCPNotificationFactory(true))
+                        List.of(simpleEdaCPNotificationFactory(true)),
+                        List.of(simpleEdaECMPListFactory(true))
                 ),
                 Arguments.of(
                         List.of(simpleEdaConsumptionRecordFactory(true)),
                         List.of(simpleEdaMasterFactory(true)),
                         List.of(simpleEdaCMNotificationFactory(true)),
                         List.of(simpleEdaCMRevokeFactory(false)),
-                        List.of(simpleEdaCPNotificationFactory(true))
+                        List.of(simpleEdaCPNotificationFactory(true)),
+                        List.of(simpleEdaECMPListFactory(true))
                 ),
                 Arguments.of(
                         List.of(simpleEdaConsumptionRecordFactory(true)),
                         List.of(simpleEdaMasterFactory(true)),
                         List.of(simpleEdaCMNotificationFactory(true)),
                         List.of(simpleEdaCMRevokeFactory(true)),
-                        List.of(simpleEdaCPNotificationFactory(false))
+                        List.of(simpleEdaCPNotificationFactory(false)),
+                        List.of(simpleEdaECMPListFactory(true))
+                ),
+                Arguments.of(
+                        List.of(simpleEdaConsumptionRecordFactory(true)),
+                        List.of(simpleEdaMasterFactory(true)),
+                        List.of(simpleEdaCMNotificationFactory(true)),
+                        List.of(simpleEdaCMRevokeFactory(true)),
+                        List.of(simpleEdaCPNotificationFactory(true)),
+                        List.of(simpleEdaECMPListFactory(false))
                 )
         );
     }
@@ -75,7 +89,8 @@ class InboundMessageFactoryCollectionTest {
             List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories,
             List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories,
             List<EdaCMRevokeInboundMessageFactory> inboundCMRevokeFactories,
-            List<EdaCPNotificationInboundMessageFactory> inboundCPNotificationFactories
+            List<EdaCPNotificationInboundMessageFactory> inboundCPNotificationFactories,
+            List<EdaECMPListInboundMessageFactory> inboundECMPListMessageFactories
     ) {
         assertThrows(IllegalStateException.class,
                      () -> new InboundMessageFactoryCollection(
@@ -83,7 +98,8 @@ class InboundMessageFactoryCollectionTest {
                              inboundMasterDataFactories,
                              inboundCMNotificationFactories,
                              inboundCMRevokeFactories,
-                             inboundCPNotificationFactories
+                             inboundCPNotificationFactories,
+                             inboundECMPListMessageFactories
                      )
         );
     }
@@ -102,7 +118,8 @@ class InboundMessageFactoryCollectionTest {
                 List.of(simpleEdaMasterFactory(true)),
                 List.of(simpleEdaCMNotificationFactory(true)),
                 List.of(revokeFactory1, revokeFactory2),
-                List.of(simpleEdaCPNotificationFactory(true))
+                List.of(simpleEdaCPNotificationFactory(true)),
+                List.of(simpleEdaECMPListFactory(true))
         );
 
         assertEquals(revokeFactory1, collection.activeCMRevokeFactory());
@@ -128,7 +145,8 @@ class InboundMessageFactoryCollectionTest {
                 List.of(simpleEdaMasterFactory(true)),
                 List.of(notificationFactory1, notificationFactory2),
                 List.of(simpleEdaCMRevokeFactory(true)),
-                List.of(simpleEdaCPNotificationFactory(true))
+                List.of(simpleEdaCPNotificationFactory(true)),
+                List.of(simpleEdaECMPListFactory(true))
         );
 
         assertEquals(notificationFactory1, collection.activeCMNotificationFactory());
@@ -154,7 +172,8 @@ class InboundMessageFactoryCollectionTest {
                 List.of(masterDataFactory1, masterDataFactory2),
                 List.of(simpleEdaCMNotificationFactory(true)),
                 List.of(simpleEdaCMRevokeFactory(true)),
-                List.of(simpleEdaCPNotificationFactory(true))
+                List.of(simpleEdaCPNotificationFactory(true)),
+                List.of(simpleEdaECMPListFactory(true))
         );
 
         assertInstanceOf(MultiMasterDataInboundMessageFactory.class, collection.activeMasterDataFactory());
@@ -180,7 +199,8 @@ class InboundMessageFactoryCollectionTest {
                 List.of(masterDataFactory1, masterDataFactory2),
                 List.of(simpleEdaCMNotificationFactory(true)),
                 List.of(simpleEdaCMRevokeFactory(true)),
-                List.of(simpleEdaCPNotificationFactory(true))
+                List.of(simpleEdaCPNotificationFactory(true)),
+                List.of(simpleEdaECMPListFactory(true))
         );
 
         // When
@@ -206,7 +226,8 @@ class InboundMessageFactoryCollectionTest {
                 List.of(simpleEdaMasterFactory(true)),
                 List.of(simpleEdaCMNotificationFactory(true)),
                 List.of(simpleEdaCMRevokeFactory(true)),
-                List.of(simpleEdaCPNotificationFactory(true))
+                List.of(simpleEdaCPNotificationFactory(true)),
+                List.of(simpleEdaECMPListFactory(true))
         );
 
         assertEquals(consumptionRecordFactory1, collection.activeConsumptionRecordFactory());
@@ -232,7 +253,8 @@ class InboundMessageFactoryCollectionTest {
                 List.of(simpleEdaMasterFactory(true)),
                 List.of(simpleEdaCMNotificationFactory(true)),
                 List.of(simpleEdaCMRevokeFactory(true)),
-                List.of(cpNotificationFactory1, cpNotificationFactory2)
+                List.of(cpNotificationFactory1, cpNotificationFactory2),
+                List.of(simpleEdaECMPListFactory(true))
         );
 
         assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory());
@@ -274,13 +296,19 @@ class InboundMessageFactoryCollectionTest {
         EdaCPNotificationInboundMessageFactory cpNotificationFactory2 = mock(EdaCPNotificationInboundMessageFactory.class);
         when(cpNotificationFactory2.isActive(any())).thenReturn(false);
 
+        EdaECMPListInboundMessageFactory ecmpListFactory1 = mock(EdaECMPListInboundMessageFactory.class);
+        when(ecmpListFactory1.isActive(any())).thenReturn(true).thenReturn(false);
+        EdaECMPListInboundMessageFactory ecmpListFactory2 = mock(EdaECMPListInboundMessageFactory.class);
+        when(ecmpListFactory2.isActive(any())).thenReturn(false);
+
 
         var collection = new InboundMessageFactoryCollection(
                 List.of(consumptionRecordFactory1, consumptionRecordFactory2),
                 List.of(masterDataFactory1, masterDataFactory2),
                 List.of(notificationFactory1, notificationFactory2),
                 List.of(revokeFactory1, revokeFactory2),
-                List.of(cpNotificationFactory1, cpNotificationFactory2)
+                List.of(cpNotificationFactory1, cpNotificationFactory2),
+                List.of(ecmpListFactory1, ecmpListFactory2)
         );
 
         assertAll(
@@ -288,7 +316,8 @@ class InboundMessageFactoryCollectionTest {
                 () -> assertEquals(masterDataFactory1, collection.activeMasterDataFactory()),
                 () -> assertEquals(notificationFactory1, collection.activeCMNotificationFactory()),
                 () -> assertEquals(revokeFactory1, collection.activeCMRevokeFactory()),
-                () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory())
+                () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory()),
+                () -> assertEquals(ecmpListFactory1, collection.activeECMPListFactory())
         );
 
         // When
@@ -300,7 +329,8 @@ class InboundMessageFactoryCollectionTest {
                 () -> assertEquals(masterDataFactory1, collection.activeMasterDataFactory()),
                 () -> assertEquals(notificationFactory1, collection.activeCMNotificationFactory()),
                 () -> assertEquals(revokeFactory1, collection.activeCMRevokeFactory()),
-                () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory())
+                () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory()),
+                () -> assertEquals(ecmpListFactory1, collection.activeECMPListFactory())
         );
     }
 
@@ -334,13 +364,18 @@ class InboundMessageFactoryCollectionTest {
         EdaCPNotificationInboundMessageFactory cpNotificationFactory2 = mock(EdaCPNotificationInboundMessageFactory.class);
         when(cpNotificationFactory2.isActive(any())).thenReturn(true);
 
+        EdaECMPListInboundMessageFactory ecmpListFactory1 = mock(EdaECMPListInboundMessageFactory.class);
+        when(ecmpListFactory1.isActive(any())).thenReturn(true).thenReturn(false);
+        EdaECMPListInboundMessageFactory ecmpListFactory2 = mock(EdaECMPListInboundMessageFactory.class);
+        when(ecmpListFactory2.isActive(any())).thenReturn(true);
 
         var collection = new InboundMessageFactoryCollection(
                 List.of(consumptionRecordFactory1, consumptionRecordFactory2),
                 List.of(masterDataFactory1, masterDataFactory2),
                 List.of(notificationFactory1, notificationFactory2),
                 List.of(revokeFactory1, revokeFactory2),
-                List.of(cpNotificationFactory1, cpNotificationFactory2)
+                List.of(cpNotificationFactory1, cpNotificationFactory2),
+                List.of(ecmpListFactory1, ecmpListFactory2)
         );
 
         assertAll(
@@ -349,7 +384,8 @@ class InboundMessageFactoryCollectionTest {
                                        collection.activeMasterDataFactory()),
                 () -> assertEquals(notificationFactory1, collection.activeCMNotificationFactory()),
                 () -> assertEquals(revokeFactory1, collection.activeCMRevokeFactory()),
-                () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory())
+                () -> assertEquals(cpNotificationFactory1, collection.activeCPNotificationFactory()),
+                () -> assertEquals(ecmpListFactory1, collection.activeECMPListFactory())
         );
 
         // When
@@ -361,7 +397,8 @@ class InboundMessageFactoryCollectionTest {
                 () -> assertEquals(masterDataFactory2, collection.activeMasterDataFactory()),
                 () -> assertEquals(notificationFactory2, collection.activeCMNotificationFactory()),
                 () -> assertEquals(revokeFactory2, collection.activeCMRevokeFactory()),
-                () -> assertEquals(cpNotificationFactory2, collection.activeCPNotificationFactory())
+                () -> assertEquals(cpNotificationFactory2, collection.activeCPNotificationFactory()),
+                () -> assertEquals(ecmpListFactory2, collection.activeECMPListFactory())
         );
     }
 
@@ -430,6 +467,20 @@ class InboundMessageFactoryCollectionTest {
 
             @Override
             public EdaCPNotification parseInputStream(InputStream inputStream) {
+                return null;
+            }
+        };
+    }
+
+    private static EdaECMPListInboundMessageFactory simpleEdaECMPListFactory(boolean isActive) {
+        return new EdaECMPListInboundMessageFactory() {
+            @Override
+            public boolean isActive(LocalDate date) {
+                return isActive;
+            }
+
+            @Override
+            public EdaECMPList parseInputStream(InputStream inputStream) {
                 return null;
             }
         };

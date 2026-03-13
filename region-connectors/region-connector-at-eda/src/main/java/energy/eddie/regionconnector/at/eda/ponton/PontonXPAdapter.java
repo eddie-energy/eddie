@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton;
@@ -22,6 +22,7 @@ import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
+import energy.eddie.regionconnector.at.eda.tasks.IdentifyECMPListTask;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,9 +50,11 @@ public class PontonXPAdapter implements EdaAdapter {
     private final Sinks.Many<EdaCMRevoke> cmRevokeSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<IdentifiableMasterData> masterDataSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<CPRequestResult> cpRequestResultSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<IdentifiableECMPList> ecmpListSink = Sinks.many().multicast().onBackpressureBuffer();
     private final PontonMessengerConnection pontonMessengerConnection;
     private final IdentifiableConsumptionRecordService identifiableConsumptionRecordService;
     private final IdentifiableMasterDataService identifiableMasterDataService;
+    private final IdentifyECMPListTask identifyECMPListTask;
     private final TaskScheduler scheduler;
     /**
      * Set of conversationIds for CPRequests that have been sent to Ponton. Used to distinguish between CPRequests and CMRequests in the OutboundMessageStatusUpdateHandler.
@@ -62,6 +65,7 @@ public class PontonXPAdapter implements EdaAdapter {
             PontonMessengerConnection pontonMessengerConnection,
             IdentifiableConsumptionRecordService identifiableConsumptionRecordService,
             IdentifiableMasterDataService identifiableMasterDataService,
+            IdentifyECMPListTask identifyECMPListTask,
             TaskScheduler scheduler
     ) {
         this.pontonMessengerConnection = pontonMessengerConnection
@@ -70,9 +74,11 @@ public class PontonXPAdapter implements EdaAdapter {
                 .withMasterDataHandler(this::handleMasterDataMessage)
                 .withConsumptionRecordHandler(this::handleConsumptionRecordMessage)
                 .withCMRevokeHandler(this::handleRevokeMessage)
-                .withCPNotificationHandler(this::handleCPNotificationMessage);
+                .withCPNotificationHandler(this::handleCPNotificationMessage)
+                .withECMPListHandler(this::handleECMPListMessage);
         this.identifiableConsumptionRecordService = identifiableConsumptionRecordService;
         this.identifiableMasterDataService = identifiableMasterDataService;
+        this.identifyECMPListTask = identifyECMPListTask;
         this.scheduler = scheduler;
     }
 
@@ -111,6 +117,10 @@ public class PontonXPAdapter implements EdaAdapter {
         return cpRequestResultSink.asFlux();
     }
 
+    @Override
+    public Flux<IdentifiableECMPList> getECMPListStream() {
+        return ecmpListSink.asFlux();
+    }
 
     @Override
     public void sendCMRequest(CCMORequest request) throws TransmissionException {
@@ -267,7 +277,7 @@ public class PontonXPAdapter implements EdaAdapter {
              * and when the DSO then sends the Data for the MeteringPoints before the "ZUSTIMMUNG_CCMO".
              * The reason for this, is that until we process the "ZUSTIMMUNG_CCMO", identifiableMasterDataService.mapToIdentifiableMasterData
              * will always return empty, as it will not be able to find a PermissionRequest for the received data.
-             * Once we receive the "ZUSTIMMUNG_CCMO" the CCMOAcceptHandler will create a PermissionRequest for every MeteringPoints contained.
+             * Once we receive the "ZUSTIMMUNG_CCMO" the CMAcceptHandler will create a PermissionRequest for every MeteringPoints contained.
              */
             var date = masterData.documentCreationDateTime();
             scheduleMessageResend(date, masterData.messageId());
@@ -307,7 +317,7 @@ public class PontonXPAdapter implements EdaAdapter {
              * and when the DSO then sends the Data for the MeteringPoints before the "ZUSTIMMUNG_CCMO".
              * The reason for this, is that until we process the "ZUSTIMMUNG_CCMO", identifiableConsumptionRecordService.mapToIdentifiableConsumptionRecord
              * will always return empty, as it will not be able to find a PermissionRequest for the received data.
-             * Once we receive the "ZUSTIMMUNG_CCMO" the CCMOAcceptHandler will create a PermissionRequest for every MeteringPoints contained.
+             * Once we receive the "ZUSTIMMUNG_CCMO" the CMAcceptHandler will create a PermissionRequest for every MeteringPoints contained.
              */
             var date = consumptionRecord.documentCreationDateTime();
             scheduleMessageResend(date, consumptionRecord.messageId());
@@ -330,6 +340,22 @@ public class PontonXPAdapter implements EdaAdapter {
         var result = cmRevokeSink.tryEmitNext(cmRevoke);
         return handleEmitResult(result);
     }
+
+    private InboundMessageResult handleECMPListMessage(EdaECMPList edaECMPList) {
+        var conversationId = edaECMPList.conversationId();
+        var messageId = edaECMPList.messageId();
+        LOGGER.info("Received ECMPList for Conversation ID '{}' with message ID '{}'", conversationId, messageId);
+        var identifiableECMPList = identifyECMPListTask.identify(edaECMPList);
+        if (identifiableECMPList.isEmpty()) {
+            var warnMessage = "Received unknown ECMPLIST with conversation ID '%s' and message ID '%s'"
+                    .formatted(conversationId, messageId);
+            LOGGER.warn(warnMessage);
+            return new InboundMessageResult(InboundStatusEnum.TEMPORARY_ERROR, warnMessage);
+        }
+        var result = ecmpListSink.tryEmitNext(identifiableECMPList.get());
+        return handleEmitResult(result);
+    }
+
 
     private InboundMessageResult handleEmitResult(Sinks.EmitResult emitResult) {
         return switch (emitResult) {

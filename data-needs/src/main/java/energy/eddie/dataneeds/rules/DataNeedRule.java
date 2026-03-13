@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
@@ -105,6 +106,23 @@ public sealed interface DataNeedRule {
         @Override
         public Class<OutboundAiidaDataNeed> getDataNeedClass() {
             return OutboundAiidaDataNeed.class;
+        }
+    }
+
+    /**
+     * The CESUJoinRequestDataNeedRule specifies that the region connector supports {@link CESUJoinRequestDataNeed}.
+     */
+    record CESUJoinRequestDataNeedRule(
+            @JsonProperty("granularities") List<Granularity> granularities
+    ) implements SpecificDataNeedRule<CESUJoinRequestDataNeed> {
+        @Override
+        public String getType() {
+            return CESUJoinRequestDataNeed.DISCRIMINATOR_VALUE;
+        }
+
+        @Override
+        public Class<CESUJoinRequestDataNeed> getDataNeedClass() {
+            return CESUJoinRequestDataNeed.class;
         }
     }
 

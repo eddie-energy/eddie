@@ -10,20 +10,36 @@ import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
+import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
 public class EdaDataNeedRuleSet implements DataNeedRuleSet {
-    public static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M, Granularity.P1D);
+    private static final List<Granularity> SUPPORTED_GRANULARITIES = List.of(Granularity.PT15M, Granularity.P1D);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EdaDataNeedRuleSet.class);
+    private final AtConfiguration config;
+
+    public EdaDataNeedRuleSet(AtConfiguration config) {this.config = config;}
 
     @Override
     public List<DataNeedRule> dataNeedRules() {
-        return List.of(
-                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES),
-                new AccountingPointDataNeedRule(),
-                new AllowMultipleDataNeedsRule()
-        );
+        List<DataNeedRule> dataNeedRules = new ArrayList<>();
+        dataNeedRules.add(new AccountingPointDataNeedRule());
+        dataNeedRules.add(new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES));
+        dataNeedRules.add(new AllowMultipleDataNeedsRule());
+        if (config.energyCommunityId() != null) {
+            LOGGER.debug(
+                    "Energy Community ID present, enabling the energy community data need for the AT EDA Region Connector");
+            dataNeedRules.add(new DataNeedRule.CESUJoinRequestDataNeedRule(SUPPORTED_GRANULARITIES));
+        } else {
+            LOGGER.debug(
+                    "Energy Community ID not present, disabling the energy community data need for the AT EDA Region Connector");
+        }
+        return dataNeedRules;
     }
 }

@@ -49,13 +49,8 @@ public class PermissionRequestService {
                 requestForCreation.apiToken()
         ));
 
-        switch (dataNeedCalculationService.calculate(dataNeedId)) {
-            case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataNeedResult not supported!";
-                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
-            }
-
+        var calculation = dataNeedCalculationService.calculate(dataNeedId);
+        switch (calculation) {
             case AccountingPointDataNeedResult ignored -> {
                 String message = "AccountingPointDataNeedResult not supported!";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
@@ -74,7 +69,6 @@ public class PermissionRequestService {
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-
             case ValidatedHistoricalDataDataNeedResult(
                     List<Granularity> granularities,
                     Timeframe ignored,
@@ -87,6 +81,11 @@ public class PermissionRequestService {
                                                  granularities.getFirst(),
                                                  requestForCreation.apiToken()));
                 return new CreatedPermissionRequest(permissionId);
+            }
+            default -> {
+                var message = calculation.getClass().getSimpleName() + " not supported";
+                outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
         }
     }

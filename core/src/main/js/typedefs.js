@@ -12,7 +12,7 @@
  */
 
 /**
- * @typedef {"account" | "validated" | "inbound" | "outbound" } DataNeedType
+ * @typedef {"account" | "validated" | "inbound" | "outbound" | "cesu-join-request" } DataNeedType
  */
 
 /**
@@ -70,6 +70,18 @@
  * @property {EnergyType} energyType - The type of energy for the data need.
  * @property {string} minGranularity - The minimum granularity of the data.
  * @property {string} maxGranularity - The maximum granularity of the data.
+ */
+
+/**
+ * @typedef {"CONSUMPTION", "PRODUCTION" } EnergyDirection
+ */
+
+/**
+ * @typedef {DataNeed} CESUJoinRequestDataNeed
+ * @property {string} minGranularity - The minimum granularity of the data.
+ * @property {string} maxGranularity - The maximum granularity of the data.
+ * @property {string} participationFactor - The amount with which the final customer will participate in the energy community .
+ * @property {EnergyDirection} energyDirection - Indicates whether the final customer should produce or consume energy.
  */
 
 /**

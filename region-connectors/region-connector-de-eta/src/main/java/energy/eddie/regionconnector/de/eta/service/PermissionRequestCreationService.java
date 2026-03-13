@@ -32,7 +32,7 @@ public class PermissionRequestCreationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
-    
+
     private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
     private final Outbox outbox;
 
@@ -49,7 +49,7 @@ public class PermissionRequestCreationService {
      *
      * @param requestForCreation the request creation DTO
      * @return the created permission request
-     * @throws DataNeedNotFoundException if the data need is not found
+     * @throws DataNeedNotFoundException    if the data need is not found
      * @throws UnsupportedDataNeedException if the data need is not supported
      */
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation requestForCreation)
@@ -57,8 +57,8 @@ public class PermissionRequestCreationService {
         String permissionId = UUID.randomUUID().toString();
         String dataNeedId = requestForCreation.dataNeedId();
 
-        LOGGER.info("Creating new permission request {} for metering point {}", 
-                permissionId, requestForCreation.meteringPointId());
+        LOGGER.info("Creating new permission request {} for metering point {}",
+                    permissionId, requestForCreation.meteringPointId());
 
         outbox.commit(new CreatedEvent(
                 permissionId,
@@ -68,18 +68,11 @@ public class PermissionRequestCreationService {
         ));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
-            case AiidaDataNeedResult ignored -> {
-                String message = "AiidaDataNeedResult not supported!";
-                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
-            }
-
             case AccountingPointDataNeedResult ignored -> {
                 String message = "AccountingPointDataNeed not supported by DE-ETA connector";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
                         permissionId,
@@ -87,12 +80,10 @@ public class PermissionRequestCreationService {
                 ));
                 throw new DataNeedNotFoundException(dataNeedId);
             }
-
             case DataNeedNotSupportedResult(String message) -> {
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-
             case ValidatedHistoricalDataDataNeedResult(
                     List<Granularity> granularities,
                     Timeframe ignored,
@@ -106,6 +97,11 @@ public class PermissionRequestCreationService {
                         granularities.getFirst()
                 ));
                 return new CreatedPermissionRequest(permissionId);
+            }
+            default -> {
+                String message = "Data need not supported!";
+                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
+                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
         }
     }

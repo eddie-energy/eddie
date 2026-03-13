@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
@@ -21,10 +21,11 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     public ConsumptionRecordHandler consumptionRecordHandler;
     public MasterDataHandler masterDataHandler;
     public CPNotificationHandler cpNotificationHandler;
+    private final MessengerStatus messengerStatus = new MessengerStatus(Map.of(), true);
 
     private boolean throwTransmissionException = false;
     private boolean throwConnectionException = false;
-    private MessengerStatus messengerStatus = new MessengerStatus(Map.of(), true);
+    public ECMPListHandler ecmpListHandler;
 
     public void setThrowTransmissionException(boolean throwTransmissionException) {
         this.throwTransmissionException = throwTransmissionException;
@@ -32,10 +33,6 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
 
     public void setThrowConnectionException(boolean throwConnectionException) {
         this.throwConnectionException = throwConnectionException;
-    }
-
-    public void setMessengerStatus(MessengerStatus messengerStatus) {
-        this.messengerStatus = messengerStatus;
     }
 
     @Override
@@ -118,6 +115,12 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
     @Override
     public PontonMessengerConnection withCPNotificationHandler(CPNotificationHandler cpNotificationHandler) {
         this.cpNotificationHandler = cpNotificationHandler;
+        return this;
+    }
+
+    @Override
+    public PontonMessengerConnection withECMPListHandler(ECMPListHandler ecmpListHandler) {
+        this.ecmpListHandler = ecmpListHandler;
         return this;
     }
 

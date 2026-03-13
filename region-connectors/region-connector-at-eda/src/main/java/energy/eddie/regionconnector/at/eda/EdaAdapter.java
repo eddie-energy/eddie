@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.regionconnector.at.eda.dto.EdaCMRevoke;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -48,6 +49,12 @@ public interface EdaAdapter extends AutoCloseable {
      */
     Flux<CPRequestResult> getCPRequestResultStream();
 
+    /**
+     * Returns a stream of ECMPList objects that contain information regarding the response of a ANFORDERUNG_ECON, the registration of a metering point to an existing energy community.
+     *
+     * @return a stream of ECMPList objects
+     */
+    Flux<IdentifiableECMPList> getECMPListStream();
 
     /**
      * This method sends a CCMORequest to EDA. A CCORequest can be used to request either metering or master data.

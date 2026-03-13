@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CCMOAcceptHandlerTest {
+class CMAcceptHandlerTest {
     @Captor
     private ArgumentCaptor<AcceptedEvent> acceptedEventArgumentCaptor;
 
@@ -43,7 +43,7 @@ class CCMOAcceptHandlerTest {
     private Outbox outbox;
 
     @InjectMocks
-    private CCMOAcceptHandler handler;
+    private CMAcceptHandler handler;
 
     private static AtPermissionRequestProjection projection(PermissionProcessStatus s) {
         return new AtPermissionRequestProjectionTest(
@@ -54,7 +54,7 @@ class CCMOAcceptHandlerTest {
     }
 
     @Test
-    void handleCCMOAccept_oneConsent_oneRequest_acceptsRequest() {
+    void handleCMAccept_oneConsent_oneRequest_acceptsRequest() {
         // Given
         CMRequestStatus cmRequestStatus = cmRequestStatus(
                 List.of(responseData("consentId", "meteringPoint"))
@@ -67,7 +67,7 @@ class CCMOAcceptHandlerTest {
                 .thenReturn(permissionRequests);
 
         // When
-        handler.handleCCMOAccept(cmRequestStatus);
+        handler.handleCMAccept(cmRequestStatus);
 
         // Then
         verify(outbox).commit(acceptedEventArgumentCaptor.capture());
@@ -75,7 +75,7 @@ class CCMOAcceptHandlerTest {
     }
 
     @Test
-    void handleCCMOAccept_oneConsent_oneAlreadyAcceptedRequest_doesNothing() {
+    void handleCMAccept_oneConsent_oneAlreadyAcceptedRequest_doesNothing() {
         // Given
         CMRequestStatus cmRequestStatus = cmRequestStatus(
                 List.of(responseData("consentId", "meteringPoint"))
@@ -88,7 +88,7 @@ class CCMOAcceptHandlerTest {
                 .thenReturn(permissionRequests);
 
         // When
-        handler.handleCCMOAccept(cmRequestStatus);
+        handler.handleCMAccept(cmRequestStatus);
 
         // Then
         verify(outbox, never()).commit(any());
@@ -104,12 +104,8 @@ class CCMOAcceptHandlerTest {
         );
     }
 
-    private static ResponseData responseData(String consentId, String meteringPoint) {
-        return new SimpleResponseData(consentId, meteringPoint, List.of(ResponseCode.CmReqOnl.ACCEPTED));
-    }
-
     @Test
-    void handleCCMOAccept_oneConsent_multipleRequests_acceptsOnlyFirstRequest() {
+    void handleCMAccept_oneConsent_multipleRequests_acceptsOnlyFirstRequest() {
         CMRequestStatus cmRequestStatus = cmRequestStatus(
                 List.of(responseData("consentId", "meteringPoint"))
         );
@@ -122,7 +118,7 @@ class CCMOAcceptHandlerTest {
                 .thenReturn(permissionRequests);
 
         // When
-        handler.handleCCMOAccept(cmRequestStatus);
+        handler.handleCMAccept(cmRequestStatus);
 
         // Then
         verify(outbox).commit(acceptedEventArgumentCaptor.capture());
@@ -130,7 +126,7 @@ class CCMOAcceptHandlerTest {
     }
 
     @Test
-    void handleCCMOAccept_multipleConsent_oneRequests_acceptsFirstRequestCreatesNewForEveryConsent() {
+    void handleCMAccept_multipleConsent_oneRequests_acceptsFirstRequestCreatesNewForEveryConsent() {
         // Given
         ArgumentCaptor<PersistablePermissionEvent> eventCaptor = ArgumentCaptor.forClass(PersistablePermissionEvent.class);
 
@@ -150,7 +146,7 @@ class CCMOAcceptHandlerTest {
                 .thenReturn(List.of(permissionRequest));
 
         // When
-        handler.handleCCMOAccept(cmRequestStatus);
+        handler.handleCMAccept(cmRequestStatus);
 
         // Then
         verify(outbox, times(9)).commit(eventCaptor.capture());
@@ -191,7 +187,7 @@ class CCMOAcceptHandlerTest {
     }
 
     @Test
-    void handleCCMOAccept_oneConsent_noRequests_doesNothing() {
+    void handleCMAccept_oneConsent_noRequests_doesNothing() {
         CMRequestStatus cmRequestStatus = cmRequestStatus(
                 List.of(responseData("consentId", "meteringPoint"))
         );
@@ -200,10 +196,16 @@ class CCMOAcceptHandlerTest {
                 .thenReturn(List.of());
 
         // When
-        handler.handleCCMOAccept(cmRequestStatus);
+        handler.handleCMAccept(cmRequestStatus);
 
         // Then
         verifyNoInteractions(outbox);
+    }
+
+    private static ResponseData responseData(String consentId, String meteringPoint) {
+        return new SimpleResponseData(consentId,
+                                      meteringPoint,
+                                      List.of(ResponseCode.KnownResponseCodes.ACCEPTED.getCode()));
     }
 
     private static void assertAcceptedEvent(AcceptedEvent event, String meteringPoint, String consentId) {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.permission.request;
@@ -57,20 +57,20 @@ public class EdaPermissionRequest implements AtPermissionRequest {
             AllowedGranularity granularity, PermissionProcessStatus status, String message,
             String consentId
     ) {
-        this(connectionId, UUID.randomUUID().toString(), dataNeedId, ccmoRequest, granularity, status, message,
-             consentId);
-    }
-
-    @SuppressWarnings("java:S107")
-    public EdaPermissionRequest(
-            String connectionId, String permissionId, String dataNeedId, CCMORequest ccmoRequest,
-            AllowedGranularity granularity, PermissionProcessStatus status, String message,
-            @Nullable String consentId
-    ) {
-        this(connectionId, permissionId, dataNeedId, ccmoRequest.cmRequestId(), ccmoRequest.messageId(),
-             ccmoRequest.meteringPointId()
-                        .orElse(null), ccmoRequest.dsoId(), ccmoRequest.start(), ccmoRequest.end().orElse(null),
-             granularity, status, message, consentId, ZonedDateTime.now(AT_ZONE_ID));
+        this(connectionId,
+             UUID.randomUUID().toString(),
+             dataNeedId,
+             ccmoRequest.cmRequestId(),
+             ccmoRequest.messageId(),
+             ccmoRequest.meteringPointId().orElse(null),
+             ccmoRequest.dsoId(),
+             ccmoRequest.start(),
+             ccmoRequest.end().orElse(null),
+             granularity,
+             status,
+             message,
+             consentId,
+             ZonedDateTime.now(AT_ZONE_ID));
     }
 
     @SuppressWarnings("java:S107")
@@ -97,6 +97,12 @@ public class EdaPermissionRequest implements AtPermissionRequest {
         this.created = created;
     }
 
+    // protected no-args ctor needed for JPA and reflections
+    protected EdaPermissionRequest() {
+        this(null, null, null, null, null, null,
+             null, null, null, null, null, null, null, null);
+    }
+
     public static EdaPermissionRequest fromProjection(AtPermissionRequestProjection projection) {
         return new EdaPermissionRequest(
                 projection.getConnectionId(),
@@ -114,12 +120,6 @@ public class EdaPermissionRequest implements AtPermissionRequest {
                 projection.getConsentId(),
                 ZonedDateTime.ofInstant(projection.getCreated(), AT_ZONE_ID)
         );
-    }
-
-    // protected no-args ctor needed for JPA and reflections
-    protected EdaPermissionRequest() {
-        this(null, null, null, null, null, null,
-             null, null, null, null, null, null, null, null);
     }
 
     @Override

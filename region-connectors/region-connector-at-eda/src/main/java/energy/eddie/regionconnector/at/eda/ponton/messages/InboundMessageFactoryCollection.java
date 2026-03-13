@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages;
@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification.EdaCMN
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke.EdaCMRevokeInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord.EdaConsumptionRecordInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification.EdaCPNotificationInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist.EdaECMPListInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MultiMasterDataInboundMessageFactory;
 import org.slf4j.LoggerFactory;
@@ -28,34 +29,40 @@ public class InboundMessageFactoryCollection {
     private final List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories;
     private final List<EdaCMRevokeInboundMessageFactory> inboundCMRevokeFactories;
     private final List<EdaCPNotificationInboundMessageFactory> inboundCPNotificationFactories;
+    private final List<EdaECMPListInboundMessageFactory> ecmpListFactories;
     private EdaMasterDataInboundMessageFactory activeMasterDataFactory;
     private EdaConsumptionRecordInboundMessageFactory activeConsumptionRecordFactory;
     private EdaCMNotificationInboundMessageFactory activeCMNotificationFactory;
     private EdaCMRevokeInboundMessageFactory activeCMRevokeFactory;
     private EdaCPNotificationInboundMessageFactory activeCPNotificationFactory;
+    private EdaECMPListInboundMessageFactory activeECMPListFactory;
 
     public InboundMessageFactoryCollection(
             List<EdaConsumptionRecordInboundMessageFactory> inboundConsumptionRecordFactories,
             List<EdaMasterDataInboundMessageFactory> inboundMasterDataFactories,
             List<EdaCMNotificationInboundMessageFactory> inboundCMNotificationFactories,
             List<EdaCMRevokeInboundMessageFactory> inboundCMRevokeFactories,
-            List<EdaCPNotificationInboundMessageFactory> inboundCPNotificationFactories
+            List<EdaCPNotificationInboundMessageFactory> inboundCPNotificationFactories,
+            List<EdaECMPListInboundMessageFactory> ecmpListFactories
     ) {
         this.inboundConsumptionRecordFactories = inboundConsumptionRecordFactories;
         this.inboundMasterDataFactories = inboundMasterDataFactories;
         this.inboundCMNotificationFactories = inboundCMNotificationFactories;
         this.inboundCMRevokeFactories = inboundCMRevokeFactories;
         this.inboundCPNotificationFactories = inboundCPNotificationFactories;
-        activeConsumptionRecordFactory = findActiveConsumptionRecordFactory()
+        this.ecmpListFactories = ecmpListFactories;
+        activeConsumptionRecordFactory = findActiveFactory(inboundConsumptionRecordFactories)
                 .orElseThrow(() -> new IllegalStateException("No active EdaConsumptionRecordInboundMessageFactory found"));
         activeMasterDataFactory = findActiveMasterDataFactory()
                 .orElseThrow(() -> new IllegalStateException("No active EdaMasterDataInboundMessageFactory found"));
-        activeCMNotificationFactory = findActiveCMNotificationFactory()
+        activeCMNotificationFactory = findActiveFactory(inboundCMNotificationFactories)
                 .orElseThrow(() -> new IllegalStateException("No active EdaCMNotificationInboundMessageFactory found"));
-        activeCMRevokeFactory = findActiveCMRevokeFactory()
+        activeCMRevokeFactory = findActiveFactory(inboundCMRevokeFactories)
                 .orElseThrow(() -> new IllegalStateException("No active EdaCMRevokeInboundMessageFactory found"));
-        activeCPNotificationFactory = findActiveCPNotificationFactory()
+        activeCPNotificationFactory = findActiveFactory(inboundCPNotificationFactories)
                 .orElseThrow(() -> new IllegalStateException("No active EdaCPNotificationInboundMessageFactory found"));
+        activeECMPListFactory = findActiveFactory(ecmpListFactories)
+                .orElseThrow(() -> new IllegalStateException("No active EdaECMPListInboundMessageFactory found"));
     }
 
     /**
@@ -67,7 +74,7 @@ public class InboundMessageFactoryCollection {
     @Scheduled(cron = "0 0 0 * * ?", zone = "Europe/Vienna")
     public void updateActiveFactories() {
         LOGGER.info("Checking for active Factories");
-        findActiveConsumptionRecordFactory()
+        findActiveFactory(inboundConsumptionRecordFactories)
                 .ifPresentOrElse(
                         this::updateActiveConsumptionRecordFactory,
                         () -> LOGGER.error("No active EdaConsumptionRecordInboundMessageFactory found")
@@ -79,22 +86,28 @@ public class InboundMessageFactoryCollection {
                         () -> LOGGER.error("No active EdaMasterDataInboundMessageFactory found")
                 );
 
-        findActiveCMNotificationFactory()
+        findActiveFactory(inboundCMNotificationFactories)
                 .ifPresentOrElse(
                         this::updateActiveCMNotificationFactory,
                         () -> LOGGER.error("No active EdaCMNotificationInboundMessageFactory found")
                 );
 
-        findActiveCMRevokeFactory()
+        findActiveFactory(inboundCMRevokeFactories)
                 .ifPresentOrElse(
                         this::updateActiveCMRevokeFactory,
                         () -> LOGGER.error("No active EdaCMRevokeInboundMessageFactory found")
                 );
 
-        findActiveCPNotificationFactory()
+        findActiveFactory(inboundCPNotificationFactories)
                 .ifPresentOrElse(
                         this::updateActiveCPNotificationFactory,
                         () -> LOGGER.error("No active EdaCPNotificationInboundMessageFactory found")
+                );
+
+        findActiveFactory(ecmpListFactories)
+                .ifPresentOrElse(
+                        this::updateActiveECMPListFactory,
+                        () -> LOGGER.error("No active EdaECMPListInboundMessageFactory found")
                 );
     }
 
@@ -118,13 +131,15 @@ public class InboundMessageFactoryCollection {
         return activeCPNotificationFactory;
     }
 
-    private Optional<EdaConsumptionRecordInboundMessageFactory> findActiveConsumptionRecordFactory() {
-        LocalDate now = LocalDate.now(AT_ZONE_ID);
-        return inboundConsumptionRecordFactories.stream()
-                                                .filter(factory -> factory.isActive(now))
-                                                .findFirst();
+    public EdaECMPListInboundMessageFactory activeECMPListFactory() {
+        return activeECMPListFactory;
     }
 
+    /**
+     * There can be multiple active master data factories, so this method will return a decorator, that delegates between the active factories.
+     *
+     * @return an EdaMasterDataInboundMessageFactory
+     */
     private Optional<EdaMasterDataInboundMessageFactory> findActiveMasterDataFactory() {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
         var factories = inboundMasterDataFactories.stream()
@@ -139,25 +154,11 @@ public class InboundMessageFactoryCollection {
         return factories.stream().findFirst();
     }
 
-    private Optional<EdaCMNotificationInboundMessageFactory> findActiveCMNotificationFactory() {
+    private static <T extends PontonMessageFactory> Optional<T> findActiveFactory(List<T> factories) {
         LocalDate now = LocalDate.now(AT_ZONE_ID);
-        return inboundCMNotificationFactories.stream()
-                                             .filter(factory -> factory.isActive(now))
-                                             .findFirst();
-    }
-
-    private Optional<EdaCMRevokeInboundMessageFactory> findActiveCMRevokeFactory() {
-        LocalDate now = LocalDate.now(AT_ZONE_ID);
-        return inboundCMRevokeFactories.stream()
-                                       .filter(factory -> factory.isActive(now))
-                                       .findFirst();
-    }
-
-    private Optional<EdaCPNotificationInboundMessageFactory> findActiveCPNotificationFactory() {
-        LocalDate now = LocalDate.now(AT_ZONE_ID);
-        return inboundCPNotificationFactories.stream()
-                                             .filter(factory -> factory.isActive(now))
-                                             .findFirst();
+        return factories.stream()
+                        .filter(factory -> factory.isActive(now))
+                        .findFirst();
     }
 
     private void updateActiveConsumptionRecordFactory(EdaConsumptionRecordInboundMessageFactory factory) {
@@ -234,4 +235,20 @@ public class InboundMessageFactoryCollection {
                   .log("Active EdaCPNotificationInboundMessageFactory is still {}");
         }
     }
+
+    private void updateActiveECMPListFactory(EdaECMPListInboundMessageFactory factory) {
+        if (activeECMPListFactory != factory) {
+            LOGGER.atInfo()
+                  .addArgument(() -> activeECMPListFactory.getClass().getSimpleName())
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Switching active EdaECMPListInboundMessageFactory from {} to {}");
+
+            activeECMPListFactory = factory;
+        } else {
+            LOGGER.atInfo()
+                  .addArgument(() -> factory.getClass().getSimpleName())
+                  .log("Active EdaECMPListInboundMessageFactory is still {}");
+        }
+    }
+
 }

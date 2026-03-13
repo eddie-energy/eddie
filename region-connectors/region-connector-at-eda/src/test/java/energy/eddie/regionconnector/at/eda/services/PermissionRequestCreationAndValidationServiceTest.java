@@ -33,7 +33,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
     @Spy
-    private final AtConfiguration configuration = new AtConfiguration("epId");
+    private final AtConfiguration configuration = new AtConfiguration("epId", "ecid", "ecid");
     @SuppressWarnings("unused")
     @Spy
     private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
@@ -158,5 +158,21 @@ class PermissionRequestCreationAndValidationServiceTest {
 
         // When, Then
         assertThrows(DataNeedNotFoundException.class, () -> creationService.createAndValidatePermissionRequest(pr));
+    }
+
+    @Test
+    void createValidPermissionRequest_forCESUJoinRequestDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException {
+        // Given
+        var now = LocalDate.now(ZoneOffset.UTC);
+        when(calculationService.calculate("dnid"))
+                .thenReturn(new CESUJoinRequestDataNeedResult(now, List.of(Granularity.PT15M, Granularity.P1D)));
+        var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
+                                                  List.of("dnid"), "AT000000");
+
+        // When
+        var res = creationService.createAndValidatePermissionRequest(pr);
+
+        // Then
+        assertNotNull(res);
     }
 }

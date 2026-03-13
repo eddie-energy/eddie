@@ -12,6 +12,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
+import energy.eddie.regionconnector.fi.fingrid.permission.events.MalformedEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.PersistablePermissionEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.ValidatedEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
@@ -186,6 +187,21 @@ class PermissionCreationServiceTest {
         // Then
         verify(outbox, times(2)).commit(simpleCaptor.capture());
         assertEquals(status, simpleCaptor.getValue().status());
+    }
+
+    @Test
+    void testCreatePermissionRequest_emitsMalformedOnCESUJoinRequestDataNeed() {
+        // Given
+        var request = new PermissionRequestForCreation("cid", "dnid", "customerId");
+        when(dataNeedCalculationService.calculate("dnid"))
+                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(ZoneOffset.UTC),
+                                                              List.of(Granularity.PT1H)));
+        // When
+        // Then
+        assertThrows(UnsupportedDataNeedException.class,
+                     () -> permissionCreationService.createAndValidatePermissionRequest(request));
+        verify(outbox).commit(isA(CreatedEvent.class));
+        verify(outbox).commit(isA(MalformedEvent.class));
     }
 
     private static Stream<Arguments> createAndValidatePermissionRequest_createsPermissionRequest() {

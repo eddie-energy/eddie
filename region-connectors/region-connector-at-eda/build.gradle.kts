@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import de.undercouch.gradle.tasks.download.Download
@@ -48,6 +48,7 @@ val masterDataVersions = mapOf(
     "01p32" to "98dda83247de9459de3a7a588992056c", // current
     "01p33" to "100f8e7b4c8c836ed2d852a9d035e460" // current
 )
+val ecmplistVersions = mapOf("01p10" to "03bf15c7579623f9b2d5ecc0f5f30f10")
 
 val edaVersionMatrix: Map<String, Map<String, String>> = mapOf(
     "https://www.ebutilities.at/schemata/customerconsent/cmnotification/%s/CMNotification_%s.xsd" to cmNotificationVersions,
@@ -58,6 +59,7 @@ val edaVersionMatrix: Map<String, Map<String, String>> = mapOf(
     "https://www.ebutilities.at/schemata/customerprocesses/cpnotification/%s/CPNotification_%s.xsd" to cpNotificationVersions,
     "https://www.ebutilities.at/schemata/customerprocesses/cprequest/%s/CPRequest_%s.xsd" to cpRequestVersions,
     "https://www.ebutilities.at/schemata/customerprocesses/masterdata/%s/MasterData_%s.xsd" to masterDataVersions,
+    "https://www.ebutilities.at/schemata/customerprocesses/ecmplist/%s/ECMPList_%s.xsd" to ecmplistVersions
 )
 
 val pontonVersion = "4.6.5"
@@ -182,6 +184,9 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
     // make sure the directory exists
     file(generatedXJCJavaDir).mkdirs()
 
+    // Disable maxOccurs <= 5000, see https://coderanch.com/t/671552/languages/xsd-parsing-ant-xjc-goal
+    systemProperty("jdk.xml.maxOccurLimit", "100000")
+
     // explicitly set the encoding because of rare issues discovered on Windows 10
     args(
         "-d",
@@ -192,7 +197,7 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
         "-encoding",
         "UTF-8",
         "-extension",
-        "-Xfluent-api"
+        "-Xfluent-api",
     )
 
     // Define the task inputs and outputs, so Gradle can track changes and only run the task when needed

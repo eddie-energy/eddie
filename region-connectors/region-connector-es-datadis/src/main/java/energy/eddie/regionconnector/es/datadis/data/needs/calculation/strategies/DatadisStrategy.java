@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.data.needs.calculation.strategies;
 
 import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies.PermissionTimeframeStrategy;
 import jakarta.annotation.Nullable;
 
@@ -11,7 +12,11 @@ import java.time.ZonedDateTime;
 
 public class DatadisStrategy implements PermissionTimeframeStrategy {
     @Override
-    public Timeframe permissionTimeframe(@Nullable Timeframe energyDataTimeframe, ZonedDateTime referenceDateTime) {
+    public Timeframe permissionTimeframe(
+            @Nullable Timeframe energyDataTimeframe,
+            DataNeed dataNeed,
+            ZonedDateTime referenceDateTime
+    ) {
         var now = referenceDateTime.toLocalDate();
         if (energyDataTimeframe == null || !now.isBefore(energyDataTimeframe.end())) {
             // if all the data is in the past, or it's accounting point data, we only need access for 1 day

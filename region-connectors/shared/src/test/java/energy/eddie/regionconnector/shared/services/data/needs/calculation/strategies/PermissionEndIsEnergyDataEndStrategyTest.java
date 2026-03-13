@@ -1,9 +1,13 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -14,6 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PermissionEndIsEnergyDataEndStrategyTest {
+    private final ValidatedHistoricalDataDataNeed dataNeed = new ValidatedHistoricalDataDataNeed(
+            new RelativeDuration(null, null, null),
+            EnergyType.ELECTRICITY,
+            Granularity.PT15M,
+            Granularity.P1D
+    );
     @Test
     void testPermissionTimeframe_withEmptyTimeframe() {
         // Given
@@ -21,7 +31,7 @@ class PermissionEndIsEnergyDataEndStrategyTest {
         var strategy = new PermissionEndIsEnergyDataEndStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(null, ZonedDateTime.now(ZoneOffset.UTC));
+        var res = strategy.permissionTimeframe(null, dataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -38,7 +48,7 @@ class PermissionEndIsEnergyDataEndStrategyTest {
         var strategy = new PermissionEndIsEnergyDataEndStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZoneOffset.UTC));
+        var res = strategy.permissionTimeframe(timeframe, dataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(
@@ -55,7 +65,7 @@ class PermissionEndIsEnergyDataEndStrategyTest {
         var strategy = new PermissionEndIsEnergyDataEndStrategy();
 
         // When
-        var res = strategy.permissionTimeframe(timeframe, ZonedDateTime.now(ZoneOffset.UTC));
+        var res = strategy.permissionTimeframe(timeframe, dataNeed, ZonedDateTime.now(ZoneOffset.UTC));
 
         // Then
         assertAll(

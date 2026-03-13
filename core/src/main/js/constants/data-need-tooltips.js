@@ -1,12 +1,12 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 export const DATA_NEED_TOOLTIPS = {
-  "account": [
+  account: [
     "Accounting Point Data",
     "Data need for accounting point information request, i.e. information about the customer and their metering point.",
   ],
-  "validated": [
+  validated: [
     "Validated Historical Data",
     "Data need for validated historical energy data. For most MDAs, data for the previous day is made available sometime during the current day (e.g. at noon).",
   ],
@@ -17,5 +17,9 @@ export const DATA_NEED_TOOLTIPS = {
   "inbound-aiida": [
     "AIIDA Inbound Data",
     "Data need for an AIIDA instance to retrieve data.",
+  ],
+  "energy-community": [
+    "Add a new member to an Energy Community",
+    "Data need to add a new member to an Energy Community",
   ],
 };

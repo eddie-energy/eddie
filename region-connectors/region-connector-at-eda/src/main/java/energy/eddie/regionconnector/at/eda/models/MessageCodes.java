@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.models;
@@ -38,6 +38,10 @@ public class MessageCodes {
         public static final String ANSWER = "ANTWORT_CCMO";
         public static final String ACCEPT = "ZUSTIMMUNG_CCMO";
         public static final String REJECT = "ABLEHNUNG_CCMO";
+        public static final String REJECT_ECON = "ABLEHNUNG_ECON";
+        public static final String ANSWER_ECON = "ANTWORT_ECON";
+        public static final String ACCEPT_ECON = "ZUSTIMMUNG_ECON";
+        public static final String CANCEL_ECON = "ABBRUCH_ECON";
 
         private Notification() {
         }
@@ -60,10 +64,29 @@ public class MessageCodes {
         }
     }
 
+    /**
+     * Requests for Energy communities.
+     *
+     * @see <a href="https://www.ebutilities.at/prozesse/592">EC_REQ_ONL</a>
+     */
+    public static class EcRequest {
+        public static final String CODE = "ANFORDERUNG_ECON";
+        public static final String SCHEMA = "EC_REQ_ONL_02.10";
+        public static final String VERSION = "02.10";
+
+        private EcRequest() {}
+    }
+
     public static class CPRequest {
         public static final String CODE = "ANFORDERUNG_PT";
 
         private CPRequest() {
         }
+    }
+
+    public static class ECMPList {
+        public static final String CONCLUSION_ECON = "ABSCHLUSS_ECON";
+
+        private ECMPList() {}
     }
 }

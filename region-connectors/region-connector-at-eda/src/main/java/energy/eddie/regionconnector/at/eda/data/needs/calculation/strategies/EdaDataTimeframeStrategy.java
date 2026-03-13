@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.data.needs.calculation.strategies;
@@ -15,7 +15,7 @@ import jakarta.annotation.Nullable;
 
 import java.time.ZonedDateTime;
 
-public class EdaStrategy implements EnergyDataTimeframeStrategy {
+public class EdaDataTimeframeStrategy implements EnergyDataTimeframeStrategy {
     /**
      * Calculates the start and end date of the energy data, if the data need requires energy data.
      * Otherwise, it returns null.

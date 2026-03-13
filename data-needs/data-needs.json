@@ -125,5 +125,17 @@
     "purpose": "Some purpose",
     "policyLink": "https://example.com/toc",
     "enabled": false
+  },
+  {
+    "type": "cesu-join-request",
+    "id": "3dd39c06-253e-4c95-a255-e3eefc69f613",
+    "name": "CESU Join Request data need",
+    "description": "Adds the final customer to an energy community",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "participationFactor": 1,
+    "energyDirection": "CONSUMPTION",
+    "minGranularity": "PT15M",
+    "maxGranularity": "P1D"
   }
 ]

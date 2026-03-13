@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p21;
@@ -26,10 +26,16 @@ public class CMRequest01p21OutboundMessageFactory implements CMRequestOutboundMe
      */
     public static final LocalDate ACTIVE_FROM = LocalDate.of(2025, 4, 7);
     public static final LocalDate ACTIVE_UNTIL = LocalDate.of(2026, 4, 12);
-    private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
+    private static final MessageType CM_REQUEST_ONL_MESSAGETYPE = new MessageType.MessageTypeBuilder()
             .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA))
             .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
+            .setMimeType(new MimeType("text/xml"))
+            .build();
+    private static final MessageType EC_REQUEST_ONL_MESSAGETYPE = new MessageType.MessageTypeBuilder()
+            .setSchemaSet(new SchemaSet(MessageCodes.EcRequest.SCHEMA))
+            .setVersion(new MessageTypeVersion(MessageCodes.EcRequest.VERSION))
+            .setName(new MessageTypeName(MessageCodes.EcRequest.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
 
@@ -54,11 +60,15 @@ public class CMRequest01p21OutboundMessageFactory implements CMRequestOutboundMe
     }
 
     public OutboundMetaData outboundMetaData(CCMORequest ccmoRequest) {
+        var messageType = switch (ccmoRequest.requestDataType()) {
+            case MASTER_DATA, METERING_DATA -> CM_REQUEST_ONL_MESSAGETYPE;
+            case ENERGY_COMMUNITY_REGISTRATION -> EC_REQUEST_ONL_MESSAGETYPE;
+        };
         return OutboundMetaData
                 .newBuilder()
                 .setSenderId(new SenderId(ccmoRequest.eligiblePartyId()))
                 .setReceiverId(new ReceiverId(ccmoRequest.dsoId()))
-                .setMessageType(MESSAGETYPE)
+                .setMessageType(messageType)
                 .build();
     }
 

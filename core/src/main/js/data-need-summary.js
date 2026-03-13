@@ -49,6 +49,8 @@ class DataNeedSummary extends HTMLElement {
       schemas,
       asset,
       dataTags,
+      energyDirection,
+      participationFactor,
     } = dataNeed;
 
     const [title, details] = DATA_NEED_TOOLTIPS[type];
@@ -143,6 +145,19 @@ class DataNeedSummary extends HTMLElement {
               `
             : ""}
 
+          <!-- For Energy Community data needs -->
+          ${energyDirection
+            ? /* HTML */ `
+                <dt>Energy Direction</dt>
+                <dd>${energyDirection}</dd>
+              `
+            : ""}
+          ${participationFactor
+            ? /* HTML */ `
+                <dt>Participation Factor</dt>
+                <dd>${participationFactor}%</dd>
+              `
+            : ""}
           <dt>Purpose</dt>
           <dd>${purpose}</dd>
         </dl>
@@ -157,7 +172,12 @@ class DataNeedSummary extends HTMLElement {
   }
 
   durationDescription(duration) {
-    const [start, end] = datesFromDuration(duration);
+    const dates = datesFromDuration(duration);
+    if (dates.length === 1) {
+      const [start] = dates;
+      return `From ${start.toLocaleDateString()}`;
+    }
+    const [start, end] = dates;
     return `From ${start.toLocaleDateString()} to ${end.toLocaleDateString()}`;
   }
 }

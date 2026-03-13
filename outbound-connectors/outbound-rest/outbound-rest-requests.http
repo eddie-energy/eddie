@@ -34,9 +34,9 @@ Accept: application/json
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get validated historical data market documents as xml
-GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md?from=2026-03-09T00:00:00Z
 Accept: application/xml
-Authorization: Bearer {{$auth.token("keycloak")}}
+#Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get validated historical data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
