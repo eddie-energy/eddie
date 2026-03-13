@@ -24,4 +24,5 @@ class EtaRegionConnectorMetadataTest {
         assertThat(metadata.latestEnd()).isEqualTo(EtaRegionConnectorMetadata.PERIOD_LATEST_END);
         assertThat(metadata.timeZone()).isEqualTo(EtaRegionConnectorMetadata.DE_ZONE_ID);
     }
+
 }

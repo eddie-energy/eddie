@@ -14,27 +14,27 @@ import java.time.ZoneId;
 public class EtaRegionConnectorMetadata implements RegionConnectorMetadata {
     public static final String REGION_CONNECTOR_ID = "de-eta";
     public static final String COUNTRY_CODE = "DE";
-    
+
     /**
      * Historical data can be requested up to 36 months in the past
      */
     public static final Period PERIOD_EARLIEST_START = Period.ofMonths(-36);
-    
+
     /**
      * Permissions can be granted up to 36 months in the future
      */
     public static final Period PERIOD_LATEST_END = Period.ofMonths(36);
-    
+
     /**
      * Germany uses Central European Time
      */
     public static final ZoneId DE_ZONE_ID = ZoneId.of("Europe/Berlin");
-    
+
     /**
      * Approximate number of metering points covered in Germany
      */
     private static final long COVERED_METERING_POINTS = 500000;
-    
+
     @Nullable
     private static EtaRegionConnectorMetadata instance = null;
 

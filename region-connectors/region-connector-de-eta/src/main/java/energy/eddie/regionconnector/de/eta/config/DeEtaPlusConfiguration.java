@@ -12,5 +12,7 @@ public record DeEtaPlusConfiguration(
         String eligiblePartyId,
         @DefaultValue("https://api.eta-plus.de") String apiBaseUrl,
         String apiClientId,
-        String apiClientSecret
+        String apiClientSecret,
+        @DefaultValue("/api/v1/metered-data") String meteredDataEndpoint,
+        @DefaultValue("/api/v1/permissions/{id}") String permissionCheckEndpoint
 ) {}

@@ -2,22 +2,25 @@ package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
+import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.FulfillmentService;
+import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -76,9 +79,27 @@ public class EtaRegionConnectorSpringConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            RegionConnectorMetadata metadata,
-            DataNeedRuleSet ruleSet) {
-        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
+            EtaDataNeedRuleSet dataNeedRuleSet) {
+        return new DataNeedCalculationServiceImpl(dataNeedsService, EtaRegionConnectorMetadata.getInstance(), dataNeedRuleSet);
+    }
+
+    @Bean
+    public FulfillmentService deFulfillmentService(Outbox outbox) {
+        return new FulfillmentService(
+                outbox,
+                SimpleEvent::new
+        );
+    }
+
+    @Bean
+    public MeterReadingPermissionUpdateAndFulfillmentService deMeterReadingUpdateAndFulfillmentService(
+            FulfillmentService fulfillmentService,
+            Outbox outbox
+    ) {
+        return new MeterReadingPermissionUpdateAndFulfillmentService(
+                fulfillmentService,
+                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(reading.permissionId(), end))
+        );
     }
 
 }
