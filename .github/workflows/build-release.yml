@@ -2,24 +2,46 @@ name: Build release docker images
 
 on:
   push:
-    branches:
-      - 'release-*'
     tags:
-      - 'release-*'
-      - 'v*'
+      - "v*.*.*"
 
 jobs:
+  tag-release:
+    runs-on: [ Linux ]
+    outputs:
+      release_body: ${{ steps.create-changelog.outputs.content }}
+      version: ${{ steps.bump-version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v6
+        with:
+          fetch-depth: 0
+
+      - name: Create changelog
+        id: create-changelog
+        uses: orhun/git-cliff-action@07dda386992489f0a6151dee53f3a137713644de
+        with:
+          args: -v --latest --no-exec --github-repo ${{ github.repository }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
+        with:
+          tag_name: ${{ steps.create-changelog.outputs.version }}
+          body: ${{ steps.create-changelog.outputs.content }}
+          make_latest: true
   build:
-    runs-on: [ self-hosted, internal ]
+    runs-on: [ Linux ]
     permissions:
       contents: read
       packages: write
     env:
       registry: ghcr.io/eddie-energy
+    needs: tag-release
     steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
       - name: Build docker containers
+        if: github.ref_name == 'main'
         uses: ./.github/actions/build-containers
         with:
-          version: $GITHUB_REF_NAME
+          version: ${{ github.ref_name }}
           secrets: ${{ secrets.GITHUB_TOKEN }}
