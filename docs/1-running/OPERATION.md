@@ -44,7 +44,21 @@ The example `.env` file contains all configuration options.
 
 ## Update
 
-TBD.
+EDDIE and AIIDA are versioned using [semantic versioning](https://semver.org/spec/v2.0.0.html).
+The version string follows this scheme: `MAJOR.MINOR.PATCH`.
+Changes to the `PATCH` version should not affect users at all, while changes to the `MINOR` version should only add functionality.
+For example, upgrading from version `1.0.0` to `1.0.1` or from `1.0.0` to `1.1.0` should be no problem for users.
+But if the `MAJOR` version changes, this means that this version contains breaking changes and could break integrations for the users.
+
+EDDIE and AIIDA are developed simultaneously, therefore, we can only guarantee compatibility between the two components for the same version.
+For example, EDDIE v1.0.0 requires AIIDA to be at the same version v1.0.0.
+Therefore, updating EDDIE would also require an update for AIIDA and vice versa.
+
+Of course, different versions for EDDIE and AIIDA might still work, but we are currently not verifying this compatibility.
+
+> [!WARNING]
+> EDDIE and AIIDA currently only support migration to newer versions and not downgrades to older ones.
+> Testing the upgrade beforehand is required!
 
 ## Using the EDDIE Button in an application
 
