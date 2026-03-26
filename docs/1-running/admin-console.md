@@ -12,7 +12,7 @@ The username for the admin user and a ***BCrypt encrypted*** password can be con
 
 | Configuration values                                            | Description                                                                                                                               |
 |-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `outbound-connector.admin.console.enabled`                      | `true` or `false`, enables the admin console. Default is `false`                                                                          |
+| `outbound-connector.admin.console.enabled`                      | `true` or `false`, enables the admin console. Default is `true`.                                                                          |
 | `outbound-connector.admin.console.login.mode`                   | `basic` or `keycloak`, enables basic or keycloak authentication. Authentication is disabled by default.                                   |
 | `outbound-connector.admin.console.login.username`               | Only required if basic login is enabled. Username for the admin user.                                                                     |
 | `outbound-connector.admin.console.login.encoded-password`       | Only required if basic login is enabled. Password for the admin user **_encrypted using BCrypt_**.                                        |
