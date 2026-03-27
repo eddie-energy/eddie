@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.UserAuthorizationsResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -28,7 +29,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
 
     private final ObjectMapper mapper;
     private final DatadisTokenProvider tokenProvider;
-    private final URI authorizationEndpoint;
+    private final DatadisConfiguration config;
 
     public NettyAuthorizationApiClient(
             HttpClient httpClient,
@@ -39,8 +40,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.authorizationEndpoint = URI.create(datadisConfig.basepath())
-                                        .resolve("api-private/request/send-request-authorization");
+        this.config = datadisConfig;
     }
 
     @Override
@@ -53,6 +53,8 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
             return Mono.error(e);
         }
 
+        var authorizationEndpoint = URI.create(config.basepath())
+                                       .resolve("api-private/request/send-request-authorization");
         return tokenProvider
                 .getToken()
                 .flatMap(token -> httpClient
@@ -80,6 +82,42 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                                     } else {
                                         return Mono.error(new DatadisApiException(
                                                 "Failed to post authorization request",
+                                                httpClientResponse.status(),
+                                                bodyString
+                                        ));
+                                    }
+                                }))
+                );
+    }
+
+    @Override
+    public Mono<UserAuthorizationsResponse> getThirdPartyAuthorizedUsersCups() {
+        var endpoint = URI.create(config.basepath())
+                          .resolve("api-private/authorizations/request/third-authorized-users-cups");
+        return tokenProvider
+                .getToken()
+                .flatMap(token -> httpClient
+                        .headers(h -> h
+                                .add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+                                .add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token)
+                                .add(HttpHeaderNames.USER_AGENT, "PostmanRuntime/7.36.3"))
+                        .get()
+                        .uri(endpoint)
+                        .responseSingle((httpClientResponse, bytBufMono) -> bytBufMono
+                                .asString()
+                                .defaultIfEmpty(Strings.EMPTY)
+                                .flatMap(bodyString -> {
+                                    if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
+                                        try {
+                                            var response = mapper.readValue(bodyString,
+                                                                            UserAuthorizationsResponse.class);
+                                            return Mono.just(response);
+                                        } catch (JacksonException e) {
+                                            return Mono.error(e);
+                                        }
+                                    } else {
+                                        return Mono.error(new DatadisApiException(
+                                                "Failed to request authorized cups",
                                                 httpClientResponse.status(),
                                                 bodyString
                                         ));

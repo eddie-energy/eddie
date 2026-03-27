@@ -183,7 +183,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(now,
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, null),
                                                               List.of(Granularity.PT15M, Granularity.P1D),
                                                               dataNeedEnergyDirection,
                                                               dataNeedParticipationFactor));

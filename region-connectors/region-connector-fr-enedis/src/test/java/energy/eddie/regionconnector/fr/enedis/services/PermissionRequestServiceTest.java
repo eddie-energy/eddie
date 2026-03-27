@@ -137,8 +137,9 @@ class PermissionRequestServiceTest {
     void testCreatePermissionRequest_emitsMalformedOnCESUJoinRequestDataNeed() {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid");
+        var now = LocalDate.now(ZONE_ID_FR);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(ZONE_ID_FR), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

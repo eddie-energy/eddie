@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.es.datadis.permission.events;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Clock;
 
@@ -20,19 +21,29 @@ public class EsCreatedEvent extends PersistablePermissionEvent {
     private final String nif;
     @Column(columnDefinition = "text")
     private final String meteringPointId;
+    @Column
+    @Nullable
+    private final String firstname;
+    @Column
+    @Nullable
+    private final String surname;
 
     public EsCreatedEvent(
             String permissionId,
             String connectionId,
             String dataNeedId,
             String nif,
-            String meteringPointId
+            String meteringPointId,
+            @Nullable String firstname,
+            @Nullable String surname
     ) {
         super(permissionId, PermissionProcessStatus.CREATED);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.nif = nif;
         this.meteringPointId = meteringPointId;
+        this.firstname = firstname;
+        this.surname = surname;
     }
 
     public EsCreatedEvent(
@@ -48,6 +59,8 @@ public class EsCreatedEvent extends PersistablePermissionEvent {
         this.dataNeedId = dataNeedId;
         this.nif = nif;
         this.meteringPointId = meteringPointId;
+        this.firstname = null;
+        this.surname = null;
     }
 
     protected EsCreatedEvent() {
@@ -56,5 +69,15 @@ public class EsCreatedEvent extends PersistablePermissionEvent {
         dataNeedId = null;
         nif = null;
         meteringPointId = null;
+        firstname = null;
+        surname = null;
+    }
+
+    public String firstname() {
+        return firstname;
+    }
+
+    public String surname() {
+        return surname;
     }
 }

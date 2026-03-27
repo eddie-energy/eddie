@@ -28,7 +28,7 @@ public interface EsPermissionRequestRepository extends
     List<EsPermissionRequest> findByStatus(PermissionProcessStatus status);
 
     @Query(
-            value = "SELECT permission_id, connection_id, nif, metering_point_id, permission_start, permission_end, data_need_id, granularity, allowed_granularity, distributor_code, point_type, latest_meter_reading, status, error_message, production_support, created, bundle_id FROM es_datadis.datadis_permission_request " +
+            value = "SELECT permission_id, connection_id, nif, metering_point_id, permission_start, permission_end, data_need_id, granularity, allowed_granularity, distributor_code, point_type, latest_meter_reading, status, error_message, production_support, created, bundle_id, firstname, surname FROM es_datadis.datadis_permission_request " +
                     "WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
@@ -58,7 +58,9 @@ public interface EsPermissionRequestRepository extends
                                                            es_datadis.firstval_agg(message) OVER w              AS error_message,
                                                            es_datadis.firstval_agg(production_support) OVER w   AS production_support,
                                                            MIN(event_created) OVER w                            AS created,
-                                                           es_datadis.firstval_agg(bundle_id) OVER w            AS bundle_id
+                                                           es_datadis.firstval_agg(bundle_id) OVER w            AS bundle_id,
+                                                           es_datadis.firstval_agg(firstname) OVER w            AS firstname,
+                                                           es_datadis.firstval_agg(surname) OVER w              AS surname
                         FROM es_datadis.permission_event
                         JOIN permissions USING (permission_id)
                         WINDOW w AS (

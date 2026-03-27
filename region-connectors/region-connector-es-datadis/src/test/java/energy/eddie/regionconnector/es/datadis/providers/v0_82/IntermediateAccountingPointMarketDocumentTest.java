@@ -8,10 +8,7 @@ import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.ap.*;
-import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
-import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
-import energy.eddie.regionconnector.es.datadis.PointType;
-import energy.eddie.regionconnector.es.datadis.SupplyProvider;
+import energy.eddie.regionconnector.es.datadis.*;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
@@ -41,12 +38,15 @@ class IntermediateAccountingPointMarketDocumentTest {
                 .setPointType(PointType.TYPE_1)
                 .setStatus(PermissionProcessStatus.ACCEPTED)
                 .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
+                .setFirstname("John")
+                .setSurname("Doe")
                 .build();
         return new IdentifiableAccountingPointData(
                 permissionRequest,
                 new AccountingPointData(
                         SupplyProvider.loadSupply().getFirst(),
-                        ContractDetailsProvider.loadContractDetails().getFirst()
+                        ContractDetailsProvider.loadContractDetails().getFirst(),
+                        AuthorizedCupsProvider.loadAuthorizedCups()
                 )
         );
     }
@@ -82,6 +82,7 @@ class IntermediateAccountingPointMarketDocumentTest {
                 .getFirst();
         BillingDataComplexType billingData = accountingPoint
                 .getBillingData();
+        ContractPartyComplexType contractParty = accountingPoint.getContractPartyList().getContractParties().getFirst();
 
         var header = res.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
         assertAll(
@@ -126,7 +127,11 @@ class IntermediateAccountingPointMarketDocumentTest {
                 () -> assertEquals("14", address.getFloorNumber()),
                 () -> assertEquals("2", address.getDoorNumber()),
                 () -> assertEquals("MADRID", address.getCityName()),
-                () -> assertEquals("MADRID", address.getAddressSuffix())
+                () -> assertEquals("MADRID", address.getAddressSuffix()),
+                // ContractParty
+                () -> assertEquals("G00000000", contractParty.getVATnumber()),
+                () -> assertEquals("Doe", contractParty.getSurName()),
+                () -> assertEquals("John", contractParty.getFirstName())
         );
     }
 }

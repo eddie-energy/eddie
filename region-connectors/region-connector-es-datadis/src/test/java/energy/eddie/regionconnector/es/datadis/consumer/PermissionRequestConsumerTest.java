@@ -7,6 +7,7 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.es.datadis.AuthorizedCupsProvider;
 import energy.eddie.regionconnector.es.datadis.ContractDetailsProvider;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.SupplyProvider;
@@ -14,6 +15,8 @@ import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.AuthorizationStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.AuthorizedCups;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForAPD;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsAcceptedEventForVHD;
 import energy.eddie.regionconnector.es.datadis.permission.events.EsSimpleEvent;
@@ -22,6 +25,7 @@ import energy.eddie.regionconnector.es.datadis.permission.request.api.EsPermissi
 import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -30,6 +34,8 @@ import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,7 +77,9 @@ class PermissionRequestConsumerTest {
         when(supply.distributorCode()).thenReturn("1");
         when(dataNeedsService.getById(permissionRequest.dataNeedId())).thenReturn(validatedHistoricalDataDataNeed);
 
-        AccountingPointData accountingPointData = new AccountingPointData(supply, createContractDetails());
+        AccountingPointData accountingPointData = new AccountingPointData(supply,
+                                                                          createContractDetails(),
+                                                                          createAuthorizedUsersCups());
 
         // When
         permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData);
@@ -132,7 +140,8 @@ class PermissionRequestConsumerTest {
         // When
         AccountingPointData accountingPointData = new AccountingPointData(
                 SupplyProvider.loadSupply().getFirst(),
-                ContractDetailsProvider.loadContractDetails().getFirst()
+                ContractDetailsProvider.loadContractDetails().getFirst(),
+                AuthorizedCupsProvider.loadAuthorizedCups()
         );
         permissionRequestConsumer.acceptPermission(permissionRequest, accountingPointData);
 
@@ -152,6 +161,26 @@ class PermissionRequestConsumerTest {
                                    acceptedAccountingPointDataCaptor.getValue().status()),
                 () -> assertEquals("pid", simpleCaptor.getValue().permissionId()),
                 () -> assertEquals(PermissionProcessStatus.FULFILLED, simpleCaptor.getValue().status())
+        );
+    }
+
+    private static @NotNull AuthorizedCups createAuthorizedUsersCups() {
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        return new AuthorizedCups(
+                0L,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                0L,
+                "",
+                AuthorizationStatus.CURRENT,
+                now,
+                now,
+                null,
+                ""
         );
     }
 

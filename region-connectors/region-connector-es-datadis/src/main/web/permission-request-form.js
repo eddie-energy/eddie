@@ -18,7 +18,10 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     dataNeedId: { attribute: "data-need-id" },
     accountingPointId: { attribute: "accounting-point-id" },
     customerIdentification: { attribute: "customer-identification" },
+    firstname: { attribute: "firstname" },
+    surname: { attribute: "surname" },
     jumpOffUrl: { attribute: "jump-off-url" },
+    dataNeedType: { attribute: "data-need-type" },
     _isSentToPermissionAdministrator: { type: Boolean },
     _isSubmitDisabled: { type: Boolean },
     _isVerifying: { type: Boolean },
@@ -50,6 +53,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       meteringPointId: formData.get("meteringPointId"),
       nif: formData.get("nif"),
       dataNeedIds: this.dataNeedId.split(","),
+      firstname: formData.get("firstname"),
+      surname: formData.get("surname"),
     };
 
     this._isSubmitDisabled = true;
@@ -92,6 +97,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   }
 
   render() {
+    const isCesuJoinRequest = this.dataNeedType.includes("cesu-join-request");
     return html`
       <form
         id="request-form"
@@ -128,6 +134,35 @@ class PermissionRequestForm extends PermissionRequestFormBase {
         ></sl-input>
 
         <br />
+        ${isCesuJoinRequest || this.dataNeedType.includes("account")
+          ? html` <sl-input
+                label="Firstname"
+                type="text"
+                id="firstname"
+                name="firstname"
+                placeholder="Firstname"
+                .help-text=${this.firstname ? "Your firstname" : nothing}
+                .value="${ifDefined(this.firstname)}"
+                .disabled="${!!this.firstname}"
+                .required="${isCesuJoinRequest}"
+              ></sl-input>
+
+              <br />
+
+              <sl-input
+                label="Surname"
+                type="text"
+                id="surname"
+                name="surname"
+                placeholder="Surname"
+                .help-text=${this.surname ? "Your Surname" : nothing}
+                .value="${ifDefined(this.surname)}"
+                .disabled="${!!this.surname}"
+                .required="${isCesuJoinRequest}"
+              ></sl-input>
+
+              <br />`
+          : ""}
 
         <sl-button
           ?disabled="${this._isSubmitDisabled}"

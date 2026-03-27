@@ -158,7 +158,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                                .getFirst();
                 var choice = new GranularityChoice(rule.granularities());
                 var supportedGranularities = choice.findAll(need.minGranularity(), need.maxGranularity());
-                yield new CESUJoinRequestDataNeedResult(permissionStartAndEndDate.start(),
+                yield new CESUJoinRequestDataNeedResult(permissionStartAndEndDate,
+                                                        energyStartAndEndDate,
                                                         supportedGranularities,
                                                         need.energyDirection(),
                                                         need.participationFactor());

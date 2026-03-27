@@ -76,11 +76,10 @@ public class PermissionRequestService {
                       .log("Got request to accept permission {}");
                 accountingPointDataService
                         .fetchAccountingPointDataForPermissionRequest(permissionRequest)
-                        .doOnError(error -> permissionRequestConsumer.consumeError(error, permissionRequest))
-                        .onErrorComplete()
                         .subscribe(accountingPointData ->
                                            permissionRequestConsumer.acceptPermission(permissionRequest,
-                                                                                      accountingPointData)
+                                                                                      accountingPointData),
+                                   error -> permissionRequestConsumer.consumeError(error, permissionRequest)
                         );
                 ids.add(permissionId);
             } catch (Exception e) {
@@ -171,7 +170,9 @@ public class PermissionRequestService {
                                          requestForCreation.connectionId(),
                                          dataNeedId,
                                          requestForCreation.nif(),
-                                         requestForCreation.meteringPointId()));
+                                         requestForCreation.meteringPointId(),
+                                         requestForCreation.firstname(),
+                                         requestForCreation.surname()));
         var isValid = new IdentifierValidator().isValidIdentifier(requestForCreation.nif());
         if (!isValid) {
             var error = new AttributeError("nif", "Invalid NIF");
@@ -198,6 +199,8 @@ public class PermissionRequestService {
             case ValidatedHistoricalDataDataNeedResult vhdResult ->
                     handleValidatedHistoricalDataNeed(vhdResult, permissionId, bundleId);
             case AccountingPointDataNeedResult ignored -> handleAccountingPointDataNeed(permissionId, bundleId);
+            case CESUJoinRequestDataNeedResult cesuResult ->
+                    handleCESUJoinRequestDataNeed(cesuResult, permissionId, bundleId);
             default -> {
                 String message = "Data Need with ID %s is not supported!".formatted(dataNeedId);
                 outbox.commit(new EsMalformedEvent(permissionId,
@@ -206,6 +209,21 @@ public class PermissionRequestService {
             }
         }
         return permissionId;
+    }
+
+    private void handleCESUJoinRequestDataNeed(
+            CESUJoinRequestDataNeedResult dataNeed,
+            String permissionId,
+            @Nullable UUID bundleId
+    ) {
+        var allowedMeasurementType = allowedMeasurementType(dataNeed.supportedGranularities());
+        outbox.commit(new EsValidatedEvent(
+                permissionId,
+                dataNeed.energyDataTimeframe().start(),
+                dataNeed.energyDataTimeframe().end(),
+                allowedMeasurementType,
+                bundleId
+        ));
     }
 
     private EsPermissionRequest getPermissionRequestById(String permissionId) throws PermissionNotFoundException {

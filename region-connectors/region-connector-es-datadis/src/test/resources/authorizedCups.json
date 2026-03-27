@@ -1,0 +1,19 @@
+{
+  "id": 0,
+  "ownerDocument": "G00000000",
+  "ownerName": "John Doe",
+  "ownerDocumentTypeName": "NIF",
+  "requesterDocument": "00000000",
+  "requesterDocumentTypeName": "NIF",
+  "requesterName": "EDDIE Framework",
+  "requestId": 0,
+  "cups": "E00000000000000000GG",
+  "status": {
+    "id": 5,
+    "description": "VIGENTE"
+  },
+  "validityDateStart": "2026-03-30T00:00:00.000+0200",
+  "validityDateEnd": "2026-03-31T23:59:59.000+0200",
+  "isDeleted": null,
+  "distributorCodeFather": "0000"
+}

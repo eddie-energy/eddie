@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.services;
@@ -68,8 +68,8 @@ public class ContractApiService {
             );
         }
         LOGGER.atInfo()
-              .addArgument(permissionId)
               .addArgument(contracts::size)
+              .addArgument(permissionId)
               .log("Got {} contracts for permission request {}");
         if (contracts.size() == 1) {
             return Mono.just(contracts.getFirst());

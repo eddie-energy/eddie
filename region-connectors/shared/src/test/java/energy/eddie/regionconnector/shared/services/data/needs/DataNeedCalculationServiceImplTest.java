@@ -45,8 +45,7 @@ import static energy.eddie.dataneeds.rules.DataNeedRule.InboundAiidaDataNeedRule
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.map;
 import static org.assertj.core.api.InstanceOfAssertFactories.type;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -518,6 +517,36 @@ class DataNeedCalculationServiceImplTest {
                 .hasEntrySatisfying(ap.id(),
                                     dn -> assertThat(dn).isInstanceOf(AccountingPointDataNeedResult.class))
                 .hasSize(2);
+    }
+
+    @Test
+    void givenCESUJoinRequestDataNeed_whenCalculate_thenReturnCalculation() {
+        // Given
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new CESUJoinRequestDataNeed(
+                        100,
+                        Granularity.PT15M,
+                        Granularity.P1D,
+                        EnergyDirection.CONSUMPTION
+                )));
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(
+                        new CESUJoinRequestDataNeedRule(List.of(Granularity.PT15M)),
+                        new AllowMultipleDataNeedsRule()
+                )
+        );
+        // When
+        var res = calculationService.calculate("dnid");
+
+        // Then
+        var result = assertInstanceOf(CESUJoinRequestDataNeedResult.class, res);
+        assertAll(
+                () -> assertEquals(List.of(Granularity.PT15M), result.supportedGranularities()),
+                () -> assertThat(result.participationFactor()).isPresent().hasValue(100),
+                () -> assertThat(result.energyDirection()).isPresent().hasValue(EnergyDirection.CONSUMPTION)
+        );
     }
 
     private static Stream<Arguments> regionConnectorFilterConfigurations() {

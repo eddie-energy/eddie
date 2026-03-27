@@ -193,8 +193,9 @@ class PermissionCreationServiceTest {
     void testCreatePermissionRequest_emitsMalformedOnCESUJoinRequestDataNeed() {
         // Given
         var request = new PermissionRequestForCreation("cid", "dnid", "customerId");
+        var now = LocalDate.now(ZoneOffset.UTC);
         when(dataNeedCalculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(ZoneOffset.UTC),
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now),
                                                               List.of(Granularity.PT1H)));
         // When
         // Then

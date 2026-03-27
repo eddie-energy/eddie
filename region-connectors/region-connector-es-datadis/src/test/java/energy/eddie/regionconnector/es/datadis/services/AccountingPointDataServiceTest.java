@@ -5,8 +5,10 @@ package energy.eddie.regionconnector.es.datadis.services;
 
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.regionconnector.es.datadis.AuthorizedCupsProvider;
 import energy.eddie.regionconnector.es.datadis.DatadisPermissionRequestBuilder;
 import energy.eddie.regionconnector.es.datadis.PointType;
+import energy.eddie.regionconnector.es.datadis.api.AuthorizationApi;
 import energy.eddie.regionconnector.es.datadis.api.MeasurementType;
 import energy.eddie.regionconnector.es.datadis.dtos.ContractDetails;
 import energy.eddie.regionconnector.es.datadis.dtos.Supply;
@@ -25,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +44,8 @@ class AccountingPointDataServiceTest {
     private ContractApiService contractApiService;
     @Mock
     private SupplyApiService supplyApiService;
+    @Mock
+    private AuthorizationApi authorizationApi;
 
     static Stream<Exception> supplyApiServiceExceptions() {
         return Stream.of(new NoSuppliesException("No supplies found"),
@@ -49,12 +54,14 @@ class AccountingPointDataServiceTest {
     }
 
     @Test
-    void fetchAccountingPointDataForPermissionRequest_everythingSucceeds_returnsExpected() {
+    void fetchAccountingPointDataForPermissionRequest_everythingSucceeds_returnsExpected() throws IOException {
         // Given
         var permissionRequest = acceptedPermissionRequest();
         Supply supply = createSupply(permissionRequest);
         ContractDetails contractDetails = createContractDetails(permissionRequest);
-        var accountingPointDataService = new AccountingPointDataService(contractApiService, supplyApiService);
+        var accountingPointDataService = new AccountingPointDataService(contractApiService,
+                                                                        supplyApiService,
+                                                                        authorizationApi);
 
         when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
                 .thenReturn(Mono.just(supply));
@@ -63,6 +70,7 @@ class AccountingPointDataServiceTest {
                                                      supply.distributorCode(),
                                                      permissionRequest.meteringPointId()))
                 .thenReturn(Mono.just(contractDetails));
+        when(authorizationApi.getThirdPartyAuthorizedUsersCups()).thenReturn(Mono.just(AuthorizedCupsProvider.loadUserAuthorizationResponse()));
 
         // When
         var accountingPointDataMono = accountingPointDataService
@@ -82,7 +90,9 @@ class AccountingPointDataServiceTest {
     void fetchAccountingPointDataForPermissionRequest_supplyServiceReturnsError_propagatesError(Exception exception) {
         // Given
         var permissionRequest = acceptedPermissionRequest();
-        var accountingPointDataService = new AccountingPointDataService(contractApiService, supplyApiService);
+        var accountingPointDataService = new AccountingPointDataService(contractApiService,
+                                                                        supplyApiService,
+                                                                        authorizationApi);
 
         when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
                 .thenReturn(Mono.error(exception));
@@ -101,7 +111,9 @@ class AccountingPointDataServiceTest {
         // Given
         var permissionRequest = acceptedPermissionRequest();
         Supply supply = createSupply(permissionRequest);
-        var accountingPointDataService = new AccountingPointDataService(contractApiService, supplyApiService);
+        var accountingPointDataService = new AccountingPointDataService(contractApiService,
+                                                                        supplyApiService,
+                                                                        authorizationApi);
 
         when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
                 .thenReturn(Mono.just(supply));
@@ -120,10 +132,77 @@ class AccountingPointDataServiceTest {
                     .verify();
     }
 
+
+    @Test
+    void fetchAccountingPointDataForPermissionRequest_withoutAuthorizationForNif_returnsNothing() throws IOException {
+        // Given
+        var permissionRequest = (EsPermissionRequest) new DatadisPermissionRequestBuilder()
+                .setNif("G11111111")
+                .setMeteringPointId("E00000000000000000GG")
+                .setPointType(PointType.TYPE_1)
+                .setDistributorCode(DistributorCode.CIDE)
+                .build();
+        Supply supply = createSupply(permissionRequest);
+        ContractDetails contractDetails = createContractDetails(permissionRequest);
+        var accountingPointDataService = new AccountingPointDataService(contractApiService,
+                                                                        supplyApiService,
+                                                                        authorizationApi);
+
+        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
+                .thenReturn(Mono.just(supply));
+        when(contractApiService.fetchContractDetails(permissionRequest.permissionId(),
+                                                     permissionRequest.nif(),
+                                                     supply.distributorCode(),
+                                                     permissionRequest.meteringPointId()))
+                .thenReturn(Mono.just(contractDetails));
+        when(authorizationApi.getThirdPartyAuthorizedUsersCups()).thenReturn(Mono.just(AuthorizedCupsProvider.loadUserAuthorizationResponse()));
+
+        // When
+        var accountingPointDataMono = accountingPointDataService
+                .fetchAccountingPointDataForPermissionRequest(permissionRequest);
+
+        // Then
+        StepVerifier.create(accountingPointDataMono)
+                    .verifyComplete();
+    }
+
+    @Test
+    void fetchAccountingPointDataForPermissionRequest_withoutAuthorizationForCUPS_returnsNothing() throws IOException {
+        // Given
+        var permissionRequest = (EsPermissionRequest) new DatadisPermissionRequestBuilder()
+                .setNif("G00000000")
+                .setMeteringPointId("E11111111111111111GG")
+                .setPointType(PointType.TYPE_1)
+                .setDistributorCode(DistributorCode.CIDE)
+                .build();
+        Supply supply = createSupply(permissionRequest);
+        ContractDetails contractDetails = createContractDetails(permissionRequest);
+        var accountingPointDataService = new AccountingPointDataService(contractApiService,
+                                                                        supplyApiService,
+                                                                        authorizationApi);
+
+        when(supplyApiService.fetchSupplyForPermissionRequest(permissionRequest))
+                .thenReturn(Mono.just(supply));
+        when(contractApiService.fetchContractDetails(permissionRequest.permissionId(),
+                                                     permissionRequest.nif(),
+                                                     supply.distributorCode(),
+                                                     permissionRequest.meteringPointId()))
+                .thenReturn(Mono.just(contractDetails));
+        when(authorizationApi.getThirdPartyAuthorizedUsersCups()).thenReturn(Mono.just(AuthorizedCupsProvider.loadUserAuthorizationResponse()));
+
+        // When
+        var accountingPointDataMono = accountingPointDataService
+                .fetchAccountingPointDataForPermissionRequest(permissionRequest);
+
+        // Then
+        StepVerifier.create(accountingPointDataMono)
+                    .verifyComplete();
+    }
+
     private static EsPermissionRequest acceptedPermissionRequest() {
         return new DatadisPermissionRequestBuilder()
-                .setNif("nif")
-                .setMeteringPointId("meteringPointId")
+                .setNif("G00000000")
+                .setMeteringPointId("E00000000000000000GG")
                 .setStart(LocalDate.now(ZONE_ID_SPAIN))
                 .setEnd(LocalDate.now(ZONE_ID_SPAIN))
                 .setDistributorCode(DistributorCode.ASEME)

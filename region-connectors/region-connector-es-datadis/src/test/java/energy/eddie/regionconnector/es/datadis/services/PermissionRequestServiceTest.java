@@ -11,6 +11,7 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.regionconnector.es.datadis.AuthorizedCupsProvider;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
@@ -38,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -70,6 +72,8 @@ class PermissionRequestServiceTest {
     private PermissionRequestService service;
     @Captor
     private ArgumentCaptor<PermissionEvent> eventCaptor;
+    @Captor
+    private ArgumentCaptor<EsCreatedEvent> createdEventCaptor;
 
     public static Stream<Arguments> createAndSendPermissionRequest_emitsCreatedAndValidated() {
         return Stream.of(
@@ -94,12 +98,14 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void acceptPermission_existingId_callsPermissionRequestConsumer() {
+    void acceptPermission_existingId_callsPermissionRequestConsumer() throws IOException {
         // Given
         var permissionId = "Existing";
         var permissionRequest = mock(DatadisPermissionRequest.class);
         Supply supply = new Supply("", "", "", "", "", "1", LocalDate.now(ZONE_ID_SPAIN), null, 1, "1");
-        AccountingPointData accountingPointData = new AccountingPointData(supply, createContractDetails());
+        AccountingPointData accountingPointData = new AccountingPointData(supply,
+                                                                          createContractDetails(),
+                                                                          AuthorizedCupsProvider.loadAuthorizedCups());
         when(permissionRequest.permissionId()).thenReturn(permissionId);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(accountingPointDataService.fetchAccountingPointDataForPermissionRequest(permissionRequest)).thenReturn(
@@ -361,17 +367,29 @@ class PermissionRequestServiceTest {
     }
 
     @Test
-    void testCreatePermissionRequest_emitsMalformedOnCESUJoinRequestDataNeed() {
+    void testCreatePermissionRequest_emitsValidatedOnCESUJoinRequestDataNeed() throws DataNeedNotFoundException, UnsupportedDataNeedException, EsValidationException {
         // Given
-        var request = new PermissionRequestForCreation("cid", Set.of("dnid"), "00000000T", "meteringPointId");
+        var request = new PermissionRequestForCreation("cid",
+                                                       Set.of("dnid"),
+                                                       "00000000T",
+                                                       "meteringPointId",
+                                                       "John",
+                                                       "Doe");
+        var now = LocalDate.now(ZONE_ID_SPAIN);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(ZONE_ID_SPAIN), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
         // When
+        var res = service.createAndSendPermissionRequest(request);
+
         // Then
-        assertThrows(UnsupportedDataNeedException.class,
-                     () -> service.createAndSendPermissionRequest(request));
-        verify(outbox).commit(isA(EsCreatedEvent.class));
-        verify(outbox).commit(isA(EsMalformedEvent.class));
+        assertNotNull(res);
+        verify(outbox).commit(createdEventCaptor.capture());
+        var event = createdEventCaptor.getValue();
+        assertAll(
+                () -> assertEquals("John", event.firstname()),
+                () -> assertEquals("Doe", event.surname())
+        );
+        verify(outbox).commit(isA(EsValidatedEvent.class));
     }
 
     private ContractDetails createContractDetails() {

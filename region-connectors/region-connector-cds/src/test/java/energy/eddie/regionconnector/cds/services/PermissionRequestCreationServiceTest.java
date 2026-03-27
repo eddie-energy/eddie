@@ -196,8 +196,9 @@ class PermissionRequestCreationServiceTest {
         var cdsServer = getCdsServer();
         when(repository.findById(0L)).thenReturn(Optional.of(cdsServer));
         var request = new PermissionRequestForCreation(0L, "dnid", "cid");
+        var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate(eq("dnid"), any(), any()))
-                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(ZoneOffset.UTC), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

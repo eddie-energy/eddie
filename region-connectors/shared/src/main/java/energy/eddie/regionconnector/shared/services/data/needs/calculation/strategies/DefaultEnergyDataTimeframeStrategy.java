@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.services.data.needs.calculation.strategies;
@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.shared.services.data.needs.calculation.stra
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.TimeframedDataNeedUtils;
@@ -35,6 +36,10 @@ public class DefaultEnergyDataTimeframeStrategy implements EnergyDataTimeframeSt
             DataNeed dataNeed,
             ZonedDateTime referenceDateTime
     ) throws UnsupportedDataNeedException {
+        if (dataNeed instanceof CESUJoinRequestDataNeed) {
+            return new Timeframe(referenceDateTime.toLocalDate(),
+                                 referenceDateTime.plus(regionConnectorMetadata.latestEnd()).toLocalDate());
+        }
         if (!(dataNeed instanceof TimeframedDataNeed timeframedDataNeed)) {
             return null;
         }

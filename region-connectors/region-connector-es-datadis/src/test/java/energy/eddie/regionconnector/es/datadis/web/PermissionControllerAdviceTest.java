@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.es.datadis.web;
 
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.es.datadis.exceptions.EsValidationException;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class PermissionControllerAdviceTest {
     @MockitoBean
     private PermissionController controller;
+    @MockitoBean
+    private DataNeedsService dataNeedsService;
     @Autowired
     private MockMvc mockMvc;
 
