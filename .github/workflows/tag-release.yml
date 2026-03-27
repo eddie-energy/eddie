@@ -1,0 +1,31 @@
+name: tag-release.yml
+on:
+  push:
+    branches:
+      - 'main'
+      - 'v*.*'
+
+jobs:
+  tag-release:
+    runs-on: [ Linux ]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+        with:
+          fetch-depth: 0
+
+      - name: Bump version
+        id: bump-version
+        uses: orhun/git-cliff-action@07dda386992489f0a6151dee53f3a137713644de
+        with:
+          args: -v --bump --no-exec --github-repo ${{ github.repository }}
+
+      - name: Create tag
+        # language=BASH
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git tag ${{ steps.bump-version.outputs.version }} ${{ github.sha }}
+          git push origin ${{ steps.bump-version.outputs.version }}

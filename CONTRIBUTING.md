@@ -166,15 +166,23 @@ Reviewers will assume that you followed these guidelines and that you actually t
 
 ### Commits
 
+We follow [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) when writing commit messages.
 We do not squash commits when merging pull requests, so your commit messages matter!
 
-The commit message should include the ticket number associated with it: `GH-123 Add this feature`.
-The `GH-` prefix is short for GitHub and is used by IntelliJ to hyperlink ticket numbers.
+The commit message should include the ticket number associated with it.
+The `GH-` prefix is short for GitHub and is used by IntelliJ to hyperlink ticket numbers, alternatively `#` can be used instead.
 This is done to later check why a change was implemented.
 You should always reference a ticket in your commits. If no ticket exists, you want to create one.
-If it does not make sense to create a new ticket for trivial changes, NOISSUE can be used instead (e.g., `NOISSUE Fix typo in README`).
 This should be used sparingly, as it makes it harder to understand why a change was made.
-Take a look at the commit history as a point of reference.
+Take a look at the commit history as a point of reference, they should look like this:
+
+```
+feat(core): Add a cool feature
+
+A more detailed description.
+
+[#1111]
+```
 
 ### Branches
 
@@ -219,7 +227,7 @@ Backporting is the process of applying specific commits from a more recent versi
 The simplest backporting strategy involves the following steps:
 
 1. **Identify the target release branch**  
-   This is the branch where you want to apply the backport, usually a stable or release branch like `release/1.x`.
+   This is the branch where you want to apply the backport, usually a stable or release branch like `v1.x`.
 
 2. **Create a new branch from the target release branch**  
    If you haven't already, create a new branch from the target release branch to keep your backport changes isolated.
@@ -241,17 +249,17 @@ The simplest backporting strategy involves the following steps:
 
 ```mermaid
 gitGraph
-   commit id: "Feature A" tag: "release-1.x"
-   branch release-1.x
+    commit id: "Feature A" tag: "v1.0.0"
+    branch v1.x
    checkout main
    commit id: "Feature B"
    commit id: "Bugfix"
    commit id: "Feature C"
-   checkout release-1.x
-   branch backport-1.x
+    checkout v1.x
+    branch backport-v1.0.1
    cherry-pick id: "Bugfix"
-   checkout release-1.x
-   merge backport-1.x
+    checkout v1.x
+    merge backport-v1.0.1
 ```
 
 ## Tests

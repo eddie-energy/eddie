@@ -62,22 +62,6 @@ jobs:
           path: '**/build/reports'
           if-no-files-found: ignore
 
-  publish-docker-images:
-    name: Publish docker images
-    needs: build
-    runs-on: self-hosted
-    if: github.ref_name == 'main'
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
-      - name: Build and publish docker images
-        uses: ./.github/actions/build-containers
-        with:
-          version: 'latest'
-          secrets: ${{ secrets.GITHUB_TOKEN }}
-
   publish-maven-packages:
     name: Publish maven packages
     needs: build
