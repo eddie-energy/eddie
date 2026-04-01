@@ -60,7 +60,7 @@ class EsPermissionRequestRepositoryTest {
         permissionEventRepository.saveAll(List.of(
                 new EsCreatedEvent("pid", "cid", "dnid", "nif", "mid", lateClock),
                 new EsSimpleEvent("pid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR),
-                new EsCreatedEvent("otherPid", "cid", "dnid", "nif", "mid", null, null),
+                new EsCreatedEvent("otherPid", "cid", "dnid", "nif", "mid"),
                 new EsSimpleEvent("otherPid", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
         ));
 

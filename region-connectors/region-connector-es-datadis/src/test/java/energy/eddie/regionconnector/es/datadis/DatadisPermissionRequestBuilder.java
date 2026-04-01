@@ -33,8 +33,6 @@ public class DatadisPermissionRequestBuilder {
     private boolean productionSupport;
     private AllowedGranularity allowedGranularity;
     private UUID bundleId;
-    private String firstname;
-    private String surname;
 
     public DatadisPermissionRequestBuilder setPermissionId(String permissionId) {
         this.permissionId = permissionId;
@@ -122,16 +120,6 @@ public class DatadisPermissionRequestBuilder {
         return this;
     }
 
-    public DatadisPermissionRequestBuilder setFirstname(String firstname) {
-        this.firstname = firstname;
-        return this;
-    }
-
-    public DatadisPermissionRequestBuilder setSurname(String surname) {
-        this.surname = surname;
-        return this;
-    }
-
     public DatadisPermissionRequest build() {
         return new DatadisPermissionRequest(
                 permissionId,
@@ -150,9 +138,7 @@ public class DatadisPermissionRequestBuilder {
                 productionSupport,
                 created,
                 allowedGranularity,
-                bundleId,
-                firstname,
-                surname
+                bundleId
         );
     }
 }

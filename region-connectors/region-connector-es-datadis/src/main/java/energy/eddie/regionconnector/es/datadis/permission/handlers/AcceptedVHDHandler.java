@@ -69,9 +69,7 @@ public class AcceptedVHDHandler implements EventHandler<EsAcceptedEventForVHD> {
                 permissionEvent.isProductionSupport(),
                 permissionRequest.created(),
                 permissionRequest.allowedGranularity(),
-                permissionRequest.bundleId(),
-                permissionRequest.firstname(),
-                permissionRequest.surname()));
+                permissionRequest.bundleId()));
     }
 
     private Optional<Granularity> granularity(AllowedGranularity allowedGranularity, Integer pointType) {

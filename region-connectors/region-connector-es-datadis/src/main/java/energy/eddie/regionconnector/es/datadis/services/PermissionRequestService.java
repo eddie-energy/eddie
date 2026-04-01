@@ -170,9 +170,7 @@ public class PermissionRequestService {
                                          requestForCreation.connectionId(),
                                          dataNeedId,
                                          requestForCreation.nif(),
-                                         requestForCreation.meteringPointId(),
-                                         requestForCreation.firstname(),
-                                         requestForCreation.surname()));
+                                         requestForCreation.meteringPointId()));
         var isValid = new IdentifierValidator().isValidIdentifier(requestForCreation.nif());
         if (!isValid) {
             var error = new AttributeError("nif", "Invalid NIF");

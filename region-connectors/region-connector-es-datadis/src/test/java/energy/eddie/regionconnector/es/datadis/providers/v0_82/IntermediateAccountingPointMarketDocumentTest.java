@@ -38,8 +38,6 @@ class IntermediateAccountingPointMarketDocumentTest {
                 .setPointType(PointType.TYPE_1)
                 .setStatus(PermissionProcessStatus.ACCEPTED)
                 .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
-                .setFirstname("John")
-                .setSurname("Doe")
                 .build();
         return new IdentifiableAccountingPointData(
                 permissionRequest,

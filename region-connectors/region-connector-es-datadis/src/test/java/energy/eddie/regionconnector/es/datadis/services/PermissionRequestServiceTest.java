@@ -72,8 +72,6 @@ class PermissionRequestServiceTest {
     private PermissionRequestService service;
     @Captor
     private ArgumentCaptor<PermissionEvent> eventCaptor;
-    @Captor
-    private ArgumentCaptor<EsCreatedEvent> createdEventCaptor;
 
     public static Stream<Arguments> createAndSendPermissionRequest_emitsCreatedAndValidated() {
         return Stream.of(
@@ -372,9 +370,7 @@ class PermissionRequestServiceTest {
         var request = new PermissionRequestForCreation("cid",
                                                        Set.of("dnid"),
                                                        "00000000T",
-                                                       "meteringPointId",
-                                                       "John",
-                                                       "Doe");
+                                                       "meteringPointId");
         var now = LocalDate.now(ZONE_ID_SPAIN);
         when(calculationService.calculate("dnid"))
                 .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
@@ -383,12 +379,7 @@ class PermissionRequestServiceTest {
 
         // Then
         assertNotNull(res);
-        verify(outbox).commit(createdEventCaptor.capture());
-        var event = createdEventCaptor.getValue();
-        assertAll(
-                () -> assertEquals("John", event.firstname()),
-                () -> assertEquals("Doe", event.surname())
-        );
+        verify(outbox).commit(isA(EsCreatedEvent.class));
         verify(outbox).commit(isA(EsValidatedEvent.class));
     }
 

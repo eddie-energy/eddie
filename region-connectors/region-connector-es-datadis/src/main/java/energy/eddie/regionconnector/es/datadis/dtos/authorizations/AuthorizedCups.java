@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.es.datadis.dtos.authorizations;
 import org.jspecify.annotations.Nullable;
 
 import java.time.ZonedDateTime;
-import java.util.Arrays;
 
 public record AuthorizedCups(Long id,
                              String ownerDocument,
@@ -37,11 +36,10 @@ public record AuthorizedCups(Long id,
         if (isCompany()) {
             return null;
         }
-        var names = ownerName.split(" ", -1);
-        if (names.length < 2) {
+        if (!ownerName.contains(" ")) {
             return null;
         }
-        return String.join(" ", Arrays.copyOfRange(names, 0, names.length - 1));
+        return ownerName.substring(0, ownerName.lastIndexOf(" "));
     }
 
     @Nullable
@@ -49,7 +47,6 @@ public record AuthorizedCups(Long id,
         if (isCompany()) {
             return null;
         }
-        var names = ownerName.split(" ", -1);
-        return names.length > 0 ? names[names.length - 1] : null;
+        return ownerName.substring(ownerName.lastIndexOf(" ") + 1);
     }
 }

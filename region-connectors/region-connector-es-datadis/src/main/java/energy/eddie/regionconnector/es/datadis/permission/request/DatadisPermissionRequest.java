@@ -55,12 +55,6 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     private final ZonedDateTime created;
     @Column(name = "bundle_id")
     private final UUID bundleId;
-    @Column(name = "firstname")
-    @Nullable
-    private final String firstname;
-    @Column(name = "surname")
-    @Nullable
-    private final String surname;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text", name = "allowed_granularity")
     private AllowedGranularity allowedGranularity;
@@ -85,8 +79,6 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         created = null;
         allowedGranularity = null;
         bundleId = null;
-        firstname = null;
-        surname = null;
     }
 
     @SuppressWarnings("java:S107")
@@ -107,9 +99,7 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
             boolean productionSupport,
             ZonedDateTime created,
             AllowedGranularity allowedGranularity,
-            @Nullable UUID bundleId,
-            @Nullable String firstname,
-            @Nullable String surname
+            @Nullable UUID bundleId
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -128,8 +118,6 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         this.created = created;
         this.allowedGranularity = allowedGranularity;
         this.bundleId = bundleId;
-        this.firstname = firstname;
-        this.surname = surname;
     }
 
     @Override
@@ -228,18 +216,6 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Override
     public UUID bundleId() {
         return bundleId;
-    }
-
-    @Override
-    @Nullable
-    public String firstname() {
-        return firstname;
-    }
-
-    @Override
-    @Nullable
-    public String surname() {
-        return surname;
     }
 
     @Override

@@ -63,10 +63,4 @@ public interface EsPermissionRequest extends MeterReadingPermissionRequest {
 
     @Nullable
     UUID bundleId();
-
-    @Nullable
-    String firstname();
-
-    @Nullable
-    String surname();
 }

@@ -25,6 +25,15 @@ import java.net.URI;
 
 @Component
 public class NettyAuthorizationApiClient implements AuthorizationApi {
+
+    /**
+     * Datadis blocks certain user-agents, such as the Spring user-agent.
+     * For this reason a different more specific user agent is used.
+     * Alternatively, most browser user agents should work too, since the Datadis API is usually called from the Datadis frontend.
+     *
+     * @see <a href="https://github.com/eddie-energy/eddie/issues/1102">GH-1102</a>
+     */
+    private static final String DATADIS_COMPATIBLE_USER_AGENT = "PostmanRuntime/7.36.3";
     private final HttpClient httpClient;
 
     private final ObjectMapper mapper;
@@ -61,8 +70,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                         .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE,
                                                         HttpHeaderValues.APPLICATION_JSON))
                         .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
-                        // Datadis blocks the spring user-agent, see GH-1102
-                        .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT, "PostmanRuntime/7.36.3"))
+                        .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT, DATADIS_COMPATIBLE_USER_AGENT))
                         .post()
                         .uri(authorizationEndpoint)
                         .send(ByteBufMono.fromString(Mono.just(body)))
@@ -100,10 +108,10 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                         .headers(h -> h
                                 .add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
                                 .add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token)
-                                .add(HttpHeaderNames.USER_AGENT, "PostmanRuntime/7.36.3"))
+                                .add(HttpHeaderNames.USER_AGENT, DATADIS_COMPATIBLE_USER_AGENT))
                         .get()
                         .uri(endpoint)
-                        .responseSingle((httpClientResponse, bytBufMono) -> bytBufMono
+                        .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono
                                 .asString()
                                 .defaultIfEmpty(Strings.EMPTY)
                                 .flatMap(bodyString -> {
@@ -115,13 +123,12 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                                         } catch (JacksonException e) {
                                             return Mono.error(e);
                                         }
-                                    } else {
-                                        return Mono.error(new DatadisApiException(
-                                                "Failed to request authorized cups",
-                                                httpClientResponse.status(),
-                                                bodyString
-                                        ));
                                     }
+                                    return Mono.error(new DatadisApiException(
+                                            "Failed to request authorized cups",
+                                            httpClientResponse.status(),
+                                            bodyString
+                                    ));
                                 }))
                 );
     }

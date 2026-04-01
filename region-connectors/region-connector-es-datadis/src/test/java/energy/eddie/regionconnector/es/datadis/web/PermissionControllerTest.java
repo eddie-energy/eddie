@@ -3,9 +3,6 @@
 
 package energy.eddie.regionconnector.es.datadis.web;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.CimTestConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.es.datadis.health.DatadisApiHealthIndicator;
@@ -29,7 +26,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
-import java.util.Optional;
 import java.util.Set;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
@@ -58,8 +54,6 @@ class PermissionControllerTest {
     private EsPermissionEventRepository unusedPermissionEventRepository;
     @MockitoBean
     private DatadisApiHealthIndicator healthIndicator;
-    @MockitoBean
-    private DataNeedsService dataNeedsService;
 
     @Test
     void acceptPermission_permissionExists_returnsOk_andCallsService() throws Exception {
@@ -200,56 +194,6 @@ class PermissionControllerTest {
     }
 
     @Test
-    void requestPermissionForCESUJoinRequestDataNeed_withoutFirstname_returnsBadRequest() throws Exception {
-        ObjectNode jsonNode = mapper.createObjectNode()
-                                    .put("connectionId", "cid")
-                                    .put("meteringPointId", "mid")
-                                    .put("nif", "NOICE")
-                                    .put("surname", "Doe");
-        jsonNode.putArray("dataNeedIds")
-                .add("dnid");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(new CESUJoinRequestDataNeed(null, Granularity.PT15M, Granularity.P1D, null)));
-
-        mockMvc.perform(post("/permission-request")
-                                .content(mapper.writeValueAsString(jsonNode))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-               .andDo(print())
-               // Then
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
-                       iterableWithSize(1),
-                       hasItem("firstname: required for CESU Join Request Data Needs")
-               )));
-    }
-
-    @Test
-    void requestPermissionForCESUJoinRequestDataNeed_withoutSurname_returnsBadRequest() throws Exception {
-        ObjectNode jsonNode = mapper.createObjectNode()
-                                    .put("connectionId", "cid")
-                                    .put("meteringPointId", "mid")
-                                    .put("nif", "NOICE")
-                                    .put("firstname", "Doe");
-        jsonNode.putArray("dataNeedIds")
-                .add("dnid");
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(new CESUJoinRequestDataNeed(null, Granularity.PT15M, Granularity.P1D, null)));
-
-        mockMvc.perform(post("/permission-request")
-                                .content(mapper.writeValueAsString(jsonNode))
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .accept(MediaType.APPLICATION_JSON))
-               .andDo(print())
-               // Then
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", allOf(
-                       iterableWithSize(1),
-                       hasItem("surname: required for CESU Join Request Data Needs")
-               )));
-    }
-
-    @Test
     void requestPermission_validInput_returnsCreatedAndSetsHeader() throws Exception {
         // Given
         var testPermissionId = "MyTestId";
@@ -260,15 +204,10 @@ class PermissionControllerTest {
         ObjectNode jsonNode = mapper.createObjectNode()
                                     .put("connectionId", "ConnId")
                                     .put("meteringPointId", "SomeId")
-                                    .put("nif", "NOICE")
-                                    .put("surname", "Doe")
-                                    .put("firstname", "John");
+                                    .put("nif", "NOICE");
         jsonNode
                 .putArray("dataNeedIds")
                 .add("SomeId");
-
-        when(dataNeedsService.findById("SomeId"))
-                .thenReturn(Optional.of(new CESUJoinRequestDataNeed(null, Granularity.PT15M, Granularity.P1D, null)));
 
         // When
         var expectedUri = connectionStatusMessagesStreamFor(testPermissionId).toString();
