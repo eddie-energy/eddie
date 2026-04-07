@@ -46,7 +46,7 @@ public interface AiidaDataNeedInterface {
      * If true, the receiving party is expected to send an acknowledgment envelope back to the sender after receiving the data.
      * If false, no acknowledgment is expected.
      */
-    boolean isAcknowledgementRequired();
+    boolean acknowledgementRequired();
 
     /**
      * Returns the type of the Data Need

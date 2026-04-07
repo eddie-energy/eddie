@@ -77,7 +77,7 @@ public class MqttService implements AutoCloseable {
     public MqttDto createCredentialsAndAclForPermission(
             String permissionId,
             boolean isInbound,
-            boolean isAcknowledgementRequired
+            boolean acknowledgementRequired
     ) throws CredentialsAlreadyExistException {
         LOGGER.info("Creating MQTT credentials and ACLs for permission {}", permissionId);
 
@@ -86,7 +86,7 @@ public class MqttService implements AutoCloseable {
         }
 
         var wrapper = createAndSaveMqttUser(permissionId);
-        var topics = createAclsForUser(wrapper.user, isInbound, isAcknowledgementRequired);
+        var topics = createAclsForUser(wrapper.user, isInbound, acknowledgementRequired);
 
         return new MqttDto(aiidaConfiguration.mqttServerUri(),
                            wrapper.user().username(),
@@ -185,7 +185,7 @@ public class MqttService implements AutoCloseable {
      * </ul>
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
-    private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound, boolean isAcknowledgementRequired) {
+    private Topics createAclsForUser(MqttUser mqttUser, boolean isInbound, boolean acknowledgementRequired) {
         var permissionId = mqttUser.permissionId();
         var username = mqttUser.username();
 
@@ -194,7 +194,7 @@ public class MqttService implements AutoCloseable {
         var topics = new Topics(MqttTopic.of(permissionId, dataTopicType),
                                 MqttTopic.of(permissionId, MqttTopicType.STATUS),
                                 MqttTopic.of(permissionId, MqttTopicType.TERMINATION),
-                                isAcknowledgementRequired
+                                acknowledgementRequired
                                         ? Optional.of(MqttTopic.of(permissionId, MqttTopicType.ACKNOWLEDGEMENT))
                                         : Optional.empty());
 

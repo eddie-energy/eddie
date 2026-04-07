@@ -124,7 +124,7 @@
       "asset": "Asset",
       "obisCodes": "OBIS-Codes",
       "dataSource": "Datenquelle",
-      "isAcknowledgementRequired": "Rückbestätigung erforderlich",
+      "acknowledgementRequired": "Rückbestätigung erforderlich",
       "permissionId": "Berechtigungs-ID",
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "inboundTooltip": "Es gibt zwei Möglichkeiten, diesen API-Schlüssel zu verwenden, um die neuesten eingehenden Daten abzurufen:",

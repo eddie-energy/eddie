@@ -44,7 +44,7 @@
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
-    "isAcknowledgementRequired": false,
+    "acknowledgementRequired": false,
     "schemas": [
       "SMART-METER-P1-CIM-V1-12"
     ],
@@ -67,7 +67,7 @@
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
-    "isAcknowledgementRequired": true,
+    "acknowledgementRequired": true,
     "schemas": [
       "MIN-MAX-ENVELOPE-CIM-V1-12",
       "OPAQUE"

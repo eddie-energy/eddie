@@ -159,7 +159,7 @@ public class AiidaPermissionService {
         var dataNeed = (AiidaDataNeed) permissionDetails.dataNeed();
         var mqttDto = mqttService.createCredentialsAndAclForPermission(permissionId,
                                                                        dataNeed instanceof InboundAiidaDataNeed,
-                                                                       dataNeed.isAcknowledgementRequired());
+                                                                       dataNeed.acknowledgementRequired());
         outbox.commit(new MqttCredentialsCreatedEvent(permissionId));
         subscribeToPermissionTopics(permissionId);
 

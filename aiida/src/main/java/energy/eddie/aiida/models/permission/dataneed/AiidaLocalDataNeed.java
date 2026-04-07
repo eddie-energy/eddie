@@ -58,9 +58,9 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @JsonDeserialize(using = CronExpressionDeserializer.class)
     protected CronExpression transmissionSchedule;
 
-    @Column(nullable = false, name = "is_acknowledgement_required")
+    @Column(nullable = false, name = "acknowledgement_required")
     @JsonProperty
-    protected boolean isAcknowledgementRequired;
+    protected boolean acknowledgementRequired;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_schemas", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
@@ -98,7 +98,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.schemas = dataNeed.schemas();
         this.asset = dataNeed.asset();
         this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
-        this.isAcknowledgementRequired = dataNeed.isAcknowledgementRequired();
+        this.acknowledgementRequired = dataNeed.acknowledgementRequired();
     }
 
     public String name() {
@@ -131,8 +131,8 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     }
 
     @Override
-    public boolean isAcknowledgementRequired() {
-        return isAcknowledgementRequired;
+    public boolean acknowledgementRequired() {
+        return acknowledgementRequired;
     }
 
     @Override
