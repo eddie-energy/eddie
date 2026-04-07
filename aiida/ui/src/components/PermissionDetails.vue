@@ -219,9 +219,9 @@ onClickOutside(target, () => (showToolTip.value = false))
           </dd>
         </div>
       </div>
-      <div v-if="permission.dataNeed.isAcknowledgementRequired" class="permission-field">
-        <dt>{{ t('permissions.dropdown.isAcknowledgementRequired') }}</dt>
-        <dd>{{ permission.dataNeed.isAcknowledgementRequired }}</dd>
+      <div v-if="permission.dataNeed.acknowledgementRequired" class="permission-field">
+        <dt>{{ t('permissions.dropdown.acknowledgementRequired') }}</dt>
+        <dd>{{ permission.dataNeed.acknowledgementRequired }}</dd>
       </div>
       <div class="permission-field" v-if="permission.permissionId">
         <dt>{{ t('permissions.dropdown.permissionID') }}</dt>

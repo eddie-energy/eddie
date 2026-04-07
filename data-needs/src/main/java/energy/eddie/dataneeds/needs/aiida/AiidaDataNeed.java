@@ -34,9 +34,9 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     private CronExpression transmissionSchedule;
 
     @JsonProperty
-    @Column(name = "is_acknowledgement_required", nullable = false)
+    @Column(name = "acknowledgement_required", nullable = false)
     @Schema(description = "Whether the receiving party should acknowledge the reception of the data.")
-    private boolean isAcknowledgementRequired = false;
+    private boolean acknowledgementRequired = false;
 
     @Schema(description = "Define the schema for the outgoing data (Raw, CIM, Saref)")
     @ElementCollection(fetch = FetchType.EAGER)
@@ -90,8 +90,8 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     }
 
     @Override
-    public boolean isAcknowledgementRequired() {
-        return isAcknowledgementRequired;
+    public boolean acknowledgementRequired() {
+        return acknowledgementRequired;
     }
 
     public abstract Set<AiidaSchema> supportedSchemas();

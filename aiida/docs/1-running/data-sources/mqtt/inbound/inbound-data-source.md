@@ -74,7 +74,7 @@ There are two ways to use this key to retrieve the latest inbound record:
 ## EP: Subscribing to Acknowledgement
 
 AIIDA data needs can be configured to send an acknowledgement back to the EP after receiving data.
-This is done by the flag `isAcknowledgementRequired` in the data need of the inbound permission.
+This is done by the flag `acknowledgementRequired` in the data need of the inbound permission.
 
 The EP can subscribe to the respective topic in a desired outbound connector (e.g, in Kafka: `fw.eddie.cim_1_12.acknowledgement-md`).
 

@@ -45,7 +45,7 @@ class DataNeedSummary extends HTMLElement {
       maxGranularity,
       energyType,
       transmissionSchedule,
-      isAcknowledgementRequired,
+      acknowledgementRequired,
       schemas,
       asset,
       dataTags,
@@ -114,10 +114,10 @@ class DataNeedSummary extends HTMLElement {
             : ""}
 
           <!-- For AIIDA data needs -->
-          ${isAcknowledgementRequired !== undefined
+          ${acknowledgementRequired !== undefined
             ? /* HTML */ `
                 <dt>Acknowledgement Required</dt>
-                <dd>${isAcknowledgementRequired}</dd>
+                <dd>${acknowledgementRequired}</dd>
               `
             : ""}
 

@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS data_needs.outbound_aiida_data_need
     policy_link                 text                        NOT NULL,
     purpose                     text                        NOT NULL,
     transmission_schedule       VARCHAR(36)                 NOT NULL,
-    is_acknowledgement_required boolean                     NOT NULL,
+    acknowledgement_required boolean NOT NULL,
     asset                       text                        NOT NULL
 );
 
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS data_needs.inbound_aiida_data_need
     policy_link                 text                        NOT NULL,
     purpose                     text                        NOT NULL,
     transmission_schedule       VARCHAR(36)                 NOT NULL,
-    is_acknowledgement_required boolean                     NOT NULL,
+    acknowledgement_required boolean NOT NULL,
     asset                       text                        NOT NULL
 );
 

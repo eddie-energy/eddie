@@ -21,6 +21,8 @@ The AiidaDataNeed specifies that a permission request is only for data from an A
 It defines what schema should be used to send the data, such as CIM or as raw data.
 Furthermore, the asset from which the data is received is defined.
 
+More information in the [AIIDA documentation](https://architecture.eddie.energy/aiida/1-running/data-need.html).
+
 ### ValidatedHistoricalDataDataNeed
 
 This data need is used to collect [validated historical data](./messages/cim/validated-historical-data-market-documents.md) from an MDA for a final customer.

@@ -135,6 +135,10 @@ export default withMermaid(
               link: "/1-running/keycloak.md",
             },
             {
+              text: "Data Needs",
+              link: "/1-running/data-need.md",
+            },
+            {
               text: "Permissions",
               link: "/1-running/permission.md",
             },
