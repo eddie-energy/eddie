@@ -62,7 +62,7 @@ val edaVersionMatrix: Map<String, Map<String, String>> = mapOf(
     "https://www.ebutilities.at/schemata/customerprocesses/ecmplist/%s/ECMPList_%s.xsd" to ecmplistVersions
 )
 
-val pontonVersion = "4.6.5"
+val pontonVersion = "5.0.1"
 val pontonLib = layout.projectDirectory.file("libs/adapterapi2.jar")
 // JAXB configuration holds classpath for running the JAXB XJC compiler
 val jaxb: Configuration by configurations.creating
