@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.cim.testing;
@@ -61,6 +61,12 @@ public class XmlValidator {
     public static boolean validateV104ValidatedHistoricalDataMarketDocument(byte[] xml) {
         var xsd = XmlValidator.class.getResource(
                 "/cim/xsd/v1_04/vhd/ValidatedHistoricalData Document_v1.04_annotated.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
+
+    public static boolean validateV112EnergySharingReferenceDataMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_12/esr/CEEDS_EnergySharingReferenceDataMarketDocument_annotated_v1.12.xsd");
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
 }

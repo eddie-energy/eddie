@@ -84,3 +84,8 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.7.0 - 2026-03-24
 
 - Add agnostic message classes
+
+## 3.8.0 - 2026-04-07
+
+- Add EnergySharingReferenceDataDocument.
+  This document can be used to announce the current participation factor of an accounting for a specific collective energy sharing unit (CESU).

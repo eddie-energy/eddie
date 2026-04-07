@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.cim.serde;
@@ -37,7 +37,9 @@ public class XmlMessageSerde implements MessageSerde {
             RTREnvelope.class,
             // CIM v1.04
             VHDEnvelope.class,
-            RTDEnvelope.class
+            RTDEnvelope.class,
+            // CIM v1.12
+            energy.eddie.cim.v1_12.esr.Envelope.class
     );
     private final Marshaller marshaller;
     private final Unmarshaller unmarshaller;

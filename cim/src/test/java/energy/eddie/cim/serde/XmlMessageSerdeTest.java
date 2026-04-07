@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.cim.serde;
@@ -20,8 +20,12 @@ import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
+import energy.eddie.cim.v1_04.vhd.PartyIDString;
+import energy.eddie.cim.v1_04.vhd.ResourceIDString;
+import energy.eddie.cim.v1_12.esr.*;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.datatype.DatatypeFactory;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
@@ -611,6 +615,59 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(res);
+
+        // Then
+        assertTrue(valid);
+    }
+
+    @Test
+    void testSerialize_producesCIM_v1_12_CompliantEnergySharingReferenceDataMarketDocument() throws SerdeInitializationException, SerializationException {
+        // Given
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var document = new Envelope()
+                .withMessageDocumentHeader(new MessageDocumentHeader())
+                .withMarketDocument(
+                        new MarketDocument()
+                                .withMRID("MRID")
+                                .withCreatedDateTime(dateTime)
+                                .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.DISTRIBUTION_SYSTEM_OPERATOR_DSO.value())
+                                .withDescription("energy-sharing-reference-data-market-document")
+                                .withType(StandardMessageTypeList.NOTIFICATION_DATA_MARKET_DOCUMENT.value())
+                                .withRevisionNumber("1")
+                                .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.ENERGY_SERVICE_COMPANY_ESCO.value())
+                                .withSenderMarketParticipantMRID(new energy.eddie.cim.v1_12.esr.PartyIDString()
+                                                                         .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                         .withValue("AT00000000"))
+                                .withReceiverMarketParticipantMRID(new energy.eddie.cim.v1_12.esr.PartyIDString()
+                                                                           .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                           .withValue("EP00000000"))
+                                .withEnergyCommunities(
+                                        new EnergyCommunity()
+                                                .withDateFrom(dateTime)
+                                                .withMRID("MRID")
+                                                .withAccountingPoints(
+                                                        new AccountingPoint()
+                                                                .withMRID("MRID")
+                                                                .withMeterReadingResolution(DatatypeFactory.newDefaultInstance()
+                                                                                                           .newDuration(
+                                                                                                                   true,
+                                                                                                                   0,
+                                                                                                                   0,
+                                                                                                                   0,
+                                                                                                                   0,
+                                                                                                                   15,
+                                                                                                                   0))
+                                                                .withGridAgreementType("agreement")
+                                                                .withEnergySharingParticipationFactor(BigInteger.TEN)
+                                                                .withEnergySharingEnergyDirection(energy.eddie.cim.v1_12.StandardDirectionTypeList.DOWN.value())
+                                                )
+                                )
+                );
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.serialize(document);
+        var valid = XmlValidator.validateV112EnergySharingReferenceDataMarketDocument(res);
 
         // Then
         assertTrue(valid);

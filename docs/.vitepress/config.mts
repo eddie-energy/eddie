@@ -214,6 +214,10 @@ export default withMermaid(
                       link: "/2-integrating/messages/cim/acknowledgement-market-documents.md",
                     },
                     {
+                      text: "Energy Sharing Reference Data Market Documents",
+                      link: "/2-integrating/messages/cim/energy-sharing-reference-data-market-documents.md",
+                    },
+                    {
                       text: "Existing Mappings",
                       link: "/2-integrating/messages/cim/mappings.md",
                     },
