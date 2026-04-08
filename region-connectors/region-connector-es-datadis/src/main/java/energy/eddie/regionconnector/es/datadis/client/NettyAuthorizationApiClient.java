@@ -8,6 +8,7 @@ import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.UserAuthorizationsResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -24,11 +25,20 @@ import java.net.URI;
 
 @Component
 public class NettyAuthorizationApiClient implements AuthorizationApi {
+
+    /**
+     * Datadis blocks certain user-agents, such as the Spring user-agent.
+     * For this reason a different more specific user agent is used.
+     * Alternatively, most browser user agents should work too, since the Datadis API is usually called from the Datadis frontend.
+     *
+     * @see <a href="https://github.com/eddie-energy/eddie/issues/1102">GH-1102</a>
+     */
+    private static final String DATADIS_COMPATIBLE_USER_AGENT = "PostmanRuntime/7.36.3";
     private final HttpClient httpClient;
 
     private final ObjectMapper mapper;
     private final DatadisTokenProvider tokenProvider;
-    private final URI authorizationEndpoint;
+    private final DatadisConfiguration config;
 
     public NettyAuthorizationApiClient(
             HttpClient httpClient,
@@ -39,8 +49,7 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.tokenProvider = tokenProvider;
-        this.authorizationEndpoint = URI.create(datadisConfig.basepath())
-                                        .resolve("api-private/request/send-request-authorization");
+        this.config = datadisConfig;
     }
 
     @Override
@@ -53,14 +62,15 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
             return Mono.error(e);
         }
 
+        var authorizationEndpoint = URI.create(config.basepath())
+                                       .resolve("api-private/request/send-request-authorization");
         return tokenProvider
                 .getToken()
                 .flatMap(token -> httpClient
                         .headers(headers -> headers.add(HttpHeaderNames.CONTENT_TYPE,
                                                         HttpHeaderValues.APPLICATION_JSON))
                         .headers(headers -> headers.add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token))
-                        // Datadis blocks the spring user-agent, see GH-1102
-                        .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT, "PostmanRuntime/7.36.3"))
+                        .headers(headers -> headers.add(HttpHeaderNames.USER_AGENT, DATADIS_COMPATIBLE_USER_AGENT))
                         .post()
                         .uri(authorizationEndpoint)
                         .send(ByteBufMono.fromString(Mono.just(body)))
@@ -84,6 +94,41 @@ public class NettyAuthorizationApiClient implements AuthorizationApi {
                                                 bodyString
                                         ));
                                     }
+                                }))
+                );
+    }
+
+    @Override
+    public Mono<UserAuthorizationsResponse> getThirdPartyAuthorizedUsersCups() {
+        var endpoint = URI.create(config.basepath())
+                          .resolve("api-private/authorizations/request/third-authorized-users-cups");
+        return tokenProvider
+                .getToken()
+                .flatMap(token -> httpClient
+                        .headers(h -> h
+                                .add(HttpHeaderNames.CONTENT_TYPE, HttpHeaderValues.APPLICATION_JSON)
+                                .add(HttpHeaderNames.AUTHORIZATION, "Bearer " + token)
+                                .add(HttpHeaderNames.USER_AGENT, DATADIS_COMPATIBLE_USER_AGENT))
+                        .get()
+                        .uri(endpoint)
+                        .responseSingle((httpClientResponse, byteBufMono) -> byteBufMono
+                                .asString()
+                                .defaultIfEmpty(Strings.EMPTY)
+                                .flatMap(bodyString -> {
+                                    if (httpClientResponse.status().code() == HttpResponseStatus.OK.code()) {
+                                        try {
+                                            var response = mapper.readValue(bodyString,
+                                                                            UserAuthorizationsResponse.class);
+                                            return Mono.just(response);
+                                        } catch (JacksonException e) {
+                                            return Mono.error(e);
+                                        }
+                                    }
+                                    return Mono.error(new DatadisApiException(
+                                            "Failed to request authorized cups",
+                                            httpClientResponse.status(),
+                                            bodyString
+                                    ));
                                 }))
                 );
     }

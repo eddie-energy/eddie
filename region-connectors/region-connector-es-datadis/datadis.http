@@ -1,0 +1,28 @@
+### LOGIN
+POST https://datadis.es/nikola-auth/tokens/login
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Content-Type: application/x-www-form-urlencoded
+
+username = {{username}} &
+password = {{password}} &
+origin = WEB
+
+> {%
+  console.log(response.body)
+  client.global.set("bearer", response.body)
+%}
+
+### Get All Third Party Authorizations
+GET https://datadis.es/api-private/authorizations/request/third-authorized-list-cups
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Accept: application/json
+Authorization: Bearer {{bearer}}
+Content-Type: application/json
+
+### Get Authorized Users CUPS
+GET https://datadis.es/api-private/authorizations/request/third-authorized-users-cups
+Accept: application/json
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:148.0) Gecko/20100101 Firefox/148.0
+Authorization: Bearer {{bearer}}
+Content-Type: application/json
+

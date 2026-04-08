@@ -8,6 +8,7 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.rules.DataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.CESUJoinRequestDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,7 @@ public class DatadisDataNeedRuleSet implements DataNeedRuleSet {
         return List.of(
                 new AccountingPointDataNeedRule(),
                 new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES),
+                new CESUJoinRequestDataNeedRule(SUPPORTED_GRANULARITIES),
                 new AllowMultipleDataNeedsRule()
         );
     }

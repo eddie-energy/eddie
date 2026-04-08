@@ -7,6 +7,9 @@ import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequest;
 import energy.eddie.regionconnector.es.datadis.dtos.AuthorizationRequestResponse;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.AuthorizationStatus;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.AuthorizedCups;
+import energy.eddie.regionconnector.es.datadis.dtos.authorizations.UserAuthorizationsResponse;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -25,7 +28,9 @@ import tools.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,16 +53,6 @@ class NettyAuthorizationApiClientTest {
     @AfterAll
     static void tearDown() throws IOException {
         mockBackEnd.shutdown();
-    }
-
-    private static Stream<Arguments> authorizationResponses() {
-        return Stream.of(
-                Arguments.of("ok", AuthorizationRequestResponse.Ok.class),
-                Arguments.of("nonif", AuthorizationRequestResponse.NoNif.class),
-                Arguments.of("nopermisos", AuthorizationRequestResponse.NoPermission.class),
-                Arguments.of("xxx", AuthorizationRequestResponse.Unknown.class)
-
-        );
     }
 
     @ParameterizedTest
@@ -119,5 +114,105 @@ class NettyAuthorizationApiClientTest {
         StepVerifier.create(uut.postAuthorizationRequest(request))
                     .expectError(DatadisApiException.class)
                     .verify();
+    }
+
+    @Test
+    void getThirdPartyAuthorizedUsersCups_returnsAuthorizedUsersCups() {
+        // Given
+        // language=JSON
+        var payload = """
+                {
+                  "response": [
+                    {
+                      "id": 7330921,
+                      "ownerDocument": "G00000000",
+                      "ownerName": "John Doe",
+                      "ownerDocumentTypeName": "NIF",
+                      "requesterDocument": "00000000",
+                      "requesterDocumentTypeName": "NIF",
+                      "requesterName": "EDDIE Framework",
+                      "requestId": 1521447,
+                      "cups": "ES0000000000000000GG",
+                      "status": {
+                        "id": 5,
+                        "description": "VIGENTE"
+                      },
+                      "validityDateStart": "2026-03-30T00:00:00.000+0200",
+                      "validityDateEnd": "2026-03-31T23:59:59.000+0200",
+                      "isDeleted": null,
+                      "distributorCodeFather": "0000"
+                    }
+                  ]
+                }
+                """;
+
+        NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
+                HttpClient.create(),
+                mapper,
+                () -> Mono.just("token"),
+                datadisConfig
+        );
+
+        mockBackEnd.enqueue(new MockResponse()
+                                    .setResponseCode(HttpStatus.OK.value())
+                                    .setBody(payload)
+                                    .addHeader("Content-Type", HttpHeaderValues.APPLICATION_JSON));
+        var expected = new UserAuthorizationsResponse(List.of(
+                new AuthorizedCups(
+                        7330921L,
+                        "G00000000",
+                        "John Doe",
+                        "NIF",
+                        "00000000",
+                        "NIF",
+                        "EDDIE Framework",
+                        1521447L,
+                        "ES0000000000000000GG",
+                        AuthorizationStatus.CURRENT,
+                        ZonedDateTime.parse("2026-03-30T00:00:00.000+02").withZoneSameInstant(ZoneOffset.UTC),
+                        ZonedDateTime.parse("2026-03-31T23:59:59.000+02").withZoneSameInstant(ZoneOffset.UTC),
+                        null,
+                        "0000"
+                ))
+        );
+
+        // When
+        var response = uut.getThirdPartyAuthorizedUsersCups();
+
+        // Then
+        StepVerifier.create(response)
+                    .expectNext(expected)
+                    .verifyComplete();
+    }
+
+
+    @Test
+    void getThirdPartyAuthorizedUsersCups_withInvalidToken_returnsError() {
+        NettyAuthorizationApiClient uut = new NettyAuthorizationApiClient(
+                HttpClient.create(),
+                mapper,
+                () -> Mono.just("invalid token"),
+                datadisConfig
+        );
+
+        mockBackEnd.enqueue(new MockResponse()
+                                    .setResponseCode(HttpStatus.UNAUTHORIZED.value())
+                                    .setBody(
+                                            "{\"timestamp\":\"2024-01-30T11:46:39.299+0000\",\"status\":401,\"error\":\"Unauthorized\",\"message\":\"No message available\",\"path\":\"/api-private/request/send-request-authorization\"}")
+                                    .addHeader("Content-Type", HttpHeaderValues.APPLICATION_JSON));
+
+        StepVerifier.create(uut.getThirdPartyAuthorizedUsersCups())
+                    .expectError(DatadisApiException.class)
+                    .verify();
+    }
+
+    private static Stream<Arguments> authorizationResponses() {
+        return Stream.of(
+                Arguments.of("ok", AuthorizationRequestResponse.Ok.class),
+                Arguments.of("nonif", AuthorizationRequestResponse.NoNif.class),
+                Arguments.of("nopermisos", AuthorizationRequestResponse.NoPermission.class),
+                Arguments.of("xxx", AuthorizationRequestResponse.Unknown.class)
+
+        );
     }
 }

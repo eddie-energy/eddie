@@ -23,7 +23,7 @@ public class CESUJoinRequestValidator implements ConstraintValidator<DataNeedCom
         for (var dataNeedId : value.dataNeedIds()) {
             var dn = dataNeedsService.findById(dataNeedId);
             if (dn.isEmpty() || !(dn.get() instanceof CESUJoinRequestDataNeed dataNeed)) {
-                return true;
+                continue;
             }
             if (value.meteringPointId() == null) {
                 return addViolationFor(context, "meteringPointId");

@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.es.datadis.consumer;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.dtos.AccountingPointData;
@@ -50,6 +51,8 @@ public class PermissionRequestConsumer {
         switch (dataNeed) {
             case AccountingPointDataNeed ignored ->
                     handleAccountingPointDataNeed(accountingPointData, permissionRequest);
+            case CESUJoinRequestDataNeed ignored ->
+                    handleCESUJoinRequestDataNeed(accountingPointData, permissionRequest);
             default -> handleHistoricalValidatedDataDataNeed(accountingPointData, permissionRequest);
         }
     }
@@ -91,5 +94,13 @@ public class PermissionRequestConsumer {
                         accountingPointData.contractDetails().installedCapacity().isPresent()
                 )
         );
+    }
+
+    private void handleCESUJoinRequestDataNeed(
+            AccountingPointData accountingPointData,
+            EsPermissionRequest permissionRequest
+    ) {
+        handleHistoricalValidatedDataDataNeed(accountingPointData, permissionRequest);
+        streams.publish(new IdentifiableAccountingPointData(permissionRequest, accountingPointData));
     }
 }

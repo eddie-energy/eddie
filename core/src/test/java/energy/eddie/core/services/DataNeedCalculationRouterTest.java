@@ -115,6 +115,27 @@ class DataNeedCalculationRouterTest {
     }
 
     @Test
+    void testCalculateFor_returnsCalculation_withCESUJoinRequest() throws UnknownRegionConnectorException, DataNeedNotFoundException {
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
+        when(service.calculate("dnid")).thenReturn(new CESUJoinRequestDataNeedResult(timeframe,
+                                                                                     timeframe,
+                                                                                     List.of(Granularity.PT15M),
+                                                                                     Optional.empty(),
+                                                                                     Optional.empty()));
+
+        // When
+        var res = router.calculateFor("at-eda", "dnid");
+
+        // Then
+        assertAll(
+                () -> assertTrue(res.supportsDataNeed()),
+                () -> assertEquals(timeframe, res.energyDataTimeframe()),
+                () -> assertEquals(timeframe, res.permissionTimeframe()),
+                () -> assertEquals(List.of(Granularity.PT15M), res.granularities())
+        );
+    }
+
+    @Test
     void testCalulcateFor_returnsCalculation_withAiidaData() throws UnknownRegionConnectorException, DataNeedNotFoundException {
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
         when(service.calculate("dnid")).thenReturn(new AiidaDataNeedResult(

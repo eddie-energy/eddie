@@ -53,11 +53,11 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
     @Column
     private final boolean productionSupport;
     private final ZonedDateTime created;
+    @Column(name = "bundle_id")
+    private final UUID bundleId;
     @Enumerated(EnumType.STRING)
     @Column(columnDefinition = "text", name = "allowed_granularity")
     private AllowedGranularity allowedGranularity;
-    @Column(name = "bundle_id")
-    private final UUID bundleId;
 
     // just for JPA
     @SuppressWarnings("NullAway.Init")
@@ -212,14 +212,14 @@ public class DatadisPermissionRequest implements EsPermissionRequest {
         return granularity;
     }
 
-    @Override
-    public Optional<LocalDate> latestMeterReadingEndDate() {
-        return Optional.ofNullable(this.latestMeterReadingEndDate);
-    }
-
     @Nullable
     @Override
     public UUID bundleId() {
         return bundleId;
+    }
+
+    @Override
+    public Optional<LocalDate> latestMeterReadingEndDate() {
+        return Optional.ofNullable(this.latestMeterReadingEndDate);
     }
 }

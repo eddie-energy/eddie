@@ -138,6 +138,7 @@ public class DatadisPermissionRequestBuilder {
                 productionSupport,
                 created,
                 allowedGranularity,
-                bundleId);
+                bundleId
+        );
     }
 }

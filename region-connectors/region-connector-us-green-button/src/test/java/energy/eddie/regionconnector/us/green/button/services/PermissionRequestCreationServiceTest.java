@@ -196,8 +196,9 @@ class PermissionRequestCreationServiceTest {
                 "company",
                 "US"
         );
+        var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(LocalDate.now(ZoneOffset.UTC), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

@@ -7,6 +7,7 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.AllowMultipleDataNeedsRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.CESUJoinRequestDataNeedRule;
 import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,7 @@ class DatadisDataNeedRuleSetTest {
                         new AccountingPointDataNeedRule(),
                         new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY,
                                                                 List.of(Granularity.PT15M, Granularity.PT1H)),
+                        new CESUJoinRequestDataNeedRule(List.of(Granularity.PT15M, Granularity.PT1H)),
                         new AllowMultipleDataNeedsRule()
                 );
     }

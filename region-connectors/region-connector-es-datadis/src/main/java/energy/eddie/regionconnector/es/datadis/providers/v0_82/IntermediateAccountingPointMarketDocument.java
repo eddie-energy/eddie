@@ -90,7 +90,20 @@ public final class IntermediateAccountingPointMarketDocument {
                 .withMeterReadingResolution(resolution())
                 .withTariffClassDSO(accountingPointData.contractDetails().codeFare())
                 .withAddressList(addressList())
+                .withContractPartyList(createContractPartyList())
                 .withBillingData(billingData());
+    }
+
+    private AccountingPointComplexType.ContractPartyList createContractPartyList() {
+        var authorizedCups = accountingPointData.thirdAuthorizedUsersCups();
+        return new AccountingPointComplexType.ContractPartyList()
+                .withContractParties(
+                        new ContractPartyComplexType()
+                                .withSurName(authorizedCups.surname())
+                                .withFirstName(authorizedCups.firstname())
+                                .withCompanyName(authorizedCups.companyName())
+                                .withVATnumber(authorizedCups.ownerDocument())
+                );
     }
 
     private DirectionTypeList direction() {

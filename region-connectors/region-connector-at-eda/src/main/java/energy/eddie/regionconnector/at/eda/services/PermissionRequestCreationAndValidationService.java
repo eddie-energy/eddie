@@ -123,13 +123,14 @@ public class PermissionRequestCreationAndValidationService {
                     permissionId, LocalDate.now(AT_ZONE_ID), null, null, calculation
             );
             case CESUJoinRequestDataNeedResult(
-                    var start,
+                    var permissionTimeframe,
+                    var ignoredEnergyDataTimeframe,
                     var supportedGranularities,
                     var energyDirection,
                     var participationFactor
             ) -> validatedEventFactory.createValidatedEvent(
                     permissionId,
-                    start,
+                    permissionTimeframe.start(),
                     null,
                     AllowedGranularity.valueOf(supportedGranularities.getFirst()),
                     calculation,
