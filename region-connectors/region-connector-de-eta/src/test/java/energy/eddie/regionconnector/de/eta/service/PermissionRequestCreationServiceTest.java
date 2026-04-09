@@ -46,7 +46,9 @@ class PermissionRequestCreationServiceTest {
 
     @Spy
     private final DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
-            "partner", "http://api.url",
+            "partner", "http://api.url", "api-client", "api-secret",
+            "/meters/historical", "/v1/permissions/{id}", 30,
+            3, 2, true, false,
             new DeEtaPlusConfiguration.AuthConfig(
                     "client-1", "secret", "token-url", "http://auth.url", "http://redirect.uri",
                     "scope"

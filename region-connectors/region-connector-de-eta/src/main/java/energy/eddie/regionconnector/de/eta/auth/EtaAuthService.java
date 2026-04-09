@@ -18,8 +18,15 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 
 @Service
 public class EtaAuthService {
@@ -30,6 +37,9 @@ public class EtaAuthService {
 
     public EtaAuthService(DeEtaPlusConfiguration configuration) {
         this.configuration = configuration;
+        if (configuration.sslTrustAll()) {
+            LOGGER.warn("SSL certificate validation is DISABLED for ETA+ auth requests. Do not use in production!");
+        }
     }
 
     public Mono<AuthTokenResponse> exchangeCodeForToken(String code, String openid) {
@@ -56,6 +66,10 @@ public class EtaAuthService {
         TokenRequest request = new TokenRequest(tokenEndpoint, clientID, codeGrant);
         HTTPRequest httpRequest = request.toHTTPRequest();
         httpRequest.setAccept("application/json");
+
+        if (configuration.sslTrustAll()) {
+            httpRequest.setSSLSocketFactory(createTrustAllSocketFactory());
+        }
 
         HTTPResponse response = httpRequest.send();
 
@@ -97,5 +111,25 @@ public class EtaAuthService {
                 new AuthTokenResponse.TokenData(token, refreshTokenString),
                 true
         );
+    }
+
+    @SuppressWarnings({"java:S4830", "java:S1186"}) // Trust-all is intentional for dev/test when sslTrustAll=true
+    private static SSLSocketFactory createTrustAllSocketFactory() {
+        try {
+            TrustManager[] trustAll = {new X509TrustManager() {
+                @Override public void checkClientTrusted(X509Certificate[] chain, String authType) {
+                    // intentionally empty: trust-all for dev/test environments
+                }
+                @Override public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                    // intentionally empty: trust-all for dev/test environments
+                }
+                @Override public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }};
+            SSLContext sslContext = SSLContext.getInstance("TLS"); // NOSONAR - trust-all is guarded by sslTrustAll config
+            sslContext.init(null, trustAll, null);
+            return sslContext.getSocketFactory();
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IllegalStateException("Failed to create trust-all SSLSocketFactory", e);
+        }
     }
 }

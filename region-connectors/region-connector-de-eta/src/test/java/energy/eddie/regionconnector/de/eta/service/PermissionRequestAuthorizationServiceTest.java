@@ -42,7 +42,9 @@ class PermissionRequestAuthorizationServiceTest {
 
     @Spy
     private DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
-            "test-party", "http://test-url",
+            "test-party", "http://test-url", "api-client", "api-secret",
+            "/meters/historical", "/v1/permissions/{id}", 30,
+            3, 2, true, false,
             new DeEtaPlusConfiguration.AuthConfig("test-client", "secret", "tokenUrl", "authUrl",
                                                    "redirectUri",
                                                    "scope"),
