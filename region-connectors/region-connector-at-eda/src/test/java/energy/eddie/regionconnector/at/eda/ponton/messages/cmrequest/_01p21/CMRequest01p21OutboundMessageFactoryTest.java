@@ -65,7 +65,7 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
     }
 
     @Test
-    void isMessageType_01p21() {
+    void isMessageType_01p40() {
         // Given
         var factory = new CMRequest01p21OutboundMessageFactory(marshaller);
         var now = LocalDate.now(ZoneOffset.UTC);
@@ -84,8 +84,8 @@ class CMRequest01p21OutboundMessageFactoryTest extends CMRequestOutboundMessageF
 
         // Then
         assertAll(
-                () -> assertEquals("CM_REQ_ONL_01.30", res.getMessageType().getSchemaSet().getValue()),
-                () -> assertEquals("01.30", res.getMessageType().getVersion().getValue())
+                () -> assertEquals("CM_REQ_ONL_01.40", res.getMessageType().getSchemaSet().getValue()),
+                () -> assertEquals("01.40", res.getMessageType().getVersion().getValue())
         );
     }
 }
