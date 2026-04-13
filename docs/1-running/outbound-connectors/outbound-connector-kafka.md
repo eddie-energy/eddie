@@ -8,7 +8,7 @@ The following parameters are of special interest:
 
 | Parameter                         | Type                                           | Default | Description                                                                                                                 |
 |-----------------------------------|------------------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------------------|
-| outbound-connector.kafka.enabled  | `true` or `false`                              | `true`  | Enables or disables the kafka connector.                                                                                    |
+| outbound-connector.kafka.enabled  | `true` or `false`                              | `false` | Enables or disables the kafka connector.                                                                                    |
 | outbound-connector.kafka.format   | `json` or `xml`                                | `json`  | Sets the output and input format for kafka topics. If set to json will only accept and produce json messages, same for xml. |
 | outbound-connector.kafka.eddie-id | String                                         |         | Sets the ID of the eddie instance in relation to the kafka broker                                                           |
 | kafka.bootstrap.servers           | comma-separated _host:port_ tuples (mandatory) |         | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                              |
