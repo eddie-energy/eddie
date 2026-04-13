@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.at;
@@ -56,7 +56,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private static final String EMQX_BASE_CONFIG_CONTAINER_PATH = "/opt/emqx/etc/base.hocon";
     private static final String EMQX_INIT_USER_CONTAINER_PATH = "/opt/emqx/data/init-user.json";
 
-    private static final String TOXIPROXY_IMAGE = "ghcr.io/shopify/toxiproxy:2.5.0";
+    private static final String TOXIPROXY_IMAGE = "ghcr.io/shopify/toxiproxy:2.12.0";
 
     private static final OesterreichsEnergieDataSource DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
 
