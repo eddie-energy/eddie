@@ -16,7 +16,7 @@ jobs:
     runs-on: [ Linux ]
     outputs:
       release_body: ${{ steps.create-changelog.outputs.content }}
-      version: ${{ steps.bump-version.outputs.version }}
+      version: ${{ steps.create-changelog.outputs.version }}
     permissions:
       contents: write
     steps:
@@ -30,6 +30,9 @@ jobs:
         uses: orhun/git-cliff-action@07dda386992489f0a6151dee53f3a137713644de
         with:
           args: -v --latest --no-exec --github-repo ${{ github.repository }}
+      - name: Print version
+        run: |
+          echo Version: ${{ steps.create-changelog.outputs.version }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
@@ -47,9 +50,11 @@ jobs:
     needs: tag-release
     steps:
       - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98
+      - name: Print version
+        run: |
+          echo Version: ${{ needs.tag-release.outputs.version }}
       - name: Build docker containers
-        if: github.ref_name == 'main'
         uses: ./.github/actions/build-containers
         with:
-          version: ${{ github.ref_name }}
+          version: ${{ needs.tag-release.outputs.version }}
           secrets: ${{ secrets.GITHUB_TOKEN }}
