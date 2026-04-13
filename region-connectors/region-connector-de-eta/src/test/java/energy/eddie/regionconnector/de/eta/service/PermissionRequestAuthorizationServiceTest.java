@@ -41,6 +41,7 @@ class PermissionRequestAuthorizationServiceTest {
     private EtaAuthService authService;
 
     @Spy
+    @SuppressWarnings("UnusedVariable") // injected into service via @InjectMocks
     private DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
             "test-party", "http://test-url", "api-client", "api-secret",
             "/meters/historical", "/v1/permissions/{id}", 30,

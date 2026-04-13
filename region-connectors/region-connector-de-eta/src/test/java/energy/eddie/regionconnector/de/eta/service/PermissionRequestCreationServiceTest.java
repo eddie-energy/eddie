@@ -45,6 +45,7 @@ class PermissionRequestCreationServiceTest {
     private PermissionRequestCreationService service;
 
     @Spy
+    @SuppressWarnings("UnusedVariable") // injected into service via @InjectMocks
     private final DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
             "partner", "http://api.url", "api-client", "api-secret",
             "/meters/historical", "/v1/permissions/{id}", 30,

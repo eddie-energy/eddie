@@ -22,7 +22,7 @@ public class EtaPlusClientConfig {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EtaPlusClientConfig.class);
 
-    @Bean(name = "etaWebClient")
+    @Bean
     public WebClient etaWebClient(
             WebClient.Builder webClientBuilder,
             DeEtaPlusConfiguration configuration
