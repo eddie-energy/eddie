@@ -26,8 +26,8 @@ public class MessageCodes {
             public static final String REVOKE = "AUFHEBUNG_CCMS";
             public static final String ANSWER = "ANTWORT_CCMS";
             public static final String DENIAL = "ABLEHNUNG_CCMS";
-            public static final String SCHEMA = "CM_REV_SP_01.10";
-            public static final String VERSION = "01.10";
+            public static final String SCHEMA = "CM_REV_SP_01.30";
+            public static final String VERSION = "01.30";
 
             private EligibleParty() {
             }
@@ -57,8 +57,8 @@ public class MessageCodes {
 
     public static class Request {
         public static final String CODE = "ANFORDERUNG_CCMO";
-        public static final String SCHEMA = "CM_REQ_ONL_01.30";
-        public static final String VERSION = "01.30";
+        public static final String SCHEMA = "CM_REQ_ONL_01.40";
+        public static final String VERSION = "01.40";
 
         private Request() {
         }
