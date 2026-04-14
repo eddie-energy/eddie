@@ -58,3 +58,4 @@ jobs:
         with:
           version: ${{ needs.tag-release.outputs.version }}
           secrets: ${{ secrets.GITHUB_TOKEN }}
+          latest: 'true'
