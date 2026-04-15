@@ -271,6 +271,7 @@ fun generateJavaClassesFromCimXsds(originalDirectory: File, entryPointFiles: Set
                 "-mark-generated", "-npa", "-encoding", "UTF-8",
                 "-extension", "-Xfluent-api", "-Xannotate"
             )
+            isIgnoreExitValue = true
         }
         val res = execution.result.get()
         val stdOut = execution.standardOutput.asText
@@ -278,10 +279,12 @@ fun generateJavaClassesFromCimXsds(originalDirectory: File, entryPointFiles: Set
             logger.log(LogLevel.LIFECYCLE, stdOut.get())
         }
         if (res.exitValue != 0) {
+            logger.error("Error while generating classes for ${tmpSrcFile.name}")
             val stdError = execution.standardError.asText
             if (stdError.isPresent) {
-                logger.log(LogLevel.WARN, stdError.get())
+                logger.error(stdError.get())
             }
+            throw GradleException("Could not generate classes for $srcFile")
         }
     }
 }

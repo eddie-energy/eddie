@@ -5,10 +5,9 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack.cim;
 
 import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
-import energy.eddie.cim.v1_12.ack.AcknowledgementMarketDocument;
-import energy.eddie.cim.v1_12.ack.MessageDocumentHeader;
-import energy.eddie.cim.v1_12.ack.PartyIDString;
+import energy.eddie.cim.v1_12.StandardMessageTypeList;
+import energy.eddie.cim.v1_12.StandardReasonCodeTypeList;
+import energy.eddie.cim.v1_12.ack.*;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.ZonedDateTime;
@@ -35,7 +34,7 @@ public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy
 
         var marketDocument = toMarketDocument(now, minMaxEnvelope.getMarketDocument())
                 .withReceivedMarketDocumentCreatedDateTime(minMaxHeader.getCreationDateTime())
-                .withReceivedMarketDocumentType(minMaxMetaInformation.getDocumentType());
+                .withReceivedMarketDocumentType(StandardMessageTypeList.ACKNOWLEDGEMENT_DOCUMENT.value());
 
         return new AcknowledgementEnvelope()
                 .withMessageDocumentHeader(header)
@@ -50,13 +49,17 @@ public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy
         return new AcknowledgementMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
                 .withCreatedDateTime(now)
-                .withSenderMarketParticipantMRID(toPartyIdString(marketDocument.getSenderMarketParticipantMRID()))
-                .withSenderMarketParticipantMarketRoleType(marketDocument.getSenderMarketParticipantMarketRoleType())
-                .withReceiverMarketParticipantMRID(toPartyIdString(marketDocument.getReceiverMarketParticipantMRID()))
-                .withReceiverMarketParticipantMarketRoleType(marketDocument.getReceiverMarketParticipantMarketRoleType())
+                .withSenderMarketParticipantMRID(toPartyIdString(marketDocument.getReceiverMarketParticipantMRID()))
+                .withSenderMarketParticipantMarketRoleType(marketDocument.getReceiverMarketParticipantMarketRoleType())
+                .withReceiverMarketParticipantMRID(toPartyIdString(marketDocument.getSenderMarketParticipantMRID()))
+                .withReceiverMarketParticipantMarketRoleType(marketDocument.getSenderMarketParticipantMarketRoleType())
                 .withReceivedMarketDocumentMRID(marketDocument.getMRID())
                 .withReceivedMarketDocumentRevisionNumber(marketDocument.getRevisionNumber())
-                .withReceivedMarketDocumentProcessProcessType(marketDocument.getProcessProcessType());
+                .withReceivedMarketDocumentProcessProcessType(marketDocument.getProcessProcessType())
+                .withReasons(
+                        new Reason()
+                                .withCode(StandardReasonCodeTypeList.MESSAGE_FULLY_ACCEPTED.value())
+                );
     }
 
     private PartyIDString toPartyIdString(energy.eddie.cim.v1_12.recmmoe.PartyIDString partyIdString) {

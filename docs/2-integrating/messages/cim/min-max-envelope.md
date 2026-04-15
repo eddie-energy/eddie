@@ -19,7 +19,7 @@ The following is an example of a min-max envelope document for version v1.12:
             <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
             <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</dataNeedId>
             <documentType>min-max-envelope</documentType>
-            <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+            <finalCustomerId>fc-id</finalCustomerId>
             <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
             <defaultValues xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
             <regionConnector>aiida</regionConnector>
@@ -39,11 +39,10 @@ The following is an example of a min-max envelope document for version v1.12:
         <comment>This is a test min-max envelope.</comment>
         <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
         <sender_MarketParticipant.name>Netz Oberösterreich GmbH</sender_MarketParticipant.name>
-        <sender_MarketParticipant.marketRole.type>CONNECTING_SYSTEM_OPERATOR</sender_MarketParticipant.marketRole.type>
-        <receiver_MarketParticipant.mRID codingScheme="NAT">88e0fc2c-4ea7-4850-a736-8b9742757518
-        </receiver_MarketParticipant.mRID>
+        <sender_MarketParticipant.marketRole.type>A56</sender_MarketParticipant.marketRole.type>
+        <receiver_MarketParticipant.mRID codingScheme="NAT">fc-id</receiver_MarketParticipant.mRID>
         <receiver_MarketParticipant.name>Max Mustermann</receiver_MarketParticipant.name>
-        <receiver_MarketParticipant.marketRole.type>FINAL_CUSTOMER</receiver_MarketParticipant.marketRole.type>
+        <receiver_MarketParticipant.marketRole.type>A13</receiver_MarketParticipant.marketRole.type>
         <process.processType>MIN_MAX_ENVELOPE</process.processType>
         <period.timeInterval>
             <start>2026-06-01T00:00:00Z</start>

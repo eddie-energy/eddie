@@ -13,19 +13,24 @@ import energy.eddie.cim.v0_82.pmd.ESMPDateTimeIntervalComplexType;
 import energy.eddie.cim.v0_82.pmd.ProcessTypeList;
 import energy.eddie.cim.v0_82.pmd.TimeSeriesComplexType;
 import energy.eddie.cim.v0_82.vhd.*;
-import energy.eddie.cim.v0_82.vhd.AccumulationKind;
-import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.MeasurementPointIDStringComplexType;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
 import energy.eddie.cim.v1_04.*;
-import energy.eddie.cim.v1_04.vhd.*;
-import energy.eddie.cim.v1_04.vhd.PartyIDString;
-import energy.eddie.cim.v1_04.vhd.ResourceIDString;
+import energy.eddie.cim.v1_04.vhd.ESMPDateTimeInterval;
+import energy.eddie.cim.v1_04.vhd.TimeSeries;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDMarketDocument;
+import energy.eddie.cim.v1_12.ack.AcknowledgementMarketDocument;
+import energy.eddie.cim.v1_12.ack.Reason;
+import energy.eddie.cim.v1_12.ack.TimePeriod;
 import energy.eddie.cim.v1_12.esr.*;
+import energy.eddie.cim.v1_12.rtd.Quantity;
+import energy.eddie.cim.v1_12.rtd.RTDMarketDocument;
 import org.junit.jupiter.api.Test;
 
 import javax.xml.datatype.DatatypeFactory;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
@@ -541,13 +546,13 @@ class XmlMessageSerdeTest {
                                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                                 .withRevisionNumber("1")
                                 .withSenderMarketParticipantMRID(
-                                        new PartyIDString()
+                                        new energy.eddie.cim.v1_04.vhd.PartyIDString()
                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                 .withValue("EDA")
                                 )
                                 .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
                                 .withReceiverMarketParticipantMRID(
-                                        new PartyIDString()
+                                        new energy.eddie.cim.v1_04.vhd.PartyIDString()
                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                 .withValue("eligible-party")
                                 )
@@ -564,17 +569,17 @@ class XmlMessageSerdeTest {
                                                 .withFlowDirectionDirection(StandardDirectionTypeList.DOWN.value())
                                                 .withProduct(StandardEnergyProductTypeList.ACTIVE_ENERGY.value())
                                                 .withMarketEvaluationPointMRID(
-                                                        new MeasurementPointIDString()
+                                                        new energy.eddie.cim.v1_04.vhd.MeasurementPointIDString()
                                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                                 .withValue("ID")
                                                 )
                                                 .withMarketEvaluationPointMeterReadingsMRID(
-                                                        new ResourceIDString()
+                                                        new energy.eddie.cim.v1_04.vhd.ResourceIDString()
                                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                                 .withValue("ID")
                                                 )
                                                 .withMarketEvaluationPointMeterReadingsReadingsMRID(
-                                                        new ResourceIDString()
+                                                        new energy.eddie.cim.v1_04.vhd.ResourceIDString()
                                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                                 .withValue("ID")
                                                 )
@@ -592,7 +597,7 @@ class XmlMessageSerdeTest {
                                                 .withEnergyQualityMeasurementUnitName(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value())
                                                 .withDateAndOrTimeDateTime(dateTime)
                                                 .withRegisteredResourceMRID(
-                                                        new ResourceIDString()
+                                                        new energy.eddie.cim.v1_04.vhd.ResourceIDString()
                                                                 .withCodingScheme(StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                                 .withValue("MRID")
                                                 )
@@ -624,10 +629,10 @@ class XmlMessageSerdeTest {
     void testSerialize_producesCIM_v1_12_CompliantEnergySharingReferenceDataMarketDocument() throws SerdeInitializationException, SerializationException {
         // Given
         var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var document = new Envelope()
+        var document = new ESRDMDEnvelope()
                 .withMessageDocumentHeader(new MessageDocumentHeader())
                 .withMarketDocument(
-                        new MarketDocument()
+                        new ESRDMDMarketDocument()
                                 .withMRID("MRID")
                                 .withCreatedDateTime(dateTime)
                                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.DISTRIBUTION_SYSTEM_OPERATOR_DSO.value())
@@ -647,7 +652,9 @@ class XmlMessageSerdeTest {
                                                 .withMRID("MRID")
                                                 .withAccountingPoints(
                                                         new AccountingPoint()
-                                                                .withMRID("MRID")
+                                                                .withMRID(new MeasurementPointIDString()
+                                                                                  .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                                  .withValue("MRID"))
                                                                 .withMeterReadingResolution(DatatypeFactory.newDefaultInstance()
                                                                                                            .newDuration(
                                                                                                                    true,
@@ -668,6 +675,149 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateV112EnergySharingReferenceDataMarketDocument(res);
+
+        // Then
+        assertTrue(valid);
+    }
+
+
+    @Test
+    void testSerialize_producesCIMCompliantV1_12RTDEnvelope() throws SerdeInitializationException, SerializationException {
+        // Given
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var document = new energy.eddie.cim.v1_12.rtd.RTDEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.rtd.MessageDocumentHeader()
+                                .withCreationDateTime(dateTime)
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.rtd.MetaInformation()
+                                                .withConnectionId("1")
+                                                .withRequestPermissionId("pid")
+                                                .withDataNeedId("dnid")
+                                                .withDocumentType("near-real-time-market-document")
+                                                .withFinalCustomerId("fcid")
+                                                .withDataSourceId("dsid")
+                                                .withRegionConnector("aiida")
+                                                .withRegionCountry("AT")
+                                                .withAsset(
+                                                        new energy.eddie.cim.v1_12.rtd.Asset()
+                                                                .withType("CONNECTION-AGREEMENT-POINT")
+                                                )
+                                )
+                )
+                .withMarketDocument(
+                        new RTDMarketDocument()
+                                .withMRID("MRID")
+                                .withCreatedDateTime(dateTime)
+                                .withTimeSeries(
+                                        new energy.eddie.cim.v1_12.rtd.TimeSeries()
+                                                .withVersion("1")
+                                                .withDateAndOrTimeDateTime(dateTime)
+                                                .withQuantities(
+                                                        new Quantity()
+                                                                .withQuantity(BigDecimal.valueOf(0.117))
+                                                                .withType(energy.eddie.cim.v1_12.rtd.QuantityTypeKind.INSTANTANEOUS_ACTIVE_POWER_CONSUMPTION_KW)
+                                                                .withQuality(energy.eddie.cim.v1_12.StandardQualityTypeList.AS_PROVIDED.value())
+                                                )
+                                                .withRegisteredResourceMRID(
+                                                        new energy.eddie.cim.v1_12.rtd.ResourceIDString()
+                                                                .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                                .withValue("MRID")
+                                                )
+                                )
+                );
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.serialize(document);
+        var valid = XmlValidator.validateV112NearRealTimeDataMarketDocument(res);
+
+        // Then
+        assertTrue(valid);
+    }
+
+
+    @Test
+    void testSerialize_producesCIMCompliantV1_12AcknowledgementEnvelope() throws SerdeInitializationException, SerializationException {
+        // Given
+        var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var document = new energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.ack.MessageDocumentHeader()
+                                .withCreationDateTime(dateTime)
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.ack.MetaInformation()
+                                                .withConnectionId("1")
+                                                .withRequestPermissionId("pid")
+                                                .withDataNeedId("dnid")
+                                                .withDocumentType("acknowledgement-market-document")
+                                                .withFinalCustomerId("fcid")
+                                                .withDataSourceId("dsid")
+                                                .withRegionConnector("aiida")
+                                                .withRegionCountry("AT")
+                                                .withAsset(
+                                                        new energy.eddie.cim.v1_12.ack.Asset()
+                                                                .withType("CONNECTION-AGREEMENT-POINT")
+                                                                .withOperatorId("AT003000")
+                                                                .withMeterId("003114735")
+                                                )
+                                )
+                )
+                .withMarketDocument(
+                        new AcknowledgementMarketDocument()
+                                .withMRID("MRID")
+                                .withCreatedDateTime(dateTime)
+                                .withSenderMarketParticipantMRID(
+                                        new energy.eddie.cim.v1_12.ack.PartyIDString()
+                                                .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                .withValue("AT00300"))
+                                .withSenderMarketParticipantMarketRoleType(energy.eddie.cim.v1_12.StandardRoleTypeList.FLEXIBILITY_SERVICE_PROVIDER.value())
+                                .withSenderMarketParticipantMarketRoleType(energy.eddie.cim.v1_12.StandardRoleTypeList.SYSTEM_OPERATOR.value())
+                                .withReceiverMarketParticipantMRID(
+                                        new energy.eddie.cim.v1_12.ack.PartyIDString()
+                                                .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
+                                                .withValue("id")
+                                )
+                                .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
+                                .withReceivedMarketDocumentMRID("prev-id")
+                                .withReceivedMarketDocumentRevisionNumber("1")
+                                .withReceivedMarketDocumentProcessProcessType(energy.eddie.cim.v1_12.StandardProcessTypeList.AGREED_CAPACITY_ALLOCATION.value())
+                                .withReceivedMarketDocumentCreatedDateTime(dateTime)
+                                .withReasons(
+                                        new Reason()
+                                                .withCode(energy.eddie.cim.v1_12.StandardReasonCodeTypeList.MESSAGE_FULLY_ACCEPTED.value())
+                                                .withText("asdf")
+                                )
+                                .withRejectedTimeSeries(
+                                        new energy.eddie.cim.v1_12.ack.TimeSeries()
+                                                .withMRID("MRID")
+                                                .withVersion("1")
+                                                .withInErrorPeriods(
+                                                        new TimePeriod()
+                                                                .withTimeInterval(
+                                                                        new energy.eddie.cim.v1_12.ack.ESMPDateTimeInterval()
+                                                                                .withStart(dateTime.toString())
+                                                                                .withEnd(dateTime.toString())
+                                                                )
+                                                                .withReasons(
+                                                                        new Reason()
+                                                                                .withCode(energy.eddie.cim.v1_12.StandardReasonCodeTypeList.MESSAGE_FULLY_ACCEPTED.value())
+                                                                                .withText("Invalid time series data")
+                                                                )
+                                                )
+                                                .withReasons(
+                                                        new Reason()
+                                                                .withCode(energy.eddie.cim.v1_12.StandardReasonCodeTypeList.MESSAGE_FULLY_ACCEPTED.value())
+                                                                .withText("Invalid time series data")
+                                                )
+                                )
+                );
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.serialize(document);
+        System.out.println(new String(res, StandardCharsets.UTF_8));
+        var valid = XmlValidator.validateV112AcknowledgementMarketDocument(res);
 
         // Then
         assertTrue(valid);

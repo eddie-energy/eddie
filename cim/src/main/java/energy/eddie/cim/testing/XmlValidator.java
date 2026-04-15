@@ -9,8 +9,10 @@ import javax.xml.validation.SchemaFactory;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 public class XmlValidator {
+    private static final Logger LOGGER = Logger.getLogger(XmlValidator.class.getName());
 
     private XmlValidator() {
         // Utility Class
@@ -27,6 +29,7 @@ public class XmlValidator {
             var validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xml)));
         } catch (Exception e) {
+            LOGGER.info(xml);
             e.printStackTrace();
             return false;
         }
@@ -67,6 +70,18 @@ public class XmlValidator {
     public static boolean validateV112EnergySharingReferenceDataMarketDocument(byte[] xml) {
         var xsd = XmlValidator.class.getResource(
                 "/cim/xsd/v1_12/esr/CEEDS_EnergySharingReferenceDataMarketDocument_annotated_v1.12.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
+
+    public static boolean validateV112NearRealTimeDataMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
+
+    public static boolean validateV112AcknowledgementMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd");
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
 }

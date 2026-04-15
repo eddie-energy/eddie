@@ -88,4 +88,9 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.8.0 - 2026-04-07
 
 - Add EnergySharingReferenceDataDocument.
-  This document can be used to announce the current participation factor of an accounting for a specific collective energy sharing unit (CESU).
+  This document can be used to announce the current participation factor of an accounting point for a specific collective energy sharing unit (CESU).
+- Fix missing (de)serialization for the following CIM documents:
+  - Real Time Data Market Document v1.12
+  - Acknowledgement Document v1.12
+  - Reference Energy Curve Min-Max Operation Document v1.12
+- Fix typo in RealTimeData Document namespace, where the namespace is missing a colon (:) in the namespace declaration
