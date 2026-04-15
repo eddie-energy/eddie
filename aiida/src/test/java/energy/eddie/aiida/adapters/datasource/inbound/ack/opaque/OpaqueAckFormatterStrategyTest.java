@@ -9,6 +9,10 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -84,8 +88,9 @@ class OpaqueAckFormatterStrategyTest {
     }
 
     @Test
-    void convert_convertsInboundRecordToAcknowledgementEnvelope() {
+    void convert_convertsInboundRecordToAcknowledgementEnvelope() throws SerdeInitializationException, SerializationException {
         when(inboundRecord.payload()).thenReturn(PAYLOAD);
+        var serde = new XmlMessageSerde();
 
         // When
         var envelope = strategy.convert(objectMapper, inboundRecord);
@@ -95,6 +100,8 @@ class OpaqueAckFormatterStrategyTest {
         var metaInfo = header.getMetaInformation();
         var asset = metaInfo.getAsset();
         var marketDocument = envelope.getMarketDocument();
+        var xml = serde.serialize(envelope);
+        assertTrue(XmlValidator.validateV112AcknowledgementMarketDocument(xml));
 
         assertAll(
                 () -> assertNotNull(header.getCreationDateTime()),

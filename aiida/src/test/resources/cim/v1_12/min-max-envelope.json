@@ -6,7 +6,7 @@
       "requestPermissionId": "00213495-bdbf-4497-8695-5d811e45aa64",
       "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
       "documentType": "min-max-envelope",
-      "finalCustomerId": "88e0fc2c-4ea7-4850-a736-8b9742757518",
+      "finalCustomerId": "fc-id",
       "dataSourceId": "0743c9d8-3e5f-4575-999b-34f6f83b2075",
       "regionConnector": "aiida",
       "regionCountry": "AT",
@@ -28,14 +28,14 @@
       "codingScheme": "NAT"
     },
     "sender_MarketParticipant.name": "Netz Oberösterreich GmbH",
-    "sender_MarketParticipant.marketRole.type": "CONNECTING_SYSTEM_OPERATOR",
+    "sender_MarketParticipant.marketRole.type": "A56",
     "receiver_MarketParticipant.mRID": {
-      "value": "88e0fc2c-4ea7-4850-a736-8b9742757518",
+      "value": "fc-id",
       "codingScheme": "NAT"
     },
     "receiver_MarketParticipant.name": "Max Mustermann",
-    "receiver_MarketParticipant.marketRole.type": "FINAL_CUSTOMER",
-    "process.processType": "MIN_MAX_ENVELOPE",
+    "receiver_MarketParticipant.marketRole.type": "A13",
+    "process.processType": "A37",
     "period.timeInterval": {
       "start": "2026-06-01T00:00:00Z",
       "end": "2026-06-02T23:59:59Z"

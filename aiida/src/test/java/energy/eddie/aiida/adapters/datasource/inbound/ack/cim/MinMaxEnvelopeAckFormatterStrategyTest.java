@@ -9,6 +9,8 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -77,6 +79,7 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
             );
 
             when(inboundRecord.payload()).thenReturn(payload);
+            var serde = new XmlMessageSerde();
 
             // When
             var envelope = strategy.convert(objectMapper, inboundRecord);
@@ -86,6 +89,8 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
             var metaInfo = header.getMetaInformation();
             var asset = metaInfo.getAsset();
             var marketDocument = envelope.getMarketDocument();
+            var bytes = serde.serialize(envelope);
+            assertTrue(XmlValidator.validateV112AcknowledgementMarketDocument(bytes));
 
             assertAll(
                     () -> assertNotNull(header.getCreationDateTime()),
@@ -110,19 +115,19 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
                     () -> assertNotNull(marketDocument.getMRID()),
                     () -> assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
                                        marketDocument.getReceivedMarketDocumentMRID()),
-                    () -> assertEquals("min-max-envelope", marketDocument.getReceivedMarketDocumentType()),
-                    () -> assertEquals("MIN_MAX_ENVELOPE",
+                    () -> assertEquals("A17", marketDocument.getReceivedMarketDocumentType()),
+                    () -> assertEquals("A37",
                                        marketDocument.getReceivedMarketDocumentProcessProcessType()),
                     () -> assertEquals(ZonedDateTime.parse("2026-02-16T10:11:58Z"),
                                        marketDocument.getReceivedMarketDocumentCreatedDateTime()),
-                    () -> assertEquals("AT003000", marketDocument.getSenderMarketParticipantMRID().getValue()),
+                    () -> assertEquals("fc-id", marketDocument.getSenderMarketParticipantMRID().getValue()),
                     () -> assertEquals("NAT", marketDocument.getSenderMarketParticipantMRID().getCodingScheme()),
-                    () -> assertEquals("CONNECTING_SYSTEM_OPERATOR",
+                    () -> assertEquals("A13",
                                        marketDocument.getSenderMarketParticipantMarketRoleType()),
-                    () -> assertEquals("88e0fc2c-4ea7-4850-a736-8b9742757518",
+                    () -> assertEquals("AT003000",
                                        marketDocument.getReceiverMarketParticipantMRID().getValue()),
                     () -> assertEquals("NAT", marketDocument.getReceiverMarketParticipantMRID().getCodingScheme()),
-                    () -> assertEquals("FINAL_CUSTOMER", marketDocument.getReceiverMarketParticipantMarketRoleType())
+                    () -> assertEquals("A56", marketDocument.getReceiverMarketParticipantMarketRoleType())
             );
         }
     }

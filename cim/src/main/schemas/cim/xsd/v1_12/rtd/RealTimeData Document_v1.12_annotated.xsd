@@ -2,11 +2,11 @@
 <!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-<xs:schema xmlns:dl="https//eddie.energy/CIM/RTD_v1.12"
+<xs:schema xmlns:dl="https://eddie.energy/CIM/RTD_v1.12"
            xmlns:ecl="urn:entsoe.eu:wgedi:codelists:1.12"
            xmlns:sawsdl="http://www.w3.org/ns/sawsdl" xmlns:cimp="http://www.iec.ch/cimprofile"
            xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified"
-           targetNamespace="https//eddie.energy/CIM/RTD_v1.12">
+           targetNamespace="https://eddie.energy/CIM/RTD_v1.12">
     <xs:import schemaLocation="../urn-entsoe-eu-wgedi-codelists.xsd" namespace="urn:entsoe.eu:wgedi:codelists:1.12"/>
     <xs:element name="RTD_Envelope" type="dl:RTD_Envelope"/>
     <xs:simpleType name="MeasurementPointID_String-base"
