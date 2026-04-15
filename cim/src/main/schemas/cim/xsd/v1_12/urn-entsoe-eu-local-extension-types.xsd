@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified"
             elementFormDefault="qualified" targetNamespace="urn:entsoe.eu:wgedi:codelists:1.12">
     <xsd:annotation>
@@ -95,6 +98,17 @@
                         <CodeDescription>
                             <Title>Canada</Title>
                             <Definition>Canada</Definition>
+                        </CodeDescription>
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:enumeration>
+            <!-- TODO: Should be changed with GH-638 -->
+            <xsd:enumeration value="AIIDA">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        <CodeDescription>
+                            <Title>AIIDA</Title>
+                            <Definition>AIIDA</Definition>
                         </CodeDescription>
                     </xsd:documentation>
                 </xsd:annotation>
