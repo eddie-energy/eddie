@@ -134,6 +134,17 @@ public class TopicConfiguration {
     }
 
 
+    /**
+     * Endpoint for CIM Energy Sharing Reference Data Market Document.
+     * Used to emit messages to the eligible party.
+     */
+    public String energySharingReferenceDataMarketDocument() {
+        return toTopic(TopicStructure.Direction.EP,
+                       TopicStructure.DataModels.CIM_1_12,
+                       TopicStructure.DocumentTypes.ENERGY_SHARING_REFERENCE_DATA_MD);
+    }
+
+
     private String toTopic(
             TopicStructure.Direction direction,
             TopicStructure.DataModels dataModel,
