@@ -80,18 +80,6 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
     }
 
     @Test
-    void testSupportedFeature_returnsFalse_withoutContext() {
-        // Given
-        var extension = new RegionConnectorSupportedFeatureExtension(new SupportedFeatureService(), metadata);
-
-        // When
-        var res = extension.supportsValidatedHistoricalDataMarketDocuments();
-
-        // Then
-        assertFalse(res);
-    }
-
-    @Test
     void testRegionConnectorId_returnsId() {
         // Given
         var extension = new RegionConnectorSupportedFeatureExtension(new SupportedFeatureService(), metadata);

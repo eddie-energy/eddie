@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.connectors.cim.v0_82;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
@@ -30,6 +31,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
                                                                                       .onBackpressureBuffer();
 
     @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public void setEddieValidatedHistoricalDataMarketDocumentStream(Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
@@ -85,7 +87,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
         terminationSink.tryEmitComplete();
     }
 
-    public static <T> Sinks.Many<T> createSink() {
+    private static <T> Sinks.Many<T> createSink() {
         return Sinks.many()
                     .replay()
                     .limit(Duration.ofSeconds(10));

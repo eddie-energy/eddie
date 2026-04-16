@@ -4,25 +4,28 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
-import energy.eddie.api.agnostic.RawDataProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService;
 import energy.eddie.api.v0.RegionConnector;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
-import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProviderV1_04;
-import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
-import energy.eddie.api.v1_12.EnergySharingReferenceDataMarketDocumentProvider;
-import energy.eddie.api.v1_12.NearRealTimeDataMarketDocumentProviderV1_12;
+import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.RawDataMessage;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.core.services.SupportedFeatureService;
 import jakarta.annotation.Nullable;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import static energy.eddie.core.message.streams.MessageStreamUtils.isProviderMethod;
 
 @RegionConnectorExtension
 public class RegionConnectorSupportedFeatureExtension implements ApplicationContextAware {
@@ -50,12 +53,12 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
 
     @JsonProperty
     public boolean supportsConnectionStatusMessages() {
-        return hasBean(ConnectionStatusMessageProvider.class);
+        return hasMessageStream(ConnectionStatusMessage.class);
     }
 
     @JsonProperty
     public boolean supportsRawDataMessages() {
-        return hasBean(RawDataProvider.class);
+        return hasMessageStream(RawDataMessage.class);
     }
 
     @JsonProperty
@@ -65,17 +68,17 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
 
     @JsonProperty
     public boolean supportsAccountingPointMarketDocuments() {
-        return hasBean(AccountingPointEnvelopeProvider.class);
+        return hasMessageStream(AccountingPointEnvelope.class);
     }
 
     @JsonProperty
     public boolean supportsPermissionMarketDocuments() {
-        return hasBean(PermissionMarketDocumentProvider.class);
+        return hasMessageStream(PermissionEnvelope.class);
     }
 
     @JsonProperty
     public boolean supportsValidatedHistoricalDataMarketDocuments() {
-        return hasBean(ValidatedHistoricalDataEnvelopeProvider.class);
+        return hasMessageStream(ValidatedHistoricalDataEnvelope.class);
     }
 
     @JsonProperty
@@ -85,35 +88,51 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
 
     @JsonProperty
     public boolean supportsNearRealTimeDataMarketDocuments() {
-        return hasBean(NearRealTimeDataMarketDocumentProviderV1_04.class);
+        return hasMessageStream(RTDEnvelope.class);
     }
 
     @JsonProperty
     @SuppressWarnings("java:S100")
     public boolean supportsNearRealTimeDataMarketDocumentsV1_12() {
-        return hasBean(NearRealTimeDataMarketDocumentProviderV1_12.class);
+        return hasMessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class);
     }
 
     @JsonProperty
     @SuppressWarnings("java:S100")
     public boolean supportsValidatedHistoricalDataMarketDocumentsV1_04() {
-        return hasBean(ValidatedHistoricalDataMarketDocumentProvider.class);
+        return hasMessageStream(VHDEnvelope.class);
     }
 
     @JsonProperty
     public boolean supportsEnergySharingReferenceDataMarketDocuments() {
-        return hasBean(EnergySharingReferenceDataMarketDocumentProvider.class);
+        return hasMessageStream(ESRDMDEnvelope.class);
     }
 
     private boolean hasBean(Class<?> clazz) {
-        if (context == null) {
-            return false;
-        }
         try {
             context.getBean(clazz);
         } catch (NoSuchBeanDefinitionException e) {
             return false;
         }
         return true;
+    }
+
+    private boolean hasMessageStream(Class<?> clazz) {
+        for (var beanName : context.getBeanDefinitionNames()) {
+            var bean = context.getBean(beanName);
+            var targetClass = AopUtils.getTargetClass(bean);
+            for (var method : targetClass.getDeclaredMethods()) {
+                var annotation = method.getAnnotation(MessageStream.class);
+                if (annotation == null || !method.trySetAccessible()) {
+                    continue;
+                }
+                var messageType = annotation.value();
+
+                if (messageType.equals(clazz) && isProviderMethod(method)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

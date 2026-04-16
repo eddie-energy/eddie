@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.simulation.providers;
 
 import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
@@ -43,6 +44,7 @@ public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider,
     }
 
     @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return getSimulatedMeterReadingStream()
                 .map(d -> new IntermediateValidatedHistoricalDataMarketDocument(d, cimConfig))
