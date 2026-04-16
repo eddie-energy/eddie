@@ -1,14 +1,13 @@
 package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
-import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
@@ -20,14 +19,14 @@ import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
-import energy.eddie.regionconnector.shared.services.FulfillmentService;
-import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdateAndFulfillmentService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.api.agnostic.RawDataProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.function.Supplier;
 
 /**
  * Spring configuration for the German (DE) ETA Plus region connector.
@@ -88,25 +87,6 @@ public class DeEtaBeanConfig {
         return new DataNeedCalculationServiceImpl(dataNeedsService, EtaRegionConnectorMetadata.getInstance(), dataNeedRuleSet);
     }
 
-    @Bean
-    public FulfillmentService deFulfillmentService(Outbox outbox) {
-        return new FulfillmentService(
-                outbox,
-                SimpleEvent::new
-        );
-    }
-
-    @Bean
-    public MeterReadingPermissionUpdateAndFulfillmentService deMeterReadingUpdateAndFulfillmentService(
-            FulfillmentService fulfillmentService,
-            Outbox outbox
-    ) {
-        return new MeterReadingPermissionUpdateAndFulfillmentService(
-                fulfillmentService,
-                (reading, end) -> outbox.commit(new LatestMeterReadingEvent(reading.permissionId(), end))
-        );
-    }
-
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
@@ -116,5 +96,10 @@ public class DeEtaBeanConfig {
                 objectMapper,
                 stream.validatedHistoricalData()
         );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(DePermissionEventRepository repo) {
+        return () -> repo;
     }
 }

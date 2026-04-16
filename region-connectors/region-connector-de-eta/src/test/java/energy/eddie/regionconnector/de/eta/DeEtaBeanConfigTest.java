@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventReposito
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.shared.services.FulfillmentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
@@ -30,7 +29,6 @@ class DeEtaBeanConfigTest {
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
                 .withBean(EtaDataNeedRuleSet.class, EtaDataNeedRuleSet::new)
-                .withBean(FulfillmentService.class, () -> mock(FulfillmentService.class))
                 .withPropertyValues(
                         "region-connector.de.eta.eligible-party-id=test-eligible-party-id",
                         "region-connector.de.eta.api-base-url=https://test-url.de",

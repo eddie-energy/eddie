@@ -1,5 +1,6 @@
 package energy.eddie.regionconnector.de.eta.persistence;
 
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
@@ -8,6 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * This configuration enables Spring Data JPA repository scanning and entity scanning.
  */
 @EnableJpaRepositories
+@EntityScan
 @Configuration
 public class DePersistenceConfig {
 }
