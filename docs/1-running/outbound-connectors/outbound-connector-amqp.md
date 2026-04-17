@@ -30,6 +30,8 @@ The following topics are created upon starting this outbound-connector:
   Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md) to request validated historical data again.
 - `fw.${outbound-connector.amqp.eddie-id}.cim_0_82.min-max-envelope-md`:
   Allows the eligible party to send [min-max envelopes](../../2-integrating/messages/cim/min-max-envelope.md).
+- `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.energy-sharing-reference-data-md`:
+  Provides the eligible party with [Energy Sharing Reference Data Market Documents](../../2-integrating/messages/cim/energy-sharing-reference-data-market-documents.md).
 
 ## Properties of messages
 
