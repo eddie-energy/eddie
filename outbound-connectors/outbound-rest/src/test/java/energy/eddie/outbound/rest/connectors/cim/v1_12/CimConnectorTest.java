@@ -4,6 +4,7 @@
 package energy.eddie.outbound.rest.connectors.cim.v1_12;
 
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,21 @@ class CimConnectorTest {
 
         // Then
         StepVerifier.create(connector.getMinMaxEnvelopes())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setEnergySharingReferenceDataMarketDocument_producesEnergySharingReferenceDataMarketDocument() {
+        // Given
+        var esrFlux = Flux.just(new ESRDMDEnvelope());
+
+        // When
+        connector.setEnergySharingReferenceDataMarketDocumentStream(esrFlux);
+
+        // Then
+        StepVerifier.create(connector.getEnergySharingReferenceDataMarketDocumentStream())
                     .then(connector::close)
                     .expectNextCount(1)
                     .verifyComplete();

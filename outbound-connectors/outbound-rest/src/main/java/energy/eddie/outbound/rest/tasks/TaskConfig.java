@@ -10,6 +10,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
@@ -19,6 +20,7 @@ import energy.eddie.outbound.rest.model.cim.v0_82.PermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
 import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
+import energy.eddie.outbound.rest.model.cim.v1_12.EnergySharingReferenceDataMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarketDocumentRepository;
@@ -26,6 +28,7 @@ import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocument
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.EnergySharingReferenceDataMarketDocumentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -157,6 +160,24 @@ public class TaskConfig {
         return new InsertionTask<>(cimConnector.getValidatedHistoricalDataMarketDocumentStream(),
                                    repository,
                                    ValidatedHistoricalDataMarketDocumentModelV1_04::new);
+    }
+
+    @Bean
+    DeletionTask<EnergySharingReferenceDataMarketDocumentModel> esrdmdEnvelopeDeletionTask(
+            EnergySharingReferenceDataMarketDocumentRepository repository,
+            RestOutboundConnectorConfiguration config
+    ) {
+        return new DeletionTask<>(repository, config);
+    }
+
+    @Bean
+    InsertionTask<ESRDMDEnvelope, EnergySharingReferenceDataMarketDocumentModel> esrdmdEnvelopeInsertionTask(
+            energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
+            EnergySharingReferenceDataMarketDocumentRepository repository
+    ) {
+        return new InsertionTask<>(cimConnector.getEnergySharingReferenceDataMarketDocumentStream(),
+                                   repository,
+                                   EnergySharingReferenceDataMarketDocumentModel::new);
     }
 
     @Bean

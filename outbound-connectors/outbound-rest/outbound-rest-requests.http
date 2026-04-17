@@ -386,3 +386,18 @@ Authorization: Bearer {{$auth.token("keycloak")}}
         </TimeSeries_Series>
     </MarketDocument>
 </RECMMOE_Envelope>
+
+### Get energy sharing reference data market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/energy-sharing-reference-data-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get energy sharing reference data market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/energy-sharing-reference-data-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get energy sharing reference data market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/energy-sharing-reference-data-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}

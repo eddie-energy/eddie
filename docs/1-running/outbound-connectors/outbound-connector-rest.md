@@ -34,17 +34,18 @@ While OpenAPI provides examples and schemas, it is recommended to use [the clien
 
 The following table lists all the endpoints and its required scopes, if the setting is enabled.
 
-| Endpoint                                     | Scope                                      |
-|----------------------------------------------|--------------------------------------------|
-| `/agnostic/connection-status-messages`       | `agnostic-connection-status-messages:read` |
-| `/agnostic/raw-data-messages`                | `agnostic-raw-data-messages:read`          |
-| `/cim_0_82/permission-md`                    | `cim-permission-md:read`                   |
-| `/cim_0_82/accounting-point-data-md`         | `cim-accounting-point-data-md:read`        |
-| `/cim_0_82/validated-historical-data-md`     | `cim-validated-historical-data-md:read`    |
-| `/cim_1_04/validated-historical-data-md`     | `cim-validated-historical-data-md:read`    |
-| `/cim_1_04/near-real-time-data-md`           | `cim-near-real-time-data-md:read`          |
-| `/cim_1_12/near-real-time-data-md`           | `cim-near-real-time-data-md:read`          |
-| `/cim_1_12/acknowledgement-md`               | `cim-acknowledgement-md:read`              |
-| `/cim_0_82/termination-md`                   | `cim-termination-md:write`                 |
-| `/cim_0_91_08/redistribution-transaction-rd` | `cim-redistribution-transaction-rd:write`  |
-| `/cim_1_12/min-max-envelope-md`              | `cim-min-max-envelope:write`               |
+| Endpoint                                     | Scope                                       |
+|----------------------------------------------|---------------------------------------------|
+| `/agnostic/connection-status-messages`       | `agnostic-connection-status-messages:read`  |
+| `/agnostic/raw-data-messages`                | `agnostic-raw-data-messages:read`           |
+| `/cim_0_82/permission-md`                    | `cim-permission-md:read`                    |
+| `/cim_0_82/accounting-point-data-md`         | `cim-accounting-point-data-md:read`         |
+| `/cim_0_82/validated-historical-data-md`     | `cim-validated-historical-data-md:read`     |
+| `/cim_1_04/validated-historical-data-md`     | `cim-validated-historical-data-md:read`     |
+| `/cim_1_04/near-real-time-data-md`           | `cim-near-real-time-data-md:read`           |
+| `/cim_1_12/near-real-time-data-md`           | `cim-near-real-time-data-md:read`           |
+| `/cim_1_12/acknowledgement-md`               | `cim-acknowledgement-md:read`               |
+| `/cim_0_82/termination-md`                   | `cim-termination-md:write`                  |
+| `/cim_0_91_08/redistribution-transaction-rd` | `cim-redistribution-transaction-rd:write`   |
+| `/cim_1_12/min-max-envelope-md`              | `cim-min-max-envelope:write`                |
+| `/cim_1_12/energy-sharing-reference-data-md` | `cim-energy-sharing-reference-data-md:read` |
