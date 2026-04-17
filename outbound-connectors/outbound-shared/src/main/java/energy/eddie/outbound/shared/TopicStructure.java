@@ -22,6 +22,7 @@ public class TopicStructure {
 
     public static final String CONNECTION_STATUS_MESSAGE_VALUE = "connection-status-message";
     public static final String OPAQUE_ENVELOPE_VALUE = "opaque-envelope";
+    public static final String ENERGY_SHARING_REFERENCE_DATA_MD_VALUE = "energy-sharing-reference-data-md";
 
     private TopicStructure() {
         // No-Op
@@ -124,6 +125,7 @@ public class TopicStructure {
         NEAR_REAL_TIME_DATA_MD("near-real-time-data-md"),
         ACKNOWLEDGEMENT_MD("acknowledgement-md"),
         MIN_MAX_ENVELOPE_MD(TopicStructure.MIN_MAX_ENVELOPE_MD_VALUE),
+        ENERGY_SHARING_REFERENCE_DATA_MD(TopicStructure.ENERGY_SHARING_REFERENCE_DATA_MD_VALUE),
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
         CONNECTION_STATUS_MESSAGE(TopicStructure.CONNECTION_STATUS_MESSAGE_VALUE),

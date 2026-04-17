@@ -15,6 +15,7 @@ import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.api.v1_04.NearRealTimeDataMarketDocumentProviderV1_04;
 import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
+import energy.eddie.api.v1_12.EnergySharingReferenceDataMarketDocumentProvider;
 import energy.eddie.api.v1_12.NearRealTimeDataMarketDocumentProviderV1_12;
 import energy.eddie.core.services.SupportedFeatureService;
 import jakarta.annotation.Nullable;
@@ -88,6 +89,7 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
     }
 
     @JsonProperty
+    @SuppressWarnings("java:S100")
     public boolean supportsNearRealTimeDataMarketDocumentsV1_12() {
         return hasBean(NearRealTimeDataMarketDocumentProviderV1_12.class);
     }
@@ -96,6 +98,11 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
     @SuppressWarnings("java:S100")
     public boolean supportsValidatedHistoricalDataMarketDocumentsV1_04() {
         return hasBean(ValidatedHistoricalDataMarketDocumentProvider.class);
+    }
+
+    @JsonProperty
+    public boolean supportsEnergySharingReferenceDataMarketDocuments() {
+        return hasBean(EnergySharingReferenceDataMarketDocumentProvider.class);
     }
 
     private boolean hasBean(Class<?> clazz) {

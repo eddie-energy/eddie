@@ -11,6 +11,7 @@ import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundCo
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.RawDataMessage;
@@ -20,6 +21,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -46,7 +48,8 @@ public class KafkaConnector implements
         ValidatedHistoricalDataMarketDocumentOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
-        AcknowledgementMarketDocumentOutboundConnector {
+        AcknowledgementMarketDocumentOutboundConnector,
+        EnergySharingReferenceDataMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -148,6 +151,37 @@ public class KafkaConnector implements
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
     }
+
+    @Override
+    public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
+        LOGGER.info("Setting stream for ESRDMD");
+        marketDocumentStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceEnergySharingReferenceDataMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    private void produceEnergySharingReferenceDataMarketDocument(ESRDMDEnvelope esrdmdEnvelope) {
+        var header = esrdmdEnvelope.getMessageDocumentHeader()
+                                   .getMetaInformation();
+        var permissionId = header.getRequestPermissionId();
+        var metaInformation = esrdmdEnvelope.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.energySharingReferenceDataMarketDocument(),
+                null,
+                permissionId,
+                esrdmdEnvelope,
+                List.of(
+                        new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                        new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                        new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+                )
+        );
+        sendToKafka(toSend, "Could not produce energy sharing reference data market document");
+    }
+
 
     private void produceStatusMessage(ConnectionStatusMessage statusMessage) {
         var toSend = new ProducerRecord<String, Object>(
@@ -256,7 +290,8 @@ public class KafkaConnector implements
                 marketDocument,
                 cimToHeaders(marketDocument)
         );
-        sendToKafka(toSend, "Could not produce " + TopicStructure.DataModels.CIM_1_04 + " near real-time market document message");
+        sendToKafka(toSend,
+                    "Could not produce " + TopicStructure.DataModels.CIM_1_04 + " near real-time market document message");
         LOGGER.debug("Produced {} near real-time market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_04,
                      marketDocument.getMessageDocumentHeaderMetaInformationPermissionId());
@@ -271,7 +306,8 @@ public class KafkaConnector implements
                 marketDocument,
                 cimToHeaders(marketDocument)
         );
-        sendToKafka(toSend, "Could not produce " + TopicStructure.DataModels.CIM_1_12 + " near real-time market document message");
+        sendToKafka(toSend,
+                    "Could not produce " + TopicStructure.DataModels.CIM_1_12 + " near real-time market document message");
         LOGGER.debug("Produced {} near real-time market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_12,
                      metaInformation.getRequestPermissionId());
