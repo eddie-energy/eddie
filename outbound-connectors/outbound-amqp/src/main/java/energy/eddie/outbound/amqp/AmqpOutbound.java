@@ -13,6 +13,7 @@ import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundCo
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.MessageWithHeaders;
@@ -23,6 +24,7 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -46,7 +48,8 @@ public class AmqpOutbound implements
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
         AcknowledgementMarketDocumentOutboundConnector,
-        ValidatedHistoricalDataMarketDocumentOutboundConnector {
+        ValidatedHistoricalDataMarketDocumentOutboundConnector,
+        EnergySharingReferenceDataMarketDocumentOutboundConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpOutbound.class);
     private final Publisher publisher;
     private final MessageSerde serde;
@@ -117,11 +120,13 @@ public class AmqpOutbound implements
                                                AmqpOutbound::toHeaders));
     }
 
-    private void publish(
-            Object payload,
-            String exchange,
-            Map<String, String> headers
-    ) {
+    @Override
+    public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
+        marketDocumentStream.subscribe(publish(config.energySharingReferenceDataMarketDocument(),
+                                               AmqpOutbound::toHeaders));
+    }
+
+    private void publish(Object payload, String exchange, Map<String, String> headers) {
         try {
             var message = publisher
                     .message()
@@ -219,6 +224,15 @@ public class AmqpOutbound implements
                 Headers.PERMISSION_ID, vhdEnvelope.getMessageDocumentHeaderMetaInformationPermissionId(),
                 Headers.CONNECTION_ID, vhdEnvelope.getMessageDocumentHeaderMetaInformationConnectionId(),
                 Headers.DATA_NEED_ID, vhdEnvelope.getMessageDocumentHeaderMetaInformationDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(ESRDMDEnvelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return Map.of(
+                Headers.PERMISSION_ID, metaInformation.getRequestPermissionId(),
+                Headers.CONNECTION_ID, metaInformation.getConnectionId(),
+                Headers.DATA_NEED_ID, metaInformation.getDataNeedId()
         );
     }
 }

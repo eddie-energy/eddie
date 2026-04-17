@@ -15,6 +15,9 @@ import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.esr.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.esr.MetaInformation;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -383,6 +386,46 @@ class AmqpOutboundTest {
         // Then
         var consumer = connection.consumerBuilder()
                                  .queue(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04))
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testEnergySharingRefernceDataMarketDocument_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<ESRDMDEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setEnergySharingReferenceDataMarketDocumentStream(publisher.flux());
+        var message = new ESRDMDEnvelope()
+                .withMessageDocumentHeader(
+                        new MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                )
+                );
+
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.energySharingReferenceDataMarketDocument())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
