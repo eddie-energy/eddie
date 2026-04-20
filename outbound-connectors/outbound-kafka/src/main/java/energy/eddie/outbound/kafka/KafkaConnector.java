@@ -4,7 +4,6 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.RawDataMessage;
@@ -33,8 +32,7 @@ import java.util.List;
 
 @Component
 public class KafkaConnector implements
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
-        EnergySharingReferenceDataMarketDocumentOutboundConnector {
+        NearRealTimeDataMarketDocumentOutboundConnectorV1_12 {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -138,7 +136,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(ESRDMDEnvelope.class)
     public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
         LOGGER.info("Setting stream for ESRDMD");
         marketDocumentStream
