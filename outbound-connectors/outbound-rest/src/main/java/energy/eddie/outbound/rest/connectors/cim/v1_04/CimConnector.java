@@ -3,7 +3,7 @@
 
 package energy.eddie.outbound.rest.connectors.cim.v1_04;
 
-import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
@@ -17,7 +17,7 @@ import java.time.Duration;
 
 @Component(value = "cimConnectorV1_04")
 @SuppressWarnings("java:S6830")
-public class CimConnector implements ValidatedHistoricalDataMarketDocumentOutboundConnector, NearRealTimeDataMarketDocumentOutboundConnectorV1_04, AutoCloseable {
+public class CimConnector implements ValidatedHistoricalDataMarketDocumentOutboundConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
     private final Sinks.Many<VHDEnvelope> vhdSink = Sinks.many()
                                                          .replay()
@@ -45,7 +45,8 @@ public class CimConnector implements ValidatedHistoricalDataMarketDocumentOutbou
         return rtdSink.asFlux();
     }
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_04.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<RTDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(

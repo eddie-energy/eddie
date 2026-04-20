@@ -4,7 +4,6 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
@@ -37,7 +36,6 @@ import java.util.List;
 @Component
 public class KafkaConnector implements
         ValidatedHistoricalDataMarketDocumentOutboundConnector,
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
         AcknowledgementMarketDocumentOutboundConnector,
         EnergySharingReferenceDataMarketDocumentOutboundConnector {
@@ -113,7 +111,8 @@ public class KafkaConnector implements
     }
 
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_04.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<energy.eddie.cim.v1_04.rtd.RTDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
