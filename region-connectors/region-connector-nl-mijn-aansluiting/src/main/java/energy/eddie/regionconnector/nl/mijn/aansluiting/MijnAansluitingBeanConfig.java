@@ -29,7 +29,6 @@ import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.MijnAansluit
 import energy.eddie.regionconnector.nl.mijn.aansluiting.persistence.NlPermissionRequestRepository;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
-import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -138,7 +137,6 @@ public class MijnAansluitingBeanConfig {
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
-    @OnRawDataMessagesEnabled
     public JsonRawDataProvider rawDataProvider(ObjectMapper objectMapper, PollingService pollingService) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,

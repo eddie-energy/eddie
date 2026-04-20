@@ -8,7 +8,6 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest;
 import energy.eddie.regionconnector.cds.persistence.CdsPermissionRequestRepository;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
-import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
@@ -34,7 +33,6 @@ public class ProviderConfig {
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
-    @OnRawDataMessagesEnabled
     public JsonRawDataProvider jsonRawDataProvider(ObjectMapper objectMapper, IdentifiableDataStreams streams) {
         return new JsonRawDataProvider(REGION_CONNECTOR_ID,
                                        objectMapper,

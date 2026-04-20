@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
+@org.springframework.test.context.TestPropertySource(properties = "eddie.raw.data.output.enabled=true")
 @Import(RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest.TestConfig.class)
 class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
     @Autowired

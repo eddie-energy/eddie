@@ -3,11 +3,14 @@
 
 package energy.eddie.core.message.streams;
 
+import org.springframework.core.env.Environment;
 import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Method;
 
 public class MessageStreamUtils {
+
+    public static final String PROPERTY_NAME = "eddie.raw.data.output.enabled";
 
     private MessageStreamUtils() {
         // Utility class
@@ -22,5 +25,9 @@ public class MessageStreamUtils {
         return method.getParameterCount() == 1
                && Flux.class.isAssignableFrom(method.getParameterTypes()[0])
                && method.getReturnType() == void.class;
+    }
+
+    public static boolean areRawDataMessagesEnabled(Environment environment) {
+        return environment.getProperty(PROPERTY_NAME, Boolean.class, false);
     }
 }

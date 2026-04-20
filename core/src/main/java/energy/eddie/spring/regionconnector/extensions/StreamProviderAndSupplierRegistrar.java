@@ -6,6 +6,7 @@ package energy.eddie.spring.regionconnector.extensions;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.agnostic.outbound.OutboundConnectorExtension;
+import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.core.services.MessageStreamHub;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
@@ -18,8 +19,7 @@ import reactor.core.publisher.Flux;
 
 import java.lang.reflect.Method;
 
-import static energy.eddie.core.message.streams.MessageStreamUtils.isProviderMethod;
-import static energy.eddie.core.message.streams.MessageStreamUtils.isReceiverMethod;
+import static energy.eddie.core.message.streams.MessageStreamUtils.*;
 
 @OutboundConnectorExtension
 @RegionConnectorExtension
@@ -37,17 +37,27 @@ public class StreamProviderAndSupplierRegistrar implements SmartInitializingSing
     public void afterSingletonsInstantiated() {
         LOGGER.debug("Registering Stream Providers and Suppliers in spring context {}", applicationContext.getId());
         var hub = applicationContext.getBean(MessageStreamHub.class);
+        var environment = applicationContext.getEnvironment();
+
         for (var beanName : applicationContext.getBeanDefinitionNames()) {
             var bean = applicationContext.getBean(beanName);
             var targetClass = AopUtils.getTargetClass(bean);
+
             for (var method : targetClass.getDeclaredMethods()) {
                 var annotation = method.getAnnotation(MessageStream.class);
                 if (annotation == null || !method.trySetAccessible()) {
                     continue;
                 }
+
                 var messageType = annotation.value();
 
-                if (isProviderMethod(method)) {
+                if (messageType.equals(RawDataMessage.class) && !areRawDataMessagesEnabled(environment)) {
+                    LOGGER.debug(
+                            "Skipping raw data message stream {}#{} because eddie.raw.data.output.enabled=false",
+                            targetClass.getName(),
+                            method.getName()
+                    );
+                } else if (isProviderMethod(method)) {
                     LOGGER.info("Registering provider {}#{} for message type {} in spring context {}",
                                 targetClass.getName(),
                                 method.getName(),

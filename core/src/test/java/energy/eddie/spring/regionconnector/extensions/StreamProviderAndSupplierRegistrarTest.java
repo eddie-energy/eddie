@@ -4,6 +4,7 @@
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.MessageStream;
+import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.core.services.MessageStreamHub;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
+import org.springframework.mock.env.MockEnvironment;
 import reactor.core.publisher.Flux;
 
 import java.util.function.Consumer;
@@ -32,18 +34,25 @@ class StreamProviderAndSupplierRegistrarTest {
     @Mock
     private ApplicationContext applicationContext;
     private StreamProviderAndSupplierRegistrar registrar;
+    private MockEnvironment mockEnvironment;
     @Captor
     private ArgumentCaptor<Class<String>> typeCaptor;
     @Captor
+    private ArgumentCaptor<Class<RawDataMessage>> rawDataMessageCaptor;
+    @Captor
     private ArgumentCaptor<Supplier<Flux<String>>> supplierCaptor;
+    @Captor
+    private ArgumentCaptor<Supplier<Flux<RawDataMessage>>> rawDataSupplierCaptor;
     @Captor
     private ArgumentCaptor<Consumer<Flux<?>>> consumerCaptor;
 
     @BeforeEach
     void setUp() {
+        mockEnvironment = new MockEnvironment();
         registrar = new StreamProviderAndSupplierRegistrar();
         registrar.setApplicationContext(applicationContext);
         when(applicationContext.getBean(MessageStreamHub.class)).thenReturn(messageStreamHub);
+        when(applicationContext.getEnvironment()).thenReturn(mockEnvironment);
     }
 
     @Test
@@ -135,5 +144,47 @@ class StreamProviderAndSupplierRegistrarTest {
                     }
                 })
         );
+    }
+
+    @Test
+    void testRawDataMessagesEnabled() {
+        // Given
+        mockEnvironment.setProperty("eddie.raw.data.output.enabled", "true");
+        Object provider = new Object() {
+            @MessageStream(RawDataMessage.class)
+            public Flux<RawDataMessage> provideRawMessages() {
+                return Flux.just();
+            }
+        };
+        when(applicationContext.getBeanDefinitionNames()).thenReturn(new String[]{"rawDataProvider"});
+        when(applicationContext.getBean("rawDataProvider")).thenReturn(provider);
+
+        // When
+        registrar.afterSingletonsInstantiated();
+
+        // Then
+        verify(messageStreamHub).registerProvider(rawDataMessageCaptor.capture(), rawDataSupplierCaptor.capture());
+        assertEquals(RawDataMessage.class, rawDataMessageCaptor.getValue());
+        assertNotNull(rawDataSupplierCaptor.getValue().get());
+    }
+
+    @Test
+    void testRawDataMessagesDisabled() {
+        // Given
+        mockEnvironment.setProperty("eddie.raw.data.output.enabled", "false");
+        Object provider = new Object() {
+            @MessageStream(RawDataMessage.class)
+            public Flux<RawDataMessage> provideRawMessages() {
+                return Flux.just();
+            }
+        };
+        when(applicationContext.getBeanDefinitionNames()).thenReturn(new String[]{"rawDataProvider"});
+        when(applicationContext.getBean("rawDataProvider")).thenReturn(provider);
+
+        // When
+        registrar.afterSingletonsInstantiated();
+
+        // Then
+        verify(messageStreamHub, never()).registerProvider(any(), any());
     }
 }

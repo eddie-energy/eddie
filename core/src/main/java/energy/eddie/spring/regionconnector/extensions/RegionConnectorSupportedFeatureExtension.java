@@ -18,19 +18,18 @@ import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.core.services.SupportedFeatureService;
-import jakarta.annotation.Nullable;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import static energy.eddie.core.message.streams.MessageStreamUtils.areRawDataMessagesEnabled;
 import static energy.eddie.core.message.streams.MessageStreamUtils.isProviderMethod;
 
 @RegionConnectorExtension
 public class RegionConnectorSupportedFeatureExtension implements ApplicationContextAware {
     private final RegionConnectorMetadata metadata;
-    @Nullable
     private ApplicationContext context;
 
     public RegionConnectorSupportedFeatureExtension(
@@ -58,7 +57,7 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
 
     @JsonProperty
     public boolean supportsRawDataMessages() {
-        return hasMessageStream(RawDataMessage.class);
+        return areRawDataMessagesEnabled(context.getEnvironment()) && hasMessageStream(RawDataMessage.class);
     }
 
     @JsonProperty

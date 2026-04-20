@@ -10,7 +10,6 @@ import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
-import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.StringWriter;
 
 @Component
-@OnRawDataMessagesEnabled
 public class EdaRawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRawDataProvider.class);
     private final Jaxb2Marshaller marshaller;
