@@ -4,9 +4,11 @@
 package energy.eddie.outbound.rest.connectors.cim.v1_12;
 
 import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
+import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
 import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ public class CimConnector implements
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
         AcknowledgementMarketDocumentOutboundConnector,
         MinMaxEnvelopeOutboundConnector,
+        EnergySharingReferenceDataMarketDocumentOutboundConnector,
         AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
     private final Sinks.Many<RTDEnvelope> rtdSink = Sinks.many()
@@ -31,6 +34,9 @@ public class CimConnector implements
     private final Sinks.Many<AcknowledgementEnvelope> ackSink = Sinks.many()
                                                                      .replay()
                                                                      .limit(Duration.ofSeconds(10));
+    private final Sinks.Many<ESRDMDEnvelope> esrdmdSink = Sinks.many()
+                                                               .replay()
+                                                               .limit(Duration.ofSeconds(10));
     private final Sinks.Many<RECMMOEEnvelope> minMaxEnvelopeSink = Sinks.many()
                                                                         .multicast()
                                                                         .onBackpressureBuffer();
@@ -63,6 +69,20 @@ public class CimConnector implements
                 .subscribe(ackSink::tryEmitNext);
     }
 
+    public Flux<ESRDMDEnvelope> getEnergySharingReferenceDataMarketDocumentStream() {
+        return esrdmdSink.asFlux();
+    }
+
+    @Override
+    public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing energy sharing reference data market document",
+                        err
+                ))
+                .subscribe(esrdmdSink::tryEmitNext);
+    }
+
     @Override
     public Flux<RECMMOEEnvelope> getMinMaxEnvelopes() {
         return minMaxEnvelopeSink.asFlux();
@@ -77,5 +97,6 @@ public class CimConnector implements
         rtdSink.tryEmitComplete();
         ackSink.tryEmitComplete();
         minMaxEnvelopeSink.tryEmitComplete();
+        esrdmdSink.tryEmitComplete();
     }
 }

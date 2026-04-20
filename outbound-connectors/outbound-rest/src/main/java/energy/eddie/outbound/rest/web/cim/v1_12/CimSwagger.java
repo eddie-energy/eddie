@@ -3,11 +3,12 @@
 
 package energy.eddie.outbound.rest.web.cim.v1_12;
 
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.dto.v1_12.AcknowledgementMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.EnergySharingReferenceDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -278,7 +279,7 @@ public interface CimSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(mediaType = "text/event-stream",
-                            schema = @Schema(implementation = RTDEnvelope.class),
+                            schema = @Schema(implementation = AcknowledgementEnvelope.class),
                             examples = @ExampleObject(
                                     // language=JSON
                                     value = """
@@ -363,7 +364,7 @@ public interface CimSwagger {
                     content = {
                             @Content(
                                     mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = RTDEnvelope.class)),
+                                    array = @ArraySchema(schema = @Schema(implementation = AcknowledgementEnvelope.class)),
                                     examples = @ExampleObject(
                                             // language=JSON
                                             value = """
@@ -438,7 +439,7 @@ public interface CimSwagger {
                             ),
                             @Content(
                                     mediaType = "application/xml",
-                                    schema = @Schema(implementation = NearRealTimeDataMarketDocuments.class),
+                                    schema = @Schema(implementation = AcknowledgementEnvelope.class),
                                     examples = @ExampleObject(
                                             // language=XML
                                             value = """
@@ -570,7 +571,7 @@ public interface CimSwagger {
                     content = {
                             @Content(
                                     mediaType = "application/json",
-                                    schema = @Schema(implementation = PermissionEnvelope.class),
+                                    schema = @Schema(implementation = RECMMOEEnvelope.class),
                                     examples = @ExampleObject(
                                             // language=JSON
                                             value = """
@@ -660,7 +661,7 @@ public interface CimSwagger {
                             ),
                             @Content(
                                     mediaType = "application/xml",
-                                    schema = @Schema(implementation = PermissionEnvelope.class),
+                                    schema = @Schema(implementation = RECMMOEEnvelope.class),
                                     examples = @ExampleObject(
                                             // language=XML
                                             value = """
@@ -746,4 +747,152 @@ public interface CimSwagger {
             )
     )
     ResponseEntity<Void> minMaxEnvelopeMd(RECMMOEEnvelope minMaxEnvelope);
+
+    @Operation(
+            operationId = "GET energy sharing reference data market document stream",
+            summary = "GET energy sharing reference data market document stream",
+            description = "Get all new energy sharing reference data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(implementation = ESRDMDEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                            {
+                                              "MessageDocumentHeader": {
+                                                "creationDateTime": "2026-02-24T11:58:05Z",
+                                                "MetaInformation": {
+                                                  "connectionId": "1",
+                                                  "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
+                                                  "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                                  "documentType": "energy-sharing-reference-data-market-document",
+                                                  "finalCustomerId": "fc-id",
+                                                  "defaultValues": null,
+                                                  "regionConnector": "at-eda",
+                                                  "regionCountry": "AT"
+                                                }
+                                              },
+                                              "MarketDocument": {
+                                              // TODO: Full example will be made available once the Austrian region connector implements the mapping in order to create a realistic example. See GH-2439
+                                              }
+                                            }
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<ESRDMDEnvelope>> energySharingReferenceDataMdSSE();
+
+    @Operation(
+            operationId = "GET energy sharing reference data market document stream",
+            summary = "GET energy sharing reference data market document stream",
+            description = "Get all new energy sharing reference data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = ESRDMDEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    [
+                                                      {
+                                                        "MessageDocumentHeader": {
+                                                          "creationDateTime": "2026-02-24T11:58:05Z",
+                                                          "MetaInformation": {
+                                                            "connectionId": "1",
+                                                            "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
+                                                            "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                                            "documentType": "energy-sharing-reference-data-market-document",
+                                                            "finalCustomerId": "fc-id",
+                                                            "defaultValues": null,
+                                                            "regionConnector": "at-eda",
+                                                            "regionCountry": "AT"
+                                                          }
+                                                        },
+                                                        "MarketDocument": {
+                                                        // TODO: Full example will be made available once the Austrian region connector implements the mapping in order to create a realistic example. See GH-2439
+                                                        }
+                                                      }
+                                                    ]
+                                                    """
+                                    )
+                            ),
+                            @Content(mediaType = "application/xml",
+                                    array = @ArraySchema(schema = @Schema(implementation = ESRDMDEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=xml
+                                            value = """
+                                                    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                                    <EnergySharingReferenceDataMarketDocuments>
+                                                        <ns:Envelope xmlns:ns="https://eddie.energy/CIM/CEEDS_EnergySharingReferenceDataMarketDocument_annotated_v1.12_new.xsd">
+                                                            <ns:MessageDocumentHeader>
+                                                                <!-- Omitted for conciseness -->
+                                                            </ns:MessageDocumentHeader>
+                                                            <ns:MarketDocument>
+                                                                <!-- TODO: Full example will be made available once the Austrian region connector implements the mapping in order to create a realistic example. See GH-2439 -->
+                                                            </ns:MarketDocument>
+                                                        </ns:Envelope>
+                                                    </EnergySharingReferenceDataMarketDocuments>
+                                                    """
+                                    )
+                            )
+                    }
+            ),
+
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by connectionId ID",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the energy sharing reference data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<EnergySharingReferenceDataMarketDocuments> energySharingReferenceDataMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
 }

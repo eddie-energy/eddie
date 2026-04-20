@@ -101,6 +101,7 @@ public class RestSecurityConfig {
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_91_08/redistribution-transaction-rd")).hasAuthority("SCOPE_cim-redistribution-transaction-rd:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_12/min-max-envelope-md")).hasAuthority("SCOPE_cim-min-max-envelope-md:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_04/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
+                .requestMatchers(restRequestMatcher.matcher("/cim_1_12/energy-sharing-reference-data-md")).hasAuthority("SCOPE_cim-energy-sharing-reference-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/v3/api-docs")).permitAll() // Allow requests to the swagger file
                 .anyRequest().denyAll();
                 // @formatter:on
