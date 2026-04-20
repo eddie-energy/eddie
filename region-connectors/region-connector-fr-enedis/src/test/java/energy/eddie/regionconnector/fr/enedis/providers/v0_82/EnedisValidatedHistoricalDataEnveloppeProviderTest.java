@@ -59,8 +59,5 @@ class EnedisValidatedHistoricalDataEnvelopeProviderTest {
                                                        .getMessageDocumentHeaderMetaInformation()
                                                        .getPermissionid()))
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 }

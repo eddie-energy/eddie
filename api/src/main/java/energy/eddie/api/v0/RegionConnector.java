@@ -16,7 +16,6 @@ package energy.eddie.api.v0;
  * The interfaces in the see also section extend the functionality of the region connector.
  * Note that there may be more versions than are referenced.
  *
- * @see energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider
  * @see energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService
  */
 public interface RegionConnector {

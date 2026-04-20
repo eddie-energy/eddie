@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
@@ -25,7 +25,7 @@ import static java.util.Objects.requireNonNull;
  * emitting it for all matching permission requests
  */
 @Component
-public class EdaValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
+public class EdaValidatedHistoricalDataEnvelopeProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaValidatedHistoricalDataEnvelopeProvider.class);
 
     private final ValidatedHistoricalDataMarketDocumentDirector director;
@@ -58,14 +58,9 @@ public class EdaValidatedHistoricalDataEnvelopeProvider implements ValidatedHist
                 .flatMap(this::mapToValidatedHistoricalMarketDocument);  // the mapping method is called for each element for each subscriber if we at some point have multiple subscribers, consider using publish().refCount()
     }
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return eddieValidatedHistoricalDataMarketDocumentFlux;
-    }
-
-    @Override
-    public void close() throws Exception {
-        // Nothing to clean up, flux is closed when the underlying flux is closed
     }
 
     private Flux<ValidatedHistoricalDataEnvelope> mapToValidatedHistoricalMarketDocument(

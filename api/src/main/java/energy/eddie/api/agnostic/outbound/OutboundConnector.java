@@ -14,7 +14,6 @@ import java.lang.annotation.Target;
  * Outbound-connectors are defined in their own module and started in their own Spring context.
  * Must be used in combination with {@code SpringBootApplication}.
  *
- * @see energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector
  * @see energy.eddie.api.v0_82.outbound.TerminationConnector
  * @see energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector
  */

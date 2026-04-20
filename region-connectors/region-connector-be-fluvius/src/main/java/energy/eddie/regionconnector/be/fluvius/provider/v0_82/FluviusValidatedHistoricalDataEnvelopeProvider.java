@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.provider.v0_82;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
@@ -14,7 +14,7 @@ import reactor.core.publisher.Flux;
 
 
 @Component
-public class FluviusValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
+public class FluviusValidatedHistoricalDataEnvelopeProvider {
 
     private final Flux<IdentifiableMeteringData> identifiableMeterReadings;
     private final FluviusOAuthConfiguration fluviusConfig;
@@ -35,14 +35,9 @@ public class FluviusValidatedHistoricalDataEnvelopeProvider implements Validated
         return new IntermediateValidatedHistoricalDocument(fluviusConfig, identifiableMeteringData, dataNeedsService);
     }
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return identifiableMeterReadings.map(this::getIntermediateVHD)
                 .flatMapIterable(IntermediateValidatedHistoricalDocument::toVHD);
-    }
-
-    @Override
-    public void close() throws Exception {
-        // No Op
     }
 }

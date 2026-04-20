@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.provider.v0_82;
@@ -47,70 +47,65 @@ class EdaValidatedHistoricalDataEnvelopeProviderTest {
         when(director.createValidatedHistoricalDataMarketDocument(consumptionRecord))
                 .thenReturn(validatedHistoricalDataMarketDocument);
 
-        try (var uut = new EdaValidatedHistoricalDataEnvelopeProvider(director, testPublisher.flux())) {
-            StepVerifier.create(uut.getValidatedHistoricalDataMarketDocumentsStream())
-                        .then(() -> {
-                            testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
-                                                                                 permissionRequests,
-                                                                                 null,
-                                                                                 null));
-                            testPublisher.complete();
-                        })
-                        .assertNext(md -> assertAll(
-                                () -> assertEquals(expectedString1,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getPermissionid()),
-                                () -> assertEquals(expectedString1,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getConnectionid()),
-                                () -> assertEquals(expectedString1,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getDataNeedid()),
-                                () -> assertEquals(validatedHistoricalDataMarketDocument,
-                                                   md.getValidatedHistoricalDataMarketDocument())
-                        ))
-                        .assertNext(md -> assertAll(
-                                () -> assertEquals(expectedString2,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getPermissionid()),
-                                () -> assertEquals(expectedString2,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getConnectionid()),
-                                () -> assertEquals(expectedString2,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getDataNeedid()),
-                                () -> assertEquals(validatedHistoricalDataMarketDocument,
-                                                   md.getValidatedHistoricalDataMarketDocument())
-                        ))
-                        .assertNext(md -> assertAll(
-                                () -> assertEquals(expectedString3,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getPermissionid()),
-                                () -> assertEquals(expectedString3,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getConnectionid()),
-                                () -> assertEquals(expectedString3,
-                                                   md.getMessageDocumentHeader()
-                                                     .getMessageDocumentHeaderMetaInformation()
-                                                     .getDataNeedid()),
-                                () -> assertEquals(validatedHistoricalDataMarketDocument,
-                                                   md.getValidatedHistoricalDataMarketDocument())
-                        ))
-                        .expectComplete()
-                        .verify(Duration.ofSeconds(2));
-        }
-    }
-
-    private SimplePermissionRequest createPermissionRequest(String expected) {
-        return new SimplePermissionRequest(expected, expected, expected);
+        var uut = new EdaValidatedHistoricalDataEnvelopeProvider(director, testPublisher.flux());
+        StepVerifier.create(uut.getValidatedHistoricalDataMarketDocumentsStream())
+                    .then(() -> {
+                        testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                             permissionRequests,
+                                                                             null,
+                                                                             null));
+                        testPublisher.complete();
+                    })
+                    .assertNext(md -> assertAll(
+                            () -> assertEquals(expectedString1,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getPermissionid()),
+                            () -> assertEquals(expectedString1,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getConnectionid()),
+                            () -> assertEquals(expectedString1,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getDataNeedid()),
+                            () -> assertEquals(validatedHistoricalDataMarketDocument,
+                                               md.getValidatedHistoricalDataMarketDocument())
+                    ))
+                    .assertNext(md -> assertAll(
+                            () -> assertEquals(expectedString2,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getPermissionid()),
+                            () -> assertEquals(expectedString2,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getConnectionid()),
+                            () -> assertEquals(expectedString2,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getDataNeedid()),
+                            () -> assertEquals(validatedHistoricalDataMarketDocument,
+                                               md.getValidatedHistoricalDataMarketDocument())
+                    ))
+                    .assertNext(md -> assertAll(
+                            () -> assertEquals(expectedString3,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getPermissionid()),
+                            () -> assertEquals(expectedString3,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getConnectionid()),
+                            () -> assertEquals(expectedString3,
+                                               md.getMessageDocumentHeader()
+                                                 .getMessageDocumentHeaderMetaInformation()
+                                                 .getDataNeedid()),
+                            () -> assertEquals(validatedHistoricalDataMarketDocument,
+                                               md.getValidatedHistoricalDataMarketDocument())
+                    ))
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(2));
     }
 
     @Test
@@ -122,19 +117,20 @@ class EdaValidatedHistoricalDataEnvelopeProviderTest {
                 .thenThrow(new InvalidMappingException(""));
 
 
-        try (var uut = new EdaValidatedHistoricalDataEnvelopeProvider(
-                director,
-                testPublisher.flux())) {
-            StepVerifier.create(uut.getValidatedHistoricalDataMarketDocumentsStream())
-                        .then(() -> {
-                            testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
-                                                                                 List.of(),
-                                                                                 null,
-                                                                                 null));
-                            testPublisher.complete();
-                        })
-                        .expectNextCount(0)
-                        .verifyComplete();
-        }
+        var uut = new EdaValidatedHistoricalDataEnvelopeProvider(director, testPublisher.flux());
+        StepVerifier.create(uut.getValidatedHistoricalDataMarketDocumentsStream())
+                    .then(() -> {
+                        testPublisher.next(new IdentifiableConsumptionRecord(consumptionRecord,
+                                                                             List.of(),
+                                                                             null,
+                                                                             null));
+                        testPublisher.complete();
+                    })
+                    .expectNextCount(0)
+                    .verifyComplete();
+    }
+
+    private SimplePermissionRequest createPermissionRequest(String expected) {
+        return new SimplePermissionRequest(expected, expected, expected);
     }
 }

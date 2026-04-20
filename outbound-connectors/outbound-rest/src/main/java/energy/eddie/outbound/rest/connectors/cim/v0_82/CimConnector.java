@@ -6,7 +6,6 @@ package energy.eddie.outbound.rest.connectors.cim.v0_82;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
-import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -19,7 +18,7 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 
 @Component
-public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConnector, TerminationConnector, AutoCloseable {
+public class CimConnector implements TerminationConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
     private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhdSink = createSink();
     private final Sinks.Many<PermissionEnvelope> pmdSink = createSink();
@@ -28,7 +27,6 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
                                                                                       .multicast()
                                                                                       .onBackpressureBuffer();
 
-    @Override
     @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public void setEddieValidatedHistoricalDataMarketDocumentStream(Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream) {
         marketDocumentStream

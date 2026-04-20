@@ -130,7 +130,7 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
     }
 
     @Test
-    void getValidatedHistoricalDataMarketDocumentsStream_producesNothingIfMappingFails() throws Exception {
+    void getValidatedHistoricalDataMarketDocumentsStream_producesNothingIfMappingFails() {
         // Given
         ValidatedHistoricalDataMarketDocumentBuilder builder = mock(ValidatedHistoricalDataMarketDocumentBuilder.class);
         doThrow(new RuntimeException("Test exception")).when(builder).withMyEnergyDataMarketDocument(any());
@@ -139,19 +139,18 @@ class EnerginetValidatedHistoricalDataEnvelopeProviderTest {
         TestPublisher<IdentifiableApiResponse> testPublisher = TestPublisher.create();
         when(streams.getValidatedHistoricalDataStream()).thenReturn(testPublisher.flux());
 
-        try (var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(streams, mockFactory)) {
+        var provider = new EnerginetValidatedHistoricalDataEnvelopeProvider(streams, mockFactory);
 
-            // When & Then
-            StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
-                        .then(() -> {
-                            testPublisher.emit(apiResponse);
-                            testPublisher.complete();
-                        })
-                        .verifyComplete();
+        // When & Then
+        StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
+                    .then(() -> {
+                        testPublisher.emit(apiResponse);
+                        testPublisher.complete();
+                    })
+                    .verifyComplete();
 
-            verify(mockFactory).create();
-            verify(builder).withMyEnergyDataMarketDocument(any());
-            verifyNoMoreInteractions(builder, mockFactory);
-        }
+        verify(mockFactory).create();
+        verify(builder).withMyEnergyDataMarketDocument(any());
+        verifyNoMoreInteractions(builder, mockFactory);
     }
 }
