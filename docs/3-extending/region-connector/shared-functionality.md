@@ -14,15 +14,16 @@ This ID is usually needed to create the CIM documents.
 In cases, where it is not available the [`CommonInformationModelConfiguration`](https://architecture.eddie.energy/javadoc/energy/eddie/api/cim/config/CommonInformationModelConfiguration.html) can be used.
 
 ```java
+
 @Configuration
 public class Config {
-  @Bean
-  public CommonInformationModelConfiguration cimConfig(
-          @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
-          @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
-  ) {
-    return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
-  }
+    @Bean
+    public CommonInformationModelConfiguration cimConfig(
+            @Value("${" + ELIGIBLE_PARTY_NATIONAL_CODING_SCHEME_KEY + "}") String codingScheme,
+            @Value("${" + ELIGIBLE_PARTY_FALLBACK_ID_KEY + "}") String fallbackId
+    ) {
+        return new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.fromValue(codingScheme), fallbackId);
+    }
 }
 ```
 
@@ -33,66 +34,63 @@ Each region connector should have one bean of the `DataNeedCalculationService` p
 This implementation can be heavily customized to match the requirements of the region connector.
 
 ```java
+
 @Configuration
 public class Config {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(DataNeedsService dataNeedsService, RegionConnectorMetadata metadata, DataNeedRuleSet ruleSet) {
-      return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
+        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
     }
 }
 ```
 
 ## `ConnectionStatusMessageHandler`
 
-The [`ConnectionStatusMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/ConnectionStatusMessageHandler.html) is an implementation of the [`ConnectionStatusMessageProvider`](./api.md#connectionstatusmessageprovider).
-It provides connection status messages based on permission events provided by an event bus instance.
+The [`ConnectionStatusMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/ConnectionStatusMessageHandler.html) provides connection status messages based on permission events provided by an event bus instance.
 It can be started as a Spring bean and does not require further configuration than the required input parameters of the constructor.
 
 ```java
 
 @Configuration
 public class Config {
-  @Bean
-  public ConnectionStatusMessageHandler<PermissionRequest> connectionStatusMessageHandler(
-          EventBus eventBus,
-          PermissionRequestRepository<PermissionRequest> repository
-  ) {
-    return new ConnectionStatusMessageHandler<>(eventBus,
-                                                repository,
-                                                PermissionRequest::message); // Assumes that there is a message method available
-  }
+    @Bean
+    public ConnectionStatusMessageHandler<PermissionRequest> connectionStatusMessageHandler(
+            EventBus eventBus,
+            PermissionRequestRepository<PermissionRequest> repository
+    ) {
+        return new ConnectionStatusMessageHandler<>(eventBus,
+                                                    repository,
+                                                    PermissionRequest::message); // Assumes that there is a message method available
+    }
 }
 ```
 
 ## `PermissionMarketDocumentMessageHandler`
 
-The [
-`PermissionMarketDocumentMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/PermissionMarketDocumentMessageHandler.html) is an implementation of the [
-`PermissionMarketDocumentProvider`](./api.md#permissionmarketdocumentprovider).
-It is an implementation that utilizes permission events and an event bus to create permission market documents.
+The [`PermissionMarketDocumentMessageHandler`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/event/sourcing/handlers/integration/PermissionMarketDocumentMessageHandler.html) is an implementation that utilizes permission events and an event bus to create permission market documents.
 
 ```java
 
 @Configuration
 public class Config {
-  @Bean
-  public PermissionMarketDocumentMessageHandler<FluviusPermissionRequest> permissionMarketDocumentMessageHandler(
-          EventBus eventBus,
-          PermissionRequestRepository<PermissionRequest> permissionRequestRepository,
-          DataNeedsService dataNeedsService,
-          FooBarConfig config,
-          CommonInformationModelConfiguration cimConfig
-  ) {
-    return new PermissionMarketDocumentMessageHandler<>(
-            eventBus,
-            permissionRequestRepository,
-            dataNeedsService,
-            config.eligiblePartyId(),
-            cimConfig,
-            PermissionRequest::transmissionSchedule, // Assumes that there is a transmissionSchedule method available
-            ZoneOffset.UTC
-    );
-  }
+    @Bean
+    public PermissionMarketDocumentMessageHandler<FluviusPermissionRequest> permissionMarketDocumentMessageHandler(
+            EventBus eventBus,
+            PermissionRequestRepository<PermissionRequest> permissionRequestRepository,
+            DataNeedsService dataNeedsService,
+            FooBarConfig config,
+            CommonInformationModelConfiguration cimConfig
+    ) {
+        return new PermissionMarketDocumentMessageHandler<>(
+                eventBus,
+                permissionRequestRepository,
+                dataNeedsService,
+                config.eligiblePartyId(),
+                cimConfig,
+                PermissionRequest::transmissionSchedule, // Assumes that there is a transmissionSchedule method available
+                ZoneOffset.UTC
+        );
+    }
 }
 ```
 
@@ -100,24 +98,22 @@ public class Config {
 
 The [`JsonRawDataProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/JsonRawDataProvider.html) provides a shared implementation for raw data.
 It requires an implementation of the [`IdentifiablePayload`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/IdentifiablePayload.html), which is a pair of the permission request and the data that was requested from the MDA or PA.
-Should only be used in combination with [`OnRawDataMessagesEnabled`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/agnostic/OnRawDataMessagesEnabled.html).
 
 ```java
 
 @Configuration
 public class Config {
-  @Bean
-  @OnRawDataMessagesEnabled
-  public RawDataProvider rawDataProvider(
-          ObjectMapper objectMapper,
-          Flux<IdentifiablePayload> flux
-  ) {
-    return new JsonRawDataProvider(
-            REGION_CONNECTOR_ID,
-            objectMapper,
-            identifiableApiResponseFlux
-    );
-  }
+    @Bean
+    public RawDataProvider rawDataProvider(
+            ObjectMapper objectMapper,
+            Flux<IdentifiablePayload> flux
+    ) {
+        return new JsonRawDataProvider(
+                REGION_CONNECTOR_ID,
+                objectMapper,
+                identifiableApiResponseFlux
+        );
+    }
 }
 ```
 
@@ -127,23 +123,24 @@ The [common timeout service](https://architecture.eddie.energy/javadoc/energy/ed
 It checks for old permission requests, and emits a timed out event if any are found.
 
 ```java
+
 @Configuration
 @EnableScheduling
 public class Config {
-  @Bean
-  public CommonTimeoutService(
-          FooPermissionRequestRepository repo,
-          Outbox outbox,
-          TimeoutConfiguration config
-  ) {
-    return new CommonTimeoutService(
-            repo,
-            SimpleEvent::new,
-            // Factory to create permission events based on permission ID and a permission process status
-            outbox,
-            config
-    );
-  }
+    @Bean
+    public CommonTimeoutService(
+            FooPermissionRequestRepository repo,
+            Outbox outbox,
+            TimeoutConfiguration config
+    ) {
+        return new CommonTimeoutService(
+                repo,
+                SimpleEvent::new,
+                // Factory to create permission events based on permission ID and a permission process status
+                outbox,
+                config
+        );
+    }
 }
 ```
 
@@ -155,10 +152,10 @@ The [fullfilment service](https://architecture.eddie.energy/javadoc/energy/eddie
 
 @Configuration
 public class Config {
-  @Bean
-  public FulfillmentService fulfillmentService(Outbox outbox) {
-    return new FulfillmentService(outbox, SimpleEvent::new);
-  }
+    @Bean
+    public FulfillmentService fulfillmentService(Outbox outbox) {
+        return new FulfillmentService(outbox, SimpleEvent::new);
+    }
 }
 ```
 
@@ -174,16 +171,16 @@ It requires [the fulfillment service](#fulfillmentservice).
 
 @Configuration
 public class Config {
-  @Bean
-  public MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
-          FulfillmentService fulfillmentService,
-          Outbox outbox
-  ) {
-    return new MeterReadingPermissionUpdateAndFulfillmentService(
-            fulfillmentService,
-            (request, date) -> outbox.commit(new InternalPollingEvent(request.permissionId(), date))
-    );
-  }
+    @Bean
+    public MeterReadingPermissionUpdateAndFulfillmentService meterReadingPermissionUpdateAndFulfillmentService(
+            FulfillmentService fulfillmentService,
+            Outbox outbox
+    ) {
+        return new MeterReadingPermissionUpdateAndFulfillmentService(
+                fulfillmentService,
+                (request, date) -> outbox.commit(new InternalPollingEvent(request.permissionId(), date))
+        );
+    }
 }
 ```
 
@@ -194,25 +191,26 @@ The
 It uses the provided cron expression and the region connectors timezone to schedule polling intervals. It requires a `PollingService` that implements `CommonPollingService` to poll data and a `PermissionRequestRepository` to find all active permission requests.
 
 ```java
+
 @Configuration
-public class Config{
-  @Bean
-  public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
-          PollingService pollingService,
-          BarPermissionRequestRepository repository,
-          RegionConnectorMetadata metadata,
-          TaskSchedular taskSchedular,
-          DataNeedCalculationService<DataNeed> calculationService
-  ){
-    return new CommonFutureDataService<>(
-            pollingService,
-            repository,
-            "0 0 17 * * *",
-            metadata,
-            taskSchedular,
-            calculationService
-    );
-  }
+public class Config {
+    @Bean
+    public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
+            PollingService pollingService,
+            BarPermissionRequestRepository repository,
+            RegionConnectorMetadata metadata,
+            TaskSchedular taskSchedular,
+            DataNeedCalculationService<DataNeed> calculationService
+    ) {
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                "0 0 17 * * *",
+                metadata,
+                taskSchedular,
+                calculationService
+        );
+    }
 }
 ```
 
@@ -228,20 +226,22 @@ If only the validation is needed and not the call to the polling function, only 
 `RetransmissionValidation`](https://architecture.eddie.energy/javadoc/energy/eddie/regionconnector/shared/retransmission/RetransmissionValidation.html) can be used.
 
 ```java
+
 @Configuration
-public class Config{
-  @Bean
-  public RetransmissionValidation retransmissionValidation(RegionConnectorMetadata metadata, DataNeedsService dataNeedsService) {
-      return new RetransmissionValidation( metadata, dataNeedsService );
-  }
-  @Bean
-  public CommonRetransmissionService<FooPermissionRequest> retransmissionService(
-          BarPermissionRequestRepository repository,
-          PollingService pollingService,
-          RetransmissionValidation validation
-  ){
-    return new CommonFutureDataService<>( repository, pollingService, validation);
-  }
+public class Config {
+    @Bean
+    public RetransmissionValidation retransmissionValidation(RegionConnectorMetadata metadata, DataNeedsService dataNeedsService) {
+        return new RetransmissionValidation(metadata, dataNeedsService);
+    }
+
+    @Bean
+    public CommonRetransmissionService<FooPermissionRequest> retransmissionService(
+            BarPermissionRequestRepository repository,
+            PollingService pollingService,
+            RetransmissionValidation validation
+    ) {
+        return new CommonFutureDataService<>(repository, pollingService, validation);
+    }
 }
 ```
 

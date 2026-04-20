@@ -14,6 +14,12 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * A centralized hub for managing message streams between providers and receivers. This
+ * class uses Reactor's {@link Sinks.Many} and {@link Flux} to facilitate reactive
+ * communication. Each message type is mapped to a corresponding stream sink, allowing
+ * multiple providers and receivers to interact concurrently.
+ */
 @Component
 public class MessageStreamHub implements AutoCloseable {
     private final Map<Class<?>, Sinks.Many<Object>> sinksByType = new HashMap<>();

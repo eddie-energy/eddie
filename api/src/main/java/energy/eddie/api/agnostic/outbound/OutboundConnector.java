@@ -16,6 +16,7 @@ import java.lang.annotation.Target;
  *
  * @see energy.eddie.api.v0_82.outbound.TerminationConnector
  * @see energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector
+ * @see energy.eddie.api.agnostic.MessageStream
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})

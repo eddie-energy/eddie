@@ -21,6 +21,12 @@ import java.lang.reflect.Method;
 
 import static energy.eddie.core.message.streams.MessageStreamUtils.*;
 
+/**
+ * Registrar for stream providers and suppliers within a Spring application context.
+ * This class scans the Spring context for beans with methods annotated with
+ * {@link MessageStream}. Based on the annotated methods, it registers providers
+ * and receivers into a {@link MessageStreamHub}.
+ */
 @OutboundConnectorExtension
 @RegionConnectorExtension
 public class StreamProviderAndSupplierRegistrar implements SmartInitializingSingleton, ApplicationContextAware {
