@@ -3,7 +3,7 @@
 
 package energy.eddie.outbound.rest.connectors.cim.v1_12;
 
-import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
 import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
 import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
@@ -23,7 +23,6 @@ import java.time.Duration;
 @SuppressWarnings("java:S6830")
 public class CimConnector implements
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
-        AcknowledgementMarketDocumentOutboundConnector,
         MinMaxEnvelopeOutboundConnector,
         EnergySharingReferenceDataMarketDocumentOutboundConnector,
         AutoCloseable {
@@ -59,7 +58,7 @@ public class CimConnector implements
         return ackSink.asFlux();
     }
 
-    @Override
+    @MessageStream(AcknowledgementEnvelope.class)
     public void setAcknowledgementMarketDocumentStream(Flux<AcknowledgementEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
