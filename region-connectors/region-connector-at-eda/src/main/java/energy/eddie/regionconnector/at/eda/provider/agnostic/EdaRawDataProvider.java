@@ -3,8 +3,8 @@
 
 package energy.eddie.regionconnector.at.eda.provider.agnostic;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.RawDataMessageFactory;
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
@@ -25,7 +25,7 @@ import java.io.StringWriter;
 
 @Component
 @OnRawDataMessagesEnabled
-public class EdaRawDataProvider implements RawDataProvider {
+public class EdaRawDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EdaRawDataProvider.class);
     private final Jaxb2Marshaller marshaller;
     private final Flux<RawDataMessage> rawDataStream;
@@ -55,14 +55,9 @@ public class EdaRawDataProvider implements RawDataProvider {
         );
     }
 
-    @Override
+    @MessageStream(RawDataMessage.class)
     public Flux<RawDataMessage> getRawDataStream() {
         return rawDataStream;
-    }
-
-    @Override
-    public void close() {
-        // Nothing to clean up, flux is closed when the underlying flux is closed
     }
 
     private Flux<RawDataMessage> mapToRawDataMessage(IdentifiableConsumptionRecord identifiableConsumptionRecord) {

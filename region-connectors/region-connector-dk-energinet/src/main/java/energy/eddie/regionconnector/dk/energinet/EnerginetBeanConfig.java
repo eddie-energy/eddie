@@ -4,7 +4,6 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -123,7 +122,7 @@ public class EnerginetBeanConfig {
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, EnergyDataStreams streams) {
+    public JsonRawDataProvider rawDataProvider(ObjectMapper objectMapper, EnergyDataStreams streams) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,

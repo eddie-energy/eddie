@@ -4,8 +4,8 @@
 package energy.eddie.regionconnector.fi.fingrid.services;
 
 import energy.eddie.api.agnostic.IdentifiablePayload;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.RawDataMessageFactory;
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.regionconnector.fi.fingrid.client.model.CustomerDataResponse;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Service
-public class EnergyDataService implements RawDataProvider {
+public class EnergyDataService implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnergyDataService.class);
     private final Sinks.Many<RawDataMessage> rawData = Sinks.many().multicast().onBackpressureBuffer();
     private final ObjectMapper objectMapper;
@@ -67,7 +67,7 @@ public class EnergyDataService implements RawDataProvider {
         aps.tryEmitNext(ap);
     }
 
-    @Override
+    @MessageStream(RawDataMessage.class)
     public Flux<RawDataMessage> getRawDataStream() {
         return getIdentifiableValidatedHistoricalDataStream()
                 .cast(IdentifiablePayload.class)

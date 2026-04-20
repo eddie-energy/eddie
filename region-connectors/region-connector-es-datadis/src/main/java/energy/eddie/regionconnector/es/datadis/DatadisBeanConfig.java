@@ -3,7 +3,6 @@
 
 package energy.eddie.regionconnector.es.datadis;
 
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -136,7 +135,7 @@ public class DatadisBeanConfig {
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
     @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(
+    public JsonRawDataProvider rawDataProvider(
             ObjectMapper mapper,
             EnergyDataStreams streams
     ) {

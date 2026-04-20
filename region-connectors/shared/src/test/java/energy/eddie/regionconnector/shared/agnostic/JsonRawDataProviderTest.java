@@ -43,9 +43,6 @@ class JsonRawDataProviderTest {
                     .assertNext(res -> assertEquals("\"" + i2.payload() + "\"", res.rawPayload()))
                     .assertNext(res -> assertEquals("\"" + i3.payload() + "\"", res.rawPayload()))
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     private record IdentifiableStringPayload(PermissionRequest permissionRequest,
