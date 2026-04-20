@@ -3,7 +3,7 @@
 
 package energy.eddie.outbound.rest.connectors;
 
-import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.outbound.OpaqueEnvelopeOutboundConnector;
 import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
@@ -19,7 +19,6 @@ import java.time.Duration;
 
 @Component
 public class AgnosticConnector implements
-        ConnectionStatusMessageOutboundConnector,
         RawDataOutboundConnector,
         OpaqueEnvelopeOutboundConnector,
         AutoCloseable {
@@ -42,7 +41,8 @@ public class AgnosticConnector implements
         return rdSink.asFlux();
     }
 
-    @Override
+
+    @MessageStream(ConnectionStatusMessage.class)
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> connectionStatusMessageStream) {
         connectionStatusMessageStream
                 .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing connection status", err))

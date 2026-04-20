@@ -15,7 +15,6 @@ import java.lang.annotation.Target;
  * Must be used in combination with {@code SpringBootApplication}.
  *
  * @see RawDataOutboundConnector
- * @see ConnectionStatusMessageOutboundConnector
  * @see energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector
  * @see energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector
  * @see energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector

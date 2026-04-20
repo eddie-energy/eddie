@@ -3,7 +3,7 @@
 
 package energy.eddie.outbound.metric.connectors;
 
-import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
-public class AgnosticConnector implements ConnectionStatusMessageOutboundConnector {
+public class AgnosticConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgnosticConnector.class);
     private final Sinks.Many<ConnectionStatusMessage> connectionStatusMessageSink = Sinks.many()
             .multicast().onBackpressureBuffer();
@@ -21,7 +21,7 @@ public class AgnosticConnector implements ConnectionStatusMessageOutboundConnect
         return connectionStatusMessageSink.asFlux();
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> connectionStatusMessageStream) {
         connectionStatusMessageStream
                 .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing connection status", err))

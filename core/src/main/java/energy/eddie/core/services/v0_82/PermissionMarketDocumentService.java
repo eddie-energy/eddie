@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core.services.v0_82;
@@ -19,7 +19,7 @@ public class PermissionMarketDocumentService {
                                                                                       .onBackpressureBuffer();
 
     public void registerProvider(PermissionMarketDocumentProvider statusMessageProvider) {
-        LOGGER.info("PermissionService: Registering {}", statusMessageProvider.getClass().getName());
+        LOGGER.info("Registering {}", statusMessageProvider.getClass().getName());
         statusMessageProvider.getPermissionMarketDocumentStream()
                              .onErrorContinue((err, obj) -> LOGGER.warn(
                                      "Encountered error while processing permission market document",

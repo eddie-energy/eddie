@@ -1,9 +1,7 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.api.v0;
-
-import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 
 /**
  * A region connector connects MDAs to EDDIE. It implements the MDA specific processes and converts requests for
@@ -18,7 +16,6 @@ import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
  * The interfaces in the see also section extend the functionality of the region connector.
  * Note that there may be more versions than are referenced.
  *
- * @see ConnectionStatusMessageProvider
  * @see energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider
  * @see energy.eddie.api.v0_82.AccountingPointEnvelopeProvider
  * @see energy.eddie.api.v0_82.PermissionMarketDocumentProvider

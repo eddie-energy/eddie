@@ -5,7 +5,7 @@ package energy.eddie.outbound.amqp;
 
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
-import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
@@ -40,7 +40,6 @@ import java.util.function.Function;
 @Component
 public class AmqpOutbound implements
         AutoCloseable,
-        ConnectionStatusMessageOutboundConnector,
         RawDataOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
@@ -61,7 +60,7 @@ public class AmqpOutbound implements
         this.config = config;
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> connectionStatusMessageStream) {
         connectionStatusMessageStream
                 .subscribe(publish(config.connectionStatusMessage(), AmqpOutbound::toHeaders));

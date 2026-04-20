@@ -3,7 +3,6 @@
 
 package energy.eddie.regionconnector.simulation.providers;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
@@ -20,7 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
-public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider, ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
+public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider, PermissionMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentStreams.class);
     private final Sinks.Many<SimulatedMeterReading> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast()
@@ -58,7 +57,7 @@ public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider,
         csmSink.tryEmitComplete();
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return csmSink.asFlux();
     }

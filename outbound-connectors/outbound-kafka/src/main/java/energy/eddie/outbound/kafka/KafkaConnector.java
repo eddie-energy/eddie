@@ -3,7 +3,7 @@
 
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
 import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
@@ -40,7 +40,6 @@ import java.util.List;
 
 @Component
 public class KafkaConnector implements
-        ConnectionStatusMessageOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
         RawDataOutboundConnector,
@@ -59,7 +58,7 @@ public class KafkaConnector implements
         this.config = config;
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
         statusMessageStream
                 .onBackpressureBuffer()
