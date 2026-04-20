@@ -17,7 +17,6 @@ package energy.eddie.api.v0;
  * Note that there may be more versions than are referenced.
  *
  * @see energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider
- * @see energy.eddie.api.v0_82.PermissionMarketDocumentProvider
  * @see energy.eddie.api.agnostic.retransmission.RegionConnectorRetransmissionService
  */
 public interface RegionConnector {

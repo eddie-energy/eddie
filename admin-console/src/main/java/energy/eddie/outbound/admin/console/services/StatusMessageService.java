@@ -3,7 +3,7 @@
 
 package energy.eddie.outbound.admin.console.services;
 
-import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionMarketDocumentComplexType;
 import energy.eddie.outbound.admin.console.data.StatusMessage;
@@ -16,7 +16,7 @@ import reactor.core.scheduler.Schedulers;
 
 
 @Service
-public class StatusMessageService implements PermissionMarketDocumentOutboundConnector {
+public class StatusMessageService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusMessageService.class);
     private final StatusMessageRepository statusMessageRepository;
@@ -25,7 +25,7 @@ public class StatusMessageService implements PermissionMarketDocumentOutboundCon
         this.statusMessageRepository = statusMessageRepository;
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .publishOn(Schedulers.boundedElastic())

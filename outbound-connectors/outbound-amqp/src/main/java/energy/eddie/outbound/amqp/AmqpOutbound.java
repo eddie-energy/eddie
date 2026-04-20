@@ -6,7 +6,6 @@ package energy.eddie.outbound.amqp;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
@@ -38,7 +37,6 @@ import java.util.function.Function;
 @Component
 public class AmqpOutbound implements
         AutoCloseable,
-        PermissionMarketDocumentOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
@@ -68,7 +66,7 @@ public class AmqpOutbound implements
                 .subscribe(publish(config.rawDataMessage(), AmqpOutbound::toHeaders));
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .subscribe(publish(config.permissionMarketDocument(), AmqpOutbound::toHeaders));

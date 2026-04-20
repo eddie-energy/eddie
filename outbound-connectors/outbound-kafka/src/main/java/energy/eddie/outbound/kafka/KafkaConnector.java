@@ -4,7 +4,6 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
 import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
@@ -39,7 +38,6 @@ import java.util.List;
 @Component
 public class KafkaConnector implements
         ValidatedHistoricalDataEnvelopeOutboundConnector,
-        PermissionMarketDocumentOutboundConnector,
         ValidatedHistoricalDataMarketDocumentOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
@@ -64,7 +62,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .onBackpressureBuffer()
