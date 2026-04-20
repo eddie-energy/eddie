@@ -6,7 +6,6 @@ package energy.eddie.outbound.amqp;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.MessageWithHeaders;
 import energy.eddie.cim.agnostic.RawDataMessage;
@@ -30,9 +29,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @Component
-public class AmqpOutbound implements
-        AutoCloseable,
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_12 {
+public class AmqpOutbound implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpOutbound.class);
     private final Publisher publisher;
     private final MessageSerde serde;
@@ -87,7 +84,8 @@ public class AmqpOutbound implements
         marketDocumentStream.subscribe(publish(config.acknowledgementMarketDocument(), AmqpOutbound::toHeaders));
     }
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> marketDocumentStream) {
         marketDocumentStream.subscribe(publish(config.nearRealTimeDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
                                                AmqpOutbound::toHeaders));

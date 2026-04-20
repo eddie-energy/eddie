@@ -4,7 +4,6 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -31,8 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-public class KafkaConnector implements
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_12 {
+public class KafkaConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -116,7 +114,8 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
