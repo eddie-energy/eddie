@@ -4,7 +4,6 @@
 package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
@@ -41,7 +40,6 @@ import java.util.List;
 public class KafkaConnector implements
         ValidatedHistoricalDataEnvelopeOutboundConnector,
         PermissionMarketDocumentOutboundConnector,
-        AccountingPointEnvelopeOutboundConnector,
         ValidatedHistoricalDataMarketDocumentOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
@@ -98,7 +96,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(AccountingPointEnvelope.class)
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()

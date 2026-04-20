@@ -56,9 +56,6 @@ class EnedisAccountingPointEnvelopeProviderTest {
                                                      .getMessageDocumentHeaderMetaInformation()
                                                      .getPermissionid()))
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     private IdentifiableAccountingPointData identifiableAccountingPointData() throws IOException {

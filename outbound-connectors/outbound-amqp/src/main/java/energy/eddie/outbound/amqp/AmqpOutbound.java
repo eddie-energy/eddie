@@ -6,7 +6,6 @@ package energy.eddie.outbound.amqp;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.api.agnostic.MessageStream;
-import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
 import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
@@ -41,7 +40,6 @@ public class AmqpOutbound implements
         AutoCloseable,
         PermissionMarketDocumentOutboundConnector,
         ValidatedHistoricalDataEnvelopeOutboundConnector,
-        AccountingPointEnvelopeOutboundConnector,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
         NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
         AcknowledgementMarketDocumentOutboundConnector,
@@ -76,7 +74,7 @@ public class AmqpOutbound implements
                 .subscribe(publish(config.permissionMarketDocument(), AmqpOutbound::toHeaders));
     }
 
-    @Override
+    @MessageStream(AccountingPointEnvelope.class)
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .subscribe(publish(config.accountingPointMarketDocument(), AmqpOutbound::toHeaders));

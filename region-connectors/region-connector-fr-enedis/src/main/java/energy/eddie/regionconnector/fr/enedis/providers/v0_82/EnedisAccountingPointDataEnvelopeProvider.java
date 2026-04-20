@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
-import energy.eddie.api.v0_82.AccountingPointEnvelopeProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class EnedisAccountingPointDataEnvelopeProvider implements AccountingPointEnvelopeProvider {
+public class EnedisAccountingPointDataEnvelopeProvider {
 
     private final Flux<IdentifiableAccountingPointData> identifiableAccountingPointDataFlux;
     private final IntermediateMarketDocumentFactory intermediateMarketDocumentFactory;
@@ -24,16 +24,10 @@ public class EnedisAccountingPointDataEnvelopeProvider implements AccountingPoin
         this.intermediateMarketDocumentFactory = intermediateMarketDocumentFactory;
     }
 
-    @Override
+    @MessageStream(AccountingPointEnvelope.class)
     public Flux<AccountingPointEnvelope> getAccountingPointEnvelopeFlux() {
         return identifiableAccountingPointDataFlux
                 .map(intermediateMarketDocumentFactory::create)
                 .map(IntermediateAccountingPointDataMarketDocument::accountingPointEnvelope);
-    }
-
-
-    @Override
-    public void close() throws Exception {
-        // No-Op
     }
 }
