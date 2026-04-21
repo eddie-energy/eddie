@@ -18,6 +18,7 @@ docker compose up -d
 
 To connect EDDIE to an OpenTelemetry connector, enable OpenTelemetry via the following properties and set the collector endpoint.
 For more information regarding configuring OpenTelemetry for EDDIE see the [Spring Boot Starter](https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/).
+Setting `logging.structured.format.console` to `ecs`, `gelf`, or `logstash` enables structured logging in JSON format using the given format, for more information see [Spring Boot Logging](https://docs.spring.io/spring-boot/reference/features/logging.html#features.logging.structured).
 
 ```properties :spring
 otel.sdk.disabled=false
@@ -26,6 +27,7 @@ otel.resource.attributes.service.name=EDDIE
 otel.resource.attributes.service.namespace=eddie.energy
 otel.exporter.otlp.endpoint=http://localhost:4318
 otel.exporter.otlp.protocol=http/protobuf
+logging.structured.format.console=ecs
 ```
 
 ## Alert Management
