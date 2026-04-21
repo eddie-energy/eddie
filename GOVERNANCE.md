@@ -55,6 +55,8 @@ The _General Assembly_ consists of appointed individuals of 16 consortial member
     - removal or exchange of _General Assembly_ members
 - The _General Assembly_ decides on strategic decisions on the project
 - All GA decisions require a 50% majority
+- Each organisation in the initial EDDIE Project Consortium receives 1 vote. Later on, this can be extended by a majority vote in the General Assembly
+- The General Assembly may vote for changes in the governance system
 
 Minutes of the meetings mentioned above to be stored in the GitHub project.
 
