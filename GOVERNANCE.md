@@ -56,7 +56,7 @@ The _General Assembly_ consists of appointed individuals of 16 consortial member
 - The _General Assembly_ decides on strategic decisions on the project
 - All GA decisions require a 50% majority
 
-Minutes of the meetings mentioned above to be stored in the project GitHub.
+Minutes of the meetings mentioned above to be stored in the GitHub project.
 
 ---
 
