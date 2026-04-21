@@ -8,7 +8,7 @@ Aligned with the principles and requirements of the Linux Foundation Energy (LFE
 
 ## 1. Purpose and Alignment with Linux Foundation Energy Principles
 
-This Community Engagement Strategy defines how **Project EDDIE (European Distributed Data Infrastructure for Energy)** builds, grows, and sustains an open, diverse, and vendor-neutral open-source ecosystem in line with Linux4Energy Foundation governance and community requirements.
+This Community Engagement Strategy defines how **Project EDDIE (European Distributed Data Infrastructure for Energy)** builds, grows, and sustains an open, diverse, and vendor-neutral open-source ecosystem in line with Linux Foundation Energy governance and community requirements.
 
 The strategy explicitly supports:
 
