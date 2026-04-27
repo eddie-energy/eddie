@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messenger.otel;
@@ -15,6 +15,7 @@ import io.opentelemetry.api.metrics.ObservableLongGauge;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -22,6 +23,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 @Component
+@ConditionalOnProperty(value = "region-connector.at.eda.ponton.messenger.enabled", havingValue = "true", matchIfMissing = true)
 public class PontonQueueGauge implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonQueueGauge.class);
     private final PontonXPAdapterConfiguration config;

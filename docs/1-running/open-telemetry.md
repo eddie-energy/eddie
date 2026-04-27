@@ -1,7 +1,7 @@
 # Open Telemetry for EDDIE
 
 This README should give a minimum running example on how to connect EDDIE to an [open telemetry](https://opentelemetry.io/) collector and connected services.
-For metrics [Prometheus](https://prometheus.io/) is used, for logs [Loki](https://grafana.com/oss/loki/), and for traces [Jaeger](https://www.jaegertracing.io/).
+The [Grafana OTel LGTM Docker image](https://grafana.com/docs/opentelemetry/docker-lgtm/) is used as a preconfigured OpenTelemetry stack.
 
 [The
 `/env/otel` directory](https://github.com/eddie-energy/eddie/tree/main/env/otel/) contains configurations to run the previously mentioned open telemetry services.
