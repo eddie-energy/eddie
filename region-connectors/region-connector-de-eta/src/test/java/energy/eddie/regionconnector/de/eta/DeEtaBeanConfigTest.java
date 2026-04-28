@@ -2,9 +2,7 @@ package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
@@ -30,18 +28,18 @@ class DeEtaBeanConfigTest {
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
-                .withBean(RegionConnectorMetadata.class, EtaRegionConnectorMetadata::getInstance)
-                .withBean(DataNeedRuleSet.class, EtaDataNeedRuleSet::new)
+                .withBean(EtaDataNeedRuleSet.class, EtaDataNeedRuleSet::new)
+                .withPropertyValues(
+                        "region-connector.de.eta.eligible-party-id=test-eligible-party-id",
+                        "region-connector.de.eta.api-base-url=https://test-url.de",
+                        "region-connector.de.eta.api-client-id=test-client-id",
+                        "region-connector.de.eta.api-client-secret=test-client-secret"
+                )
                 .withBean(CommonInformationModelConfiguration.class, () -> {
                     CommonInformationModelConfiguration cimConfig = mock(CommonInformationModelConfiguration.class);
                     when(cimConfig.eligiblePartyNationalCodingScheme()).thenReturn(CodingSchemeTypeList.EIC);
                     return cimConfig;
                 })
-                .withPropertyValues(
-                        "region-connector.de.eta.eligible-party-id=party-1",
-                        "region-connector.de.eta.api-base-url=https://api.eta-plus.de",
-                        "region-connector.de.eta.api-client-id=client-id",
-                        "region-connector.de.eta.api-client-secret=client-secret")
                 .run(context -> {
                     assertThat(context).hasSingleBean(EventBus.class);
                     assertThat(context).hasSingleBean(Outbox.class);

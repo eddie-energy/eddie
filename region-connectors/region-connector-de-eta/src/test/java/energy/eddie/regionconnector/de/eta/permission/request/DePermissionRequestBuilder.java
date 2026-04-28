@@ -39,6 +39,8 @@ public class DePermissionRequestBuilder {
     @Nullable
     private String dataNeedId;
     @Nullable
+    private LocalDate latestMeterReadingEndDate;
+    @Nullable
     private String message;
     @Nullable
     private String cause;
@@ -93,6 +95,11 @@ public class DePermissionRequestBuilder {
         return this;
     }
 
+    public DePermissionRequestBuilder latestMeterReadingEndDate(LocalDate latestMeterReadingEndDate) {
+        this.latestMeterReadingEndDate = latestMeterReadingEndDate;
+        return this;
+    }
+
     public DePermissionRequestBuilder message(String message) {
         this.message = message;
         return this;
@@ -115,6 +122,7 @@ public class DePermissionRequestBuilder {
                 status,
                 created,
                 dataNeedId,
+                latestMeterReadingEndDate,
                 message,
                 cause
         );

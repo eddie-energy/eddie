@@ -28,7 +28,10 @@ class EtaAuthServiceTest {
                 "client", "secret", tokenUrl, "http://auth.url", "http://redirect.uri", "scope");
 
         DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
-                "partner", "http://api.url", authConfig, null);
+                "partner", "http://api.url", "client-id", "client-secret",
+                "/meters/historical", "/v1/permissions/{id}", 30,
+                3, 2, true, false,
+                authConfig, null);
 
         service = new EtaAuthService(configuration);
     }

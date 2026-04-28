@@ -1,27 +1,32 @@
 package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
-import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
+import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import energy.eddie.api.agnostic.RawDataProvider;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.databind.ObjectMapper;
 
-import java.time.ZoneOffset;
+import java.util.function.Supplier;
 
 /**
  * Spring configuration for the German (DE) ETA Plus region connector.
@@ -42,37 +47,32 @@ public class DeEtaBeanConfig {
         return new Outbox(eventBus, eventRepository);
     }
 
-    // For connection status messages
-    @Bean("deConnectionStatusMessageHandler")
-    public ConnectionStatusMessageHandler<DePermissionRequest> connectionStatusMessageHandler(
+    @Bean
+    public ConnectionStatusMessageHandler<DePermissionRequest> deConnectionStatusMessageHandler(
             EventBus eventBus,
-            DePermissionRequestRepository repository
-    ) {
+            DePermissionRequestRepository repository) {
         return new ConnectionStatusMessageHandler<>(
                 eventBus,
                 repository,
-                pr -> ""
-        );
+                req -> req.message().orElse(null));
     }
 
-    // For permission market documents, the CIM pendant to connection status
-    // messages
-    @Bean("dePermissionMarketDocumentMessageHandler")
-    public PermissionMarketDocumentMessageHandler<DePermissionRequest> permissionMarketDocumentMessageHandler(
+    @Bean
+    public PermissionMarketDocumentMessageHandler<DePermissionRequest> dePermissionMarketDocumentMessageHandler(
             EventBus eventBus,
             DePermissionRequestRepository repository,
             DataNeedsService dataNeedsService,
-            CommonInformationModelConfiguration cimConfig
-    ) {
+            DeEtaPlusConfiguration configuration,
+            CommonInformationModelConfiguration cimConfig,
+            TransmissionScheduleProvider<DePermissionRequest> transmissionScheduleProvider) {
         return new PermissionMarketDocumentMessageHandler<>(
                 eventBus,
                 repository,
                 dataNeedsService,
-                cimConfig.eligiblePartyFallbackId(),
+                configuration.eligiblePartyId(),
                 cimConfig,
-                pr -> null,
-                ZoneOffset.UTC
-        );
+                transmissionScheduleProvider,
+                EtaRegionConnectorMetadata.DE_ZONE_ID);
     }
 
     @Bean
@@ -83,9 +83,23 @@ public class DeEtaBeanConfig {
     @Bean
     public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
-            RegionConnectorMetadata metadata,
-            DataNeedRuleSet ruleSet
-    ) {
-        return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, ruleSet);
+            EtaDataNeedRuleSet dataNeedRuleSet) {
+        return new DataNeedCalculationServiceImpl(dataNeedsService, EtaRegionConnectorMetadata.getInstance(), dataNeedRuleSet);
+    }
+
+    @SuppressWarnings("ReactiveStreamsUnusedPublisher")
+    @Bean
+    @OnRawDataMessagesEnabled
+    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, ValidatedHistoricalDataStream stream) {
+        return new JsonRawDataProvider(
+                EtaRegionConnectorMetadata.REGION_CONNECTOR_ID,
+                objectMapper,
+                stream.validatedHistoricalData()
+        );
+    }
+
+    @Bean
+    Supplier<PermissionEventRepository> permissionEventSupplier(DePermissionEventRepository repo) {
+        return () -> repo;
     }
 }

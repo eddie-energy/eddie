@@ -34,6 +34,7 @@ class DePermissionRequestTest {
                 .status(PermissionProcessStatus.VALIDATED)
                 .created(now)
                 .dataNeedId("dn-1")
+                .latestMeterReadingEndDate(end)
                 .message("some message")
                 .cause("some cause")
                 .build();
@@ -49,7 +50,7 @@ class DePermissionRequestTest {
         assertThat(request.created()).isEqualTo(now);
         assertThat(request.dataSourceInformation()).isInstanceOf(DeDataSourceInformation.class);
         assertThat(request.dataNeedId()).isEqualTo("dn-1");
-        assertThat(request.latestMeterReadingEndDate()).isEmpty();
+        assertThat(request.latestMeterReadingEndDate()).contains(end);
         assertThat(request.message()).contains("some message");
         assertThat(request.cause()).contains("some cause");
     }
