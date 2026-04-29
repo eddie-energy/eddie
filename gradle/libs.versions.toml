@@ -61,7 +61,7 @@ xmlunit = "2.10.3"
 j2mod = "3.2.1"
 mvel2 = "2.5.2.Final"
 
-opentelemetry-instrumentation-bom = "2.18.1"
+opentelemetry-instrumentation-bom = "2.27.0"
 
 undercouch-download = "5.6.0"
 
