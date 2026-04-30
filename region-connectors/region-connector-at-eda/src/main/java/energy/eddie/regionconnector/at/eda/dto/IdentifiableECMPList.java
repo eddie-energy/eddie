@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.at.eda.dto;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EdaECMPList;
 
 public record IdentifiableECMPList(
         EdaECMPList ecmpList,

@@ -4,8 +4,8 @@
 package energy.eddie.regionconnector.at.eda.tasks;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
-import energy.eddie.regionconnector.at.eda.dto.EdaECMPList;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EdaECMPList;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest;
 import org.springframework.stereotype.Component;
 

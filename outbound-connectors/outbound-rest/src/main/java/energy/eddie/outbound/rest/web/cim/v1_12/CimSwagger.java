@@ -745,21 +745,56 @@ public interface CimSwagger {
                                     // language=JSON
                                     value = """
                                             {
+                                              "MarketDocument": {
+                                                "type": null,
+                                                "mRID": "AT000000000000000000000000000000000",
+                                                "description": null,
+                                                "revisionNumber": "112",
+                                                "createdDateTime": "2025-10-06T07:04:58Z",
+                                                "sender_MarketParticipant.mRID": null,
+                                                "sender_MarketParticipant.name": "AT000000",
+                                                "sender_MarketParticipant.marketRole.type": null,
+                                                "receiver_MarketParticipant.mRID": null,
+                                                "receiver_MarketParticipant.name": "CC000000",
+                                                "receiver_MarketParticipant.marketRole.type": null,
+                                                "EnergyCommunity": [
+                                                  {
+                                                    "DateFrom": "2025-10-05T22:00:00Z",
+                                                    "mRID": "ATCC0000DYNAMCC000000000000000000",
+                                                    "AccountingPoint": [
+                                                      {
+                                                        "energySharingParticipationFactor": 100,
+                                                        "mRID": {
+                                                          "value": "AT0000000000000000000000000000000",
+                                                          "codingScheme": "NAT"
+                                                        },
+                                                        "settlementMethod": null,
+                                                        "energySharingEnergyDirection": "A02",
+                                                        "meterReadingResolution": null,
+                                                        "gridAgreementType": null,
+                                                        "administrativeStatus": null,
+                                                        "flexibilityContract": null,
+                                                        "MeterReadings": null
+                                                      }
+                                                    ]
+                                                  }
+                                                ],
+                                                "Process": null
+                                              },
                                               "MessageDocumentHeader": {
-                                                "creationDateTime": "2026-02-24T11:58:05Z",
+                                                "creationDateTime": "2026-04-30T08:09:13Z",
                                                 "MetaInformation": {
-                                                  "connectionId": "1",
-                                                  "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
-                                                  "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+                                                  "connectionId": "cid",
+                                                  "requestPermissionId": "pid",
+                                                  "dataNeedId": "dnid",
                                                   "documentType": "energy-sharing-reference-data-market-document",
-                                                  "finalCustomerId": "fc-id",
+                                                  "finalCustomerId": null,
+                                                  "dataSourceId": null,
                                                   "defaultValues": null,
                                                   "regionConnector": "at-eda",
-                                                  "regionCountry": "AT"
+                                                  "regionCountry": "AT",
+                                                  "Asset": null
                                                 }
-                                              },
-                                              "MarketDocument": {
-                                              // TODO: Full example will be made available once the Austrian region connector implements the mapping in order to create a realistic example. See GH-2439
                                               }
                                             }
                                             """
@@ -781,26 +816,59 @@ public interface CimSwagger {
                                     examples = @ExampleObject(
                                             // language=JSON
                                             value = """
-                                                    [
-                                                      {
-                                                        "MessageDocumentHeader": {
-                                                          "creationDateTime": "2026-02-24T11:58:05Z",
-                                                          "MetaInformation": {
-                                                            "connectionId": "1",
-                                                            "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
-                                                            "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
-                                                            "documentType": "energy-sharing-reference-data-market-document",
-                                                            "finalCustomerId": "fc-id",
-                                                            "defaultValues": null,
-                                                            "regionConnector": "at-eda",
-                                                            "regionCountry": "AT"
+                                                    [{
+                                                      "MarketDocument": {
+                                                        "type": null,
+                                                        "mRID": "AT000000000000000000000000000000000",
+                                                        "description": null,
+                                                        "revisionNumber": "112",
+                                                        "createdDateTime": "2025-10-06T07:04:58Z",
+                                                        "sender_MarketParticipant.mRID": null,
+                                                        "sender_MarketParticipant.name": "AT000000",
+                                                        "sender_MarketParticipant.marketRole.type": null,
+                                                        "receiver_MarketParticipant.mRID": null,
+                                                        "receiver_MarketParticipant.name": "CC000000",
+                                                        "receiver_MarketParticipant.marketRole.type": null,
+                                                        "EnergyCommunity": [
+                                                          {
+                                                            "DateFrom": "2025-10-05T22:00:00Z",
+                                                            "mRID": "ATCC0000DYNAMCC000000000000000000",
+                                                            "AccountingPoint": [
+                                                              {
+                                                                "energySharingParticipationFactor": 100,
+                                                                "mRID": {
+                                                                  "value": "AT0000000000000000000000000000000",
+                                                                  "codingScheme": "NAT"
+                                                                },
+                                                                "settlementMethod": null,
+                                                                "energySharingEnergyDirection": "A02",
+                                                                "meterReadingResolution": null,
+                                                                "gridAgreementType": null,
+                                                                "administrativeStatus": null,
+                                                                "flexibilityContract": null,
+                                                                "MeterReadings": null
+                                                              }
+                                                            ]
                                                           }
-                                                        },
-                                                        "MarketDocument": {
-                                                        // TODO: Full example will be made available once the Austrian region connector implements the mapping in order to create a realistic example. See GH-2439
+                                                        ],
+                                                        "Process": null
+                                                      },
+                                                      "MessageDocumentHeader": {
+                                                        "creationDateTime": "2026-04-30T08:09:13Z",
+                                                        "MetaInformation": {
+                                                          "connectionId": "cid",
+                                                          "requestPermissionId": "pid",
+                                                          "dataNeedId": "dnid",
+                                                          "documentType": "energy-sharing-reference-data-market-document",
+                                                          "finalCustomerId": null,
+                                                          "dataSourceId": null,
+                                                          "defaultValues": null,
+                                                          "regionConnector": "at-eda",
+                                                          "regionCountry": "AT",
+                                                          "Asset": null
                                                         }
                                                       }
-                                                    ]
+                                                    }]
                                                     """
                                     )
                             ),
@@ -810,16 +878,35 @@ public interface CimSwagger {
                                             // language=xml
                                             value = """
                                                     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                                                    <EnergySharingReferenceDataMarketDocuments>
-                                                        <ns:Envelope xmlns:ns="https://eddie.energy/CIM/CEEDS_EnergySharingReferenceDataMarketDocument_annotated_v1.12_new.xsd">
-                                                            <ns:MessageDocumentHeader>
-                                                                <!-- Omitted for conciseness -->
-                                                            </ns:MessageDocumentHeader>
-                                                            <ns:MarketDocument>
-                                                                <!-- TODO: Full example will be made available once the Austrian region connector implements the mapping in order to create a realistic example. See GH-2439 -->
-                                                            </ns:MarketDocument>
-                                                        </ns:Envelope>
-                                                    </EnergySharingReferenceDataMarketDocuments>
+                                                    <ns:ESRDMD_Envelope xmlns:ns="https://eddie.energy/CIM/CEEDS_EnergySharingReferenceDataMarketDocument_v1.12_annotated.xsd">
+                                                        <ns:MarketDocument>
+                                                            <ns:mRID>AT000000000000000000000000000000000</ns:mRID>
+                                                            <ns:revisionNumber>112</ns:revisionNumber>
+                                                            <ns:createdDateTime>2025-10-06T07:04:58Z</ns:createdDateTime>
+                                                            <ns:sender_MarketParticipant.name>AT000000</ns:sender_MarketParticipant.name>
+                                                            <ns:receiver_MarketParticipant.name>CC000000</ns:receiver_MarketParticipant.name>
+                                                            <ns:EnergyCommunity>
+                                                                <ns:DateFrom>2025-10-05T22:00:00Z</ns:DateFrom>
+                                                                <ns:mRID>ATCC0000DYNAMCC000000000000000000</ns:mRID>
+                                                                <ns:AccountingPoint>
+                                                                    <ns:energySharingParticipationFactor>100</ns:energySharingParticipationFactor>
+                                                                    <ns:mRID codingScheme="NAT">AT0000000000000000000000000000000</ns:mRID>
+                                                                    <ns:energySharingEnergyDirection>A02</ns:energySharingEnergyDirection>
+                                                                </ns:AccountingPoint>
+                                                            </ns:EnergyCommunity>
+                                                        </ns:MarketDocument>
+                                                        <ns:MessageDocumentHeader>
+                                                            <ns:creationDateTime>2026-04-30T07:42:42Z</ns:creationDateTime>
+                                                            <ns:MetaInformation>
+                                                                <ns:connectionId>cid</ns:connectionId>
+                                                                <ns:requestPermissionId>pid</ns:requestPermissionId>
+                                                                <ns:dataNeedId>dnid</ns:dataNeedId>
+                                                                <ns:documentType>energy-sharing-reference-data-market-document</ns:documentType>
+                                                                <ns:regionConnector>at-eda</ns:regionConnector>
+                                                                <ns:regionCountry>AT</ns:regionCountry>
+                                                            </ns:MetaInformation>
+                                                        </ns:MessageDocumentHeader>
+                                                    </ns:ESRDMD_Envelope>
                                                     """
                                     )
                             )
