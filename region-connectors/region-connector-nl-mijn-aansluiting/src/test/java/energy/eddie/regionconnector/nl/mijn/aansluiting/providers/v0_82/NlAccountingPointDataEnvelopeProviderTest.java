@@ -64,9 +64,6 @@ class NlAccountingPointDataEnvelopeProviderTest {
         StepVerifier.create(res)
                     .expectNextCount(1)
                     .verifyComplete();
-
-        // Clean Up
-        provider.close();
     }
 
     private static MijnAansluitingPermissionRequest createPermissionRequest() {

@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.us.green.button.providers.v0_82;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.providers.UnsupportedUnitException;
@@ -18,7 +18,7 @@ import reactor.core.publisher.Flux;
 import java.util.List;
 
 @Component
-public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataEnvelopeProvider {
+public class ValidatedHistoricalDataProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedHistoricalDataProvider.class);
     private final Flux<ValidatedHistoricalDataEnvelope> validatedHistoricalDataEnvelopes;
 
@@ -47,13 +47,8 @@ public class ValidatedHistoricalDataProvider implements ValidatedHistoricalDataE
                 });
     }
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return validatedHistoricalDataEnvelopes;
-    }
-
-    @Override
-    public void close() throws Exception {
-        // No-Op
     }
 }

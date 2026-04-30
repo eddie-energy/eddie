@@ -3,7 +3,6 @@
 
 package energy.eddie.regionconnector.be.fluvius;
 
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -22,7 +21,6 @@ import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRe
 import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
-import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -112,8 +110,7 @@ public class FluviusBeanConfig {
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
-    @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, IdentifiableDataStreams streams) {
+    public JsonRawDataProvider rawDataProvider(ObjectMapper objectMapper, IdentifiableDataStreams streams) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,

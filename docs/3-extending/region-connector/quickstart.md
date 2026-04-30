@@ -96,6 +96,7 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionEventRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import java.util.function.Supplier;
 
 @Configuration
@@ -262,10 +263,9 @@ public class FooBarDataNeedRuleSet implements DataNeedRuleSet {
     public List<DataNeedRule> dataNeedRules() {
         return List.of(
                 new AcountingPointDataNeedRule();
-                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D))
+      new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D))
         )
     }
-
 }
 ```
 
@@ -864,6 +864,7 @@ The EDDIE button can include any custom element that is served on the `/ce.js` p
 
 Existing region connector elements use the [Lit](https://lit.dev/) library, build with Vite, and extend a shared base class.
 To replicate this setup simply copy the following files from an existing region connector. For example [/region-connectors/region-connector-at-eda](https://github.com/eddie-energy/eddie/tree/main/region-connectors/region-connector-at-eda).
+
 - `src/main/web/permission-request-form.js`
 - `package.json`
 - `vite.config.js`
@@ -1211,8 +1212,10 @@ public class LatestMeterReadingEventHandler implements EventHandler<LatestMeterR
 }
 ```
 
+### Emitting Validated Historical Data via Raw Data Messages
+
 Once the data is emitted to the `ValidatedHistoricalDataStream` it can be emitted to the outbound connectors.
-To that an implementation of the [`RawDataProvider`](./api.md#rawdataprovider) is required.
+This can be done in any Spring bean, via the [`MessageType` annotation](./api.md#message-streams).
 The implementation subscribes to the `ValidatedHistoricalDataStream` and converts the
 `IdentifiableValidatedHistoricalData` to a [`RawDataMessage`](../../2-integrating/messages/agnostic.md#raw-data-messages).
 If the API responses are in JSON the default implementation [`JsonRawDataProvider`](./shared-functionality.md#jsonrawdataprovider) for JSON values can be used instead.
@@ -1220,7 +1223,7 @@ If the API responses are in JSON the default implementation [`JsonRawDataProvide
 ```java
 
 @Component
-public class FooBarRawDataProvider implements RawDataProvider {
+public class FooBarRawDataProvider {
   private final Flux<RawDataMessage> messages;
 
   public FooBarRawDataProvider(ValidatedHistoricalDataStream stream) {
@@ -1228,7 +1231,7 @@ public class FooBarRawDataProvider implements RawDataProvider {
                      .map(this::toRawDataMessage);
   }
 
-  @Override
+  @MessageStream(RawDataMessage.class)
   public Flux<RawDataMessage> getRawDataStream() {
     return messages;
   }
@@ -1266,18 +1269,14 @@ public class FooBarRawDataProvider implements RawDataProvider {
 The region connector can request validated historical data and emit it as raw data messages.
 It can react to revocation of permissions by the final customer, by checking the error messages when requesting data from the MDA's API.
 The next step is to map the validated historical data to the [validated historical data market document](../../2-integrating/messages/cim/validated-historical-data-market-documents.md).
-Similar to the `RawDataProvider`, we implement an [`ValidatedHistoricalDataMarketDocumentProvider`](./api.md#validatedhistoricaldatamarketdocumentprovider).
+Similar to the [`RawDataProvider`](#emitting-validated-historical-data-via-raw-data-messages), we implement an `ValidatedHistoricalDataMarketDocumentProvider`.
 Since the mapping of the data to a CIM document depends on the data given, that part is left out as TODO.
 There are some [helpers](./shared-functionality.md#cim-utilities-and-helper-classes) for the mapping available.
-
-> [!INFO]
-> The `ValidatedHistoricalDataMarketDocumentProvider` is only for CIM v1.04.
-> Please remember to implement the [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider) to maintain backwards compatibility to CIM v0.82.
 
 ```java
 
 @Component
-public class FooBarValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataMarketDocumentProvider {
+public class FooBarValidatedHistoricalDataEnvelopeProvider {
   private final Flux<ValidatedHistoricalDataEnvelope> data;
 
   public FooBarValidatedHistoricalDataEnvelopeProvider(ValidatedHistoricalDataStream stream) {
@@ -1285,6 +1284,7 @@ public class FooBarValidatedHistoricalDataEnvelopeProvider implements ValidatedH
                  .map(this::toValidatedHistoricalDataMarketDocument);
   }
 
+  @MessageStream(ValidatedHistoricalDataEnvelope.class)
   public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
     return data;
   }
@@ -1324,10 +1324,11 @@ That's everything needed to create a validated historical data market document.
 Implementing future data is rather easy once requesting validated historical data is implemented.
 This implementation periodically checks for new data for active permission requests.
 It uses a cron expression that should be configured for the region connector.
-To avoid redundant implementations for each region connector, a CommonFutureDataService was implemented. 
+To avoid redundant implementations for each region connector, a CommonFutureDataService was implemented.
 To use it, add a Bean to the region connectors spring configuration.
 
 ```java
+
 @Bean
 public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
         PollingService pollingService,
@@ -1335,7 +1336,7 @@ public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
         RegionConnectorMetadata metadata,
         TaskSchedular taskSchedular,
         DataNeedCalculationService<DataNeed> calculationService
-){
+) {
   return new CommonFutureDataService<>(
           pollingService,
           repository,
@@ -1418,12 +1419,11 @@ The region connector is now ready to poll data from the MDA for permission reque
 
 Requesting accounting point data is almost the same as [requesting validated historical data](#request-validated-historical-data).
 Therefore, this section does not contain any code examples.
-To request accounting point data include the
-`AcountingPointDataNeed` in the list of supported data needs in your metadata implementation.
+To request accounting point data include the `AcountingPointDataNeed` in the list of supported data needs in your metadata implementation.
 When you get a permission request for accounting point data, don't request validated historical data from the MDA, but accounting point data.
-Emit the data via the `RawDataProvider` and the [`AccountingPointEnvelopeProvider`](./api.md#accountingpointenvelopeprovider).
+Emit the data via the [`RawDataProvider`](#emitting-validated-historical-data-via-raw-data-messages) and via a custom Spring bean annotated with the [`MessageStream` annotation](./api.md#message-streams).
 
-## Ensure Data Needs are Enforced when Request Data
+## Ensure Data Needs are Enforced when Requesting Data
 
 ::: details Checklist Status
 
@@ -1672,19 +1672,21 @@ The reasons for this can vary, for example, the eligible party is missing a spec
 There is already a shared implementation, that validates the retransmission request and requests the data from the polling service of the region connector.
 
 ```java
+
 @Configuration
-public class FooSpringConfig{
+public class FooSpringConfig {
   @Bean
   public RetransmissionValidation retransmissionValidation(RegionConnectorMetadata metadata, DataNeedsService dataNeedsService) {
-    return new RetransmissionValidation( metadata, dataNeedsService );
+    return new RetransmissionValidation(metadata, dataNeedsService);
   }
+
   @Bean
   public CommonRetransmissionService<FooPermissionRequest> retransmissionService(
           BarPermissionRequestRepository repository,
           PollingService pollingService,
           RetransmissionValidation validation
-  ){
-    return new CommonFutureDataService<>( repository, pollingService, validation);
+  ) {
+    return new CommonFutureDataService<>(repository, pollingService, validation);
   }
 }
 ```
@@ -1717,7 +1719,6 @@ public class PollingService implements PollingFunction<FooPermissionRequest> {
   }
 }
 ```
-
 
 ## Timing Out Permission Requests
 

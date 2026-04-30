@@ -3,16 +3,7 @@
 
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.api.agnostic.outbound.ConnectionStatusMessageOutboundConnector;
-import energy.eddie.api.agnostic.outbound.RawDataOutboundConnector;
-import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
-import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
-import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
-import energy.eddie.api.v1_04.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_04;
-import energy.eddie.api.v1_04.outbound.ValidatedHistoricalDataMarketDocumentOutboundConnector;
-import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
-import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
-import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -39,17 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
-public class KafkaConnector implements
-        ConnectionStatusMessageOutboundConnector,
-        ValidatedHistoricalDataEnvelopeOutboundConnector,
-        PermissionMarketDocumentOutboundConnector,
-        RawDataOutboundConnector,
-        AccountingPointEnvelopeOutboundConnector,
-        ValidatedHistoricalDataMarketDocumentOutboundConnector,
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_04,
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
-        AcknowledgementMarketDocumentOutboundConnector,
-        EnergySharingReferenceDataMarketDocumentOutboundConnector {
+public class KafkaConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
@@ -59,7 +40,7 @@ public class KafkaConnector implements
         this.config = config;
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
         statusMessageStream
                 .onBackpressureBuffer()
@@ -69,7 +50,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .onBackpressureBuffer()
@@ -79,7 +60,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public void setEddieValidatedHistoricalDataMarketDocumentStream(
             Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream
     ) {
@@ -91,7 +72,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(RawDataMessage.class)
     public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
         rawDataStream
                 .onBackpressureBuffer()
@@ -101,7 +82,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(AccountingPointEnvelope.class)
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
@@ -111,7 +92,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(VHDEnvelope.class)
     public void setValidatedHistoricalDataMarketDocumentStream(Flux<VHDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
@@ -122,7 +103,8 @@ public class KafkaConnector implements
     }
 
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_04.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<energy.eddie.cim.v1_04.rtd.RTDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
@@ -132,7 +114,8 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
@@ -142,7 +125,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(AcknowledgementEnvelope.class)
     public void setAcknowledgementMarketDocumentStream(Flux<AcknowledgementEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onBackpressureBuffer()
@@ -152,7 +135,7 @@ public class KafkaConnector implements
                 .subscribe();
     }
 
-    @Override
+    @MessageStream(ESRDMDEnvelope.class)
     public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
         LOGGER.info("Setting stream for ESRDMD");
         marketDocumentStream

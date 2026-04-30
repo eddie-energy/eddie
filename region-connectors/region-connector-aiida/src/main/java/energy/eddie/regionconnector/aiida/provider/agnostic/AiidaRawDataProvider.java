@@ -3,27 +3,22 @@
 
 package energy.eddie.regionconnector.aiida.provider.agnostic;
 
-import energy.eddie.api.agnostic.RawDataProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.regionconnector.aiida.streams.IdentifiableStreams;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class AiidaRawDataProvider implements RawDataProvider {
+public class AiidaRawDataProvider {
     private final Flux<RawDataMessage> flux;
 
     public AiidaRawDataProvider(IdentifiableStreams streams) {
         this.flux = streams.rawDataMessageFlux();
     }
 
-    @Override
+    @MessageStream(RawDataMessage.class)
     public Flux<RawDataMessage> getRawDataStream() {
         return flux;
-    }
-
-    @Override
-    public void close() {
-        // No-Op
     }
 }

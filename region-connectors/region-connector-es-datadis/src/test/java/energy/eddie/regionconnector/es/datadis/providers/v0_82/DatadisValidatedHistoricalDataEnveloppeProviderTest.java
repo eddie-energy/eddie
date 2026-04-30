@@ -35,8 +35,5 @@ class DatadisValidatedHistoricalDataEnvelopeProviderTest {
                     })
                     .expectNextCount(1)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 }

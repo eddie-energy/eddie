@@ -94,9 +94,6 @@ class EdaRawDataProviderTest {
                     })
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
-
-        // Clean-Up
-        provider.close();
     }
 
     @Test
@@ -142,9 +139,6 @@ class EdaRawDataProviderTest {
                     .expectNextCount(1)
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
-
-        // Clean-Up
-        provider.close();
     }
 
     private SimplePermissionRequest createPermissionRequest(String expected) {

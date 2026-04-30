@@ -3,10 +3,8 @@
 
 package energy.eddie.regionconnector.simulation.providers;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -19,7 +17,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
 @Component
-public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider, ConnectionStatusMessageProvider, PermissionMarketDocumentProvider {
+public class DocumentStreams implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentStreams.class);
     private final Sinks.Many<SimulatedMeterReading> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast()
@@ -42,7 +40,7 @@ public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider,
         pmdSink.tryEmitNext(permissionEnvelope);
     }
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return getSimulatedMeterReadingStream()
                 .map(d -> new IntermediateValidatedHistoricalDataMarketDocument(d, cimConfig))
@@ -56,12 +54,12 @@ public class DocumentStreams implements ValidatedHistoricalDataEnvelopeProvider,
         csmSink.tryEmitComplete();
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return csmSink.asFlux();
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
         return pmdSink.asFlux();
     }

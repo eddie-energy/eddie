@@ -1,13 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.connectors.cim.v0_82;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.utils.Pair;
-import energy.eddie.api.v0_82.outbound.AccountingPointEnvelopeOutboundConnector;
-import energy.eddie.api.v0_82.outbound.PermissionMarketDocumentOutboundConnector;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
-import energy.eddie.api.v0_82.outbound.ValidatedHistoricalDataEnvelopeOutboundConnector;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -20,7 +18,7 @@ import reactor.core.publisher.Sinks;
 import java.time.Duration;
 
 @Component
-public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConnector, PermissionMarketDocumentOutboundConnector, AccountingPointEnvelopeOutboundConnector, TerminationConnector, AutoCloseable {
+public class CimConnector implements TerminationConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
     private final Sinks.Many<ValidatedHistoricalDataEnvelope> vhdSink = createSink();
     private final Sinks.Many<PermissionEnvelope> pmdSink = createSink();
@@ -29,7 +27,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
                                                                                       .multicast()
                                                                                       .onBackpressureBuffer();
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public void setEddieValidatedHistoricalDataMarketDocumentStream(Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
@@ -46,7 +44,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
         return pmdSink.asFlux();
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
         permissionMarketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
@@ -55,7 +53,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
                 .subscribe(pmdSink::tryEmitNext);
     }
 
-    @Override
+    @MessageStream(AccountingPointEnvelope.class)
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
@@ -85,7 +83,7 @@ public class CimConnector implements ValidatedHistoricalDataEnvelopeOutboundConn
         terminationSink.tryEmitComplete();
     }
 
-    public static <T> Sinks.Many<T> createSink() {
+    private static <T> Sinks.Many<T> createSink() {
         return Sinks.many()
                     .replay()
                     .limit(Duration.ofSeconds(10));

@@ -34,8 +34,5 @@ class DatadisAccountingPointEnvelopeProviderTest {
                     })
                     .expectNextCount(1)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 }

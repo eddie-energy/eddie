@@ -70,9 +70,6 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
         StepVerifier.create(res)
                     .expectNextCount(1)
                     .verifyComplete();
-
-        // Clean-Up
-        vhdProvider.close();
     }
 
     @Test
@@ -89,8 +86,5 @@ class NlValidatedHistoricalDataMarketDocumentProviderTest {
         // Then
         StepVerifier.create(res)
                     .verifyComplete();
-
-        // Clean-Up
-        vhdProvider.close();
     }
 }

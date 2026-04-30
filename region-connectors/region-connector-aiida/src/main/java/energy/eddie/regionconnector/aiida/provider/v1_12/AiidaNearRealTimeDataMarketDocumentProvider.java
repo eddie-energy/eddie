@@ -3,21 +3,22 @@
 
 package energy.eddie.regionconnector.aiida.provider.v1_12;
 
-import energy.eddie.api.v1_12.NearRealTimeDataMarketDocumentProviderV1_12;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.regionconnector.aiida.streams.IdentifiableStreams;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component(value = "aiidaNearRealTimeDataMarketDocumentProviderV112")
-public class AiidaNearRealTimeDataMarketDocumentProvider implements NearRealTimeDataMarketDocumentProviderV1_12 {
+public class AiidaNearRealTimeDataMarketDocumentProvider {
     private final Flux<RTDEnvelope> flux;
 
     public AiidaNearRealTimeDataMarketDocumentProvider(IdentifiableStreams streams) {
         this.flux = streams.nearRealTimeDataCimV112Flux();
     }
 
-    @Override
+    @MessageStream(RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentsStream() {
         return flux;
     }

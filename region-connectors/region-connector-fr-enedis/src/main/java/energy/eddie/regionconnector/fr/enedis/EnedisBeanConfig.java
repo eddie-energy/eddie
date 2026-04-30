@@ -3,7 +3,6 @@
 
 package energy.eddie.regionconnector.fr.enedis;
 
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -20,7 +19,6 @@ import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRep
 import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import energy.eddie.regionconnector.fr.enedis.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
-import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -107,8 +105,7 @@ public class EnedisBeanConfig {
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
-    @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(
+    public JsonRawDataProvider rawDataProvider(
             ObjectMapper objectMapper,
             EnergyDataStreams streams
     ) {

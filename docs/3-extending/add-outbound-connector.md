@@ -41,57 +41,98 @@ The interfaces are separated into two packages:
 
 ### `@OutboundConnector`
 
-The [
-`@OutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound connector.
+The [`@OutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/OutboundConnector.html)-annotation denotes the starting point of an outbound connector.
 Must be used in combination with the `@SpringBootApplication`-annotation.
 The class annotated with the
 `@OutboundConnector`-annotation will be used to start the Spring context of the outbound connector.
 Furthermore, it is used to set the name of the outbound connector.
 
-### `ConnectionStatusMessageOutboundConnector`
+### Message Streams
 
-The [
-`ConnectionStatusMessageOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/ConnectionStatusMessageOutboundConnector.html) interface provides means to get a stream of [connection status messages](../2-integrating/messages/cim/connection-status-messages.md), which are emitted to the eligible party.
+Each Region Connector can provide a stream of messages, typically in the form of a stream of [CIM documents and EDDIE internal formats](../2-integrating/messages/messages.md).
+To receive the messages in the Outbound Connector, create implement a method that is annotated with the `MessageStream`-annotation.
+The method must have a single parameter of type `Flux<T>`.
+The `T` parameter is the type of the message.
+Here are some examples:
 
-### `RawDataOutboundConnector`
+```java
+import energy.eddie.api.agnostic.MessageStream;
+import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.RawDataMessage;
+import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
+import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
-The [
-`RawDataOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/RawDataOutboundConnector.html) interface provides a stream of raw data messages.
-[Raw data messages](../2-integrating/messages/agnostic.md#raw-data-messages) are messages that are received from region connectors and their region as is, without any changes, which can be useful for debugging purposes or operating on the data provided by metered data administrators itself.
+@Component
+public class DataConsumer {
+    @MessageStream(ConnectionStatusMessage.class)
+    public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> statusMessageStream) {
+        // TODO
+    }
 
-### `PermissionMarketDocumentOutboundConnector`
+    @MessageStream(PermissionEnvelope.class)
+    public void setPermissionMarketDocumentStream(Flux<PermissionEnvelope> permissionMarketDocumentStream) {
+        // TODO
+    }
 
-The [
-`PermissionMarketDocumentOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/PermissionMarketDocumentOutboundConnector.html) interface provides a stream of permission market documents.
-Their purpose is similar to the connection status messages described in subsubsection [
-`ConnectionStatusMessageOutboundConnector`](#connectionstatusmessageoutboundconnector).
-They provide information about status changes of a certain permission request in a CIM compliant format.
-For more information see section [permission market documents](../2-integrating/messages/cim/permission-market-documents.md).
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
+    public void setEddieValidatedHistoricalDataMarketDocumentStream(
+            Flux<ValidatedHistoricalDataEnvelope> marketDocumentStream
+    ) {
+        // TODO
+    }
 
-### `ValidatedHistoricalDataMarketDocumentOutboundConnector`
+    @MessageStream(RawDataMessage.class)
+    public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
+        // TODO
+    }
 
-The [
-`ValidatedHistoricalDataMarketDocumentOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/ValidatedHistoricalDataEnvelopeOutboundConnector.html) interface provides a stream of validated historical data market documents.
-These are CIM compliant documents containing metered data, for more information see section [validated historical data market documents](../2-integrating/messages/cim/validated-historical-data-market-documents.md).
+    @MessageStream(AccountingPointEnvelope.class)
+    public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
+        // TODO
+    }
 
-### `AccountingPointEnvelopeOutboundConnector`
+    @MessageStream(VHDEnvelope.class)
+    public void setValidatedHistoricalDataMarketDocumentStream(Flux<VHDEnvelope> marketDocumentStream) {
+        // TODO
+    }
 
-The [
-`AccountingPointEnvelopeOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/AccountingPointEnvelopeOutboundConnector.html) interface provides a stream of accounting point market documents.
-The accounting point market documents are CIM compliant documents, for more information see section [accounting point market documents](../2-integrating/messages/cim/accounting-point-data-market-documents.md).
+
+    @MessageStream(energy.eddie.cim.v1_04.rtd.RTDEnvelope.class)
+    public void setNearRealTimeDataMarketDocumentStreamV1_04(Flux<energy.eddie.cim.v1_04.rtd.RTDEnvelope> marketDocumentStream) {
+        // TODO
+    }
+
+    @MessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)
+    public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> marketDocumentStream) {
+        // TODO
+    }
+
+    @MessageStream(AcknowledgementEnvelope.class)
+    public void setAcknowledgementMarketDocumentStream(Flux<AcknowledgementEnvelope> marketDocumentStream) {
+        // TODO
+    }
+
+    @MessageStream(ESRDMDEnvelope.class)
+    public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
+        // TODO
+    }
+}
+```
 
 ### `TerminationConnector`
 
-The [
-`TerminationConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
+The [`TerminationConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
 If a permission request has the status accepted, the eligible party can terminate a permission request by sending a termination document, which is a permission market document.
 See subsection [termination documents](../2-integrating/messages/cim/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
 This interface does not produce any documents, but receives them.
 
 ### `RetransmissionOutboundConnector`
-
-> [!WARNING]
-> This interface is still work in progress.
 
 The [
 `RetransmissionOutboundConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/outbound/RetransmissionOutboundConnector.html) interface provides the eligible party with means to request retransmission of data from a permission request.
@@ -101,8 +142,7 @@ These results are only specific to permission requests and no order is guarantee
 Aka when sending multiple retransmission request for the same permission request there is no way to associate a retransmission result with a specific retransmission request, only with the permission request.
 
 Currently, there are no cim documents defined for retransmission requests.
-So the internal `RetransmissionRequest` and
-`RetransmissionResult` can be used to send and receive retransmission requests.
+So the internal `RetransmissionRequest` and `RetransmissionResult` can be used to send and receive retransmission requests.
 
 ## General Topic Structure
 
@@ -163,16 +203,13 @@ Of course, the endpoints and headers are not limited to those values, but it sho
 
 For common formats, there are already serializers and deserializers in place, which can be reused.
 
-- For
-  `JSON` use the [JsonMessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/JsonMessageSerde.html) class.
-- For
-  `XML` use the [JsonMessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/XmlMessageSerde.html) class.
+- For `JSON` use the [JsonMessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/JsonMessageSerde.html) class.
+- For `XML` use the [JsonMessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/XmlMessageSerde.html) class.
   Supports CIM documents as well as unknown types, which are serialized using the XmlMapper from jackson.
 
 #### Custom SerDe
 
-To implement a custom SerDe for other formats, such as `CSV` or
-`protobuf`, implement the [MessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/MessageSerde.html) interface and either extend the [DefaultSerdeFactory](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/DefaultSerdeFactory.html) or implement a custom [SerdeFactory](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/SerdeFactory.html).
+To implement a custom SerDe for other formats, such as `CSV` or `protobuf`, implement the [MessageSerde](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/MessageSerde.html) interface and either extend the [DefaultSerdeFactory](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/DefaultSerdeFactory.html) or implement a custom [SerdeFactory](https://architecture.eddie.energy/javadoc/energy/eddie/outbound/shared/serde/SerdeFactory.html).
 
 ## Security Configuration
 
@@ -184,22 +221,21 @@ The endpoints can then be secured as follows, but please note that the security 
 
 @OutboundConnectorSecurityConfig
 public class OCSecurityConfig {
-    @Bean
-    public MvcRequestMatcher.Builder requestMatcher(HandlerMappingIntrospector introspector) {
-        return new MvcRequestMatcher.Builder(introspector).servletPath("/" + ALL_OUTBOUND_CONNECTORS_BASE_URL_PATH + "/" + "oc-name");
-    }
+  @Bean
+  public PathPatternRequestMatcher.Builder restRequestMatcher() {
+    return PathPatternRequestMatcher.withDefaults()
+                                    .basePath(CommonPaths.getServletPathForOutboundConnector("outbound-connector-name"));
+  }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        return http
-                .csrf((csrf) -> csrf.requireCsrfProtectionMatcher(requestMatcher.pattern("*")))
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers(requestMatcher.pattern("**")).authenticated()
-                        .anyRequest().permitAll()
-                )
-                // ... formLogin, oauth2Login, etc.
-                .build();
-    }
+  @Bean
+  public SecurityFilterChain restSecurityFilterChain( PathPatternRequestMatcher.Builder restRequestMatcher, HttpSecurity http, CorsConfigurationSource corsConfigurationSource, ) {
+    return http
+            .csrf(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests((authorize) -> authorize
+                    .anyRequest().permitAll()
+            )
+            // ... formLogin, oauth2Login, etc.
+            .build();
 }
 ```
 

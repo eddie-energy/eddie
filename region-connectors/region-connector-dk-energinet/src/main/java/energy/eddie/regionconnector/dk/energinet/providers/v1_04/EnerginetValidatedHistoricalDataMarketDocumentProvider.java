@@ -1,10 +1,10 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.dk.energinet.providers.v1_04;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v1_04.ValidatedHistoricalDataMarketDocumentProvider;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
@@ -16,7 +16,7 @@ import reactor.core.publisher.Flux;
 
 @SuppressWarnings("java:S6830")
 @Component("EnerginetValidatedHistoricalDataMarketDocumentProvider_v1_04")
-public class EnerginetValidatedHistoricalDataMarketDocumentProvider implements ValidatedHistoricalDataMarketDocumentProvider {
+public class EnerginetValidatedHistoricalDataMarketDocumentProvider {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnerginetValidatedHistoricalDataMarketDocumentProvider.class);
     private final Flux<VHDEnvelope> eddieValidatedHistoricalDataMarketDocumentFlux;
     private final CommonInformationModelConfiguration cimConfig;
@@ -31,7 +31,7 @@ public class EnerginetValidatedHistoricalDataMarketDocumentProvider implements V
         this.cimConfig = cimConfig;
     }
 
-    @Override
+    @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return eddieValidatedHistoricalDataMarketDocumentFlux;
     }

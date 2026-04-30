@@ -118,14 +118,14 @@ Example implementation:
 
 ```java
 @Component
-public class AiidaNearRealTimeDataMarketDocumentProvider implements NearRealTimeDataMarketDocumentProvider {
+public class AiidaNearRealTimeDataMarketDocumentProvider {
     private final Flux<RTDEnvelope> flux;
 
     public AiidaNearRealTimeDataMarketDocumentProvider(IdentifiableStreams streams) {
         this.flux = streams.nearRealTimeDataFlux();
     }
 
-    @Override
+    @MessageType(RTDEnvelope.class)
     public Flux<RTDEnvelope> getNearRealTimeMarketDocumentsStream() {
         return flux;
     }

@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.es.datadis.providers.v0_82;
 
-import energy.eddie.api.v0_82.ValidatedHistoricalDataEnvelopeProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
@@ -12,7 +12,7 @@ import reactor.core.publisher.Flux;
 
 @SuppressWarnings("java:S6830")
 @Component("DatadisValidatedHistoricalDataEnvelopeProviderV0_82")
-public class DatadisValidatedHistoricalDataEnvelopeProvider implements ValidatedHistoricalDataEnvelopeProvider {
+public class DatadisValidatedHistoricalDataEnvelopeProvider {
     private final Flux<IdentifiableMeteringData> identifiableMeterReadings;
     private final IntermediateVHDFactory intermediateVHDFactory;
 
@@ -24,15 +24,10 @@ public class DatadisValidatedHistoricalDataEnvelopeProvider implements Validated
         this.intermediateVHDFactory = intermediateVHDFactory;
     }
 
-    @Override
+    @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return identifiableMeterReadings
                 .map(intermediateVHDFactory::create)
                 .map(IntermediateValidatedHistoricalDocument::eddieValidatedHistoricalDataMarketDocument);
-    }
-
-    @Override
-    public void close() throws Exception {
-        // No-Op
     }
 }

@@ -3,10 +3,8 @@
 
 package energy.eddie.outbound.rest.connectors.cim.v1_12;
 
-import energy.eddie.api.v1_12.outbound.AcknowledgementMarketDocumentOutboundConnector;
-import energy.eddie.api.v1_12.outbound.EnergySharingReferenceDataMarketDocumentOutboundConnector;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
-import energy.eddie.api.v1_12.outbound.NearRealTimeDataMarketDocumentOutboundConnectorV1_12;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
@@ -21,12 +19,7 @@ import java.time.Duration;
 
 @Component(value = "cimConnectorV1_12")
 @SuppressWarnings("java:S6830")
-public class CimConnector implements
-        NearRealTimeDataMarketDocumentOutboundConnectorV1_12,
-        AcknowledgementMarketDocumentOutboundConnector,
-        MinMaxEnvelopeOutboundConnector,
-        EnergySharingReferenceDataMarketDocumentOutboundConnector,
-        AutoCloseable {
+public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimConnector.class);
     private final Sinks.Many<RTDEnvelope> rtdSink = Sinks.many()
                                                          .replay()
@@ -45,7 +38,8 @@ public class CimConnector implements
         return rtdSink.asFlux();
     }
 
-    @Override
+    @MessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)
+    @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<RTDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
@@ -59,7 +53,7 @@ public class CimConnector implements
         return ackSink.asFlux();
     }
 
-    @Override
+    @MessageStream(AcknowledgementEnvelope.class)
     public void setAcknowledgementMarketDocumentStream(Flux<AcknowledgementEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(
@@ -73,7 +67,7 @@ public class CimConnector implements
         return esrdmdSink.asFlux();
     }
 
-    @Override
+    @MessageStream(ESRDMDEnvelope.class)
     public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
         marketDocumentStream
                 .onErrorContinue((err, obj) -> LOGGER.warn(

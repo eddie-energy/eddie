@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.provider.v0_82;
@@ -36,7 +36,7 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
     private FluviusOAuthConfiguration fluviusConfig;
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_differentUnits() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_differentUnits() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("gas_data_measurement_hourly_different_units.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -70,13 +70,10 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
                                                                           .getTimeSeries().size()))
                     .expectNext(2)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_sameUnit() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_sameUnit() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("gas_data_measurement_daily_same_unit.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -117,13 +114,10 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
                                                                           .size()))
                     .expectNext(2)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_daily_empty() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_gas_daily_empty() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("gas_data_measurement_hourly_different_units.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -157,13 +151,10 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
                                                                           .getTimeSeries().size()))
                     .expectNext(0)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_electricity_quarterHourly() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_electricity_quarterHourly() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_quarter_hourly.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -195,13 +186,10 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
                                                                           .getTimeSeries().size()))
                     .expectNext(2)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_electricity_hourly_empty() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_electricity_hourly_empty() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_quarter_hourly.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -234,13 +222,10 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
                                                                           .getTimeSeries().size()))
                     .expectNext(0)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 
     @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_electricity_daily() throws Exception {
+    void testGetValidatedHistoricalDataMarketDocumentsStream_electricity_daily() {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_daily.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -273,8 +258,5 @@ class FluviusValidatedHistoricalDataEnvelopeProviderTest {
                                                                           .getTimeSeries().size()))
                     .expectNext(1)
                     .verifyComplete();
-
-        // Clean-Up
-        provider.close();
     }
 }

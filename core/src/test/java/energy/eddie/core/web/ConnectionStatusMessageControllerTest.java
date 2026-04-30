@@ -6,40 +6,45 @@ package energy.eddie.core.web;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.core.security.JwtIssuerFilter;
-import energy.eddie.core.services.PermissionService;
+import energy.eddie.core.services.MessageStreamHub;
+import energy.eddie.spring.regionconnector.extensions.StreamProviderAndSupplierRegistrar;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
-import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
-
-import static org.mockito.BDDMockito.given;
+import reactor.test.publisher.TestPublisher;
 
 @WebFluxTest(
         value = ConnectionStatusMessageController.class,
         excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = JwtIssuerFilter.class)
 )
 @AutoConfigureMockMvc(addFilters = false) // disables spring security filters
+@Import(ConnectionStatusMessageControllerTest.TestConfig.class)
 class ConnectionStatusMessageControllerTest {
-    @MockitoBean
-    private PermissionService permissionService;
     @Autowired
     private WebTestClient webTestClient;
+    @Autowired
+    private ConnectionStatusMessageController controller;
+    @Autowired
+    private MessageStreamHub messageStreamHub;
 
     @Test
     void connectionStatusMessageByPermissionIds_sendsStatus() {
         var message1 = statusMessage("1", PermissionProcessStatus.CREATED);
         var message2 = statusMessage("2", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
         var message3 = statusMessage("3", PermissionProcessStatus.VALIDATED);
-
-        given(permissionService.getConnectionStatusMessageStream())
-                .willReturn(Flux.just(message1, message2, message3));
+        TestPublisher<ConnectionStatusMessage> publisher = TestPublisher.create();
+        messageStreamHub.registerProvider(ConnectionStatusMessage.class, publisher::flux);
+        publisher.next(message1, message2, message3);
+        publisher.complete();
 
         var result = webTestClient.get()
                                   .uri(b -> b.path("/api/connection-status-messages")
@@ -55,7 +60,8 @@ class ConnectionStatusMessageControllerTest {
                     // only check status to avoid time zone issues
                     .expectNextMatches(message -> message1.status().equals(message.status()))
                     .expectNextMatches(message -> message3.status().equals(message.status()))
-                    .verifyComplete();
+                    .thenCancel()
+                    .verify();
     }
 
     private ConnectionStatusMessage statusMessage(String pid, PermissionProcessStatus status) {
@@ -65,5 +71,18 @@ class ConnectionStatusMessageControllerTest {
                 "1",
                 null,
                 status);
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        MessageStreamHub messageStreamHub() {
+            return new MessageStreamHub();
+        }
+
+        @Bean
+        StreamProviderAndSupplierRegistrar streamProviderAndSupplierRegistrar() {
+            return new StreamProviderAndSupplierRegistrar();
+        }
     }
 }

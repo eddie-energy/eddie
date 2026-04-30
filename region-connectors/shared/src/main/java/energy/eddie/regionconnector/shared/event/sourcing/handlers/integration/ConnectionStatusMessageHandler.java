@@ -3,7 +3,7 @@
 
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
-import energy.eddie.api.agnostic.ConnectionStatusMessageProvider;
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
@@ -22,7 +22,7 @@ import java.util.function.Function;
 /**
  * Subscribes to all events of an {@code EventBus} and creates connection status messages based on an event.
  */
-public class ConnectionStatusMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, ConnectionStatusMessageProvider {
+public class ConnectionStatusMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatusMessageHandler.class);
     private final Sinks.Many<ConnectionStatusMessage> messages = Sinks.many().multicast().onBackpressureBuffer();
     private final PermissionRequestRepository<T> repository;
@@ -80,7 +80,7 @@ public class ConnectionStatusMessageHandler<T extends PermissionRequest> impleme
         );
     }
 
-    @Override
+    @MessageStream(ConnectionStatusMessage.class)
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return messages.asFlux();
     }

@@ -97,43 +97,21 @@ Retransmission can be requested by the EP, in case, some validated historical da
 This works only in cases where the permission request is still active and data can be requested again from the MDA.
 The retransmission service gets permission ID and a timeframe, which declares the start and end date of the needed data.
 
-### `ConnectionStatusMessageProvider`
+### Message streams
 
-The [`ConnectionStatusMessageProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/ConnectionStatusMessageProvider.html) interface provides the [connection status message](../../2-integrating/messages/cim/connection-status-messages.md) stream to the outbound connectors.
-Furthermore, it is used by the core to propagate status changes of a permission request to the EDDIE button.
-This allows immediate feedback for permission requests created by final customers.
-For a default implementation see the [connection status message provider implementation](./shared-functionality.md#connectionstatusmessagehandler).
+EDDIE uses the [`@MessageStream(...)`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/MessageStream.html) annotation to discover message producers and consumers at runtime.
+A **provider** exposes a stream by declaring a method annotated with `@MessageStream(MessageType.class)` that returns `Flux<MessageType>`.
+A **receiver** consumes a stream by declaring a method annotated with `@MessageStream(MessageType.class)` that accepts a single `Flux<MessageType>` parameter.
+The framework wires these methods automatically during application startup using reflection, if the implementing class is a Spring bean.
 
-### `RawDataProvider`
+For example, to create a message stream for the `RawDataMessage` type the following code can be used:
 
-The [`RawDataProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/RawDataProvider.html) sends a stream of data received from the MDA to the outbound connectors.
-It contains some meta information regarding the permission request and the **unchanged** messages received from the MDA.
-This is useful for debugging purposes and allows the EP to access the data in the original format if needed.
-
-### CIM v0.82
-
-The following providers are used to produce CIM v0.82 documents.
-
-#### `PermissionMarketDocumentProvider`
-
-The [`PermissionMarketDocumentProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/PermissionMarketDocumentProvider.html) is the CIM compliant equivalent of the [ConnectionStatusMessageProvider](#connectionstatusmessageprovider).
-It sends the permission request status changes as CIM documents to the outbound connectors.
-For a default implementation, see the [permission market document provider implementation](./shared-functionality.md#permissionmarketdocumentmessagehandler).
-
-#### `ValidatedHistoricalDataEnvelopeProvider`
-
-The [`ValidatedHistoricalDataEnvelopeProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/ValidatedHistoricalDataEnvelopeProvider.html) sends a stream of validated historical data.
-When metered data is received from the MDA, it has to be converted to a CIM document, before it is emitted via this provider.
-
-#### `AccountingPointEnvelopeProvider`
-
-The [`AccountingPointEnvelopeProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/AccountingPointEnvelopeProvider.html) emits accounting point data.
-Similar to the [`ValidatedHistoricalDataEnvelopeProvider`](#validatedhistoricaldataenvelopeprovider), it converts accounting point data received from the MDA to CIM compliant documents, and emits them.
-
-### CIM v1.04
-
-#### `ValidatedHistoricalDataMarketDocumentProvider`
-
-The [`ValidatedHistoricalDataMarketDocumentProvider`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v1_04/ValidatedHistoricalDataMarketDocumentProvider.html) is the new version of the [`ValidatedHistoricalDataEnvelopeProvider`](./api.md#validatedhistoricaldataenvelopeprovider).
-It should be implemented in parallel to the old version, but its implementation should be the priority.
-The old version should still be supported to maintain backwards compatibility.
+```java
+@Component
+public class RawDataMessageProvider {
+    @MessageStream(RawDataMessage.class)
+    Flux<RawDataMessage> rawDataMessageFlux() {
+        return Flux.just(/*TODO: create RawDataMessage+/);
+    }
+}
+```

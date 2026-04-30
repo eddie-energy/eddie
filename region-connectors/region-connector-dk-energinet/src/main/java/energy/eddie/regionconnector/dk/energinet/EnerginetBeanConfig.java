@@ -4,7 +4,6 @@
 package energy.eddie.regionconnector.dk.energinet;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.RawDataProvider;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -23,7 +22,6 @@ import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.TimeSer
 import energy.eddie.regionconnector.dk.energinet.providers.v0_82.builder.ValidatedHistoricalDataMarketDocumentBuilderFactory;
 import energy.eddie.regionconnector.dk.energinet.services.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
-import energy.eddie.regionconnector.shared.agnostic.OnRawDataMessagesEnabled;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -122,8 +120,7 @@ public class EnerginetBeanConfig {
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
-    @OnRawDataMessagesEnabled
-    public RawDataProvider rawDataProvider(ObjectMapper objectMapper, EnergyDataStreams streams) {
+    public JsonRawDataProvider rawDataProvider(ObjectMapper objectMapper, EnergyDataStreams streams) {
         return new JsonRawDataProvider(
                 REGION_CONNECTOR_ID,
                 objectMapper,

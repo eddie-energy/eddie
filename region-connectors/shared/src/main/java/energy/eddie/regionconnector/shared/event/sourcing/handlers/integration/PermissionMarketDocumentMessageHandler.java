@@ -1,14 +1,14 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.event.sourcing.handlers.integration;
 
+import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.events.InternalPermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.api.v0_82.PermissionMarketDocumentProvider;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -24,10 +24,10 @@ import reactor.core.publisher.Sinks;
 import java.time.ZoneId;
 
 /**
- * An implementation for the {@link PermissionMarketDocumentProvider} that converts a {@link PermissionEvent} to a CIM compliant document.
+ * This class converts a {@link PermissionEvent} to a CIM compliant document and provides them via a {@link Flux}.
  * It subscribes to all events present in an {@link EventBus} and based on thos creates PermissionMarketDocuments.
  */
-public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, PermissionMarketDocumentProvider {
+public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest> implements EventHandler<PermissionEvent>, AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionMarketDocumentMessageHandler.class);
     private final PermissionRequestRepository<T> repository;
     private final DataNeedsService dataNeedsService;
@@ -88,7 +88,7 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
         }
     }
 
-    @Override
+    @MessageStream(PermissionEnvelope.class)
     public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
         return pmdSink.asFlux();
     }
