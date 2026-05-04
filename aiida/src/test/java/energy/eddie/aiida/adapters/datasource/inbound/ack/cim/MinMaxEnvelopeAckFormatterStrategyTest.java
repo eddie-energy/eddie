@@ -116,7 +116,7 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
                     () -> assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
                                        marketDocument.getReceivedMarketDocumentMRID()),
                     () -> assertEquals("A17", marketDocument.getReceivedMarketDocumentType()),
-                    () -> assertEquals("A37",
+                    () -> assertEquals("A14",
                                        marketDocument.getReceivedMarketDocumentProcessProcessType()),
                     () -> assertEquals(ZonedDateTime.parse("2026-02-16T10:11:58Z"),
                                        marketDocument.getReceivedMarketDocumentCreatedDateTime()),

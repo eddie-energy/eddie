@@ -35,7 +35,7 @@
     },
     "receiver_MarketParticipant.name": "Max Mustermann",
     "receiver_MarketParticipant.marketRole.type": "A13",
-    "process.processType": "A37",
+    "process.processType": "A14",
     "period.timeInterval": {
       "start": "2026-06-01T00:00:00Z",
       "end": "2026-06-02T23:59:59Z"
@@ -43,10 +43,10 @@
     "TimeSeries_Series": [
       {
         "mRID": "series-1",
-        "businessType": "MIN_MAX_ENVELOPE",
-        "curveType": "MIN_MAX_ENVELOPE",
+        "businessType": "C76",
+        "curveType": "A01",
         "resourceTimeSeries.value1ScheduleType": "loadReduction",
-        "flowDirection.direction": "CONSUMPTION",
+        "flowDirection.direction": "A02",
         "registeredResource.mRID": {
           "value": "003114735",
           "codingScheme": "NAT"
