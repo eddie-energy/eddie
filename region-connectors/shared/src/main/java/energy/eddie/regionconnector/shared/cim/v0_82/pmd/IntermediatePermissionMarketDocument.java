@@ -159,7 +159,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
         return switch (dataNeed) {
             case ValidatedHistoricalDataDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
             case AiidaDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
-            case CESUJoinRequestDataNeed ignored -> ProcessTypeList.ACCESS_TO_METERED_DATA;
+            case CESUJoinRequestDataNeed ignored -> ProcessTypeList.ACCOUNTINGPOINT_DATA;
             case AccountingPointDataNeed ignored -> ProcessTypeList.ACCOUNTINGPOINT_DATA;
             default -> throw new IllegalArgumentException("Unsupported data need type: " + dataNeed);
         };

@@ -478,24 +478,18 @@ public interface CimSwagger {
                                                             <received_MarketDocument.title xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
                                                             <received_MarketDocument.createdDateTime>2026-02-24T11:57:05Z</received_MarketDocument.createdDateTime>
                                                             <Rejected_TimeSeries>
-                                                                <Rejected_TimeSeries>
                                                                     <mRID>63c99336-d854-4ed2-be01-13dca22a2850</mRID>
                                                                     <version>1</version>
                                                                     <InError_Period>
-                                                                        <InError_Period>
-                                                                            <timeInterval>
-                                                                                <start>2026-02-24T12:58:05Z</start>
-                                                                                <end>2026-02-24T13:58:05Z</end>
-                                                                            </timeInterval>
-                                                                        </InError_Period>
+                                                                        <timeInterval>
+                                                                            <start>2026-02-24T12:58:05Z</start>
+                                                                            <end>2026-02-24T13:58:05Z</end>
+                                                                        </timeInterval>
                                                                     </InError_Period>
                                                                     <Reason>
-                                                                        <Reason>
-                                                                            <code>A01</code>
-                                                                            <text>Invalid time series data</text>
-                                                                        </Reason>
+                                                                        <code>A01</code>
+                                                                        <text>Invalid time series data</text>
                                                                     </Reason>
-                                                                </Rejected_TimeSeries>
                                                             </Rejected_TimeSeries>
                                                         </MarketDocument>
                                                     </Acknowledgement_Envelope>
@@ -605,14 +599,14 @@ public interface CimSwagger {
                                                           "codingScheme": "NAT"
                                                         },
                                                         "sender_MarketParticipant.name": "Netz Oberösterreich GmbH",
-                                                        "sender_MarketParticipant.marketRole.type": "CONNECTING_SYSTEM_OPERATOR",
+                                                        "sender_MarketParticipant.marketRole.type": "A56",
                                                         "receiver_MarketParticipant.mRID": {
                                                           "value": "88e0fc2c-4ea7-4850-a736-8b9742757518",
                                                           "codingScheme": "NAT"
                                                         },
                                                         "receiver_MarketParticipant.name": "Max Mustermann",
-                                                        "receiver_MarketParticipant.marketRole.type": "FINAL_CUSTOMER",
-                                                        "process.processType": "MIN_MAX_ENVELOPE",
+                                                        "receiver_MarketParticipant.marketRole.type": "A13",
+                                                        "process.processType": "A14",
                                                         "period.timeInterval": {
                                                           "start": "2026-06-01T00:00:00Z",
                                                           "end": "2026-06-02T23:59:59Z"
@@ -620,10 +614,10 @@ public interface CimSwagger {
                                                         "TimeSeries_Series": [
                                                           {
                                                             "mRID": "series-1",
-                                                            "businessType": "MIN_MAX_ENVELOPE",
-                                                            "curveType": "MIN_MAX_ENVELOPE",
+                                                            "businessType": "C76",
+                                                            "curveType": "A01",
                                                             "resourceTimeSeries.value1ScheduleType": "loadReduction",
-                                                            "flowDirection.direction": "CONSUMPTION",
+                                                            "flowDirection.direction": "A02",
                                                             "registeredResource.mRID": {
                                                               "value": "003114735",
                                                               "codingScheme": "NAT"
@@ -673,9 +667,9 @@ public interface CimSwagger {
                                                                 <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
                                                                 <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</dataNeedId>
                                                                 <documentType>min-max-envelope</documentType>
-                                                                <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+                                                                <finalCustomerId>fc-id</finalCustomerId>
                                                                 <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
-                                                                <defaultValues xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                                                                <defaultValues>minPower=value</defaultValues>
                                                                 <regionConnector>aiida</regionConnector>
                                                                 <regionCountry>AT</regionCountry>
                                                                 <Asset>
@@ -693,50 +687,41 @@ public interface CimSwagger {
                                                             <comment>This is a test min-max envelope.</comment>
                                                             <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
                                                             <sender_MarketParticipant.name>Netz Oberösterreich GmbH</sender_MarketParticipant.name>
-                                                            <sender_MarketParticipant.marketRole.type>CONNECTING_SYSTEM_OPERATOR</sender_MarketParticipant.marketRole.type>
-                                                            <receiver_MarketParticipant.mRID codingScheme="NAT">88e0fc2c-4ea7-4850-a736-8b9742757518
-                                                            </receiver_MarketParticipant.mRID>
+                                                            <sender_MarketParticipant.marketRole.type>A56</sender_MarketParticipant.marketRole.type>
+                                                            <receiver_MarketParticipant.mRID codingScheme="NAT">fc-id</receiver_MarketParticipant.mRID>
                                                             <receiver_MarketParticipant.name>Max Mustermann</receiver_MarketParticipant.name>
-                                                            <receiver_MarketParticipant.marketRole.type>FINAL_CUSTOMER</receiver_MarketParticipant.marketRole.type>
-                                                            <process.processType>MIN_MAX_ENVELOPE</process.processType>
+                                                            <receiver_MarketParticipant.marketRole.type>A13</receiver_MarketParticipant.marketRole.type>
+                                                            <process.processType>A14</process.processType>
                                                             <period.timeInterval>
-                                                                <start>2026-06-01T00:00:00Z</start>
-                                                                <end>2026-06-30T23:59:59Z</end>
+                                                                <start>2026-06-01T00:00Z</start>
+                                                                <end>2026-06-30T23:59Z</end>
                                                             </period.timeInterval>
                                                             <TimeSeries_Series>
-                                                                <TimeSeries_Series>
-                                                                    <mRID>series-1</mRID>
-                                                                    <businessType>MIN_MAX_ENVELOPE</businessType>
-                                                                    <curveType>MIN_MAX_ENVELOPE</curveType>
-                                                                    <resourceTimeSeries.value1ScheduleType>loadReduction</resourceTimeSeries.value1ScheduleType>
-                                                                    <flowDirection.direction>CONSUMPTION</flowDirection.direction>
-                                                                    <registeredResource.mRID codingScheme="NAT">003114735</registeredResource.mRID>
-                                                                    <registeredResource.name>Test Connection Point</registeredResource.name>
-                                                                    <registeredResource.description>This is a test connection point for the min-max envelope.
-                                                                    </registeredResource.description>
-                                                                    <Series>
-                                                                        <Series>
-                                                                            <Period>
-                                                                                <Period>
-                                                                                    <resolution xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
-                                                                                    <timeInterval>
-                                                                                        <start>2026-06-01T00:00:00Z</start>
-                                                                                        <end>2026-06-30T23:59:59Z</end>
-                                                                                    </timeInterval>
-                                                                                    <Point>
-                                                                                        <Point>
-                                                                                            <position>1</position>
-                                                                                            <min_Quantity.quantity>1</min_Quantity.quantity>
-                                                                                            <min_Quantity.quality>1</min_Quantity.quality>
-                                                                                            <max_Quantity.quantity>4</max_Quantity.quantity>
-                                                                                            <max_Quantity.quality>3</max_Quantity.quality>
-                                                                                        </Point>
-                                                                                    </Point>
-                                                                                </Period>
-                                                                            </Period>
-                                                                        </Series>
-                                                                    </Series>
-                                                                </TimeSeries_Series>
+                                                                <mRID>series-1</mRID>
+                                                                <businessType>C76</businessType>
+                                                                <curveType>A01</curveType>
+                                                                <resourceTimeSeries.value1ScheduleType>loadReduction</resourceTimeSeries.value1ScheduleType>
+                                                                <flowDirection.direction>A02</flowDirection.direction>
+                                                                <registeredResource.mRID codingScheme="NAT">003114735</registeredResource.mRID>
+                                                                <registeredResource.name>Test Connection Point</registeredResource.name>
+                                                                <registeredResource.description>This is a test connection point for the min-max envelope.
+                                                                </registeredResource.description>
+                                                                <Series>
+                                                                    <Period>
+                                                                        <resolution>PT15M</resolution>
+                                                                        <timeInterval>
+                                                                            <start>2026-06-01T00:00Z</start>
+                                                                            <end>2026-06-30T23:59Z</end>
+                                                                        </timeInterval>
+                                                                        <Point>
+                                                                            <position>1</position>
+                                                                            <min_Quantity.quantity>1</min_Quantity.quantity>
+                                                                            <min_Quantity.quality>A04</min_Quantity.quality>
+                                                                            <max_Quantity.quantity>4</max_Quantity.quantity>
+                                                                            <max_Quantity.quality>A04</max_Quantity.quality>
+                                                                        </Point>
+                                                                    </Period>
+                                                                </Series>
                                                             </TimeSeries_Series>
                                                         </MarketDocument>
                                                     </RECMMOE_Envelope>
