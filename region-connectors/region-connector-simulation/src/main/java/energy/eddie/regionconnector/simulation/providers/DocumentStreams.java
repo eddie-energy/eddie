@@ -6,26 +6,39 @@ package energy.eddie.regionconnector.simulation.providers;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedMeterReading;
 import energy.eddie.regionconnector.simulation.permission.request.IntermediateValidatedHistoricalDataMarketDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+import tools.jackson.databind.ObjectMapper;
+
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 @Component
 public class DocumentStreams implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DocumentStreams.class);
     private final Sinks.Many<SimulatedMeterReading> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast()
-                                                                     .onBackpressureBuffer();
+    private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final CommonInformationModelConfiguration cimConfig;
+    private final ObjectMapper objectMapper;
 
-    public DocumentStreams(@SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig) {this.cimConfig = cimConfig;}
+    public DocumentStreams(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig,
+            @Qualifier("jacksonJsonMapper") ObjectMapper objectMapper
+    ) {
+        this.cimConfig = cimConfig;
+        this.objectMapper = objectMapper;
+    }
 
     public synchronized void publish(SimulatedMeterReading document) {
         LOGGER.info("Publishing validated historical data market document");
@@ -62,6 +75,18 @@ public class DocumentStreams implements AutoCloseable {
     @MessageStream(PermissionEnvelope.class)
     public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
         return pmdSink.asFlux();
+    }
+
+    @MessageStream(RawDataMessage.class)
+    public Flux<RawDataMessage> getRawDataMessageStream() {
+        return getSimulatedMeterReadingStream()
+                .map(data -> new RawDataMessage(
+                        data.permissionId(),
+                        data.connectionId(),
+                        data.dataNeedId(),
+                        new SimulationDataSourceInformation(),
+                        ZonedDateTime.now(ZoneOffset.UTC),
+                        objectMapper.writeValueAsString(data)));
     }
 
     public Flux<SimulatedMeterReading> getSimulatedMeterReadingStream() {

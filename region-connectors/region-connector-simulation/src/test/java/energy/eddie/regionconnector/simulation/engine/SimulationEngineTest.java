@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.Period;
 import java.time.ZoneOffset;
@@ -77,7 +78,7 @@ class SimulationEngineTest {
                 )
         );
         var metadata = new ScenarioMetadata("cid", "pid", "dnid");
-        var streams = new DocumentStreams(cimConfig);
+        var streams = new DocumentStreams(cimConfig, new ObjectMapper());
         var engine = new SimulationEngine(streams, dataNeedsService);
 
         // When
@@ -100,6 +101,43 @@ class SimulationEngineTest {
                     .verifyComplete();
         StepVerifier.create(streams.getPermissionMarketDocumentStream())
                     .expectNextCount(5)
+                    .verifyComplete();
+    }
+
+    void testRun_withValidatedHistoricalData_emitsRawData() {
+        // Given
+        when(dataNeedsService.findById("dnid")).thenReturn(
+                Optional.of(new ValidatedHistoricalDataDataNeed(
+                        new RelativeDuration(Period.ZERO,
+                                             Period.ZERO,
+                                             null),
+                        EnergyType.ELECTRICITY,
+                        Granularity.PT5M,
+                        Granularity.P1Y)));
+        var scenario = new Scenario(
+                "Test Scenario",
+                List.of(new ValidatedHistoricalDataStep(new SimulatedValidatedHistoricalData(
+                                "mid",
+                                ZonedDateTime.now(ZoneOffset.UTC),
+                                Granularity.PT15M.name(),
+                                List.of(
+                                        new Measurement(10.0,
+                                                        Measurement.MeasurementType.MEASURED)
+                                ))
+                        )
+                )
+        );
+        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
+        var streams = new DocumentStreams(cimConfig, new ObjectMapper());
+        var engine = new SimulationEngine(streams, dataNeedsService);
+
+        // When
+        engine.run(scenario, metadata);
+
+        // Then
+        StepVerifier.create(streams.getRawDataMessageStream())
+                    .expectNextCount(1)
+                    .then(streams::close)
                     .verifyComplete();
     }
 
@@ -126,7 +164,7 @@ class SimulationEngineTest {
                 )
         );
         var metadata = new ScenarioMetadata("cid", "pid", "dnid");
-        var streams = new DocumentStreams(cimConfig);
+        var streams = new DocumentStreams(cimConfig, new ObjectMapper());
         var engine = new SimulationEngine(streams, dataNeedsService);
 
         // When
