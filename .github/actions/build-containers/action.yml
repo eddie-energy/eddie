@@ -64,7 +64,7 @@ runs:
         echo IMAGE_ID: $IMAGE_ID
         echo VERSION: $VERSION
         docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
-        if [${{env.LATEST}} == 'true']; then
+        if [ "$LATEST" == 'true' ]; then
           docker push $IMAGE_ID:latest
         fi 
         docker push $IMAGE_ID:$VERSION
@@ -72,6 +72,7 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
+        LATEST: ${{ inputs.latest }}
       # language=bash
       run: |
         IMAGE_NAME=eddie
@@ -80,7 +81,7 @@ runs:
         echo IMAGE_ID: $IMAGE_ID
         echo VERSION: $VERSION
         docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
-        if [${{env.LATEST}} == 'true']; then
+        if [ "$LATEST" == 'true' ]; then
           docker push $IMAGE_ID:latest
         fi 
         docker push $IMAGE_ID:$VERSION
@@ -99,6 +100,7 @@ runs:
       env:
         VERSION: ${{ inputs.version }}
         SECRETS: ${{ inputs.secrets }}
+        LATEST: ${{ inputs.latest }}
       # language=bash
       run: |
         IMAGE_NAME=aiida
@@ -106,6 +108,6 @@ runs:
         echo $IMAGE_ID
         ./gradlew --no-daemon jib --image $IMAGE_ID:$VERSION -Djib.to.auth.password=$SECRETS
         # Second build should not make a difference since JIB caches quiet aggressively: https://github.com/GoogleContainerTools/jib/issues/802#issuecomment-417124198
-        if [${{env.LATEST}} == 'true']; then
+        if [ "$LATEST" == 'true' ]; then
           ./gradlew --no-daemon jib --image $IMAGE_ID:latest -Djib.to.auth.password=$SECRETS
         fi 
