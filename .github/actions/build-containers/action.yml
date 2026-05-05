@@ -65,6 +65,7 @@ runs:
         echo VERSION: $VERSION
         docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
         if [ "$LATEST" == 'true' ]; then
+          docker tag ${IMAGE_NAME} $IMAGE_ID:latest
           docker push $IMAGE_ID:latest
         fi 
         docker push $IMAGE_ID:$VERSION
@@ -82,6 +83,7 @@ runs:
         echo VERSION: $VERSION
         docker tag ${IMAGE_NAME} $IMAGE_ID:$VERSION
         if [ "$LATEST" == 'true' ]; then
+          docker tag ${IMAGE_NAME} $IMAGE_ID:latest
           docker push $IMAGE_ID:latest
         fi 
         docker push $IMAGE_ID:$VERSION
