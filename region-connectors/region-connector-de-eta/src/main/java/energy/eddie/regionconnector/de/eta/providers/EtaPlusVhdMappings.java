@@ -13,24 +13,6 @@ public final class EtaPlusVhdMappings {
 
     private EtaPlusVhdMappings() {}
 
-    /**
-     * Translates an ETA Plus wire {@code unit} string to its CIM XML schema unit code.
-     *
-     * <p>Throws {@link IllegalArgumentException} for unsupported units; callers catch this and skip
-     * the response with a warn log.
-     */
-    public static String translateUnit(String wireUnit) {
-        if (wireUnit == null) {
-            throw new IllegalArgumentException("null");
-        }
-        return switch (wireUnit) {
-            case "kWh", "KWH" -> "KWH";
-            case "MWh", "MWH" -> "MWH";
-            case "m³", "m3", "M3" -> "MTQ";
-            default -> throw new IllegalArgumentException(wireUnit);
-        };
-    }
-
     /** {@code true} if the wire {@code direction} is {@code "Generation"} (prosumer feed-in). */
     public static boolean isProduction(String direction) {
         return "Generation".equals(direction);

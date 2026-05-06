@@ -55,7 +55,7 @@ class IntermediateValidatedHistoricalDataEnvelope {
         var firstReading = readings.get(0);
         UnitOfMeasureTypeList unit;
         try {
-            unit = UnitOfMeasureTypeList.fromValue(EtaPlusVhdMappings.translateUnit(firstReading.unit()));
+            unit = translateUnit(firstReading.unit());
         } catch (IllegalArgumentException e) {
             LOGGER.warn("Skipping VHD for metering point {}: unsupported unit '{}'",
                     payload.meteringPointId(), firstReading.unit());
@@ -205,5 +205,17 @@ class IntermediateValidatedHistoricalDataEnvelope {
         LOGGER.info("Unknown reading status '{}' on metering point {}; omitting quality",
                 wireStatus, identifiableData.payload().meteringPointId());
         return null;
+    }
+
+    private static UnitOfMeasureTypeList translateUnit(String wireUnit) {
+        if (wireUnit == null) {
+            throw new IllegalArgumentException("null");
+        }
+        return switch (wireUnit) {
+            case "kWh", "KWH" -> UnitOfMeasureTypeList.KILOWATT_HOUR;
+            case "MWh", "MWH" -> UnitOfMeasureTypeList.MEGAWATT_HOURS;
+            case "m³", "m3", "M3" -> UnitOfMeasureTypeList.CUBIC_METRE;
+            default -> throw new IllegalArgumentException(wireUnit);
+        };
     }
 }

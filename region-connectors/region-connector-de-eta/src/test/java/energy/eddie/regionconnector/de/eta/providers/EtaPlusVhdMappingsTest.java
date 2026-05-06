@@ -3,43 +3,14 @@ package energy.eddie.regionconnector.de.eta.providers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class EtaPlusVhdMappingsTest {
-
-    @ParameterizedTest
-    @CsvSource({
-            "kWh,KWH",
-            "KWH,KWH",
-            "MWh,MWH",
-            "MWH,MWH",
-            "m³,MTQ",
-            "m3,MTQ",
-            "M3,MTQ"
-    })
-    void translateUnit_supportedWireValue_returnsCimCode(String wire, String expected) {
-        assertThat(EtaPlusVhdMappings.translateUnit(wire)).isEqualTo(expected);
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"Wh", "GJ", "MJ", "unknown", ""})
-    void translateUnit_unsupportedWireValue_throws(String wire) {
-        assertThatThrownBy(() -> EtaPlusVhdMappings.translateUnit(wire))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    @Test
-    void translateUnit_null_throws() {
-        assertThatThrownBy(() -> EtaPlusVhdMappings.translateUnit(null))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
 
     @ParameterizedTest
     @CsvSource({
