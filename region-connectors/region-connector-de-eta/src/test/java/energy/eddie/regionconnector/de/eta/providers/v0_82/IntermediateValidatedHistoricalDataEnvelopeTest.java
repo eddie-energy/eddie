@@ -5,6 +5,10 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.BusinessTypeList;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.cim.v0_82.vhd.CommodityKind;
@@ -19,18 +23,20 @@ import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import energy.eddie.regionconnector.de.eta.providers.IdentifiableValidatedHistoricalData;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class IntermediateValidatedHistoricalDataEnvelopeTest {
 
     private static final ZonedDateTime T0 = ZonedDateTime.of(2026, 4, 30, 22, 0, 0, 0, ZoneOffset.UTC);
     private static final String METERING_POINT_ID = "DE0123456789012345678901234567890";
-    private static final String ELIGIBLE_PARTY_ID = "test-eligible-party-id";
+    private static final String ELIGIBLE_PARTY_ID = "test-ep-id";
 
     private final CommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
             CodingSchemeTypeList.GERMANY_NATIONAL_CODING_SCHEME,
@@ -43,6 +49,9 @@ class IntermediateValidatedHistoricalDataEnvelopeTest {
             3, 2, true, false,
             null, null
     );
+    private final XmlMessageSerde serde = new XmlMessageSerde();
+
+    IntermediateValidatedHistoricalDataEnvelopeTest() throws SerdeInitializationException {}
 
     @Test
     void toVhd_emptyReadings_returnsEmptyList() {
@@ -97,6 +106,17 @@ class IntermediateValidatedHistoricalDataEnvelopeTest {
         var readings = List.of(reading(T0, 1.0, "Wh", "VALIDATED", "Consumption"));
 
         assertThat(build(EnergyType.ELECTRICITY, readings).toVhd()).isEmpty();
+    }
+
+    @Test
+    void toVhd_producesXsdValidV082MarketDocument() throws SerializationException {
+        var readings = List.of(reading(T0, 12.345, "kWh", "VALIDATED", "Consumption"));
+        var envelope = build(EnergyType.ELECTRICITY, readings).toVhd().getFirst();
+
+        var xml = new String(serde.serialize(envelope), StandardCharsets.UTF_8);
+
+        assertTrue(XmlValidator.validateValidatedHistoricalMarketDocument(xml),
+                "Produced XML failed XSD validation:\n" + xml);
     }
 
     @Test

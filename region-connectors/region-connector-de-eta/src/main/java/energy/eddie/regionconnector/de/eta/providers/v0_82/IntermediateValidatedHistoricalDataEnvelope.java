@@ -109,6 +109,7 @@ class IntermediateValidatedHistoricalDataEnvelope {
     ) {
         var ts = new TimeSeriesComplexType()
                 .withMRID(UUID.randomUUID().toString())
+                .withVersion("1")
                 .withBusinessType(businessTypeFor(direction))
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(commodityKindFor(energyType))
                 .withFlowDirectionDirection(flowDirectionFor(direction))
@@ -159,7 +160,8 @@ class IntermediateValidatedHistoricalDataEnvelope {
         return new SeriesPeriodComplexType()
                 .withResolution(granularity.toString())
                 .withTimeInterval(esmpInterval(start, end))
-                .withPointList(new SeriesPeriodComplexType.PointList().withPoints(points));
+                .withPointList(new SeriesPeriodComplexType.PointList().withPoints(points))
+                .withReasonList(new SeriesPeriodComplexType.ReasonList());
     }
 
     private static ESMPDateTimeIntervalComplexType esmpInterval(ZonedDateTime start, ZonedDateTime end) {
