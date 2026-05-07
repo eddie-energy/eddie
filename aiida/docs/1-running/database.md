@@ -19,21 +19,14 @@ The following values in the [.env](https://github.com/eddie-energy/eddie/blob/ma
 
 ### EMQX User
 
-The [postgres folder](https://github.com/eddie-energy/eddie/tree/main/aiida/docker/postgres) contains the Infrastructure as Code (IaC) files for AIIDA's TimescaleDB:
-
-- [create-emqx-user.sql](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/create-emqx-user.sql)
-- [replace-password-with-env.sh](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/replace-password-with-env.sh)
-
-The [create-emqx-user.sql](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/create-emqx-user.sql)
-file contains an SQL query for creating a user with the username `emqx`.
-This user will later be used by [EMQX](emqx.md) to connect to the database.
+[EMQX](emqx.md) requires a user with the username `emqx` to connect to the database.
 This user has limited privileges and is therefore only allowed to access the `data_source` table.
 
-The [replace-password-with-env.sh](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/replace-password-with-env.sh)
-replaces the password of the `emqx` user with the value of the `EMQX_DATABASE_PASSWORD` environment variable.
-
-Both files are mounted in the
-`timescaledb` container in the [compose.yml](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/compose.yml).
+To create such a user on startup, 
+[create-emqx-user.sh](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/postgres/create-emqx-user.sh)
+is mounted as an init script in the `timescaledb` container in the [compose.yml](https://github.com/eddie-energy/eddie/blob/main/aiida/docker/compose.yml).
+This script create the user with username `emqx` with the value of the `EMQX_DATABASE_PASSWORD` environment variable as its password.
+If the variable is not set, the password will be blank.
 
 ## Data Model
 
