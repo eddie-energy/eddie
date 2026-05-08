@@ -105,10 +105,11 @@ public class EtaPlusApiClient {
         List<EtaPlusMeteredData.MeterReading> domainReadings = readings.stream()
                 .filter(dto -> dto.timestamp() != null)
                 .map(dto -> new EtaPlusMeteredData.MeterReading(
-                        dto.timestamp().toString(),
+                        dto.timestamp().toZonedDateTime(),
                         dto.value(),
                         dto.unit(),
-                        dto.status()
+                        dto.status(),
+                        dto.direction()
                 ))
                 .toList();
 
@@ -185,6 +186,7 @@ public class EtaPlusApiClient {
             OffsetDateTime timestamp,
             Double value,
             String unit,
-            String status
+            String status,
+            String direction
     ) {}
 }

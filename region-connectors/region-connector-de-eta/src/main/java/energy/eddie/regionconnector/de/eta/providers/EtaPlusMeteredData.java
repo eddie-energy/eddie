@@ -1,17 +1,16 @@
 package energy.eddie.regionconnector.de.eta.providers;
 
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
- * Represents metered data from the ETA Plus API.
- * This is a placeholder structure that should be replaced with the actual
- * ETA Plus API response format once the API specification is available.
+ * Metered data fetched from the ETA Plus historical-readings endpoint for a single metering point.
  *
  * @param meteringPointId the metering point identifier
- * @param startDate       the start date of the metering period
- * @param endDate         the end date of the metering period
- * @param readings        the list of meter readings
+ * @param startDate       inclusive lower bound of the request window
+ * @param endDate         inclusive upper bound of the request window
+ * @param readings        readings returned for the window
  */
 public record EtaPlusMeteredData(
         String meteringPointId,
@@ -21,18 +20,19 @@ public record EtaPlusMeteredData(
 ) {
 
     /**
-     * Individual meter reading within a time series.
+     * One reading element from the ETA Plus historical-readings response.
      *
-     * @param timestamp the timestamp of the reading (ISO 8601)
-     * @param value     the measured value
-     * @param unit      the unit of measurement (e.g., kWh, Wh)
-     * @param quality   the quality indicator of the reading
+     * @param timestamp reading timestamp (UTC, per backend contract)
+     * @param value     measured value
+     * @param unit      wire unit string (e.g. {@code "kWh"}, {@code "m³"}); constant within a response
+     * @param quality   wire status string; backend always emits {@code "VALIDATED"} on this endpoint
+     * @param direction wire direction string; backend always emits {@code "Consumption"} or {@code "Generation"}
      */
     public record MeterReading(
-            String timestamp,
+            ZonedDateTime timestamp,
             Double value,
             String unit,
-            String quality
+            String quality,
+            String direction
     ) {}
 }
-

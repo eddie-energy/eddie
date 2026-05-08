@@ -104,10 +104,11 @@ class AcceptedHandlerFlowTest {
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(mockRequest));
 
         EtaPlusMeteredData.MeterReading reading = new EtaPlusMeteredData.MeterReading(
-                end.atStartOfDay().toString(),
+                end.atStartOfDay(EtaRegionConnectorMetadata.DE_ZONE_ID),
                 123.45,
                 "kWh",
-                "VALIDATED"
+                "VALIDATED",
+                "Consumption"
         );
 
         EtaPlusMeteredData mockApiData = new EtaPlusMeteredData(

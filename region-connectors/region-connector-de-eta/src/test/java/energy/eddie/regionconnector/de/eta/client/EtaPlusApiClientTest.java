@@ -100,7 +100,8 @@ class EtaPlusApiClientTest {
                     "timestamp": "2024-06-01T12:00:00Z",
                     "value": 42.5,
                     "unit": "kWh",
-                    "status": "VALIDATED"
+                    "status": "VALIDATED",
+                    "direction": "Consumption"
                   }
                 ]
                 """;
@@ -121,6 +122,7 @@ class EtaPlusApiClientTest {
                     assertThat(reading.value()).isEqualTo(42.5);
                     assertThat(reading.unit()).isEqualTo("kWh");
                     assertThat(reading.quality()).isEqualTo("VALIDATED");
+                    assertThat(reading.direction()).isEqualTo("Consumption");
                 })
                 .verifyComplete();
     }
