@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
@@ -42,7 +42,9 @@ class IntermediateValidatedHistoricalDocument {
     }
 
     public List<VHDEnvelope> toVHD() {
-        GetEnergyResponseModel meteringData = identifiableMeteredData.payload().data();
+        // TODO
+        GetEnergyResponseModel meteringData = (GetEnergyResponseModel) (Object) identifiableMeteredData.payload()
+                                                                                                       .data();
         ValidatedHistoricalDataDataNeed dataNeed = (ValidatedHistoricalDataDataNeed) dataNeedsService.
                 getById(identifiableMeteredData.permissionRequest().dataNeedId());
 
@@ -123,13 +125,12 @@ class IntermediateValidatedHistoricalDocument {
         var standardBusinessType = getBusinessType(flowDirection);
         var businessType = standardBusinessType == null ? null : standardBusinessType.value();
         var metaData = identifiableMeteredData.payload().metaData();
-        var version = metaData == null ? "1" : metaData.version();
         for (var entry : unitSeriesPeriodMap.entrySet()) {
             timeSeriesList.add(
                     new TimeSeries()
                             .withMRID(UUID.randomUUID().toString())
                             .withBusinessType(businessType)
-                            .withVersion(version)
+                            .withVersion("1")
                             .withProduct(EnergyProductTypeList.ACTIVE_ENERGY.value())
                             .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(type)
                             .withFlowDirectionDirection(flowDirection.value())

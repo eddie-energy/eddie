@@ -1,6 +1,6 @@
 ## Variable for requests
 @granularity = VH_kwartier_uur
-@ean = 541441010000000001
+@ean = 541441010000000100
 @start = 2024-12-01T00:00:00Z
 @end = 2024-12-19T23:59:59Z
 
@@ -12,7 +12,7 @@
   console.log(shortendUUid)
   client.global.set("referenceNumber", shortendUUid)
 %}
-POST {{baseUrl}}//api/v2.0/shortUrlIdentifier
+POST {{baseUrl}}/v3/api/shortUrlIdentifier
 Authorization: Bearer {{$auth.token("fluvius")}}
 Content-Type: application/json
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
@@ -28,7 +28,7 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
       "dataPeriodTo": "{{end}}"
     }
   ],
-  "numberOfEans": "1",
+  "numberOfEans": 1,
   "returnUrlSuccess": null,
   "returnUrlFailed": null,
   "sso": true,
@@ -39,29 +39,29 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 # The eanNumber is assembled, based on the required services, for more information checkout the docs
 # EanNumber Assembly:
 # 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
-POST {{baseUrl}}/api/v2.0/Mandate/mock
+POST {{baseUrl}}/v3/api/mandate/mock
 Authorization: Bearer {{$auth.token("fluvius")}}
 Content-Type: application/json
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 {
   "referenceNumber": "{{referenceNumber}}",
-  "eanNumber": "{{ean}}",
+  "ean": "{{ean}}",
   "dataServiceType": "{{granularity}}",
   "dataPeriodFrom": "{{start}}",
   "dataPeriodTo": "{{end}}",
   "status": "Approved",
-  "mandateExpirationDate": "2024-12-29T23:00:00Z",
+  "mandateExpirationDate": "{{end}}",
   "renewalStatus": "ToBeRenewed"
 }
 
 #### Request specific mandates
-GET {{baseUrl}}/api/v2.0/Mandate?ReferenceNumber={{referenceNumber}}
+GET {{baseUrl}}/v3/api/Mandate?referenceNumber={{referenceNumber}}
 Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 #### Request all mandates
-GET {{baseUrl}}/api/v2.0/Mandate
+GET {{baseUrl}}/v3/api/Mandate
 Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
@@ -71,9 +71,9 @@ Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
 ### Request energy consumption data from mandate
-GET {{baseUrl}}/api/v2.0/Mandate/energy?
+GET {{baseUrl}}/v3/api/Mandate/energy?
     referenceNumber={{referenceNumber}}&
-    eanNumber={{ean}}&
+    ean={{ean}}&
     DataServiceType={{granularity}}&
     PeriodType=readTime&
     from={{start}}&
@@ -81,3 +81,8 @@ GET {{baseUrl}}/api/v2.0/Mandate/energy?
 Authorization: Bearer {{$auth.token("fluvius")}}
 Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 
+
+### GET OpenAPI spec
+GET https://apihub.fluvius.be/esco-sbx/v3/swagger/fluvius_energy_api/swagger.json
+Authorization: Bearer {{$auth.token("fluvius")}}
+Ocp-Apim-Subscription-Key: {{subscriptionKey}}

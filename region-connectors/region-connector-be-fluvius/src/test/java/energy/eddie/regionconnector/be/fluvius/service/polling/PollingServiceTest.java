@@ -7,7 +7,8 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApiClient;
-import energy.eddie.regionconnector.be.fluvius.client.model.*;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.*;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
@@ -26,6 +27,7 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -119,7 +121,7 @@ class PollingServiceTest {
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(null, null, null)
+                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -147,7 +149,7 @@ class PollingServiceTest {
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(null, null, null)
+                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -170,7 +172,7 @@ class PollingServiceTest {
                 .thenReturn(Mono.error(error))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(null, null, null)
+                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -192,7 +194,7 @@ class PollingServiceTest {
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.DAILY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(null, null, null)
+                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -235,7 +237,9 @@ class PollingServiceTest {
                         Mono.just(
                                 new GetEnergyResponseModelApiDataResponse(
                                         null,
-                                        new GetEnergyResponseModel(null, null, null)
+                                        new GetEnergyResponseModel(new MeteringOnMeter(null,
+                                                                                       EnergyType.ELECTRICITY,
+                                                                                       null))
                                 )
                         )
                 );
@@ -246,7 +250,7 @@ class PollingServiceTest {
         // Then
         verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(null),
-                new GetEnergyResponseModel(null, null, null)
+                new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
         ));
     }
 
@@ -319,16 +323,16 @@ class PollingServiceTest {
     void testForcePoll_pollsHistoricalValidatedData() {
         // Given
         var lastMeterReadingDate = ZonedDateTime.of(2025, 3, 31, 0, 0, 0, 0, ZoneOffset.UTC);
-        var from = LocalDate.of(2024, 2, 1);
-        var to = LocalDate.of(2024, 3, 1);
+        var from = LocalDate.of(2024, Month.FEBRUARY, 1);
+        var to = LocalDate.of(2024, Month.MARCH, 1);
         var request = DefaultFluviusPermissionRequestBuilder.create()
                                                             .granularity(Granularity.PT15M)
                                                             .addMeterReadings(new MeterReading("pid",
                                                                                                "ean",
                                                                                                lastMeterReadingDate))
                                                             .dataNeedId("did")
-                                                            .start(LocalDate.of(2025, 1, 1))
-                                                            .start(LocalDate.of(2025, 4, 1))
+                                                            .start(LocalDate.of(2025, Month.JANUARY, 1))
+                                                            .start(LocalDate.of(2025, Month.APRIL, 1))
                                                             .build();
         when(apiClient.energy(any(), any(), any(), any(), any()))
                 .thenReturn(Mono.just(createSampleGetEnergyResponseModels()));
@@ -364,34 +368,22 @@ class PollingServiceTest {
 
     private GetEnergyResponseModelApiDataResponse createSampleGetEnergyResponseModels() {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
+        var total = new Total(5.0, Unit.KWH, ValidationState.READ, null);
+        var reading = new Reading(total, null, null, null, null, null);
+        var measurement = new Measurement(reading, null, null, null);
+        var slice = new MeasurementSlice(now.minusMinutes(15), now, List.of(measurement));
+        var physicalMeters = List.of(slice);
         return new GetEnergyResponseModelApiDataResponse(
                 null,
-                new GetEnergyResponseModel(null, null, List.of(
-                        new ElectricityMeterResponseModel(
-                                1,
+                new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, List.of(
+                        new PhysicalMeter(
+                                "1",
                                 "meterId",
-                                List.of(
-                                        new EDailyEnergyItemResponseModel(
-                                                now.minusMinutes(15),
-                                                now,
-                                                List.of(
-                                                        new EMeasurementItemResponseModel(
-                                                                "kwh",
-                                                                null,
-                                                                null,
-                                                                null,
-                                                                null,
-                                                                5.0,
-                                                                null,
-                                                                null,
-                                                                null
-                                                        )
-                                                )
-                                        )
-                                ),
-                                null
+                                physicalMeters,
+                                null,
+                                physicalMeters
                         )
-                ))
+                )))
         );
     }
 }

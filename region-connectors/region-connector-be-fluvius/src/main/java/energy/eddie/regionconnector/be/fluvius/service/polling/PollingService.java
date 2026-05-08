@@ -6,7 +6,7 @@ package energy.eddie.regionconnector.be.fluvius.service.polling;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApiClient;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
@@ -112,17 +112,21 @@ public class PollingService implements CommonPollingService<FluviusPermissionReq
                                     .doOnSuccess(data -> LOGGER.atDebug()
                                                                .addArgument(permissionId)
                                                                .log("Got response from fluvius for permission request {}"))
-                                    .filter(response1 -> isDataPresent(response1, permissionId));
+                                    .filter(response1 -> isDataPresent(response1, permissionRequest));
             commonflux = Flux.merge(commonflux, response);
         }
         return commonflux;
     }
 
-    private boolean isDataPresent(GetEnergyResponseModelApiDataResponse response, String permissionId) {
-        if (response.data().electricityMeters() != null) {
+    private boolean isDataPresent(
+            GetEnergyResponseModelApiDataResponse response,
+            FluviusPermissionRequest permissionRequest
+    ) {
+        var headpoint = response.data().headpoint();
+        if (headpoint != null && headpoint.dataPresentFor(permissionRequest.granularity())) {
             return true;
         }
-        LOGGER.info("Response for energy data was empty, for permission request {}", permissionId);
+        LOGGER.info("Response for energy data was empty, for permission request {}", permissionRequest.permissionId());
         return false;
     }
 

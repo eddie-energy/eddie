@@ -1,10 +1,16 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.client;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.be.fluvius.client.model.*;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock.CreateMandateRequestModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock.CreateMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionRequestDataServiceModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionRequestModel;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthRequestException;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthTokenService;
@@ -109,7 +115,7 @@ public class FluviusApiClient implements FluviusApi {
 
         return webClient.get()
                         .uri(uriBuilder -> uriBuilder
-                                .path("/api/v2.0/Mandate/energy")
+                                .path("/v3/api/Mandate/energy")
                                 .queryParam("referenceNumber", transformPermissionId(permissionId))
                                 .queryParam("eanNumber", eanNumber)
                                 .queryParam("DataServiceType", dataServiceType.value())
@@ -162,7 +168,7 @@ public class FluviusApiClient implements FluviusApi {
                 null
         );
         return webClient.post()
-                        .uri("/api/v2.0/shortUrlIdentifier")
+                        .uri("/v3/api/shortUrlIdentifier")
                         .headers(h -> h.setBearerAuth(token))
                         .header(OCP_APIM_SUBSCRIPTION_KEY,
                                 fluviusConfiguration.subscriptionKey())
@@ -179,7 +185,7 @@ public class FluviusApiClient implements FluviusApi {
             String token
     ) {
         return webClient.get()
-                        .uri(u -> u.path("/api/v2.0/Mandate")
+                        .uri(u -> u.path("/v3/api/Mandate")
                                    .queryParam("ReferenceNumber", transformPermissionId(permissionId))
                                    .build())
                         .headers(h -> h.setBearerAuth(token))
@@ -224,7 +230,7 @@ public class FluviusApiClient implements FluviusApi {
                 "ToBeRenewed"
         );
         return webClient.post()
-                        .uri("/api/v2.0/Mandate/mock")
+                        .uri("/v3/api/Mandate/mock")
                         .headers(h -> h.setBearerAuth(token))
                         .header(OCP_APIM_SUBSCRIPTION_KEY, fluviusConfiguration.subscriptionKey())
                         .contentType(MediaType.APPLICATION_JSON)

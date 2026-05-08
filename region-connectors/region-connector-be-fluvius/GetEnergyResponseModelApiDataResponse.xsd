@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<xs:schema
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        elementFormDefault="qualified">
+
+    <!-- ================================================= -->
+    <!-- Root                                              -->
+    <!-- ================================================= -->
+
+    <xs:element name="GetEnergyResponseApiDataResponse"
+                type="GetEnergyResponseApiDataResponseType"/>
+
+    <xs:complexType name="GetEnergyResponseApiDataResponseType">
+        <xs:sequence>
+            <xs:element name="_meta" type="ResponseMetadataType" minOccurs="0"/>
+            <xs:element name="data" type="GetEnergyResponseType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Metadata                                          -->
+    <!-- ================================================= -->
+
+    <xs:complexType name="ResponseMetadataType">
+        <xs:sequence>
+            <xs:element name="fetchTime" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Main payload                                      -->
+    <!-- ================================================= -->
+
+    <xs:complexType name="GetEnergyResponseType">
+        <xs:sequence>
+            <xs:element name="headpoint" type="HeadpointType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Discriminator enums                               -->
+    <!-- ================================================= -->
+
+    <xs:simpleType name="HeadpointDiscriminatorEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="metering-on-headpoint"/>
+            <xs:enumeration value="metering-on-headpoint-and-meter"/>
+            <xs:enumeration value="metering-on-meter"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="SubHeadpointDiscriminatorEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="submetering-auxiliary"/>
+            <xs:enumeration value="submetering-offtake"/>
+            <xs:enumeration value="submetering-production"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ================================================= -->
+    <!-- Headpoint                                         -->
+    <!-- ================================================= -->
+
+    <xs:complexType name="HeadpointType">
+        <xs:sequence>
+            <!-- discriminator -->
+            <xs:element name="type" type="HeadpointDiscriminatorEnum"/>
+
+            <xs:element name="ean" type="xs:string" minOccurs="0"/>
+            <xs:element name="energyType" type="EnergyTypeEnum"/>
+
+            <xs:element name="physicalMeters" type="PhysicalMeterListType" minOccurs="0"/>
+            <xs:element name="dailyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="hourlyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="quarterHourlyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="subHeadpoints" type="SubHeadpointListType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Enums                                             -->
+    <!-- ================================================= -->
+
+    <xs:simpleType name="EnergyTypeEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="E"/>
+            <xs:enumeration value="G"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- ================================================= -->
+    <!-- Physical meters                                   -->
+    <!-- ================================================= -->
+
+    <xs:complexType name="PhysicalMeterListType">
+        <xs:sequence>
+            <xs:element name="physicalMeter"
+                        type="PhysicalMeterType"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="PhysicalMeterType">
+        <xs:sequence>
+            <xs:element name="seqNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="meterID" type="xs:string" minOccurs="0"/>
+            <xs:element name="dailyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="hourlyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="quarterHourlyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Measurements                                      -->
+    <!-- ================================================= -->
+
+    <xs:complexType name="MeasurementTimeSliceListType">
+        <xs:sequence>
+            <xs:element name="timeSlice"
+                        type="MeasurementTimeSliceType"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MeasurementTimeSliceType">
+        <xs:sequence>
+            <xs:element name="start" type="xs:dateTime"/>
+            <xs:element name="end" type="xs:dateTime"/>
+            <xs:element name="measurements" type="MeasurementDirectionListType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MeasurementDirectionListType">
+        <xs:sequence>
+            <xs:element name="measurement"
+                        type="MeasurementDirectionType"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MeasurementDirectionType">
+        <xs:sequence>
+            <xs:element name="offtake" type="MeasurementValueSetType" minOccurs="0"/>
+            <xs:element name="injection" type="MeasurementValueSetType" minOccurs="0"/>
+            <xs:element name="production" type="MeasurementValueSetType" minOccurs="0"/>
+            <xs:element name="auxiliary" type="MeasurementValueSetType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MeasurementValueSetType">
+        <xs:sequence>
+            <xs:element name="total" type="MeasurementValueType" minOccurs="0"/>
+            <xs:element name="day" type="MeasurementValueType" minOccurs="0"/>
+            <xs:element name="night" type="MeasurementValueType" minOccurs="0"/>
+            <xs:element name="reactive" type="MeasurementValueType" minOccurs="0"/>
+            <xs:element name="inductive" type="MeasurementValueType" minOccurs="0"/>
+            <xs:element name="capacitive" type="MeasurementValueType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="MeasurementValueType">
+        <xs:sequence>
+            <xs:element name="value" type="xs:double" minOccurs="0"/>
+            <xs:element name="unit" type="UnitEnum"/>
+            <xs:element name="validationState" type="ValidationStateEnum" minOccurs="0"/>
+            <xs:element name="gasConversionFactor" type="GasConversionFactorEnum" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Sub-headpoints                                    -->
+    <!-- ================================================= -->
+
+    <xs:complexType name="SubHeadpointListType">
+        <xs:sequence>
+            <xs:element name="subHeadpoint"
+                        type="SubHeadpointType"
+                        maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="SubHeadpointType">
+        <xs:sequence>
+            <!-- discriminator -->
+            <xs:element name="type" type="SubHeadpointDiscriminatorEnum"/>
+
+            <xs:element name="ean" type="xs:string" minOccurs="0"/>
+            <xs:element name="seqNumber" type="xs:string" minOccurs="0"/>
+            <xs:element name="vregId" type="xs:string" minOccurs="0"/>
+            <xs:element name="installationType" type="xs:string" minOccurs="0"/>
+
+            <xs:element name="dailyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="hourlyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+            <xs:element name="quarterHourlyEnergy" type="MeasurementTimeSliceListType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!-- ================================================= -->
+    <!-- Supporting enums                                  -->
+    <!-- ================================================= -->
+
+    <xs:simpleType name="UnitEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="kWh"/>
+            <xs:enumeration value="kVArh"/>
+            <xs:enumeration value="kVA"/>
+            <xs:enumeration value="kW"/>
+            <xs:enumeration value="m3"/>
+            <xs:enumeration value="?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="ValidationStateEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="READ"/>
+            <xs:enumeration value="EST"/>
+            <xs:enumeration value="VAL"/>
+            <xs:enumeration value="NVAL"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="GasConversionFactorEnum">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="P"/>
+            <xs:enumeration value="D"/>
+            <xs:enumeration value="C"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

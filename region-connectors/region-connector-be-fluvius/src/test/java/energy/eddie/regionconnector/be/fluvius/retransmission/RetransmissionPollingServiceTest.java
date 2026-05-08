@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.retransmission;
@@ -8,9 +8,11 @@ import energy.eddie.api.agnostic.retransmission.result.DataNotAvailable;
 import energy.eddie.api.agnostic.retransmission.result.Failure;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
 import energy.eddie.api.agnostic.retransmission.result.Success;
-import energy.eddie.regionconnector.be.fluvius.client.model.ApiMetaData;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.MeteringOnMeter;
 import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -97,7 +99,7 @@ class RetransmissionPollingServiceTest {
                 .thenReturn(Flux.just(
                         new GetEnergyResponseModelApiDataResponse(
                                 new ApiMetaData(null),
-                                new GetEnergyResponseModel(null, null, null)
+                                new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
                         )
                 ));
         // When

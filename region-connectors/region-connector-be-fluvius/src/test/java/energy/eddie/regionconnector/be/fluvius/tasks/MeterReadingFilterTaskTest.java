@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.tasks;
@@ -8,10 +8,9 @@ import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.be.fluvius.client.model.ElectricityMeterResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.GasMeterResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.MeteringOnMeter;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,14 +21,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@SuppressWarnings("DataFlowIssue")
 @ExtendWith(MockitoExtension.class)
 class MeterReadingFilterTaskTest {
     @Mock
@@ -39,16 +35,22 @@ class MeterReadingFilterTaskTest {
 
     @ParameterizedTest
     @MethodSource("apply_filterData_forEnergyTypeDataNeed")
-    void apply_filterData_forEnergyTypeDataNeed(EnergyType energyType, int gasCount, int electricityCount) {
+    void apply_filterData_forEnergyTypeDataNeed(
+            EnergyType energyType,
+            energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType fluviusEnergyType
+    ) {
         // Given
         var pr = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .dataNeedId("dnid")
                 .build();
         var payload = new GetEnergyResponseModel(
-                null,
-                List.of(new GasMeterResponseModel(null, null, null, null)),
-                List.of(new ElectricityMeterResponseModel(null, null, null, null))
+                new MeteringOnMeter(
+                        "ean",
+                        fluviusEnergyType,
+                        null
+                )
+
         );
         var data = new GetEnergyResponseModelApiDataResponse(null, payload);
         var id = new IdentifiableMeteringData(pr, data);
@@ -61,20 +63,18 @@ class MeterReadingFilterTaskTest {
         when(dataNeedsService.getById("dnid")).thenReturn(dn);
 
         // When
-        var res = task.apply(id);
+        var res = task.test(id);
 
         // Then
-        assertAll(
-                () -> assertEquals(pr, res.permissionRequest()),
-                () -> assertEquals(electricityCount, res.payload().data().electricityMeters().size()),
-                () -> assertEquals(gasCount, res.payload().data().gasMeters().size())
-        );
+        assertTrue(res);
     }
 
     private static Stream<Arguments> apply_filterData_forEnergyTypeDataNeed() {
         return Stream.of(
-                Arguments.of(EnergyType.ELECTRICITY, 0, 1),
-                Arguments.of(EnergyType.NATURAL_GAS, 1, 0)
+                Arguments.of(EnergyType.ELECTRICITY,
+                             energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY),
+                Arguments.of(EnergyType.NATURAL_GAS,
+                             energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.GAS)
         );
     }
 }

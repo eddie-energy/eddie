@@ -11,7 +11,12 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.*;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock.CreateMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
@@ -96,7 +101,7 @@ class SandboxFluviusApiClientTest {
         when(api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(null, null, null)
+                        new GetEnergyResponseModel(null)
                 )));
 
         // When
