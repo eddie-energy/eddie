@@ -8,6 +8,7 @@ import de.ponton.xp.adapter.api.OutboundMessageStatusUpdateHandler;
 import de.ponton.xp.adapter.api.TransmissionException;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EdaECMPList;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.*;

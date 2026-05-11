@@ -5,10 +5,13 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10;
 
 import at.ebutilities.schemata.customerprocesses.ecmplist._01p10.ECMPList;
 import at.ebutilities.schemata.customerprocesses.ecmplist._01p10.MPListData;
-import energy.eddie.regionconnector.at.eda.dto.EdaECMPList;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EdaECMPList;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EnergyCommunityMeteringPointData;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public record ECMPList01p10(ECMPList ecmpList) implements EdaECMPList {
@@ -43,6 +46,34 @@ public record ECMPList01p10(ECMPList ecmpList) implements EdaECMPList {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public String senderMessageAddress() {
+        return ecmpList.getMarketParticipantDirectory().getRoutingHeader().getSender().getMessageAddress();
+    }
+
+    @Override
+    public String receiverMessageAddress() {
+        return ecmpList.getMarketParticipantDirectory().getRoutingHeader().getReceiver().getMessageAddress();
+    }
+
+    @Override
+    public ZonedDateTime documentCreationDateTime() {
+        return ecmpList.getMarketParticipantDirectory()
+                       .getRoutingHeader()
+                       .getDocumentCreationDateTime()
+                       .toGregorianCalendar()
+                       .toZonedDateTime();
+    }
+
+    @Override
+    public List<EnergyCommunityMeteringPointData> mpListData() {
+        List<EnergyCommunityMeteringPointData> list = new ArrayList<>();
+        for (MPListData mpListData : ecmpList.getProcessDirectory().getMPListData()) {
+            list.add(new EnergyCommunityMeteringPointData01p10(mpListData));
+        }
+        return list;
     }
 
     @Override

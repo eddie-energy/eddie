@@ -3,7 +3,7 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
-import energy.eddie.regionconnector.at.eda.dto.EdaECMPList;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EdaECMPList;
 
 public interface ECMPListHandler {
     InboundMessageResult handle(EdaECMPList ecmpList);

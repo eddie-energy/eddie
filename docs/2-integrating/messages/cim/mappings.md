@@ -12,6 +12,8 @@ The schemas used by EDA can be found at [ebutilities.at](https://www.ebutilities
 
 ![Mapping for Accounting Point Data](./images/eda-ap.png "Accounting point data market document mapping")
 
+![Mapping for Energy Sharing Reference Data](images/eda-esrdmd.jpg "Energy sharing reference data market document mapping")
+
 ## BE Fluvius Mapping
 
 This is the mapping for the [Fluvius Region Connector](../../../1-running/region-connectors/region-connector-be-fluvius.md).
