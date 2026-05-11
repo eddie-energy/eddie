@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie;
@@ -26,14 +26,12 @@ import static energy.eddie.spring.RegionConnectorRegistrationBeanPostProcessor.E
  * documentation for the European MasterData.
  */
 public class OpenApiDocs {
-    private static final String HOST = "localhost";
-
     @Bean
     @Primary
     public SwaggerUiConfigProperties swaggerUiConfig(
             SwaggerUiConfigProperties config,
-            @Value("${server.port}") int serverPort,
-            @Value("${eddie.management.server.port}") int managementPort,
+            @Value("${eddie.public.url}") String publicURL,
+            @Value("${eddie.management.url}") String managementURL,
             @Qualifier(ENABLED_REGION_CONNECTOR_BEAN_NAME) List<String> enabledRegionConnectors,
             @Qualifier(SWAGGER_ENABLED_OUTBOUND_CONNECTOR_BEAN_NAME) List<String> enabledOutboundConnectors
     ) {
@@ -42,10 +40,7 @@ public class OpenApiDocs {
                 .map(name -> {
                     // CVE-2024-22243 can be ignored, as we are not parsing an externally provided URL
                     String docUrl = UriComponentsBuilder
-                            .newInstance()
-                            .scheme("http")
-                            .host(HOST)
-                            .port(serverPort)
+                            .fromUriString(publicURL)
                             .pathSegment(ALL_REGION_CONNECTORS_BASE_URL_PATH)
                             .pathSegment(name)
                             .path(SWAGGER_DOC_PATH)
@@ -61,10 +56,7 @@ public class OpenApiDocs {
                 .map(name -> {
                     // CVE-2024-22243 can be ignored, as we are not parsing an externally provided URL
                     String docUrl = UriComponentsBuilder
-                            .newInstance()
-                            .scheme("http")
-                            .host(HOST)
-                            .port(managementPort)
+                            .fromUriString(managementURL)
                             .pathSegment("outbound-connectors")
                             .pathSegment(name)
                             .path(SWAGGER_DOC_PATH)
@@ -75,18 +67,15 @@ public class OpenApiDocs {
                                                                             name.toUpperCase(Locale.ENGLISH));
                 })
                 .collect(Collectors.toSet());
-        swaggerUrls.add(getEuropeanMasterDataSwaggerUrl(serverPort));
+        swaggerUrls.add(getEuropeanMasterDataSwaggerUrl(publicURL));
         swaggerUrls.addAll(outboundSwaggerUrls);
         config.setUrls(swaggerUrls);
         return config;
     }
 
-    private static AbstractSwaggerUiConfigProperties.SwaggerUrl getEuropeanMasterDataSwaggerUrl(int serverPort) {
+    private static AbstractSwaggerUiConfigProperties.SwaggerUrl getEuropeanMasterDataSwaggerUrl(String host) {
         var url = UriComponentsBuilder
-                .newInstance()
-                .scheme("http")
-                .host(HOST)
-                .port(serverPort)
+                .fromUriString(host)
                 .pathSegment("european-masterdata")
                 .path(SWAGGER_DOC_PATH)
                 .toUriString();
