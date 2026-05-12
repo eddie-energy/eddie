@@ -44,6 +44,10 @@ public class DePermissionRequestBuilder {
     private String message;
     @Nullable
     private String cause;
+    @Nullable
+    private String accessToken;
+    @Nullable
+    private String refreshToken;
 
     public DePermissionRequestBuilder permissionId(String permissionId) {
         this.permissionId = permissionId;
@@ -110,6 +114,16 @@ public class DePermissionRequestBuilder {
         return this;
     }
 
+    public DePermissionRequestBuilder accessToken(String accessToken) {
+        this.accessToken = accessToken;
+        return this;
+    }
+
+    public DePermissionRequestBuilder refreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+        return this;
+    }
+
     public DePermissionRequest build() {
         return new DePermissionRequest(
                 permissionId,
@@ -124,7 +138,9 @@ public class DePermissionRequestBuilder {
                 dataNeedId,
                 latestMeterReadingEndDate,
                 message,
-                cause
+                cause,
+                accessToken,
+                refreshToken
         );
     }
 }

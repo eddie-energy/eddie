@@ -70,6 +70,14 @@ public class DePermissionRequest implements MeterReadingPermissionRequest {
     @Nullable
     private final String cause;
 
+    @Nullable
+    @Column(name = "access_token", columnDefinition = "text")
+    private final String accessToken;
+
+    @Nullable
+    @Column(name = "refresh_token", columnDefinition = "text")
+    private final String refreshToken;
+
     @SuppressWarnings("java:S107") // Constructor with many parameters is needed for mapping
     public DePermissionRequest(
             String permissionId,
@@ -84,7 +92,9 @@ public class DePermissionRequest implements MeterReadingPermissionRequest {
             String dataNeedId,
             @Nullable LocalDate latestMeterReadingEndDate,
             @Nullable String message,
-            @Nullable String cause
+            @Nullable String cause,
+            @Nullable String accessToken,
+            @Nullable String refreshToken
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
@@ -99,6 +109,8 @@ public class DePermissionRequest implements MeterReadingPermissionRequest {
         this.latestMeterReadingEndDate = latestMeterReadingEndDate;
         this.message = message;
         this.cause = cause;
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 
     protected DePermissionRequest() {
@@ -115,6 +127,8 @@ public class DePermissionRequest implements MeterReadingPermissionRequest {
         this.latestMeterReadingEndDate = null;
         this.message = null;
         this.cause = null;
+        this.accessToken = null;
+        this.refreshToken = null;
     }
 
     @Override
@@ -175,6 +189,14 @@ public class DePermissionRequest implements MeterReadingPermissionRequest {
 
     public Optional<String> cause() {
         return Optional.ofNullable(cause);
+    }
+
+    public Optional<String> accessToken() {
+        return Optional.ofNullable(accessToken);
+    }
+
+    public Optional<String> refreshToken() {
+        return Optional.ofNullable(refreshToken);
     }
 
     @Override

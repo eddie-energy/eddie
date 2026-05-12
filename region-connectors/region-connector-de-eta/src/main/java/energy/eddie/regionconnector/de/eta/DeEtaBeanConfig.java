@@ -14,6 +14,7 @@ import energy.eddie.regionconnector.de.eta.permission.request.DePermissionReques
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.de.eta.service.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -21,10 +22,13 @@ import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.regionconnector.shared.services.CommonFutureDataService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.function.Supplier;
@@ -95,6 +99,24 @@ public class DeEtaBeanConfig {
                 EtaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                 objectMapper,
                 stream.validatedHistoricalData()
+        );
+    }
+
+    @Bean
+    public CommonFutureDataService<DePermissionRequest> commonFutureDataService(
+            PollingService pollingService,
+            DePermissionRequestRepository repository,
+            @Value("${region-connector.de.eta.polling:0 0 17 * * *}") String cronExpr,
+            TaskScheduler taskScheduler,
+            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+    ) {
+        return new CommonFutureDataService<>(
+                pollingService,
+                repository,
+                cronExpr,
+                EtaRegionConnectorMetadata.getInstance(),
+                taskScheduler,
+                dataNeedCalculationService
         );
     }
 
