@@ -27,16 +27,16 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     participationFactor: { attribute: "participation-factor" },
     _isSubmitDisabled: { type: Boolean },
     _dataNeedIds: { type: Array },
-    _createdCount: { type: Number },
-    _sentCount: { type: Number },
+    _created: { type: Set },
+    _sent: { type: Set },
     _cmRequestIds: { type: Array },
   };
 
   constructor() {
     super();
     this._isSubmitDisabled = false;
-    this._createdCount = 0;
-    this._sentCount = 0;
+    this._created = new Set();
+    this._sent = new Set();
     this._cmRequestIds = [];
   }
 
@@ -47,19 +47,21 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       const {
         additionalInformation: { cmRequestId },
         status,
+        permissionId,
       } = event.detail;
 
       if (status === "CREATED") {
-        this._createdCount += 1;
+        this._created.add(permissionId);
       }
 
       if (status === "SENT_TO_PERMISSION_ADMINISTRATOR") {
-        this._sentCount += 1;
+        this._sent.add(permissionId);
       }
 
       if (cmRequestId && !this._cmRequestIds.includes(cmRequestId)) {
         this._cmRequestIds.push(cmRequestId);
       }
+      this.requestUpdate();
     });
   }
 
@@ -93,7 +95,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
 
   render() {
     const hasCesuJoinRequest = this.dataNeedType.includes("cesu-join-request");
-    return this._sentCount === 0
+    return this._sent.size === 0
       ? html`
           <form id="request-form">
             <sl-input
@@ -162,13 +164,13 @@ class PermissionRequestForm extends PermissionRequestFormBase {
             </div>
           </form>
 
-          ${this._createdCount > 0
+          ${this._created.size > 0
             ? html`<br />
                 <sl-alert open>
                   <sl-spinner slot="icon"></sl-spinner>
 
                   <p>
-                    ${this._createdCount} of ${this._dataNeedIds.length}
+                    ${this._created.size} of ${this._dataNeedIds.length}
                     permission requests were created successfully. Please wait
                     while we are sending the permission requests to the
                     permission administrator. This might take some time.
@@ -181,7 +183,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
           <sl-icon slot="icon" name="info-circle"></sl-icon>
 
           <p>
-            ${this._sentCount} of ${this._dataNeedIds.length} requests were
+            ${this._sent.size} of ${this._dataNeedIds.length} requests were
             successfully sent to the permission administrator. The Consent
             Request IDs for this connection are
             ${this._cmRequestIds.join(", ")}
