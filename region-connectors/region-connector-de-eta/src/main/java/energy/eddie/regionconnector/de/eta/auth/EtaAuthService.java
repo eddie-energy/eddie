@@ -5,12 +5,16 @@ import com.nimbusds.oauth2.sdk.AuthorizationCode;
 import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
 import com.nimbusds.oauth2.sdk.ErrorObject;
 import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.RefreshTokenGrant;
 import com.nimbusds.oauth2.sdk.TokenErrorResponse;
 import com.nimbusds.oauth2.sdk.TokenRequest;
 import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
+import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
+import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +51,21 @@ public class EtaAuthService {
                    .subscribeOn(Schedulers.boundedElastic())
                    .onErrorResume(error -> {
                        LOGGER.error("Error during token exchange", error);
+                       return Mono.just(new AuthTokenResponse(null, false));
+                   });
+    }
+
+    /**
+     * Exchanges a stored refresh token for a fresh access token. Used by handlers
+     * that hit a 401 on a one-shot fetch and want to recover without forcing the
+     * customer to re-consent. The returned tokens are intended for in-flight use
+     * only — callers are responsible for deciding whether to persist them.
+     */
+    public Mono<AuthTokenResponse> refresh(String refreshToken) {
+        return Mono.fromCallable(() -> performTokenRefresh(refreshToken))
+                   .subscribeOn(Schedulers.boundedElastic())
+                   .onErrorResume(error -> {
+                       LOGGER.error("Error during token refresh", error);
                        return Mono.just(new AuthTokenResponse(null, false));
                    });
     }
@@ -109,6 +128,56 @@ public class EtaAuthService {
 
         return new AuthTokenResponse(
                 new AuthTokenResponse.TokenData(token, refreshTokenString),
+                true
+        );
+    }
+
+    private AuthTokenResponse performTokenRefresh(String refreshToken)
+            throws IOException, ParseException {
+
+        LOGGER.info("Refreshing access token");
+
+        RefreshTokenGrant grant = new RefreshTokenGrant(new RefreshToken(refreshToken));
+
+        URI tokenEndpoint = URI.create(configuration.auth().tokenUrl());
+        ClientID clientID = new ClientID(configuration.auth().clientId());
+        ClientSecretBasic clientAuth = new ClientSecretBasic(
+                clientID, new Secret(configuration.auth().clientSecret()));
+
+        TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, grant);
+        HTTPRequest httpRequest = request.toHTTPRequest();
+        httpRequest.setAccept("application/json");
+
+        if (configuration.sslTrustAll()) {
+            httpRequest.setSSLSocketFactory(createTrustAllSocketFactory());
+        }
+
+        HTTPResponse response = httpRequest.send();
+        TokenResponse tokenResponse = TokenResponse.parse(response);
+
+        if (!tokenResponse.indicatesSuccess()) {
+            TokenErrorResponse errorResponse = tokenResponse.toErrorResponse();
+            ErrorObject errorObject = errorResponse.getErrorObject();
+
+            if (errorObject != null && errorObject.getCode() != null) {
+                LOGGER.warn("Token refresh unsuccessful: {}", errorObject.getCode());
+            } else {
+                LOGGER.warn("Token refresh unsuccessful with unknown error");
+            }
+            return new AuthTokenResponse(null, false);
+        }
+
+        AccessTokenResponse successResponse = tokenResponse.toSuccessResponse();
+
+        String token = successResponse.getTokens().getAccessToken().getValue();
+        String newRefreshToken = successResponse.getTokens().getRefreshToken() != null
+                ? successResponse.getTokens().getRefreshToken().getValue()
+                : null;
+
+        LOGGER.info("Successfully refreshed access token");
+
+        return new AuthTokenResponse(
+                new AuthTokenResponse.TokenData(token, newRefreshToken),
                 true
         );
     }

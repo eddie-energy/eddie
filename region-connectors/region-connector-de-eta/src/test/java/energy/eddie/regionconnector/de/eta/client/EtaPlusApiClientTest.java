@@ -4,10 +4,14 @@ import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.AuthenticationException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.DeserializationException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusBadRequestException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusForbiddenException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusNotFoundException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusServerException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
+import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -53,6 +57,7 @@ class EtaPlusApiClientTest {
                 "client-id",
                 "client-secret",
                 "/meters/historical",
+                "/meters/accounting-point",
                 "/v1/permissions/{id}",
                 30,
                 3, 0,
@@ -447,5 +452,203 @@ class EtaPlusApiClientTest {
         assertThat(recorded).isNotNull();
         assertThat(recorded.getMethod()).isEqualTo("HEAD");
         assertThat(recorded.getPath()).isEqualTo("/v1/permissions/perm-abc-123");
+    }
+
+    // ------------------------------------------------------------------
+    // fetchAccountingPointData
+    // ------------------------------------------------------------------
+
+    private DePermissionRequest buildApRequest(String permissionId, String meteringPointId) {
+        return new DePermissionRequestBuilder()
+                .permissionId(permissionId)
+                .meteringPointId(meteringPointId)
+                .build();
+    }
+
+    @Test
+    void fetchAccountingPointData_validResponse_mapsToDto() {
+        String body = """
+                {
+                  "meteringPointId": "malo-1",
+                  "customerId": "42",
+                  "energyType": "ELECTRICITY",
+                  "direction": "Consumption",
+                  "deliveryAddress": {
+                    "streetName": "Hauptstraße",
+                    "city": "Berlin",
+                    "country": "DE"
+                  },
+                  "contractParty": {
+                    "firstName": "Max",
+                    "surName": "Mustermann"
+                  }
+                }
+                """;
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody(body));
+
+        DePermissionRequest request = buildApRequest("perm-ap-1", "malo-1");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "test-token"))
+                .assertNext(data -> {
+                    assertThat(data.meteringPointId()).isEqualTo("malo-1");
+                    assertThat(data.customerId()).isEqualTo("42");
+                    assertThat(data.deliveryAddress().city()).isEqualTo("Berlin");
+                    assertThat(data.contractParty().surName()).isEqualTo("Mustermann");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void fetchAccountingPointData_sendsQueryParamAndBearer() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"meteringPointId\":\"malo-q\"}"));
+
+        DePermissionRequest request = buildApRequest("perm-ap-q", "malo-q");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "ap-bearer"))
+                .assertNext(data -> assertThat(data.meteringPointId()).isEqualTo("malo-q"))
+                .verifyComplete();
+
+        RecordedRequest recorded = takeLatestRequest();
+        assertThat(recorded).isNotNull();
+        assertThat(recorded.getPath()).startsWith("/meters/accounting-point?meteringPointId=malo-q");
+        assertThat(recorded.getHeader("Authorization")).isEqualTo("Bearer ap-bearer");
+    }
+
+    @Test
+    void fetchAccountingPointData_400_throwsBadRequestException_noRetry() {
+        server.enqueue(new MockResponse()
+                .setResponseCode(400)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"Success\":false,\"Message\":\"meteringPointId is required.\"}"));
+
+        DePermissionRequest request = buildApRequest("perm-ap-400", "malo-400");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(EtaPlusBadRequestException.class);
+                    assertThat(((EtaPlusBadRequestException) error).statusCode()).isEqualTo(400);
+                    assertThat(error.getMessage()).contains("perm-ap-400");
+                })
+                .verify();
+    }
+
+    @Test
+    void fetchAccountingPointData_401_throwsAuthenticationException_noRetry() {
+        server.enqueue(new MockResponse().setResponseCode(401));
+
+        DePermissionRequest request = buildApRequest("perm-ap-401", "malo-401");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(AuthenticationException.class);
+                    assertThat(((AuthenticationException) error).statusCode()).isEqualTo(401);
+                    assertThat(error.getMessage()).contains("perm-ap-401");
+                })
+                .verify();
+    }
+
+    @Test
+    void fetchAccountingPointData_403_throwsForbiddenException_noRetry() {
+        server.enqueue(new MockResponse().setResponseCode(403));
+
+        DePermissionRequest request = buildApRequest("perm-ap-403", "malo-403");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(EtaPlusForbiddenException.class);
+                    assertThat(((EtaPlusForbiddenException) error).statusCode()).isEqualTo(403);
+                })
+                .verify();
+    }
+
+    @Test
+    void fetchAccountingPointData_404_throwsNotFoundException_noRetry() {
+        server.enqueue(new MockResponse()
+                .setResponseCode(404)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"Success\":false,\"Message\":\"Device malo-404 not found.\"}"));
+
+        DePermissionRequest request = buildApRequest("perm-ap-404", "malo-404");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(EtaPlusNotFoundException.class);
+                    assertThat(((EtaPlusNotFoundException) error).statusCode()).isEqualTo(404);
+                })
+                .verify();
+    }
+
+    @Test
+    void fetchAccountingPointData_429_retriesAndThrowsRateLimitException() {
+        for (int i = 0; i < 4; i++) {
+            server.enqueue(new MockResponse().setResponseCode(429));
+        }
+        DePermissionRequest request = buildApRequest("perm-ap-429", "malo-429");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(RateLimitException.class);
+                    assertThat(error.getMessage()).contains("perm-ap-429");
+                })
+                .verify();
+
+        assertThat(server.getRequestCount()).isGreaterThan(1);
+    }
+
+    @Test
+    void fetchAccountingPointData_429ThenRecovers_returnsData() {
+        server.enqueue(new MockResponse().setResponseCode(429));
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"meteringPointId\":\"malo-recover\"}"));
+
+        DePermissionRequest request = buildApRequest("perm-ap-recover", "malo-recover");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .assertNext(data -> assertThat(data.meteringPointId()).isEqualTo("malo-recover"))
+                .verifyComplete();
+    }
+
+    @Test
+    void fetchAccountingPointData_500_retriesAndThrowsServerException() {
+        for (int i = 0; i < 4; i++) {
+            server.enqueue(new MockResponse().setResponseCode(500));
+        }
+        DePermissionRequest request = buildApRequest("perm-ap-500", "malo-500");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> {
+                    assertThat(error).isInstanceOf(EtaPlusServerException.class);
+                    assertThat(((EtaPlusServerException) error).statusCode()).isEqualTo(500);
+                })
+                .verify();
+    }
+
+    @Test
+    void fetchAccountingPointData_malformedJson_throwsDeserializationException() {
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{not valid json"));
+
+        DePermissionRequest request = buildApRequest("perm-ap-bad", "malo-bad");
+
+        StepVerifier.create(apiClient.fetchAccountingPointData(request, "token"))
+                .expectErrorSatisfies(error -> assertThat(error).isInstanceOf(DeserializationException.class))
+                .verify();
+    }
+
+    @Test
+    void fetchAccountingPointData_assertDtoTypeForCompiler() {
+        EtaPlusAccountingPointData ignored = new EtaPlusAccountingPointData(
+                "malo", null, null, null, null, null);
+        assertThat(ignored.meteringPointId()).isEqualTo("malo");
     }
 }

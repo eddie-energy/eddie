@@ -45,7 +45,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
     private final DeEtaPlusConfiguration deConfiguration = new DeEtaPlusConfiguration(
             ELIGIBLE_PARTY_ID,
             "http://api.url", "client-id", "client-secret",
-            "/meters/historical", "/v1/permissions/{id}", 30,
+            "/meters/historical", "/meters/accounting-point", "/v1/permissions/{id}", 30,
             3, 2, true, false,
             null, null
     );

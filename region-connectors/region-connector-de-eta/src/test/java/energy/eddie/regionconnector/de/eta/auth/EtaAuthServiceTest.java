@@ -29,7 +29,7 @@ class EtaAuthServiceTest {
 
         DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
                 "partner", "http://api.url", "client-id", "client-secret",
-                "/meters/historical", "/v1/permissions/{id}", 30,
+                "/meters/historical", "/meters/accounting-point", "/v1/permissions/{id}", 30,
                 3, 2, true, false,
                 authConfig, null);
 
@@ -75,5 +75,64 @@ class EtaAuthServiceTest {
                     assertThat(res.success()).isFalse();
                     assertThat(res.getAccessToken()).isNull();
                 }).verifyComplete();
+    }
+
+    @Test
+    void refreshShouldExchangeRefreshTokenForNewAccessToken() {
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json;charset=UTF-8")
+                .setBody("{\"access_token\":\"new-acc\",\"token_type\":\"bearer\",\"refresh_token\":\"new-ref\",\"expires_in\":3600}"));
+
+        StepVerifier.create(service.refresh("old-refresh-token"))
+                .assertNext(res -> {
+                    assertThat(res.success()).isTrue();
+                    assertThat(res.getAccessToken()).isEqualTo("new-acc");
+                    assertThat(res.getRefreshToken()).isEqualTo("new-ref");
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void refreshShouldReturnUnsuccessfulOnInvalidRefreshToken() {
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(400)
+                .setHeader("Content-Type", "application/json")
+                .setBody("{\"error\":\"invalid_grant\"}"));
+
+        StepVerifier.create(service.refresh("expired-refresh-token"))
+                .assertNext(res -> {
+                    assertThat(res.success()).isFalse();
+                    assertThat(res.getAccessToken()).isNull();
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void refreshShouldReturnUnsuccessfulWhenIdpUnreachable() throws IOException {
+        mockWebServer.shutdown();
+
+        StepVerifier.create(service.refresh("any"))
+                .assertNext(res -> {
+                    assertThat(res.success()).isFalse();
+                    assertThat(res.getAccessToken()).isNull();
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void refreshShouldHandleMissingRefreshTokenInResponse() {
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json;charset=UTF-8")
+                .setBody("{\"access_token\":\"only-access\",\"token_type\":\"bearer\",\"expires_in\":3600}"));
+
+        StepVerifier.create(service.refresh("rt"))
+                .assertNext(res -> {
+                    assertThat(res.success()).isTrue();
+                    assertThat(res.getAccessToken()).isEqualTo("only-access");
+                    assertThat(res.getRefreshToken()).isNull();
+                })
+                .verifyComplete();
     }
 }

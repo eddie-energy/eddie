@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.providers.AccountingPointDataStream;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.de.eta.service.PollingService;
 import energy.eddie.regionconnector.shared.agnostic.JsonRawDataProvider;
@@ -94,11 +95,16 @@ public class DeEtaBeanConfig {
 
     @SuppressWarnings("ReactiveStreamsUnusedPublisher")
     @Bean
-    public JsonRawDataProvider rawDataProvider(ObjectMapper objectMapper, ValidatedHistoricalDataStream stream) {
+    public JsonRawDataProvider rawDataProvider(
+            ObjectMapper objectMapper,
+            ValidatedHistoricalDataStream vhdStream,
+            AccountingPointDataStream apStream
+    ) {
         return new JsonRawDataProvider(
                 EtaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                 objectMapper,
-                stream.validatedHistoricalData()
+                vhdStream.validatedHistoricalData(),
+                apStream.accountingPointData()
         );
     }
 

@@ -4,10 +4,14 @@ import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.AuthenticationException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.DeserializationException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusBadRequestException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusForbiddenException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusNotFoundException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusServerException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusTimeoutException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
+import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,6 +123,69 @@ public class EtaPlusApiClient {
                 effectiveEnd,
                 domainReadings
         );
+    }
+
+    /**
+     * Fetch accounting point master data for a permission request.
+     * Single-shot fetch — caller is responsible for retry / state transitions
+     * on failure. Error envelope bodies (4xx/5xx) are not parsed; status code
+     * drives the mapping.
+     *
+     * @param permissionRequest the permission request whose metering point we want
+     * @param accessToken       the customer's OAuth bearer
+     * @return a Mono emitting the accounting point data or an error
+     */
+    public Mono<EtaPlusAccountingPointData> fetchAccountingPointData(
+            DePermissionRequest permissionRequest,
+            String accessToken
+    ) {
+        LOGGER.atInfo()
+              .addArgument(permissionRequest::permissionId)
+              .addArgument(permissionRequest::meteringPointId)
+              .log("Fetching accounting point data for permission {} on metering point {}");
+
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path(configuration.accountingPointEndpoint())
+                        .queryParam("meteringPointId", permissionRequest.meteringPointId())
+                        .build())
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .bodyToMono(EtaPlusAccountingPointData.class)
+                .timeout(Duration.ofSeconds(configuration.responseTimeoutSeconds()))
+                .retryWhen(retrySpec(permissionRequest.permissionId()))
+                .onErrorMap(WebClientResponseException.BadRequest.class, ex ->
+                        new EtaPlusBadRequestException(
+                                "Bad request fetching accounting point data for permission " + permissionRequest.permissionId(),
+                                ex.getStatusCode().value(), ex))
+                .onErrorMap(WebClientResponseException.Unauthorized.class, ex ->
+                        new AuthenticationException(
+                                "Authentication failed fetching accounting point data for permission " + permissionRequest.permissionId(),
+                                ex.getStatusCode().value(), ex))
+                .onErrorMap(WebClientResponseException.Forbidden.class, ex ->
+                        new EtaPlusForbiddenException(
+                                "Forbidden fetching accounting point data for permission " + permissionRequest.permissionId(),
+                                ex.getStatusCode().value(), ex))
+                .onErrorMap(WebClientResponseException.NotFound.class, ex ->
+                        new EtaPlusNotFoundException(
+                                "Metering point not found for permission " + permissionRequest.permissionId(),
+                                ex.getStatusCode().value(), ex))
+                .onErrorMap(WebClientResponseException.TooManyRequests.class, ex ->
+                        new RateLimitException(
+                                "Rate limit exceeded fetching accounting point data for permission " + permissionRequest.permissionId()))
+                .onErrorMap(ex -> ex instanceof WebClientResponseException wce
+                                && wce.getStatusCode().is5xxServerError(),
+                        ex -> new EtaPlusServerException(
+                                "ETA Plus server error fetching accounting point data for permission " + permissionRequest.permissionId(),
+                                ((WebClientResponseException) ex).getStatusCode().value(), ex))
+                .onErrorMap(DecodingException.class, ex ->
+                        new DeserializationException(
+                                "Failed to deserialize accounting point data for permission " + permissionRequest.permissionId(),
+                                ex))
+                .onErrorMap(java.util.concurrent.TimeoutException.class, ex ->
+                        new EtaPlusTimeoutException(
+                                "Accounting point request timed out for permission " + permissionRequest.permissionId(),
+                                ex));
     }
 
     /**
