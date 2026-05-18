@@ -128,37 +128,45 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
     }
 
     private void handleError(String permissionId, Throwable error) {
-        PermissionProcessStatus status;
-        if (error instanceof EtaPlusForbiddenException) {
-            LOGGER.warn(
-                    "Forbidden fetching accounting point data for permission {} — verify backend scopes for this metering point",
-                    permissionId, error);
-            status = PermissionProcessStatus.UNFULFILLABLE;
-        } else if (error instanceof EtaPlusNotFoundException) {
-            LOGGER.warn("Metering point not found for permission {} — marking UNFULFILLABLE", permissionId, error);
-            status = PermissionProcessStatus.UNFULFILLABLE;
-        } else if (error instanceof EtaPlusBadRequestException) {
-            LOGGER.warn("Bad request fetching accounting point data for permission {} — programmer error",
-                    permissionId, error);
-            status = PermissionProcessStatus.UNFULFILLABLE;
-        } else if (error instanceof AuthenticationException) {
-            LOGGER.warn(
-                    "Authentication failed fetching accounting point data for permission {} — marking UNABLE_TO_SEND",
-                    permissionId, error);
-            status = PermissionProcessStatus.UNABLE_TO_SEND;
-        } else if (error instanceof RateLimitException
-                || error instanceof EtaPlusServerException
-                || error instanceof EtaPlusTimeoutException
-                || error instanceof DeserializationException) {
-            LOGGER.warn("Transient error fetching accounting point data for permission {} — marking UNABLE_TO_SEND",
-                    permissionId, error);
-            status = PermissionProcessStatus.UNABLE_TO_SEND;
-        } else {
-            LOGGER.warn("Unexpected error fetching accounting point data for permission {} — marking UNABLE_TO_SEND",
-                    permissionId, error);
-            status = PermissionProcessStatus.UNABLE_TO_SEND;
-        }
+        PermissionProcessStatus status = switch (error) {
+            case EtaPlusForbiddenException e -> {
+                LOGGER.warn(
+                        "Forbidden fetching accounting point data for permission {} — verify backend scopes for this metering point",
+                        permissionId, e);
+                yield PermissionProcessStatus.UNFULFILLABLE;
+            }
+            case EtaPlusNotFoundException e -> {
+                LOGGER.warn("Metering point not found for permission {} — marking UNFULFILLABLE", permissionId, e);
+                yield PermissionProcessStatus.UNFULFILLABLE;
+            }
+            case EtaPlusBadRequestException e -> {
+                LOGGER.warn("Bad request fetching accounting point data for permission {} — programmer error",
+                        permissionId, e);
+                yield PermissionProcessStatus.UNFULFILLABLE;
+            }
+            case AuthenticationException e -> {
+                LOGGER.warn(
+                        "Authentication failed fetching accounting point data for permission {} — marking UNABLE_TO_SEND",
+                        permissionId, e);
+                yield PermissionProcessStatus.UNABLE_TO_SEND;
+            }
+            case RateLimitException e -> markTransient(permissionId, e);
+            case EtaPlusServerException e -> markTransient(permissionId, e);
+            case EtaPlusTimeoutException e -> markTransient(permissionId, e);
+            case DeserializationException e -> markTransient(permissionId, e);
+            default -> {
+                LOGGER.warn("Unexpected error fetching accounting point data for permission {} — marking UNABLE_TO_SEND",
+                        permissionId, error);
+                yield PermissionProcessStatus.UNABLE_TO_SEND;
+            }
+        };
         commitSafely(permissionId, status);
+    }
+
+    private PermissionProcessStatus markTransient(String permissionId, Throwable error) {
+        LOGGER.warn("Transient error fetching accounting point data for permission {} — marking UNABLE_TO_SEND",
+                permissionId, error);
+        return PermissionProcessStatus.UNABLE_TO_SEND;
     }
 
     private void commitSafely(String permissionId, PermissionProcessStatus status) {
