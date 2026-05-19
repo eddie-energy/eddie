@@ -28,7 +28,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class IntermediatePermissionMarketDocumentTest {
+@SuppressWarnings("NewClassNamingConvention")
+class IntermediatePermissionMarketDocumentV0_82Test {
 
     public static Stream<Arguments> toPermissionMarketDocument_mapsSuccessfully() {
         return Stream.of(
@@ -74,7 +75,7 @@ class IntermediatePermissionMarketDocumentTest {
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
         when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        IntermediatePermissionMarketDocument<PermissionRequest> csm = new IntermediatePermissionMarketDocument<>(
+        IntermediatePermissionMarketDocumentV0_82<PermissionRequest> csm = new IntermediatePermissionMarketDocumentV0_82<>(
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),
@@ -117,7 +118,7 @@ class IntermediatePermissionMarketDocumentTest {
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
         when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        IntermediatePermissionMarketDocument<PermissionRequest> csm = new IntermediatePermissionMarketDocument<>(
+        IntermediatePermissionMarketDocumentV0_82<PermissionRequest> csm = new IntermediatePermissionMarketDocumentV0_82<>(
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),
@@ -206,7 +207,7 @@ class IntermediatePermissionMarketDocumentTest {
         when(permissionRequest.start()).thenReturn(start);
         when(permissionRequest.end()).thenReturn(end);
         when(permissionRequest.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
-        IntermediatePermissionMarketDocument<PermissionRequest> csm = new IntermediatePermissionMarketDocument<>(
+        IntermediatePermissionMarketDocumentV0_82<PermissionRequest> csm = new IntermediatePermissionMarketDocumentV0_82<>(
                 permissionRequest,
                 "customerId",
                 ignored -> Granularity.PT15M.name(),

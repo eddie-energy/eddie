@@ -11,6 +11,7 @@ import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.regionconnector.shared.cim.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.shared.cim.v0_82.*;
 import jakarta.annotation.Nullable;
 
@@ -24,7 +25,8 @@ import java.util.UUID;
 import static energy.eddie.cim.CommonInformationModelVersions.V0_82;
 import static java.util.Map.entry;
 
-public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
+@SuppressWarnings("java:S101")
+public class IntermediatePermissionMarketDocumentV0_82<T extends PermissionRequest> implements IntermediatePermissionMarketDocument {
     private static final Map<PermissionProcessStatus, StatusTypeList> EDDIE_STATUS_TO_CIM = Map.ofEntries(
             entry(PermissionProcessStatus.CREATED, StatusTypeList.A14),
             entry(PermissionProcessStatus.VALIDATED, StatusTypeList.Z02),
@@ -43,15 +45,16 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
             entry(PermissionProcessStatus.FAILED_TO_TERMINATE, StatusTypeList.A33),
             entry(PermissionProcessStatus.EXTERNALLY_TERMINATED, StatusTypeList.A16)
     );
+
     private final T permissionRequest;
     private final String customerIdentifier;
     private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
     private final String countryCode;
     private final ZoneId zoneId;
-    private final PermissionProcessStatus status;
     private final DataNeed dataNeed;
+    private final PermissionProcessStatus status;
 
-    public IntermediatePermissionMarketDocument(
+    public IntermediatePermissionMarketDocumentV0_82(
             T permissionRequest,
             String customerIdentifier,
             TransmissionScheduleProvider<T> transmissionScheduleProvider,
@@ -68,7 +71,7 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
              dataNeed);
     }
 
-    public IntermediatePermissionMarketDocument(
+    public IntermediatePermissionMarketDocumentV0_82(
             T permissionRequest,
             PermissionProcessStatus status,
             String customerIdentifier,
@@ -77,15 +80,16 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
             ZoneId zoneId,
             DataNeed dataNeed
     ) {
-        this.status = status;
         this.permissionRequest = permissionRequest;
         this.customerIdentifier = customerIdentifier;
         this.transmissionScheduleProvider = transmissionScheduleProvider;
         this.countryCode = countryCode;
         this.zoneId = zoneId;
         this.dataNeed = dataNeed;
+        this.status = status;
     }
 
+    @Override
     public PermissionEnvelope toPermissionMarketDocument() {
         return toPermissionMarketDocument(Clock.systemUTC());
     }
@@ -167,7 +171,8 @@ public class IntermediatePermissionMarketDocument<T extends PermissionRequest> {
 
     @Nullable
     private String transmissionSchedule() {
-        // Not all permission requests contain a start date from the beginning, this is just a fact of the process model, where validation happens after the creation of the permission request.
+        // Not all permission requests contain a start date from the beginning.
+        // This is just a fact of the process model, where validation happens after the creation of the permission request.
         // Only validated permission requests contain start and end dates.
         if (permissionRequest.start() == null || !permissionRequest.start().isAfter(LocalDate.now(ZoneOffset.UTC))) {
             return null;

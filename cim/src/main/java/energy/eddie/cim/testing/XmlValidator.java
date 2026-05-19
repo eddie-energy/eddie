@@ -84,4 +84,10 @@ public class XmlValidator {
                 "/cim/xsd/v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd");
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
+
+    public static boolean validateV112RequestPermissionMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_12/rpmd/RequestPermissionDocument_annotated_v1.12.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
 }
