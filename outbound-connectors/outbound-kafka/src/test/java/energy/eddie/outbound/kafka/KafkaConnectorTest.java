@@ -16,6 +16,7 @@ import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Tag;
@@ -294,6 +295,33 @@ class KafkaConnectorTest {
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
         consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.energy-sharing-reference-data-md"));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+
+    @Test
+    void testRequestPermissionMarketDocuments_areProducedToKafka() {
+        // Given
+        var data = new RequestPermissionEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.rpmd.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.rpmd.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                                .withDocumentType("request-permission-market-document")));
+        kafkaConnector.setRequestPermissionMarketDocumentStream(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.request-permission-md"));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);
