@@ -6,17 +6,21 @@ package energy.eddie.outbound.rest.web.cim.v1_12;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.dto.v1_12.AcknowledgementMarketDocuments;
 import energy.eddie.outbound.rest.dto.v1_12.EnergySharingReferenceDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.RequestPermissionMarketDocuments;
 import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_12.EnergySharingReferenceDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel;
+import energy.eddie.outbound.rest.model.cim.v1_12.RequestPermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.EnergySharingReferenceDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.RequestPermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.PredicateSpecification;
@@ -41,17 +45,20 @@ public class CimController implements CimSwagger {
     private final NearRealTimeDataMarketDocumentRepository rtdRepository;
     private final AcknowledgementMarketDocumentRepository ackRepository;
     private final EnergySharingReferenceDataMarketDocumentRepository esrRepository;
+    private final RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository;
 
     public CimController(
             CimConnector cimConnector,
             NearRealTimeDataMarketDocumentRepository rtdRepository,
             AcknowledgementMarketDocumentRepository ackRepository,
-            EnergySharingReferenceDataMarketDocumentRepository esrRepository
+            EnergySharingReferenceDataMarketDocumentRepository esrRepository,
+            RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository
     ) {
         this.cimConnector = cimConnector;
         this.rtdRepository = rtdRepository;
         this.ackRepository = ackRepository;
         this.esrRepository = esrRepository;
+        this.requestPermissionMarketDocumentRepository = requestPermissionMarketDocumentRepository;
     }
 
     @Override
@@ -166,5 +173,39 @@ public class CimController implements CimSwagger {
         var messages = payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new EnergySharingReferenceDataMarketDocuments(messages));
+    }
+
+    @Override
+    @GetMapping(value = "/request-permission-md", produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
+    public ResponseEntity<Flux<RequestPermissionEnvelope>> requestPermissionMdSSE() {
+        return ResponseEntity.ok()
+                             .header(X_ACCEL_BUFFERING, "no")
+                             .body(cimConnector.getRequestPermissionMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/request-permission-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    public ResponseEntity<RequestPermissionMarketDocuments> requestPermissionMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    ) {
+        PredicateSpecification<RequestPermissionMarketDocumentModel> specification = CimSpecification.buildQueryForV1_12(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                countryCode,
+                regionConnectorId,
+                from,
+                to
+        );
+        var all = requestPermissionMarketDocumentRepository.findAll(specification);
+        var messages = payloadsOf(all);
+        return ResponseEntity.ok()
+                             .body(new RequestPermissionMarketDocuments(messages));
     }
 }

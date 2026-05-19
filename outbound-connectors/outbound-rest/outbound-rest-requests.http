@@ -103,6 +103,21 @@ GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get request permission market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/request-permission-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get request permission market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/request-permission-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get request permission market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/request-permission-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get accounting point data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: application/json

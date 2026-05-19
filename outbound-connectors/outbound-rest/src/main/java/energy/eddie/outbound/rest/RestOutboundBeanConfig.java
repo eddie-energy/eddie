@@ -13,6 +13,7 @@ import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.dto.*;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.RequestPermissionMarketDocuments;
 import energy.eddie.outbound.rest.mixins.AgnosticMessageMixin;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
@@ -75,6 +76,8 @@ public class RestOutboundBeanConfig {
                 // CIM v1.12
                 energy.eddie.cim.v1_12.rtd.RTDEnvelope.class,
                 energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope.class,
+                energy.eddie.cim.v1_12.esr.ESRDMDEnvelope.class,
+                energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope.class,
                 // DTOs
                 CimCollection.class,
                 ValidatedHistoricalDataMarketDocuments.class,
@@ -82,7 +85,8 @@ public class RestOutboundBeanConfig {
                 NearRealTimeDataMarketDocuments.class,
                 PermissionMarketDocuments.class,
                 AccountingPointDataMarketDocuments.class,
-                ValidatedHistoricalDataMarketDocumentsV1_04.class
+                ValidatedHistoricalDataMarketDocumentsV1_04.class,
+                RequestPermissionMarketDocuments.class
         );
         return marshaller;
     }
