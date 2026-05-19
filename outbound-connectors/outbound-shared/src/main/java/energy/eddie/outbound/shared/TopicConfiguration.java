@@ -154,6 +154,16 @@ public class TopicConfiguration {
                        TopicStructure.DocumentTypes.ENERGY_SHARING_REFERENCE_DATA_MD);
     }
 
+    /**
+     * Endpoint for CIM Request Permission Market Document, the direct successor of {@link #permissionMarketDocument()}.
+     * Used to emit messages to the eligible party.
+     */
+    public String requestPermissionMarketDocument() {
+        return toTopic(TopicStructure.Direction.EP,
+                       TopicStructure.DataModels.CIM_1_12,
+                       TopicStructure.DocumentTypes.REQUEST_PERMISSION_MD);
+    }
+
 
     private String toTopic(
             TopicStructure.Direction direction,

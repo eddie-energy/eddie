@@ -16,6 +16,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -108,6 +109,12 @@ public class AmqpOutbound implements AutoCloseable {
                                                AmqpOutbound::toHeaders));
     }
 
+    @MessageStream(RequestPermissionEnvelope.class)
+    public void setRequestPermissionMarketDocumentStream(Flux<RequestPermissionEnvelope> marketDocumentStream) {
+        marketDocumentStream.subscribe(publish(config.requestPermissionMarketDocument(),
+                                               AmqpOutbound::toHeaders));
+    }
+
     private void publish(Object payload, String exchange, Map<String, String> headers) {
         try {
             var message = publisher
@@ -139,82 +146,81 @@ public class AmqpOutbound implements AutoCloseable {
     }
 
     private static Map<String, String> toHeaders(MessageWithHeaders raw) {
-        return Map.of(
-                Headers.PERMISSION_ID, raw.permissionId(),
-                Headers.CONNECTION_ID, raw.connectionId(),
-                Headers.DATA_NEED_ID, raw.dataNeedId()
-        );
+        return toHeaders(raw.permissionId(), raw.connectionId(), raw.dataNeedId());
     }
 
     private static Map<String, String> toHeaders(PermissionEnvelope pmd) {
         var header = pmd.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
-        return Map.of(
-                Headers.PERMISSION_ID, header.getPermissionid(),
-                Headers.CONNECTION_ID, header.getConnectionid(),
-                Headers.DATA_NEED_ID, header.getDataNeedid()
-        );
+        return toHeaders(header.getPermissionid(), header.getConnectionid(), header.getDataNeedid());
     }
 
     private static Map<String, String> toHeaders(AccountingPointEnvelope envelope) {
         var header = envelope.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
-        return Map.of(
-                Headers.PERMISSION_ID, header.getPermissionid(),
-                Headers.CONNECTION_ID, header.getConnectionid(),
-                Headers.DATA_NEED_ID, header.getDataNeedid()
-        );
+        return toHeaders(header.getPermissionid(), header.getConnectionid(), header.getDataNeedid());
     }
 
     private static Map<String, String> toHeaders(ValidatedHistoricalDataEnvelope envelope) {
         var header = envelope.getMessageDocumentHeader().getMessageDocumentHeaderMetaInformation();
-        return Map.of(
-                Headers.PERMISSION_ID, header.getPermissionid(),
-                Headers.CONNECTION_ID, header.getConnectionid(),
-                Headers.DATA_NEED_ID, header.getDataNeedid()
-        );
+        return toHeaders(header.getPermissionid(), header.getConnectionid(), header.getDataNeedid());
     }
 
     private static Map<String, String> toHeaders(energy.eddie.cim.v1_04.rtd.RTDEnvelope envelope) {
-        return Map.of(
-                Headers.PERMISSION_ID, envelope.getMessageDocumentHeaderMetaInformationPermissionId(),
-                Headers.CONNECTION_ID, envelope.getMessageDocumentHeaderMetaInformationConnectionId(),
-                Headers.DATA_NEED_ID, envelope.getMessageDocumentHeaderMetaInformationDataNeedId()
+        return toHeaders(
+                envelope.getMessageDocumentHeaderMetaInformationPermissionId(),
+                envelope.getMessageDocumentHeaderMetaInformationConnectionId(),
+                envelope.getMessageDocumentHeaderMetaInformationDataNeedId()
         );
     }
 
     private static Map<String, String> toHeaders(energy.eddie.cim.v1_12.rtd.RTDEnvelope envelope) {
         var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
-
-        return Map.of(
-                Headers.PERMISSION_ID, metaInformation.getRequestPermissionId(),
-                Headers.CONNECTION_ID, metaInformation.getConnectionId(),
-                Headers.DATA_NEED_ID, metaInformation.getDataNeedId()
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
         );
     }
 
     private static Map<String, String> toHeaders(AcknowledgementEnvelope envelope) {
         var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
-
-        return Map.of(
-                Headers.PERMISSION_ID, metaInformation.getRequestPermissionId(),
-                Headers.CONNECTION_ID, metaInformation.getConnectionId(),
-                Headers.DATA_NEED_ID, metaInformation.getDataNeedId()
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
         );
     }
 
     private static Map<String, String> toHeaders(VHDEnvelope vhdEnvelope) {
-        return Map.of(
-                Headers.PERMISSION_ID, vhdEnvelope.getMessageDocumentHeaderMetaInformationPermissionId(),
-                Headers.CONNECTION_ID, vhdEnvelope.getMessageDocumentHeaderMetaInformationConnectionId(),
-                Headers.DATA_NEED_ID, vhdEnvelope.getMessageDocumentHeaderMetaInformationDataNeedId()
+        return toHeaders(
+                vhdEnvelope.getMessageDocumentHeaderMetaInformationPermissionId(),
+                vhdEnvelope.getMessageDocumentHeaderMetaInformationConnectionId(),
+                vhdEnvelope.getMessageDocumentHeaderMetaInformationDataNeedId()
         );
     }
 
     private static Map<String, String> toHeaders(ESRDMDEnvelope envelope) {
         var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(RequestPermissionEnvelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(String permissionId, String connectionId, String dataNeedId) {
         return Map.of(
-                Headers.PERMISSION_ID, metaInformation.getRequestPermissionId(),
-                Headers.CONNECTION_ID, metaInformation.getConnectionId(),
-                Headers.DATA_NEED_ID, metaInformation.getDataNeedId()
+                Headers.PERMISSION_ID, permissionId,
+                Headers.CONNECTION_ID, connectionId,
+                Headers.DATA_NEED_ID, dataNeedId
         );
     }
 }
