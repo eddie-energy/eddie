@@ -2,8 +2,11 @@
 
 Permission market documents are used to signal the status change of one or multiple permission requests.
 They contain a lot of information, the following example focuses on the most necessary parts.
-The header is described in [CIM envelope](./cim.md#cim-envelope-for-v082).
-The schema can be found [here](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/pmd).
+The header is described in [CIM envelope](./cim.md#cim-envelope).
+The schema can be found here:
+
+- [v0.82](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/pmd)
+- [v1.12](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v1_12/rpmd)
 
 > [!Warning]
 > Only the XSD is provided since the CIM is an XML first format, and it cannot be guaranteed that the JSON variant is stable.
@@ -11,7 +14,9 @@ The schema can be found [here](https://github.com/eddie-energy/eddie/tree/main/c
 The following is an example of a permission market document produced by EDDIE.
 The comments explain the usage of each element.
 
-```xml
+::: code-group
+
+```xml [V0.82]
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125"
 >
@@ -89,6 +94,70 @@ The comments explain the usage of each element.
     </Permission_MarketDocument>
 </Permission_Envelope>
 ```
+
+```xml [V1.12]
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<RequestPermission_Envelope xmlns="https://eddie.energy/CEEDS_RequestPermissionDocument_annotated_v1.12.xsd">
+    <MarketDocument>
+        <!-- the ID of the permission request -->
+        <mRID>b9b06543-4f14-4081-8419-4b933e4b7f9d</mRID>
+        <!-- The ID of the data need related to this document and permission request -->
+        <description>9bd0668f-cc19-40a8-99db-dc2cb2802b17</description>
+        <!-- version of the CIM schema that is used -->
+        <revisionNumber>112</revisionNumber>
+        <!-- Describes what type of permission market document this is
+             'B48' identifies it as a permission document.
+             This is the only permission document type emitted by EDDIE. -->
+        <type>B48</type>
+        <!-- Sender of the document that resulted in the status change of the permission request -->
+        <sender_MarketParticipant.mRID codingScheme="NUS">REPLACE-ME</sender_MarketParticipant.mRID>
+        <!-- The role of the sender -->
+        <sender_MarketParticipant.marketRole.type>A20</sender_MarketParticipant.marketRole.type>
+        <!-- receiver of the document that resulted in the status change of the permission request -->
+        <receiver_MarketParticipant.mRID codingScheme="NUS">DEMOUTILITY</receiver_MarketParticipant.mRID>
+        <!-- The role of the receiver -->
+        <receiver_MarketParticipant.marketRole.type>A59</receiver_MarketParticipant.marketRole.type>
+        <!-- The process type shows the type of data need related to the permission request -->
+        <process.processType>A74</process.processType>
+        <!-- Contains the start and end time of the permission request if already known -->
+        <period.timeInterval>
+            <!-- can be empty -->
+            <start>2021-01-01T00:00Z</start>
+            <!-- can be empty -->
+            <end>9999-12-31T00:00Z</end>
+        </period.timeInterval>
+        <!-- Contains permission related to this document -->
+        <Request_Permission>
+            <!-- again the ID of the permission request -->
+            <mRID>b9b06543-4f14-4081-8419-4b933e4b7f9d</mRID>
+            <!-- created datetime of the permission request -->
+            <createdDateTime>2024-12-02T10:04:22Z</createdDateTime>
+            <!-- Contains the connectionID plus the coding scheme selected by the eligible party -->
+            <AccountingPoint>
+                <!-- connectionID -->
+                <mRID codingScheme="NAT">1</mRID>
+            </AccountingPoint>
+            <MktActivityRecord>
+                <!-- Random UUID identifying only this market activity record -->
+                <mRID>9f8f770c-fb9d-47f7-9b71-8fb1f31e5729</mRID>
+                <!-- created datetime of this market activity record -->
+                <createdDateTime>2024-12-02T10:04:22Z</createdDateTime>
+                <!-- EDDIE internal status in the permission process model -->
+                <description>CREATED</description>
+                <!-- region connector ID -->
+                <type>us-green-button</type>
+                <!-- Matching CIM status to the permission process model -->
+                <status>A14</status>
+            </MktActivityRecord>
+        </Request_Permission>
+    </MarketDocument>
+    <MessageDocumentHeader>
+        <!-- ... omitted for conciseness -->
+    </MessageDocumentHeader>
+</RequestPermission_Envelope>
+```
+
+:::
 
 ## Termination Documents
 
