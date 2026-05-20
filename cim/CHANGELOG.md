@@ -94,3 +94,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
   - Acknowledgement Document v1.12
   - Reference Energy Curve Min-Max Operation Document v1.12
 - Fix typo in RealTimeData Document namespace, where the namespace is missing a colon (:) in the namespace declaration
+
+## 3.8.1 - 2026-05-20
+
+- Add default deserialization class for data source information in agnostic connection status messages removing the need for object mapper configuration to use it

@@ -5,6 +5,8 @@ package energy.eddie.cim.serde;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 /**
  * A {@link MessageSerde} that serializes to JSON.
@@ -13,7 +15,9 @@ import tools.jackson.databind.ObjectMapper;
 public class JsonMessageSerde implements MessageSerde {
     private final ObjectMapper objectMapper;
 
-    public JsonMessageSerde() {objectMapper = ObjectMapperCreator.create(SerializationFormat.JSON);}
+    public JsonMessageSerde() {
+        objectMapper = JsonMapper.builder().addModule(new JakartaXmlBindAnnotationModule()).build();
+    }
 
     @Override
     public byte[] serialize(Object message) throws SerializationException {
