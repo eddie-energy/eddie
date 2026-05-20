@@ -19,6 +19,7 @@ public record DeEtaPlusConfiguration(
                 @NotBlank String apiClientId,
                 @NotBlank String apiClientSecret,
                 @DefaultValue("/meters/historical") String meteredDataEndpoint,
+                @DefaultValue("/meters/accounting-point") String accountingPointEndpoint,
                 @DefaultValue("/v1/permissions/{id}") String permissionCheckEndpoint,
                 @Positive @DefaultValue("30") int responseTimeoutSeconds,
                 @PositiveOrZero @DefaultValue("3") int retryMaxAttempts,

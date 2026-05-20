@@ -10,6 +10,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionEventRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
+import energy.eddie.regionconnector.de.eta.providers.AccountingPointDataStream;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.de.eta.service.PollingService;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
@@ -35,11 +36,14 @@ class DeEtaBeanConfigTest {
     void testBeansAreCreated() {
         var vhdStream = mock(ValidatedHistoricalDataStream.class);
         when(vhdStream.validatedHistoricalData()).thenReturn(Flux.empty());
+        var apStream = mock(AccountingPointDataStream.class);
+        when(apStream.accountingPointData()).thenReturn(Flux.empty());
         contextRunner
                 .withBean(DePermissionEventRepository.class, () -> mock(DePermissionEventRepository.class))
                 .withBean(DePermissionRequestRepository.class, () -> mock(DePermissionRequestRepository.class))
                 .withBean(DataNeedsService.class, () -> mock(DataNeedsService.class))
                 .withBean(ValidatedHistoricalDataStream.class, () -> vhdStream)
+                .withBean(AccountingPointDataStream.class, () -> apStream)
                 .withBean(EtaDataNeedRuleSet.class, EtaDataNeedRuleSet::new)
                 .withBean(ObjectMapper.class, ObjectMapper::new)
                 .withBean(PollingService.class, () -> mock(PollingService.class))

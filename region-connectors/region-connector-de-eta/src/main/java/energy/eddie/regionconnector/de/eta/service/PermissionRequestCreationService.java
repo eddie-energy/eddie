@@ -12,6 +12,7 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.de.eta.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.de.eta.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.de.eta.permission.request.events.AccountingPointValidatedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.ValidatedEvent;
@@ -79,10 +80,13 @@ public class PermissionRequestCreationService {
                 requestForCreation.meteringPointId()));
 
         switch (dataNeedCalculationService.calculate(dataNeedId)) {
-            case AccountingPointDataNeedResult ignored -> {
-                String message = "AccountingPointDataNeed not supported by DE-ETA connector";
-                outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
-                throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
+                LOGGER.info("Validated accounting-point permission request {}", permissionId);
+                outbox.commit(new AccountingPointValidatedEvent(
+                        permissionId,
+                        permissionTimeframe.start(),
+                        permissionTimeframe.end()));
+                return new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
             }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(

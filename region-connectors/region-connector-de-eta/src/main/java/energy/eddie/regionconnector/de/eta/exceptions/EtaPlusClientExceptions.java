@@ -85,4 +85,57 @@ public final class EtaPlusClientExceptions {
             super(message, cause);
         }
     }
+
+    /**
+     * Thrown when the ETA Plus API responds with HTTP 400 (Bad Request).
+     * Indicates a malformed request from the connector and should be treated as
+     * terminal — a retry will not succeed.
+     */
+    public static class EtaPlusBadRequestException extends RuntimeException {
+        private final int statusCode;
+
+        public EtaPlusBadRequestException(String message, int statusCode, Throwable cause) {
+            super(message, cause);
+            this.statusCode = statusCode;
+        }
+
+        public int statusCode() {
+            return statusCode;
+        }
+    }
+
+    /**
+     * Thrown when the ETA Plus API responds with HTTP 403 (Forbidden) on a resource
+     * the bearer should normally authorise. Reserved for future per-resource ACL
+     * responses; treated as terminal at the handler layer.
+     */
+    public static class EtaPlusForbiddenException extends RuntimeException {
+        private final int statusCode;
+
+        public EtaPlusForbiddenException(String message, int statusCode, Throwable cause) {
+            super(message, cause);
+            this.statusCode = statusCode;
+        }
+
+        public int statusCode() {
+            return statusCode;
+        }
+    }
+
+    /**
+     * Thrown when the ETA Plus API responds with HTTP 404 (Not Found) for a
+     * requested resource. Treated as terminal — the resource does not exist.
+     */
+    public static class EtaPlusNotFoundException extends RuntimeException {
+        private final int statusCode;
+
+        public EtaPlusNotFoundException(String message, int statusCode, Throwable cause) {
+            super(message, cause);
+            this.statusCode = statusCode;
+        }
+
+        public int statusCode() {
+            return statusCode;
+        }
+    }
 }
