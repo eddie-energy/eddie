@@ -15,16 +15,35 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulationAdapter.class);
+
+    private static final long MIN_POSITIVE_WATT = 200;
+    private static final long MAX_POSITIVE_WATT = 1800;
+    private static final long AVG_POSITIVE_WATT = 400;
+    private static final long MIN_NEGATIVE_WATT = 0;
+    private static final long MAX_NEGATIVE_WATT = 1200;
+    private static final long AVG_NEGATIVE_WATT = 100;
+
+    private static final Instant SIMULATION_START = Instant.parse("2024-01-01T00:00:00Z");
+    private static final BigDecimal WATT_SECONDS_PER_KWH = new BigDecimal(3_600_000L);
+    private static final BigDecimal WATT_PER_KW = new BigDecimal(1000L);
+
     private final Random random;
-    private final List<ObisCode> obisCodes;
+
+    private long totalPositiveEnergy = 0;
+    private long totalNegativeEnergy = 0;
+
     @Nullable
     private Disposable periodicFlux;
 
@@ -46,15 +65,10 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
         super(dataSource);
 
         random = new SecureRandom();
-        obisCodes = List.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
-                            ObisCode.NEGATIVE_ACTIVE_ENERGY,
-                            ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
-                            ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER);
 
         LOGGER.info(
-                "Created new SimulationDataSource that will publish random values every {} seconds for obis codes {}",
-                dataSource.pollingInterval(),
-                obisCodes);
+                "Created new SimulationDataSource that will publish random values every {} seconds",
+                dataSource.pollingInterval());
     }
 
     /**
@@ -69,6 +83,10 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     @Override
     public Flux<AiidaRecord> start() {
         LOGGER.info("Starting {}", dataSource().name());
+
+        var secondsSinceStart = ChronoUnit.SECONDS.between(SIMULATION_START, Instant.now());
+        totalPositiveEnergy = AVG_POSITIVE_WATT * secondsSinceStart;
+        totalNegativeEnergy = AVG_NEGATIVE_WATT * secondsSinceStart;
 
         periodicFlux = Flux.interval(Duration.ofSeconds(dataSource().pollingInterval()))
                            .subscribeOn(Schedulers.parallel())
@@ -94,20 +112,42 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
         recordSink.tryEmitComplete();
     }
 
+    private BigDecimal wattToKiloWatt(long watt) {
+        return BigDecimal.valueOf(watt)
+                         .divide(WATT_PER_KW, 3, RoundingMode.HALF_UP);
+    }
+
+    private BigDecimal wattSecondsToKiloWattHours(long wattSeconds) {
+        return BigDecimal.valueOf(wattSeconds)
+                         .divide(WATT_SECONDS_PER_KWH, 8, RoundingMode.HALF_UP);
+    }
+
     private void emitRandomAiidaRecords() {
-        List<AiidaRecordValue> aiidaRecordValues = new ArrayList<>();
+        var positivePower = random.nextLong(MIN_POSITIVE_WATT, MAX_POSITIVE_WATT);
+        var negativePower = random.nextLong(MIN_NEGATIVE_WATT, MAX_NEGATIVE_WATT);
 
-        for (ObisCode code : obisCodes) {
-            var value = String.valueOf(random.nextInt(2000));
+        var positiveEnergy = positivePower * dataSource.pollingInterval();
+        var negativeEnergy = negativePower * dataSource.pollingInterval();
 
-            aiidaRecordValues.add(new AiidaRecordValue(code.toString(),
-                                                       code,
-                                                       value,
-                                                       code.unitOfMeasurement(),
-                                                       value,
-                                                       code.unitOfMeasurement()));
-        }
+        totalPositiveEnergy += positiveEnergy;
+        totalNegativeEnergy += negativeEnergy;
 
-        emitAiidaRecord(aiidaRecordValues);
+        var mappings = Map.of(
+                ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER, wattToKiloWatt(positivePower),
+                ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER, wattToKiloWatt(negativePower),
+                ObisCode.POSITIVE_ACTIVE_ENERGY, wattSecondsToKiloWattHours(totalPositiveEnergy),
+                ObisCode.NEGATIVE_ACTIVE_ENERGY, wattSecondsToKiloWattHours(totalNegativeEnergy)
+        );
+
+        var values = new ArrayList<AiidaRecordValue>();
+        mappings.forEach((code, value) -> values.add(
+                new AiidaRecordValue(code.toString(),
+                                     code,
+                                     value.toString(),
+                                     code.unitOfMeasurement(),
+                                     value.toString(),
+                                     code.unitOfMeasurement())));
+
+        emitAiidaRecord(values);
     }
 }
