@@ -5,6 +5,10 @@ package energy.eddie.regionconnector.de.eta.providers.v0_82;
 
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.AddressRoleType;
 import energy.eddie.cim.v0_82.ap.CodingSchemeTypeList;
@@ -20,6 +24,7 @@ import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
 import energy.eddie.regionconnector.de.eta.providers.IdentifiableAccountingPointData;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +47,16 @@ class IntermediateAccountingPointDataMarketDocumentTest {
             null, null
     );
 
+    private final XmlMessageSerde serde = newSerde();
+
+    private static XmlMessageSerde newSerde() {
+        try {
+            return new XmlMessageSerde();
+        } catch (SerdeInitializationException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
     private static DePermissionRequest permissionRequest() {
         return new DePermissionRequestBuilder()
                 .permissionId("perm-1")
@@ -54,10 +69,24 @@ class IntermediateAccountingPointDataMarketDocumentTest {
     }
 
     private AccountingPointEnvelope toEnvelope(EtaPlusAccountingPointData payload) {
-        return new IntermediateAccountingPointDataMarketDocument(
+        var envelope = new IntermediateAccountingPointDataMarketDocument(
                 cimConfig, deConfiguration,
                 new IdentifiableAccountingPointData(permissionRequest(), payload)
         ).toEnvelope();
+        assertValidatesAgainstXsd(envelope);
+        return envelope;
+    }
+
+    private void assertValidatesAgainstXsd(AccountingPointEnvelope envelope) {
+        String xml;
+        try {
+            xml = new String(serde.serialize(envelope), StandardCharsets.UTF_8);
+        } catch (SerializationException e) {
+            throw new AssertionError("Failed to serialize AccountingPointEnvelope", e);
+        }
+        assertThat(XmlValidator.validateAccountingPointMarketDocument(xml))
+                .as("Serialized envelope must validate against the AccountingPoint XSD:\n%s", xml)
+                .isTrue();
     }
 
     @Test
