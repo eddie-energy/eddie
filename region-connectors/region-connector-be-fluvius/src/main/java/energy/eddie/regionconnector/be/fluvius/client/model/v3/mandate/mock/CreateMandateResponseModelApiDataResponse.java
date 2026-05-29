@@ -4,7 +4,7 @@
 package energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.regionconnector.be.fluvius.client.model.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
 import jakarta.annotation.Nullable;
 
 public record CreateMandateResponseModelApiDataResponse(

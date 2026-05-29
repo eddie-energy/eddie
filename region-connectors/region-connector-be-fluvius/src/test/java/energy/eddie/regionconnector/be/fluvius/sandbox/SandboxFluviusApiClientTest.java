@@ -98,14 +98,14 @@ class SandboxFluviusApiClientTest {
     void testEnergy_callsDecoratee() {
         // Given
         var now = ZonedDateTime.now(ZoneOffset.UTC);
-        when(api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now))
+        when(api.energy("pid", "ean", DataServiceType.DAILY, now, now))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
                         new GetEnergyResponseModel(null)
                 )));
 
         // When
-        var res = sandboxFluviusApiClient.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = sandboxFluviusApiClient.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         StepVerifier.create(res)

@@ -14,7 +14,7 @@ import java.time.ZonedDateTime;
 public record MandateResponseModel(
         @JsonProperty("referenceNumber") @Nullable String referenceNumber,
         @JsonProperty("status") @Nullable Status status,
-        @JsonProperty("eanNumber") @Nullable String eanNumber,
+        @JsonProperty("ean") @Nullable String eanNumber,
         @JsonProperty("energyType") @Nullable EnergyType energyType,
         @JsonProperty("dataPeriodFrom") @Nullable ZonedDateTime dataPeriodFrom,
         @JsonProperty("dataPeriodTo") @Nullable ZonedDateTime dataPeriodTo,
@@ -46,7 +46,7 @@ public record MandateResponseModel(
         @JsonProperty("Rejected")
         REJECTED,
         @JsonProperty("Finished")
-        FINISHED;
+        FINISHED
     }
 
     /**
@@ -77,7 +77,7 @@ public record MandateResponseModel(
         @JsonProperty("VH_dag")
         DAILY,
         @JsonProperty("IG")
-        INSTALLATION;
+        INSTALLATION
     }
 
     public enum RenewalStatus {
@@ -86,6 +86,6 @@ public record MandateResponseModel(
         @JsonProperty("RenewalRequested")
         RENEWAL_REQUESTED,
         @JsonProperty("Expired")
-        EXPIRED;
+        EXPIRED
     }
 }

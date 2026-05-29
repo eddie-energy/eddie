@@ -8,7 +8,7 @@ import jakarta.annotation.Nullable;
 
 public record CreateMandateRequestModel(
         @Nullable @JsonProperty("referenceNumber") String referenceNumber,
-        @Nullable @JsonProperty("eanNumber") String eanNumber,
+        @Nullable @JsonProperty("ean") String ean,
         @Nullable @JsonProperty("dataServiceType") String dataServiceType,
         @Nullable @JsonProperty("dataPeriodFrom") String dataPeriodFrom,
         @Nullable @JsonProperty("dataPeriodTo") String dataPeriodTo,

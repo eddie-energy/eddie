@@ -117,7 +117,7 @@ public class FluviusApiClient implements FluviusApi {
                         .uri(uriBuilder -> uriBuilder
                                 .path("/v3/api/Mandate/energy")
                                 .queryParam("referenceNumber", transformPermissionId(permissionId))
-                                .queryParam("eanNumber", eanNumber)
+                                .queryParam("ean", eanNumber)
                                 .queryParam("DataServiceType", dataServiceType.value())
                                 .queryParam("PeriodType", PERIOD_TYPE_READ_TIME)
                                 .queryParam("from", fromIso)

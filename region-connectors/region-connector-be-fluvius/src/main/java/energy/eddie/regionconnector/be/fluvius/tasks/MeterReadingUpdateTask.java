@@ -65,7 +65,7 @@ public class MeterReadingUpdateTask {
         var permissionId = meterReading.permissionId();
         LOGGER.debug("Updating meterReading {} for permission request {}", meterEan, permissionId);
         var lastMeterReading = meterReading.lastMeterReading();
-        if (latestReading.isAfter(lastMeterReading)) {
+        if (lastMeterReading == null || latestReading.isAfter(lastMeterReading)) {
             meterReading.setLastMeterReading(latestReading);
         }
     }

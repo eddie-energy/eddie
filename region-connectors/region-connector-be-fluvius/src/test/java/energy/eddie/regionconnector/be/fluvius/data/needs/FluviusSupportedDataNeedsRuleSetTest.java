@@ -31,7 +31,7 @@ class FluviusSupportedDataNeedsRuleSetTest {
                         ),
                         new ValidatedHistoricalDataDataNeedRule(
                                 EnergyType.NATURAL_GAS,
-                                List.of(Granularity.PT30M, Granularity.P1D)
+                                List.of(Granularity.PT1H, Granularity.P1D)
                         )
                 );
     }

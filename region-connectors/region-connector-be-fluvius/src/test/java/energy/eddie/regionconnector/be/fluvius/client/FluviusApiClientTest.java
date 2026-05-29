@@ -194,7 +194,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         StepVerifier.create(res)
@@ -210,7 +210,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         StepVerifier.create(res)
@@ -228,7 +228,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         Assertions.assertEquals(Status.UNKNOWN, api.health().getStatus());

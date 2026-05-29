@@ -27,7 +27,7 @@ public class FluviusDataNeedsRuleSet implements DataNeedRuleSet {
     public List<DataNeedRule> dataNeedRules() {
         var granularitiesForGas = sandboxEnabled
                 ? List.of(Granularity.PT15M, Granularity.P1D)
-                : List.of(Granularity.PT30M, Granularity.P1D);
+                : List.of(Granularity.PT1H, Granularity.P1D);
         return List.of(
                 new ValidatedHistoricalDataDataNeedRule(
                         EnergyType.ELECTRICITY,
