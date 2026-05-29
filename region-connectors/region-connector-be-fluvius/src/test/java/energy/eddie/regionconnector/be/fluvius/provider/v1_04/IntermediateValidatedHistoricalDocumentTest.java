@@ -4,593 +4,110 @@
 package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
-import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
-import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.*;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.xmlunit.builder.DiffBuilder;
+import tools.jackson.databind.ObjectMapper;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
 
-
-// TODO
-@Disabled("Until new mapping is done")
-@ExtendWith(MockitoExtension.class)
 class IntermediateValidatedHistoricalDocumentTest {
+    private final ClassLoader classLoader = this.getClass().getClassLoader();
+    private final ObjectMapper mapper = new ObjectMapper();
     private final XmlMessageSerde serde = new XmlMessageSerde();
-    @Mock
-    private DataNeedsService dataNeedsService;
+
+    private final FluviusOAuthConfiguration fluviusConfig = new FluviusOAuthConfiguration("http://localhost:8080",
+                                                                                          "client-id",
+                                                                                          "client-secret",
+                                                                                          "tenant-id",
+                                                                                          "scope");
 
     IntermediateValidatedHistoricalDocumentTest() throws SerdeInitializationException {}
 
-    @Test
-    void givenElectricityDailyResponseData_whenToVhd_thenReturnVhd() throws SerializationException {
+    @ParameterizedTest
+    @MethodSource("testToVhd")
+    void testToVhd(
+            String inputJsonFile,
+            String expectedXmlFile,
+            Granularity granularity
+    ) throws SerializationException {
         // Given
-        when(dataNeedsService.getById("dnid")).thenReturn(new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(null, null, null),
-                EnergyType.ELECTRICITY,
-                Granularity.P1D,
-                Granularity.P1D
-        ));
-        // language=XML
-        var expected = """
-                <?xml version="1.0" encoding="UTF-8" ?>
-                <ns:VHD_Envelope xmlns:ns="https//eddie.energy/CIM/VHD_v1.04">
-                    <ns:messageDocumentHeader.creationDateTime>ignored</ns:messageDocumentHeader.creationDateTime>
-                    <ns:messageDocumentHeader.metaInformation.connectionId>cid</ns:messageDocumentHeader.metaInformation.connectionId>
-                    <ns:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns:messageDocumentHeader.metaInformation.dataNeedId>
-                    <ns:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns:messageDocumentHeader.metaInformation.documentType>
-                    <ns:messageDocumentHeader.metaInformation.permissionId>pid</ns:messageDocumentHeader.metaInformation.permissionId>
-                    <ns:messageDocumentHeader.metaInformation.region.connector>be-fluvius</ns:messageDocumentHeader.metaInformation.region.connector>
-                    <ns:messageDocumentHeader.metaInformation.region.country>NBE</ns:messageDocumentHeader.metaInformation.region.country>
-                    <ns:MarketDocument>
-                        <ns:mRID>anything</ns:mRID>
-                        <ns:revisionNumber>104</ns:revisionNumber>
-                        <ns:description>1</ns:description>
-                        <ns:type>A45</ns:type>
-                        <ns:createdDateTime>ignored</ns:createdDateTime>
-                        <ns:sender_MarketParticipant.marketRole.type>A26</ns:sender_MarketParticipant.marketRole.type>
-                        <ns:receiver_MarketParticipant.marketRole.type>A13</ns:receiver_MarketParticipant.marketRole.type>
-                        <ns:sender_MarketParticipant.mRID codingScheme="NBE">Fluvius</ns:sender_MarketParticipant.mRID>
-                        <ns:receiver_MarketParticipant.mRID codingScheme="NBE">client-id</ns:receiver_MarketParticipant.mRID>
-                        <ns:period.timeInterval>
-                            <ns:start>2025-01-01T00:00Z</ns:start>
-                            <ns:end>2025-01-02T00:00Z</ns:end>
-                        </ns:period.timeInterval>
-                        <ns:process.processType>A16</ns:process.processType>
-                        <ns:TimeSeries>
-                            <ns:mRID>ignored</ns:mRID>
-                            <ns:version>2</ns:version>
-                            <ns:businessType>A07</ns:businessType>
-                            <ns:product>8716867000030</ns:product>
-                            <ns:energy_Measurement_Unit.name>KWH</ns:energy_Measurement_Unit.name>
-                            <ns:flowDirection.direction>A03</ns:flowDirection.direction>
-                            <ns:Period>
-                                <ns:resolution>P0Y0M1DT0H0M0.000S</ns:resolution>
-                                <ns:timeInterval>
-                                    <ns:start>2025-01-01T00:00Z</ns:start>
-                                    <ns:end>2025-01-02T00:00Z</ns:end>
-                                </ns:timeInterval>
-                                <ns:Point>
-                                    <ns:position>1</ns:position>
-                                    <ns:energy_Quantity.quantity>10.0</ns:energy_Quantity.quantity>
-                                    <ns:energy_Quantity.quality>A03</ns:energy_Quantity.quality>
-                                </ns:Point>
-                            </ns:Period>
-                            <ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>2</ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
-                            <ns:marketEvaluationPoint.meterReadings.mRID codingScheme="NBE">mid</ns:marketEvaluationPoint.meterReadings.mRID>
-                            <ns:reason.code>999</ns:reason.code>
-                        </ns:TimeSeries>
-                    </ns:MarketDocument>
-                </ns:VHD_Envelope>
-                """;
-        var config = new FluviusOAuthConfiguration("token", "client-id", "secret", "tenant", "scope");
-        var pr = DefaultFluviusPermissionRequestBuilder
-                .create()
-                .permissionId("pid")
-                .connectionId("cid")
-                .dataNeedId("dnid")
-                .granularity(Granularity.P1D)
-                .build();
-        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = ZonedDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse(
-                new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
-                new GetEnergyResponseModel(
-                        new Headpoint(
-                                "ean",
-                                energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY,
-                                List.of(
-                                        new PhysicalMeter(
-                                                "1",
-                                                "mid",
-                                                List.of(
-                                                        new MeasurementSlice(
-                                                                timestampStart,
-                                                                timestampEnd,
-                                                                List.of(
-                                                                        new Measurement(
-                                                                                new Reading(
-                                                                                        new Total(
-                                                                                                20.0,
-                                                                                                Unit.KWH,
-                                                                                                ValidationState.READ,
-                                                                                                null
-                                                                                        )
-                                                                                ),
-                                                                                null,
-                                                                                null,
-                                                                                null
-                                                                        )
-                                                                )
-                                                        )
-                                                ),
-                                                null,
-                                                null
-                                        )
-                                )
-                        )
+        var json = classLoader.getResourceAsStream(inputJsonFile);
+        var payload = mapper.readValue(json, GetEnergyResponseModelApiDataResponse.class);
+        var pr = DefaultFluviusPermissionRequestBuilder.create()
+                                                       .permissionId("pid")
+                                                       .connectionId("cid")
+                                                       .dataNeedId("dnid")
+                                                       .granularity(granularity)
+                                                       .build();
+        var doc = new IntermediateValidatedHistoricalDocument(fluviusConfig, new IdentifiableMeteringData(pr, payload));
+        var ignoredNames = Set.of(
+                "mRID",
+                "messageDocumentHeader.creationDateTime"
+        );
+        var expectedStream = classLoader.getResourceAsStream(expectedXmlFile);
+        assert expectedStream != null;
+        var expected = new BufferedReader(new InputStreamReader(expectedStream))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        // When
+        var res = doc.toVHD();
+
+        // Then
+        assertNotNull(res);
+        var bytes = serde.serialize(res);
+        var testXml = new String(bytes, StandardCharsets.UTF_8);
+        var myDiff = DiffBuilder.compare(expected)
+                                .withTest(testXml)
+                                .ignoreWhitespace()
+                                .ignoreComments()
+                                .checkForSimilar()
+                                .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
+                                .build();
+        System.out.println(new String(bytes, StandardCharsets.UTF_8));
+        assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
+        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(bytes));
+    }
+
+    private static Stream<Arguments> testToVhd() {
+        return Stream.of(
+                Arguments.of(
+                        "electricity_data_measurement_quarter_hourly.json",
+                        "cim/v1_04/vhd_for_physical_meters.xml",
+                        Granularity.PT15M
+                ),
+                Arguments.of(
+                        "electricity_data_headpoints_measurement_quarter_hourly.json",
+                        "cim/v1_04/vhd_for_headpoints.xml",
+                        Granularity.PT15M
+                ),
+                Arguments.of(
+                        "electricity_data_headpoints_and_physical_meters_measurement_quarter_hourly.json",
+                        "cim/v1_04/vhd_for_headpoints_and_physical_meters.xml",
+                        Granularity.PT15M
+                ),
+                Arguments.of(
+                        "gas_data_measurement_hourly.json",
+                        "cim/v1_04/vhd_for_physical_meters_for_gas.xml",
+                        Granularity.PT1H
                 )
         );
-        var id = new IntermediateValidatedHistoricalDocument(
-                config,
-                new IdentifiableMeteringData(pr, data),
-                dataNeedsService
-        );
-
-        // When
-        var vhds = id.toVHD();
-
-        // Then
-        var ignoredNames = Set.of(
-                "messageDocumentHeader.creationDateTime",
-                "createdDateTime",
-                "dateAndOrTime.dateTime",
-                "mRID"
-        );
-        var res = vhds.getFirst();
-        var bytes = serde.serialize(res);
-        var testXml = new String(bytes, StandardCharsets.UTF_8);
-        var myDiff = DiffBuilder.compare(expected)
-                                .withTest(testXml)
-                                .ignoreWhitespace()
-                                .ignoreComments()
-                                .checkForSimilar()
-                                .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
-                                .build();
-        assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
-        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(bytes));
-    }
-
-    @Test
-    void givenElectricityQuarterHourlyResponseData_whenToVhd_thenReturnVhd() throws SerializationException {
-        // Given
-        when(dataNeedsService.getById("dnid")).thenReturn(new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(null, null, null),
-                EnergyType.ELECTRICITY,
-                Granularity.PT15M,
-                Granularity.P1D
-        ));
-        // language=XML
-        var expected = """
-                <?xml version="1.0" encoding="UTF-8" ?>
-                <ns:VHD_Envelope xmlns:ns="https//eddie.energy/CIM/VHD_v1.04">
-                    <ns:messageDocumentHeader.creationDateTime>ignored</ns:messageDocumentHeader.creationDateTime>
-                    <ns:messageDocumentHeader.metaInformation.connectionId>cid</ns:messageDocumentHeader.metaInformation.connectionId>
-                    <ns:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns:messageDocumentHeader.metaInformation.dataNeedId>
-                    <ns:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns:messageDocumentHeader.metaInformation.documentType>
-                    <ns:messageDocumentHeader.metaInformation.permissionId>pid</ns:messageDocumentHeader.metaInformation.permissionId>
-                    <ns:messageDocumentHeader.metaInformation.region.connector>be-fluvius</ns:messageDocumentHeader.metaInformation.region.connector>
-                    <ns:messageDocumentHeader.metaInformation.region.country>NBE</ns:messageDocumentHeader.metaInformation.region.country>
-                    <ns:MarketDocument>
-                        <ns:mRID>anything</ns:mRID>
-                        <ns:revisionNumber>104</ns:revisionNumber>
-                        <ns:description>1</ns:description>
-                        <ns:type>A45</ns:type>
-                        <ns:createdDateTime>ignored</ns:createdDateTime>
-                        <ns:sender_MarketParticipant.marketRole.type>A26</ns:sender_MarketParticipant.marketRole.type>
-                        <ns:receiver_MarketParticipant.marketRole.type>A13</ns:receiver_MarketParticipant.marketRole.type>
-                        <ns:sender_MarketParticipant.mRID codingScheme="NBE">Fluvius</ns:sender_MarketParticipant.mRID>
-                        <ns:receiver_MarketParticipant.mRID codingScheme="NBE">client-id</ns:receiver_MarketParticipant.mRID>
-                        <ns:period.timeInterval>
-                            <ns:start>2025-01-01T00:00Z</ns:start>
-                            <ns:end>2025-01-01T00:15Z</ns:end>
-                        </ns:period.timeInterval>
-                        <ns:process.processType>A16</ns:process.processType>
-                        <ns:TimeSeries>
-                            <ns:mRID>ignored</ns:mRID>
-                            <ns:version>2</ns:version>
-                            <ns:businessType>A07</ns:businessType>
-                            <ns:product>8716867000030</ns:product>
-                            <ns:energy_Measurement_Unit.name>KWH</ns:energy_Measurement_Unit.name>
-                            <ns:flowDirection.direction>A03</ns:flowDirection.direction>
-                            <ns:Period>
-                                <ns:resolution>P0Y0M0DT0H15M0.000S</ns:resolution>
-                                <ns:timeInterval>
-                                    <ns:start>2025-01-01T00:00Z</ns:start>
-                                    <ns:end>2025-01-01T00:15Z</ns:end>
-                                </ns:timeInterval>
-                                <ns:Point>
-                                    <ns:position>1</ns:position>
-                                    <ns:energy_Quantity.quantity>10.0</ns:energy_Quantity.quantity>
-                                    <ns:energy_Quantity.quality>A04</ns:energy_Quantity.quality>
-                                </ns:Point>
-                            </ns:Period>
-                            <ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>2</ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
-                            <ns:marketEvaluationPoint.meterReadings.mRID codingScheme="NBE">mid</ns:marketEvaluationPoint.meterReadings.mRID>
-                            <ns:reason.code>999</ns:reason.code>
-                        </ns:TimeSeries>
-                    </ns:MarketDocument>
-                </ns:VHD_Envelope>
-                """;
-        var config = new FluviusOAuthConfiguration("token", "client-id", "secret", "tenant", "scope");
-        var pr = DefaultFluviusPermissionRequestBuilder
-                .create()
-                .permissionId("pid")
-                .connectionId("cid")
-                .dataNeedId("dnid")
-                .granularity(Granularity.PT15M)
-                .build();
-        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = ZonedDateTime.of(2025, 1, 1, 0, 15, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse(
-                new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
-                new GetEnergyResponseModel(
-                        new Headpoint(
-                                "ean",
-                                energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY,
-                                List.of(
-                                        new PhysicalMeter(
-                                                "1",
-                                                "mid",
-                                                List.of(),
-                                                List.of(),
-                                                List.of(
-                                                        new MeasurementSlice(
-                                                                timestampStart,
-                                                                timestampEnd,
-                                                                List.of(
-                                                                        new Measurement(
-                                                                                new Reading(
-                                                                                        new Total(
-                                                                                                20.0,
-                                                                                                Unit.KWH,
-                                                                                                ValidationState.READ,
-                                                                                                null
-                                                                                        )
-                                                                                ),
-                                                                                null,
-                                                                                null,
-                                                                                null
-                                                                        )
-                                                                )
-                                                        )
-                                                )
-                                        )
-                                )
-                        )
-                )
-        );
-        var id = new IntermediateValidatedHistoricalDocument(
-                config,
-                new IdentifiableMeteringData(pr, data),
-                dataNeedsService
-        );
-
-        // When
-        var vhds = id.toVHD();
-
-        // Then
-        var ignoredNames = Set.of(
-                "messageDocumentHeader.creationDateTime",
-                "createdDateTime",
-                "dateAndOrTime.dateTime",
-                "mRID"
-        );
-        var res = vhds.getFirst();
-        var bytes = serde.serialize(res);
-        var testXml = new String(bytes, StandardCharsets.UTF_8);
-        var myDiff = DiffBuilder.compare(expected)
-                                .withTest(testXml)
-                                .ignoreWhitespace()
-                                .ignoreComments()
-                                .checkForSimilar()
-                                .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
-                                .build();
-        assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
-        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(bytes));
-    }
-
-
-    @Test
-    void givenHourlyGasResponseData_whenToVhd_thenReturnVhd() throws SerializationException {
-        // Given
-        when(dataNeedsService.getById("dnid")).thenReturn(new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(null, null, null),
-                EnergyType.NATURAL_GAS,
-                Granularity.PT15M,
-                Granularity.P1D
-        ));
-        // language=XML
-        var expected = """
-                <?xml version="1.0" encoding="UTF-8" ?>
-                <ns:VHD_Envelope xmlns:ns="https//eddie.energy/CIM/VHD_v1.04">
-                    <ns:messageDocumentHeader.creationDateTime>ignored</ns:messageDocumentHeader.creationDateTime>
-                    <ns:messageDocumentHeader.metaInformation.connectionId>cid</ns:messageDocumentHeader.metaInformation.connectionId>
-                    <ns:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns:messageDocumentHeader.metaInformation.dataNeedId>
-                    <ns:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns:messageDocumentHeader.metaInformation.documentType>
-                    <ns:messageDocumentHeader.metaInformation.permissionId>pid</ns:messageDocumentHeader.metaInformation.permissionId>
-                    <ns:messageDocumentHeader.metaInformation.region.connector>be-fluvius</ns:messageDocumentHeader.metaInformation.region.connector>
-                    <ns:messageDocumentHeader.metaInformation.region.country>NBE</ns:messageDocumentHeader.metaInformation.region.country>
-                    <ns:MarketDocument>
-                        <ns:mRID>anything</ns:mRID>
-                        <ns:revisionNumber>104</ns:revisionNumber>
-                        <ns:description>1</ns:description>
-                        <ns:type>A45</ns:type>
-                        <ns:createdDateTime>ignored</ns:createdDateTime>
-                        <ns:sender_MarketParticipant.marketRole.type>A26</ns:sender_MarketParticipant.marketRole.type>
-                        <ns:receiver_MarketParticipant.marketRole.type>A13</ns:receiver_MarketParticipant.marketRole.type>
-                        <ns:sender_MarketParticipant.mRID codingScheme="NBE">Fluvius</ns:sender_MarketParticipant.mRID>
-                        <ns:receiver_MarketParticipant.mRID codingScheme="NBE">client-id</ns:receiver_MarketParticipant.mRID>
-                        <ns:period.timeInterval>
-                            <ns:start>2025-01-01T00:00Z</ns:start>
-                            <ns:end>2025-01-01T01:00Z</ns:end>
-                        </ns:period.timeInterval>
-                        <ns:process.processType>A16</ns:process.processType>
-                        <ns:TimeSeries>
-                            <ns:mRID>ignored</ns:mRID>
-                            <ns:version>2</ns:version>
-                            <ns:businessType>A04</ns:businessType>
-                            <ns:product>8716867000030</ns:product>
-                            <ns:energy_Measurement_Unit.name>MTQ</ns:energy_Measurement_Unit.name>
-                            <ns:flowDirection.direction>A02</ns:flowDirection.direction>
-                            <ns:Period>
-                                <ns:resolution>P0Y0M0DT1H0M0.000S</ns:resolution>
-                                <ns:timeInterval>
-                                    <ns:start>2025-01-01T00:00Z</ns:start>
-                                    <ns:end>2025-01-01T01:00Z</ns:end>
-                                </ns:timeInterval>
-                                <ns:Point>
-                                    <ns:position>1</ns:position>
-                                    <ns:energy_Quantity.quantity>10.0</ns:energy_Quantity.quantity>
-                                    <ns:energy_Quantity.quality>A04</ns:energy_Quantity.quality>
-                                </ns:Point>
-                            </ns:Period>
-                            <ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>7</ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
-                            <ns:marketEvaluationPoint.meterReadings.mRID codingScheme="NBE">mid</ns:marketEvaluationPoint.meterReadings.mRID>
-                            <ns:reason.code>999</ns:reason.code>
-                        </ns:TimeSeries>
-                    </ns:MarketDocument>
-                </ns:VHD_Envelope>
-                """;
-        var config = new FluviusOAuthConfiguration("token", "client-id", "secret", "tenant", "scope");
-        var pr = DefaultFluviusPermissionRequestBuilder
-                .create()
-                .permissionId("pid")
-                .connectionId("cid")
-                .dataNeedId("dnid")
-                .granularity(Granularity.PT1H)
-                .build();
-        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = ZonedDateTime.of(2025, 1, 1, 1, 0, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse(
-                new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
-                new GetEnergyResponseModel(new Headpoint(
-                        "ean",
-                        energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.GAS,
-                        List.of(new PhysicalMeter(
-                                "1",
-                                "mid",
-                                null,
-                                List.of(
-                                        new MeasurementSlice(
-                                                timestampStart,
-                                                timestampEnd,
-                                                List.of(
-                                                        new Measurement(
-                                                                new Reading(
-                                                                        new Total(
-                                                                                10.0,
-                                                                                Unit.M3,
-                                                                                ValidationState.READ,
-                                                                                GasConversionFactor.C
-                                                                        )
-                                                                ),
-                                                                null,
-                                                                null,
-                                                                null
-                                                        )
-                                                )
-                                        )
-                                ),
-                                null
-                        ))
-                ))
-        );
-        var id = new IntermediateValidatedHistoricalDocument(
-                config,
-                new IdentifiableMeteringData(pr, data),
-                dataNeedsService
-        );
-
-        // When
-        var vhds = id.toVHD();
-
-        // Then
-        var ignoredNames = Set.of(
-                "messageDocumentHeader.creationDateTime",
-                "createdDateTime",
-                "dateAndOrTime.dateTime",
-                "mRID"
-        );
-        var res = vhds.getFirst();
-        var bytes = serde.serialize(res);
-        var testXml = new String(bytes, StandardCharsets.UTF_8);
-        var myDiff = DiffBuilder.compare(expected)
-                                .withTest(testXml)
-                                .ignoreWhitespace()
-                                .ignoreComments()
-                                .checkForSimilar()
-                                .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
-                                .build();
-        assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
-        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(bytes));
-    }
-
-    @Test
-    void givenGasDailyResponseData_whenToVhd_thenReturnVhd() throws SerializationException {
-        // Given
-        when(dataNeedsService.getById("dnid")).thenReturn(new ValidatedHistoricalDataDataNeed(
-                new RelativeDuration(null, null, null),
-                EnergyType.NATURAL_GAS,
-                Granularity.PT15M,
-                Granularity.P1D
-        ));
-        // language=XML
-        var expected = """
-                <?xml version="1.0" encoding="UTF-8" ?>
-                <ns:VHD_Envelope xmlns:ns="https//eddie.energy/CIM/VHD_v1.04">
-                    <ns:messageDocumentHeader.creationDateTime>ignored</ns:messageDocumentHeader.creationDateTime>
-                    <ns:messageDocumentHeader.metaInformation.connectionId>cid</ns:messageDocumentHeader.metaInformation.connectionId>
-                    <ns:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns:messageDocumentHeader.metaInformation.dataNeedId>
-                    <ns:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns:messageDocumentHeader.metaInformation.documentType>
-                    <ns:messageDocumentHeader.metaInformation.permissionId>pid</ns:messageDocumentHeader.metaInformation.permissionId>
-                    <ns:messageDocumentHeader.metaInformation.region.connector>be-fluvius</ns:messageDocumentHeader.metaInformation.region.connector>
-                    <ns:messageDocumentHeader.metaInformation.region.country>NBE</ns:messageDocumentHeader.metaInformation.region.country>
-                    <ns:MarketDocument>
-                        <ns:mRID>anything</ns:mRID>
-                        <ns:revisionNumber>104</ns:revisionNumber>
-                        <ns:description>1</ns:description>
-                        <ns:type>A45</ns:type>
-                        <ns:createdDateTime>ignored</ns:createdDateTime>
-                        <ns:sender_MarketParticipant.marketRole.type>A26</ns:sender_MarketParticipant.marketRole.type>
-                        <ns:receiver_MarketParticipant.marketRole.type>A13</ns:receiver_MarketParticipant.marketRole.type>
-                        <ns:sender_MarketParticipant.mRID codingScheme="NBE">Fluvius</ns:sender_MarketParticipant.mRID>
-                        <ns:receiver_MarketParticipant.mRID codingScheme="NBE">client-id</ns:receiver_MarketParticipant.mRID>
-                        <ns:period.timeInterval>
-                            <ns:start>2025-01-01T00:00Z</ns:start>
-                            <ns:end>2025-01-02T00:00Z</ns:end>
-                        </ns:period.timeInterval>
-                        <ns:process.processType>A16</ns:process.processType>
-                        <ns:TimeSeries>
-                            <ns:mRID>ignored</ns:mRID>
-                            <ns:version>2</ns:version>
-                            <ns:businessType>A04</ns:businessType>
-                            <ns:product>8716867000030</ns:product>
-                            <ns:energy_Measurement_Unit.name>MTQ</ns:energy_Measurement_Unit.name>
-                            <ns:flowDirection.direction>A02</ns:flowDirection.direction>
-                            <ns:Period>
-                                <ns:resolution>P0Y0M1DT0H0M0.000S</ns:resolution>
-                                <ns:timeInterval>
-                                    <ns:start>2025-01-01T00:00Z</ns:start>
-                                    <ns:end>2025-01-02T00:00Z</ns:end>
-                                </ns:timeInterval>
-                                <ns:Point>
-                                    <ns:position>1</ns:position>
-                                    <ns:energy_Quantity.quantity>10.0</ns:energy_Quantity.quantity>
-                                    <ns:energy_Quantity.quality>A04</ns:energy_Quantity.quality>
-                                </ns:Point>
-                            </ns:Period>
-                            <ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>7</ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
-                            <ns:marketEvaluationPoint.meterReadings.mRID codingScheme="NBE">mid</ns:marketEvaluationPoint.meterReadings.mRID>
-                            <ns:reason.code>999</ns:reason.code>
-                        </ns:TimeSeries>
-                    </ns:MarketDocument>
-                </ns:VHD_Envelope>
-                """;
-        var config = new FluviusOAuthConfiguration("token", "client-id", "secret", "tenant", "scope");
-        var pr = DefaultFluviusPermissionRequestBuilder
-                .create()
-                .permissionId("pid")
-                .connectionId("cid")
-                .dataNeedId("dnid")
-                .granularity(Granularity.P1D)
-                .build();
-        var timestampStart = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
-        var timestampEnd = ZonedDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
-        var data = new GetEnergyResponseModelApiDataResponse(
-                new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
-                new GetEnergyResponseModel(new Headpoint(
-                        "ean",
-                        energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.GAS,
-                        List.of(new PhysicalMeter(
-                                "1",
-                                "mid",
-                                List.of(
-                                        new MeasurementSlice(
-                                                timestampStart,
-                                                timestampEnd,
-                                                List.of(
-                                                        new Measurement(
-                                                                new Reading(
-                                                                        new Total(
-                                                                                10.0,
-                                                                                Unit.M3,
-                                                                                ValidationState.READ,
-                                                                                GasConversionFactor.C
-                                                                        )
-                                                                ),
-                                                                null,
-                                                                null,
-                                                                null
-                                                        )
-                                                )
-                                        )
-                                ),
-                                null,
-                                null
-                        ))
-                ))
-        );
-        var id = new IntermediateValidatedHistoricalDocument(
-                config,
-                new IdentifiableMeteringData(pr, data),
-                dataNeedsService
-        );
-
-        // When
-        var vhds = id.toVHD();
-
-        // Then
-        var ignoredNames = Set.of(
-                "messageDocumentHeader.creationDateTime",
-                "createdDateTime",
-                "dateAndOrTime.dateTime",
-                "mRID"
-        );
-        var res = vhds.getFirst();
-        var bytes = serde.serialize(res);
-        var testXml = new String(bytes, StandardCharsets.UTF_8);
-        var myDiff = DiffBuilder.compare(expected)
-                                .withTest(testXml)
-                                .ignoreWhitespace()
-                                .ignoreComments()
-                                .checkForSimilar()
-                                .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
-                                .build();
-        assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
-        assertTrue(XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(bytes));
     }
 }

@@ -5,7 +5,6 @@ package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
 
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
@@ -19,26 +18,22 @@ public class FluviusValidatedHistoricalDataMarketDocumentProvider {
 
     private final Flux<IdentifiableMeteringData> identifiableMeterReadings;
     private final FluviusOAuthConfiguration fluviusConfig;
-    private final DataNeedsService dataNeedsService;
 
     public FluviusValidatedHistoricalDataMarketDocumentProvider(
             FluviusOAuthConfiguration fluviusConfig,
-            IdentifiableDataStreams identifiableDataStreams,
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-            DataNeedsService dataNeedsService
+            IdentifiableDataStreams identifiableDataStreams
     ) {
         this.fluviusConfig = fluviusConfig;
         this.identifiableMeterReadings = identifiableDataStreams.getMeteringData();
-        this.dataNeedsService = dataNeedsService;
     }
 
     @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return identifiableMeterReadings.map(this::getIntermediateVHD)
-                                        .flatMapIterable(IntermediateValidatedHistoricalDocument::toVHD);
+                                        .mapNotNull(IntermediateValidatedHistoricalDocument::toVHD);
     }
 
     private IntermediateValidatedHistoricalDocument getIntermediateVHD(IdentifiableMeteringData identifiableMeteringData) {
-        return new IntermediateValidatedHistoricalDocument(fluviusConfig, identifiableMeteringData, dataNeedsService);
+        return new IntermediateValidatedHistoricalDocument(fluviusConfig, identifiableMeteringData);
     }
 }

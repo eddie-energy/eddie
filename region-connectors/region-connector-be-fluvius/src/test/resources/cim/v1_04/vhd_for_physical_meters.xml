@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<!-- @formatter:off -->
+<ns:VHD_Envelope xmlns:ns="https//eddie.energy/CIM/VHD_v1.04">
+    <ns:messageDocumentHeader.creationDateTime>2026-01-01T00:00:00Z</ns:messageDocumentHeader.creationDateTime>
+    <ns:messageDocumentHeader.metaInformation.connectionId>cid</ns:messageDocumentHeader.metaInformation.connectionId>
+    <ns:messageDocumentHeader.metaInformation.dataNeedId>dnid</ns:messageDocumentHeader.metaInformation.dataNeedId>
+    <ns:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document
+    </ns:messageDocumentHeader.metaInformation.documentType>
+    <ns:messageDocumentHeader.metaInformation.permissionId>pid</ns:messageDocumentHeader.metaInformation.permissionId>
+    <ns:messageDocumentHeader.metaInformation.region.connector>be-fluvius
+    </ns:messageDocumentHeader.metaInformation.region.connector>
+    <ns:messageDocumentHeader.metaInformation.region.country>NBE
+    </ns:messageDocumentHeader.metaInformation.region.country>
+    <ns:MarketDocument>
+        <ns:mRID>ignored</ns:mRID>
+        <ns:revisionNumber>104</ns:revisionNumber>
+        <ns:type>A45</ns:type>
+        <ns:createdDateTime>2026-05-28T09:37:08Z</ns:createdDateTime>
+        <ns:sender_MarketParticipant.mRID codingScheme="NBE">Fluvius</ns:sender_MarketParticipant.mRID>
+        <ns:sender_MarketParticipant.marketRole.type>A26</ns:sender_MarketParticipant.marketRole.type>
+        <ns:receiver_MarketParticipant.mRID codingScheme="NBE">client-id</ns:receiver_MarketParticipant.mRID>
+        <ns:receiver_MarketParticipant.marketRole.type>A13</ns:receiver_MarketParticipant.marketRole.type>
+        <ns:period.timeInterval>
+            <ns:start>2024-12-01T00:00Z</ns:start>
+            <ns:end>2024-12-01T00:30Z</ns:end>
+        </ns:period.timeInterval>
+        <ns:process.processType>A16</ns:process.processType>
+        <ns:TimeSeries>
+            <ns:version>1</ns:version>
+            <ns:mRID>ignored</ns:mRID>
+            <ns:businessType>A04</ns:businessType>
+            <ns:product>8716867000030</ns:product>
+            <ns:energy_Measurement_Unit.name>KWH</ns:energy_Measurement_Unit.name>
+            <ns:flowDirection.direction>A02</ns:flowDirection.direction>
+            <ns:Period>
+                <ns:resolution>P0Y0M0DT0H15M0.000S</ns:resolution>
+                <ns:timeInterval>
+                    <ns:start>2024-12-01T00:00Z</ns:start>
+                    <ns:end>2024-12-01T00:15Z</ns:end>
+                </ns:timeInterval>
+                <ns:Point>
+                    <ns:position>1</ns:position>
+                    <ns:energy_Quantity.quantity>0.009</ns:energy_Quantity.quantity>
+                    <ns:energy_Quantity.quality>A03</ns:energy_Quantity.quality>
+                </ns:Point>
+                <ns:reason.code>999</ns:reason.code>
+            </ns:Period>
+            <ns:marketEvaluationPoint.mRID codingScheme="NBE">541440010000000001</ns:marketEvaluationPoint.mRID>
+            <ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>2</ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
+            <ns:reason.code>999</ns:reason.code>
+        </ns:TimeSeries>
+        <ns:TimeSeries>
+            <ns:version>1</ns:version>
+            <ns:mRID>ignored</ns:mRID>
+            <ns:businessType>A04</ns:businessType>
+            <ns:product>8716867000030</ns:product>
+            <ns:energy_Measurement_Unit.name>KWH</ns:energy_Measurement_Unit.name>
+            <ns:flowDirection.direction>A02</ns:flowDirection.direction>
+            <ns:Period>
+                <ns:resolution>P0Y0M0DT0H15M0.000S</ns:resolution>
+                <ns:timeInterval>
+                    <ns:start>2024-12-01T00:15Z</ns:start>
+                    <ns:end>2024-12-01T00:30Z</ns:end>
+                </ns:timeInterval>
+                <ns:Point>
+                    <ns:position>1</ns:position>
+                    <ns:energy_Quantity.quantity>0.01</ns:energy_Quantity.quantity>
+                    <ns:energy_Quantity.quality>A03</ns:energy_Quantity.quality>
+                </ns:Point>
+                <ns:reason.code>999</ns:reason.code>
+            </ns:Period>
+            <ns:marketEvaluationPoint.mRID codingScheme="NBE">541440010000000001</ns:marketEvaluationPoint.mRID>
+            <ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>2</ns:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
+            <ns:reason.code>999</ns:reason.code>
+        </ns:TimeSeries>
+    </ns:MarketDocument>
+</ns:VHD_Envelope>
