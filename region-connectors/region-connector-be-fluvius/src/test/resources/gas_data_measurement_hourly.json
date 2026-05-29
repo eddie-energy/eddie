@@ -1,0 +1,35 @@
+{
+  "data": {
+    "headpoint": {
+      "$type": "metering-on-meter",
+      "ean": "541440010000000001",
+      "energyType": "G",
+      "physicalMeters": [
+        {
+          "seqNumber": "1",
+          "meterID": "1SAG1234567890",
+          "hourlyEnergy": [
+            {
+              "start": "2024-12-01T00:00:00Z",
+              "end": "2024-12-01T01:00:00Z",
+              "measurements": [
+                {
+                  "offtake": {
+                    "total": {
+                      "value": 0.009,
+                      "unit": "m3",
+                      "validationState": "READ"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "_meta": {
+    "fetchTime": "2026-05-28T09:37:08Z"
+  }
+}

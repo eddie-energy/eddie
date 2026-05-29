@@ -5,6 +5,15 @@ package energy.eddie.regionconnector.be.fluvius.client.model.v3.energy;
 
 import org.jspecify.annotations.Nullable;
 
-public record Measurement(@Nullable Reading offtake, @Nullable Reading injection,
+public record Measurement(@Nullable Reading offtake,
+                          @Nullable Reading injection,
                           @Nullable Reading production,
-                          @Nullable Reading auxiliary) {}
+                          @Nullable Reading auxiliary) {
+    public boolean supportsInjection() {
+        return injection != null;
+    }
+
+    public boolean supportsOfftake() {
+        return offtake != null;
+    }
+}

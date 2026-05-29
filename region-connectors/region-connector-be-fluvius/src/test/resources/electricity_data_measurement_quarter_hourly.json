@@ -1,41 +1,50 @@
 {
   "data": {
-    "fetchTime": "2025-07-17T08:08:21Z",
-    "gasMeters": [],
-    "electricityMeters": [
-      {
-        "seqNumber": 1,
-        "meterID": "0001",
-        "dailyEnergy": [],
-        "quarterHourlyEnergy": [
-          {
-            "timestampStart": "2025-04-17T00:00:00Z",
-            "timestampEnd": "2025-04-17T00:15:00Z",
-            "measurement": [
-              {
-                "unit": "kWh",
-                "offtakeValue": 0.009,
-                "offtakeValidationState": "EST",
-                "injectionValue": 0.0,
-                "injectionValidationState": "EST"
-              }
-            ]
-          },
-          {
-            "timestampStart": "2025-04-17T00:15:00Z",
-            "timestampEnd": "2025-04-17T00:30:00Z",
-            "measurement": [
-              {
-                "unit": "kWh",
-                "offtakeValue": 0.008,
-                "offtakeValidationState": "EST",
-                "injectionValue": 0.0,
-                "injectionValidationState": "EST"
-              }
-            ]
-          }
-        ]
-      }
-    ]
+    "headpoint": {
+      "$type": "metering-on-meter",
+      "ean": "541440010000000001",
+      "energyType": "E",
+      "physicalMeters": [
+        {
+          "seqNumber": "1",
+          "meterID": "1SAG1234567890",
+          "quarterHourlyEnergy": [
+            {
+              "start": "2024-12-01T00:00:00Z",
+              "end": "2024-12-01T00:15:00Z",
+              "measurements": [
+                {
+                  "offtake": {
+                    "total": {
+                      "value": 0.009,
+                      "unit": "kWh",
+                      "validationState": "EST"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "start": "2024-12-01T00:15:00Z",
+              "end": "2024-12-01T00:30:00Z",
+              "measurements": [
+                {
+                  "offtake": {
+                    "total": {
+                      "value": 0.010,
+                      "unit": "kWh",
+                      "validationState": "EST"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "_meta": {
+    "fetchTime": "2026-05-28T09:37:08Z"
   }
 }

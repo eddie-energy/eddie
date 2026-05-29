@@ -12,6 +12,19 @@ public record Reading(@Nullable Total total,
                       @Nullable Total inductive,
                       @Nullable Total capacitive) {
     public Reading(Total total) {
-        this(total, null, null, null, null, null);
+        this(total, total, total, total, total, total);
+    }
+
+    public @Nullable Total value(ReadingKind kind) {
+        return switch (kind) {
+            case TOTAL -> total;
+            case REACTIVE -> reactive;
+            case CAPACITIVE -> capacitive;
+            case INDUCTIVE -> inductive;
+        };
+    }
+
+    public enum ReadingKind {
+        TOTAL, REACTIVE, CAPACITIVE, INDUCTIVE,
     }
 }

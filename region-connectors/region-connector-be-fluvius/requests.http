@@ -1,8 +1,11 @@
 ## Variable for requests
 @granularity = VH_kwartier_uur
-@ean = 541441010000000100
+# The eanNumber is assembled, based on the required services, for more information checkout the docs
+# EanNumber Assembly:
+# 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
+@ean = 541440010000000001
 @start = 2024-12-01T00:00:00Z
-@end = 2024-12-19T23:59:59Z
+@end = 2024-12-04T23:59:59Z
 
 #### Request to create a permission request
 # In our case the referenceNumber is the permisisonId, so for test requests, just use a random uuid
@@ -36,9 +39,6 @@ Ocp-Apim-Subscription-Key: {{subscriptionKey}}
 }
 
 #### Request to create a mock mandate
-# The eanNumber is assembled, based on the required services, for more information checkout the docs
-# EanNumber Assembly:
-# 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
 POST {{baseUrl}}/v3/api/mandate/mock
 Authorization: Bearer {{$auth.token("fluvius")}}
 Content-Type: application/json

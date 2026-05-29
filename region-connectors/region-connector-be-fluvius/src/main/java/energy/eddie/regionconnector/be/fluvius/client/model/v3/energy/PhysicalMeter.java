@@ -11,5 +11,5 @@ public record PhysicalMeter(@Nullable String seqNumber,
                             @Nullable String meterId,
                             @Nullable List<MeasurementSlice> dailyEnergy,
                             @Nullable List<MeasurementSlice> hourlyEnergy,
-                            @Nullable List<MeasurementSlice> quarterHourlyEnergy) implements EnergyForGranularity {
+                            @Nullable List<MeasurementSlice> quarterHourlyEnergy) implements MeasurementDevice {
 }

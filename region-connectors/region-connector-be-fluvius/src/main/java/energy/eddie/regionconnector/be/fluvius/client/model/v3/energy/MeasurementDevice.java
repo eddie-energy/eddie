@@ -8,8 +8,10 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
 
-public interface EnergyForGranularity {
+public interface MeasurementDevice {
     @Nullable
     List<MeasurementSlice> dailyEnergy();
 
@@ -30,22 +32,36 @@ public interface EnergyForGranularity {
     }
 
     @Nullable
+    default ZonedDateTime getEarliestReadingForGranularity(Granularity granularity) {
+        return findExtremeReadings(granularity, ZonedDateTime::isBefore, MeasurementSlice::start);
+    }
+
+    @Nullable
     default ZonedDateTime getLatestReadingForGranularity(Granularity granularity) {
-        var readings = getForGranularity(granularity);
-        if (readings == null) {
-            return null;
-        }
-        ZonedDateTime latestReading = null;
-        for (var reading : readings) {
-            var current = reading.end();
-            if (latestReading == null || current != null && current.isAfter(latestReading)) {
-                latestReading = current;
-            }
-        }
-        return latestReading;
+        return findExtremeReadings(granularity, ZonedDateTime::isAfter, MeasurementSlice::end);
     }
 
     default boolean dataPresentFor(Granularity granularity) {
         return getForGranularity(granularity) != null;
+    }
+
+    @Nullable
+    private ZonedDateTime findExtremeReadings(
+            Granularity granularity,
+            BiPredicate<ZonedDateTime, ZonedDateTime> comparator,
+            Function<MeasurementSlice, ZonedDateTime> readingFunction
+    ) {
+        var readings = getForGranularity(granularity);
+        if (readings == null) {
+            return null;
+        }
+        ZonedDateTime extremeReading = null;
+        for (var reading : readings) {
+            var current = readingFunction.apply(reading);
+            if (extremeReading == null || (current != null && comparator.test(current, extremeReading))) {
+                extremeReading = current;
+            }
+        }
+        return extremeReading;
     }
 }

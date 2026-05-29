@@ -1,0 +1,70 @@
+{
+  "data": {
+    "headpoint": {
+      "$type": "metering-on-headpoint",
+      "ean": "541440010000000001",
+      "energyType": "E",
+      "quarterHourlyEnergy": [
+        {
+          "start": "2024-12-01T00:00:00Z",
+          "end": "2024-12-01T00:15:00Z",
+          "measurements": [
+            {
+              "offtake": {
+                "total": {
+                  "value": 0.009,
+                  "unit": "kWh",
+                  "validationState": "EST"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "start": "2024-12-01T00:15:00Z",
+          "end": "2024-12-01T00:30:00Z",
+          "measurements": [
+            {
+              "offtake": {
+                "total": {
+                  "value": 0.010,
+                  "unit": "kWh",
+                  "validationState": "EST"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "subHeadpoints": [
+        {
+          "$type": "submetering-auxiliary",
+          "ean": "001",
+          "seqNumber": "1",
+          "vregId": "1",
+          "type": "PV",
+          "quarterHourlyEnergy": [
+            {
+              "start": "2024-12-01T00:00:00Z",
+              "end": "2024-12-01T00:15:00Z",
+              "measurements": [
+                {
+                  "injection": {
+                    "reactive": {
+                      "value": 0.010,
+                      "unit": "kWh",
+                      "validationState": "READ"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "_meta": {
+    "fetchTime": "2026-05-28T09:37:08Z"
+  }
+}

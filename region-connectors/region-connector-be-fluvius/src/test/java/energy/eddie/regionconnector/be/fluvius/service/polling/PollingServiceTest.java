@@ -121,7 +121,7 @@ class PollingServiceTest {
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
+                        new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -149,7 +149,7 @@ class PollingServiceTest {
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.QUARTER_HOURLY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
+                        new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -172,7 +172,7 @@ class PollingServiceTest {
                 .thenReturn(Mono.error(error))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
+                        new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -194,7 +194,7 @@ class PollingServiceTest {
         when(apiClient.energy(eq("pid"), eq("ean"), eq(DataServiceType.DAILY), any(), any()))
                 .thenReturn(Mono.just(new GetEnergyResponseModelApiDataResponse(
                         new ApiMetaData(null),
-                        new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
+                        new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, null))
                 )));
 
         // When
@@ -237,7 +237,7 @@ class PollingServiceTest {
                         Mono.just(
                                 new GetEnergyResponseModelApiDataResponse(
                                         null,
-                                        new GetEnergyResponseModel(new MeteringOnMeter(null,
+                                        new GetEnergyResponseModel(new Headpoint(null,
                                                                                        EnergyType.ELECTRICITY,
                                                                                        null))
                                 )
@@ -250,7 +250,7 @@ class PollingServiceTest {
         // Then
         verify(streams, never()).publish(permissionRequest, new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(null),
-                new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
+                new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, null))
         ));
     }
 
@@ -375,7 +375,7 @@ class PollingServiceTest {
         var physicalMeters = List.of(slice);
         return new GetEnergyResponseModelApiDataResponse(
                 null,
-                new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, List.of(
+                new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, List.of(
                         new PhysicalMeter(
                                 "1",
                                 "meterId",

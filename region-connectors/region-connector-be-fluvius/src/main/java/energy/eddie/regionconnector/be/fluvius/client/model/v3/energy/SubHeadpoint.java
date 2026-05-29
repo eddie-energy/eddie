@@ -16,7 +16,7 @@ public record SubHeadpoint(@JsonProperty(value = "$type", required = true) SubHe
                            @Nullable Type type,
                            @Nullable List<MeasurementSlice> dailyEnergy,
                            @Nullable List<MeasurementSlice> hourlyEnergy,
-                           @Nullable List<MeasurementSlice> quarterHourlyEnergy) implements EnergyForGranularity {
+                           @Nullable List<MeasurementSlice> quarterHourlyEnergy) implements MeasurementDevice {
 
 
     public enum Type {

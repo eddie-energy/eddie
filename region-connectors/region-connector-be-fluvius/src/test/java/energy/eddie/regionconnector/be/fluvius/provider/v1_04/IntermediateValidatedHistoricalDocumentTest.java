@@ -119,7 +119,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var data = new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
                 new GetEnergyResponseModel(
-                        new MeteringOnMeter(
+                        new Headpoint(
                                 "ean",
                                 energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY,
                                 List.of(
@@ -258,7 +258,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var data = new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
                 new GetEnergyResponseModel(
-                        new MeteringOnMeter(
+                        new Headpoint(
                                 "ean",
                                 energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY,
                                 List.of(
@@ -397,7 +397,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var timestampEnd = ZonedDateTime.of(2025, 1, 1, 1, 0, 0, 0, ZoneOffset.UTC);
         var data = new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
-                new GetEnergyResponseModel(new MeteringOnMeter(
+                new GetEnergyResponseModel(new Headpoint(
                         "ean",
                         energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.GAS,
                         List.of(new PhysicalMeter(
@@ -532,7 +532,7 @@ class IntermediateValidatedHistoricalDocumentTest {
         var timestampEnd = ZonedDateTime.of(2025, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
         var data = new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(ZonedDateTime.now(ZoneOffset.UTC)),
-                new GetEnergyResponseModel(new MeteringOnMeter(
+                new GetEnergyResponseModel(new Headpoint(
                         "ean",
                         energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.GAS,
                         List.of(new PhysicalMeter(

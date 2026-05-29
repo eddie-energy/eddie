@@ -5,5 +5,7 @@ package energy.eddie.regionconnector.be.fluvius.client.model.v3.energy;
 
 import org.jspecify.annotations.Nullable;
 
-public record Total(@Nullable Double value, Unit unit, @Nullable ValidationState validationState,
+public record Total(@Nullable Double value,
+                    Unit unit,
+                    @Nullable ValidationState validationState,
                     @Nullable GasConversionFactor gasConversionFactor) {}

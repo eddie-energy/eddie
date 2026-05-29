@@ -7,7 +7,7 @@ import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModel;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.MeteringOnMeter;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.Headpoint;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
@@ -26,7 +26,7 @@ class IdentifiableDataStreamsTest {
         // When
         streams.publish(pr, new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(null),
-                new GetEnergyResponseModel(new MeteringOnMeter(null, EnergyType.ELECTRICITY, null))
+                new GetEnergyResponseModel(new Headpoint(null, EnergyType.ELECTRICITY, null))
         ));
 
         // Then
