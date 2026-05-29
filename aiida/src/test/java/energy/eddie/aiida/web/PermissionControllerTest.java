@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.services.PermissionService;
@@ -207,7 +208,24 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isOk());
 
-        verify(permissionService).acceptPermission(permissionId, dataSourceId);
+        verify(permissionService).acceptPermission(permissionId, dataSourceId, null);
+    }
+
+    @Test
+    @WithMockUser
+    void givenAcceptWithInboundMessageFormat_updatePermission_callsAcceptOnService() throws Exception {
+        // Given
+        var requestJson = "{\"operation\": \"ACCEPT\", \"inboundMessageFormat\": \"OPENADR_3\"}";
+
+        // When
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+               // Then
+               .andExpect(status().isOk());
+
+        verify(permissionService).acceptPermission(permissionId, null, InboundMessageFormat.OPENADR_3);
     }
 
     @Test
@@ -259,6 +277,36 @@ class PermissionControllerTest {
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
                                    is("Cannot transition permission 'fooBar' to state 'desired', as it is not in a one of the permitted states '[allowed]' but in state 'current'")));
+    }
+
+    @Test
+    @WithMockUser
+    void givenUpdateInboundMessageFormat_updatePermission_callsService() throws Exception {
+        // Given
+        var requestJson = "{\"operation\": \"UPDATE_INBOUND_MESSAGE_FORMAT\", \"inboundMessageFormat\": \"OPENADR_3\"}";
+
+        // When
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+               // Then
+               .andExpect(status().isOk());
+
+        verify(permissionService).updateInboundMessageFormat(permissionId, InboundMessageFormat.OPENADR_3);
+    }
+
+    @Test
+    @WithMockUser
+    void givenMissingInboundMessageFormat_updatePermission_returnsBadRequest() throws Exception {
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"operation\": \"UPDATE_INBOUND_MESSAGE_FORMAT\"}"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   is("inboundMessageFormat must not be null when operation is UPDATE_INBOUND_MESSAGE_FORMAT.")));
     }
 
     private List<Permission> sampleDataForGetAllPermissionsTest() {

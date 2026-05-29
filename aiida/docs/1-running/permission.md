@@ -7,7 +7,7 @@ One permission in AIIDA correlates to one permission of an EDDIE instance.
 
 The following class diagram shows the main entities involved in the permission system.
 
-![Class diagram showing the main entities involved in the permission system.](../images/permission/aiida-class-diagram-permission.png)
+![Class diagram showing the main entities involved in the permission system.](../diagrams/aiida-class-diagram-permission.svg)
 
 Each permission is associated with a `PermissionStatus` indicating its current state.
 Each permission is also associated with a single `Datasource` and a single `DataNeed` (`LocalAiidaDataNeed`).
