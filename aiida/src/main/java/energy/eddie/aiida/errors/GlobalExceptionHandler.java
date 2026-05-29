@@ -4,7 +4,8 @@
 package energy.eddie.aiida.errors;
 
 import api.ValidationErrors;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
@@ -29,6 +30,8 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.InvalidTypeIdException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -39,8 +42,9 @@ import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 @ControllerAdvice
 public class GlobalExceptionHandler {
     /**
-     * If the HttpMessageNotReadableException was caused by an invalid enum value, a detailed error message including
-     * valid enum values is returned, otherwise a generic error message is returned.
+     * If the HttpMessageNotReadableException was caused by an invalid enum value, or an invalid type id,
+     * a detailed error message including valid values is returned.
+     * Otherwise, returns a generic error message.
      *
      * @param exception HttpMessageNotReadableException Exception that occurred during request parsing.
      * @return ResponseEntity with status code 400 and an error message.
@@ -49,34 +53,58 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<EddieApiError>>> handleHttpMessageNotReadableException(
             HttpMessageNotReadableException exception
     ) {
-        String errorDetails = "Invalid request body.";
+        var cause = exception.getMostSpecificCause();
+        var errorDetails = switch (cause) {
+            case InvalidTypeIdException invalidTypeIdEx -> {
+                if (invalidTypeIdEx.getBaseType() == null) {
+                    yield "Cannot infer a typing for the given request body.";
+                }
 
-        if (isEnumCauseOfException(exception)) {
-            var invalidFormatEx = (InvalidFormatException) exception.getCause();
+                var baseTypeClass = invalidTypeIdEx.getBaseType().getRawClass();
+                var typeInfo = baseTypeClass.getAnnotation(JsonTypeInfo.class);
 
-            if (invalidFormatEx != null) {
-                var fieldName = invalidFormatEx.getPath().getLast().getFieldName();
-                Object[] validEnumConstants = invalidFormatEx.getTargetType().getEnumConstants();
+                if (typeInfo == null || typeInfo.property() == null || typeInfo.property().isBlank()) {
+                    yield "Cannot infer a property to assume a typing for the given request body.";
+                }
 
-                errorDetails = String.format("%s: Invalid enum value: '%s'. Valid values: %s.",
-                                             fieldName,
-                                             invalidFormatEx.getValue(),
-                                             Arrays.toString(validEnumConstants));
+                var subTypes = baseTypeClass.getAnnotation(JsonSubTypes.class);
+                if (subTypes == null || subTypes.value() == null || subTypes.value().length == 0) {
+                    yield "The %s property has no typing options. Please report this issue.".formatted(typeInfo.property());
+                }
+
+                var validValues = new String[subTypes.value().length];
+                var subTypesValue = subTypes.value();
+                for (int i = 0; i < subTypesValue.length; i++) {
+                    var subType = subTypesValue[i];
+                    var name = subType.name();
+                    validValues[i] = name == null || name.isBlank() ? subType.value().getSimpleName() : name;
+                }
+                var validValuesString = Arrays.toString(validValues);
+
+                if (invalidTypeIdEx.getTypeId() == null) {
+                    yield "%s is missing or invalid. Valid values: %s.".formatted(typeInfo.property(),
+                                                                                  validValuesString);
+                }
+
+                yield "Invalid %s: '%s'. Valid values: %s.".formatted(typeInfo.property(),
+                                                                      invalidTypeIdEx.getTypeId(),
+                                                                      validValuesString);
             }
-        }
+            case InvalidFormatException invalidFormatEx when
+                    invalidFormatEx.getTargetType() != null &&
+                    invalidFormatEx.getTargetType().isEnum() -> {
+                var propertyName = invalidFormatEx.getPath().getLast().getPropertyName();
+                var validEnumConstants = invalidFormatEx.getTargetType().getEnumConstants();
+
+                yield "%s: Invalid enum value: '%s'. Valid values: %s."
+                        .formatted(propertyName,
+                                   invalidFormatEx.getValue(),
+                                   Arrays.toString(validEnumConstants));
+            }
+            default -> "Invalid request body.";
+        };
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(errorDetails)));
         return ResponseEntity.badRequest().body(errors);
-    }
-
-    /**
-     * @param exception HttpMessageNotReadableException that might have been caused by an Enum not being able to be
-     *                  matched.
-     * @return True if the passed exception is an {@link InvalidFormatException} and the target that couldn't be matched
-     * is an Enum.
-     */
-    private boolean isEnumCauseOfException(HttpMessageNotReadableException exception) {
-        return exception.getCause() instanceof InvalidFormatException invalidFormatEx
-               && (invalidFormatEx.getTargetType() != null && invalidFormatEx.getTargetType().isEnum());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -90,7 +118,6 @@ public class GlobalExceptionHandler {
             ImageFormatException.class,
             ImageReadException.class,
             InvalidDataSourceTypeException.class,
-            MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,
             PermissionAlreadyExistsException.class,
     })

@@ -223,4 +223,81 @@ class GlobalExceptionHandlerTest {
         errors.add(new FieldError("field2", "field2", "Error message 2"));
         return errors;
     }
+
+    @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+    @JsonSubTypes({
+            @JsonSubTypes.Type(value = TestDto.Empty.class, name = "EMPTY"),
+            @JsonSubTypes.Type(value = TestDto.WithEnum.class, name = "WITH_ENUM")
+    })
+    interface TestDto {
+        enum TestEnum {
+            FOO,
+            BAR
+        }
+
+        record Empty() implements TestDto {}
+
+        record WithEnum(TestEnum testEnum) implements TestDto {}
+    }
+
+    @RestController
+    static class TestController {
+        @PostMapping("/test")
+        void patch(@Valid @RequestBody TestDto ignored) {
+            // test only
+        }
+    }
+
+    @Nested
+    class InvalidEnumAndTypeIdValuesTest {
+        private MockMvc mockMvc;
+
+        @BeforeEach
+        void setUp() {
+            mockMvc = MockMvcBuilders.standaloneSetup(TestController.class)
+                                     .setControllerAdvice(advice)
+                                     .build();
+        }
+
+        @Test
+        void givenInvalidTypeIdInMockMvcRequest_returnsBadRequestAndResolvesHttpMessageNotReadableException() throws Exception {
+            var mvcResult = mockMvc.perform(post("/test")
+                                                    .contentType(MediaType.APPLICATION_JSON)
+                                                    .content("""
+                                                                     {
+                                                                      "type": "NOT_A_REAL_type"
+                                                                     }
+                                                                     """))
+                                   .andExpect(status().isBadRequest())
+                                   .andExpect(jsonPath("$.errors").value(1))
+                                   .andExpect(jsonPath("$.errors[0].message").value(
+                                           "Invalid type: 'NOT_A_REAL_type'."))
+                                   .andReturn();
+
+            var resolvedException = assertInstanceOf(HttpMessageNotReadableException.class,
+                                                     mvcResult.getResolvedException());
+            assertInstanceOf(InvalidTypeIdException.class, resolvedException.getMostSpecificCause());
+        }
+
+        @Test
+        void givenInvalidEnumInMockMvcRequest_returnsBadRequestAndResolvesHttpMessageNotReadableException() throws Exception {
+            var mvcResult = mockMvc.perform(post("/test")
+                                                    .contentType(MediaType.APPLICATION_JSON)
+                                                    .content("""
+                                                                     {
+                                                                      "type": "WITH_ENUM",
+                                                                      "testEnum": "NOT_A_REAL_FORMAT"
+                                                                     }
+                                                                     """))
+                                   .andExpect(status().isBadRequest())
+                                   .andExpect(jsonPath("$.errors").value(1))
+                                   .andExpect(jsonPath("$.errors[0].message").value(
+                                           "testEnum: Invalid enum value: 'NOT_A_REAL_FORMAT'. Valid values: [FOO, BAR]."))
+                                   .andReturn();
+
+            var resolvedException = assertInstanceOf(HttpMessageNotReadableException.class,
+                                                     mvcResult.getResolvedException());
+            assertInstanceOf(InvalidFormatException.class, resolvedException.getMostSpecificCause());
+        }
+    }
 }
