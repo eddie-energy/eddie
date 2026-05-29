@@ -3,27 +3,39 @@
 
 package energy.eddie.aiida.errors;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import energy.eddie.aiida.dtos.PatchOperation;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
 import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import jakarta.validation.Valid;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.InvalidTypeIdException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +44,11 @@ import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -64,9 +78,9 @@ class GlobalExceptionHandlerTest {
         // mock setup so it appears that the granularity field of TestClassWithGranularity caused the HttpMessageNotReadableException
         var mockJsonReference = mock(JsonMappingException.Reference.class);
         InvalidFormatException mockInvalidFormatEx = mock(InvalidFormatException.class);
-        doReturn(PatchOperation.class).when(mockInvalidFormatEx).getTargetType();
+        doReturn(InboundMessageFormat.class).when(mockInvalidFormatEx).getTargetType();
         doReturn(List.of(mockJsonReference)).when(mockInvalidFormatEx).getPath();
-        doReturn("operation").when(mockJsonReference).getFieldName();
+        doReturn("inboundMessageFormat").when(mockJsonReference).getFieldName();
         doReturn("FooBar").when(mockInvalidFormatEx).getValue();
 
         // Given
@@ -83,7 +97,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT].",
+        assertEquals("inboundMessageFormat: Invalid enum value: 'FooBar'. Valid values: [CIM_1_12, OPENADR_3].",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 

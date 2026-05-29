@@ -6,7 +6,10 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.permission.*;
+import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
+import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
@@ -32,6 +35,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+
+import static energy.eddie.aiida.dtos.PatchPermissionDto.*;
 
 @CrossOrigin(origins = "http://localhost:5173")
 @RestController
@@ -94,23 +99,16 @@ public class PermissionController {
             )
             @Valid @RequestBody PatchPermissionDto patchDto,
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException {
-        LOGGER.atInfo()
-              // Validate that it's a real permission ID and not some malicious string
-              .addArgument(() -> permissionId)
-              .addArgument(patchDto::operation)
-              .log("Got request to update permission '{}' with operation {}");
-
-        var permission = switch (patchDto.operation()) {
-            case ACCEPT -> permissionService.acceptPermission(permissionId,
-                                                              patchDto.dataSourceId(),
-                                                              patchDto.inboundMessageFormat());
-            case REJECT -> permissionService.rejectPermission(permissionId);
-            case REVOKE -> permissionService.revokePermission(permissionId);
-            case UPDATE_INBOUND_MESSAGE_FORMAT -> permissionService.updateInboundMessageFormat(
-                    permissionId,
-                    patchDto.inboundMessageFormat()
-            );
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+        var permission = switch (patchDto) {
+            case Accept(var dataSourceId, var inboundMessageFormat) ->
+                    permissionService.acceptPermission(permissionId, dataSourceId, inboundMessageFormat);
+            case Reject() -> permissionService.rejectPermission(permissionId);
+            case Revoke() -> permissionService.revokePermission(permissionId);
+            case UpdateInboundMessageFormat(var inboundMessageFormat) ->
+                    permissionService.updateInboundMessageFormat(permissionId, inboundMessageFormat);
+            default -> throw new IllegalStateException("Unsupported PatchPermissionDto instance %s"
+                                                               .formatted(patchDto.getClass().getName()));
         };
         return ResponseEntity.ok(permission);
     }

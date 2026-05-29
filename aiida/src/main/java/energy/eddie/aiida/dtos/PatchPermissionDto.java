@@ -3,31 +3,41 @@
 
 package energy.eddie.aiida.dtos;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
+import static energy.eddie.aiida.dtos.PatchPermissionDto.*;
+
 /**
  * This data transfer object is expected by the updatePermission API endpoint.
- *
- * @param operation The operation that should be applied to the permission.
- * @param dataSourceId The data source assigned to the permission.
- * @param inboundMessageFormat The inbound message format to assign to the permission.
  */
-public record PatchPermissionDto(
-        @Schema(description = "Operation to apply to the permission.", example = "REVOKE")
-        @NotNull(message = "must not be null")
-        PatchOperation operation,
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.NAME,
+        include = JsonTypeInfo.As.PROPERTY,
+        property = "operation"
+)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = Accept.class, name = "ACCEPT"),
+        @JsonSubTypes.Type(value = Reject.class, name = "REJECT"),
+        @JsonSubTypes.Type(value = Revoke.class, name = "REVOKE"),
+        @JsonSubTypes.Type(value = UpdateInboundMessageFormat.class, name = "UPDATE_INBOUND_MESSAGE_FORMAT")
+})
+public interface PatchPermissionDto {
+    record Accept(
+            @Nullable UUID dataSourceId,
+            @Nullable InboundMessageFormat inboundMessageFormat
+    ) implements PatchPermissionDto {}
 
-        @Schema(description = "Data source assigned to the permission.")
-        @Nullable
-        UUID dataSourceId,
+    record Reject() implements PatchPermissionDto {}
 
-        @Schema(description = "Selected inbound message format for inbound permissions.", example = "OPENADR_3")
-        @Nullable
-        InboundMessageFormat inboundMessageFormat
-) {
+    record Revoke() implements PatchPermissionDto {}
+
+    record UpdateInboundMessageFormat(
+            @NotNull InboundMessageFormat inboundMessageFormat
+    ) implements PatchPermissionDto {}
 }

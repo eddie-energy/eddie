@@ -9,7 +9,10 @@ import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.permission.*;
+import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
+import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -196,12 +199,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public Permission updateInboundMessageFormat(
             UUID permissionId,
-            @Nullable InboundMessageFormat inboundMessageFormat
-    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException {
-        if (inboundMessageFormat == null) {
-            throw new MissingInboundMessageFormatException();
-        }
-
+            InboundMessageFormat inboundMessageFormat
+    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 

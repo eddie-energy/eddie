@@ -306,7 +306,7 @@ class PermissionControllerTest {
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
-                                   is("inboundMessageFormat must not be null when operation is UPDATE_INBOUND_MESSAGE_FORMAT.")));
+                                   is("inboundMessageFormat: must not be null")));
     }
 
     private List<Permission> sampleDataForGetAllPermissionsTest() {
