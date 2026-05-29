@@ -83,7 +83,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT].",
+        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT, UPDATE_INBOUND_MESSAGE_FORMAT].",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 

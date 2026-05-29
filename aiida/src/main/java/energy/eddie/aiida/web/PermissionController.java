@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
@@ -6,10 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
-import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
@@ -73,7 +70,7 @@ public class PermissionController {
                 .body(permission);
     }
 
-    @Operation(summary = "Update a permission", description = "Accept, reject or revoke a permission.", operationId = "updatePermission", tags = {"permission"})
+    @Operation(summary = "Update a permission", description = "Accept, reject, revoke, or update the inbound message format of a permission.", operationId = "updatePermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class), examples = @ExampleObject(value = REVOKE_PERMISSION_EXAMPLE_RETURN_JSON))}),
             @ApiResponse(responseCode = "400", description = "Invalid operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
@@ -81,9 +78,23 @@ public class PermissionController {
             @ApiResponse(responseCode = "409", description = "Permission cannot be updated as it's not in an eligible state.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})})
     @PatchMapping(value = "/{permissionId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Permission> updatePermission(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Permission patch request. Fields required depend on the selected operation.",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = PatchPermissionDto.class),
+                            examples = {
+                                    @ExampleObject(name = "Accept permission",
+                                            value = "{\"operation\":\"ACCEPT\",\"dataSourceId\":\"51d0a13e-688a-454d-acab-7a6b2951cde2\"}"),
+                                    @ExampleObject(name = "Accept inbound permission with message format",
+                                            value = "{\"operation\":\"ACCEPT\",\"dataSourceId\":\"51d0a13e-688a-454d-acab-7a6b2951cde2\",\"inboundMessageFormat\":\"OPENADR_3\"}"),
+                                    @ExampleObject(name = "Update inbound message format",
+                                            value = "{\"operation\":\"UPDATE_INBOUND_MESSAGE_FORMAT\",\"inboundMessageFormat\":\"OPENADR_3\"}")
+                            })
+            )
             @Valid @RequestBody PatchPermissionDto patchDto,
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)
@@ -91,9 +102,15 @@ public class PermissionController {
               .log("Got request to update permission '{}' with operation {}");
 
         var permission = switch (patchDto.operation()) {
-            case ACCEPT -> permissionService.acceptPermission(permissionId, patchDto.dataSourceId());
+            case ACCEPT -> permissionService.acceptPermission(permissionId,
+                                                              patchDto.dataSourceId(),
+                                                              patchDto.inboundMessageFormat());
             case REJECT -> permissionService.rejectPermission(permissionId);
             case REVOKE -> permissionService.revokePermission(permissionId);
+            case UPDATE_INBOUND_MESSAGE_FORMAT -> permissionService.updateInboundMessageFormat(
+                    permissionId,
+                    patchDto.inboundMessageFormat()
+            );
         };
         return ResponseEntity.ok(permission);
     }

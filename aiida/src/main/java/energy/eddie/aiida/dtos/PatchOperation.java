@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.dtos;
@@ -9,5 +9,6 @@ public enum PatchOperation {
      */
     REVOKE,
     ACCEPT,
-    REJECT
+    REJECT,
+    UPDATE_INBOUND_MESSAGE_FORMAT
 }

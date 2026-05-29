@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.permission;
@@ -12,6 +12,7 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -106,6 +107,12 @@ public class Permission {
     @JsonProperty
     private DataSource dataSource;
 
+    @Column(name = "inbound_message_format", nullable = false)
+    @Enumerated(EnumType.STRING)
+    @Schema(description = "Selected format for inbound permission messages.", requiredMode = Schema.RequiredMode.REQUIRED, example = "CIM_1_12")
+    @JsonProperty
+    private InboundMessageFormat inboundMessageFormat = InboundMessageFormat.CIM_1_12;
+
     /**
      * Create a new permission from the contents of the QR code. The status will be set to
      * {@link PermissionStatus#CREATED}.
@@ -186,6 +193,10 @@ public class Permission {
      */
     public @Nullable String serviceName() {
          return serviceName;
+    }
+
+    public InboundMessageFormat inboundMessageFormat() {
+        return inboundMessageFormat;
     }
 
     /**
@@ -271,5 +282,9 @@ public class Permission {
 
     public void setDataSource(@Nullable DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    public void setInboundMessageFormat(@NonNull InboundMessageFormat inboundMessageFormat) {
+        this.inboundMessageFormat = inboundMessageFormat;
     }
 }

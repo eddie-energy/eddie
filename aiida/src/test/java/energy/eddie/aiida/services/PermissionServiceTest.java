@@ -14,6 +14,7 @@ import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -354,7 +355,7 @@ class PermissionServiceTest {
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
-                     () -> service.acceptPermission(permissionId1, dataSourceId));
+                     () -> service.acceptPermission(permissionId1, dataSourceId, null));
     }
 
     @Test
@@ -372,7 +373,7 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
 
         // When, Then
-        assertThrows(DetailFetchingFailedException.class, () -> service.acceptPermission(permissionId1, dataSourceId));
+        assertThrows(DetailFetchingFailedException.class, () -> service.acceptPermission(permissionId1, dataSourceId, null));
     }
 
     @Test
@@ -386,7 +387,7 @@ class PermissionServiceTest {
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
         // When
-        service.acceptPermission(permissionId1, dataSourceId);
+        service.acceptPermission(permissionId1, dataSourceId, null);
 
         // Then
         verify(mockHandshakeService).fetchMqttDetails(any());
@@ -414,10 +415,28 @@ class PermissionServiceTest {
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
 
         // When
-        service.acceptPermission(permissionId1, null);
+        service.acceptPermission(permissionId1, null, null);
 
         // Then
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionAcceptEvent.class));
+    }
+
+    @Test
+    void givenValidInboundPermissionWithInboundMessageFormat_acceptPermission_updatesFormat() throws Exception {
+        // Given
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId1.toString());
+        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
+
+        // When
+        service.acceptPermission(permissionId1, null, InboundMessageFormat.OPENADR_3);
+
+        // Then
+        verify(mockPermission).setInboundMessageFormat(InboundMessageFormat.OPENADR_3);
     }
 
     @Test
@@ -495,6 +514,19 @@ class PermissionServiceTest {
         verify(mockPermission).setRevokeTime(fixedInstant);
         verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
+    }
+
+    @Test
+    void givenInboundPermission_updateInboundMessageFormat_updatesPermission() throws Exception {
+        // Given
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+
+        // When
+        var updatedPermission = service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3);
+
+        // Then
+        assertEquals(mockPermission, updatedPermission);
+        verify(mockPermission).setInboundMessageFormat(InboundMessageFormat.OPENADR_3);
     }
 
     @Test
