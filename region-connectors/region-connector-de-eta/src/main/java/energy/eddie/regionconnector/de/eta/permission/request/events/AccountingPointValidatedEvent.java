@@ -18,10 +18,10 @@ import java.time.LocalDate;
 @SuppressWarnings({"NullAway", "unused"})
 public class AccountingPointValidatedEvent extends PersistablePermissionEvent {
 
-    @Column(name = "permission_start")
+    @Column(name = "data_start")
     private final LocalDate start;
 
-    @Column(name = "permission_end")
+    @Column(name = "data_end")
     private final LocalDate end;
 
     public AccountingPointValidatedEvent(String permissionId, LocalDate start, LocalDate end) {
