@@ -108,10 +108,16 @@
     "loadLess": "Load Less Permissions",
     "revokeTitle": "Revoke Permission",
     "revokeDescription": "Are you sure you want to revoke this permission? This action cannot be undone.",
+    "updateInboundMessageFormatTitle": "Change Incoming Message Mapping",
+    "updateInboundMessageFormatDescription": "Do you want incoming messages for this permission to be mapped to {format} before forwarding them?",
     "toggleTooltip": "Toggle Access Code tooltip",
     "showMqttPassword": "Show MQTT Password",
     "hideMqttPassword": "Hide MQTT Password",
     "copyMqttPassword": "Copy MQTT Password",
+    "inboundMessageFormats": {
+      "CIM_1_12": "CIM 1.12",
+      "OPENADR_3": "OpenADR 3"
+    },
     "dropdown": {
       "service": "Service",
       "status": "Status",
@@ -125,6 +131,7 @@
       "obisCodes": "OBIS-Codes",
       "dataSource": "Data Source",
       "acknowledgementRequired": "Acknowledgement Required",
+      "inboundMessageFormat": "Inbound Message Format",
       "permissionId": "Permission ID",
       "downloadLatestMessageButton": "Download Latest Message",
       "inboundTooltip": "There are two ways to use this API Key to retrieve the latest inbound data:",
@@ -160,6 +167,7 @@
     "warning": "Warning!",
     "danger": "Something went wrong!",
     "acceptPermission": "Permission request accepted.",
+    "updateInboundMessageFormat": "Inbound message format updated.",
     "revokePermission": "The permission for this service was revoked.",
     "rejectPermission": "Permission request rejected",
     "createDatasource": "Data source created.",

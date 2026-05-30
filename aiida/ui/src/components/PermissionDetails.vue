@@ -2,16 +2,16 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import type { AiidaPermission, PermissionTypes } from '@/types'
+import type { AiidaPermission, InboundMessageFormat, PermissionTypes } from '@/types'
 import StatusTag from './StatusTag.vue'
 import cronstrue from 'cronstrue/i18n'
 import Button from '@/components/Button.vue'
 import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
-import { BASE_URL, revokePermission } from '@/api'
+import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
-import { ref, useTemplateRef } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
@@ -19,6 +19,7 @@ import { onClickOutside } from '@vueuse/core'
 import CopyButton from './CopyButton.vue'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
+import CustomSelect from './CustomSelect.vue'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -31,6 +32,18 @@ const { permission, status } = defineProps<{
 const { updatePermission } = usePermissionDialog()
 const show = ref(false)
 const showToolTip = ref(false)
+const selectedInboundMessageFormat = ref(permission.inboundMessageFormat)
+
+const inboundMessageFormatOptions: { label: string; value: InboundMessageFormat }[] = [
+  {
+    label: t('permissions.inboundMessageFormats.CIM_1_12'),
+    value: 'CIM_1_12',
+  },
+  {
+    label: t('permissions.inboundMessageFormats.OPENADR_3'),
+    value: 'OPENADR_3',
+  },
+]
 
 const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   day: '2-digit',
@@ -40,6 +53,13 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   hour: '2-digit',
   second: '2-digit',
 })
+
+watch(
+  () => permission.inboundMessageFormat,
+  (inboundMessageFormat) => {
+    selectedInboundMessageFormat.value = inboundMessageFormat
+  },
+)
 
 const handleRevoke = async () => {
   if (
@@ -52,6 +72,34 @@ const handleRevoke = async () => {
   ) {
     const promise = revokePermission(permission.permissionId)
     promise.then(() => fetchPermissions())
+  }
+}
+
+const handleInboundMessageFormatSelection = async (
+  inboundMessageFormat: string | number | boolean | undefined,
+) => {
+  if (inboundMessageFormat && inboundMessageFormat !== permission.inboundMessageFormat) {
+    if (
+      await confirm(
+        t('permissions.updateInboundMessageFormatTitle'),
+        t('permissions.updateInboundMessageFormatDescription', {
+          format: t(`permissions.inboundMessageFormats.${inboundMessageFormat}`),
+        }),
+        t('editButton'),
+        t('cancelButton'),
+      )
+    ) {
+      try {
+        await updateInboundMessageFormat(
+          permission.permissionId,
+          inboundMessageFormat as InboundMessageFormat,
+        )
+      } catch {
+        selectedInboundMessageFormat.value = permission.inboundMessageFormat
+      }
+    } else {
+      selectedInboundMessageFormat.value = permission.inboundMessageFormat
+    }
   }
 }
 
@@ -73,13 +121,13 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>{{ t('permissions.dropdown.service') }}</dt>
         <dd>{{ permission.serviceName }}</dd>
       </div>
-      <div class="permission-field status">
+      <div class="permission-field permission-field--status">
         <dt>{{ t('permissions.dropdown.status') }}</dt>
-        <StatusTag
-          :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'"
-          class="status-tag"
-          >{{ t(permission.status) }}</StatusTag
-        >
+        <dd>
+          <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'">
+            {{ t(permission.status) }}
+          </StatusTag>
+        </dd>
       </div>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.creationDate') }}</dt>
@@ -151,6 +199,21 @@ onClickOutside(target, () => (showToolTip.value = false))
         >
           <dt>Streaming Topic</dt>
           <dd>{{ permission.mqttStreamingConfig.dataTopic }}</dd>
+        </div>
+      </template>
+      <template v-if="permission.dataNeed.type === 'inbound-aiida'">
+        <div class="permission-field permission-field--select">
+          <dt>{{ t('permissions.dropdown.inboundMessageFormat') }}</dt>
+          <dd>
+            <CustomSelect
+              v-model="selectedInboundMessageFormat"
+              :options="inboundMessageFormatOptions"
+              :placeholder="
+                t(`permissions.inboundMessageFormats.${permission.inboundMessageFormat}`)
+              "
+              @update:model-value="handleInboundMessageFormatSelection"
+            />
+          </dd>
         </div>
       </template>
       <template v-if="permission.dataNeed.type === 'inbound-aiida' && permission.dataSource">
@@ -270,9 +333,8 @@ onClickOutside(target, () => (showToolTip.value = false))
   font-size: 1rem;
   line-height: 1.5;
   gap: 0.25rem;
-  &:not(.status) {
-    flex-direction: column;
-  }
+  flex-direction: column;
+
   dd {
     word-break: break-all;
     line-height: 1;
@@ -282,11 +344,13 @@ onClickOutside(target, () => (showToolTip.value = false))
   }
 }
 
-.status {
+.permission-field--select,
+.permission-field--status {
   padding: unset;
   border: unset;
   gap: 0.5rem;
   align-items: center;
+  flex-direction: row;
 
   dt {
     padding: var(--spacing-sm) var(--spacing-sm);
@@ -295,8 +359,9 @@ onClickOutside(target, () => (showToolTip.value = false))
     border-radius: var(--border-radius);
   }
 
-  .status-tag {
-    min-width: fit-content;
+  dd {
+    font-weight: unset;
+    min-width: max-content;
   }
 }
 
@@ -373,7 +438,7 @@ onClickOutside(target, () => (showToolTip.value = false))
     position: absolute;
     bottom: 100%;
     left: 10%;
-    margin-left: -var(--spacing-xs);
+    margin-left: var(--spacing-xs);
     border-width: var(--spacing-xs);
     border-style: solid;
     border-color: var(--eddie-primary) transparent transparent transparent;
@@ -412,7 +477,7 @@ onClickOutside(target, () => (showToolTip.value = false))
   }
   .permission-field {
     align-items: center;
-    &:not(.status, .schedule) {
+    &:not(.schedule) {
       flex-direction: row;
     }
     &.schemas {

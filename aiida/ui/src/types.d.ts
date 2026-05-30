@@ -44,6 +44,8 @@ export type AiidaDataSource = {
   activationKey?: string
 }
 
+export type InboundMessageFormat = 'CIM_1_12' | 'OPENADR_3'
+
 export type AiidaPermission = {
   permissionId: string
   eddieId: string
@@ -54,6 +56,7 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
+  inboundMessageFormat: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
   userId: string
   unimplemented: {
