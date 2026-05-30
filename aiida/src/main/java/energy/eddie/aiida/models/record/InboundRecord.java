@@ -6,7 +6,6 @@ package energy.eddie.aiida.models.record;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.persistence.*;
@@ -73,16 +72,5 @@ public class InboundRecord {
 
     public String payload() {
         return payload;
-    }
-
-    public InboundRecordDto toDto() {
-        return new InboundRecordDto(timestamp,
-                                    dataSource.userId(),
-                                    dataSource.id(),
-                                    dataSource.asset(),
-                                    dataSource.meterId(),
-                                    dataSource.operatorId(),
-                                    schema,
-                                    payload);
     }
 }

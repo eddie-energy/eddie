@@ -9,6 +9,8 @@ import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
+import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.services.record.LatestRecordService;
 import energy.eddie.api.agnostic.aiida.*;
 import org.junit.jupiter.api.Test;
@@ -232,7 +234,7 @@ class LatestRecordControllerTest {
     void latestInboundPermissionRecord_shouldReturnLatestRecord() throws Exception {
         var inboundRecord = new LatestInboundPermissionRecordDto(
                 TIMESTAMP,
-                UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606"),
+                DATA_SOURCE_ID,
                 PAYLOAD
         );
 
@@ -242,8 +244,24 @@ class LatestRecordControllerTest {
                                 .accept(MediaType.APPLICATION_JSON))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.timestamp").value("2024-01-15T10:30:00Z"))
-               .andExpect(jsonPath("$.dataSourceId").value("5211ea05-d4ab-48ff-8613-8f4791a56606"))
+               .andExpect(jsonPath("$.dataSourceId").value("4211ea05-d4ab-48ff-8613-8f4791a56606"))
                .andExpect(jsonPath("$.payload").value(PAYLOAD));
+
+        verify(service, times(1)).latestInboundPermissionRecord(PERMISSION_ID);
+    }
+
+    @Test
+    @WithMockUser
+    void latestInboundPermissionRecord_shouldReturnNotImplementedForUnsupportedTransformation() throws Exception {
+        when(service.latestInboundPermissionRecord(PERMISSION_ID))
+                .thenThrow(new UnsupportedInboundRecordTransformationException(
+                        AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
+                        InboundMessageFormat.OPENADR_3
+                ));
+
+        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/inbound/latest")
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isNotImplemented());
 
         verify(service, times(1)).latestInboundPermissionRecord(PERMISSION_ID);
     }

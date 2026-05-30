@@ -3,8 +3,11 @@
 
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.dtos.record.InboundRecordDto;
+import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.services.record.InboundRecordService;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
@@ -39,7 +42,7 @@ class InboundControllerTest {
 
     @Test
     void latestRecord_withHeader_isOk() throws Exception {
-        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
+        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecordDto.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
                                 .header("X-API-Key", ACCESS_CODE)
@@ -49,7 +52,7 @@ class InboundControllerTest {
 
     @Test
     void latestRecord_withQueryParam_isOk() throws Exception {
-        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecord.class));
+        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE)).thenReturn(mock(InboundRecordDto.class));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID + "?apiKey=" + ACCESS_CODE))
                .andExpect(status().isOk());
@@ -67,5 +70,18 @@ class InboundControllerTest {
                                 .header("X-API-Key", "")
                )
                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void latestRecord_withUnsupportedTransformation_isNotImplemented() throws Exception {
+        when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE))
+                .thenThrow(new UnsupportedInboundRecordTransformationException(
+                        AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
+                        InboundMessageFormat.OPENADR_3
+                ));
+
+        mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)
+                                .header("X-API-Key", ACCESS_CODE))
+               .andExpect(status().isNotImplemented());
     }
 }

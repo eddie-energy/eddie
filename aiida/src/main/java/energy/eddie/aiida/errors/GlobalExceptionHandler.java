@@ -21,6 +21,7 @@ import energy.eddie.aiida.errors.image.ImageReadException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
+import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.springframework.http.HttpStatus;
@@ -148,5 +149,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<EddieApiError>>> handleServiceUnavailableExceptions(Exception exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errors);
+    }
+
+    @ExceptionHandler({
+            UnsupportedInboundRecordTransformationException.class
+    })
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleNotImplementedExceptions(Exception exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(errors);
     }
 }

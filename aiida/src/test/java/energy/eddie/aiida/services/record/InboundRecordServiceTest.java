@@ -7,12 +7,15 @@ import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
+import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.record.transform.InboundPayloadTransformationService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,6 +51,8 @@ class InboundRecordServiceTest {
     private InboundRecordRepository inboundRecordRepository;
     @Mock
     private PermissionRepository permissionRepository;
+    @Mock
+    private InboundPayloadTransformationService inboundPayloadTransformationService;
 
     @InjectMocks
     private InboundRecordService inboundRecordService;
@@ -58,20 +63,25 @@ class InboundRecordServiceTest {
         when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE);
 
         PERMISSION.setDataSource(DATA_SOURCE);
+        PERMISSION.setInboundMessageFormat(InboundMessageFormat.CIM_1_12);
     }
 
     @Test
-    void testLatestRecord_returnsRecord() throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+    void testLatestRecord_returnsMappedRecord() throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
         when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(
                 INBOUND_RECORD));
+        when(inboundPayloadTransformationService.transform(INBOUND_RECORD, InboundMessageFormat.CIM_1_12))
+                .thenReturn("mapped-payload");
 
         // When
         var inboundRecord = inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE);
 
         // Then
-        assertEquals(DATA_SOURCE_ID, inboundRecord.dataSource().id());
+        assertEquals(DATA_SOURCE_ID, inboundRecord.dataSourceId());
+        assertEquals("mapped-payload", inboundRecord.payload());
+        assertEquals(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12, inboundRecord.schema());
     }
 
     @Test
