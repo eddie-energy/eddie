@@ -216,7 +216,7 @@ class PermissionControllerTest {
     @WithMockUser
     void givenAcceptWithInboundMessageFormat_updatePermission_callsAcceptOnService() throws Exception {
         // Given
-        var requestJson = "{\"operation\": \"ACCEPT\", \"inboundMessageFormat\": \"OPENADR_3\"}";
+        var requestJson = "{\"operation\": \"ACCEPT\", \"inboundMessageFormat\": \"OPENADR_3_1\"}";
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
@@ -226,7 +226,7 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isOk());
 
-        verify(permissionService).acceptPermission(permissionId, null, InboundMessageFormat.OPENADR_3);
+        verify(permissionService).acceptPermission(permissionId, null, InboundMessageFormat.OPENADR_3_1);
     }
 
     @Test
@@ -284,7 +284,7 @@ class PermissionControllerTest {
     @WithMockUser
     void givenUpdateInboundMessageFormat_updatePermission_callsService() throws Exception {
         // Given
-        var requestJson = "{\"operation\": \"UPDATE_INBOUND_MESSAGE_FORMAT\", \"inboundMessageFormat\": \"OPENADR_3\"}";
+        var requestJson = "{\"operation\": \"UPDATE_INBOUND_MESSAGE_FORMAT\", \"inboundMessageFormat\": \"OPENADR_3_1\"}";
 
         // When
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
@@ -294,7 +294,7 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isOk());
 
-        verify(permissionService).updateInboundMessageFormat(permissionId, InboundMessageFormat.OPENADR_3);
+        verify(permissionService).updateInboundMessageFormat(permissionId, InboundMessageFormat.OPENADR_3_1);
     }
 
     @Test

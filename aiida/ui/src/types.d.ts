@@ -44,7 +44,7 @@ export type AiidaDataSource = {
   activationKey?: string
 }
 
-export type InboundMessageFormat = 'CIM_1_12' | 'OPENADR_3'
+export type InboundMessageFormat = 'CIM_1_12' | 'OPENADR_3_1'
 
 export type AiidaPermission = {
   permissionId: string

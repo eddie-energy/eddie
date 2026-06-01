@@ -34,7 +34,7 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
     @Override
     public boolean supports(AiidaSchema schema, InboundMessageFormat inboundMessageFormat) {
         return schema == AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12
-               && inboundMessageFormat == InboundMessageFormat.OPENADR_3;
+               && inboundMessageFormat == InboundMessageFormat.OPENADR_3_1;
     }
 
     @Override

@@ -432,10 +432,10 @@ class PermissionServiceTest {
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
         // When
-        service.acceptPermission(permissionId1, null, InboundMessageFormat.OPENADR_3);
+        service.acceptPermission(permissionId1, null, InboundMessageFormat.OPENADR_3_1);
 
         // Then
-        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
     }
 
     @Test
@@ -444,12 +444,12 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
         doThrow(new InboundMessageFormatOnlyForInboundPermissionsException())
                 .when(mockPermission)
-                .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+                .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
 
         assertThrows(InboundMessageFormatOnlyForInboundPermissionsException.class,
-                     () -> service.acceptPermission(permissionId1, dataSourceId, InboundMessageFormat.OPENADR_3));
+                     () -> service.acceptPermission(permissionId1, dataSourceId, InboundMessageFormat.OPENADR_3_1));
 
-        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
         verify(mockHandshakeService, never()).fetchMqttDetails(any());
     }
 
@@ -536,11 +536,11 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
 
         // When
-        var updatedPermission = service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3);
+        var updatedPermission = service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3_1);
 
         // Then
         assertEquals(mockPermission, updatedPermission);
-        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
     }
 
     @Test
@@ -548,12 +548,12 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         doThrow(new InboundMessageFormatOnlyForInboundPermissionsException())
                 .when(mockPermission)
-                .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+                .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
 
         assertThrows(InboundMessageFormatOnlyForInboundPermissionsException.class,
-                     () -> service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3));
+                     () -> service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3_1));
 
-        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
     }
 
     @Test

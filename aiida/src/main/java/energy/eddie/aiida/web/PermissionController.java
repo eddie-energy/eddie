@@ -87,9 +87,9 @@ public class PermissionController {
                                     @ExampleObject(name = "Accept permission",
                                             value = "{\"operation\":\"ACCEPT\",\"dataSourceId\":\"51d0a13e-688a-454d-acab-7a6b2951cde2\"}"),
                                     @ExampleObject(name = "Accept inbound permission with message format",
-                                            value = "{\"operation\":\"ACCEPT\",\"dataSourceId\":\"51d0a13e-688a-454d-acab-7a6b2951cde2\",\"inboundMessageFormat\":\"OPENADR_3\"}"),
+                                            value = "{\"operation\":\"ACCEPT\",\"dataSourceId\":\"51d0a13e-688a-454d-acab-7a6b2951cde2\",\"inboundMessageFormat\":\"OPENADR_3_1\"}"),
                                     @ExampleObject(name = "Update inbound message format",
-                                            value = "{\"operation\":\"UPDATE_INBOUND_MESSAGE_FORMAT\",\"inboundMessageFormat\":\"OPENADR_3\"}")
+                                            value = "{\"operation\":\"UPDATE_INBOUND_MESSAGE_FORMAT\",\"inboundMessageFormat\":\"OPENADR_3_1\"}")
                             })
             )
             @Valid @RequestBody PatchPermissionDto patchDto,

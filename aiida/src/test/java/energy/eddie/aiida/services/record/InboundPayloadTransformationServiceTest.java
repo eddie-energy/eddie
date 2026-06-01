@@ -63,11 +63,11 @@ class InboundPayloadTransformationServiceTest {
         );
 
         var exception = assertThrows(UnsupportedInboundRecordTransformationException.class, () ->
-                inboundPayloadTransformationService.transform(inboundRecord, InboundMessageFormat.OPENADR_3)
+                inboundPayloadTransformationService.transform(inboundRecord, InboundMessageFormat.OPENADR_3_1)
         );
 
         assertEquals(
-                "Inbound record transformation is not supported for source schema SMART_METER_P1_RAW and target format OPENADR_3.",
+                "Inbound record transformation is not supported for source schema SMART_METER_P1_RAW and target format OPENADR_3_1.",
                 exception.getMessage()
         );
     }
@@ -84,7 +84,7 @@ class InboundPayloadTransformationServiceTest {
                 payload
         );
 
-        var transformed = inboundPayloadTransformationService.transform(inboundRecord, InboundMessageFormat.OPENADR_3);
+        var transformed = inboundPayloadTransformationService.transform(inboundRecord, InboundMessageFormat.OPENADR_3_1);
         var expected = readResource("record/transform/min-max-envelope-openadr3-expected.json");
 
         assertEquals(mapper.readTree(expected), mapper.readTree(transformed));

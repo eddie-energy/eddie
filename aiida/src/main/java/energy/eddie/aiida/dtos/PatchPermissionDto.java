@@ -26,7 +26,7 @@ public record PatchPermissionDto(
         @Nullable
         UUID dataSourceId,
 
-        @Schema(description = "Selected inbound message format for inbound permissions.", example = "OPENADR_3")
+        @Schema(description = "Selected inbound message format for inbound permissions.", example = "OPENADR_3_1")
         @Nullable
         InboundMessageFormat inboundMessageFormat
 ) {

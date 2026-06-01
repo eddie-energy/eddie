@@ -58,7 +58,7 @@ enum PermissionStatus {
 
 enum InboundMessageFormat {
     CIM_1_12
-    OPENADR_3
+    OPENADR_3_1
 }
 
 Permission "n" o-- "1" AiidaLocalDataNeed

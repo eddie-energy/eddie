@@ -40,8 +40,8 @@ const inboundMessageFormatOptions: { label: string; value: InboundMessageFormat 
     value: 'CIM_1_12',
   },
   {
-    label: t('permissions.inboundMessageFormats.OPENADR_3'),
-    value: 'OPENADR_3',
+    label: t('permissions.inboundMessageFormats.OPENADR_3_1'),
+    value: 'OPENADR_3_1',
   },
 ]
 

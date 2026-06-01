@@ -77,7 +77,7 @@ class InboundControllerTest {
         when(inboundRecordService.latestRecord(DATA_SOURCE_ID, ACCESS_CODE))
                 .thenThrow(new UnsupportedInboundRecordTransformationException(
                         AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
-                        InboundMessageFormat.OPENADR_3
+                        InboundMessageFormat.OPENADR_3_1
                 ));
 
         mockMvc.perform(get("/inbound/latest/" + DATA_SOURCE_ID)

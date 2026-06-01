@@ -92,9 +92,9 @@ class PermissionTest {
         when(dataNeed.name()).thenReturn("someDataNeed");
         permission.setDataNeed(dataNeed);
 
-        permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3);
+        permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
 
-        assertEquals(InboundMessageFormat.OPENADR_3, permission.inboundMessageFormat());
+        assertEquals(InboundMessageFormat.OPENADR_3_1, permission.inboundMessageFormat());
     }
 
     @Test
@@ -104,7 +104,7 @@ class PermissionTest {
         permission.setDataNeed(dataNeed);
 
         assertThrows(InboundMessageFormatOnlyForInboundPermissionsException.class,
-                     () -> permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3));
+                     () -> permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1));
     }
 
     @Test

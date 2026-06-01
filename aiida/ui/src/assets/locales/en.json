@@ -116,7 +116,7 @@
     "copyMqttPassword": "Copy MQTT Password",
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
-      "OPENADR_3": "OpenADR 3"
+      "OPENADR_3_1": "OpenADR 3.1"
     },
     "dropdown": {
       "service": "Service",

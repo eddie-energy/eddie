@@ -235,7 +235,7 @@ class LatestRecordControllerTest {
         var inboundRecord = new LatestInboundPermissionRecordDto(
                 TIMESTAMP,
                 DATA_SOURCE_ID,
-                InboundMessageFormat.OPENADR_3,
+                InboundMessageFormat.OPENADR_3_1,
                 PAYLOAD
         );
 
@@ -246,7 +246,7 @@ class LatestRecordControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.timestamp").value("2024-01-15T10:30:00Z"))
                .andExpect(jsonPath("$.dataSourceId").value("4211ea05-d4ab-48ff-8613-8f4791a56606"))
-               .andExpect(jsonPath("$.messageFormat").value("OPENADR_3"))
+               .andExpect(jsonPath("$.messageFormat").value("OPENADR_3_1"))
                .andExpect(jsonPath("$.payload").value(PAYLOAD));
 
         verify(service, times(1)).latestInboundPermissionRecord(PERMISSION_ID);
@@ -258,7 +258,7 @@ class LatestRecordControllerTest {
         when(service.latestInboundPermissionRecord(PERMISSION_ID))
                 .thenThrow(new UnsupportedInboundRecordTransformationException(
                         AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
-                        InboundMessageFormat.OPENADR_3
+                        InboundMessageFormat.OPENADR_3_1
                 ));
 
         mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/inbound/latest")

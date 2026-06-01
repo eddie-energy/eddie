@@ -5,5 +5,5 @@ package energy.eddie.aiida.models.permission;
 
 public enum InboundMessageFormat {
     CIM_1_12,
-    OPENADR_3
+    OPENADR_3_1
 }

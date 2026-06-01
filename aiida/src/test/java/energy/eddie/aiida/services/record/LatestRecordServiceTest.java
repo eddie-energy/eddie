@@ -240,7 +240,7 @@ class LatestRecordServiceTest {
         var inboundRecord = mock(InboundRecordDto.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
         when(inboundRecord.dataSourceId()).thenReturn(DATA_SOURCE_ID);
-        when(inboundRecord.messageFormat()).thenReturn(InboundMessageFormat.OPENADR_3);
+        when(inboundRecord.messageFormat()).thenReturn(InboundMessageFormat.OPENADR_3_1);
         when(inboundRecord.payload()).thenReturn(PAYLOAD);
 
         when(inboundRecordService.latestRecord(PERMISSION_ID))
@@ -251,7 +251,7 @@ class LatestRecordServiceTest {
         assertNotNull(result);
         assertEquals(TIMESTAMP, result.timestamp());
         assertEquals(DATA_SOURCE_ID, result.dataSourceId());
-        assertEquals(InboundMessageFormat.OPENADR_3, result.messageFormat());
+        assertEquals(InboundMessageFormat.OPENADR_3_1, result.messageFormat());
         assertEquals(PAYLOAD, result.payload());
 
         verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
