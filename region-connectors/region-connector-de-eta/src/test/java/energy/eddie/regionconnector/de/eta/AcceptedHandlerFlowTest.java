@@ -4,6 +4,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.EnergyType;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
 import energy.eddie.regionconnector.de.eta.permission.handlers.AcceptedHandler;
@@ -50,6 +53,9 @@ class AcceptedHandlerFlowTest {
     private DePermissionRequestRepository repository;
 
     @Mock
+    private DataNeedsService dataNeedsService;
+
+    @Mock
     private EtaPlusApiClient apiClient;
 
     @Mock
@@ -64,10 +70,13 @@ class AcceptedHandlerFlowTest {
         realStream = new ValidatedHistoricalDataStream(outbox);
 
         when(eventBus.filteredFlux(AcceptedEvent.class)).thenReturn(Flux.empty());
+        // Default: treat all data needs as VHD (some tests skip before getById is called, hence lenient)
+        lenient().when(dataNeedsService.getById(anyString())).thenReturn(mock(ValidatedHistoricalDataDataNeed.class));
 
         acceptedHandler = new AcceptedHandler(
                 eventBus,
                 repository,
+                dataNeedsService,
                 apiClient,
                 realStream,
                 outbox,
@@ -257,5 +266,23 @@ class AcceptedHandlerFlowTest {
         acceptedHandler.accept(new AcceptedEvent(permissionId, "test-access-token", null));
 
         verify(outbox).commit(any());
+    }
+
+    @Test
+    @DisplayName("Should skip event when data need is not ValidatedHistoricalData (e.g. accounting point)")
+    void shouldSkipEventWhenDataNeedIsNotVhd() {
+        String permissionId = "perm-ap";
+        LocalDate start = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID).minusMonths(1);
+        LocalDate end = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID).minusDays(1);
+
+        DePermissionRequest permissionRequest = buildDefaultRequest(permissionId, start, end);
+
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
+        when(dataNeedsService.getById(anyString())).thenReturn(mock(AccountingPointDataNeed.class));
+
+        acceptedHandler.accept(new AcceptedEvent(permissionId, "test-access-token", null));
+
+        verifyNoInteractions(apiClient);
+        verifyNoInteractions(outbox);
     }
 }
