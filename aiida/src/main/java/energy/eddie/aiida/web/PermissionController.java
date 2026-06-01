@@ -94,7 +94,9 @@ public class PermissionController {
             )
             @Valid @RequestBody PatchPermissionDto patchDto,
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
+             UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException,
+             InboundMessageFormatOnlyForInboundPermissionsException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)

@@ -5,6 +5,7 @@ package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.InboundMessageFormatOnlyForInboundPermissionsException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
@@ -12,6 +13,7 @@ import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSo
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -58,12 +60,15 @@ class InboundRecordServiceTest {
     private InboundRecordService inboundRecordService;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws InboundMessageFormatOnlyForInboundPermissionsException {
         when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
         when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE);
 
         PERMISSION.setDataSource(DATA_SOURCE);
-        PERMISSION.setInboundMessageFormat(InboundMessageFormat.CIM_1_12);
+        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+        PERMISSION.setDataNeed(dataNeed);
+        PERMISSION.updateInboundMessageFormat(InboundMessageFormat.CIM_1_12);
     }
 
     @Test

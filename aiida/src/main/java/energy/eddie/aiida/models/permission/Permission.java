@@ -7,8 +7,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.errors.permission.InboundMessageFormatOnlyForInboundPermissionsException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -284,7 +286,12 @@ public class Permission {
         this.dataSource = dataSource;
     }
 
-    public void setInboundMessageFormat(@NonNull InboundMessageFormat inboundMessageFormat) {
+    public void updateInboundMessageFormat(@NonNull InboundMessageFormat inboundMessageFormat)
+            throws InboundMessageFormatOnlyForInboundPermissionsException {
+        if (!(dataNeed instanceof InboundAiidaLocalDataNeed)) {
+            throw new InboundMessageFormatOnlyForInboundPermissionsException();
+        }
+
         this.inboundMessageFormat = inboundMessageFormat;
     }
 }

@@ -197,7 +197,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public Permission updateInboundMessageFormat(
             UUID permissionId,
             @Nullable InboundMessageFormat inboundMessageFormat
-    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException {
+    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException,
+             MissingInboundMessageFormatException, InboundMessageFormatOnlyForInboundPermissionsException {
         if (inboundMessageFormat == null) {
             throw new MissingInboundMessageFormatException();
         }
@@ -206,7 +207,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         authService.checkAuthorizationForPermission(permission);
 
         var previousInboundMessageFormat = permission.inboundMessageFormat();
-        permission.setInboundMessageFormat(inboundMessageFormat);
+        permission.updateInboundMessageFormat(inboundMessageFormat);
 
         LOGGER.info("Updated inbound message format for permission {} from {} to {}.",
                     permission.id(),
@@ -233,7 +234,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             UUID permissionId,
             @Nullable UUID dataSourceId,
             @Nullable InboundMessageFormat inboundMessageFormat
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
+             UnauthorizedException, InvalidUserException, InboundMessageFormatOnlyForInboundPermissionsException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -245,7 +247,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         if (inboundMessageFormat != null) {
-            permission.setInboundMessageFormat(inboundMessageFormat);
+            permission.updateInboundMessageFormat(inboundMessageFormat);
         }
 
         permission.setGrantTime(Instant.now(clock));
