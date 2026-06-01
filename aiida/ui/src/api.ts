@@ -32,13 +32,14 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
     throw error
   }
   const isImagesEndpoint = path.startsWith('/datasources/images')
+  const isFileEndpoint = path.startsWith('/mqtt/download')
   const isHealthEndpoint = path.startsWith('/actuator/health')
 
-  const response = await window
+  const response = await globalThis
     .fetch(BASE_URL + path, {
       headers: {
         Authorization: `Bearer ${keycloak.token}`,
-        ...(!isImagesEndpoint ? { 'Content-Type': 'application/json' } : {}),
+        ...(isImagesEndpoint || isFileEndpoint ? {} : { 'Content-Type': 'application/json' }),
         ...(isHealthEndpoint ? { Accept: 'application/json' } : {}),
       },
       ...init,
@@ -62,7 +63,7 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
   if (response.headers.get('content-type')?.includes('application/json')) {
     return response.json()
   }
-  if (isImagesEndpoint) {
+  if (isImagesEndpoint || isFileEndpoint) {
     return response.blob()
   }
 
@@ -258,6 +259,12 @@ export async function getLatestOutboundPermissionMessage(id: string) {
 
 export async function getLatestInboundPermissionMessage(id: string) {
   return fetch(`/messages/permission/${id}/inbound/latest`, {
+    method: 'GET',
+  })
+}
+
+export async function getTlsCertificateFile() {
+  return fetch('/mqtt/download/tls-certificate', {
     method: 'GET',
   })
 }

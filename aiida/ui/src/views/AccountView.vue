@@ -5,8 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script setup lang="ts">
 import { keycloak } from '@/keycloak'
-import { ref } from 'vue'
-import { getApplicationInformation } from '@/api'
+import { onMounted, ref } from 'vue'
+import { getApplicationInformation, getTlsCertificateFile } from '@/api'
 import Button from '@/components/Button.vue'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { useI18n } from 'vue-i18n'
@@ -17,6 +17,7 @@ const lastName = ref('')
 const username = ref('')
 const aiidaId = ref('')
 const userAvatar = ref('')
+const certLink = ref('')
 
 keycloak.loadUserProfile().then((user) => {
   firstName.value = user.firstName ?? ''
@@ -27,6 +28,13 @@ keycloak.loadUserProfile().then((user) => {
 getApplicationInformation().then((data) => {
   aiidaId.value = data.aiidaId
 })
+
+onMounted(async () => {
+  const cert = await getTlsCertificateFile()
+  if (cert) {
+    certLink.value = URL.createObjectURL(cert)
+  }
+})
 </script>
 
 <template>
@@ -34,7 +42,7 @@ getApplicationInformation().then((data) => {
     <h1 class="heading-2 title">{{ t('account.title') }}</h1>
     <div class="user-profile">
       <div class="profile-header">
-        <img v-if="userAvatar" :src="userAvatar" />
+        <img v-if="userAvatar" :src="userAvatar" alt="user avatar" />
         <div v-else class="account-icon">
           <AccountIcon />
         </div>
@@ -47,6 +55,14 @@ getApplicationInformation().then((data) => {
         <div class="info-field">
           <dt>AIIDA ID</dt>
           <dd>{{ aiidaId }}</dd>
+        </div>
+        <div class="info-field">
+          <dt>{{ t('account.mqttTlsCertificate') }}</dt>
+          <dd>
+            <Button is-link download="emqx.crt" :href="certLink" size="small">{{
+              t('account.downloadCertificate')
+            }}</Button>
+          </dd>
         </div>
       </dl>
       <div class="user-buttons">
@@ -91,6 +107,12 @@ getApplicationInformation().then((data) => {
   padding: var(--spacing-sm);
   border-radius: var(--border-radius);
   border: 1px solid var(--eddie-grey-light);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
 }
 
 .info-field {
