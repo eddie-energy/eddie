@@ -152,7 +152,9 @@
   "account": {
     "title": "Compte",
     "settings": "Paramètres",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "mqttTlsCertificate": "Certificat TLS MQTT",
+    "downloadCertificate": "Télécharger"
   },
   "toasts": {
     "info": "Le saviez-vous ?",
