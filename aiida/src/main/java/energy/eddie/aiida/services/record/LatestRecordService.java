@@ -107,6 +107,7 @@ public class LatestRecordService {
         return new LatestInboundPermissionRecordDto(
                 inboundRecord.timestamp(),
                 inboundRecord.dataSourceId(),
+                inboundRecord.messageFormat(),
                 inboundRecord.payload()
         );
     }

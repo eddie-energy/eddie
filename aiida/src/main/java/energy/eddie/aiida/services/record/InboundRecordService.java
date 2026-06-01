@@ -97,6 +97,7 @@ public class InboundRecordService {
                 dataSource.meterId(),
                 dataSource.operatorId(),
                 inboundRecord.schema(),
+                format,
                 payload
         );
     }

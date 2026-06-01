@@ -235,6 +235,7 @@ class LatestRecordControllerTest {
         var inboundRecord = new LatestInboundPermissionRecordDto(
                 TIMESTAMP,
                 DATA_SOURCE_ID,
+                InboundMessageFormat.OPENADR_3,
                 PAYLOAD
         );
 
@@ -245,6 +246,7 @@ class LatestRecordControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.timestamp").value("2024-01-15T10:30:00Z"))
                .andExpect(jsonPath("$.dataSourceId").value("4211ea05-d4ab-48ff-8613-8f4791a56606"))
+               .andExpect(jsonPath("$.messageFormat").value("OPENADR_3"))
                .andExpect(jsonPath("$.payload").value(PAYLOAD));
 
         verify(service, times(1)).latestInboundPermissionRecord(PERMISSION_ID);

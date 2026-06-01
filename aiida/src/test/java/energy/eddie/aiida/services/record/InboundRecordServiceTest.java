@@ -87,6 +87,7 @@ class InboundRecordServiceTest {
         assertEquals(DATA_SOURCE_ID, inboundRecord.dataSourceId());
         assertEquals("mapped-payload", inboundRecord.payload());
         assertEquals(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12, inboundRecord.schema());
+        assertEquals(InboundMessageFormat.CIM_1_12, inboundRecord.messageFormat());
     }
 
     @Test

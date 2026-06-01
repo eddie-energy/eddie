@@ -4,6 +4,7 @@
 package energy.eddie.aiida.dtos.record;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -11,6 +12,7 @@ import java.util.UUID;
 public record LatestInboundPermissionRecordDto(
         @JsonProperty Instant timestamp,
         @JsonProperty UUID dataSourceId,
+        @JsonProperty InboundMessageFormat messageFormat,
         @JsonProperty String payload
 ) {
 }
