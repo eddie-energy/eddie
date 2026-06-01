@@ -442,11 +442,11 @@ class PermissionServiceTest {
     void givenOutboundPermissionWithInboundMessageFormat_acceptPermission_throws() throws Exception {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
-        doThrow(new InboundMessageFormatOnlyForInboundPermissionsException())
+        doThrow(new InvalidInboundPermissionException(permissionId1))
                 .when(mockPermission)
                 .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
 
-        assertThrows(InboundMessageFormatOnlyForInboundPermissionsException.class,
+        assertThrows(InvalidInboundPermissionException.class,
                      () -> service.acceptPermission(permissionId1, dataSourceId, InboundMessageFormat.OPENADR_3_1));
 
         verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
@@ -546,11 +546,11 @@ class PermissionServiceTest {
     @Test
     void givenOutboundPermission_updateInboundMessageFormat_throws() throws Exception {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
-        doThrow(new InboundMessageFormatOnlyForInboundPermissionsException())
+        doThrow(new InvalidInboundPermissionException(permissionId1))
                 .when(mockPermission)
                 .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
 
-        assertThrows(InboundMessageFormatOnlyForInboundPermissionsException.class,
+        assertThrows(InvalidInboundPermissionException.class,
                      () -> service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3_1));
 
         verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);

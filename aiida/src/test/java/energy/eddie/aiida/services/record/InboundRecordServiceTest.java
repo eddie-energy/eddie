@@ -5,7 +5,7 @@ package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
-import energy.eddie.aiida.errors.permission.InboundMessageFormatOnlyForInboundPermissionsException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
@@ -60,7 +60,7 @@ class InboundRecordServiceTest {
     private InboundRecordService inboundRecordService;
 
     @BeforeEach
-    void setUp() throws InboundMessageFormatOnlyForInboundPermissionsException {
+    void setUp() throws InvalidInboundPermissionException {
         when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
         when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE);
 
@@ -72,7 +72,10 @@ class InboundRecordServiceTest {
     }
 
     @Test
-    void testLatestRecord_returnsMappedRecord() throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+    void testLatestRecord_returnsMappedRecord() throws UnauthorizedException, PermissionNotFoundException,
+                                                       InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                                                       UnsupportedInboundRecordTransformationException,
+                                                       InvalidInboundPermissionException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
         when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(
@@ -129,6 +132,19 @@ class InboundRecordServiceTest {
 
         // When, Then
         assertThrows(InboundRecordNotFoundException.class,
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+    }
+
+    @Test
+    void testLatestRecord_withMissingInboundMessageFormat_throwsException() {
+        var permissionWithoutInboundFormat = new Permission();
+        permissionWithoutInboundFormat.setDataSource(DATA_SOURCE);
+
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permissionWithoutInboundFormat));
+        when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(
+                INBOUND_RECORD));
+
+        assertThrows(InvalidInboundPermissionException.class,
                      () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
     }
 }

@@ -91,7 +91,7 @@ public class GlobalExceptionHandler {
             ImageFormatException.class,
             ImageReadException.class,
             InvalidDataSourceTypeException.class,
-            InboundMessageFormatOnlyForInboundPermissionsException.class,
+            InvalidInboundPermissionException.class,
             MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,
             PermissionAlreadyExistsException.class,

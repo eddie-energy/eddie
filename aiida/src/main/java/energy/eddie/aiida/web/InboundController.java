@@ -6,6 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
@@ -45,7 +46,8 @@ public class InboundController {
             @RequestHeader(value = "X-API-Key", required = false) String apiKeyHeader,
             @RequestParam(name = "apiKey", required = false) String apiKeyQuery
     ) throws UnauthorizedException, PermissionNotFoundException, InvalidDataSourceTypeException,
-             InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+             InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+             InvalidInboundPermissionException {
         String apiKey = (apiKeyHeader != null && !apiKeyHeader.isBlank())
                 ? apiKeyHeader
                 : apiKeyQuery;

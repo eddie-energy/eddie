@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.models.permission;
 
-import energy.eddie.aiida.errors.permission.InboundMessageFormatOnlyForInboundPermissionsException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
@@ -31,12 +31,6 @@ class PermissionTest {
     void constructor_setsStatusToCreated() {
         // When, Then
         assertEquals(PermissionStatus.CREATED, permission.status());
-    }
-
-    @Test
-    void constructor_setsInboundMessageFormatToCim1_12() {
-        // When, Then
-        assertEquals(InboundMessageFormat.CIM_1_12, permission.inboundMessageFormat());
     }
 
     @Test
@@ -87,6 +81,16 @@ class PermissionTest {
     }
 
     @Test
+    void givenOutboundDataNeed_setDataNeed_setsInboundMessageFormatToNull() {
+        var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+
+        permission.setDataNeed(dataNeed);
+
+        assertNull(permission.inboundMessageFormat());
+    }
+
+    @Test
     void givenInboundDataNeed_updateInboundMessageFormat_updatesField() throws Exception {
         var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         when(dataNeed.name()).thenReturn("someDataNeed");
@@ -103,7 +107,7 @@ class PermissionTest {
         when(dataNeed.name()).thenReturn("someDataNeed");
         permission.setDataNeed(dataNeed);
 
-        assertThrows(InboundMessageFormatOnlyForInboundPermissionsException.class,
+        assertThrows(InvalidInboundPermissionException.class,
                      () -> permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1));
     }
 

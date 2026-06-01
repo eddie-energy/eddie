@@ -6,11 +6,11 @@ package energy.eddie.aiida.services.record;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
@@ -43,7 +43,8 @@ public class InboundRecordService {
 
     public InboundRecordDto latestRecord(UUID permissionId, String accessCode)
             throws PermissionNotFoundException, UnauthorizedException,
-                   InvalidDataSourceTypeException, InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+                   InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
         if (!Objects.equals(dataSource.accessCode(), accessCode)) {
@@ -52,14 +53,15 @@ public class InboundRecordService {
             );
         }
 
-        return toDto(latestRecord(dataSource), permission.inboundMessageFormat());
+        return toDto(permission, latestRecord(dataSource));
     }
 
     public InboundRecordDto latestRecord(UUID permissionId)
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
-        return toDto(latestRecord(dataSource), permission.inboundMessageFormat());
+        return toDto(permission, latestRecord(dataSource));
     }
 
     private InboundDataSource dataSource(Permission permission) throws InvalidDataSourceTypeException {
@@ -83,8 +85,12 @@ public class InboundRecordService {
                 .orElseThrow(() -> new InboundRecordNotFoundException(dataSource.id()));
     }
 
-    private InboundRecordDto toDto(InboundRecord inboundRecord, InboundMessageFormat format)
-            throws UnsupportedInboundRecordTransformationException {
+    private InboundRecordDto toDto(Permission permission, InboundRecord inboundRecord)
+            throws UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+        var format = permission.inboundMessageFormat();
+        if (format == null) {
+            throw new InvalidInboundPermissionException(permission.id());
+        }
 
         var dataSource = inboundRecord.dataSource();
         var payload = inboundPayloadTransformationService.transform(inboundRecord, format);

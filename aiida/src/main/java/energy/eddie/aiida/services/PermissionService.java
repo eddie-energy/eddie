@@ -198,7 +198,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             UUID permissionId,
             @Nullable InboundMessageFormat inboundMessageFormat
     ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException,
-             MissingInboundMessageFormatException, InboundMessageFormatOnlyForInboundPermissionsException {
+             MissingInboundMessageFormatException, InvalidInboundPermissionException {
         if (inboundMessageFormat == null) {
             throw new MissingInboundMessageFormatException();
         }
@@ -235,7 +235,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             @Nullable UUID dataSourceId,
             @Nullable InboundMessageFormat inboundMessageFormat
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
-             UnauthorizedException, InvalidUserException, InboundMessageFormatOnlyForInboundPermissionsException {
+             UnauthorizedException, InvalidUserException, InvalidInboundPermissionException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
