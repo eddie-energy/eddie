@@ -18,11 +18,13 @@ import java.util.UUID;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "action")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PermissionCommand.UpdateSchedule.class, name = "UPDATE_SCHEDULE"),
-        @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = "SET_TRANSMISSION_ENABLED")
+        @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = "SET_TRANSMISSION_ENABLED"),
+        @JsonSubTypes.Type(value = PermissionCommand.Terminate.class, name = "TERMINATE")
 })
-public sealed interface PermissionCommand
-        permits PermissionCommand.UpdateSchedule,
-        PermissionCommand.SetTransmissionEnabled {
+public sealed interface PermissionCommand permits
+        PermissionCommand.UpdateSchedule,
+        PermissionCommand.SetTransmissionEnabled,
+        PermissionCommand.Terminate {
 
     String regionConnectorId();
 
@@ -51,6 +53,13 @@ public sealed interface PermissionCommand
             UUID permissionId,
             ZonedDateTime timestamp,
             boolean enabled
+    ) implements PermissionCommand {
+    }
+
+    record Terminate(
+            String regionConnectorId,
+            UUID permissionId,
+            ZonedDateTime timestamp
     ) implements PermissionCommand {
     }
 }
