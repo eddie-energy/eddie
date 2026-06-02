@@ -65,9 +65,9 @@ class MqttTopicTest {
     @Test
     void aiidaTopic_withoutSuffix() {
         String permissionId = "perm-abc";
-        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.COMMAND);
 
-        assertEquals("aiida/v1/perm-abc/termination", topic.aiidaTopic());
+        assertEquals("aiida/v1/perm-abc/command", topic.aiidaTopic());
     }
 
     @Test

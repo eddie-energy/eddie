@@ -44,9 +44,6 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private PermissionProcessStatus status;
-    @Column(name = "termination_topic")
-    @Nullable
-    private String terminationTopic;
     @Column(name = "message")
     @Nullable
     private String message;
@@ -99,12 +96,6 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Override
     public LocalDate end() {
         return end;
-    }
-
-    @Override
-    @Nullable
-    public String terminationTopic() {
-        return terminationTopic;
     }
 
     @Override

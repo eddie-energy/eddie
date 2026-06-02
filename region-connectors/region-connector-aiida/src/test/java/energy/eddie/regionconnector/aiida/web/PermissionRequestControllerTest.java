@@ -214,7 +214,7 @@ class PermissionRequestControllerTest {
                 "MySuperSafePassword",
                 "data",
                 "status",
-                "termination",
+                "command",
                 "ack"));
 
         // When
@@ -226,7 +226,7 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath("$.password", is("MySuperSafePassword")))
                .andExpect(jsonPath("$.dataTopic", is("data")))
                .andExpect(jsonPath("$.statusTopic", is("status")))
-               .andExpect(jsonPath("$.terminationTopic", is("termination")));
+               .andExpect(jsonPath("$.commandTopic", is("command")));
     }
 
     @Test
@@ -247,8 +247,8 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath("$.permission_request.end", is("9999-12-31")))
                .andExpect(jsonPath("$.permission_request.connection_id", is("someConnectionId")))
                .andExpect(jsonPath("$.permission_request.status").doesNotExist())
-               .andExpect(jsonPath("$.permission_request.terminationTopic").doesNotExist())
-               .andExpect(jsonPath("$.permission_request.termination_topic").doesNotExist());
+               .andExpect(jsonPath("$.permission_request.commandTopic").doesNotExist())
+               .andExpect(jsonPath("$.permission_request.command_topic").doesNotExist());
     }
 
     private AiidaPermissionRequestInterface createDummyRequest() throws InvocationTargetException, InstantiationException, IllegalAccessException {
@@ -263,7 +263,6 @@ class PermissionRequestControllerTest {
         setField(request, "start", LocalDate.of(2000, 1, 1));
         setField(request, "end", LocalDate.of(9999, 12, 31));
         setField(request, "status", PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
-        setField(request, "terminationTopic", "someTopic");
         setField(request, "message", "someMessage");
         setField(request, "created", Instant.now());
 

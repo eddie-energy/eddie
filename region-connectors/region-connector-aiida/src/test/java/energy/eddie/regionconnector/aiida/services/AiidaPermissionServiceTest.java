@@ -536,7 +536,7 @@ class AiidaPermissionServiceTest {
     @Test
     void givenExceptionDuringTerminate_terminatePermission_emitsFailedToTerminateEvent() throws MqttException {
         // Given
-        doThrow(new MqttException(1234567)).when(mockMqttService).sendTerminationRequest(any());
+        doThrow(new MqttException(1234567)).when(mockMqttService).publishPermissionCommand(any());
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
         when(mockRequest.status()).thenReturn(ACCEPTED);
 
