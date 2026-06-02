@@ -3,14 +3,17 @@
 
 package energy.eddie.aiida.services.record;
 
+import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
+import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -234,12 +237,12 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldReturnLatestRecord_whenFound()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
-        var inboundRecord = mock(InboundRecord.class);
-        var dataSource = mock(InboundDataSource.class);
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+        var inboundRecord = mock(InboundRecordDto.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
-        when(inboundRecord.dataSource()).thenReturn(dataSource);
-        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(inboundRecord.dataSourceId()).thenReturn(DATA_SOURCE_ID);
+        when(inboundRecord.messageFormat()).thenReturn(InboundMessageFormat.OPENADR_3_1);
         when(inboundRecord.payload()).thenReturn(PAYLOAD);
 
         when(inboundRecordService.latestRecord(PERMISSION_ID))
@@ -250,6 +253,7 @@ class LatestRecordServiceTest {
         assertNotNull(result);
         assertEquals(TIMESTAMP, result.timestamp());
         assertEquals(DATA_SOURCE_ID, result.dataSourceId());
+        assertEquals(InboundMessageFormat.OPENADR_3_1, result.messageFormat());
         assertEquals(PAYLOAD, result.payload());
 
         verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
@@ -257,7 +261,8 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagatePermissionNotFoundException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
 
@@ -270,11 +275,26 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagateInboundRecordNotFoundException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InboundRecordNotFoundException(UUID.randomUUID()));
 
         assertThrows(InboundRecordNotFoundException.class, () ->
+                aiidaRecordService.latestInboundPermissionRecord(PERMISSION_ID)
+        );
+
+        verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
+    }
+
+    @Test
+    void latestInboundPermissionRecord_shouldPropagateInvalidInboundPermissionException()
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+        when(inboundRecordService.latestRecord(PERMISSION_ID))
+                .thenThrow(new InvalidInboundPermissionException(PERMISSION_ID));
+
+        assertThrows(InvalidInboundPermissionException.class, () ->
                 aiidaRecordService.latestInboundPermissionRecord(PERMISSION_ID)
         );
 

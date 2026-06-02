@@ -10,6 +10,7 @@ import type {
   AiidaDataSourceType,
   AiidaPermission,
   AiidaPermissionRequestsDTO,
+  InboundMessageFormat,
 } from './types'
 
 const { danger, success } = useToast()
@@ -179,6 +180,20 @@ export async function revokePermission(permissionId: string): Promise<void> {
     }),
   })
   success('toasts.revokePermission')
+}
+
+export async function updateInboundMessageFormat(
+  permissionId: string,
+  inboundMessageFormat: InboundMessageFormat,
+): Promise<void> {
+  await fetch(`/permissions/${permissionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      operation: 'UPDATE_INBOUND_MESSAGE_FORMAT',
+      inboundMessageFormat,
+    }),
+  })
+  success('toasts.updateInboundMessageFormat')
 }
 
 export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Promise<{

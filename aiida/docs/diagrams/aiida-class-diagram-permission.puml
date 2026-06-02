@@ -11,7 +11,7 @@ class Permission {
     - permissionId: UUID
     - eddieId: UUID
     - userId: UUID
-    - status PermissionStatus
+    - status: PermissionStatus
     - serviceName: String
     - startTime: Instant
     - expirationTime: Instant
@@ -19,10 +19,11 @@ class Permission {
     - revokeTime: Instant
     - connectionId: String
     - handshakeUrl: String
-    - acessToken: String
+    - accessToken: String
     - dataNeed: AiidaLocalDataNeed
     - mqttStreamingConfig: MqttStreamingConfig
     - dataSource: DataSource
+    - inboundMessageFormat: InboundMessageFormat
 }
 
 class AiidaLocalDataNeed {
@@ -55,8 +56,14 @@ enum PermissionStatus {
     FAILED_TO_START
 }
 
+enum InboundMessageFormat {
+    CIM_1_12
+    OPENADR_3_1
+}
+
 Permission "n" o-- "1" AiidaLocalDataNeed
 Permission - PermissionStatus
+Permission - InboundMessageFormat
 Permission "1" *-up- "1" MqttStreamingConfig
 Permission "n" o-- "1" Datasource
 

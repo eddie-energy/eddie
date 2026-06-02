@@ -1,16 +1,18 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.permission;
 
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -66,6 +68,47 @@ class PermissionTest {
         // Then
         assertEquals(dataNeed, permission.dataNeed());
         assertEquals("someDataNeed", permission.serviceName());
+    }
+
+    @Test
+    void givenInboundDataNeed_setDataNeed_setsInboundMessageFormatToCim1_12() {
+        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+
+        permission.setDataNeed(dataNeed);
+
+        assertEquals(InboundMessageFormat.CIM_1_12, permission.inboundMessageFormat());
+    }
+
+    @Test
+    void givenOutboundDataNeed_setDataNeed_setsInboundMessageFormatToNull() {
+        var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+
+        permission.setDataNeed(dataNeed);
+
+        assertNull(permission.inboundMessageFormat());
+    }
+
+    @Test
+    void givenInboundDataNeed_updateInboundMessageFormat_updatesField() throws Exception {
+        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+        permission.setDataNeed(dataNeed);
+
+        permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
+
+        assertEquals(InboundMessageFormat.OPENADR_3_1, permission.inboundMessageFormat());
+    }
+
+    @Test
+    void givenOutboundDataNeed_updateInboundMessageFormat_throws() {
+        var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+        permission.setDataNeed(dataNeed);
+
+        assertThrows(InvalidInboundPermissionException.class,
+                     () -> permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1));
     }
 
     @Test

@@ -9,12 +9,10 @@ import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
-import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -195,6 +193,30 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permission;
     }
 
+    @Transactional
+    public Permission updateInboundMessageFormat(
+            UUID permissionId,
+            @Nullable InboundMessageFormat inboundMessageFormat
+    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException,
+             MissingInboundMessageFormatException, InvalidInboundPermissionException {
+        if (inboundMessageFormat == null) {
+            throw new MissingInboundMessageFormatException();
+        }
+
+        var permission = findById(permissionId);
+        authService.checkAuthorizationForPermission(permission);
+
+        var previousInboundMessageFormat = permission.inboundMessageFormat();
+        permission.updateInboundMessageFormat(inboundMessageFormat);
+
+        LOGGER.info("Updated inbound message format for permission {} from {} to {}.",
+                    permission.id(),
+                    previousInboundMessageFormat,
+                    inboundMessageFormat);
+
+        return permission;
+    }
+
     /**
      * Accept the permission with the passed id. Updates the database and informs the EDDIE framework about the
      * acceptance. Will fetch the MQTT details from the EDDIE framework and either schedules the start (if start date is
@@ -210,8 +232,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public Permission acceptPermission(
             UUID permissionId,
-            @Nullable UUID dataSourceId
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException {
+            @Nullable UUID dataSourceId,
+            @Nullable InboundMessageFormat inboundMessageFormat
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
+             UnauthorizedException, InvalidUserException, InvalidInboundPermissionException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -220,6 +244,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                          ACCEPTED.name(),
                                                          List.of(FETCHED_DETAILS.name()),
                                                          permission.status().name());
+        }
+
+        if (inboundMessageFormat != null) {
+            permission.updateInboundMessageFormat(inboundMessageFormat);
         }
 
         permission.setGrantTime(Instant.now(clock));

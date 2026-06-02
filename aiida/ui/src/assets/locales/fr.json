@@ -108,10 +108,16 @@
     "loadLess": "Charger moins d’autorisations",
     "revokeTitle": "Révoquer l’autorisation",
     "revokeDescription": "Êtes-vous sûr de vouloir révoquer cette autorisation ? Cette action est irréversible.",
+    "updateInboundMessageFormatTitle": "Changer le mappage des messages entrants",
+    "updateInboundMessageFormatDescription": "Voulez-vous que les messages entrants pour cette autorisation soient mappés vers {format} avant d’être transmis ?",
     "toggleTooltip": "Basculer l’infobulle du code d’accès",
     "showMqttPassword": "Afficher le mot de passe MQTT",
     "hideMqttPassword": "Masquer le mot de passe MQTT",
     "copyMqttPassword": "Copier le mot de passe MQTT",
+    "inboundMessageFormats": {
+      "CIM_1_12": "CIM 1.12",
+      "OPENADR_3_1": "OpenADR 3.1"
+    },
     "dropdown": {
       "service": "Service",
       "status": "Statut",
@@ -125,6 +131,7 @@
       "obisCodes": "Codes OBIS",
       "dataSource": "Source de données",
       "acknowledgementRequired": "Confirmation requise",
+      "inboundMessageFormat": "Format des messages entrants",
       "permissionId": "ID d’autorisation",
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "inboundTooltip": "Il existe deux façons d’utiliser cette clé API pour récupérer les dernières données entrantes :",
@@ -162,6 +169,7 @@
     "warning": "Attention !",
     "danger": "Une erreur est survenue !",
     "acceptPermission": "Demande d’autorisation acceptée.",
+    "updateInboundMessageFormat": "Format des messages entrants mis à jour.",
     "revokePermission": "L’autorisation pour ce service a été révoquée.",
     "rejectPermission": "Demande d’autorisation refusée.",
     "createDatasource": "Source de données créée.",

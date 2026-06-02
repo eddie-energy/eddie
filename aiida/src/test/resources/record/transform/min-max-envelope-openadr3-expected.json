@@ -1,0 +1,60 @@
+{
+  "id": "90b203e4-e024-4008-b2e7-a90ae90bcb76",
+  "createdDateTime": "2026-05-31T23:55:00Z",
+  "modificationDateTime": "2026-06-01T00:05:00Z",
+  "objectType": "EVENT",
+  "programID": "FCA",
+  "eventName": "Demonstrator MinMax envelope",
+  "payloadDescriptors": [
+    {
+      "objectType": "EVENT_PAYLOAD_DESCRIPTOR",
+      "payloadType": "IMPORT_CAPACITY_LIMIT",
+      "units": "KW"
+    },
+    {
+      "objectType": "EVENT_PAYLOAD_DESCRIPTOR",
+      "payloadType": "EXPORT_CAPACITY_LIMIT",
+      "units": "KW"
+    }
+  ],
+  "intervalPeriod": {
+    "start": "2026-06-01T00:00:00Z",
+    "duration": "PT15M"
+  },
+  "intervals": [
+    {
+      "id": 0,
+      "payloads": [
+        {
+          "type": "IMPORT_CAPACITY_LIMIT",
+          "values": [
+            -1.5
+          ]
+        },
+        {
+          "type": "EXPORT_CAPACITY_LIMIT",
+          "values": [
+            -3.0
+          ]
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "payloads": [
+        {
+          "type": "IMPORT_CAPACITY_LIMIT",
+          "values": [
+            4.5
+          ]
+        },
+        {
+          "type": "EXPORT_CAPACITY_LIMIT",
+          "values": [
+            1.0
+          ]
+        }
+      ]
+    }
+  ]
+}

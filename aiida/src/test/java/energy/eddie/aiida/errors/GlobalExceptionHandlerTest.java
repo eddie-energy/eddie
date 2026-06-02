@@ -6,10 +6,7 @@ package energy.eddie.aiida.errors;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
-import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
-import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.Test;
@@ -83,7 +80,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT].",
+        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT, UPDATE_INBOUND_MESSAGE_FORMAT].",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 
@@ -140,6 +137,21 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         var responseBody = response.getBody();
         var message = "Permission with ID '%s' already exists.".formatted(permissionId);
+        assertNotNull(responseBody);
+        assertEquals(1, responseBody.size());
+        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
+        assertEquals(message, responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
+    }
+
+    @Test
+    void givenInvalidInboundPermissionException_returnsBadRequest() {
+        var exception = new InvalidInboundPermissionException(permissionId);
+
+        var response = advice.handleBadRequestExceptions(exception);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        var responseBody = response.getBody();
+        var message = "Permission with ID '%s' is not an inbound permission.".formatted(permissionId);
         assertNotNull(responseBody);
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());

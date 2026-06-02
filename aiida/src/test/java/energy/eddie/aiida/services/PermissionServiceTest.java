@@ -8,16 +8,15 @@ import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
-import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
-import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
-import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
-import energy.eddie.aiida.errors.permission.PermissionUnfulfillableException;
+import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -97,6 +96,8 @@ class PermissionServiceTest {
     private AiidaDataNeed mockDataNeed;
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
+    @Mock
+    private OutboundAiidaLocalDataNeed mockOutboundAiidaLocalDataNeed;
     @Mock
     private AuthService mockAuthService;
     @Mock
@@ -354,7 +355,7 @@ class PermissionServiceTest {
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
-                     () -> service.acceptPermission(permissionId1, dataSourceId));
+                     () -> service.acceptPermission(permissionId1, dataSourceId, null));
     }
 
     @Test
@@ -372,7 +373,7 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
 
         // When, Then
-        assertThrows(DetailFetchingFailedException.class, () -> service.acceptPermission(permissionId1, dataSourceId));
+        assertThrows(DetailFetchingFailedException.class, () -> service.acceptPermission(permissionId1, dataSourceId, null));
     }
 
     @Test
@@ -386,7 +387,7 @@ class PermissionServiceTest {
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
         // When
-        service.acceptPermission(permissionId1, dataSourceId);
+        service.acceptPermission(permissionId1, dataSourceId, null);
 
         // Then
         verify(mockHandshakeService).fetchMqttDetails(any());
@@ -414,10 +415,42 @@ class PermissionServiceTest {
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
 
         // When
-        service.acceptPermission(permissionId1, null);
+        service.acceptPermission(permissionId1, null, null);
 
         // Then
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionAcceptEvent.class));
+    }
+
+    @Test
+    void givenValidInboundPermissionWithInboundMessageFormat_acceptPermission_updatesFormat() throws Exception {
+        // Given
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId1.toString());
+
+        // When
+        service.acceptPermission(permissionId1, null, InboundMessageFormat.OPENADR_3_1);
+
+        // Then
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
+    }
+
+    @Test
+    void givenOutboundPermissionWithInboundMessageFormat_acceptPermission_throws() throws Exception {
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        doThrow(new InvalidInboundPermissionException(permissionId1))
+                .when(mockPermission)
+                .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
+
+        assertThrows(InvalidInboundPermissionException.class,
+                     () -> service.acceptPermission(permissionId1, dataSourceId, InboundMessageFormat.OPENADR_3_1));
+
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
+        verify(mockHandshakeService, never()).fetchMqttDetails(any());
     }
 
     @Test
@@ -495,6 +528,32 @@ class PermissionServiceTest {
         verify(mockPermission).setRevokeTime(fixedInstant);
         verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
+    }
+
+    @Test
+    void givenInboundPermission_updateInboundMessageFormat_updatesPermission() throws Exception {
+        // Given
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+
+        // When
+        var updatedPermission = service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3_1);
+
+        // Then
+        assertEquals(mockPermission, updatedPermission);
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
+    }
+
+    @Test
+    void givenOutboundPermission_updateInboundMessageFormat_throws() throws Exception {
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        doThrow(new InvalidInboundPermissionException(permissionId1))
+                .when(mockPermission)
+                .updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
+
+        assertThrows(InvalidInboundPermissionException.class,
+                     () -> service.updateInboundMessageFormat(permissionId1, InboundMessageFormat.OPENADR_3_1));
+
+        verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
     }
 
     @Test

@@ -108,10 +108,16 @@
     "loadLess": "Weniger Berechtigungen laden",
     "revokeTitle": "Berechtigung widerrufen",
     "revokeDescription": "Sind Sie sicher, dass Sie diese Berechtigung widerrufen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "updateInboundMessageFormatTitle": "Format eingehender Nachrichten zum Abruf ändern",
+    "updateInboundMessageFormatDescription": "Möchten Sie, dass eingehende Nachrichten für diese Berechtigung vor der Weiterleitung in {format} abgebildet werden?",
     "toggleTooltip": "Zugriffscode-Tooltip umschalten",
     "showMqttPassword": "MQTT-Passwort anzeigen",
     "hideMqttPassword": "MQTT-Passwort ausblenden",
     "copyMqttPassword": "MQTT-Passwort kopieren",
+    "inboundMessageFormats": {
+      "CIM_1_12": "CIM 1.12",
+      "OPENADR_3_1": "OpenADR 3.1"
+    },
     "dropdown": {
       "service": "Dienst",
       "status": "Status",
@@ -125,6 +131,7 @@
       "obisCodes": "OBIS-Codes",
       "dataSource": "Datenquelle",
       "acknowledgementRequired": "Rückbestätigung erforderlich",
+      "inboundMessageFormat": "Format eingehender Nachrichten",
       "permissionId": "Berechtigungs-ID",
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "inboundTooltip": "Es gibt zwei Möglichkeiten, diesen API-Schlüssel zu verwenden, um die neuesten eingehenden Daten abzurufen:",
@@ -162,6 +169,7 @@
     "warning": "Warnung!",
     "danger": "Etwas ist schiefgelaufen!",
     "acceptPermission": "Berechtigungsanfrage akzeptiert.",
+    "updateInboundMessageFormat": "Format eingehender Nachrichten aktualisiert.",
     "revokePermission": "Die Berechtigung für diesen Dienst wurde widerrufen.",
     "rejectPermission": "Berechtigungsanfrage abgelehnt.",
     "createDatasource": "Datenquelle erstellt.",

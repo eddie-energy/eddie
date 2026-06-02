@@ -8,10 +8,12 @@ import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
+import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
@@ -100,12 +102,14 @@ public class LatestRecordService {
     }
 
     public LatestInboundPermissionRecordDto latestInboundPermissionRecord(UUID permissionId)
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
         var inboundRecord = inboundRecordService.latestRecord(permissionId);
 
         return new LatestInboundPermissionRecordDto(
                 inboundRecord.timestamp(),
-                inboundRecord.dataSource().id(),
+                inboundRecord.dataSourceId(),
+                inboundRecord.messageFormat(),
                 inboundRecord.payload()
         );
     }

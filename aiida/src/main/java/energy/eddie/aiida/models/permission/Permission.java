@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.permission;
@@ -7,11 +7,14 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import org.jspecify.annotations.NonNull;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -106,6 +109,13 @@ public class Permission {
     @JsonProperty
     private DataSource dataSource;
 
+    @Column(name = "inbound_message_format")
+    @Enumerated(EnumType.STRING)
+    @Schema(description = "Selected format for inbound permission messages.", example = "CIM_1_12")
+    @JsonProperty
+    @Nullable
+    private InboundMessageFormat inboundMessageFormat;
+
     /**
      * Create a new permission from the contents of the QR code. The status will be set to
      * {@link PermissionStatus#CREATED}.
@@ -185,7 +195,11 @@ public class Permission {
      * Returns the service name for which this permission is for.
      */
     public @Nullable String serviceName() {
-         return serviceName;
+        return serviceName;
+    }
+
+    public @Nullable InboundMessageFormat inboundMessageFormat() {
+        return inboundMessageFormat;
     }
 
     /**
@@ -267,9 +281,24 @@ public class Permission {
     public void setDataNeed(AiidaLocalDataNeed dataNeed) {
         this.dataNeed = requireNonNull(dataNeed);
         this.serviceName = dataNeed.name();
+
+        if (dataNeed instanceof InboundAiidaLocalDataNeed && this.inboundMessageFormat == null) {
+            this.inboundMessageFormat = InboundMessageFormat.CIM_1_12;
+        } else {
+            this.inboundMessageFormat = null;
+        }
     }
 
     public void setDataSource(@Nullable DataSource dataSource) {
         this.dataSource = dataSource;
+    }
+
+    public void updateInboundMessageFormat(@NonNull InboundMessageFormat inboundMessageFormat)
+            throws InvalidInboundPermissionException {
+        if (!(dataNeed instanceof InboundAiidaLocalDataNeed)) {
+            throw new InvalidInboundPermissionException(permissionId);
+        }
+
+        this.inboundMessageFormat = inboundMessageFormat;
     }
 }
