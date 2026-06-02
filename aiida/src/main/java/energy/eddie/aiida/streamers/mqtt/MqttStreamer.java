@@ -13,6 +13,7 @@ import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -158,23 +159,35 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
 
     @Override
     public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.info("Got termination message {}", message);
-        var payload = new String(message.getPayload(), StandardCharsets.UTF_8);
+        LOGGER.info("Got permission command message {}", message);
 
+        PermissionCommand command;
         try {
-            var permissionId = UUID.fromString(payload);
-            if (permissionId.compareTo(streamingConfig.permissionId()) != 0) {
-                throw new IllegalArgumentException();
-            }
+            command = mapper.readValue(message.getPayload(), PermissionCommand.class);
+        } catch (JacksonException e) {
+            LOGGER.warn("MqttStreamer for permission {} received an unparseable permission command",
+                        streamingConfig.permissionId(),
+                        e);
+            return;
+        }
 
-            isBeingTerminated = true;
-            terminationRequestSink.emitValue(streamingConfig.permissionId(),
-                                             Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(3)));
-        } catch (IllegalArgumentException e) {
-            LOGGER.warn(
-                    "MqttStreamer got request to terminate permission {}, but received wrong permission.permissionId() {}",
+        if (!command.permissionId().equals(streamingConfig.permissionId())) {
+            LOGGER.warn("MqttStreamer for permission {} received a command for a different permission {}",
+                        streamingConfig.permissionId(),
+                        command.permissionId());
+            return;
+        }
+
+        switch (command) {
+            case PermissionCommand.Terminate ignored -> terminate();
+            case PermissionCommand.SetTransmissionEnabled setTransmissionEnabled -> LOGGER.warn(
+                    "MqttStreamer for permission {} received SET_TRANSMISSION_ENABLED({}), not yet implemented",
                     streamingConfig.permissionId(),
-                    message.getPayload());
+                    setTransmissionEnabled.enabled());
+            case PermissionCommand.UpdateSchedule updateSchedule -> LOGGER.warn(
+                    "MqttStreamer for permission {} received UPDATE_SCHEDULE({}), not yet implemented",
+                    streamingConfig.permissionId(),
+                    updateSchedule.transmissionSchedule());
         }
     }
 
@@ -190,8 +203,14 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                      serverURI,
                      reconnect);
 
-        subscribeToTerminationTopic();
+        subscribeToCommandTopic();
         retryFailedToSendMessages();
+    }
+
+    private void terminate() {
+        isBeingTerminated = true;
+        terminationRequestSink.emitValue(streamingConfig.permissionId(),
+                                         Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(3)));
     }
 
     @Override
@@ -291,13 +310,13 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         }
     }
 
-    private void subscribeToTerminationTopic() {
+    private void subscribeToCommandTopic() {
         try {
-            client.subscribe(streamingConfig.terminationTopic(), 2);
+            client.subscribe(streamingConfig.commandTopic(), 2);
         } catch (MqttException e) {
             LOGGER.error("MqttStreamer for permission {} has encountered an error while subscribing to {} ",
                          streamingConfig.permissionId(),
-                         streamingConfig.terminationTopic(),
+                         streamingConfig.commandTopic(),
                          e);
         }
     }

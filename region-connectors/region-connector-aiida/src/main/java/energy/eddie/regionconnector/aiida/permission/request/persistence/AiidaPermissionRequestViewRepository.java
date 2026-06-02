@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.permission.request.persistence;
@@ -42,7 +42,7 @@ public interface AiidaPermissionRequestViewRepository extends
     }
 
     @Query(
-            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, termination_topic, created, message, aiida_id " +
+            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, created, message, aiida_id " +
                     "FROM aiida.aiida_permission_request_view WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
@@ -50,7 +50,7 @@ public interface AiidaPermissionRequestViewRepository extends
     List<AiidaPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
 
     @Query(
-            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, termination_topic, created, message, aiida_id " +
+            value = "SELECT permission_id, status, connection_id, data_need_id, permission_start, permission_end, created, message, aiida_id " +
                     "FROM aiida.aiida_permission_request_view WHERE status = 'ACCEPTED' AND permission_start <= NOW() AND permission_end >= NOW()",
             nativeQuery = true
     )

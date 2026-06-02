@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.mqtt.acl.MqttAclRepository;
@@ -13,7 +14,6 @@ import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
 import energy.eddie.regionconnector.aiida.mqtt.user.MqttUser;
 import energy.eddie.regionconnector.aiida.mqtt.user.MqttUserRepository;
-import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
@@ -25,7 +25,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -93,7 +92,7 @@ public class MqttService implements AutoCloseable {
                            wrapper.rawPassword(),
                            topics.dataTopic().aiidaTopic(),
                            topics.statusTopic().aiidaTopic(),
-                           topics.terminationTopic().aiidaTopic(),
+                           topics.commandTopic().aiidaTopic(),
                            topics.acknowledgementTopic()
                                  .map(MqttTopic::aiidaTopic)
                                  .orElse(null));
@@ -137,11 +136,15 @@ public class MqttService implements AutoCloseable {
         mqttClient.subscribe(topic, 1);
     }
 
-    public void sendTerminationRequest(AiidaPermissionRequest permissionRequest) throws MqttException {
-        mqttClient.publish(permissionRequest.terminationTopic(),
-                           permissionRequest.permissionId().getBytes(StandardCharsets.UTF_8),
-                           1,
-                           true);
+    public void publishPermissionCommand(PermissionCommand permissionCommand) throws MqttException {
+        if (permissionCommand.permissionId() == null) {
+            LOGGER.warn("Permission ID is null, cannot publish permission command");
+            return;
+        }
+
+        var topic = MqttTopic.of(permissionCommand.permissionId().toString(), MqttTopicType.COMMAND).eddieTopic();
+        // retained, so a subscriber that (re)connects after the command was sent still receives it
+        publishJson(topic, permissionCommand, true);
     }
 
     public <T> void publishInboundData(
@@ -155,11 +158,15 @@ public class MqttService implements AutoCloseable {
         }
 
         var topic = MqttTopic.of(permissionId, MqttTopicType.INBOUND_DATA).schemaTopic(schema);
-        LOGGER.info("Publishing inbound data to topic {}", topic);
+        publishJson(topic, payload, false);
+    }
 
-        var payloadBytes = objectMapper.writeValueAsBytes(payload);
-
-        mqttClient.publish(topic, payloadBytes, 1, false);
+    /**
+     * Serializes {@code payload} to JSON and publishes it to {@code topic} with QoS 1.
+     */
+    private void publishJson(String topic, Object payload, boolean retained) throws MqttException {
+        LOGGER.info("Publishing to topic {}", topic);
+        mqttClient.publish(topic, objectMapper.writeValueAsBytes(payload), 1, retained);
     }
 
     /**
@@ -181,7 +188,8 @@ public class MqttService implements AutoCloseable {
      * <ul>
      *     <li>data topic: publish</li>
      *     <li>status message topic: publish</li>
-     *     <li>termination topic: subscribe</li>
+     *     <li>permission command topic: subscribe</li>
+     *     <li>acknowledgement topic: publish</li>
      * </ul>
      * No other ACLs are defined, make sure to properly configure your MQTT server with a deny-all for unmatched topics.
      */
@@ -193,7 +201,7 @@ public class MqttService implements AutoCloseable {
 
         var topics = new Topics(MqttTopic.of(permissionId, dataTopicType),
                                 MqttTopic.of(permissionId, MqttTopicType.STATUS),
-                                MqttTopic.of(permissionId, MqttTopicType.TERMINATION),
+                                MqttTopic.of(permissionId, MqttTopicType.COMMAND),
                                 acknowledgementRequired
                                         ? Optional.of(MqttTopic.of(permissionId, MqttTopicType.ACKNOWLEDGEMENT))
                                         : Optional.empty());
@@ -201,7 +209,7 @@ public class MqttService implements AutoCloseable {
         var acls = new ArrayList<>(List.of(
                 topics.dataTopic().aiidaAcl(username),
                 topics.statusTopic().aiidaAcl(username),
-                topics.terminationTopic().aiidaAcl(username)));
+                topics.commandTopic().aiidaAcl(username)));
 
         topics.acknowledgementTopic()
               .ifPresent(topic -> acls.add(topic.aiidaAcl(username)));
@@ -215,6 +223,6 @@ public class MqttService implements AutoCloseable {
 
     private record Topics(MqttTopic dataTopic,
                           MqttTopic statusTopic,
-                          MqttTopic terminationTopic,
+                          MqttTopic commandTopic,
                           Optional<MqttTopic> acknowledgementTopic) {}
 }

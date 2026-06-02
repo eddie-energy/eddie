@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.mqtt;
@@ -14,6 +14,6 @@ class MqttTopicTypeTest {
         assertEquals("data/outbound", MqttTopicType.OUTBOUND_DATA.baseTopicName());
         assertEquals("data/inbound", MqttTopicType.INBOUND_DATA.baseTopicName());
         assertEquals("status", MqttTopicType.STATUS.baseTopicName());
-        assertEquals("termination", MqttTopicType.TERMINATION.baseTopicName());
+        assertEquals("command", MqttTopicType.COMMAND.baseTopicName());
     }
 }

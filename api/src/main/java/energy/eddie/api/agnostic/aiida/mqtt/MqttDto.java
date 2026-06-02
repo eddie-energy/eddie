@@ -10,6 +10,6 @@ public record MqttDto(String serverUri,
                       String password,
                       String dataTopic,
                       String statusTopic,
-                      String terminationTopic,
+                      String commandTopic,
                       @Nullable String acknowledgementTopic) {
 }

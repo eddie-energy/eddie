@@ -20,6 +20,7 @@ import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -38,6 +39,7 @@ import tools.jackson.databind.json.JsonMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -54,7 +56,7 @@ class MqttStreamerTest {
     private static final String DATA_TOPIC = "aiida/v1/permission-id/data/outbound";
     private static final String EXPECTED_DATA_TOPIC = DATA_TOPIC + "/smart-meter-p1-raw";
     private static final String EXPECTED_STATUS_TOPIC = "aiida/v1/permission-id/status";
-    private static final String EXPECTED_TERMINATION_TOPIC = "aiida/v1/permission-id/termination";
+    private static final String EXPECTED_COMMAND_TOPIC = "aiida/v1/permission-id/command";
     private static final String EXPECTED_ACK_TOPIC = "aiida/v1/permission-id/acknowledgement";
     private static final UUID PERMISSION_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final DataSource DATA_SOURCE = mock(DataSource.class);
@@ -109,7 +111,7 @@ class MqttStreamerTest {
                                   "mqttPassword",
                                   DATA_TOPIC,
                                   EXPECTED_STATUS_TOPIC,
-                                  EXPECTED_TERMINATION_TOPIC,
+                                  EXPECTED_COMMAND_TOPIC,
                                   EXPECTED_ACK_TOPIC);
         mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
 
@@ -170,7 +172,7 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenConnectComplete_subscribesToTerminationTopic() throws MqttException {
+    void givenConnectComplete_subscribesToCommandTopic() throws MqttException {
         // Given
         streamer.connect();
 
@@ -178,7 +180,7 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "testFoo");
 
         // Then
-        verify(mockClient).subscribe(EXPECTED_TERMINATION_TOPIC, 2);
+        verify(mockClient).subscribe(EXPECTED_COMMAND_TOPIC, 2);
     }
 
     @Test
@@ -201,7 +203,7 @@ class MqttStreamerTest {
 
         // Then
         verify(mockClient).setCallback(any());
-        verify(mockClient).subscribe(EXPECTED_TERMINATION_TOPIC, 2);
+        verify(mockClient).subscribe(EXPECTED_COMMAND_TOPIC, 2);
         verify(mockClient, times(2)).publish(eq(EXPECTED_DATA_TOPIC), any(), eq(1), eq(false));
     }
 
@@ -222,9 +224,11 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenTerminationRequest_publishesOnMono() throws MqttException {
+    void givenTerminateCommand_publishesOnMono() throws MqttException {
         // Given
         when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID, ZonedDateTime.now()));
         when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .expectNext(PERMISSION_ID)
@@ -235,16 +239,20 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "fooTest");
 
         // When
-        streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
 
         // Then
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 
     @Test
-    void givenTerminationRequestWithInvalidPermissionId_doesNotPublishOnMono() throws MqttException {
+    void givenTerminateCommandWithInvalidPermissionId_doesNotPublishOnMono() throws MqttException {
         // Given
         when(mockMessage.getPayload()).thenReturn("82831e2c-a01c-41b8-9db6-3f51670df7a5".getBytes(StandardCharsets.UTF_8));
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.Terminate("aiida",
+                                                            UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5"),
+                                                            ZonedDateTime.now()));
         when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .then(streamer::close)
@@ -254,7 +262,7 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "fooTest");
 
         // When
-        streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
 
         // Then
         stepVerifier.verify(Duration.ofSeconds(2));
@@ -262,15 +270,17 @@ class MqttStreamerTest {
 
     @Test
     @SuppressWarnings("java:S2925")
-    void givenAiidaRecordAfterTerminationRequest_doesNotSendViaMqtt() throws MqttException, InterruptedException {
+    void givenAiidaRecordAfterTerminateCommand_doesNotSendViaMqtt() throws MqttException, InterruptedException {
         // Given
         streamer.connect();
         // manually call callback
         streamer.connectComplete(false, "fooTest");
         when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID, ZonedDateTime.now()));
 
         // When
-        streamer.messageArrived(EXPECTED_TERMINATION_TOPIC, mockMessage);
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
         recordPublisher.next(record1, record2);
         Thread.sleep(200);
 

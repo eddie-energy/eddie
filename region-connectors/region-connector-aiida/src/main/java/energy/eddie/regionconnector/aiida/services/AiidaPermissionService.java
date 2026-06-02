@@ -12,6 +12,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -24,8 +25,6 @@ import energy.eddie.regionconnector.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
 import energy.eddie.regionconnector.aiida.exceptions.DataNeedMalformedException;
-import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopic;
-import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.*;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -42,6 +41,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
 
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -180,8 +180,10 @@ public class AiidaPermissionService {
 
     public void terminatePermission(String permissionId) {
         try {
-            AiidaPermissionRequest request = checkIfPermissionHasValidStatus(permissionId, ACCEPTED, TERMINATED);
-            mqttService.sendTerminationRequest(request);
+            checkIfPermissionHasValidStatus(permissionId, ACCEPTED, TERMINATED);
+            mqttService.publishPermissionCommand(new PermissionCommand.Terminate(REGION_CONNECTOR_ID,
+                                                                                 UUID.fromString(permissionId),
+                                                                                 ZonedDateTime.now()));
             outbox.commit(new SimpleEvent(permissionId, TERMINATED));
             outbox.commit(new SimpleEvent(permissionId, REQUIRES_EXTERNAL_TERMINATION));
         } catch (Exception e) {
@@ -241,13 +243,11 @@ public class AiidaPermissionService {
                     dataNeedId,
                     message);
             case AiidaDataNeedResult aiidaResult -> {
-                var terminationTopic = MqttTopic.of(permissionId, MqttTopicType.TERMINATION);
                 var createdEvent = new CreatedEvent(permissionId,
                                                     connectionId,
                                                     dataNeedId,
                                                     aiidaResult.energyTimeframe().start(),
-                                                    aiidaResult.energyTimeframe().end(),
-                                                    terminationTopic.eddieTopic());
+                                                    aiidaResult.energyTimeframe().end());
                 outbox.commit(createdEvent);
 
                 if (isInvalidPermissionRequest(aiidaResult)) {
@@ -279,7 +279,7 @@ public class AiidaPermissionService {
         return jwtUtil.createJwt(REGION_CONNECTOR_ID, permissionIdsArray);
     }
 
-    private AiidaPermissionRequest checkIfPermissionHasValidStatus(
+    private void checkIfPermissionHasValidStatus(
             String permissionId,
             PermissionProcessStatus requiredStatus,
             PermissionProcessStatus desiredNextStatus
@@ -301,8 +301,6 @@ public class AiidaPermissionService {
                                                          requiredStatus,
                                                          request.status());
         }
-
-        return request;
     }
 
     private void subscribeToPermissionTopics(String permissionId) {

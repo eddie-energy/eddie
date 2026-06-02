@@ -59,7 +59,6 @@ class AiidaPermissionRequestViewRepositoryTest {
                                                                                   "dnid",
                                                                                   now.toLocalDate(),
                                                                                   now.plusDays(10).toLocalDate(),
-                                                                                  "termination-topic",
                                                                                   clock));
         permissionEventRepository.saveAndFlush((PermissionEvent) new SimpleEvent("pid",
                                                                                  PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
@@ -67,8 +66,7 @@ class AiidaPermissionRequestViewRepositoryTest {
                                                                                   "cid",
                                                                                   "dnid",
                                                                                   now.toLocalDate(),
-                                                                                  now.plusDays(20).toLocalDate(),
-                                                                                  "termination-topic"));
+                                                                                  now.plusDays(20).toLocalDate()));
         permissionEventRepository.saveAndFlush((PermissionEvent) new SimpleEvent("otherPid",
                                                                                  PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
 

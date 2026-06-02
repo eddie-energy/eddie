@@ -20,8 +20,6 @@ public class CreatedEvent extends PersistablePermissionEvent {
     private final LocalDate permissionStart;
     @Column(name = "permission_end")
     private final LocalDate permissionEnd;
-    @Column(name = "termination_topic")
-    private final String terminationTopic;
 
     @SuppressWarnings("NullAway") // Needed for JPA
     protected CreatedEvent() {
@@ -29,7 +27,6 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.dataNeedId = null;
         this.permissionStart = null;
         this.permissionEnd = null;
-        this.terminationTopic = null;
     }
 
     public CreatedEvent(
@@ -38,7 +35,6 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String dataNeedId,
             LocalDate permissionStart,
             LocalDate permissionEnd,
-            String terminationTopic,
             Clock clock
     ) {
         super(permissionId, PermissionProcessStatus.CREATED, clock);
@@ -46,7 +42,6 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.dataNeedId = dataNeedId;
         this.permissionStart = permissionStart;
         this.permissionEnd = permissionEnd;
-        this.terminationTopic = terminationTopic;
     }
 
     public CreatedEvent(
@@ -54,15 +49,13 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String connectionId,
             String dataNeedId,
             LocalDate permissionStart,
-            LocalDate permissionEnd,
-            String terminationTopic
+            LocalDate permissionEnd
     ) {
         super(permissionId, PermissionProcessStatus.CREATED);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.permissionStart = permissionStart;
         this.permissionEnd = permissionEnd;
-        this.terminationTopic = terminationTopic;
     }
 
     public String connectionId() {
@@ -79,9 +72,5 @@ public class CreatedEvent extends PersistablePermissionEvent {
 
     public LocalDate permissionEnd() {
         return permissionEnd;
-    }
-
-    public String terminationTopic() {
-        return terminationTopic;
     }
 }
