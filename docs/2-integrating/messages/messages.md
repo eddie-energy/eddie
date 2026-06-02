@@ -15,9 +15,9 @@ EDDIE emits a number of different messages at different points during its runtim
 The following describes which messages are sent at what point during the interaction of a final customer with EDDIE and afterward.
 
 1. The final customer opens the EDDIE Button, selects a country, and a permission administrator.
-The final customer creates a [permission request](../integrating.md#permission-requests) by clicking on the create-button in the EDDIE Button.
+The final customer creates a [permission request](../permission-requests.md) by clicking on the create-button in the EDDIE Button.
 This creates the permission request on EDDIE's side and a [connection status message (CSM)](agnostic.md#connection-status-messages) and a [permission market document (PMD)](./cim/permission-market-documents.md) is sent to the active outbound connectors indicating the creation of the permission request.
-For all statuses, a permission request can have see [the permission process model](../integrating.md#permission-process-model)
+For all statuses, a permission request can have see [the permission process model](../permission-requests.md#permission-process-model)
 2. EDDIE validates the permission request.
 Then another set of CSM and PMD are emitted indicating the validity of the permission request, either malformed or validated.
 3. Then the permission request is sent to the permission administrator, and another set of CSM and PMD are emitted, which indicate whether the permission request could be sent to the PA or not.
@@ -30,5 +30,5 @@ At this point, it is possible for the eligible party to request the termination 
 This is done via [the termination document](./cim/permission-market-documents.md#termination-documents).
 If the data that is received is incomplete, it is possible to re-request data via [the redistribution transaction request document](./cim/redistribution-transaction-request-documents.md).
 6. If the final customer revokes the permission, EDDIE emits a CSM and PMD notifying the eligible party.
-If the eligible party terminates a permission request, they are notified about the status of the permission request in the termination process described in [the permission process model](../integrating.md#permission-process-model).
+If the eligible party terminates a permission request, they are notified about the status of the permission request in the termination process described in [the permission process model](../permission-requests.md#permission-process-model).
 Same, if the permission request is unfulfillable or fulfilled, it is automatically terminated at the PA's side if necessary.

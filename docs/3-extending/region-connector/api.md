@@ -20,7 +20,7 @@ The name should be `<two-letter country-code>-<permission-administrator>`, for e
 
 The [permission request](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/process/model/PermissionRequest.html) is a central interface in managing permissions.
 It provides information regarding the start and end of the validated historical data.
-For more detailed information on the permission request regarding the permission process model see [permission requests](../../2-integrating/integrating.md#permission-requests).
+For more detailed information on the permission request regarding the permission process model see [permission requests](../../2-integrating/permission-requests.md).
 
 Furthermore, a permission request contains [data source information](https://architecture.eddie.energy/javadoc/energy/eddie/api/agnostic/DataSourceInformation.html), which identifies the PA that manages the permission and the MDA that is used to request data from.
 

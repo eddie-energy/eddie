@@ -129,7 +129,7 @@ public class DataConsumer {
 
 The [`TerminationConnector`](https://architecture.eddie.energy/javadoc/energy/eddie/api/v0_82/outbound/TerminationConnector.html) interface provides the eligible party with means to change the status of a permission request.
 If a permission request has the status accepted, the eligible party can terminate a permission request by sending a termination document, which is a permission market document.
-See subsection [termination documents](../2-integrating/messages/cim/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/integrating.md#permission-process-model) documentation for more information.
+See subsection [termination documents](../2-integrating/messages/cim/permission-market-documents.md#termination-documents) and the [permission process model](../2-integrating/permission-requests.md#permission-process-model) documentation for more information.
 This interface does not produce any documents, but receives them.
 
 ### `RetransmissionOutboundConnector`

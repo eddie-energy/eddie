@@ -3,7 +3,7 @@
 While each region connector could implement a completely different architecture, since they are isolated from another, it is better to use the same architecture.
 That way it is possible to reuse existing shared functionality, where only one bean instance has to be created for a shared implementation in the region connector context.
 
-[The permission process model](../../2-integrating/integrating.md#permission-process-model) has to be implemented by each region connector.
+[The permission process model](../../2-integrating/permission-requests.md#permission-process-model) has to be implemented by each region connector.
 When a permission request changes status, it has to be emitted to the EP.
 
 The region connectors are implemented using [event sourcing](https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing).
