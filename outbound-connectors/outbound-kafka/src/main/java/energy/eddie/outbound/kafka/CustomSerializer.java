@@ -5,6 +5,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerializationException;
@@ -36,6 +37,7 @@ class CustomSerializer implements Serializer<Object> {
             case ConnectionStatusMessage ignored -> serialize(data);
             case RawDataMessage ignored -> serialize(data);
             case OpaqueEnvelope ignored -> serialize(data);
+            case PermissionCommand ignored -> serialize(data);
             // CIM v0.82
             case ValidatedHistoricalDataEnvelope ignored -> serialize(data);
             case PermissionEnvelope ignored -> serialize(data);

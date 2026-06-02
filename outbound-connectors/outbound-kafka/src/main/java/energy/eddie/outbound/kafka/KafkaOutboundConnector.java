@@ -5,6 +5,7 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.outbound.OutboundConnector;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerdeFactory;
 import energy.eddie.cim.serde.SerdeInitializationException;
@@ -90,6 +91,26 @@ public class KafkaOutboundConnector {
     }
 
     @Bean
+    public ConsumerFactory<String, PermissionCommand> permissionCommandConsumerFactory(
+            @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
+            MessageSerde serde
+    ) {
+        var config = kafkaProperties(kafkaProperties);
+        return new DefaultKafkaConsumerFactory<>(config,
+                                                 new StringDeserializer(),
+                                                 new CustomDeserializer<>(serde, PermissionCommand.class));
+    }
+
+    @Bean
+    public KafkaListenerContainerFactory<@NonNull ConcurrentMessageListenerContainer<String, PermissionCommand>> permissionCommandListenerContainerFactory(
+            ConsumerFactory<String, PermissionCommand> consumerFactory
+    ) {
+        var listenerContainerFactory = new ConcurrentKafkaListenerContainerFactory<String, PermissionCommand>();
+        listenerContainerFactory.setConsumerFactory(consumerFactory);
+        return listenerContainerFactory;
+    }
+
+    @Bean
     public ConsumerFactory<String, RECMMOEEnvelope> minMaxEnvelopeConsumerFactory(
             @Qualifier("kafkaPropertiesMap") Map<String, String> kafkaProperties,
             MessageSerde serde
@@ -144,6 +165,12 @@ public class KafkaOutboundConnector {
     @Bean
     public NewTopic retransmissionTopic(TopicConfiguration config) {
         var topic = config.redistributionTransactionRequestDocument();
+        return TopicBuilder.name(topic).build();
+    }
+
+    @Bean
+    public NewTopic permissionCommandTopic(TopicConfiguration config) {
+        var topic = config.permissionCommand();
         return TopicBuilder.name(topic).build();
     }
 

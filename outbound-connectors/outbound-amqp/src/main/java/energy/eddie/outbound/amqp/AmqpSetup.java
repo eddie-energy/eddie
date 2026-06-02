@@ -28,6 +28,7 @@ public class AmqpSetup {
                 configuration.acknowledgementMarketDocument(),
                 configuration.terminationMarketDocument(),
                 configuration.redistributionTransactionRequestDocument(),
+                configuration.permissionCommand(),
                 configuration.minMaxEnvelopeDocument(),
                 configuration.opaqueEnvelope(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),

@@ -114,6 +114,16 @@ public class TopicConfiguration {
     }
 
     /**
+     * Endpoint for agnostic permission commands.
+     * Used to receive messages from the eligible party.
+     */
+    public String permissionCommand() {
+        return toTopic(TopicStructure.Direction.FW,
+                       TopicStructure.DataModels.AGNOSTIC,
+                       TopicStructure.DocumentTypes.PERMISSION_COMMAND);
+    }
+
+    /**
      * Endpoint for CIM min-max envelope.
      * Used to receive messages from the eligible party.
      */

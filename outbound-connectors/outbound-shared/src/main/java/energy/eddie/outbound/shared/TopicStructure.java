@@ -21,6 +21,7 @@ public class TopicStructure {
     public static final String AGNOSTIC_VALUE = "agnostic";
 
     public static final String CONNECTION_STATUS_MESSAGE_VALUE = "connection-status-message";
+    public static final String PERMISSION_COMMAND_VALUE = "permission-command";
     public static final String OPAQUE_ENVELOPE_VALUE = "opaque-envelope";
     public static final String ENERGY_SHARING_REFERENCE_DATA_MD_VALUE = "energy-sharing-reference-data-md";
 
@@ -129,6 +130,7 @@ public class TopicStructure {
         // AGNOSTIC
         RAW_DATA_MESSAGE("raw-data-message"),
         CONNECTION_STATUS_MESSAGE(TopicStructure.CONNECTION_STATUS_MESSAGE_VALUE),
+        PERMISSION_COMMAND(TopicStructure.PERMISSION_COMMAND_VALUE),
         OPAQUE_ENVELOPE(TopicStructure.OPAQUE_ENVELOPE_VALUE)
         ;
         private final String value;

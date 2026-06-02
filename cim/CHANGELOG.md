@@ -94,3 +94,9 @@ For more information, see [Common Information Model Client Libraries](https://ar
   - Acknowledgement Document v1.12
   - Reference Energy Curve Min-Max Operation Document v1.12
 - Fix typo in RealTimeData Document namespace, where the namespace is missing a colon (:) in the namespace declaration
+
+## 3.9.0 - 2026-06-02
+
+- Add agnostic `PermissionCommand` for transmission control sent by the eligible party.
+  Modeled as a sealed interface discriminated on `action`, with the subtypes `UpdateSchedule` and `SetTransmissionEnabled`.
+- Add JSON and XSD schema definitions for the permission command.

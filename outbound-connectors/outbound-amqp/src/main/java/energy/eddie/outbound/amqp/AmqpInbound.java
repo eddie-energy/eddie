@@ -7,6 +7,7 @@ import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Consumer;
 import com.rabbitmq.client.amqp.Message;
 import energy.eddie.api.agnostic.outbound.OpaqueEnvelopeOutboundConnector;
+import energy.eddie.api.agnostic.outbound.PermissionCommandOutboundConnector;
 import energy.eddie.api.agnostic.outbound.RetransmissionOutboundConnector;
 import energy.eddie.api.agnostic.retransmission.RetransmissionRequest;
 import energy.eddie.api.agnostic.retransmission.result.RetransmissionResult;
@@ -14,6 +15,7 @@ import energy.eddie.api.utils.Pair;
 import energy.eddie.api.v0_82.outbound.TerminationConnector;
 import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.serde.DeserializationException;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
@@ -31,12 +33,14 @@ import reactor.core.publisher.Sinks;
 public class AmqpInbound implements
         TerminationConnector,
         RetransmissionOutboundConnector,
+        PermissionCommandOutboundConnector,
         MinMaxEnvelopeOutboundConnector,
         OpaqueEnvelopeOutboundConnector,
         AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AmqpInbound.class);
     private final Consumer terminationsConsumer;
     private final Consumer retransmissionRequestsConsumer;
+    private final Consumer permissionCommandConsumer;
     private final Consumer minMaxEnvelopeConsumer;
     private final Consumer opaqueEnvelopeConsumer;
     private final Sinks.Many<Pair<String, PermissionEnvelope>> terminations = Sinks.many()
@@ -45,6 +49,9 @@ public class AmqpInbound implements
     private final Sinks.Many<RetransmissionRequest> retransmissionRequests = Sinks.many()
                                                                                   .multicast()
                                                                                   .onBackpressureBuffer();
+    private final Sinks.Many<PermissionCommand> permissionCommands = Sinks.many()
+                                                                          .multicast()
+                                                                          .onBackpressureBuffer();
     private final Sinks.Many<RECMMOEEnvelope> minMaxEnvelopes = Sinks.many()
                                                                      .multicast()
                                                                      .onBackpressureBuffer();
@@ -62,6 +69,10 @@ public class AmqpInbound implements
                                                    .queue(config.redistributionTransactionRequestDocument())
                                                    .messageHandler(this::consumeRetransmissionRequests)
                                                    .build();
+        permissionCommandConsumer = connection.consumerBuilder()
+                                              .queue(config.permissionCommand())
+                                              .messageHandler(this::consumePermissionCommand)
+                                              .build();
         minMaxEnvelopeConsumer = connection.consumerBuilder()
                                            .queue(config.minMaxEnvelopeDocument())
                                            .messageHandler(this::consumeMinMaxEnvelope)
@@ -78,6 +89,7 @@ public class AmqpInbound implements
     public void close() {
         terminationsConsumer.close();
         retransmissionRequestsConsumer.close();
+        permissionCommandConsumer.close();
         minMaxEnvelopeConsumer.close();
         opaqueEnvelopeConsumer.close();
         terminations.tryEmitComplete();
@@ -92,6 +104,11 @@ public class AmqpInbound implements
     @Override
     public Flux<RetransmissionRequest> retransmissionRequests() {
         return retransmissionRequests.asFlux();
+    }
+
+    @Override
+    public Flux<PermissionCommand> getPermissionCommands() {
+        return permissionCommands.asFlux();
     }
 
     @Override
@@ -135,6 +152,20 @@ public class AmqpInbound implements
         } catch (DeserializationException e) {
             context.discard();
             LOGGER.info("Got invalid retransmission message", e);
+        }
+    }
+
+    private void consumePermissionCommand(Consumer.Context context, Message message) {
+        try {
+            var command = serde.deserialize(message.body(), PermissionCommand.class);
+            LOGGER.atDebug()
+                  .addArgument(command::permissionId)
+                  .log("Got new permission command for {}");
+            permissionCommands.tryEmitNext(command);
+            context.accept();
+        } catch (DeserializationException e) {
+            context.discard();
+            LOGGER.info("Got invalid permission command", e);
         }
     }
 
