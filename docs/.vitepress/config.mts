@@ -155,6 +155,10 @@ export default withMermaid(
               link: "/2-integrating/data-needs.md",
             },
             {
+              text: "Permission Requests",
+              link: "/2-integrating/permission-requests.md",
+            },
+            {
               text: "Messages and Documents",
               link: "/2-integrating/messages/messages.md",
               items: [

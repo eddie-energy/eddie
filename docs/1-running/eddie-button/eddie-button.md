@@ -94,7 +94,7 @@ The EDDIE dialog uses components from the [Shoelace](https://shoelace.style) lib
 
 The EDDIE button fires events to inform the EP application about the status of the user interaction, and the status of the permission request. These events can be listened to by the EP application to update the UI or to trigger further actions.
 
-Permission request states are described in [integrating](../../2-integrating/integrating.md#permission-process-model).
+Permission request states are described in [integrating](../../2-integrating/permission-requests.md#permission-process-model).
 To match the naming of event and attribute names common in HTML and JavaScript, the status names are converted to lowercase and hyphens are used as separators.
 Event handler attributes also have the hyphens removed.
 For example, the status `UNABLE_TO_SEND` is converted to `unable-to-send` for events and

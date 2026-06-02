@@ -97,7 +97,7 @@ It indicates that an already **accepted** permission request should be terminate
 The termination document is sent to EDDIE by the eligible party, it uses the same format as described [above](#permission-market-documents).
 
 > [!Info]
-> Only accepted permission requests can be terminated, see [the permission process model](../../integrating.md#permission-process-model)
+> Only accepted permission requests can be terminated, see [the permission process model](../../permission-requests.md#permission-process-model)
 
 The following is a minimal example of a permission market document.
 

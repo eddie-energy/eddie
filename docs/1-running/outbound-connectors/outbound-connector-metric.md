@@ -1,7 +1,7 @@
 # Metric Outbound Connector
 
 The metric outbound connector performs live mean and median calculation for each permission request status for all region connectors.
-When a new [ConnectionStatusMessage](../../../docs/2-integrating/messages/cim/connection-status-messages.md) received, the duration of the previous state of the [Permission Process Model](../../../docs/2-integrating/integrating.md#permission-process-model) is calculated.
+When a new [ConnectionStatusMessage](../../../docs/2-integrating/messages/cim/connection-status-messages.md) received, the duration of the previous state of the [Permission Process Model](../../2-integrating/permission-requests.md#permission-process-model) is calculated.
 Then, the median duration, accumulative mean and count are updated and persisted in metric.permission_request_metrics, from which the metrics report is generated and periodically sent to the configured endpoint.
 
 

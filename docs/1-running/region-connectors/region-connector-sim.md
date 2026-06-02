@@ -34,7 +34,7 @@ The validated historical data will be published on the CIM topic and the custom 
 
 ## Scenarios
 
-The simulation region connector allows developers to run predefined scenarios, to see what kind of messages are produced at which point in the [permission process model](../../2-integrating/integrating.md#permission-process-model).
+The simulation region connector allows developers to run predefined scenarios, to see what kind of messages are produced at which point in the [permission process model](../../2-integrating/permission-requests.md#permission-process-model).
 The predefined scenarios are:
 
 - External Termination Scenario: Runs through the whole permission process model including the external termination.
