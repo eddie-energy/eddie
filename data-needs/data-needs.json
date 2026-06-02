@@ -96,6 +96,27 @@
     "dataTags": []
   },
   {
+    "type": "outbound-aiida",
+    "id": "5de2a77d-1dd4-458d-b700-a84884dd04c6",
+    "name": "Forward inbound opaque and min-max envelopes",
+    "description": "Forwarded reference energy curve min-max operating envelopes for flexible connection agreements",
+    "purpose": "purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P10D"
+    },
+    "transmissionSchedule": "*/5 * * * * *",
+    "acknowledgementRequired": false,
+    "schemas": [
+      "MIN-MAX-ENVELOPE-CIM-V1-12",
+      "OPAQUE"
+    ],
+    "asset": "CONNECTION-AGREEMENT-POINT",
+    "dataTags": []
+  },
+  {
     "type": "validated",
     "id": "b35dc783-a25e-487a-a914-6064bdd7feb5",
     "name": "LAST_3_MONTHS_HOURLY_MEASUREMENTS_PER_DAY",
