@@ -17,6 +17,8 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.dataformat.xml.XmlMapper;
+import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -59,7 +61,7 @@ public class XmlMessageSerde implements MessageSerde {
         } catch (JAXBException e) {
             throw new SerdeInitializationException(e);
         }
-        objectMapper = ObjectMapperCreator.create(SerializationFormat.XML);
+        objectMapper = XmlMapper.builder().addModule(new JakartaXmlBindAnnotationModule()).build();
     }
 
     @Override
