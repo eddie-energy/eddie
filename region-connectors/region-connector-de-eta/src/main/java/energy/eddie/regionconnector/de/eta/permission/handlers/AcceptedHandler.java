@@ -1,5 +1,7 @@
 package energy.eddie.regionconnector.de.eta.permission.handlers;
 
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
@@ -31,20 +33,24 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
 
     private final DePermissionRequestRepository repository;
+    private final DataNeedsService dataNeedsService;
     private final EtaPlusApiClient apiClient;
     private final ValidatedHistoricalDataStream stream;
     private final Outbox outbox;
     private final ObservationRegistry observationRegistry;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AcceptedHandler(
             EventBus eventBus,
             DePermissionRequestRepository repository,
+            DataNeedsService dataNeedsService,
             EtaPlusApiClient apiClient,
             ValidatedHistoricalDataStream stream,
             Outbox outbox,
             ObservationRegistry observationRegistry
     ) {
         this.repository = repository;
+        this.dataNeedsService = dataNeedsService;
         this.apiClient = apiClient;
         this.stream = stream;
         this.outbox = outbox;
@@ -67,6 +73,12 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
                 LOGGER.atWarn()
                       .addArgument(event::permissionId)
                       .log("Permission request not found for id: {}, skipping event");
+                observation.stop();
+                return;
+            }
+
+            if (!(dataNeedsService.getById(pr.dataNeedId()) instanceof ValidatedHistoricalDataDataNeed)) {
+                // Not a VHD request — AccountingPointDataHandler handles it
                 observation.stop();
                 return;
             }

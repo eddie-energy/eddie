@@ -1,5 +1,10 @@
 package energy.eddie.regionconnector.de.eta.providers;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
+import jakarta.annotation.Nullable;
+
+import java.time.Duration;
 import java.util.Comparator;
 import java.util.List;
 
@@ -30,5 +35,45 @@ public final class EtaPlusVhdMappings {
         return readings.stream()
                 .sorted(Comparator.comparing(EtaPlusMeteredData.MeterReading::timestamp))
                 .toList();
+    }
+
+    /**
+     * Returns the {@link EnergyType} that corresponds to the wire {@code unit} string,
+     * or {@code null} if the unit is not recognised.
+     *
+     * <p>Per ETA Plus contract, the unit is constant within a historical-readings response,
+     * so checking the first reading's unit is sufficient to determine the energy type.
+     */
+    @Nullable
+    public static EnergyType energyTypeFromUnit(@Nullable String unit) {
+        if (unit == null) {
+            return null;
+        }
+        return switch (unit) {
+            case "kWh", "KWH", "MWh", "MWH" -> EnergyType.ELECTRICITY;
+            case "m³", "m3", "M3" -> EnergyType.NATURAL_GAS;
+            default -> null;
+        };
+    }
+
+    /**
+     * Infers the data {@link Granularity} from the interval between the first two entries of an
+     * already-sorted reading list, or {@code null} if fewer than two readings are present or the
+     * interval does not match any known {@link Granularity} value.
+     */
+    @Nullable
+    public static Granularity inferGranularity(List<EtaPlusMeteredData.MeterReading> sortedReadings) {
+        if (sortedReadings.size() < 2) {
+            return null;
+        }
+        Duration interval = Duration.between(
+                sortedReadings.get(0).timestamp(),
+                sortedReadings.get(1).timestamp());
+        for (Granularity g : Granularity.values()) {
+            if (g.duration().equals(interval)) {
+                return g;
+            }
+        }
+        return null;
     }
 }
