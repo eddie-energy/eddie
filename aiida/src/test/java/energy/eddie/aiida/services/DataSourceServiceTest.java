@@ -16,9 +16,10 @@ import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
-import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
@@ -102,7 +103,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlflaEmptyConfigException {
+    void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
         when(DATA_SOURCE_DTO.enabled()).thenReturn(true);
@@ -116,10 +117,18 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldAddModbusDataSource() throws InvalidUserException, SinapsiAlflaEmptyConfigException {
+    void shouldAddModbusDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
         try (
                 MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class);
-                MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class)
+                MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class,
+                                                                                          (mock, context) -> {
+                                                                                              ModbusDataSource ds =
+                                                                                                      (ModbusDataSource) context.arguments()
+                                                                                                                                .getFirst();
+
+                                                                                              when(mock.dataSource()).thenReturn(
+                                                                                                      ds);
+                                                                                          })
         ) {
             mockedStatic.when(() -> ModbusDeviceService.loadConfig(any()))
                         .thenReturn(ModbusDeviceTestHelper.setupModbusDevice());
@@ -143,7 +152,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlflaEmptyConfigException {
+    void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
         when(DATA_SOURCE_DTO.enabled()).thenReturn(false);

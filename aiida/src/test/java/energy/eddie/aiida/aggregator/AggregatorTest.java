@@ -3,18 +3,13 @@
 
 package energy.eddie.aiida.aggregator;
 
-import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
-import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.AfterEach;
@@ -47,18 +42,15 @@ import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @ExtendWith(MockitoExtension.class)
 class AggregatorTest {
-    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(Aggregator.class);
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(AbstractAggregator.class);
     private static final String DATASOURCE_NAME_1 = "test-1";
     private static final UUID DATA_SOURCE_ID_1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID_2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final UUID DATA_SOURCE_ID_3 = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56607");
     @Mock
     private SimulationDataSource dataSource1;
     @Mock
     private SimulationDataSource dataSource2;
-    @Mock
-    private InboundDataSource inboundDataSource;
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private Aggregator aggregator;
     private AiidaAsset wantedAsset;
@@ -76,11 +68,7 @@ class AggregatorTest {
     @Mock
     private SimulationAdapter mockAdapter2;
     @Mock
-    private InboundAdapter inboundAdapter;
-    @Mock
     private AiidaRecordRepository mockAiidaRecordRepository;
-    @Mock
-    private InboundRecordRepository mockInboundRecordRepository;
 
     @BeforeEach
     void setUp() {
@@ -100,7 +88,6 @@ class AggregatorTest {
         Mockito.lenient().when(dataSource1.userId()).thenReturn(USER_ID);
         Mockito.lenient().when(dataSource2.id()).thenReturn(DATA_SOURCE_ID_2);
         Mockito.lenient().when(dataSource2.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
-        Mockito.lenient().when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID_3);
         Mockito.lenient().when(mockAdapter1.dataSource()).thenReturn(dataSource1);
         Mockito.lenient().when(mockAdapter2.dataSource()).thenReturn(dataSource2);
 
@@ -112,15 +99,30 @@ class AggregatorTest {
                                      "10",
                                      KILO_WATT_HOUR)));
         unwanted2 = new AiidaRecord(instant, dataSource1, List.of(
-                new AiidaRecordValue(NEGATIVE_ACTIVE_ENERGY.toString(), NEGATIVE_ACTIVE_ENERGY, "60", KILO_WATT_HOUR, "10", KILO_WATT_HOUR)));
+                new AiidaRecordValue(NEGATIVE_ACTIVE_ENERGY.toString(),
+                                     NEGATIVE_ACTIVE_ENERGY,
+                                     "60",
+                                     KILO_WATT_HOUR,
+                                     "10",
+                                     KILO_WATT_HOUR)));
         unwanted3 = new AiidaRecord(instant, dataSource2, List.of(
-                new AiidaRecordValue(POSITIVE_ACTIVE_ENERGY.toString(), POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
+                new AiidaRecordValue(POSITIVE_ACTIVE_ENERGY.toString(),
+                                     POSITIVE_ACTIVE_ENERGY,
+                                     "50",
+                                     KILO_WATT,
+                                     "10",
+                                     KILO_WATT)));
         wanted = new AiidaRecord(instant, dataSource1, List.of(
-                new AiidaRecordValue(POSITIVE_ACTIVE_ENERGY.toString(), POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
+                new AiidaRecordValue(POSITIVE_ACTIVE_ENERGY.toString(),
+                                     POSITIVE_ACTIVE_ENERGY,
+                                     "50",
+                                     KILO_WATT,
+                                     "10",
+                                     KILO_WATT)));
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
-        aggregator = new Aggregator(mockAiidaRecordRepository, mockInboundRecordRepository, healthContributorRegistry);
+        aggregator = new Aggregator(mockAiidaRecordRepository, healthContributorRegistry);
     }
 
     @AfterEach
@@ -408,28 +410,6 @@ class AggregatorTest {
         TestUtils.verifyErrorLogStartsWith("Error from datasource %s".formatted(DATASOURCE_NAME_1),
                                            LOG_CAPTOR,
                                            IOException.class);
-    }
-
-    @Test
-    void givenInboundDataSource_savedToInboundRepository() {
-        TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
-        TestPublisher<InboundRecord> inboundPublisher = TestPublisher.create();
-
-        when(inboundAdapter.dataSource()).thenReturn(inboundDataSource);
-        when(inboundAdapter.inboundRecordFlux()).thenReturn(inboundPublisher.flux());
-        when(inboundAdapter.start()).thenReturn(recordPublisher.flux());
-
-        aggregator.addNewDataSourceAdapter(inboundAdapter);
-
-        var inboundRecord = new InboundRecord(Instant.now(),
-                                       inboundDataSource,
-                                       AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
-                                       "Test");
-        inboundPublisher.next(inboundRecord);
-        inboundPublisher.complete();
-        recordPublisher.complete();
-
-        verify(mockInboundRecordRepository, times(1)).save(any(InboundRecord.class));
     }
 
     private boolean containsExpectedAiidaRecordValue(AiidaRecord actual, AiidaRecordValue expectedValue) {

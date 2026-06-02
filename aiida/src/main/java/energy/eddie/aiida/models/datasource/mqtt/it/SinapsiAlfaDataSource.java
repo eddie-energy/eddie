@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.datasource.mqtt.it;
@@ -6,11 +6,11 @@ package energy.eddie.aiida.models.datasource.mqtt.it;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
-import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.MqttUser;
+import energy.eddie.aiida.models.mqtt.MqttConnectionEntity;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -40,13 +40,12 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
     public void configure(
             SinapsiAlfaConfiguration config,
             String activationKey
-    ) throws SinapsiAlflaEmptyConfigException {
+    ) throws SinapsiAlfaEmptyConfigException {
         if (config.mqttUsername().isEmpty() || config.mqttPassword().isEmpty()) {
-            throw new SinapsiAlflaEmptyConfigException();
+            throw new SinapsiAlfaEmptyConfigException();
         }
 
-        this.internalHost = config.mqttHost();
-        this.externalHost = config.mqttHost();
+        this.mqttConnection = new MqttConnectionEntity(config.mqttHost(), config.mqttHost());
         this.activationKey = activationKey;
         this.config = config;
     }
@@ -58,7 +57,7 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
 
     @Override
     protected void createMqttUser() {
-        this.user = new MqttUser(config.mqttUsername(), config.mqttPassword());
+        this.mqttConnection.createMqttUser(config.mqttUsername(), config.mqttPassword());
     }
 
     @Override

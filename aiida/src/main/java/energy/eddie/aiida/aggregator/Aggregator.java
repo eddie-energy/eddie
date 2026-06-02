@@ -4,13 +4,10 @@
 package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
-import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import org.slf4j.Logger;
@@ -22,7 +19,6 @@ import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Instant;
 import java.util.*;
@@ -34,69 +30,34 @@ import static java.util.Comparator.comparing;
 import static java.util.function.BinaryOperator.maxBy;
 
 @Component
-public class Aggregator implements AutoCloseable {
+public class Aggregator extends AbstractAggregator<AiidaRecord> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Aggregator.class);
-    private static final String HEALTH_REGISTRY_PREFIX = "DATA_SOURCE_";
 
-    private final List<DataSourceAdapter<? extends DataSource>> dataSourceAdapters;
-    private final Sinks.Many<AiidaRecord> combinedSink;
     private final AiidaRecordRepository aiidaRecordRepository;
-    private final InboundRecordRepository inboundRecordRepository;
-    private final HealthContributorRegistry healthContributorRegistry;
 
     public Aggregator(
             AiidaRecordRepository aiidaRecordRepository,
-            InboundRecordRepository inboundRecordRepository,
             HealthContributorRegistry healthContributorRegistry
     ) {
+        super(healthContributorRegistry);
         this.aiidaRecordRepository = aiidaRecordRepository;
-        this.inboundRecordRepository = inboundRecordRepository;
-        this.healthContributorRegistry = healthContributorRegistry;
-
-        dataSourceAdapters = new ArrayList<>();
-        combinedSink = Sinks.many().multicast().directAllOrNothing();
-
-        combinedSink.asFlux()
-                    .publishOn(Schedulers.boundedElastic())
-                    .doOnNext(this::saveRecordToDatabase)
-                    .doOnError(this::handleCombinedSinkError)
-                    .subscribe();
     }
 
-    /**
-     * Adds a new {@link DataSourceAdapter} to this aggregator and will subscribe to the Flux returned by
-     * {@link DataSourceAdapter#start()}.
-     *
-     * @param dataSourceAdapter The new data source adapter to add. No check is made if this is a duplicate.
-     */
+    @Override
     public void addNewDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        var dataSource = dataSourceAdapter.dataSource();
-        LOGGER.info("Will add datasource {} with ID {} to aggregator", dataSource.name(), dataSource.id());
-
-        healthContributorRegistry.registerContributor(HEALTH_REGISTRY_PREFIX + dataSource.id(), dataSourceAdapter);
-        dataSourceAdapters.add(dataSourceAdapter);
+        super.addNewDataSourceAdapter(dataSourceAdapter);
         dataSourceAdapter.start()
                          .subscribe(this::publishRecordToCombinedFlux,
                                     throwable -> handleError(throwable, dataSourceAdapter));
-
-        if (dataSourceAdapter instanceof InboundAdapter inboundAdapter) {
-            inboundAdapter.inboundRecordFlux()
-                          .subscribe(this::saveInboundRecordToDatabase);
-        }
     }
 
-    /**
-     * Removes a {@link DataSourceAdapter} from this aggregator and will close the datasource.
-     *
-     * @param dataSourceAdapter The datasource adapter to remove.
-     */
-    public void removeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        var dataSource = dataSourceAdapter.dataSource();
-        LOGGER.info("Will remove datasource {} with ID {} from aggregator", dataSource.name(), dataSource.id());
-
-        healthContributorRegistry.unregisterContributor(HEALTH_REGISTRY_PREFIX + dataSource.id());
-        dataSourceAdapters.remove(dataSourceAdapter);
-        dataSourceAdapter.close();
+    @Override
+    protected void saveRecordToDatabase(AiidaRecord dataRecord) {
+        LOGGER.trace("Saving new AIIDA record to db");
+        for (AiidaRecordValue value : dataRecord.aiidaRecordValues()) {
+            value.setAiidaRecord(dataRecord);
+        }
+        aiidaRecordRepository.save(dataRecord);
     }
 
     /**
@@ -130,7 +91,7 @@ public class Aggregator implements AutoCloseable {
         cronScheduler.initialize();
         cronScheduler.schedule(() -> cronSink.tryEmitNext(true), cronTrigger);
 
-        var flux = combinedSink.asFlux().doOnComplete(() -> {
+        var flux = combinedRecordSink.asFlux().doOnComplete(() -> {
             cronScheduler.stop();
             cronSink.tryEmitComplete();
         });
@@ -145,50 +106,6 @@ public class Aggregator implements AutoCloseable {
                    .buffer(cronSink.asFlux())
                    .flatMapIterable(this::aggregateRecords)
                    .onErrorContinue((err, obj) -> LOGGER.error("Error while filtering records for permission", err));
-    }
-
-    /**
-     * Closes all {@link DataSourceAdapter}s and emits a complete signal for all the Flux returned by
-     */
-    @Override
-    public void close() {
-        // ignore if complete signal can't be emitted successfully
-        combinedSink.tryEmitComplete();
-
-        LOGGER.info("Closing all {} datasources", dataSourceAdapters.size());
-        for (var dataSourceAdapter : dataSourceAdapters) {
-            dataSourceAdapter.close();
-        }
-    }
-
-    private void saveRecordToDatabase(AiidaRecord aiidaRecord) {
-        LOGGER.trace("Saving new AIIDA record to db");
-        for (AiidaRecordValue value : aiidaRecord.aiidaRecordValues()) {
-            value.setAiidaRecord(aiidaRecord);
-        }
-        aiidaRecordRepository.save(aiidaRecord);
-    }
-
-    private void saveInboundRecordToDatabase(InboundRecord inboundRecord) {
-        LOGGER.trace("Saving new inbound record to db");
-        inboundRecordRepository.save(inboundRecord);
-    }
-
-    private void handleCombinedSinkError(Throwable throwable) {
-        LOGGER.error("Error from combined sink", throwable);
-    }
-
-    private synchronized void publishRecordToCombinedFlux(AiidaRecord data) {
-        var result = combinedSink.tryEmitNext(data);
-
-        if (result.isFailure()) {
-            LOGGER.error("Error while emitting record to combined sink. Error was: {}", result);
-        }
-    }
-
-    private void handleError(Throwable throwable, DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        // TODO: GH-1591 do we try to restart the affected datasource or only notify user?
-        LOGGER.error("Error from datasource {}", dataSourceAdapter.dataSource().name(), throwable);
     }
 
     private boolean isValidAiidaRecord(
