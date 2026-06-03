@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.verify;
 class AiidaRegionConnectorPermissionCommandServiceTest {
     private static final UUID PERMISSION_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final PermissionCommand COMMAND =
-            new PermissionCommand.Terminate("aiida", PERMISSION_ID, ZonedDateTime.now());
+            new PermissionCommand.Terminate("aiida", PERMISSION_ID);
 
     @Mock
     private MqttService mqttService;

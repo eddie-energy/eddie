@@ -82,7 +82,6 @@
             <xs:element type="ns1:permissionCommandAction" name="action"/>
             <xs:element type="xs:string" name="regionConnectorId"/>
             <xs:element type="ns1:uuid" name="permissionId"/>
-            <xs:element type="xs:dateTime" name="timestamp"/>
             <xs:element type="xs:string" name="transmissionSchedule"/>
         </xs:all>
     </xs:complexType>
@@ -91,14 +90,21 @@
             <xs:element type="ns1:permissionCommandAction" name="action"/>
             <xs:element type="xs:string" name="regionConnectorId"/>
             <xs:element type="ns1:uuid" name="permissionId"/>
-            <xs:element type="xs:dateTime" name="timestamp"/>
             <xs:element type="xs:boolean" name="enabled"/>
+        </xs:all>
+    </xs:complexType>
+    <xs:complexType name="terminate">
+        <xs:all>
+            <xs:element type="ns1:permissionCommandAction" name="action"/>
+            <xs:element type="xs:string" name="regionConnectorId"/>
+            <xs:element type="ns1:uuid" name="permissionId"/>
         </xs:all>
     </xs:complexType>
     <xs:simpleType name="permissionCommandAction" final="restriction">
         <xs:restriction base="xs:string">
             <xs:enumeration value="UPDATE_SCHEDULE"/>
             <xs:enumeration value="SET_TRANSMISSION_ENABLED"/>
+            <xs:enumeration value="TERMINATE"/>
         </xs:restriction>
     </xs:simpleType>
 

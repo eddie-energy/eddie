@@ -7,7 +7,6 @@ import energy.eddie.cim.agnostic.PermissionCommand;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,7 +21,7 @@ class PermissionCommandSerdeTest {
     void json_roundTripsUpdateSchedule_preservingSubtype() throws Exception {
         // Given
         var serde = new JsonMessageSerde();
-        var command = new PermissionCommand.UpdateSchedule("rc-1", PERMISSION_ID, ZonedDateTime.now(), "0 */1 * * * *");
+        var command = new PermissionCommand.UpdateSchedule("rc-1", PERMISSION_ID, "0 */1 * * * *");
 
         // When
         var bytes = serde.serialize(command);
@@ -41,7 +40,7 @@ class PermissionCommandSerdeTest {
     void json_roundTripsSetTransmissionEnabled_preservingSubtype() throws Exception {
         // Given
         var serde = new JsonMessageSerde();
-        var command = new PermissionCommand.SetTransmissionEnabled("rc-1", PERMISSION_ID, ZonedDateTime.now(), true);
+        var command = new PermissionCommand.SetTransmissionEnabled("rc-1", PERMISSION_ID, true);
 
         // When
         var bytes = serde.serialize(command);
@@ -59,7 +58,7 @@ class PermissionCommandSerdeTest {
     void xml_roundTripsCommand_preservingSubtype() throws Exception {
         // Given
         var serde = new XmlMessageSerde();
-        var command = new PermissionCommand.UpdateSchedule("rc-1", PERMISSION_ID, ZonedDateTime.now(), "0 */1 * * * *");
+        var command = new PermissionCommand.UpdateSchedule("rc-1", PERMISSION_ID, "0 */1 * * * *");
 
         // When
         var bytes = serde.serialize(command);

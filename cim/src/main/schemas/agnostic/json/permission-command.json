@@ -22,11 +22,6 @@
           "description": "Unique ID of the permission this signal applies to",
           "$ref": "shared.json#/$defs/uuid"
         },
-        "timestamp": {
-          "description": "Timestamp when the event got triggered",
-          "type": "string",
-          "format": "date-time"
-        },
         "transmissionSchedule": {
           "description": "Cron expression; effective schedule is capped at the data-need frequency",
           "type": "string"
@@ -36,7 +31,6 @@
         "action",
         "regionConnectorId",
         "permissionId",
-        "timestamp",
         "transmissionSchedule"
       ]
     },
@@ -58,11 +52,6 @@
           "description": "Unique ID of the permission this signal applies to",
           "$ref": "shared.json#/$defs/uuid"
         },
-        "timestamp": {
-          "description": "Timestamp when the event got triggered",
-          "type": "string",
-          "format": "date-time"
-        },
         "enabled": {
           "description": "Whether transmission is enabled for the permission",
           "type": "boolean"
@@ -72,8 +61,32 @@
         "action",
         "regionConnectorId",
         "permissionId",
-        "timestamp",
         "enabled"
+      ]
+    },
+    {
+      "description": "Revokes a permission.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "REVOKE_PERMISSION"
+          ]
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        },
+        "permissionId": {
+          "description": "Unique ID of the permission this signal applies to",
+          "$ref": "shared.json#/$defs/uuid"
+        }
+      },
+      "required": [
+        "action",
+        "regionConnectorId",
+        "permissionId"
       ]
     }
   ]

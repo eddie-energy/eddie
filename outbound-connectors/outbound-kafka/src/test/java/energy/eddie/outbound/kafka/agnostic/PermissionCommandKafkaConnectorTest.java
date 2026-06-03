@@ -16,7 +16,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -33,7 +32,6 @@ class PermissionCommandKafkaConnectorTest {
     private static final UUID PERMISSION_ID = UUID.randomUUID();
     private static final PermissionCommand COMMAND = new PermissionCommand.UpdateSchedule("eddie",
                                                                                           PERMISSION_ID,
-                                                                                          ZonedDateTime.now(),
                                                                                           "0 */1 * * * *");
 
     @Autowired

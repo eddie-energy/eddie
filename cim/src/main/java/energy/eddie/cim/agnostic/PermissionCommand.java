@@ -6,7 +6,6 @@ package energy.eddie.cim.agnostic;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
@@ -34,8 +33,6 @@ public sealed interface PermissionCommand permits
 
     UUID permissionId();
 
-    ZonedDateTime timestamp();
-
     default String action() {
         return switch (this) {
             case UpdateSchedule ignored -> UPDATE_SCHEDULE;
@@ -52,7 +49,6 @@ public sealed interface PermissionCommand permits
     record UpdateSchedule(
             String regionConnectorId,
             UUID permissionId,
-            ZonedDateTime timestamp,
             String transmissionSchedule
     ) implements PermissionCommand {
     }
@@ -63,15 +59,13 @@ public sealed interface PermissionCommand permits
     record SetTransmissionEnabled(
             String regionConnectorId,
             UUID permissionId,
-            ZonedDateTime timestamp,
             boolean enabled
     ) implements PermissionCommand {
     }
 
     record Terminate(
             String regionConnectorId,
-            UUID permissionId,
-            ZonedDateTime timestamp
+            UUID permissionId
     ) implements PermissionCommand {
     }
 }

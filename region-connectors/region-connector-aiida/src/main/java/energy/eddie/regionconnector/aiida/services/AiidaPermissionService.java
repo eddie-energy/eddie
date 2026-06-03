@@ -41,7 +41,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Sinks;
 
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -181,9 +180,10 @@ public class AiidaPermissionService {
     public void terminatePermission(String permissionId) {
         try {
             checkIfPermissionHasValidStatus(permissionId, ACCEPTED, TERMINATED);
-            mqttService.publishPermissionCommand(new PermissionCommand.Terminate(REGION_CONNECTOR_ID,
-                                                                                 UUID.fromString(permissionId),
-                                                                                 ZonedDateTime.now()));
+
+            var command = new PermissionCommand.Terminate(REGION_CONNECTOR_ID, UUID.fromString(permissionId));
+            mqttService.publishPermissionCommand(command);
+
             outbox.commit(new SimpleEvent(permissionId, TERMINATED));
             outbox.commit(new SimpleEvent(permissionId, REQUIRES_EXTERNAL_TERMINATION));
         } catch (Exception e) {

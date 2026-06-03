@@ -40,12 +40,9 @@ public class PermissionCommandRouter implements AutoCloseable {
     public void registerPermissionCommandConnector(PermissionCommandOutboundConnector permissionCommandOutboundConnector) {
         LOGGER.info("Registering PermissionCommandOutboundConnector: {}",
                     permissionCommandOutboundConnector.getClass().getName());
-        var subscription = permissionCommandOutboundConnector.getPermissionCommands()
-                                                             .subscribe(
-                                                                     this::route,
-                                                                     e -> LOGGER.error(
-                                                                             "Error in PermissionCommandRouter", e
-                                                                     ));
+        var subscription = permissionCommandOutboundConnector
+                .getPermissionCommands()
+                .subscribe(this::route, e -> LOGGER.error("Error in PermissionCommandRouter", e));
         subscriptions.add(subscription);
     }
 

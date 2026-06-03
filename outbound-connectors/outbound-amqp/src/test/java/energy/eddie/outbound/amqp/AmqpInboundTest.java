@@ -172,7 +172,6 @@ class AmqpInboundTest {
                                   .build();
         var command = new PermissionCommand.SetTransmissionEnabled("rc-id",
                                                                    UUID.randomUUID(),
-                                                                   ZonedDateTime.now(),
                                                                    true);
         var msg = publisher.message(serde.serialize(command));
 

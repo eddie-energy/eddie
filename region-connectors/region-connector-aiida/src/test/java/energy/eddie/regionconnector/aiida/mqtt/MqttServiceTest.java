@@ -30,7 +30,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
@@ -227,7 +226,7 @@ class MqttServiceTest {
     void publishPermissionCommand_sendsSerializedCommandToActionSubTopic() throws MqttException {
         // Given
         var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
-        var command = new PermissionCommand.Terminate("aiida", permissionId, ZonedDateTime.now());
+        var command = new PermissionCommand.Terminate("aiida", permissionId);
         var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.TERMINATE;
         var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
 
@@ -242,7 +241,7 @@ class MqttServiceTest {
     void publishPermissionCommand_usesCommandActionAsTopicSuffix() throws MqttException {
         // Given
         var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
-        var command = new PermissionCommand.UpdateSchedule("aiida", permissionId, ZonedDateTime.now(), "0 */1 * * * *");
+        var command = new PermissionCommand.UpdateSchedule("aiida", permissionId, "0 */1 * * * *");
         var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.UPDATE_SCHEDULE;
         var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
 

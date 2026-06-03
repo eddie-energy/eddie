@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.publisher.TestPublisher;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -91,7 +90,6 @@ class PermissionCommandRouterTest {
     private static PermissionCommand commandFor(String regionConnectorId) {
         return new PermissionCommand.SetTransmissionEnabled(regionConnectorId,
                                                             UUID.randomUUID(),
-                                                            ZonedDateTime.now(),
                                                             true);
     }
 

@@ -40,7 +40,6 @@ import tools.jackson.databind.json.JsonMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -229,7 +228,7 @@ class MqttStreamerTest {
         // Given
         when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID, ZonedDateTime.now()));
+                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID));
         when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .expectNext(PERMISSION_ID)
@@ -252,8 +251,7 @@ class MqttStreamerTest {
         when(mockMessage.getPayload()).thenReturn("82831e2c-a01c-41b8-9db6-3f51670df7a5".getBytes(StandardCharsets.UTF_8));
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
                 .thenReturn(new PermissionCommand.Terminate("aiida",
-                                                            UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5"),
-                                                            ZonedDateTime.now()));
+                                                            UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5")));
         when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .then(streamer::close)
@@ -297,7 +295,6 @@ class MqttStreamerTest {
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
                 .thenReturn(new PermissionCommand.SetTransmissionEnabled("aiida",
                                                                          PERMISSION_ID,
-                                                                         ZonedDateTime.now(),
                                                                          false));
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .then(streamer::close)
@@ -321,7 +318,6 @@ class MqttStreamerTest {
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
                 .thenReturn(new PermissionCommand.UpdateSchedule("aiida",
                                                                  PERMISSION_ID,
-                                                                 ZonedDateTime.now(),
                                                                  "0 0 * * * *"));
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .then(streamer::close)
@@ -347,7 +343,7 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "fooTest");
         when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID, ZonedDateTime.now()));
+                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID));
 
         // When
         streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
