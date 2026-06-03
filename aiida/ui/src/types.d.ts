@@ -29,6 +29,7 @@ export type AiidaDataSource = {
   operatorId?: string
   //DatasourceType = INBOUND
   accessCode?: string
+  schemas?: string[]
   //DatasourceType = MQTT
   internalHost?: string
   externalHost?: string

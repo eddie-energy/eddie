@@ -9,6 +9,7 @@ import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
+import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
@@ -91,6 +92,7 @@ public class GlobalExceptionHandler {
             ImageFormatException.class,
             ImageReadException.class,
             InvalidDataSourceTypeException.class,
+            IncompatibleDataSourceException.class,
             InvalidInboundPermissionException.class,
             MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,
@@ -135,6 +137,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            InboundDataSourceInUseException.class,
             PermissionUnfulfillableException.class,
             PermissionStateTransitionException.class
     })

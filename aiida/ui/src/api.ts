@@ -105,6 +105,10 @@ export function getDataSources(): Promise<AiidaDataSource[]> {
   return fetch('/datasources/outbound')
 }
 
+export function getInboundDataSources(): Promise<AiidaDataSource[]> {
+  return fetch('/datasources/inbound')
+}
+
 export function getDataSourceTypes(): Promise<AiidaDataSourceType[]> {
   return fetch('/datasources/outbound/types')
 }

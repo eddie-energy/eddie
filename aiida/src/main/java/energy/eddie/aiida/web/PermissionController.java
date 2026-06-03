@@ -6,6 +6,8 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
@@ -96,7 +98,8 @@ public class PermissionController {
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
              UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException,
-             InvalidInboundPermissionException {
+             InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException,
+             InboundDataSourceInUseException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)

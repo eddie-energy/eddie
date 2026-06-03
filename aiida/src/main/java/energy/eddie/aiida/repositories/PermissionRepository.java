@@ -26,4 +26,13 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
      */
     @Query("SELECT p FROM Permission p WHERE p.status IN (energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START, energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA)")
     List<Permission> findAllActivePermissions();
+
+    @Query("""
+            SELECT p.permissionId
+            FROM Permission p
+            WHERE p.dataSource.id = :dataSourceId
+              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed.DISCRIMINATOR_VALUE
+              AND p.status IN (energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START, energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA)
+            """)
+    List<UUID> findActiveOutboundPermissionIdsByDataSourceId(UUID dataSourceId);
 }

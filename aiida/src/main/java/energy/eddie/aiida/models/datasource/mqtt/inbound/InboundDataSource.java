@@ -13,11 +13,13 @@ import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.mqtt.MqttConnection;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -31,7 +33,9 @@ public class InboundDataSource extends MqttDataSource {
     @JsonProperty
     protected String accessCode;
 
-    @OneToOne(mappedBy = "dataSource")
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "permission_id", table = TABLE_NAME)
+    @JsonIgnore
     protected Permission permission;
 
     @Transient
@@ -62,6 +66,12 @@ public class InboundDataSource extends MqttDataSource {
 
     public Permission permission() {
         return permission;
+    }
+
+    @JsonProperty
+    public Set<AiidaSchema> schemas() {
+        var dataNeed = permission == null ? null : permission.dataNeed();
+        return dataNeed == null ? Set.of() : dataNeed.schemas();
     }
 
     @Nullable

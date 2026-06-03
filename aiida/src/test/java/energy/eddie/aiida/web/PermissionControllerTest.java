@@ -5,6 +5,9 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
+import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.MissingInboundMessageFormatException;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
@@ -282,6 +285,27 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
+    void givenInboundDataSourceInUseDuringRevoke_updatePermission_returnsConflict() throws Exception {
+        var blockingPermissionId1 = UUID.fromString("a57a9f3d-2b5a-4b84-a32c-51bfa4b865c1");
+        var blockingPermissionId2 = UUID.fromString("6dbc4ec9-4f2f-4aa7-b016-36c28945a6e4");
+        when(permissionService.revokePermission(any()))
+                .thenThrow(new InboundDataSourceInUseException(
+                        permissionId,
+                        dataSourceId,
+                        List.of(blockingPermissionId1, blockingPermissionId2)
+                ));
+
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId).with(csrf())
+                                                                          .contentType(MediaType.APPLICATION_JSON)
+                                                                          .content("{\"operation\": \"REVOKE\"}"))
+               .andExpect(status().isConflict())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString(blockingPermissionId1.toString())))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString(blockingPermissionId2.toString())));
+    }
+
+    @Test
+    @WithMockUser
     void givenUpdateInboundMessageFormat_updatePermission_callsService() throws Exception {
         // Given
         var requestJson = "{\"operation\": \"UPDATE_INBOUND_MESSAGE_FORMAT\", \"inboundMessageFormat\": \"OPENADR_3_1\"}";
@@ -311,6 +335,36 @@ class PermissionControllerTest {
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
                                    is("inboundMessageFormat must not be null when operation is UPDATE_INBOUND_MESSAGE_FORMAT.")));
+    }
+
+    @Test
+    @WithMockUser
+    void givenIncompatibleDataSource_updatePermission_returnsBadRequest() throws Exception {
+        when(permissionService.acceptPermission(permissionId, dataSourceId, null))
+                .thenThrow(new IncompatibleDataSourceException("Data source is incompatible."));
+
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"operation\": \"ACCEPT\", \"dataSourceId\": \"" + dataSourceId + "\"}"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("incompatible")));
+    }
+
+    @Test
+    @WithMockUser
+    void givenDataSourceNotFound_updatePermission_returnsNotFound() throws Exception {
+        when(permissionService.acceptPermission(permissionId, dataSourceId, null))
+                .thenThrow(new DataSourceNotFoundException(dataSourceId));
+
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"operation\": \"ACCEPT\", \"dataSourceId\": \"" + dataSourceId + "\"}"))
+               .andExpect(status().isNotFound())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString(dataSourceId.toString())));
     }
 
     private List<Permission> sampleDataForGetAllPermissionsTest() {

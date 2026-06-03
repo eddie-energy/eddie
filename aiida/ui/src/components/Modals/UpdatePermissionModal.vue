@@ -9,10 +9,11 @@ import ModalDialog from '@/components/ModalDialog.vue'
 import Button from '@/components/Button.vue'
 import { computed, ref, watch } from 'vue'
 import PermissionDetails from '@/components/PermissionDetails.vue'
-import { acceptPermission, rejectPermission } from '@/api'
+import { acceptPermission, getInboundDataSources, rejectPermission } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
+import type { AiidaDataSource } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const { permission, open, resolveDialog } = usePermissionDialog()
@@ -20,12 +21,16 @@ const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
+const inboundDataSources = ref<AiidaDataSource[]>([])
 const emit = defineEmits(['update'])
 
 watch([open], async () => {
   if (open.value) {
+    selectedDataSource.value = ''
     modal.value?.showModal()
+
     await fetchDataSources()
+    inboundDataSources.value = await getInboundDataSources()
   }
 })
 
@@ -47,12 +52,15 @@ const handleModalClose = () => {
 }
 
 const dataSourceOptions = computed(() => {
-  return dataSources.value.map((datasource) => {
-    return {
-      label: datasource.name,
-      value: datasource.id,
-    }
-  })
+  const requestedSchemas = permission.value?.dataNeed.schemas ?? []
+  const filteredInboundDataSources = inboundDataSources.value.filter((dataSource) =>
+    requestedSchemas.some((schema) => dataSource.schemas?.includes(schema)),
+  )
+
+  return [...dataSources.value, ...filteredInboundDataSources].map(({ id, name }) => ({
+    label: name,
+    value: id,
+  }))
 })
 </script>
 
