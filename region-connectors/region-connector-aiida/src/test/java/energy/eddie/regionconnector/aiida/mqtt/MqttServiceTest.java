@@ -7,6 +7,7 @@ import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAclType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttAction;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistException;
@@ -15,7 +16,6 @@ import energy.eddie.regionconnector.aiida.mqtt.acl.MqttAclRepository;
 import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.mqtt.user.MqttUser;
 import energy.eddie.regionconnector.aiida.mqtt.user.MqttUserRepository;
-import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.services.MqttService;
 import energy.eddie.regionconnector.shared.utils.PasswordGenerator;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
@@ -30,8 +30,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import tools.jackson.databind.ObjectMapper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,8 +50,6 @@ class MqttServiceTest {
     private BCryptPasswordEncoder mockEncoder;
     @Mock
     private MqttAsyncClient mockAsyncClient;
-    @Mock
-    private AiidaPermissionRequest mockRequest;
     @Mock
     private AiidaConfiguration mockConfiguration;
     @Captor
@@ -127,7 +125,7 @@ class MqttServiceTest {
         assertEquals(MqttAclType.ALLOW, acls.get(1).aclType());
         assertEquals(permissionId, acls.get(1).username());
 
-        assertEquals("aiida/v1/testId/termination", acls.get(2).topic());
+        assertEquals("aiida/v1/testId/command/+", acls.get(2).topic());
         assertEquals(MqttAction.SUBSCRIBE, acls.get(2).action());
         assertEquals(MqttAclType.ALLOW, acls.get(2).aclType());
         assertEquals(permissionId, acls.get(2).username());
@@ -138,7 +136,7 @@ class MqttServiceTest {
         assertEquals(password, dto.password());
         assertEquals("aiida/v1/testId/data/outbound", dto.dataTopic());
         assertEquals("aiida/v1/testId/status", dto.statusTopic());
-        assertEquals("aiida/v1/testId/termination", dto.terminationTopic());
+        assertEquals("aiida/v1/testId/command/+", dto.commandTopic());
         assertNull(dto.acknowledgementTopic());
     }
 
@@ -225,17 +223,33 @@ class MqttServiceTest {
     }
 
     @Test
-    void sendTerminationRequest_sendsViaMqttClient() throws MqttException {
+    void publishPermissionCommand_sendsSerializedCommandToActionSubTopic() throws MqttException {
         // Given
-        var permissionId = "testMyId";
-        when(mockRequest.permissionId()).thenReturn(permissionId);
-        when(mockRequest.terminationTopic()).thenReturn("MyTopic");
+        var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
+        var command = new PermissionCommand.Terminate("aiida", permissionId);
+        var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.TERMINATE;
+        var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
 
         // When
-        mqttService.sendTerminationRequest(mockRequest);
+        mqttService.publishPermissionCommand(command);
 
         // Then
-        verify(mockAsyncClient).publish("MyTopic", permissionId.getBytes(StandardCharsets.UTF_8), 1, true);
+        verify(mockAsyncClient).publish(expectedTopic, expectedPayload, 1, true);
+    }
+
+    @Test
+    void publishPermissionCommand_usesCommandActionAsTopicSuffix() throws MqttException {
+        // Given
+        var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
+        var command = new PermissionCommand.UpdateSchedule("aiida", permissionId, "0 */1 * * * *");
+        var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.UPDATE_SCHEDULE;
+        var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
+
+        // When
+        mqttService.publishPermissionCommand(command);
+
+        // Then
+        verify(mockAsyncClient).publish(expectedTopic, expectedPayload, 1, true);
     }
 
     @Test

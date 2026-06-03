@@ -29,8 +29,8 @@ public class MqttStreamingConfig {
     private String dataTopic;
     @Column(name = "status_topic", nullable = false)
     private String statusTopic;
-    @Column(name = "termination_topic", nullable = false)
-    private String terminationTopic;
+    @Column(name = "command_topic", nullable = false)
+    private String commandTopic;
     @Nullable
     @Column(name = "acknowledgement_topic")
     private String acknowledgementTopic;
@@ -45,7 +45,7 @@ public class MqttStreamingConfig {
         this.serverUri = mqttDto.serverUri();
         this.dataTopic = mqttDto.dataTopic();
         this.statusTopic = mqttDto.statusTopic();
-        this.terminationTopic = mqttDto.terminationTopic();
+        this.commandTopic = mqttDto.commandTopic();
         this.acknowledgementTopic = mqttDto.acknowledgementTopic();
     }
 
@@ -73,8 +73,8 @@ public class MqttStreamingConfig {
         return statusTopic;
     }
 
-    public String terminationTopic() {
-        return terminationTopic;
+    public String commandTopic() {
+        return commandTopic;
     }
 
     @Nullable

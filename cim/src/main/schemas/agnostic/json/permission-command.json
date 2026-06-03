@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "https://eddie.energy/agnostic/permission-command",
+  "description": "Permission control signal sent by the eligible party to a certain region connector. The 'action' field discriminates the payload.",
+  "type": "object",
+  "oneOf": [
+    {
+      "description": "Adjusts the transmission schedule for a permission.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "UPDATE_SCHEDULE"
+          ]
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        },
+        "permissionId": {
+          "description": "Unique ID of the permission this signal applies to",
+          "$ref": "shared.json#/$defs/uuid"
+        },
+        "transmissionSchedule": {
+          "description": "Cron expression; effective schedule is capped at the data-need frequency",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action",
+        "regionConnectorId",
+        "permissionId",
+        "transmissionSchedule"
+      ]
+    },
+    {
+      "description": "Enables or disables transmission for a permission.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "SET_TRANSMISSION_ENABLED"
+          ]
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        },
+        "permissionId": {
+          "description": "Unique ID of the permission this signal applies to",
+          "$ref": "shared.json#/$defs/uuid"
+        },
+        "enabled": {
+          "description": "Whether transmission is enabled for the permission",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "action",
+        "regionConnectorId",
+        "permissionId",
+        "enabled"
+      ]
+    },
+    {
+      "description": "Revokes a permission.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "REVOKE_PERMISSION"
+          ]
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        },
+        "permissionId": {
+          "description": "Unique ID of the permission this signal applies to",
+          "$ref": "shared.json#/$defs/uuid"
+        }
+      },
+      "required": [
+        "action",
+        "regionConnectorId",
+        "permissionId"
+      ]
+    }
+  ]
+}

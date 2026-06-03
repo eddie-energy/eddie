@@ -6,6 +6,7 @@ package energy.eddie.outbound.amqp;
 import com.rabbitmq.client.amqp.Connection;
 import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.serde.XmlMessageSerde;
@@ -21,6 +22,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -141,6 +143,56 @@ class AmqpInboundTest {
 
     @Test
     void testRetransmissionRequests_discardsInvalidMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(config.redistributionTransactionRequestDocument())
+                                  .build();
+        var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testPermissionCommand_acceptsMessage() throws InterruptedException, SerializationException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        var publisher = connection.publisherBuilder()
+                                  .queue(config.permissionCommand())
+                                  .build();
+        var command = new PermissionCommand.SetTransmissionEnabled("rc-id",
+                                                                   UUID.randomUUID(),
+                                                                   true);
+        var msg = publisher.message(serde.serialize(command));
+
+        // When
+        publisher.publish(msg, ctx -> {
+            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
+            latch.countDown();
+        });
+
+        // Then
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "assertions in callback might have failed");
+        var pair = amqpInbound.getPermissionCommands().blockFirst();
+        assertNotNull(pair);
+
+        // Clean-Up
+        publisher.close();
+    }
+
+    @Test
+    void testPermissionCommand_discardsInvalidMessage() throws InterruptedException {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
         var publisher = connection.publisherBuilder()

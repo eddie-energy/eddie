@@ -38,6 +38,8 @@ The following table lists all the endpoints and its required scopes, if the sett
 |----------------------------------------------|---------------------------------------------|
 | `/agnostic/connection-status-messages`       | `agnostic-connection-status-messages:read`  |
 | `/agnostic/raw-data-messages`                | `agnostic-raw-data-messages:read`           |
+| `/agnostic/permission-command`               | `agnostic-permission-command:write`         |
+| `/agnostic/opaque-envelope`                  | `agnostic-opaque-envelope:write`            |
 | `/cim_0_82/permission-md`                    | `cim-permission-md:read`                    |
 | `/cim_0_82/accounting-point-data-md`         | `cim-accounting-point-data-md:read`         |
 | `/cim_0_82/validated-historical-data-md`     | `cim-validated-historical-data-md:read`     |

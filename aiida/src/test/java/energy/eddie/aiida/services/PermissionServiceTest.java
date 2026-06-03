@@ -140,12 +140,14 @@ class PermissionServiceTest {
         testPublisher.next(permissionId1);
 
         // Then
+        // terminationRequestReceived runs on Schedulers.boundedElastic(), so await the async side effects
         testPublisher.assertSubscribers(1);
-        verify(mockPermissionScheduler).removePermission(permissionId1);
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.EXTERNALLY_TERMINATED));
-        verify(mockPermission).setStatus(PermissionStatus.TERMINATED);
-        verify(mockPermission).setRevokeTime(any());
-        verify(mockPermissionRepository).save(any());
+        verify(mockPermissionScheduler, timeout(2000)).removePermission(permissionId1);
+        verify(streamerManager,
+               timeout(2000)).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.EXTERNALLY_TERMINATED));
+        verify(mockPermission, timeout(2000)).setStatus(PermissionStatus.TERMINATED);
+        verify(mockPermission, timeout(2000)).setRevokeTime(any());
+        verify(mockPermissionRepository, timeout(2000)).save(any());
     }
 
     @Test

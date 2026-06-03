@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida.permission.request.api;
@@ -10,14 +10,6 @@ import jakarta.annotation.Nullable;
 import java.util.UUID;
 
 public interface AiidaPermissionRequestInterface extends PermissionRequest {
-    /**
-     * Topic on which a permission termination request should be published.
-     *
-     * @return terminationTopic
-     */
-    @Nullable
-    String terminationTopic();
-
     /**
      * A message providing further information about the latest status.
      */

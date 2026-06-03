@@ -10,8 +10,11 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.cfg.MapperBuilder;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 import tools.jackson.dataformat.xml.XmlMapper;
 import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
+
+import java.util.UUID;
 
 class ObjectMapperCreator {
     private ObjectMapperCreator() {
@@ -31,7 +34,8 @@ class ObjectMapperCreator {
         };
 
         var simpleModule = new SimpleModule()
-                .addAbstractTypeMapping(DataSourceInformation.class, SimpleDataSourceInformation.class);
+                .addAbstractTypeMapping(DataSourceInformation.class, SimpleDataSourceInformation.class)
+                .addSerializer(UUID.class, new ToStringSerializer(UUID.class));
         return builder.addModule(new JakartaXmlBindAnnotationModule())
                       .addModule(simpleModule)
                       .build();
