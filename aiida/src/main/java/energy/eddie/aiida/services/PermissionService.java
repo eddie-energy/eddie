@@ -37,7 +37,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriTemplate;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.*;
 import java.util.ArrayList;
@@ -79,10 +78,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.authService = authService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
-
-        streamerManager.terminationRequestsFlux()
-                       .publishOn(Schedulers.boundedElastic())
-                       .subscribe(this::terminationRequestReceived);
     }
 
     /**
@@ -449,38 +444,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private boolean isValidDataNeedType(String dataNeedType) {
         return OutboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType)
                || InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType);
-    }
-
-    private void terminationRequestReceived(UUID permissionId) {
-        LOGGER.info("Will handle termination request for permission '{}'.", permissionId);
-
-        Permission permission;
-        try {
-            permission = findById(permissionId);
-        } catch (PermissionNotFoundException e) {
-            LOGGER.error("Was requested to terminate permission '{}', but it cannot be found in the database",
-                         permissionId);
-            return;
-        }
-
-        permissionScheduler.removePermission(permissionId);
-
-        Instant terminateTime = clock.instant();
-        permission.setRevokeTime(terminateTime);
-        permission.setStatus(TERMINATED);
-        permission = permissionRepository.save(permission);
-
-        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
-        var connectionId = requireNonNull(permission.connectionId());
-        var terminatedMessage = new AiidaConnectionStatusMessageDto(connectionId,
-                                                                    dataNeedId,
-                                                                    clock.instant(),
-                                                                    PermissionProcessStatus.EXTERNALLY_TERMINATED,
-                                                                    permission.id(),
-                                                                    permission.eddieId());
-        streamerManager.stopStreamer(terminatedMessage);
-
-        removeInboundDataSourceIfExists(permission);
     }
 
     /**

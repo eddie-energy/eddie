@@ -11,7 +11,7 @@ import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
-import { ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
@@ -30,6 +30,11 @@ const { permission, status } = defineProps<{
 }>()
 
 const { updatePermission } = usePermissionDialog()
+
+const effectiveTransmissionSchedule = computed(
+  () => permission.transmissionSchedule ?? permission.dataNeed.transmissionSchedule,
+)
+
 const show = ref(false)
 const showToolTip = ref(false)
 const selectedInboundMessageFormat = ref(permission.inboundMessageFormat)
@@ -159,10 +164,22 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
         <dd>
           {{
-            cronstrue.toString(permission.dataNeed.transmissionSchedule, {
+            cronstrue.toString(effectiveTransmissionSchedule, {
               locale: locale,
             })
           }}
+        </dd>
+      </div>
+      <div class="permission-field">
+        <dt>{{ t('permissions.dropdown.transmissionEnabled') }}</dt>
+        <dd>
+          <StatusTag :status-type="permission.transmissionEnabled ? 'healthy' : 'unhealthy'">
+            {{
+              permission.transmissionEnabled
+                ? t('permissions.dropdown.transmissionOn')
+                : t('permissions.dropdown.transmissionOff')
+            }}
+          </StatusTag>
         </dd>
       </div>
     </div>

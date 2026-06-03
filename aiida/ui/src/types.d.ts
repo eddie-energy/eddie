@@ -57,6 +57,8 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
+  transmissionEnabled: boolean
+  transmissionSchedule?: string
   inboundMessageFormat?: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
   userId: string
