@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Verifies that {@link PermissionCommand#action()} returns the discriminator that matches each subtype's
@@ -18,26 +18,43 @@ class PermissionCommandTest {
 
     @Test
     void action_updateSchedule_returnsUpdateScheduleDiscriminator() {
-        PermissionCommand command = new PermissionCommand.UpdateSchedule("rc-1",
-                                                                         PERMISSION_ID,
-                                                                         "0 */1 * * * *");
+        var command = new PermissionCommand.UpdateSchedule("rc-1", PERMISSION_ID, "0 */1 * * * *");
 
         assertEquals(PermissionCommand.UPDATE_SCHEDULE, command.action());
     }
 
     @Test
     void action_setTransmissionEnabled_returnsSetTransmissionEnabledDiscriminator() {
-        PermissionCommand command = new PermissionCommand.SetTransmissionEnabled("rc-1",
-                                                                                 PERMISSION_ID,
-                                                                                 true);
+        var command = new PermissionCommand.SetTransmissionEnabled("rc-1", PERMISSION_ID, true);
 
         assertEquals(PermissionCommand.SET_TRANSMISSION_ENABLED, command.action());
     }
 
     @Test
     void action_terminate_returnsTerminateDiscriminator() {
-        PermissionCommand command = new PermissionCommand.Terminate("rc-1", PERMISSION_ID);
+        var command = new PermissionCommand.Terminate("rc-1", PERMISSION_ID);
 
         assertEquals(PermissionCommand.TERMINATE, command.action());
+    }
+
+    @Test
+    void controlsTransmission_updateSchedule_isTrue() {
+        var command = new PermissionCommand.UpdateSchedule("rc-1", PERMISSION_ID, "0 */1 * * * *");
+
+        assertTrue(command.controlsTransmission());
+    }
+
+    @Test
+    void controlsTransmission_setTransmissionEnabled_isTrue() {
+        var command = new PermissionCommand.SetTransmissionEnabled("rc-1", PERMISSION_ID, true);
+
+        assertTrue(command.controlsTransmission());
+    }
+
+    @Test
+    void controlsTransmission_terminate_isFalse() {
+        var command = new PermissionCommand.Terminate("rc-1", PERMISSION_ID);
+
+        assertFalse(command.controlsTransmission());
     }
 }

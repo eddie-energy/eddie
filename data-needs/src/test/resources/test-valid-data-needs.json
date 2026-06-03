@@ -44,6 +44,7 @@
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
+    "allowTransmissionControl": false,
     "acknowledgementRequired": true,
     "schemas": [
       "SMART-METER-P1-RAW"
@@ -67,6 +68,7 @@
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
+    "allowTransmissionControl": false,
     "acknowledgementRequired": false,
     "schemas": [
       "SMART-METER-P1-RAW"

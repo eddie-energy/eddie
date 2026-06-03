@@ -45,6 +45,7 @@ class DataNeedSummary extends HTMLElement {
       maxGranularity,
       energyType,
       transmissionSchedule,
+      allowTransmissionControl,
       acknowledgementRequired,
       schemas,
       asset,
@@ -110,6 +111,14 @@ class DataNeedSummary extends HTMLElement {
             ? /* HTML */ `
                 <dt>Transmission Schedule</dt>
                 <dd>${cronstrue.toString(transmissionSchedule)}</dd>
+              `
+            : ""}
+
+          <!-- For AIIDA data needs -->
+          ${allowTransmissionControl !== undefined
+            ? /* HTML */ `
+                <dt>Allow Transmission Control</dt>
+                <dd>${allowTransmissionControl}</dd>
               `
             : ""}
 

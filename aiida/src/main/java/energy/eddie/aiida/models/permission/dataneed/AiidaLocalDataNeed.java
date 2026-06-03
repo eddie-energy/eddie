@@ -62,6 +62,10 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @JsonProperty
     protected boolean acknowledgementRequired;
 
+    @Column(nullable = false, name = "allow_transmission_control")
+    @JsonProperty
+    protected boolean allowTransmissionControl;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_schemas", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
     @Column(name = "schema")
@@ -99,6 +103,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.asset = dataNeed.asset();
         this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
         this.acknowledgementRequired = dataNeed.acknowledgementRequired();
+        this.allowTransmissionControl = dataNeed.allowTransmissionControl();
     }
 
     public String name() {
@@ -133,6 +138,11 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Override
     public boolean acknowledgementRequired() {
         return acknowledgementRequired;
+    }
+
+    @Override
+    public boolean allowTransmissionControl() {
+        return allowTransmissionControl;
     }
 
     @Override

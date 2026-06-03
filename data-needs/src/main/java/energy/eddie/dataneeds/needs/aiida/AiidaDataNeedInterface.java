@@ -42,6 +42,13 @@ public interface AiidaDataNeedInterface {
     CronExpression transmissionSchedule();
 
     /**
+     * Returns whether the eligible party may remotely control transmission for this data need.
+     * If true, the {@code SET_TRANSMISSION_ENABLED} and {@code UPDATE_SCHEDULE} permission commands are accepted.
+     * If false, those commands are rejected.
+     */
+    boolean allowTransmissionControl();
+
+    /**
      * Returns whether the receiving party should acknowledge the reception of the data.
      * If true, the receiving party is expected to send an acknowledgment envelope back to the sender after receiving the data.
      * If false, no acknowledgment is expected.

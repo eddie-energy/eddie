@@ -33,6 +33,10 @@ public sealed interface PermissionCommand permits
 
     UUID permissionId();
 
+    default boolean controlsTransmission() {
+        return false;
+    }
+
     default String action() {
         return switch (this) {
             case UpdateSchedule ignored -> UPDATE_SCHEDULE;
@@ -51,6 +55,10 @@ public sealed interface PermissionCommand permits
             UUID permissionId,
             String transmissionSchedule
     ) implements PermissionCommand {
+        @Override
+        public boolean controlsTransmission() {
+            return true;
+        }
     }
 
     /**
@@ -61,6 +69,10 @@ public sealed interface PermissionCommand permits
             UUID permissionId,
             boolean enabled
     ) implements PermissionCommand {
+        @Override
+        public boolean controlsTransmission() {
+            return true;
+        }
     }
 
     record Terminate(

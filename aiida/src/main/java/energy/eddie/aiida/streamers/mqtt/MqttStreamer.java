@@ -178,6 +178,14 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             return;
         }
 
+        if (command.controlsTransmission() && !allowsTransmissionControl()) {
+            LOGGER.warn(
+                    "MqttStreamer for permission {} rejected {}: transmission control not allowed for this data need",
+                    streamingConfig.permissionId(),
+                    command.action());
+            return;
+        }
+
         switch (command) {
             case PermissionCommand.Terminate ignored -> terminate();
             case PermissionCommand.SetTransmissionEnabled setTransmissionEnabled -> LOGGER.warn(
@@ -189,6 +197,11 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                     streamingConfig.permissionId(),
                     updateSchedule.transmissionSchedule());
         }
+    }
+
+    private boolean allowsTransmissionControl() {
+        var dataNeed = permission.dataNeed();
+        return dataNeed != null && dataNeed.allowTransmissionControl();
     }
 
     @Override

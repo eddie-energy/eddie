@@ -38,6 +38,11 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Schema(description = "Whether the receiving party should acknowledge the reception of the data.")
     private boolean acknowledgementRequired = false;
 
+    @JsonProperty
+    @Column(name = "allow_transmission_control", nullable = false)
+    @Schema(description = "Whether the eligible party may remotely control transmission (SET_TRANSMISSION_ENABLED, UPDATE_SCHEDULE).")
+    private boolean allowTransmissionControl = false;
+
     @Schema(description = "Define the schema for the outgoing data (Raw, CIM, Saref)")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_data_need_schemas",
@@ -92,6 +97,11 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Override
     public boolean acknowledgementRequired() {
         return acknowledgementRequired;
+    }
+
+    @Override
+    public boolean allowTransmissionControl() {
+        return allowTransmissionControl;
     }
 
     public abstract Set<AiidaSchema> supportedSchemas();
