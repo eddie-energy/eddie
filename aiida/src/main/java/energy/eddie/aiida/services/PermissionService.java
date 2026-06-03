@@ -39,6 +39,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriTemplate;
+import reactor.core.scheduler.Schedulers;
 
 import java.time.*;
 import java.util.ArrayList;
@@ -81,7 +82,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
 
-        streamerManager.terminationRequestsFlux().subscribe(this::terminationRequestReceived);
+        streamerManager.terminationRequestsFlux()
+                       .publishOn(Schedulers.boundedElastic())
+                       .subscribe(this::terminationRequestReceived);
     }
 
     /**

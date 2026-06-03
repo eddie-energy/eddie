@@ -137,13 +137,9 @@ public class MqttService implements AutoCloseable {
     }
 
     public void publishPermissionCommand(PermissionCommand permissionCommand) throws MqttException {
-        if (permissionCommand.permissionId() == null) {
-            LOGGER.warn("Permission ID is null, cannot publish permission command");
-            return;
-        }
+        var permissionId = permissionCommand.permissionId();
 
-        var topic = MqttTopic.of(permissionCommand.permissionId().toString(), MqttTopicType.COMMAND).eddieTopic();
-        // retained, so a subscriber that (re)connects after the command was sent still receives it
+        var topic = MqttTopic.of(permissionId.toString(), MqttTopicType.COMMAND).eddieTopic(permissionCommand.action());
         publishJson(topic, permissionCommand, true);
     }
 

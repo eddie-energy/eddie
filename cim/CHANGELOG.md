@@ -98,5 +98,5 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.9.0 - 2026-06-02
 
 - Add agnostic `PermissionCommand` for transmission control sent by the eligible party.
-  Modeled as a sealed interface discriminated on `action`, with the subtypes `UpdateSchedule` and `SetTransmissionEnabled`.
+  Modeled as a sealed interface discriminated on `action`, with the subtypes `UpdateSchedule`,  `SetTransmissionEnabled`, and `Terminate`.
 - Add JSON and XSD schema definitions for the permission command.

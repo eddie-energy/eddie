@@ -65,9 +65,25 @@ class MqttTopicTest {
     @Test
     void aiidaTopic_withoutSuffix() {
         String permissionId = "perm-abc";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.STATUS);
+
+        assertEquals("aiida/v1/perm-abc/status", topic.aiidaTopic());
+    }
+
+    @Test
+    void aiidaTopic_command_hasWildcardSuffix() {
+        String permissionId = "perm-abc";
         MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.COMMAND);
 
-        assertEquals("aiida/v1/perm-abc/command", topic.aiidaTopic());
+        assertEquals("aiida/v1/perm-abc/command/+", topic.aiidaTopic());
+    }
+
+    @Test
+    void eddieTopic_command_withActionSuffix() {
+        String permissionId = "perm-abc";
+        MqttTopic topic = MqttTopic.of(permissionId, MqttTopicType.COMMAND);
+
+        assertEquals("aiida/v1/perm-abc/command/TERMINATE", topic.eddieTopic("TERMINATE"));
     }
 
     @Test

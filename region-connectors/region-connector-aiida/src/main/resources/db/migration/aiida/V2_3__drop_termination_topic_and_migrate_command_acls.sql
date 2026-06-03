@@ -1,4 +1,4 @@
---  SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+--  SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 --  SPDX-License-Identifier: Apache-2.0
 
 DROP VIEW aiida_permission_request_view;
@@ -7,7 +7,7 @@ ALTER TABLE permission_event
     DROP COLUMN termination_topic;
 
 UPDATE aiida_mqtt_acl
-SET topic = REGEXP_REPLACE(topic, '/termination$', '/command')
+SET topic = REGEXP_REPLACE(topic, '/termination$', '/command/+')
 WHERE topic LIKE 'aiida/v1/%/termination';
 
 CREATE VIEW aiida_permission_request_view AS
