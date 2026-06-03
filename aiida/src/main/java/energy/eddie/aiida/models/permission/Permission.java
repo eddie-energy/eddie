@@ -11,10 +11,17 @@ import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
+import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
+import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.jspecify.annotations.NonNull;
+import org.springframework.scheduling.support.CronExpression;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -115,6 +122,18 @@ public class Permission {
     @JsonProperty
     @Nullable
     private InboundMessageFormat inboundMessageFormat;
+
+    @Column(name = "transmission_enabled", nullable = false)
+    @JsonProperty
+    private boolean transmissionEnabled = true;
+
+    @Nullable
+    @Column(name = "transmission_schedule")
+    @Convert(converter = CronExpressionConverter.class)
+    @JsonProperty
+    @JsonSerialize(using = CronExpressionSerializer.class)
+    @JsonDeserialize(using = CronExpressionDeserializer.class)
+    private CronExpression transmissionSchedule;
 
     /**
      * Create a new permission from the contents of the QR code. The status will be set to
@@ -239,6 +258,14 @@ public class Permission {
         return dataNeed;
     }
 
+    /**
+     * Returns whether data transmission is currently enabled for this permission. Defaults to {@code true} and is
+     * toggled by {@link PermissionCommand.SetTransmissionEnabled} commands from the EP.
+     */
+    public boolean transmissionEnabled() {
+        return transmissionEnabled;
+    }
+
     public void setStatus(PermissionStatus newStatus) {
         this.status = requireNonNull(newStatus);
     }
@@ -281,6 +308,7 @@ public class Permission {
     public void setDataNeed(AiidaLocalDataNeed dataNeed) {
         this.dataNeed = requireNonNull(dataNeed);
         this.serviceName = dataNeed.name();
+        this.transmissionSchedule = dataNeed.transmissionSchedule();
 
         if (dataNeed instanceof InboundAiidaLocalDataNeed && this.inboundMessageFormat == null) {
             this.inboundMessageFormat = InboundMessageFormat.CIM_1_12;
@@ -300,5 +328,23 @@ public class Permission {
         }
 
         this.inboundMessageFormat = inboundMessageFormat;
+    }
+
+    public void setTransmissionEnabled(boolean transmissionEnabled) {
+        this.transmissionEnabled = transmissionEnabled;
+    }
+
+    public void setTransmissionSchedule(CronExpression transmissionSchedule) {
+        this.transmissionSchedule = requireNonNull(transmissionSchedule);
+    }
+
+    /**
+     * Returns the schedule that should be used to stream data for this permission: the permission's own
+     * transmission schedule if set, otherwise the data need's schedule as a fallback
+     */
+    public CronExpression effectiveTransmissionSchedule() {
+        return transmissionSchedule != null
+                ? transmissionSchedule
+                : requireNonNull(dataNeed).transmissionSchedule();
     }
 }

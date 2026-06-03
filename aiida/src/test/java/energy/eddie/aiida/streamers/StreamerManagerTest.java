@@ -90,9 +90,9 @@ class StreamerManagerTest {
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
+        when(mockPermission.effectiveTransmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
@@ -110,12 +110,6 @@ class StreamerManagerTest {
     void givenPermissionWithoutDataSource_createNoStreamer() throws MqttException {
         // Given
         when(mockPermission.id()).thenReturn(permissionId);
-        when(mockPermission.expirationTime()).thenReturn(expirationTime);
-        when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
-        when(mockPermission.userId()).thenReturn(userId);
-        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
-        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
 
         // When
         manager.createNewStreamer(mockPermission);
@@ -133,9 +127,9 @@ class StreamerManagerTest {
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
+        when(mockPermission.effectiveTransmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
@@ -149,12 +143,12 @@ class StreamerManagerTest {
     }
 
     @Test
-    void givenInvalidPermissionId_stopStreamer_throws() {
+    void givenInvalidPermissionId_stopStreamer_doesNothing() {
         // Given
         when(mockStatusMessage.permissionId()).thenReturn(UUID.fromString("62831e2c-a01c-41b8-9db6-3f51670df7a5"));
 
         // When, Then
-        assertThrows(IllegalArgumentException.class, () -> manager.stopStreamer(mockStatusMessage));
+        assertDoesNotThrow(() -> manager.stopStreamer(mockStatusMessage));
     }
 
     @Test
@@ -181,8 +175,7 @@ class StreamerManagerTest {
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
-        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
-        when(aggregatorMock.getFilteredFlux(any(), any(), any(), any(), any(), any())).thenReturn(Flux.empty());
+        when(mockPermission.effectiveTransmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
@@ -198,8 +191,8 @@ class StreamerManagerTest {
     }
 
     @Test
-    void verify_close_emitsCompleteOnTerminationRequestsFlux() {
-        StepVerifier.create(manager.terminationRequestsFlux())
+    void verify_close_emitsCompleteOnCommandFlux() {
+        StepVerifier.create(manager.commandFlux())
                     // When
                     .then(() -> manager.close())
                     // Then

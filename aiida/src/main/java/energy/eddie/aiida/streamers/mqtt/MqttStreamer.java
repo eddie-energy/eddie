@@ -34,7 +34,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
@@ -45,6 +44,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private boolean isBeingTerminated = false;
+    private volatile boolean transmissionEnabled;
     @Nullable
     private Disposable subscription;
 
@@ -58,8 +58,8 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      * @param schemaFormatterRegistry Registry of all available schema formatters
      * @param streamingContext        Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
      *                                MQTT configuration values.
-     * @param terminationRequestSink  Sink, to which the ID of the permission will be published when the EP requests a
-     *                                termination.
+     * @param commandSink             Sink, to which a {@link PermissionCommand} is published when the EP sends a
+     *                                control command.
      */
     public MqttStreamer(
             FailedToSendRepository failedToSendRepository,
@@ -68,9 +68,9 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             Flux<AiidaRecord> recordFlux,
             SchemaFormatterRegistry schemaFormatterRegistry,
             MqttStreamingContext streamingContext,
-            Sinks.One<UUID> terminationRequestSink
+            Sinks.Many<PermissionCommand> commandSink
     ) {
-        super(recordFlux, schemaFormatterRegistry, terminationRequestSink);
+        super(recordFlux, schemaFormatterRegistry, commandSink);
 
         this.client = streamingContext.client();
         this.failedToSendRepository = failedToSendRepository;
@@ -78,6 +78,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         this.permission = permission;
         this.streamingConfig = streamingContext.streamingConfig();
         this.permissionLatestRecordMap = streamingContext.permissionLatestRecordMap();
+        this.transmissionEnabled = permission.transmissionEnabled();
 
         client.setCallback(this);
     }
@@ -116,7 +117,6 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     public void close() {
         isBeingTerminated = true;
         if (subscription != null) subscription.dispose();
-        terminationRequestSink.tryEmitEmpty();
 
         LOGGER.info("Closing MqttStreamer for permission {}", streamingConfig.permissionId());
         try {
@@ -171,40 +171,13 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             return;
         }
 
-        if (!command.permissionId().equals(streamingConfig.permissionId())) {
-            LOGGER.warn("MqttStreamer for permission {} received a command for a different permission {}",
-                        streamingConfig.permissionId(),
-                        command.permissionId());
-            return;
+        var result = commandSink.tryEmitNext(command);
+        if (result.isFailure()) {
+            LOGGER.error("MqttStreamer for permission {} failed to forward command {}. Error was: {}",
+                         streamingConfig.permissionId(),
+                         command.action(),
+                         result);
         }
-
-        var action = command.action();
-        if (action.requiresExplicitGrant() && !isPermissionCommandAllowed(action)) {
-            LOGGER.warn(
-                    "MqttStreamer for permission {} rejected {}: command not in allowed permission commands for this data need",
-                    streamingConfig.permissionId(),
-                    command.action());
-            return;
-        }
-
-        switch (command) {
-            case PermissionCommand.Terminate ignored -> terminate();
-            case PermissionCommand.SetTransmissionEnabled setTransmissionEnabled -> LOGGER.warn(
-                    "MqttStreamer for permission {} received SET_TRANSMISSION_ENABLED({}), not yet implemented",
-                    streamingConfig.permissionId(),
-                    setTransmissionEnabled.enabled());
-            case PermissionCommand.UpdateTransmissionSchedule updateTransmissionSchedule -> LOGGER.warn(
-                    "MqttStreamer for permission {} received UPDATE_TRANSMISSION_SCHEDULE({}), not yet implemented",
-                    streamingConfig.permissionId(),
-                    updateTransmissionSchedule.transmissionSchedule());
-        }
-    }
-
-    private boolean isPermissionCommandAllowed(PermissionCommand.Action action) {
-        var dataNeed = permission.dataNeed();
-        return dataNeed != null
-               && dataNeed.allowedPermissionCommands() != null
-               && dataNeed.allowedPermissionCommands().contains(action);
     }
 
     @Override
@@ -223,10 +196,28 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         retryFailedToSendMessages();
     }
 
-    private void terminate() {
-        isBeingTerminated = true;
-        terminationRequestSink.emitValue(streamingConfig.permissionId(),
-                                         Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(3)));
+    @Override
+    public void setTransmissionEnabled(boolean enabled) {
+        this.transmissionEnabled = enabled;
+        LOGGER.info("MqttStreamer for permission {} set transmissionEnabled to {}",
+                    streamingConfig.permissionId(),
+                    enabled);
+    }
+
+    @Override
+    public void updateRecordFlux(Flux<AiidaRecord> recordFlux) {
+        if (subscription != null) subscription.dispose();
+        this.recordFlux = recordFlux;
+
+        if (isBeingTerminated) {
+            LOGGER.debug("MqttStreamer for permission {} got an updated record flux but is being terminated, "
+                         + "will not resubscribe", streamingConfig.permissionId());
+            return;
+        }
+
+        subscription = recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
+        LOGGER.info("MqttStreamer for permission {} resubscribed to an updated record flux",
+                    streamingConfig.permissionId());
     }
 
     @Override
@@ -273,6 +264,14 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     }
 
     private void publishMessage(String topic, byte[] payload) {
+        if (!transmissionEnabled) {
+            LOGGER.atDebug()
+                  .addArgument(streamingConfig.permissionId())
+                  .addArgument(topic)
+                  .log("MqttStreamer for permission {} has transmission disabled, will not publish message to topic {}");
+            return;
+        }
+
         if (isBeingTerminated) {
             LOGGER.atDebug()
                   .addArgument(streamingConfig.permissionId())
