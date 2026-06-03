@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.dto;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -20,7 +19,7 @@ public class SimpleEdaConsumptionRecord implements EdaConsumptionRecord {
     private String receiverMessageAddress;
     private List<Energy> energy;
     private String schemaVersion;
-    private XMLGregorianCalendar processDate;
+    private ZonedDateTime processDate;
     private Object originalConsumptionRecord;
     private String messageId;
 
@@ -75,7 +74,7 @@ public class SimpleEdaConsumptionRecord implements EdaConsumptionRecord {
     }
 
     @Override
-    public XMLGregorianCalendar processDate() {
+    public ZonedDateTime processDate() {
         return processDate;
     }
 
@@ -134,7 +133,7 @@ public class SimpleEdaConsumptionRecord implements EdaConsumptionRecord {
         return this;
     }
 
-    public SimpleEdaConsumptionRecord setProcessDate(XMLGregorianCalendar processDate) {
+    public SimpleEdaConsumptionRecord setProcessDate(ZonedDateTime processDate) {
         this.processDate = processDate;
         return this;
     }

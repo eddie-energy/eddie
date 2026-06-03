@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fi.fingrid.services.cim.v0_82;
@@ -16,10 +16,8 @@ import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import jakarta.annotation.Nullable;
 
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.List;
 
 class IntermediateAccountingPointDataMarketDocument {
@@ -104,12 +102,8 @@ class IntermediateAccountingPointDataMarketDocument {
     }
 
     @Nullable
-    private static XMLGregorianCalendar getDateOfBirth(CustomerTransaction transaction) {
-        if (transaction.dateOfBirth() == null) {
-            return null;
-        }
-        return DatatypeFactory.newDefaultInstance()
-                              .newXMLGregorianCalendar(GregorianCalendar.from(transaction.dateOfBirth()));
+    private static ZonedDateTime getDateOfBirth(CustomerTransaction transaction) {
+        return transaction.dateOfBirth() == null ? null : transaction.dateOfBirth();
     }
 
     private static AddressComplexType createAddress(Address address, AddressRoleType role) {

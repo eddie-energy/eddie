@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.at.eda.provider.v1_12;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v1_12.StandardCodingSchemeTypeList;
 import energy.eddie.cim.v1_12.StandardDirectionTypeList;
+import energy.eddie.cim.v1_12.StandardProcessTypeList;
 import energy.eddie.cim.v1_12.esr.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
@@ -52,6 +53,7 @@ public class IntermediateEnergySharingReferenceDataMarketDocument {
                                 .withCreatedDateTime(ecmpList.documentCreationDateTime())
                                 .withSenderMarketParticipantName(ecmpList.senderMessageAddress())
                                 .withReceiverMarketParticipantName(ecmpList.receiverMessageAddress())
+                                .withProcessProcessType(StandardProcessTypeList.EXCHANGE_OF_MASTER_DATA.value())
                                 .withEnergyCommunities(createEnergyCommunities())
                 );
     }

@@ -107,3 +107,8 @@ For more information, see [Common Information Model Client Libraries](https://ar
 - Add `PermissionCommand.Action` enum (`UPDATE_TRANSMISSION_SCHEDULE`, `SET_TRANSMISSION_ENABLED`, `TERMINATE`).
   `action()` now returns `Action` instead of `String` (use `action().name()` for the wire value).
 - Add `Action.requiresExplicitGrant()`: `true` for commands a data need must opt into, `false` for `TERMINATE`.
+
+## 3.10.0 - 2026-06-10
+
+- Update EnergySharingReferenceDataMarketDocument to use some new mandatory fields
+- Replace instances of XMLGreogorianCalendar with ZonedDateTime

@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.dto;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -29,7 +28,7 @@ public interface EdaConsumptionRecord {
 
     String schemaVersion();
 
-    XMLGregorianCalendar processDate();
+    ZonedDateTime processDate();
 
     Object originalConsumptionRecord();
 }

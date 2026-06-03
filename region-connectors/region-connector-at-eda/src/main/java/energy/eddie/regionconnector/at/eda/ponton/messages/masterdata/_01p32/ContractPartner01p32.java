@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32;
@@ -7,7 +7,7 @@ import at.ebutilities.schemata.customerprocesses.masterdata._01p32.NameC;
 import energy.eddie.regionconnector.at.eda.dto.masterdata.ContractPartner;
 import jakarta.annotation.Nullable;
 
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
 public record ContractPartner01p32(
@@ -52,14 +52,26 @@ public record ContractPartner01p32(
 
     @Override
     @Nullable
-    public XMLGregorianCalendar dateOfBirth() {
-        return contractPartner.getDateOfBirth();
+    public ZonedDateTime dateOfBirth() {
+        var dateOfBirth = contractPartner.getDateOfBirth();
+        if (dateOfBirth == null) {
+            return null;
+        }
+        return dateOfBirth
+                .toGregorianCalendar()
+                .toZonedDateTime();
     }
 
     @Override
     @Nullable
-    public XMLGregorianCalendar dateOfDeath() {
-        return contractPartner.getDateOfDeath();
+    public ZonedDateTime dateOfDeath() {
+        var dateOfDeath = contractPartner.getDateOfDeath();
+        if (dateOfDeath == null) {
+            return null;
+        }
+        return dateOfDeath
+                .toGregorianCalendar()
+                .toZonedDateTime();
     }
 
     @Override

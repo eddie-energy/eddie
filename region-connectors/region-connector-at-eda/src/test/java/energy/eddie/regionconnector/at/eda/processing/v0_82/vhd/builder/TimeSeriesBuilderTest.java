@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
@@ -6,11 +6,11 @@ package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd.builder;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
 import energy.eddie.regionconnector.at.eda.dto.*;
-import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,7 +32,7 @@ class TimeSeriesBuilderTest {
     void withConsumptionRecord_setsDateAndMarketEvaluationPoint() {
         String meteringPoint = "meteringPoint";
         String version = "version";
-        XMLGregorianCalendar processDate = DateTimeConverter.dateToXml(LocalDate.of(2023, 1, 1));
+        ZonedDateTime processDate = LocalDate.of(2023, 1, 1).atStartOfDay(ZoneOffset.UTC);
         EdaConsumptionRecord consumptionRecord = new SimpleEdaConsumptionRecord()
                 .setSchemaVersion(version)
                 .setProcessDate(processDate)

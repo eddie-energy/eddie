@@ -646,6 +646,7 @@ class XmlMessageSerdeTest {
                                 .withReceiverMarketParticipantMRID(new energy.eddie.cim.v1_12.esr.PartyIDString()
                                                                            .withCodingScheme(energy.eddie.cim.v1_12.StandardCodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME.value())
                                                                            .withValue("EP00000000"))
+                                .withProcessProcessType(energy.eddie.cim.v1_12.StandardProcessTypeList.EXCHANGE_OF_MASTER_DATA.value())
                                 .withEnergyCommunities(
                                         new EnergyCommunity()
                                                 .withDateFrom(dateTime)

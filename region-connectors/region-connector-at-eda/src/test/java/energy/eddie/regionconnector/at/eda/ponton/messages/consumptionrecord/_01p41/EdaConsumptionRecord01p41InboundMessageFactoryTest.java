@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41;
@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.stream.Stream;
 
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
@@ -69,7 +70,7 @@ class EdaConsumptionRecord01p41InboundMessageFactoryTest {
                 () -> assertEquals("ATXXXXXX", rec.senderMessageAddress()),
                 () -> assertEquals("EPXXXXXX", rec.receiverMessageAddress()),
                 () -> assertEquals(conversationId, rec.conversationId()),
-                () -> assertEquals(processDate.toString(), rec.processDate().toString()),
+                () -> assertEquals(processDate.atStartOfDay(AT_ZONE_ID).toString(), rec.processDate().toString()),
                 () -> assertEquals(1, rec.energy().size()),
                 () -> assertEquals(granularity, energy.granularity()),
                 () -> assertEquals("00", energy.meteringReason()),

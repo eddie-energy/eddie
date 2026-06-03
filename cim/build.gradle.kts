@@ -22,7 +22,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.9.1"
+version = "3.10.0"
 
 repositories {
     mavenCentral()
@@ -326,6 +326,9 @@ fun generateBindingsFile(rootXsd: File, bindingsFilePath: String) {
         .append("           <xjc:javaType name=\"java.time.ZonedDateTime\"\n")
         .append("                         xmlType=\"xs:dateTime\"\n")
         .append("                         adapter=\"energy.eddie.cim.v1_04.extensions.CimDateTimeAdapter\"/>\n")
+        .append("           <xjc:javaType name=\"java.time.ZonedDateTime\"\n")
+        .append("                         xmlType=\"xs:date\"\n")
+        .append("                         adapter=\"energy.eddie.cim.extensions.CimDateAdapter\"/>\n")
         .append("    </globalBindings>\n")
     for (file in visitedXsds) {
         bindings.append(generateBindingsForReferencedFile(file))
