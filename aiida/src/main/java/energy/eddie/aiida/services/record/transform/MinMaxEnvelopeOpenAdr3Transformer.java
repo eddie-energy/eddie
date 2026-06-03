@@ -25,10 +25,11 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
     private static final String EVENT_PAYLOAD_DESCRIPTOR = "EVENT_PAYLOAD_DESCRIPTOR";
     private static final String IMPORT_CAPACITY_LIMIT = "IMPORT_CAPACITY_LIMIT";
     private static final String EXPORT_CAPACITY_LIMIT = "EXPORT_CAPACITY_LIMIT";
-    private static final String KILO_WATT = "KW";
+    private static final String CAPACITY_LIMIT_UNIT = "W";
+    private static final BigDecimal WATT_PER_KILO_WATT = BigDecimal.valueOf(1000);
     private static final List<EventPayloadDescriptor> PAYLOAD_DESCRIPTORS = List.of(
-            new EventPayloadDescriptor(EVENT_PAYLOAD_DESCRIPTOR, IMPORT_CAPACITY_LIMIT, KILO_WATT),
-            new EventPayloadDescriptor(EVENT_PAYLOAD_DESCRIPTOR, EXPORT_CAPACITY_LIMIT, KILO_WATT)
+            new EventPayloadDescriptor(EVENT_PAYLOAD_DESCRIPTOR, IMPORT_CAPACITY_LIMIT, CAPACITY_LIMIT_UNIT),
+            new EventPayloadDescriptor(EVENT_PAYLOAD_DESCRIPTOR, EXPORT_CAPACITY_LIMIT, CAPACITY_LIMIT_UNIT)
     );
 
     @Override
@@ -55,6 +56,7 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
                 OBJECT_TYPE,
                 programId(marketDocument),
                 eventName(marketDocument),
+                duration(marketDocument),
                 PAYLOAD_DESCRIPTORS,
                 intervalPeriod(marketDocument, period),
                 intervals(period)
@@ -81,15 +83,18 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
         return marketDocument.getDescription();
     }
 
+    private Duration duration(RECMMOEMarketDocument marketDocument) {
+        var interval = requireNonNull(marketDocument.getPeriodTimeInterval(), "marketDocument.period.timeInterval");
+        return Duration.between(OffsetDateTime.parse(interval.getStart()), OffsetDateTime.parse(interval.getEnd()));
+    }
+
     private IntervalPeriod intervalPeriod(RECMMOEMarketDocument marketDocument, SeriesPeriod period) {
         var interval = requireNonNull(marketDocument.getPeriodTimeInterval(), "marketDocument.period.timeInterval");
         var start = requireNonBlank(interval.getStart(), "marketDocument.period.timeInterval.start");
         var normalizedStart = OffsetDateTime.parse(start).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        var resolution = requireNonNull(period.getResolution(), "period.resolution");
 
-        return new IntervalPeriod(
-                normalizedStart,
-                parseResolution(period).toString()
-        );
+        return new IntervalPeriod(normalizedStart, resolution);
     }
 
     private List<Interval> intervals(SeriesPeriod period) {
@@ -130,14 +135,17 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
             throw new IllegalArgumentException("Point position must be greater than or equal to zero.");
         }
 
-        var exportCapacityLimit = requireNonNull(point.getMinQuantityQuantity(), "point.min_Quantity.quantity");
-        var importCapacityLimit = requireNonNull(point.getMaxQuantityQuantity(), "point.max_Quantity.quantity");
+        var minKiloWatt = requireNonNull(point.getMinQuantityQuantity(), "point.min_Quantity.quantity");
+        var maxKiloWatt = requireNonNull(point.getMaxQuantityQuantity(), "point.max_Quantity.quantity");
 
-        if (exportCapacityLimit.compareTo(importCapacityLimit) > 0) {
+        if (minKiloWatt.compareTo(maxKiloWatt) > 0) {
             throw new IllegalArgumentException(
                     "Export capacity limit must be less than or equal to import capacity limit."
             );
         }
+
+        var exportCapacityLimit = minKiloWatt.multiply(WATT_PER_KILO_WATT);
+        var importCapacityLimit = maxKiloWatt.multiply(WATT_PER_KILO_WATT);
 
         return new Interval(intervalId, intervalPayloads(importCapacityLimit, exportCapacityLimit));
     }
@@ -147,11 +155,6 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
                 new IntervalPayload(IMPORT_CAPACITY_LIMIT, List.of(importCapacityLimit)),
                 new IntervalPayload(EXPORT_CAPACITY_LIMIT, List.of(exportCapacityLimit))
         );
-    }
-
-    private Duration parseResolution(SeriesPeriod period) {
-        var resolution = requireNonNull(period.getResolution(), "period.resolution");
-        return Duration.parse(resolution.toString());
     }
 
     private @Nullable String dateTimeOrNull(@Nullable ZonedDateTime value) {
@@ -184,6 +187,7 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
             String objectType,
             String programID,
             @Nullable String eventName,
+            Duration duration,
             List<EventPayloadDescriptor> payloadDescriptors,
             IntervalPeriod intervalPeriod,
             List<Interval> intervals
@@ -208,7 +212,7 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private record IntervalPeriod(
             String start,
-            String duration
+            javax.xml.datatype.Duration duration
     ) {
     }
 
