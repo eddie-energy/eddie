@@ -178,17 +178,33 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
             return;
         }
 
+        var action = command.action();
+        if (action.requiresExplicitGrant() && !isPermissionCommandAllowed(action)) {
+            LOGGER.warn(
+                    "MqttStreamer for permission {} rejected {}: command not in allowed permission commands for this data need",
+                    streamingConfig.permissionId(),
+                    command.action());
+            return;
+        }
+
         switch (command) {
             case PermissionCommand.Terminate ignored -> terminate();
             case PermissionCommand.SetTransmissionEnabled setTransmissionEnabled -> LOGGER.warn(
                     "MqttStreamer for permission {} received SET_TRANSMISSION_ENABLED({}), not yet implemented",
                     streamingConfig.permissionId(),
                     setTransmissionEnabled.enabled());
-            case PermissionCommand.UpdateSchedule updateSchedule -> LOGGER.warn(
-                    "MqttStreamer for permission {} received UPDATE_SCHEDULE({}), not yet implemented",
+            case PermissionCommand.UpdateTransmissionSchedule updateTransmissionSchedule -> LOGGER.warn(
+                    "MqttStreamer for permission {} received UPDATE_TRANSMISSION_SCHEDULE({}), not yet implemented",
                     streamingConfig.permissionId(),
-                    updateSchedule.transmissionSchedule());
+                    updateTransmissionSchedule.transmissionSchedule());
         }
+    }
+
+    private boolean isPermissionCommandAllowed(PermissionCommand.Action action) {
+        var dataNeed = permission.dataNeed();
+        return dataNeed != null
+               && dataNeed.allowedPermissionCommands() != null
+               && dataNeed.allowedPermissionCommands().contains(action);
     }
 
     @Override

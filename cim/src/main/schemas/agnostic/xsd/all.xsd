@@ -8,8 +8,9 @@
     <xs:element name="RawDataMessage" type="ns1:rawDataMessage"/>
     <xs:element name="ConnectionStatusMessage" type="ns1:connectionStatusMessage"/>
     <xs:element name="OpaqueEnvelope" type="ns1:opaqueEnvelope"/>
-    <xs:element name="UpdateSchedule" type="ns1:updateSchedule"/>
+    <xs:element name="UpdateTransmissionSchedule" type="ns1:updateTransmissionSchedule"/>
     <xs:element name="SetTransmissionEnabled" type="ns1:setTransmissionEnabled"/>
+    <xs:element name="Terminate" type="ns1:terminate"/>
 
     <!-- connection status message types -->
     <xs:complexType name="connectionStatusMessage">
@@ -77,7 +78,7 @@
     </xs:complexType>
 
     <!-- permission command types -->
-    <xs:complexType name="updateSchedule">
+    <xs:complexType name="updateTransmissionSchedule">
         <xs:all>
             <xs:element type="ns1:permissionCommandAction" name="action"/>
             <xs:element type="xs:string" name="regionConnectorId"/>
@@ -102,7 +103,7 @@
     </xs:complexType>
     <xs:simpleType name="permissionCommandAction" final="restriction">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="UPDATE_SCHEDULE"/>
+            <xs:enumeration value="UPDATE_TRANSMISSION_SCHEDULE"/>
             <xs:enumeration value="SET_TRANSMISSION_ENABLED"/>
             <xs:enumeration value="TERMINATE"/>
         </xs:restriction>

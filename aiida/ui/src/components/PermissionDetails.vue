@@ -282,6 +282,14 @@ onClickOutside(target, () => (showToolTip.value = false))
           </dd>
         </div>
       </div>
+      <div v-if="permission.dataNeed.allowedPermissionCommands?.length" class="permission-field">
+        <dt>{{ t('permissions.dropdown.allowedPermissionCommands') }}</dt>
+        <div class="column schema">
+          <dd v-for="command in permission.dataNeed.allowedPermissionCommands" :key="command">
+            {{ command }}
+          </dd>
+        </div>
+      </div>
       <div v-if="permission.dataNeed.acknowledgementRequired" class="permission-field">
         <dt>{{ t('permissions.dropdown.acknowledgementRequired') }}</dt>
         <dd>{{ permission.dataNeed.acknowledgementRequired }}</dd>

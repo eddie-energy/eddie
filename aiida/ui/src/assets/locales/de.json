@@ -130,6 +130,7 @@
       "asset": "Asset",
       "obisCodes": "OBIS-Codes",
       "dataSource": "Datenquelle",
+      "allowedPermissionCommands": "Erlaubte Berechtigungsbefehle",
       "acknowledgementRequired": "Rückbestätigung erforderlich",
       "inboundMessageFormat": "Format eingehender Nachrichten",
       "permissionId": "Berechtigungs-ID",

@@ -100,3 +100,10 @@ For more information, see [Common Information Model Client Libraries](https://ar
 - Add agnostic `PermissionCommand` for transmission control sent by the eligible party.
   Modeled as a sealed interface discriminated on `action`, with the subtypes `UpdateSchedule`,  `SetTransmissionEnabled`, and `Terminate`.
 - Add JSON and XSD schema definitions for the permission command.
+
+## 3.9.1 - 2026-06-08
+
+- Rename `UpdateSchedule` to `UpdateTransmissionSchedule` for clarity.
+- Add `PermissionCommand.Action` enum (`UPDATE_TRANSMISSION_SCHEDULE`, `SET_TRANSMISSION_ENABLED`, `TERMINATE`).
+  `action()` now returns `Action` instead of `String` (use `action().name()` for the wire value).
+- Add `Action.requiresExplicitGrant()`: `true` for commands a data need must opt into, `false` for `TERMINATE`.

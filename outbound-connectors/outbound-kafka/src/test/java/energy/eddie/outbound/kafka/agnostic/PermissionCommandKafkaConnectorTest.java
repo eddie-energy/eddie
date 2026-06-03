@@ -30,9 +30,9 @@ import static org.junit.jupiter.api.Assertions.*;
 class PermissionCommandKafkaConnectorTest {
     private static final String TOPIC = "fw.eddie.agnostic.permission-command";
     private static final UUID PERMISSION_ID = UUID.randomUUID();
-    private static final PermissionCommand COMMAND = new PermissionCommand.UpdateSchedule("eddie",
-                                                                                          PERMISSION_ID,
-                                                                                          "0 */1 * * * *");
+    private static final PermissionCommand COMMAND = new PermissionCommand.UpdateTransmissionSchedule("eddie",
+                                                                                                      PERMISSION_ID,
+                                                                                                      "0 */1 * * * *");
 
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
@@ -51,7 +51,7 @@ class PermissionCommandKafkaConnectorTest {
         var result = permissionCommandConnector.getPermissionCommands().blockFirst();
         assertAll(
                 () -> assertNotNull(result),
-                () -> assertInstanceOf(PermissionCommand.UpdateSchedule.class, result),
+                () -> assertInstanceOf(PermissionCommand.UpdateTransmissionSchedule.class, result),
                 () -> assertEquals(PERMISSION_ID, result.permissionId())
         );
     }

@@ -11,7 +11,7 @@
         "action": {
           "type": "string",
           "enum": [
-            "UPDATE_SCHEDULE"
+            "UPDATE_TRANSMISSION_SCHEDULE"
           ]
         },
         "regionConnectorId": {
