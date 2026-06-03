@@ -58,7 +58,6 @@ class EtaPlusApiClientTest {
                 "client-secret",
                 "/meters/historical",
                 "/meters/accounting-point",
-                "/v1/permissions/{id}",
                 30,
                 3, 0,
                 true,
@@ -362,96 +361,6 @@ class EtaPlusApiClientTest {
         RecordedRequest recorded = takeLatestRequest();
         assertThat(recorded).isNotNull();
         assertThat(recorded.getPath()).startsWith("/meters/historical");
-    }
-
-    // ---- checkPermissionValidity ----
-
-    @Test
-    void checkPermissionValidity_200Response_returnsTrue() {
-        server.enqueue(new MockResponse().setResponseCode(200));
-
-        DePermissionRequest request = buildRequest(
-                "perm-valid", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
-
-        StepVerifier.create(apiClient.checkPermissionValidity(request))
-                .expectNext(true)
-                .verifyComplete();
-    }
-
-    @Test
-    void checkPermissionValidity_403Response_returnsFalse() {
-        server.enqueue(new MockResponse().setResponseCode(403));
-
-        DePermissionRequest request = buildRequest(
-                "perm-forbidden", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
-
-        StepVerifier.create(apiClient.checkPermissionValidity(request))
-                .expectNext(false)
-                .verifyComplete();
-    }
-
-    @Test
-    void checkPermissionValidity_500Response_retriesAndReturnsFalse() {
-        for (int i = 0; i < 4; i++) {
-            server.enqueue(new MockResponse().setResponseCode(500));
-        }
-
-        DePermissionRequest request = buildRequest(
-                "perm-server-error", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
-
-        StepVerifier.create(apiClient.checkPermissionValidity(request))
-                .expectNext(false)
-                .verifyComplete();
-    }
-
-    @Test
-    void checkPermissionValidity_401Response_throwsAuthenticationException() {
-        server.enqueue(new MockResponse().setResponseCode(401));
-
-        DePermissionRequest request = buildRequest(
-                "perm-auth-check", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
-
-        StepVerifier.create(apiClient.checkPermissionValidity(request))
-                .expectErrorSatisfies(error -> {
-                    assertThat(error).isInstanceOf(AuthenticationException.class);
-                    assertThat(error.getMessage()).contains("perm-auth-check");
-                    assertThat(((AuthenticationException) error).statusCode()).isEqualTo(401);
-                })
-                .verify();
-    }
-
-    @Test
-    void checkPermissionValidity_429Response_retriesAndThrowsRateLimitException() {
-        for (int i = 0; i < 4; i++) {
-            server.enqueue(new MockResponse().setResponseCode(429));
-        }
-
-        DePermissionRequest request = buildRequest(
-                "perm-rate-check", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
-
-        StepVerifier.create(apiClient.checkPermissionValidity(request))
-                .expectErrorSatisfies(error -> {
-                    assertThat(error).isInstanceOf(RateLimitException.class);
-                    assertThat(error.getMessage()).contains("perm-rate-check");
-                })
-                .verify();
-    }
-
-    @Test
-    void checkPermissionValidity_usesHeadMethodAndCorrectPathWithPermissionId() throws InterruptedException {
-        server.enqueue(new MockResponse().setResponseCode(200));
-
-        DePermissionRequest request = buildRequest(
-                "perm-abc-123", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31));
-
-        StepVerifier.create(apiClient.checkPermissionValidity(request))
-                .expectNext(true)
-                .verifyComplete();
-
-        RecordedRequest recorded = takeLatestRequest();
-        assertThat(recorded).isNotNull();
-        assertThat(recorded.getMethod()).isEqualTo("HEAD");
-        assertThat(recorded.getPath()).isEqualTo("/v1/permissions/perm-abc-123");
     }
 
     // ------------------------------------------------------------------

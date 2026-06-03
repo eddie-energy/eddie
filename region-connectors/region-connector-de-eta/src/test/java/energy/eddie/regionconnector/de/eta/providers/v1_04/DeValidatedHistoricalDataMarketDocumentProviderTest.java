@@ -39,7 +39,7 @@ class DeValidatedHistoricalDataMarketDocumentProviderTest {
                         CodingSchemeTypeList.GERMANY_NATIONAL_CODING_SCHEME, "fallback"),
                 new DeEtaPlusConfiguration(
                         "ep-id", "http://api.url", "client-id", "client-secret",
-                        "/meters/historical", "/meters/accounting-point", "/v1/permissions/{id}", 30,
+                        "/meters/historical", "/meters/accounting-point", 30,
                         3, 2, true, false, null, null)
         );
 

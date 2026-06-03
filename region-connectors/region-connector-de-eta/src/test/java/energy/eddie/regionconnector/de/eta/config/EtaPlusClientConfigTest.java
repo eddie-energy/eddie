@@ -43,7 +43,6 @@ class EtaPlusClientConfigTest {
                 "my-secret",
                 "/meters/historical",
                 "/meters/accounting-point",
-                "/v1/permissions/{id}",
                 30,
                 3, 2,
                 sslEnabled,
