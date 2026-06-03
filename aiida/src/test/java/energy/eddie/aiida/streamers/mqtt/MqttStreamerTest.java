@@ -33,6 +33,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -258,6 +259,75 @@ class MqttStreamerTest {
                                                 .then(streamer::close)
                                                 .expectComplete()
                                                 .verifyLater();
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+
+        // When
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenUnparseableCommand_doesNotPublishOnMono() throws MqttException {
+        // Given
+        when(mockMessage.getPayload()).thenReturn("not-json".getBytes(StandardCharsets.UTF_8));
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenThrow(new JacksonException("boom") {});
+        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
+                                                .then(streamer::close)
+                                                .expectComplete()
+                                                .verifyLater();
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+
+        // When
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenSetTransmissionEnabledCommand_doesNotPublishOnMono() throws MqttException {
+        // Given
+        when(mockMessage.getPayload()).thenReturn(new byte[]{});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.SetTransmissionEnabled("aiida",
+                                                                         PERMISSION_ID,
+                                                                         ZonedDateTime.now(),
+                                                                         false));
+        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
+                                                .then(streamer::close)
+                                                .expectComplete()
+                                                .verifyLater();
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+
+        // When
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenUpdateScheduleCommand_doesNotPublishOnMono() throws MqttException {
+        // Given
+        when(mockMessage.getPayload()).thenReturn(new byte[]{});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.UpdateSchedule("aiida",
+                                                                 PERMISSION_ID,
+                                                                 ZonedDateTime.now(),
+                                                                 "0 0 * * * *"));
+        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
+                                                .then(streamer::close)
+                                                .expectComplete()
+                                                .verifyLater();
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         streamer.connect();
         streamer.connectComplete(false, "fooTest");
 

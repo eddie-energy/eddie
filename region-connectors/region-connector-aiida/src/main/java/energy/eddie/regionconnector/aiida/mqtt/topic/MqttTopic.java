@@ -26,6 +26,10 @@ public record MqttTopic(
         return buildTopic(MqttAction.PUBLISH);
     }
 
+    public String eddieTopic(String suffix) {
+        return String.join(DELIMITER, eddieTopic(), suffix);
+    }
+
     public String aiidaTopic() {
         return buildTopic(MqttAction.SUBSCRIBE);
     }

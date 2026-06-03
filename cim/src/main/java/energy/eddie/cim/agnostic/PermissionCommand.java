@@ -17,20 +17,32 @@ import java.util.UUID;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "action")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = PermissionCommand.UpdateSchedule.class, name = "UPDATE_SCHEDULE"),
-        @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = "SET_TRANSMISSION_ENABLED"),
-        @JsonSubTypes.Type(value = PermissionCommand.Terminate.class, name = "TERMINATE")
+        @JsonSubTypes.Type(value = PermissionCommand.UpdateSchedule.class, name = PermissionCommand.UPDATE_SCHEDULE),
+        @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = PermissionCommand.SET_TRANSMISSION_ENABLED),
+        @JsonSubTypes.Type(value = PermissionCommand.Terminate.class, name = PermissionCommand.TERMINATE)
 })
 public sealed interface PermissionCommand permits
         PermissionCommand.UpdateSchedule,
         PermissionCommand.SetTransmissionEnabled,
         PermissionCommand.Terminate {
 
+    String UPDATE_SCHEDULE = "UPDATE_SCHEDULE";
+    String SET_TRANSMISSION_ENABLED = "SET_TRANSMISSION_ENABLED";
+    String TERMINATE = "TERMINATE";
+
     String regionConnectorId();
 
     UUID permissionId();
 
     ZonedDateTime timestamp();
+
+    default String action() {
+        return switch (this) {
+            case UpdateSchedule ignored -> UPDATE_SCHEDULE;
+            case SetTransmissionEnabled ignored -> SET_TRANSMISSION_ENABLED;
+            case Terminate ignored -> TERMINATE;
+        };
+    }
 
     /**
      * Adjusts the transmission schedule for a permission.

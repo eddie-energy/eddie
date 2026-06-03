@@ -126,7 +126,7 @@ class MqttServiceTest {
         assertEquals(MqttAclType.ALLOW, acls.get(1).aclType());
         assertEquals(permissionId, acls.get(1).username());
 
-        assertEquals("aiida/v1/testId/command", acls.get(2).topic());
+        assertEquals("aiida/v1/testId/command/+", acls.get(2).topic());
         assertEquals(MqttAction.SUBSCRIBE, acls.get(2).action());
         assertEquals(MqttAclType.ALLOW, acls.get(2).aclType());
         assertEquals(permissionId, acls.get(2).username());
@@ -137,7 +137,7 @@ class MqttServiceTest {
         assertEquals(password, dto.password());
         assertEquals("aiida/v1/testId/data/outbound", dto.dataTopic());
         assertEquals("aiida/v1/testId/status", dto.statusTopic());
-        assertEquals("aiida/v1/testId/command", dto.commandTopic());
+        assertEquals("aiida/v1/testId/command/+", dto.commandTopic());
         assertNull(dto.acknowledgementTopic());
     }
 
@@ -224,11 +224,26 @@ class MqttServiceTest {
     }
 
     @Test
-    void publishPermissionCommand_sendsSerializedCommandToCommandTopic() throws MqttException {
+    void publishPermissionCommand_sendsSerializedCommandToActionSubTopic() throws MqttException {
         // Given
         var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
         var command = new PermissionCommand.Terminate("aiida", permissionId, ZonedDateTime.now());
-        var expectedTopic = "aiida/v1/" + permissionId + "/command";
+        var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.TERMINATE;
+        var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
+
+        // When
+        mqttService.publishPermissionCommand(command);
+
+        // Then
+        verify(mockAsyncClient).publish(expectedTopic, expectedPayload, 1, true);
+    }
+
+    @Test
+    void publishPermissionCommand_usesCommandActionAsTopicSuffix() throws MqttException {
+        // Given
+        var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
+        var command = new PermissionCommand.UpdateSchedule("aiida", permissionId, ZonedDateTime.now(), "0 */1 * * * *");
+        var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.UPDATE_SCHEDULE;
         var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
 
         // When
