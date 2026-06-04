@@ -52,14 +52,12 @@ public class EtaRegionConnector implements RegionConnector {
             return;
         }
 
-        // Mark the permission as terminated in the database
-        // The actual termination will be handled by a scheduled task or event processor
-        // that reads from the outbox and sends termination requests to ETA Plus
+        if (request.get().status() != PermissionProcessStatus.ACCEPTED) {
+            LOGGER.info("Permission request {} is in {} status, ignoring termination request",
+                    permissionId, request.get().status());
+            return;
+        }
 
-        // Implement actual termination logic with ETA Plus API in GH-2197
-        // For now, we just mark it as terminated and requiring external termination
-
-        // Publish termination events
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
