@@ -47,6 +47,7 @@ class EtaRegionConnectorTest {
     void terminatePermissionWhenPermissionExistsShouldCommitEvents() {
         String permissionId = "test-permission-id";
         DePermissionRequest request = mock(DePermissionRequest.class);
+        when(request.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
 
         connector.terminatePermission(permissionId);
@@ -60,6 +61,18 @@ class EtaRegionConnectorTest {
         assertThat(events.get(0).status()).isEqualTo(PermissionProcessStatus.TERMINATED);
         assertThat(events.get(1).permissionId()).isEqualTo(permissionId);
         assertThat(events.get(1).status()).isEqualTo(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
+    }
+
+    @Test
+    void terminatePermissionWhenPermissionNotAcceptedShouldNotCommitEvents() {
+        String permissionId = "test-permission-id";
+        DePermissionRequest request = mock(DePermissionRequest.class);
+        when(request.status()).thenReturn(PermissionProcessStatus.TERMINATED);
+        when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(request));
+
+        connector.terminatePermission(permissionId);
+
+        verify(outbox, never()).commit(any());
     }
 
     @Test
