@@ -14,7 +14,7 @@ import jakarta.persistence.Enumerated;
 import java.time.Instant;
 
 @Entity
-public class InboundRecord extends AbstractDataRecord {
+public class InboundRecord extends DataSourceRecord {
 
     @JsonProperty
     @Enumerated(EnumType.STRING)

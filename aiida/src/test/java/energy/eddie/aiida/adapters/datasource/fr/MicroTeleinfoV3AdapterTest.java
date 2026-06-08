@@ -162,7 +162,7 @@ class MicroTeleinfoV3AdapterTest {
 
             var message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("teleinfo/data", message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
@@ -271,7 +271,7 @@ class MicroTeleinfoV3AdapterTest {
 
         var historyModeJson = "{\"ADCO\":{\"raw\":\"123456789123\",\"value\":123456789123},\"OPTARIF\":{\"raw\":\"BASE\",\"value\":\"BASE\"},\"ISOUSC\":{\"raw\":\"30\",\"value\":30},\"BASE\":{\"raw\":\"006367621\",\"value\":6367621},\"PTEC\":{\"raw\":\"TH..\",\"value\":\"TH\"},\"IINST\":{\"raw\":\"001\",\"value\":1},\"IMAX\":{\"raw\":\"090\",\"value\":90},\"PAPP\":{\"raw\":\"00126\",\"value\":126},\"HHPHC\":{\"raw\":\"A\",\"value\":\"A\"}}";
         var knownObisCodeCountInMessage = 6;
-        var stepVerifier = StepVerifier.create(adapter.start())
+        var stepVerifier = StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                                        .expectNextMatches(ar -> hasKnownObisCodeCount(ar, knownObisCodeCountInMessage))
                                        .then(adapter::close)
                                        .expectComplete()
@@ -526,7 +526,7 @@ class MicroTeleinfoV3AdapterTest {
                 }
                 """;
 
-        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
+        StepVerifier stepVerifier = StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                                                 .expectNextMatches(received -> {
                                                     var aiidaRecordValues = received.aiidaRecordValues();
 

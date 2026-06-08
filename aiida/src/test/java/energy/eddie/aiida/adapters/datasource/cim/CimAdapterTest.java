@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -170,7 +171,7 @@ class CimAdapterTest {
 
             MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived(CIM_TOPIC, message))
                         .expectNextMatches(received -> received.aiidaRecordValues()

@@ -9,8 +9,8 @@ import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.modbus.ModbusDataPoint;
 import energy.eddie.aiida.models.modbus.ModbusDevice;
 import energy.eddie.aiida.models.modbus.ModbusSource;
-import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import jakarta.annotation.Nullable;
 import org.mvel2.MVEL;
@@ -72,7 +72,7 @@ public class ModbusTcpDataSourceAdapter extends DataSourceAdapter<ModbusDataSour
     }
 
     @Override
-    public Flux<AiidaRecord> start() {
+    public Flux<DataSourceRecord> start() {
         LOGGER.info("Starting {} with polling interval {}ms", dataSource().name(), pollingInterval);
         var now = System.currentTimeMillis();
         var delayUntilNextAlignedInterval = pollingInterval - (now % pollingInterval);

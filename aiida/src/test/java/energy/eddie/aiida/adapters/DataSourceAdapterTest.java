@@ -26,6 +26,7 @@ import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -203,7 +204,7 @@ class DataSourceAdapterTest {
         }
 
         @Override
-        public Flux<AiidaRecord> start() {
+        public Flux<DataSourceRecord> start() {
             return Flux.empty();
         }
 

@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.utils.TestUtils;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -41,8 +42,8 @@ import static org.mockito.Mockito.*;
 import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 @ExtendWith(MockitoExtension.class)
-class AggregatorTest {
-    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(AbstractAggregator.class);
+class OutboundAggregatorTest {
+    private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(Aggregator.class);
     private static final String DATASOURCE_NAME_1 = "test-1";
     private static final UUID DATA_SOURCE_ID_1 = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID_2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -52,7 +53,7 @@ class AggregatorTest {
     @Mock
     private SimulationDataSource dataSource2;
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
-    private Aggregator aggregator;
+    private OutboundAggregator aggregator;
     private AiidaAsset wantedAsset;
     private Set<ObisCode> wantedCodes;
     private AiidaRecord unwanted1;
@@ -122,7 +123,7 @@ class AggregatorTest {
         expiration = Instant.now().plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
-        aggregator = new Aggregator(mockAiidaRecordRepository, healthContributorRegistry);
+        aggregator = new OutboundAggregator(mockAiidaRecordRepository, healthContributorRegistry);
     }
 
     @AfterEach
@@ -132,7 +133,10 @@ class AggregatorTest {
 
     @Test
     void givenNewDataSource_addNewDataSource_subscribesToFluxAndCallsStart() {
-        when(mockAdapter1.start()).thenReturn(mockFlux);
+        AiidaRecord r = mock(AiidaRecord.class);
+
+        when(mockAdapter1.start())
+                .thenReturn(Flux.just(r));
 
         aggregator.addNewDataSourceAdapter(mockAdapter1);
 
@@ -162,8 +166,8 @@ class AggregatorTest {
         unwanted2 = new AiidaRecord(instant, dataSource2, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "15", KILO_WATT, "10", KILO_WATT)));
 
-        TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
-        TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher1 = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher2 = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher1.flux());
         when(mockAdapter2.start()).thenReturn(publisher2.flux());
 
@@ -194,7 +198,7 @@ class AggregatorTest {
 
     @Test
     void getFilteredFlux_bufferRecordsByCron() {
-        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher.flux());
 
         var unwantedBeforeCron = new AiidaRecord(Instant.now().minusSeconds(10), dataSource1,
@@ -228,7 +232,7 @@ class AggregatorTest {
 
     @Test
     void getFilteredFlux_mergeRecordsByRawTag() {
-        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher.flux());
 
         var record1 = new AiidaRecord(Instant.now().plusSeconds(600), dataSource1,
@@ -286,11 +290,11 @@ class AggregatorTest {
 
     @Test
     void givenAiidaRecordFromDatasource_isSavedInDatabase() {
-        TestPublisher<AiidaRecord> publisher1 = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher1 = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher1.flux());
 
 
-        TestPublisher<AiidaRecord> publisher2 = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher2 = TestPublisher.create();
         when(mockAdapter2.start()).thenReturn(publisher2.flux());
 
         aggregator.addNewDataSourceAdapter(mockAdapter1);
@@ -312,7 +316,7 @@ class AggregatorTest {
      */
     @Test
     void givenDataWithTimestampAfterFluxFilterTime_fluxDoesNotPublish() {
-        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher.flux());
 
         var atExpirationTime = new AiidaRecord(expiration,
@@ -397,7 +401,7 @@ class AggregatorTest {
 
     @Test
     void givenErrorFromDataSource_errorIsLoggedWithDataSourceName() {
-        TestPublisher<AiidaRecord> publisher = TestPublisher.create();
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
 
         when(mockAdapter1.dataSource()).thenReturn(dataSource1);
         when(mockAdapter1.start()).thenReturn(publisher.flux());

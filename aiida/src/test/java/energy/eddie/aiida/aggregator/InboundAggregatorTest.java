@@ -5,7 +5,7 @@ package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -45,12 +45,11 @@ class InboundAggregatorTest {
 
     @Test
     void givenInboundDataSource_savedToInboundRepository() {
-        TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
-        TestPublisher<InboundRecord> inboundPublisher = TestPublisher.create();
+        TestPublisher<DataSourceRecord> inboundPublisher = TestPublisher.create();
 
         when(inboundAdapter.dataSource()).thenReturn(inboundDataSource);
-        when(inboundAdapter.inboundRecordFlux()).thenReturn(inboundPublisher.flux());
-
+        when(inboundAdapter.start())
+                .thenReturn(inboundPublisher.flux());
         aggregator.addNewDataSourceAdapter(inboundAdapter);
 
         var inboundRecord = new InboundRecord(Instant.now(),
@@ -59,8 +58,8 @@ class InboundAggregatorTest {
                                               "Test");
         inboundPublisher.next(inboundRecord);
         inboundPublisher.complete();
-        recordPublisher.complete();
 
-        verify(mockInboundRecordRepository, times(1)).save(any(InboundRecord.class));
+        verify(inboundAdapter, times(1)).start();
+        verify(mockInboundRecordRepository, timeout(1000)).save(any(InboundRecord.class));
     }
 }

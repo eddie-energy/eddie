@@ -14,25 +14,27 @@ import jakarta.transaction.Transactional;
 @Entity
 @Table(name = "mqtt_connection")
 public class MqttConnectionEntity {
-
-    @Column(name = "internal_host", nullable = false)
-    @Schema(description = "The internal host of the MQTT broker the data source connects to.")
-    @JsonProperty
-    protected String internalHost;
-    @Column(name = "external_host", nullable = false)
-    @Schema(description = "The external host of the MQTT broker the data source connects to.")
-    @JsonProperty
-    protected String externalHost;
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "mqtt_user_id", referencedColumnName = "id")
-    @JsonUnwrapped
-    protected MqttUser user;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     @JsonIgnore
     @SuppressWarnings("unused")
     private Long id;
+
+    @Column(name = "internal_host", nullable = false)
+    @Schema(description = "The internal host of the MQTT broker the data source connects to.")
+    @JsonProperty
+    private String internalHost;
+
+    @Column(name = "external_host", nullable = false)
+    @Schema(description = "The external host of the MQTT broker the data source connects to.")
+    @JsonProperty
+    private String externalHost;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mqtt_user_id", referencedColumnName = "id")
+    @JsonUnwrapped
+    private MqttUser user;
 
     @SuppressWarnings("NullAway.Init")
     public MqttConnectionEntity() {}

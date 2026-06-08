@@ -4,8 +4,8 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.aggregator.Aggregator;
 import energy.eddie.aiida.aggregator.InboundAggregator;
+import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
@@ -47,7 +47,7 @@ public class DataSourceService {
     private final ApplicationInformationService applicationInformationService;
     private final DataSourceRepository repository;
     private final AiidaEventPublisher aiidaEventPublisher;
-    private final Aggregator aggregator;
+    private final OutboundAggregator aggregator;
     private final InboundAggregator inboundAggregator;
     private final AuthService authService;
     private final Set<DataSourceAdapter<? extends DataSource>> dataSourceAdapters = new HashSet<>();
@@ -60,7 +60,7 @@ public class DataSourceService {
     public DataSourceService(
             ApplicationInformationService applicationInformationService,
             DataSourceRepository repository,
-            Aggregator aggregator,
+            OutboundAggregator aggregator,
             InboundAggregator inboundAggregator,
             AuthService authService,
             MqttConfiguration mqttConfiguration,

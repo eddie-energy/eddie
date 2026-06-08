@@ -14,8 +14,6 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
@@ -24,7 +22,6 @@ import java.util.UUID;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
-    private final Sinks.Many<InboundRecord> inboundRecordSink;
     private final InboundAcknowledgementStreamer acknowledgementStreamer;
 
     /**
@@ -43,13 +40,14 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
             UUID aiidaId
     ) {
         super(dataSource, LOGGER, mqttConfiguration);
-        inboundRecordSink = Sinks.many().multicast().onBackpressureBuffer();
 
         acknowledgementStreamer = new InboundAcknowledgementStreamer(
                 aiidaId,
                 mapper,
                 dataSource.acknowledgementTopic(),
-                inboundRecordSink.asFlux());
+                recordSink.asFlux()
+                          .ofType(InboundRecord.class)
+        );
     }
 
     @Override
@@ -81,16 +79,12 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 schema.get(),
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
-        inboundRecordSink.tryEmitNext(inboundRecord);
+        recordSink.tryEmitNext(inboundRecord);
     }
 
     @Override
     public void deliveryComplete(IMqttToken token) {
         LOGGER.trace("Delivery complete for MqttToken {}", token);
-    }
-
-    public Flux<InboundRecord> inboundRecordFlux() {
-        return inboundRecordSink.asFlux();
     }
 
     @Override

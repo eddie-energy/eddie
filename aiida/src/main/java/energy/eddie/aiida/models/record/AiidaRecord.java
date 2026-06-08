@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-public class AiidaRecord extends AbstractDataRecord {
+public class AiidaRecord extends DataSourceRecord {
 
     @OneToMany(mappedBy = "aiidaRecord", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonProperty("values")

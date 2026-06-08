@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.aiida.utils.TestUtils;
 import nl.altindag.log.LogCaptor;
@@ -151,7 +152,7 @@ class OesterreichsEnergieAdapterTest {
 
             MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
@@ -176,7 +177,7 @@ class OesterreichsEnergieAdapterTest {
 
             MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
                         .expectNextMatches(received -> {
@@ -210,7 +211,7 @@ class OesterreichsEnergieAdapterTest {
 
             MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
@@ -236,7 +237,7 @@ class OesterreichsEnergieAdapterTest {
 
             MqttMessage message = new MqttMessage(recordJson.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived("MyTestTopic", message))
                         .expectNextMatches(received -> received.aiidaRecordValues()
@@ -290,7 +291,7 @@ class OesterreichsEnergieAdapterTest {
         var invalidJson = "{\"foo\":\"bar\"}";
         var validJson = "{\"1-0:2.7.0\":{\"value\":0,\"time\":1697622950},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":2370.6}";
 
-        StepVerifier stepVerifier = StepVerifier.create(adapter.start())
+        StepVerifier stepVerifier = StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                                                 .expectNextMatches(received -> received.aiidaRecordValues()
                                                                                        .stream()
                                                                                        .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
@@ -304,8 +305,11 @@ class OesterreichsEnergieAdapterTest {
         adapter.messageArrived(DATA_SOURCE_TOPIC,
                                new MqttMessage(validJson.getBytes(StandardCharsets.UTF_8)));
 
-        TestUtils.verifyErrorLogStartsWith("Topic aiida/test: error while deserializing JSON received from adapter. JSON was %s".formatted(
-                invalidJson), LOG_CAPTOR, DatabindException.class);
+        TestUtils.verifyErrorLogStartsWith(
+                "Topic aiida/test: error while deserializing JSON received from adapter. JSON was %s".formatted(
+                        invalidJson),
+                LOG_CAPTOR,
+                DatabindException.class);
 
         stepVerifier.verify();
     }
@@ -319,7 +323,7 @@ class OesterreichsEnergieAdapterTest {
     void givenUnknownObisCode_otherValuesAreStillEmitted() {
         var json = "{\"1-0:1.8.0\":{\"value\":83622,\"time\":1698218800},\"UNKNOWN-OBIS-CODE\":{\"value\":0,\"time\":0},\"api_version\":\"v1\",\"name\":\"90296857\",\"sma_time\":83854.3}";
 
-        StepVerifier.create(adapter.start())
+        StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                     .then(() -> adapter.messageArrived(DATA_SOURCE_TOPIC,
                                                        new MqttMessage(json.getBytes(StandardCharsets.UTF_8))))
                     .expectNextMatches(received -> received.aiidaRecordValues()

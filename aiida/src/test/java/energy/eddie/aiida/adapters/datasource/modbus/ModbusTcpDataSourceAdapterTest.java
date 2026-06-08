@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.modbus;
@@ -77,7 +77,7 @@ class ModbusTcpDataSourceAdapterTest {
 
     @Test
     void testModbusAdapterEmitsValuesOnStart() {
-        Flux<AiidaRecord> flux = adapter.start();
+        Flux<AiidaRecord> flux = adapter.startFiltered(AiidaRecord.class);
 
         StepVerifier.create(flux)
                     .thenAwait(java.time.Duration.ofSeconds(2))

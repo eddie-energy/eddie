@@ -6,6 +6,7 @@ package energy.eddie.aiida.adapters.datasource.at;
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
 import eu.rekawek.toxiproxy.model.ToxicDirection;
@@ -144,7 +145,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         scheduler.schedule(() -> publishSampleMqttMessage(TOPIC, json), 4, TimeUnit.SECONDS);
 
 
-        StepVerifier.create(adapter.start())
+        StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                     .expectNextMatches(aiidaRecord -> aiidaRecord.aiidaRecordValues().stream()
                                                                  .anyMatch(aiidaRecordValue -> aiidaRecordValue.value()
                                                                                                                .equals(expectedValue)))

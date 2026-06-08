@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.streamers;
 
-import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -31,7 +31,7 @@ import java.util.*;
 @Component
 public class StreamerManager implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamerManager.class);
-    private final Aggregator aggregator;
+    private final OutboundAggregator aggregator;
     private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
     private final SchemaFormatterRegistry schemaFormatterRegistry;
@@ -45,7 +45,7 @@ public class StreamerManager implements AutoCloseable {
      */
     @Autowired
     public StreamerManager(
-            Aggregator aggregator,
+            OutboundAggregator aggregator,
             FailedToSendRepository failedToSendRepository,
             ObjectMapper mapper,
             SchemaFormatterRegistry schemaFormatterRegistry,

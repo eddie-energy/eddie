@@ -8,6 +8,7 @@ import energy.eddie.aiida.adapters.datasource.shelly.transformer.ShellyJsonTest;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -177,7 +178,7 @@ class ShellyAdapterTest {
 
             MqttMessage message = new MqttMessage(ShellyJsonTest.EM_PAYLOAD.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived(TOPIC, message))
                         .expectNextMatches(received -> received.aiidaRecordValues()

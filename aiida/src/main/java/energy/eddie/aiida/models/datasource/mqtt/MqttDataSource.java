@@ -5,7 +5,7 @@ package energy.eddie.aiida.models.datasource.mqtt;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -25,7 +25,7 @@ public abstract class MqttDataSource extends DataSource {
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "mqtt_connection_id", table = TABLE_NAME, referencedColumnName = "id")
-    @JsonProperty
+    @JsonUnwrapped
     protected MqttConnectionEntity mqttConnection;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

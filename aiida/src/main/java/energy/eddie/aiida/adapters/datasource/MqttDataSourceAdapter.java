@@ -5,7 +5,7 @@ package energy.eddie.aiida.adapters.datasource;
 
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
@@ -44,7 +44,7 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
      * interpreted as unix timestamp.
      */
     @Override
-    public Flux<AiidaRecord> start() {
+    public Flux<DataSourceRecord> start() {
         logger.info("Starting {}", dataSource().name());
 
         try {

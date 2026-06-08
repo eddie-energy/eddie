@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -161,9 +162,7 @@ class InboundAdapterTest {
 
             MqttMessage message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
 
-            adapter.start().subscribe();
-
-            StepVerifier.create(adapter.inboundRecordFlux())
+            StepVerifier.create(adapter.startFiltered(InboundRecord.class))
                         .then(() -> adapter.messageArrived(
                                 "aiida/v1/data/inbound/63176fd9-4e0c-46d2-969a-e9d55928904b/min-max-envelope-cim-v1-12",
                                 message))

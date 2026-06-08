@@ -4,9 +4,6 @@
 --  SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 --  SPDX-License-Identifier: Apache-2.0
 
---  SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
---  SPDX-License-Identifier: Apache-2.0
-
 CREATE TABLE mqtt_connection
 (
     id                    bigserial PRIMARY KEY,

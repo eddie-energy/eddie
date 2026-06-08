@@ -12,7 +12,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 @MappedSuperclass
-public abstract class AbstractDataRecord {
+public abstract class DataSourceRecord {
     @JsonIgnore
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,14 +34,14 @@ public abstract class AbstractDataRecord {
      * Constructor only for JPA.
      */
     @SuppressWarnings("NullAway.Init")
-    protected AbstractDataRecord() {}
+    protected DataSourceRecord() {}
 
-    protected AbstractDataRecord(Long id, Instant timestamp, DataSource dataSource) {
+    protected DataSourceRecord(Long id, Instant timestamp, DataSource dataSource) {
         this(timestamp, dataSource);
         this.id = id;
     }
 
-    protected AbstractDataRecord(Instant timestamp, DataSource dataSource) {
+    protected DataSourceRecord(Instant timestamp, DataSource dataSource) {
         this.timestamp = timestamp;
         this.dataSource = dataSource;
     }

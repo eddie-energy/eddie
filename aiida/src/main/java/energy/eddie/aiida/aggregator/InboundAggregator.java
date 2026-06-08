@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @Component
-public class InboundAggregator extends AbstractAggregator<InboundRecord> {
+public class InboundAggregator extends Aggregator<InboundRecord> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAggregator.class);
 
@@ -25,15 +25,13 @@ public class InboundAggregator extends AbstractAggregator<InboundRecord> {
             InboundRecordRepository inboundRecordRepository,
             HealthContributorRegistry healthContributorRegistry
     ) {
-        super(healthContributorRegistry);
+        super(InboundRecord.class, healthContributorRegistry);
         this.inboundRecordRepository = inboundRecordRepository;
     }
 
     @Override
     public void addNewDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        super.addNewDataSourceAdapter(dataSourceAdapter);
-
-        if (!(dataSourceAdapter instanceof InboundAdapter inboundAdapter)) {
+        if (!(dataSourceAdapter instanceof InboundAdapter)) {
             LOGGER.error("Data source adapter of data source {} is not of type {}",
                          dataSourceAdapter.dataSource().name(),
                          InboundAdapter.class.getName());
@@ -41,8 +39,7 @@ public class InboundAggregator extends AbstractAggregator<InboundRecord> {
             return;
         }
 
-        inboundAdapter.inboundRecordFlux()
-                      .subscribe(this::saveRecordToDatabase);
+        super.addNewDataSourceAdapter(dataSourceAdapter);
     }
 
     @Override
@@ -52,6 +49,7 @@ public class InboundAggregator extends AbstractAggregator<InboundRecord> {
     }
 
     public Flux<InboundRecord> getInboundRecordFlux() {
-        return combinedRecordSink.asFlux();
+        return combinedRecordSink.asFlux()
+                                 .ofType(InboundRecord.class);
     }
 }

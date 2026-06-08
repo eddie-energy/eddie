@@ -5,7 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
-import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
@@ -64,7 +64,7 @@ class DataSourceServiceTest {
     @Mock
     private DataSourceRepository repository;
     @Mock
-    private Aggregator aggregator;
+    private OutboundAggregator aggregator;
     @Mock
     private AuthService authService;
     @Mock

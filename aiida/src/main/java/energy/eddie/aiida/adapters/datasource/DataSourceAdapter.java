@@ -26,6 +26,7 @@ import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.health.contributor.Health;
@@ -45,7 +46,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
     private static final short MAX_HEALTH_VALIDATION_MESSAGES = 100;
     private static final short FIRST_HEALTH_THRESHOLD_SECONDS = 90;
     private static final short LAST_HEALTH_THRESHOLD_SECONDS = 180;
-    protected final Sinks.Many<AiidaRecord> recordSink;
+    protected final Sinks.Many<DataSourceRecord> recordSink;
     protected final Sinks.Many<Health> healthSink;
     protected final T dataSource;
     protected final Deque<AiidaRecord> healthValidationMessages;
@@ -97,7 +98,11 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      *
      * @return Flux on which all data from this datasource will be published.
      */
-    public abstract Flux<AiidaRecord> start();
+    public abstract Flux<DataSourceRecord> start();
+
+    public <R extends DataSourceRecord> Flux<R> startFiltered(Class<R> recordType) {
+        return start().ofType(recordType);
+    }
 
     /**
      * Emits a new {@code AiidaRecord} with specified aiida record values

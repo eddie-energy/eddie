@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.models.record.DataSourceRecord;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -81,7 +82,7 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
      * @return Flux of the generated records.
      */
     @Override
-    public Flux<AiidaRecord> start() {
+    public Flux<DataSourceRecord> start() {
         LOGGER.info("Starting {}", dataSource().name());
 
         var secondsSinceStart = ChronoUnit.SECONDS.between(SIMULATION_START, Instant.now());
