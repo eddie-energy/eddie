@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script setup lang="ts">
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
-import { computed, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 
 const { options, placeholder } = defineProps<{
   options: { label?: string; value: string }[] | string[]
@@ -14,14 +14,6 @@ const { options, placeholder } = defineProps<{
 const model = defineModel()
 const show = ref(false)
 const parentDiv = useTemplateRef('parent')
-
-const boundingRect = ref()
-
-watch([show], () => {
-  if (show.value) {
-    boundingRect.value = parentDiv.value?.getBoundingClientRect()
-  }
-})
 
 const labelValueOptions = computed(() => {
   if (typeof options[0] === 'string') {
@@ -47,15 +39,6 @@ const handleBlur = (e: FocusEvent) => {
     show.value = false
   }
 }
-
-onMounted(() => {
-  window.addEventListener('resize', () => {
-    boundingRect.value = parentDiv.value?.getBoundingClientRect()
-  })
-})
-
-const optionsLeft = computed(() => `${boundingRect.value?.left ?? 0}px`)
-const optionsWidth = computed(() => `${boundingRect.value?.width ?? 0}px`)
 </script>
 
 <template>
@@ -126,15 +109,18 @@ const optionsWidth = computed(() => `${boundingRect.value?.width ?? 0}px`)
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--spacing-sm);
   &.placeholder {
     color: var(--eddie-grey-medium);
   }
 }
 .options {
   position: absolute;
+  top: 100%;
   left: -1px;
-  width: v-bind('optionsWidth');
+  right: -1px;
   z-index: 100;
+  box-sizing: unset;
   background-color: var(--light);
   border: 1px solid var(--eddie-grey-medium);
   border-top: unset;
@@ -167,12 +153,5 @@ const optionsWidth = computed(() => `${boundingRect.value?.width ?? 0}px`)
 .v-enter-from,
 .v-leave-to {
   opacity: 0;
-}
-
-@media screen and (min-width: 1024px) {
-  .options {
-    position: fixed;
-    left: v-bind('optionsLeft');
-  }
 }
 </style>
