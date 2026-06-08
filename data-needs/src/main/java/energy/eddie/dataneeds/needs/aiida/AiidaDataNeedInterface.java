@@ -6,6 +6,7 @@ package energy.eddie.dataneeds.needs.aiida;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import org.springframework.scheduling.support.CronExpression;
 
 import java.util.Set;
@@ -42,11 +43,12 @@ public interface AiidaDataNeedInterface {
     CronExpression transmissionSchedule();
 
     /**
-     * Returns whether the eligible party may remotely control transmission for this data need.
-     * If true, the {@code SET_TRANSMISSION_ENABLED} and {@code UPDATE_SCHEDULE} permission commands are accepted.
-     * If false, those commands are rejected.
+     * Returns the permission commands the eligible party is explicitly granted to send for this data need.
+     * A command whose action {@link PermissionCommand.Action#requiresExplicitGrant() requires an explicit grant}
+     * (e.g. {@code SET_TRANSMISSION_ENABLED}, {@code UPDATE_TRANSMISSION_SCHEDULE}) is accepted only if its action is contained
+     * in this set; otherwise it is rejected. {@code TERMINATE} is always accepted, regardless of this set.
      */
-    boolean allowTransmissionControl();
+    Set<PermissionCommand.Action> allowedPermissionCommands();
 
     /**
      * Returns whether the receiving party should acknowledge the reception of the data.

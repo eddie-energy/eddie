@@ -8,6 +8,7 @@ import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
@@ -38,10 +39,15 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Schema(description = "Whether the receiving party should acknowledge the reception of the data.")
     private boolean acknowledgementRequired = false;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_data_need_permission_commands",
+            joinColumns = @JoinColumn(name = "data_need_id"),
+            schema = "data_needs")
+    @Column(name = "permission_command")
+    @Enumerated(EnumType.STRING)
     @JsonProperty
-    @Column(name = "allow_transmission_control", nullable = false)
-    @Schema(description = "Whether the eligible party may remotely control transmission (SET_TRANSMISSION_ENABLED, UPDATE_SCHEDULE).")
-    private boolean allowTransmissionControl = false;
+    @Schema(description = "Permission commands the eligible party is explicitly granted to send.")
+    private Set<PermissionCommand.Action> allowedPermissionCommands = Set.of();
 
     @Schema(description = "Define the schema for the outgoing data (Raw, CIM, Saref)")
     @ElementCollection(fetch = FetchType.EAGER)
@@ -100,8 +106,8 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     }
 
     @Override
-    public boolean allowTransmissionControl() {
-        return allowTransmissionControl;
+    public Set<PermissionCommand.Action> allowedPermissionCommands() {
+        return allowedPermissionCommands;
     }
 
     public abstract Set<AiidaSchema> supportedSchemas();

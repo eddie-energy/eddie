@@ -21,6 +21,7 @@ import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -47,6 +48,7 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.NEGATIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT_HOUR;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -312,13 +314,13 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenUpdateScheduleCommand_doesNotPublishOnMono() throws MqttException {
+    void givenUpdateTransmissionScheduleCommand_doesNotPublishOnMono() throws MqttException {
         // Given
         when(mockMessage.getPayload()).thenReturn(new byte[]{});
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.UpdateSchedule("aiida",
-                                                                 PERMISSION_ID,
-                                                                 "0 0 * * * *"));
+                .thenReturn(new PermissionCommand.UpdateTransmissionSchedule("aiida",
+                                                                             PERMISSION_ID,
+                                                                             "0 0 * * * *"));
         StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
                                                 .then(streamer::close)
                                                 .expectComplete()
@@ -410,6 +412,61 @@ class MqttStreamerTest {
         // Then
         verify(mockRepository).deleteAllById(any());
         verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    void givenPermissionCommand_whenActionGranted_reachesHandler() {
+        // Given
+        setUpDataNeedWithPermissionCommands(Set.of(PermissionCommand.Action.SET_TRANSMISSION_ENABLED));
+        when(mockMessage.getPayload()).thenReturn(new byte[]{});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.SetTransmissionEnabled("aiida", PERMISSION_ID, false));
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+
+        try (LogCaptor captor = LogCaptor.forClass(MqttStreamer.class)) {
+            // When
+            streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+
+            // Then
+            assertThat(captor.getWarnLogs())
+                    .anyMatch(log -> log.contains("received SET_TRANSMISSION_ENABLED"))
+                    .noneMatch(log -> log.contains("not in allowed permission commands"));
+        }
+    }
+
+    @Test
+    void givenPermissionCommand_whenActionNotGranted_isRejected() {
+        // Given
+        setUpDataNeedWithPermissionCommands(Set.of(PermissionCommand.Action.UPDATE_TRANSMISSION_SCHEDULE));
+        when(mockMessage.getPayload()).thenReturn(new byte[]{});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
+                .thenReturn(new PermissionCommand.SetTransmissionEnabled("aiida", PERMISSION_ID, false));
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+
+        try (LogCaptor captor = LogCaptor.forClass(MqttStreamer.class)) {
+            // When
+            streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+
+            // Then
+            assertThat(captor.getWarnLogs())
+                    .anyMatch(log -> log.contains("not in allowed permission commands"))
+                    .noneMatch(log -> log.contains("received SET_TRANSMISSION_ENABLED"));
+        }
+    }
+
+    private void setUpDataNeedWithPermissionCommands(Set<PermissionCommand.Action> allowedPermissionCommands) {
+        try {
+            var field = streamer.getClass().getDeclaredField("permission");
+            field.setAccessible(true);
+            var permissionReflection = (Permission) field.get(streamer);
+            var dataNeed = mock(AiidaLocalDataNeed.class);
+            when(dataNeed.allowedPermissionCommands()).thenReturn(allowedPermissionCommands);
+            when(permissionReflection.dataNeed()).thenReturn(dataNeed);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void useReflectionToSetPermissionMock() {

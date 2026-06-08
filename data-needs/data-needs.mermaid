@@ -28,7 +28,7 @@ classDiagram
 
     class AiidaDataNeed {
         +String~CronExpression~ transmissionSchedule
-        +boolean allowTransmissionControl
+        +Set~PermissionCommandAction~ allowedPermissionCommands
         +boolean acknowledgementRequired
         +Set~AiidaSchema~ schemas
         +AiidaAsset asset

@@ -45,7 +45,7 @@ class DataNeedSummary extends HTMLElement {
       maxGranularity,
       energyType,
       transmissionSchedule,
-      allowTransmissionControl,
+      allowedPermissionCommands,
       acknowledgementRequired,
       schemas,
       asset,
@@ -115,10 +115,10 @@ class DataNeedSummary extends HTMLElement {
             : ""}
 
           <!-- For AIIDA data needs -->
-          ${allowTransmissionControl !== undefined
+          ${allowedPermissionCommands?.length
             ? /* HTML */ `
-                <dt>Allow Transmission Control</dt>
-                <dd>${allowTransmissionControl}</dd>
+                <dt>Allowed Permission Commands</dt>
+                <dd>${allowedPermissionCommands.join(", ")}</dd>
               `
             : ""}
 

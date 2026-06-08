@@ -8,7 +8,7 @@ export type AiidaDataNeed = {
   policyLink: string
   transmissionSchedule: string
   schemas: string[]
-  allowTransmissionControl: boolean
+  allowedPermissionCommands: string[]
   acknowledgementRequired: boolean
   asset: string
   dataTags: string[]
