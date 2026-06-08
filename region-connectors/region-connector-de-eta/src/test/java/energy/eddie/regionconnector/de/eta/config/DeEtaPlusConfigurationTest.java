@@ -40,7 +40,6 @@ class DeEtaPlusConfigurationTest {
                     assertThat(config.apiBaseUrl()).isEqualTo("https://int.eta-plus.com/api");
                     assertThat(config.meteredDataEndpoint()).isEqualTo("/meters/historical");
                     assertThat(config.accountingPointEndpoint()).isEqualTo("/meters/accounting-point");
-                    assertThat(config.permissionCheckEndpoint()).isEqualTo("/v1/permissions/{id}");
                     assertThat(config.responseTimeoutSeconds()).isEqualTo(30);
                     assertThat(config.retryMaxAttempts()).isEqualTo(3);
                     assertThat(config.retryInitialBackoffSeconds()).isEqualTo(2);

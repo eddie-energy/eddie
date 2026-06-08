@@ -188,44 +188,6 @@ public class EtaPlusApiClient {
                                 ex));
     }
 
-    /**
-     * Check if permission is still valid at ETA Plus.
-     * Used to verify that the final customer hasn't revoked permission.
-     *
-     * @param permissionRequest the permission request to check
-     * @return a Mono emitting true if permission is valid, false otherwise
-     */
-    public Mono<Boolean> checkPermissionValidity(DePermissionRequest permissionRequest) {
-        LOGGER.atDebug()
-                .addArgument(permissionRequest::permissionId)
-                .log("Checking permission validity for permission request {}");
-
-        return webClient.head()
-                .uri(uriBuilder -> uriBuilder
-                        .path(configuration.permissionCheckEndpoint())
-                        .build(permissionRequest.permissionId()))
-                .retrieve()
-                .toBodilessEntity()
-                .map(response -> response.getStatusCode().is2xxSuccessful())
-                .retryWhen(retrySpec(permissionRequest.permissionId()))
-                .onErrorResume(ex -> {
-                    if (ex instanceof WebClientResponseException wce) {
-                        int status = wce.getStatusCode().value();
-                        if (status == 401) {
-                            return Mono.error(new AuthenticationException(
-                                    "Authentication failed during permission check for " + permissionRequest.permissionId(),
-                                    status, ex));
-                        }
-                        if (status == 429) {
-                            return Mono.error(new RateLimitException(
-                                    "Rate limit exceeded during permission check for " + permissionRequest.permissionId()));
-                        }
-                    }
-                    LOGGER.warn("Permission check failed for {}: {}", permissionRequest.permissionId(), ex.getMessage());
-                    return Mono.just(false);
-                });
-    }
-
     private Retry retrySpec(String permissionId) {
         return Retry.backoff(configuration.retryMaxAttempts(),
                         Duration.ofSeconds(configuration.retryInitialBackoffSeconds()))
