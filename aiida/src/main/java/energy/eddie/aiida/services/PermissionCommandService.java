@@ -59,7 +59,7 @@ public class PermissionCommandService {
         this.clock = clock;
         this.permissionScheduler = permissionScheduler;
         this.aiidaEventPublisher = aiidaEventPublisher;
-        this.self = self;
+        this.self = self; // proxy ref so @Transactional applies on internal call
     }
 
     /**
@@ -139,7 +139,7 @@ public class PermissionCommandService {
 
         permission.setTransmissionSchedule(cron);
         permissionRepository.save(permission);
-        streamerManager.updateSchedule(permission, cron);
+        streamerManager.updateSchedule(permission);
         LOGGER.info("Updated transmission schedule to {} for permission {}", cron, permission.id());
     }
 

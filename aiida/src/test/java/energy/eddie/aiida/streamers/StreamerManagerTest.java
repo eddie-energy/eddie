@@ -110,6 +110,27 @@ class StreamerManagerTest {
     void givenPermissionWithoutDataSource_createNoStreamer() throws MqttException {
         // Given
         when(mockPermission.id()).thenReturn(permissionId);
+        when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
+        when(mockPermission.expirationTime()).thenReturn(expirationTime);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.dataSource()).thenReturn(null);
+
+        // When
+        manager.createNewStreamer(mockPermission);
+
+        // Then
+        verify(aggregatorMock, never()).getFilteredFlux(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void givenPermissionWithoutTransmissionSchedule_createNoStreamer() throws MqttException {
+        // Given
+        when(mockPermission.id()).thenReturn(permissionId);
+        when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
+        when(mockPermission.expirationTime()).thenReturn(expirationTime);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockPermission.dataSource()).thenReturn(mockDataSource);
+        when(mockPermission.effectiveTransmissionSchedule()).thenReturn(null);
 
         // When
         manager.createNewStreamer(mockPermission);
