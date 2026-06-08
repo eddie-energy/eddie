@@ -308,7 +308,6 @@ public class Permission {
     public void setDataNeed(AiidaLocalDataNeed dataNeed) {
         this.dataNeed = requireNonNull(dataNeed);
         this.serviceName = dataNeed.name();
-        this.transmissionSchedule = dataNeed.transmissionSchedule();
 
         if (dataNeed instanceof InboundAiidaLocalDataNeed && this.inboundMessageFormat == null) {
             this.inboundMessageFormat = InboundMessageFormat.CIM_1_12;
@@ -342,9 +341,13 @@ public class Permission {
      * Returns the schedule that should be used to stream data for this permission: the permission's own
      * transmission schedule if set, otherwise the data need's schedule as a fallback
      */
+    @Nullable
+    @JsonProperty
+    @JsonSerialize(using = CronExpressionSerializer.class)
     public CronExpression effectiveTransmissionSchedule() {
-        return transmissionSchedule != null
-                ? transmissionSchedule
-                : requireNonNull(dataNeed).transmissionSchedule();
+        if (transmissionSchedule != null) {
+            return transmissionSchedule;
+        }
+        return dataNeed != null ? dataNeed.transmissionSchedule() : null;
     }
 }

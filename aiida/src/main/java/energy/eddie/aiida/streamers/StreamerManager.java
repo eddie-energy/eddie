@@ -17,7 +17,6 @@ import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
@@ -81,18 +80,16 @@ public class StreamerManager implements AutoCloseable {
                             permission.id()));
         }
 
-        if (permission.dataSource() == null) {
-            LOGGER.error("No data source found for permission {}", permission.id());
+        var recordFlux = buildFilteredFlux(permission);
+        if (recordFlux.isEmpty()) {
             return;
         }
-
-        var recordFlux = buildFilteredFlux(permission, permission.effectiveTransmissionSchedule());
 
         var streamer = StreamerFactory.getAiidaStreamer(
                 failedToSendRepository,
                 mapper,
                 permission,
-                recordFlux,
+                recordFlux.get(),
                 schemaFormatterRegistry,
                 commands,
                 permissionLatestRecordMap
@@ -114,9 +111,9 @@ public class StreamerManager implements AutoCloseable {
      * Applies a new transmission schedule to the streamer of the passed permission by rebuilding its record flux with
      * the new aggregation cadence.
      */
-    public void updateSchedule(Permission permission, CronExpression transmissionSchedule) {
+    public void updateSchedule(Permission permission) {
         requireStreamer(permission.id())
-                .ifPresent(streamer -> streamer.updateRecordFlux(buildFilteredFlux(permission, transmissionSchedule)));
+                .ifPresent(streamer -> buildFilteredFlux(permission).ifPresent(streamer::updateRecordFlux));
     }
 
     /**
@@ -156,22 +153,28 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Builds the filtered and aggregated record flux for the passed permission using the given transmission schedule.
+     * Builds the filtered and aggregated record flux for the passed permission. Returns an empty {@link Optional} if a
+     * required field is missing, after logging which one; the caller is responsible for not creating or for closing the
+     * corresponding streamer.
      */
-    private Flux<AiidaRecord> buildFilteredFlux(Permission permission, CronExpression transmissionSchedule) {
-        var dataNeed = Objects.requireNonNull(permission.dataNeed());
-        var allowedDataTags = Objects.requireNonNull(dataNeed.dataTags());
-        var allowedAsset = Objects.requireNonNull(dataNeed.asset());
-        var permissionExpirationTime = Objects.requireNonNull(permission.expirationTime());
-        var userId = Objects.requireNonNull(permission.userId());
-        var dataSource = Objects.requireNonNull(permission.dataSource());
+    private Optional<Flux<AiidaRecord>> buildFilteredFlux(Permission permission) {
+        try {
+            var dataNeed = Objects.requireNonNull(permission.dataNeed(), "data need");
+            var expirationTime = Objects.requireNonNull(permission.expirationTime(), "expiration time");
+            var userId = Objects.requireNonNull(permission.userId(), "user id");
+            var dataSource = Objects.requireNonNull(permission.dataSource(), "data source");
+            var schedule = Objects.requireNonNull(permission.effectiveTransmissionSchedule(), "transmission schedule");
 
-        return aggregator.getFilteredFlux(allowedDataTags,
-                                          allowedAsset,
-                                          permissionExpirationTime,
-                                          transmissionSchedule,
-                                          userId,
-                                          dataSource.id());
+            return Optional.of(aggregator.getFilteredFlux(dataNeed.dataTags(),
+                                                          dataNeed.asset(),
+                                                          expirationTime,
+                                                          schedule,
+                                                          userId,
+                                                          dataSource.id()));
+        } catch (NullPointerException e) {
+            LOGGER.error("Cannot build record flux for permission {}: missing {}", permission.id(), e.getMessage());
+            return Optional.empty();
+        }
     }
 
     private Optional<AiidaStreamer> requireStreamer(UUID permissionId) {

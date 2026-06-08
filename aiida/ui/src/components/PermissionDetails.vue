@@ -11,7 +11,7 @@ import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { ref, useTemplateRef, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
@@ -30,10 +30,6 @@ const { permission, status } = defineProps<{
 }>()
 
 const { updatePermission } = usePermissionDialog()
-
-const effectiveTransmissionSchedule = computed(
-  () => permission.transmissionSchedule ?? permission.dataNeed.transmissionSchedule,
-)
 
 const show = ref(false)
 const showToolTip = ref(false)
@@ -164,7 +160,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
         <dd>
           {{
-            cronstrue.toString(effectiveTransmissionSchedule, {
+            cronstrue.toString(permission.effectiveTransmissionSchedule, {
               locale: locale,
             })
           }}

@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.scheduling.support.CronExpression;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -28,9 +27,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.anyBoolean;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionCommandServiceTest {
@@ -118,7 +117,7 @@ class PermissionCommandServiceTest {
 
         verify(permission).setTransmissionSchedule(argThat(cron -> cron.toString().equals("*/30 * * * * *")));
         verify(permissionRepository).save(permission);
-        verify(streamerManager).updateSchedule(eq(permission), any(CronExpression.class));
+        verify(streamerManager).updateSchedule(permission);
     }
 
     @Test
@@ -131,7 +130,7 @@ class PermissionCommandServiceTest {
 
         verify(permission, never()).setTransmissionSchedule(any());
         verify(permissionRepository, never()).save(any());
-        verify(streamerManager, never()).updateSchedule(any(), any());
+        verify(streamerManager, never()).updateSchedule(any());
     }
 
     @Test
