@@ -59,8 +59,14 @@ public class AdminConsoleSecurityConfig {
                             .loginPage(ADMIN_CONSOLE_BASE_URL + "/login").defaultSuccessUrl(ADMIN_CONSOLE_BASE_URL)
                             .failureUrl(ADMIN_CONSOLE_BASE_URL + "/login?error").permitAll()
                     );
-            case "keycloak" -> http
-                    .oauth2Login(Customizer.withDefaults());
+            case "keycloak" -> http.oauth2Login(oauth -> oauth
+                    .authorizationEndpoint(authorization -> authorization
+                            .baseUri(ADMIN_CONSOLE_BASE_URL + "/oauth2/authorization")
+                    )
+                    .redirectionEndpoint(redirection -> redirection
+                            .baseUri(ADMIN_CONSOLE_BASE_URL + "/login/oauth2/code/keycloak")
+                    )
+            );
             default -> throw new IllegalStateException(
                     "Unsupported value for outbound-connector.admin.console.login.mode: " + authMode);
         }
