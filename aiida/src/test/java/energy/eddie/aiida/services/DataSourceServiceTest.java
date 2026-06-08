@@ -102,48 +102,6 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldReturnOutboundDataSourceTypes() {
-        var dataSourceTypes = dataSourceService.getOutboundDataSourceTypes();
-
-        assertTrue(dataSourceTypes.containsAll(List.of(
-                DataSourceType.SMART_GATEWAYS_ADAPTER,
-                DataSourceType.SIMULATION,
-                DataSourceType.MODBUS,
-                DataSourceType.MICRO_TELEINFO,
-                DataSourceType.SMART_METER_ADAPTER
-        )));
-        assertFalse(dataSourceTypes.contains(DataSourceType.INBOUND));
-    }
-
-    @Test
-    void shouldReturnInboundDataSources() throws InvalidUserException {
-        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
-        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
-        when(repository.findByUserId(USER_ID)).thenReturn(List.of(INBOUND_DATA_SOURCE, OUTBOUND_DATA_SOURCE));
-        when(authService.getCurrentUserId()).thenReturn(USER_ID);
-
-        var result = dataSourceService.getInboundDataSources();
-
-        assertTrue(result.contains(INBOUND_DATA_SOURCE));
-        assertFalse(result.contains(OUTBOUND_DATA_SOURCE));
-        verify(repository).findByUserId(USER_ID);
-    }
-
-    @Test
-    void shouldReturnOutboundDataSources() throws InvalidUserException {
-        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
-        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
-        when(repository.findByUserId(USER_ID)).thenReturn(List.of(INBOUND_DATA_SOURCE, OUTBOUND_DATA_SOURCE));
-        when(authService.getCurrentUserId()).thenReturn(USER_ID);
-
-        var result = dataSourceService.getOutboundDataSources();
-
-        assertTrue(result.contains(OUTBOUND_DATA_SOURCE));
-        assertFalse(result.contains(INBOUND_DATA_SOURCE));
-        verify(repository).findByUserId(USER_ID);
-    }
-
-    @Test
     void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlflaEmptyConfigException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");

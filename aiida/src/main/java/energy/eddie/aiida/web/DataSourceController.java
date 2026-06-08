@@ -13,6 +13,7 @@ import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.services.DataSourceService;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -56,12 +57,10 @@ public class DataSourceController {
     })
     @GetMapping("/outbound/types")
     public List<DataSourceTypeDto> getOutboundDataSourceTypes() {
-        return service.getOutboundDataSourceTypes().stream()
-                      .map(dataSourceType -> new DataSourceTypeDto(
-                              dataSourceType.identifier(),
-                              dataSourceType.dataSourceName()
-                      ))
-                      .toList();
+        return DataSourceType.outboundTypes().stream().map(dataSourceType -> new DataSourceTypeDto(
+                dataSourceType.identifier(),
+                dataSourceType.dataSourceName()
+        )).toList();
     }
 
     @Operation(summary = "Get all assets", description = "Retrieve all assets.",

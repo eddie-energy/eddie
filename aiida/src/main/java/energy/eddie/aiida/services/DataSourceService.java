@@ -102,28 +102,14 @@ public class DataSourceService {
                          .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
     }
 
-    public List<DataSourceType> getOutboundDataSourceTypes() {
-        return Arrays.stream(DataSourceType.values())
-                     .filter(this::isOutboundDataSourceType)
-                     .toList();
-    }
-
     public List<DataSource> getInboundDataSources() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-
-        return repository.findByUserId(currentUserId)
-                         .stream()
-                         .filter(dataSource -> isInboundDataSourceType(dataSource.type()))
-                         .toList();
+        return repository.findInboundByUserId(currentUserId);
     }
 
     public List<DataSource> getOutboundDataSources() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-
-        return repository.findByUserId(currentUserId)
-                         .stream()
-                         .filter(dataSource -> isOutboundDataSourceType(dataSource.type()))
-                         .toList();
+        return repository.findOutboundByUserId(currentUserId);
     }
 
     @Transactional
@@ -259,14 +245,6 @@ public class DataSourceService {
 
             aiidaEventPublisher.publishEvent(new DataSourceDeletionEvent(permissionIds));
         }
-    }
-
-    private boolean isOutboundDataSourceType(DataSourceType dataSourceType) {
-        return !isInboundDataSourceType(dataSourceType);
-    }
-
-    private boolean isInboundDataSourceType(DataSourceType dataSourceType) {
-        return dataSourceType == DataSourceType.INBOUND;
     }
 
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {

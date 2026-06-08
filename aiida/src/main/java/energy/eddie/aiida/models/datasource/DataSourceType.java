@@ -3,6 +3,10 @@
 
 package energy.eddie.aiida.models.datasource;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 public enum DataSourceType {
     SMART_METER_ADAPTER(Identifiers.SMART_METER_ADAPTER, "Österreichs Energie Adapter"),
     MICRO_TELEINFO(Identifiers.MICRO_TELEINFO, "Micro Teleinfo v3"),
@@ -20,6 +24,12 @@ public enum DataSourceType {
     DataSourceType(String identifier, String name) {
         this.identifier = identifier;
         this.name = name;
+    }
+
+    public static Set<DataSourceType> outboundTypes() {
+        var types = new HashSet<>(List.of(values()));
+        types.remove(DataSourceType.INBOUND);
+        return types;
     }
 
     public String identifier() {
