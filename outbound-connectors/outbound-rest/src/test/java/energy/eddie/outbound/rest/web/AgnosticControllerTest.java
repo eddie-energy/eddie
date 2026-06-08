@@ -3,10 +3,7 @@
 
 package energy.eddie.outbound.rest.web;
 
-import energy.eddie.cim.agnostic.ConnectionStatusMessage;
-import energy.eddie.cim.agnostic.OpaqueEnvelope;
-import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.cim.agnostic.RawDataMessage;
+import energy.eddie.cim.agnostic.*;
 import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
@@ -31,6 +28,7 @@ import reactor.test.StepVerifier;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -145,6 +143,20 @@ class AgnosticControllerTest {
                         assertEquals(msg.payload().permissionId(), next.getFirst().permissionId());
                     })
                     .verifyComplete();
+    }
+
+    @Test
+    void permissionCommand_returnsAccepted() {
+        var id = UUID.randomUUID();
+        var command = new PermissionCommand.Terminate("test-permission-id", id);
+
+        webTestClient.post()
+                     .uri("/agnostic/permission-command")
+                     .contentType(MediaType.APPLICATION_JSON)
+                     .bodyValue(command)
+                     .exchange()
+                     .expectStatus()
+                     .isAccepted();
     }
 
     @Test

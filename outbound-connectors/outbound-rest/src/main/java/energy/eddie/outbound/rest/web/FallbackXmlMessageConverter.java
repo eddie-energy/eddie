@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.web;
@@ -59,8 +59,7 @@ public class FallbackXmlMessageConverter implements HttpMessageConverter<Object>
         if (isJaxbAnnotated(clazz)) {
             return jaxbConverter.read(clazz, inputMessage);
         } else {
-            throw new HttpMessageNotReadableException(clazz + " cannot be read, as it is not required as input",
-                                                      inputMessage);
+            return jacksonConverter.read(clazz, inputMessage);
         }
     }
 

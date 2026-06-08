@@ -5,6 +5,7 @@ package energy.eddie.outbound.rest.web;
 
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
@@ -385,6 +386,55 @@ public class AgnosticController {
         var messages = ModelWithJsonPayload.payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new RawDataMessages(messages));
+    }
+
+    @Operation(
+            operationId = "POST permission command",
+            summary = "POST permission command",
+            description = "POST a permission command, that will be forwarded to the region connectors",
+            method = "POST",
+            responses = @ApiResponse(responseCode = "202"),
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    description = "The permission command, which contains control commands for permissions, that will be forwarded to the region connectors",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = PermissionCommand.class),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    {
+                                                      "regionConnectorId": "aiida",
+                                                      "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                      "action": "UPDATE_TRANSMISSION_SCHEDULE",
+                                                      "transmissionSchedule": "0 */1 * * * *"
+                                                    }
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = PermissionCommand.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <PermissionCommand>
+                                                      <regionConnectorId>aiida</regionConnectorId>
+                                                      <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                      <action>UPDATE_TRANSMISSION_SCHEDULE</action>
+                                                      <transmissionSchedule>0 */1 * * * *</transmissionSchedule>
+                                                    </PermissionCommand>
+                                                    """
+                                    )
+                            )
+                    }
+            )
+    )
+    @PostMapping(value = "permission-command", consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    public ResponseEntity<Void> permissionCommand(@RequestBody PermissionCommand permissionCommand) {
+        agnosticConnector.publish(permissionCommand);
+        return ResponseEntity.accepted()
+                             .build();
     }
 
     @Operation(
