@@ -97,13 +97,14 @@ class MqttStreamerTest {
     private PermissionLatestRecordMap mockLatestRecordMap;
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
+    @Mock
+    private Permission permissionMock;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
     @BeforeEach()
     void setUp() {
         // Permission
-        var permissionMock = mock(Permission.class);
         when(permissionMock.transmissionEnabled()).thenReturn(true);
 
         // Mqtt Streaming Config
@@ -187,7 +188,7 @@ class MqttStreamerTest {
     @Test
     void givenAiidaRecord_sendsViaMqtt() throws MqttException {
         // Given
-        useReflectionToSetPermissionMock();
+        mockDataNeedWithSchemas();
 
 
         streamer.connect();
@@ -304,7 +305,7 @@ class MqttStreamerTest {
     @SuppressWarnings("java:S2925")
     void givenTransmissionDisabled_doesNotSendViaMqtt() throws MqttException, InterruptedException {
         // Given
-        useReflectionToSetPermissionMock();
+        mockDataNeedWithSchemas();
         streamer.connect();
         streamer.connectComplete(false, "fooTest");
 
@@ -320,7 +321,7 @@ class MqttStreamerTest {
     @Test
     void givenUpdatedRecordFlux_resubscribesAndSendsViaMqtt() throws MqttException {
         // Given
-        useReflectionToSetPermissionMock();
+        mockDataNeedWithSchemas();
         streamer.connect();
         streamer.connectComplete(false, "fooTest");
         TestPublisher<AiidaRecord> newPublisher = TestPublisher.create();
@@ -337,7 +338,7 @@ class MqttStreamerTest {
     @Test
     void givenExceptionWhileSending_savesToRepository() throws Exception {
         // Given
-        useReflectionToSetPermissionMock();
+        mockDataNeedWithSchemas();
 
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
         streamer.connect();
@@ -389,16 +390,9 @@ class MqttStreamerTest {
         verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
     }
 
-    private void useReflectionToSetPermissionMock() {
-        try {
-            var field = streamer.getClass().getDeclaredField("permission");
-            field.setAccessible(true);
-            var permissionReflection = (Permission) field.get(streamer);
-            var dataNeed = mock(AiidaLocalDataNeed.class);
-            when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
-            when(permissionReflection.dataNeed()).thenReturn(dataNeed);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    private void mockDataNeedWithSchemas() {
+        var dataNeed = mock(AiidaLocalDataNeed.class);
+        when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+        when(permissionMock.dataNeed()).thenReturn(dataNeed);
     }
 }

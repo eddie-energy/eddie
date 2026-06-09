@@ -82,7 +82,7 @@ public class PermissionCommandService {
         }
 
         var action = command.action();
-        if (action.requiresExplicitGrant() && !isPermissionCommandAllowed(permission, action)) {
+        if (!isPermissionCommandAllowed(permission, action)) {
             LOGGER.warn("Rejected command {} for permission {}: command not in allowed permission commands for this data need",
                         action,
                         permissionId);
@@ -112,6 +112,10 @@ public class PermissionCommandService {
     }
 
     private boolean isPermissionCommandAllowed(Permission permission, PermissionCommand.Action action) {
+        if (!action.requiresExplicitGrant()) {
+            return true;
+        }
+
         var dataNeed = permission.dataNeed();
         return dataNeed != null
                 && dataNeed.allowedPermissionCommands() != null
