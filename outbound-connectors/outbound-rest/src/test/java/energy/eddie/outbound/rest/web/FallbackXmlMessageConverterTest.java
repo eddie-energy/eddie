@@ -4,6 +4,7 @@
 package energy.eddie.outbound.rest.web;
 
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
@@ -18,7 +19,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
@@ -27,6 +27,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -90,32 +91,28 @@ class FallbackXmlMessageConverterTest {
     }
 
     @Test
-    void read_connectionStatusMessage_throws() {
+    void read_permissionCommand_returnsTypedCommand() throws IOException {
         // Given
         // language=XML
         var xml = """
-                <ConnectionStatusMessages>
-                    <ConnectionStatusMessage>
-                        <connectionId>1</connectionId>
-                        <permissionId>11162130-a49f-4705-aa1a-3165c725f69f</permissionId>
-                        <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
-                        <dataSourceInformation>
-                            <countryCode>DE</countryCode>
-                            <meteredDataAdministratorId>sim</meteredDataAdministratorId>
-                            <permissionAdministratorId>sim</permissionAdministratorId>
-                            <regionConnectorId>sim</regionConnectorId>
-                        </dataSourceInformation>
-                        <timestamp>2025-07-23T06:09:19.066591086Z</timestamp>
-                        <status>CREATED</status>
-                        <message></message>
-                        <additionalInformation/>
-                    </ConnectionStatusMessage>
-                </ConnectionStatusMessages>
+                <PermissionCommand>
+                    <action>TERMINATE</action>
+                    <regionConnectorId>aiida</regionConnectorId>
+                    <permissionId>11162130-a49f-4705-aa1a-3165c725f69f</permissionId>
+                </PermissionCommand>
                 """;
         var msg = new MockHttpInputMessage(xml.getBytes(StandardCharsets.UTF_8));
 
-        // When & Then
-        assertThrows(HttpMessageNotReadableException.class, () -> converter.read(ConnectionStatusMessages.class, msg));
+        // When
+        var res = converter.read(PermissionCommand.class, msg);
+
+        // Then
+        assertThat(res)
+                .asInstanceOf(InstanceOfAssertFactories.type(PermissionCommand.Terminate.class))
+                .satisfies(terminate -> {
+                    assertEquals("aiida", terminate.regionConnectorId());
+                    assertEquals(UUID.fromString("11162130-a49f-4705-aa1a-3165c725f69f"), terminate.permissionId());
+                });
     }
 
     @SuppressWarnings("DataFlowIssue")

@@ -218,6 +218,56 @@ Authorization: Bearer {{$auth.token("keycloak")}}
     </ns4:marketDocument.period.timeInterval>
 </ns4:RTR_Envelope>
 
+### POST permission command as json
+POST http://localhost:9090/outbound-connectors/rest/agnostic/permission-command
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+{
+  "regionConnectorId": "aiida",
+  "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+  "action": "SET_TRANSMISSION_ENABLED",
+  "enabled": "false"
+}
+
+### POST permission command as xml
+POST http://localhost:9090/outbound-connectors/rest/agnostic/permission-command
+Content-Type: application/xml
+#Authorization: Bearer {{$auth.token("keycloak")}}
+
+<PermissionCommand>
+    <regionConnectorId>aiida</regionConnectorId>
+    <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+    <action>SET_TRANSMISSION_ENABLED</action>
+    <enabled>false</enabled>
+</PermissionCommand>
+
+### POST  opaque envelope as json
+POST http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
+Content-Type: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+{
+  "connectionId": "1",
+  "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+  "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+  "regionConnectorId": "aiida",
+  "payload": "{}"
+}
+
+### POST opaque envelope as xml
+POST http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
+Content-Type: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+<OpaqueEnvelope>
+    <connectionId>1</connectionId>
+    <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+    <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+    <regionConnectorId>aiida</regionConnectorId>
+    <payload>{}</payload>
+</OpaqueEnvelope>
+
 ### POST min-max envelope as json
 POST http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
 Content-Type: application/json

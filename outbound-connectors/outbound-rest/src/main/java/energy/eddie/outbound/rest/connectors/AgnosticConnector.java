@@ -5,8 +5,10 @@ package energy.eddie.outbound.rest.connectors;
 
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.agnostic.outbound.OpaqueEnvelopeOutboundConnector;
+import energy.eddie.api.agnostic.outbound.PermissionCommandOutboundConnector;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import java.time.Duration;
 
 @Component
 public class AgnosticConnector implements
+        PermissionCommandOutboundConnector,
         OpaqueEnvelopeOutboundConnector,
         AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(AgnosticConnector.class);
@@ -30,6 +33,9 @@ public class AgnosticConnector implements
     private final Sinks.Many<OpaqueEnvelope> opaqueEnvelopeSink = Sinks.many()
                                                                        .multicast()
                                                                        .onBackpressureBuffer();
+    private final Sinks.Many<PermissionCommand> permissionCommandSink = Sinks.many()
+                                                                             .multicast()
+                                                                             .onBackpressureBuffer();
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return csmSink.asFlux();
@@ -52,6 +58,15 @@ public class AgnosticConnector implements
         rawDataStream
                 .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing raw data", err))
                 .subscribe(rdSink::tryEmitNext);
+    }
+
+    @Override
+    public Flux<PermissionCommand> getPermissionCommands() {
+        return permissionCommandSink.asFlux();
+    }
+
+    public void publish(PermissionCommand permissionCommand) {
+        permissionCommandSink.tryEmitNext(permissionCommand);
     }
 
     @Override
