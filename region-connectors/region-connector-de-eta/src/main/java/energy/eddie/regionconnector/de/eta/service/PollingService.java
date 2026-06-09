@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.services.CommonPollingService;
@@ -32,21 +33,25 @@ public class PollingService implements CommonPollingService<DePermissionRequest>
     private final EtaPlusApiClient apiClient;
     private final ValidatedHistoricalDataStream stream;
     private final Outbox outbox;
+    private final DePermissionCredentialsRepository credentialsRepository;
 
-    public PollingService(EtaPlusApiClient apiClient, ValidatedHistoricalDataStream stream, Outbox outbox) {
+    public PollingService(EtaPlusApiClient apiClient, ValidatedHistoricalDataStream stream, Outbox outbox,
+                          DePermissionCredentialsRepository credentialsRepository) {
         this.apiClient = apiClient;
         this.stream = stream;
         this.outbox = outbox;
+        this.credentialsRepository = credentialsRepository;
     }
 
     @Override
     public void pollTimeSeriesData(DePermissionRequest permissionRequest) {
-        permissionRequest.accessToken().ifPresentOrElse(
-                token -> fetchAndPublish(permissionRequest, token),
-                () -> LOGGER.atWarn()
-                            .addArgument(permissionRequest::permissionId)
-                            .log("Skipping poll for permission {}: no access token on permission request")
-        );
+        credentialsRepository.findByPermissionId(permissionRequest.permissionId())
+                .ifPresentOrElse(
+                        creds -> fetchAndPublish(permissionRequest, creds.accessToken()),
+                        () -> LOGGER.atWarn()
+                                    .addArgument(permissionRequest::permissionId)
+                                    .log("Skipping poll for permission {}: no credentials")
+                );
     }
 
     @Override

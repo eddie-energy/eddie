@@ -10,9 +10,11 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
+import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -31,8 +33,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -43,10 +47,11 @@ class PollingServiceTest {
     @Mock private EtaPlusApiClient apiClient;
     @Mock private ValidatedHistoricalDataStream stream;
     @Mock private Outbox outbox;
+    @Mock private DePermissionCredentialsRepository credentialsRepository;
 
     @InjectMocks private PollingService pollingService;
 
-    private static DePermissionRequest request(LocalDate start, LocalDate end, String accessToken, LocalDate watermark) {
+    private DePermissionRequest request(LocalDate start, LocalDate end, String accessToken, LocalDate watermark) {
         DePermissionRequestBuilder builder = new DePermissionRequestBuilder()
                 .permissionId("pid")
                 .connectionId("cid")
@@ -58,11 +63,14 @@ class PollingServiceTest {
                 .end(end)
                 .granularity(Granularity.PT15M)
                 .energyType(EnergyType.ELECTRICITY);
-        if (accessToken != null) {
-            builder.accessToken(accessToken);
-        }
         if (watermark != null) {
             builder.latestMeterReadingEndDate(watermark);
+        }
+        if (accessToken != null) {
+            lenient().when(credentialsRepository.findByPermissionId("pid"))
+                    .thenReturn(Optional.of(new DePermissionCredentials("pid", accessToken, null)));
+        } else {
+            lenient().when(credentialsRepository.findByPermissionId("pid")).thenReturn(Optional.empty());
         }
         return builder.build();
     }
