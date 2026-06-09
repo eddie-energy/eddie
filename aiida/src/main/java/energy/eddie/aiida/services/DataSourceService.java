@@ -47,7 +47,7 @@ public class DataSourceService {
     private final ApplicationInformationService applicationInformationService;
     private final DataSourceRepository repository;
     private final AiidaEventPublisher aiidaEventPublisher;
-    private final OutboundAggregator aggregator;
+    private final OutboundAggregator outboundAggregator;
     private final InboundAggregator inboundAggregator;
     private final AuthService authService;
     private final Set<DataSourceAdapter<? extends DataSource>> dataSourceAdapters = new HashSet<>();
@@ -60,7 +60,7 @@ public class DataSourceService {
     public DataSourceService(
             ApplicationInformationService applicationInformationService,
             DataSourceRepository repository,
-            OutboundAggregator aggregator,
+            OutboundAggregator outboundAggregator,
             InboundAggregator inboundAggregator,
             AuthService authService,
             MqttConfiguration mqttConfiguration,
@@ -71,7 +71,7 @@ public class DataSourceService {
     ) {
         this.applicationInformationService = applicationInformationService;
         this.repository = repository;
-        this.aggregator = aggregator;
+        this.outboundAggregator = outboundAggregator;
         this.inboundAggregator = inboundAggregator;
         this.authService = authService;
         this.mqttConfiguration = mqttConfiguration;
@@ -290,20 +290,20 @@ public class DataSourceService {
     private void addAdapterToAggregator(
             DataSourceAdapter<? extends DataSource> adapter
     ) {
-        if (isInboundDataSourceType(adapter.dataSource().type())) {
+        if (adapter.dataSource().type().equals(DataSourceType.INBOUND)) {
             inboundAggregator.addNewDataSourceAdapter(adapter);
         } else {
-            aggregator.addNewDataSourceAdapter(adapter);
+            outboundAggregator.addNewDataSourceAdapter(adapter);
         }
     }
 
     private void removeAdapterFromAggregator(
             DataSourceAdapter<? extends DataSource> adapter
     ) {
-        if (isInboundDataSourceType(adapter.dataSource().type())) {
+        if (adapter.dataSource().type().equals(DataSourceType.INBOUND)) {
             inboundAggregator.removeDataSourceAdapter(adapter);
         } else {
-            aggregator.removeDataSourceAdapter(adapter);
+            outboundAggregator.removeDataSourceAdapter(adapter);
         }
     }
 }

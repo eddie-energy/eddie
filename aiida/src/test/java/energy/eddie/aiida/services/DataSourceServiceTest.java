@@ -5,6 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
+import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.MqttConfiguration;
@@ -64,7 +65,9 @@ class DataSourceServiceTest {
     @Mock
     private DataSourceRepository repository;
     @Mock
-    private OutboundAggregator aggregator;
+    private OutboundAggregator outboundAggregator;
+    @Mock
+    private InboundAggregator inboundAggregator;
     @Mock
     private AuthService authService;
     @Mock
@@ -107,13 +110,14 @@ class DataSourceServiceTest {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
         when(DATA_SOURCE_DTO.enabled()).thenReturn(true);
+        when(DATA_SOURCE_DTO.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
 
         var result = dataSourceService.addDataSource(DATA_SOURCE_DTO);
 
         assertNotNull(result.plaintextPassword());
         verify(bCryptPasswordEncoder).encode(anyString());
         verify(repository).save(any());
-        verify(aggregator).addNewDataSourceAdapter(any());
+        verify(outboundAggregator).addNewDataSourceAdapter(any());
     }
 
     @Test
@@ -147,7 +151,7 @@ class DataSourceServiceTest {
 
             assertEquals("", result.plaintextPassword());
             verify(repository).save(any());
-            verify(aggregator).addNewDataSourceAdapter(any());
+            verify(outboundAggregator).addNewDataSourceAdapter(any());
         }
     }
 
@@ -160,7 +164,7 @@ class DataSourceServiceTest {
         dataSourceService.addDataSource(DATA_SOURCE_DTO);
 
         verify(repository).save(any());
-        verify(aggregator, never()).addNewDataSourceAdapter(any());
+        verify(outboundAggregator, never()).addNewDataSourceAdapter(any());
     }
 
     @Test
@@ -189,10 +193,13 @@ class DataSourceServiceTest {
 
         when(OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
         when(OUTBOUND_DATA_SOURCE.id()).thenReturn(UUID.randomUUID());
+        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
         when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(false);
         when(MQTT_OUTBOUND_DATA_SOURCE.id()).thenReturn(dataSourceId2);
+        when(MQTT_OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
         when(INBOUND_DATA_SOURCE.enabled()).thenReturn(true);
         when(INBOUND_DATA_SOURCE.id()).thenReturn(UUID.randomUUID());
+        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
 
         when(repository.findAll()).thenReturn(List.of(OUTBOUND_DATA_SOURCE,
                                                       MQTT_OUTBOUND_DATA_SOURCE,
@@ -200,14 +207,22 @@ class DataSourceServiceTest {
 
         dataSourceService.startDataSources();
 
-        verify(aggregator, times(2)).addNewDataSourceAdapter(any());
-        verify(aggregator, never()).addNewDataSourceAdapter(argThat(ds -> ds.dataSource().id().equals(dataSourceId2)));
+        verify(outboundAggregator, times(1)).addNewDataSourceAdapter(any());
+        verify(inboundAggregator, times(1)).addNewDataSourceAdapter(any());
+        verify(outboundAggregator, never()).addNewDataSourceAdapter(argThat(ds -> ds.dataSource()
+                                                                                    .id()
+                                                                                    .equals(dataSourceId2)));
+        verify(inboundAggregator, never()).addNewDataSourceAdapter(argThat(ds -> ds.dataSource()
+                                                                                   .id()
+                                                                                   .equals(dataSourceId2)));
     }
 
     @Test
     void testEnableDataSource() throws DataSourceNotFoundException {
         var dto = mock(SimulationDataSourceDto.class);
         when(dto.id()).thenReturn(DATA_SOURCE_ID);
+        when(dto.type()).thenReturn(DataSourceType.SIMULATION);
+
         var dataSource = new SimulationDataSource(dto, USER_ID);
 
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
@@ -219,20 +234,21 @@ class DataSourceServiceTest {
         dataSourceService.updateEnabledState(DATA_SOURCE_ID, false);
         dataSourceService.updateEnabledState(DATA_SOURCE_ID, false);
 
-        verify(aggregator, times(2)).addNewDataSourceAdapter(any());
-        verify(aggregator, times(2)).removeDataSourceAdapter(any());
+        verify(outboundAggregator, times(2)).addNewDataSourceAdapter(any());
+        verify(outboundAggregator, times(2)).removeDataSourceAdapter(any());
     }
 
     @Test
     void shouldRegenerateSecrets() throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
         when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
         when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
+        when(MQTT_OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
 
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
         verify(MQTT_OUTBOUND_DATA_SOURCE).updatePassword(eq(bCryptPasswordEncoder), anyString());
-        verify(aggregator).addNewDataSourceAdapter(any());
+        verify(outboundAggregator).addNewDataSourceAdapter(any());
     }
 
     @Test
