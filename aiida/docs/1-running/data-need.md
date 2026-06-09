@@ -94,7 +94,12 @@ This acknowledgement message serves as a confirmation that the data has been rec
 
 The acknowledgement is available in the outbound connector being used.
 
-## Transmission Control
+For more details, see:
+
+- [Acknowledgement Market Document](https://architecture.eddie.energy/framework/2-integrating/messages/cim/acknowledgement-market-documents.html#acknowledgement-market-document)
+- [EP Subscribing to Acknowledgement](https://architecture.eddie.energy/aiida/1-running/data-sources/mqtt/inbound/inbound-data-source.html#ep-subscribing-to-acknowledgement)
+
+## Permission Commands
 
 The `allowedPermissionCommands` field lists the permission commands the EP may send to remotely control transmission
 for the permission. A transmission-controlling command is accepted only if it is listed; otherwise it is rejected.
@@ -106,8 +111,3 @@ The available commands are:
 For example, `"allowedPermissionCommands": ["UPDATE_TRANSMISSION_SCHEDULE", "SET_TRANSMISSION_ENABLED"]` allows both commands.
 If the field is empty (the default `[]`), all transmission-controlling commands are rejected. The `TERMINATE`
 command is always accepted, regardless of this field.
-
-For more details, see:
-
-- [Acknowledgement Market Document](https://architecture.eddie.energy/framework/2-integrating/messages/cim/acknowledgement-market-documents.html#acknowledgement-market-document)
-- [EP Subscribing to Acknowledgement](https://architecture.eddie.energy/aiida/1-running/data-sources/mqtt/inbound/inbound-data-source.html#ep-subscribing-to-acknowledgement)

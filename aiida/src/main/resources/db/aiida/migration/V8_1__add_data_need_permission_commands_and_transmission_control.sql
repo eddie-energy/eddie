@@ -8,3 +8,7 @@ CREATE TABLE aiida_local_data_need_permission_commands
     PRIMARY KEY (data_need_id, permission_command),
     FOREIGN KEY (data_need_id) REFERENCES aiida_local_data_need (data_need_id)
 );
+
+ALTER TABLE permission
+    ADD COLUMN transmission_enabled  BOOLEAN NOT NULL DEFAULT TRUE,
+    ADD COLUMN transmission_schedule VARCHAR;
