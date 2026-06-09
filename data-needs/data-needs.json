@@ -60,10 +60,7 @@
       "end": "P10D"
     }, 
     "transmissionSchedule": "*/5 * * * * *",
-    "allowedPermissionCommands": [
-      "UPDATE_TRANSMISSION_SCHEDULE",
-      "SET_TRANSMISSION_ENABLED"
-    ],
+    "allowedPermissionCommands": [],
     "acknowledgementRequired": false,
     "schemas": [
       "SMART-METER-P1-RAW",
