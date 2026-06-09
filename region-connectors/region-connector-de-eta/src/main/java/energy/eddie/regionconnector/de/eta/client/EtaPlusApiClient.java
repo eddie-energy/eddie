@@ -47,34 +47,57 @@ public class EtaPlusApiClient {
     }
 
     /**
-     * Fetch validated historical metered data for a permission request.
+     * Fetch validated historical metered data for a permission request over its full range,
+     * capped at today (the API holds no data for future dates).
+     *
      * @param permissionRequest the permission request containing connection details
+     * @param accessToken       the customer's OAuth bearer token
      * @return a Mono emitting the metered data or an error
      */
     public Mono<EtaPlusMeteredData> fetchMeteredData(DePermissionRequest permissionRequest, String accessToken) {
+        LocalDate today = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID);
+        LocalDate effectiveEnd = permissionRequest.end().isAfter(today) ? today : permissionRequest.end();
+        return fetchMeteredData(permissionRequest, accessToken, permissionRequest.start(), effectiveEnd);
+    }
+
+    /**
+     * Fetch validated historical metered data for a permission request over an explicit window.
+     * Used for retransmission requests, where the eligible party specifies the timeframe. The
+     * caller is responsible for supplying a valid window (within the permission range and in the
+     * past); see {@link energy.eddie.regionconnector.shared.retransmission.RetransmissionValidation}.
+     *
+     * @param permissionRequest the permission request containing connection details
+     * @param accessToken       the customer's OAuth bearer token
+     * @param from              inclusive lower bound of the request window
+     * @param to                inclusive upper bound of the request window
+     * @return a Mono emitting the metered data or an error
+     */
+    public Mono<EtaPlusMeteredData> fetchMeteredData(
+            DePermissionRequest permissionRequest,
+            String accessToken,
+            LocalDate from,
+            LocalDate to
+    ) {
         LOGGER.atInfo()
                 .addArgument(permissionRequest::permissionId)
                 .addArgument(permissionRequest::meteringPointId)
-                .addArgument(permissionRequest::start)
-                .addArgument(permissionRequest::end)
+                .addArgument(() -> from)
+                .addArgument(() -> to)
                 .log("Fetching metered data for permission request {} with metering point {} from {} to {}");
-
-        LocalDate today = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID);
-        LocalDate effectiveEnd = permissionRequest.end().isAfter(today) ? today : permissionRequest.end();
 
         return webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(configuration.meteredDataEndpoint())
                         .queryParam("meteringPointId", permissionRequest.meteringPointId())
-                        .queryParam("from", permissionRequest.start().atStartOfDay())
-                        .queryParam("to", effectiveEnd.atStartOfDay())
+                        .queryParam("from", from.atStartOfDay())
+                        .queryParam("to", to.atStartOfDay())
                         .build())
                 .header("Authorization", "Bearer " + accessToken)
                 .retrieve()
                 .bodyToFlux(EtaPlusReadingDto.class)
                 .timeout(Duration.ofSeconds(configuration.responseTimeoutSeconds()))
                 .collectList()
-                .map(readings -> mapToDomain(readings, permissionRequest, effectiveEnd))
+                .map(readings -> mapToDomain(readings, permissionRequest, from, to))
                 .retryWhen(retrySpec(permissionRequest.permissionId()))
                 .onErrorMap(WebClientResponseException.Unauthorized.class, ex ->
                         new AuthenticationException(
@@ -104,7 +127,8 @@ public class EtaPlusApiClient {
     private EtaPlusMeteredData mapToDomain(
             List<EtaPlusReadingDto> readings,
             DePermissionRequest request,
-            LocalDate effectiveEnd
+            LocalDate from,
+            LocalDate to
     ) {
         List<EtaPlusMeteredData.MeterReading> domainReadings = readings.stream()
                 .filter(dto -> dto.timestamp() != null)
@@ -119,8 +143,8 @@ public class EtaPlusApiClient {
 
         return new EtaPlusMeteredData(
                 request.meteringPointId(),
-                request.start(),
-                effectiveEnd,
+                from,
+                to,
                 domainReadings
         );
     }

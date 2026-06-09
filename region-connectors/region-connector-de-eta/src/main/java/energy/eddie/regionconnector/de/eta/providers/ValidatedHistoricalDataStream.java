@@ -92,12 +92,39 @@ public class ValidatedHistoricalDataStream implements AutoCloseable {
         }
 
         IdentifiableValidatedHistoricalData identifiableData = new IdentifiableValidatedHistoricalData(permissionRequest, data);
-        Sinks.EmitResult emitResult = sink.tryEmitNext(identifiableData);
+        emit(identifiableData);
+        determineAndEmitLatestReading(identifiableData);
+    }
 
+    /**
+     * Publishes retransmitted validated historical data to the outbound stream without mutating
+     * permission state.
+     *
+     * <p>Unlike {@link #publish(DePermissionRequest, EtaPlusMeteredData)}, this method neither
+     * updates the latest-meter-reading watermark nor emits any status event. A retransmission
+     * re-delivers data the eligible party already received for a window in the past, so it must
+     * not regress the fulfillment watermark — which would otherwise trigger redundant re-polling
+     * of the whole range — nor change the permission's status (e.g. to
+     * {@link PermissionProcessStatus#UNFULFILLABLE}). The data still reaches the outbound
+     * connectors through the same stream consumed by the raw-data and CIM providers.
+     *
+     * @param permissionRequest the permission request the data belongs to
+     * @param data              the validated historical data fetched for the retransmission window
+     */
+    public void publishRetransmission(DePermissionRequest permissionRequest, EtaPlusMeteredData data) {
+        LOGGER.atInfo()
+                .addArgument(permissionRequest::permissionId)
+                .addArgument(data::meteringPointId)
+                .log("Publishing retransmitted validated historical data for permission request {} with metering point {}");
+
+        emit(new IdentifiableValidatedHistoricalData(permissionRequest, data));
+    }
+
+    private void emit(IdentifiableValidatedHistoricalData identifiableData) {
+        Sinks.EmitResult emitResult = sink.tryEmitNext(identifiableData);
         if (emitResult.isFailure()) {
             LOGGER.warn("Failed to emit data to stream: {}", emitResult);
         }
-        determineAndEmitLatestReading(identifiableData);
     }
 
     private boolean isEnergyTypeValid(
