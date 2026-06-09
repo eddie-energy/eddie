@@ -17,7 +17,9 @@ import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.Et
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusServerException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusTimeoutException;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
+import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
@@ -54,7 +56,9 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
     private final EtaAuthService authService;
     private final AccountingPointDataStream stream;
     private final Outbox outbox;
+    private final DePermissionCredentialsRepository credentialsRepository;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AccountingPointDataHandler(
             EventBus eventBus,
             DePermissionRequestRepository repository,
@@ -62,7 +66,8 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
             EtaPlusApiClient apiClient,
             EtaAuthService authService,
             AccountingPointDataStream stream,
-            Outbox outbox
+            Outbox outbox,
+            DePermissionCredentialsRepository credentialsRepository
     ) {
         this.repository = repository;
         this.dataNeedsService = dataNeedsService;
@@ -70,6 +75,7 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
         this.authService = authService;
         this.stream = stream;
         this.outbox = outbox;
+        this.credentialsRepository = credentialsRepository;
         eventBus.filteredFlux(AcceptedEvent.class).subscribe(this::accept);
     }
 
@@ -87,10 +93,16 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
             return;
         }
 
-        String refreshToken = event.refreshToken().orElse(null);
+        DePermissionCredentials creds = credentialsRepository.findByPermissionId(pr.permissionId())
+                .orElse(null);
+        if (creds == null) {
+            LOGGER.warn("No credentials found for permission {}", pr.permissionId());
+            commitSafely(pr.permissionId(), PermissionProcessStatus.UNABLE_TO_SEND);
+            return;
+        }
 
-        apiClient.fetchAccountingPointData(pr, event.accessToken())
-                 .onErrorResume(AuthenticationException.class, ex -> recoverWithRefreshToken(pr, refreshToken, ex))
+        apiClient.fetchAccountingPointData(pr, creds.accessToken())
+                 .onErrorResume(AuthenticationException.class, ex -> recoverWithRefreshToken(pr, creds.refreshToken(), ex))
                  .subscribe(
                          data -> {
                              stream.publish(pr, data);
@@ -115,7 +127,7 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
                 .flatMap(refreshResponse -> {
                     if (!refreshResponse.success() || refreshResponse.getAccessToken() == null) {
                         LOGGER.warn("Refresh of access token failed for permission {}", pr.permissionId());
-                        return Mono.<EtaPlusAccountingPointData>error(originalError);
+                        return Mono.error(originalError);
                     }
                     return apiClient.fetchAccountingPointData(pr, refreshResponse.getAccessToken())
                             .onErrorResume(AuthenticationException.class, retryError -> {

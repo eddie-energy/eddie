@@ -5,7 +5,9 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.EtaRegionConnectorMetadata;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
+import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
@@ -38,6 +40,7 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
     private final ValidatedHistoricalDataStream stream;
     private final Outbox outbox;
     private final ObservationRegistry observationRegistry;
+    private final DePermissionCredentialsRepository credentialsRepository;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AcceptedHandler(
@@ -47,7 +50,8 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
             EtaPlusApiClient apiClient,
             ValidatedHistoricalDataStream stream,
             Outbox outbox,
-            ObservationRegistry observationRegistry
+            ObservationRegistry observationRegistry,
+            DePermissionCredentialsRepository credentialsRepository
     ) {
         this.repository = repository;
         this.dataNeedsService = dataNeedsService;
@@ -55,6 +59,7 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
         this.stream = stream;
         this.outbox = outbox;
         this.observationRegistry = observationRegistry;
+        this.credentialsRepository = credentialsRepository;
         eventBus.filteredFlux(AcceptedEvent.class)
                 .subscribe(this::accept);
     }
@@ -91,7 +96,18 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
                 return;
             }
 
-            fetchAndPublishData(pr, event.accessToken(), observation);
+            DePermissionCredentials creds = credentialsRepository.findByPermissionId(pr.permissionId())
+                    .orElse(null);
+            if (creds == null) {
+                LOGGER.atWarn()
+                      .addArgument(pr::permissionId)
+                      .log("No credentials found for permission {}, marking UNABLE_TO_SEND");
+                observation.stop();
+                commitSafely(event.permissionId(), PermissionProcessStatus.UNABLE_TO_SEND);
+                return;
+            }
+
+            fetchAndPublishData(pr, creds.accessToken(), observation);
         } catch (Exception e) {
             observation.error(e);
             observation.stop();

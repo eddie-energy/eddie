@@ -8,10 +8,12 @@ import energy.eddie.regionconnector.de.eta.auth.AuthCallback;
 import energy.eddie.regionconnector.de.eta.auth.AuthTokenResponse;
 import energy.eddie.regionconnector.de.eta.auth.EtaAuthService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
+import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
 import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -39,6 +41,8 @@ class PermissionRequestAuthorizationServiceTest {
     private Outbox outbox;
     @Mock
     private EtaAuthService authService;
+    @Mock
+    private DePermissionCredentialsRepository credentialsRepository;
 
     @Spy
     @SuppressWarnings("UnusedVariable") // injected into service via @InjectMocks
@@ -141,6 +145,13 @@ class PermissionRequestAuthorizationServiceTest {
                 .isEqualTo(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         verify(outbox).commit(any(AcceptedEvent.class));
+
+        ArgumentCaptor<DePermissionCredentials> credsCaptor =
+                ArgumentCaptor.forClass(DePermissionCredentials.class);
+        verify(credentialsRepository).save(credsCaptor.capture());
+        assertThat(credsCaptor.getValue().permissionId()).isEqualTo(PERMISSION_ID);
+        assertThat(credsCaptor.getValue().accessToken()).isEqualTo("access-token");
+        assertThat(credsCaptor.getValue().refreshToken()).isEqualTo("refresh-token");
     }
 
     @Test
