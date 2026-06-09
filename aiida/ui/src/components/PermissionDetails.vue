@@ -30,6 +30,7 @@ const { permission, status } = defineProps<{
 }>()
 
 const { updatePermission } = usePermissionDialog()
+
 const show = ref(false)
 const showToolTip = ref(false)
 const selectedInboundMessageFormat = ref(permission.inboundMessageFormat)
@@ -159,10 +160,22 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
         <dd>
           {{
-            cronstrue.toString(permission.dataNeed.transmissionSchedule, {
+            cronstrue.toString(permission.effectiveTransmissionSchedule, {
               locale: locale,
             })
           }}
+        </dd>
+      </div>
+      <div class="permission-field">
+        <dt>{{ t('permissions.dropdown.transmissionEnabled') }}</dt>
+        <dd>
+          <StatusTag :status-type="permission.transmissionEnabled ? 'healthy' : 'unhealthy'">
+            {{
+              permission.transmissionEnabled
+                ? t('permissions.dropdown.transmissionOn')
+                : t('permissions.dropdown.transmissionOff')
+            }}
+          </StatusTag>
         </dd>
       </div>
     </div>
@@ -279,6 +292,14 @@ onClickOutside(target, () => (showToolTip.value = false))
         <div class="column schema">
           <dd v-for="schema in permission.dataNeed.schemas" :key="schema">
             {{ schema }}
+          </dd>
+        </div>
+      </div>
+      <div v-if="permission.dataNeed.allowedPermissionCommands?.length" class="permission-field">
+        <dt>{{ t('permissions.dropdown.allowedPermissionCommands') }}</dt>
+        <div class="column schema">
+          <dd v-for="command in permission.dataNeed.allowedPermissionCommands" :key="command">
+            {{ command }}
           </dd>
         </div>
       </div>

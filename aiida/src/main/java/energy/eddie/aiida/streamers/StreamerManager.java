@@ -11,6 +11,7 @@ import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
@@ -21,10 +22,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * The StreamerManager manages the lifecycle of {@link AiidaStreamer}.
@@ -38,7 +36,7 @@ public class StreamerManager implements AutoCloseable {
     private final ObjectMapper mapper;
     private final SchemaFormatterRegistry schemaFormatterRegistry;
     private final Map<UUID, AiidaStreamer> streamers;
-    private final Sinks.Many<UUID> terminationRequests;
+    private final Sinks.Many<PermissionCommand> commands;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
 
     /**
@@ -60,7 +58,7 @@ public class StreamerManager implements AutoCloseable {
         this.permissionLatestRecordMap = permissionLatestRecordMap;
 
         streamers = new HashMap<>();
-        terminationRequests = Sinks.many().unicast().onBackpressureBuffer();
+        commands = Sinks.many().unicast().onBackpressureBuffer();
     }
 
     /**
@@ -82,56 +80,50 @@ public class StreamerManager implements AutoCloseable {
                             permission.id()));
         }
 
-        var dataNeed = Objects.requireNonNull(permission.dataNeed());
-        var allowedDataTags = Objects.requireNonNull(dataNeed.dataTags());
-        var allowedAsset = Objects.requireNonNull(dataNeed.asset());
-        var transmissionSchedule = Objects.requireNonNull(dataNeed.transmissionSchedule());
-        var permissionExpirationTime = Objects.requireNonNull(permission.expirationTime());
-        var userId = Objects.requireNonNull(permission.userId());
-        var dataSource = permission.dataSource();
-
-        if (dataSource != null) {
-            Flux<AiidaRecord> recordFlux = aggregator.getFilteredFlux(allowedDataTags,
-                                                                      allowedAsset,
-                                                                      permissionExpirationTime,
-                                                                      transmissionSchedule,
-                                                                      userId,
-                                                                      dataSource.id());
-            Sinks.One<UUID> streamerTerminationRequestSink = Sinks.one();
-
-            streamerTerminationRequestSink.asMono().subscribe(permissionId -> {
-                var result = terminationRequests.tryEmitNext(permissionId);
-                if (result.isFailure()) {
-                    LOGGER.error("Error while emitting termination request for permission {}. Error was: {}",
-                                 permissionId,
-                                 result);
-                }
-            });
-
-            var streamer = StreamerFactory.getAiidaStreamer(
-                    failedToSendRepository,
-                    mapper,
-                    permission,
-                    recordFlux,
-                    schemaFormatterRegistry,
-                    streamerTerminationRequestSink,
-                    permissionLatestRecordMap
-            );
-            streamer.connect();
-            streamers.put(id, streamer);
-        } else {
-            LOGGER.error("No data source found for permission {}", permission.id());
+        var recordFlux = buildFilteredFlux(permission);
+        if (recordFlux.isEmpty()) {
+            return;
         }
+
+        var streamer = StreamerFactory.getAiidaStreamer(
+                failedToSendRepository,
+                mapper,
+                permission,
+                recordFlux.get(),
+                schemaFormatterRegistry,
+                commands,
+                permissionLatestRecordMap
+        );
+        streamer.connect();
+        streamers.put(id, streamer);
     }
 
     /**
-     * Returns a Flux on which the ID of a permission is published when the EP requests a termination for this permission.
-     * The Flux allows only one subscriber and buffers, ensuring no values get lost.
-     *
-     * @return Flux of permissionIDs for which the EP requested termination.
+     * Enables or disables data transmission for the streamer of the passed permission. While disabled, no records are
+     * published to the EP.
      */
-    public Flux<UUID> terminationRequestsFlux() {
-        return terminationRequests.asFlux();
+    public void setTransmissionEnabled(UUID permissionId, boolean enabled) {
+        requireStreamer(permissionId)
+                .ifPresent(streamer -> streamer.setTransmissionEnabled(enabled));
+    }
+
+    /**
+     * Applies a new transmission schedule to the streamer of the passed permission by rebuilding its record flux with
+     * the new aggregation cadence.
+     */
+    public void updateSchedule(Permission permission) {
+        requireStreamer(permission.id())
+                .ifPresent(streamer -> buildFilteredFlux(permission).ifPresent(streamer::updateRecordFlux));
+    }
+
+    /**
+     * Returns a Flux on which a {@link PermissionCommand} is published whenever the EP sends a control command for one
+     * of the managed permissions. The Flux allows only one subscriber and buffers, ensuring no values get lost.
+     *
+     * @return Flux of permission commands received from the EP.
+     */
+    public Flux<PermissionCommand> commandFlux() {
+        return commands.asFlux();
     }
 
     /**
@@ -142,13 +134,8 @@ public class StreamerManager implements AutoCloseable {
      *                {@link PermissionStatus#FULFILLED}.
      */
     public void stopStreamer(AiidaConnectionStatusMessageDto message) {
-        var id = message.permissionId();
-        AiidaStreamer streamer = streamers.get(id);
-
-        if (streamer == null)
-            throw new IllegalArgumentException("No streamer for permissionId '%s' exists.".formatted(id));
-
-        streamer.closeTerminally(message);
+        requireStreamer(message.permissionId())
+                .ifPresent(streamer -> streamer.closeTerminally(message));
     }
 
     /**
@@ -162,6 +149,35 @@ public class StreamerManager implements AutoCloseable {
             entry.getValue().close();
         }
 
-        terminationRequests.tryEmitComplete();
+        commands.tryEmitComplete();
+    }
+
+    /**
+     * Builds the filtered and aggregated record flux for the passed permission. Returns an empty {@link Optional} if a
+     * required field is missing, after logging which one; the caller is responsible for not creating or for closing the
+     * corresponding streamer.
+     */
+    private Optional<Flux<AiidaRecord>> buildFilteredFlux(Permission permission) {
+        try {
+            var dataNeed = Objects.requireNonNull(permission.dataNeed(), "data need");
+            var expirationTime = Objects.requireNonNull(permission.expirationTime(), "expiration time");
+            var userId = Objects.requireNonNull(permission.userId(), "user id");
+            var dataSource = Objects.requireNonNull(permission.dataSource(), "data source");
+            var schedule = Objects.requireNonNull(permission.effectiveTransmissionSchedule(), "transmission schedule");
+
+            return Optional.of(aggregator.getFilteredFlux(dataNeed.dataTags(),
+                                                          dataNeed.asset(),
+                                                          expirationTime,
+                                                          schedule,
+                                                          userId,
+                                                          dataSource.id()));
+        } catch (NullPointerException e) {
+            LOGGER.error("Cannot build record flux for permission {}: missing {}", permission.id(), e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    private Optional<AiidaStreamer> requireStreamer(UUID permissionId) {
+        return Optional.ofNullable(streamers.get(permissionId));
     }
 }

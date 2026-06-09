@@ -227,7 +227,7 @@ class MqttServiceTest {
         // Given
         var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
         var command = new PermissionCommand.Terminate("aiida", permissionId);
-        var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.TERMINATE;
+        var expectedTopic = "aiida/v1/" + permissionId + "/command/TERMINATE";
         var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
 
         // When
@@ -241,8 +241,8 @@ class MqttServiceTest {
     void publishPermissionCommand_usesCommandActionAsTopicSuffix() throws MqttException {
         // Given
         var permissionId = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
-        var command = new PermissionCommand.UpdateSchedule("aiida", permissionId, "0 */1 * * * *");
-        var expectedTopic = "aiida/v1/" + permissionId + "/command/" + PermissionCommand.UPDATE_SCHEDULE;
+        var command = new PermissionCommand.UpdateTransmissionSchedule("aiida", permissionId, "0 */1 * * * *");
+        var expectedTopic = "aiida/v1/" + permissionId + "/command/UPDATE_TRANSMISSION_SCHEDULE";
         var expectedPayload = new ObjectMapper().writeValueAsBytes(command);
 
         // When

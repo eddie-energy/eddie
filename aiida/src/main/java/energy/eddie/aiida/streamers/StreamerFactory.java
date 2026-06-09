@@ -11,14 +11,13 @@ import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.cim.agnostic.PermissionCommand;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
-
-import java.util.UUID;
 
 import static java.util.Objects.requireNonNull;
 
@@ -35,8 +34,8 @@ public class StreamerFactory {
      * @param permission              Permission for which to create the AiidaStreamer.
      * @param recordFlux              Flux on which the records that should be sent are published.
      * @param schemaFormatterRegistry Registry of all available schema formatters
-     * @param terminationRequestSink  Sink, to which the permissionId will be published when the EP requests a
-     *                                termination.
+     * @param commandSink             Sink, to which a {@link PermissionCommand} is published when the EP sends a
+     *                                control command.
      * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
@@ -45,7 +44,7 @@ public class StreamerFactory {
             Permission permission,
             Flux<AiidaRecord> recordFlux,
             SchemaFormatterRegistry schemaFormatterRegistry,
-            Sinks.One<UUID> terminationRequestSink,
+            Sinks.Many<PermissionCommand> commandSink,
             PermissionLatestRecordMap permissionLatestRecordMap
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
@@ -64,6 +63,6 @@ public class StreamerFactory {
                                 recordFlux,
                                 schemaFormatterRegistry,
                                 streamingContext,
-                                terminationRequestSink);
+                                commandSink);
     }
 }

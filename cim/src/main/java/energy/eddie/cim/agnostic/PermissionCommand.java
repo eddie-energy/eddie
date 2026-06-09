@@ -16,29 +16,46 @@ import java.util.UUID;
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "action")
 @JsonSubTypes({
-        @JsonSubTypes.Type(value = PermissionCommand.UpdateSchedule.class, name = PermissionCommand.UPDATE_SCHEDULE),
-        @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = PermissionCommand.SET_TRANSMISSION_ENABLED),
-        @JsonSubTypes.Type(value = PermissionCommand.Terminate.class, name = PermissionCommand.TERMINATE)
+        @JsonSubTypes.Type(value = PermissionCommand.UpdateTransmissionSchedule.class, name = "UPDATE_TRANSMISSION_SCHEDULE"),
+        @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = "SET_TRANSMISSION_ENABLED"),
+        @JsonSubTypes.Type(value = PermissionCommand.Terminate.class, name = "TERMINATE")
 })
 public sealed interface PermissionCommand permits
-        PermissionCommand.UpdateSchedule,
+        PermissionCommand.UpdateTransmissionSchedule,
         PermissionCommand.SetTransmissionEnabled,
         PermissionCommand.Terminate {
 
-    String UPDATE_SCHEDULE = "UPDATE_SCHEDULE";
-    String SET_TRANSMISSION_ENABLED = "SET_TRANSMISSION_ENABLED";
-    String TERMINATE = "TERMINATE";
+    default Action action() {
+        return switch (this) {
+            case UpdateTransmissionSchedule ignored -> Action.UPDATE_TRANSMISSION_SCHEDULE;
+            case SetTransmissionEnabled ignored -> Action.SET_TRANSMISSION_ENABLED;
+            case Terminate ignored -> Action.TERMINATE;
+        };
+    }
 
     String regionConnectorId();
 
     UUID permissionId();
 
-    default String action() {
-        return switch (this) {
-            case UpdateSchedule ignored -> UPDATE_SCHEDULE;
-            case SetTransmissionEnabled ignored -> SET_TRANSMISSION_ENABLED;
-            case Terminate ignored -> TERMINATE;
-        };
+    enum Action {
+        UPDATE_TRANSMISSION_SCHEDULE(true),
+        SET_TRANSMISSION_ENABLED(true),
+        TERMINATE(false);
+
+        private final boolean requiresExplicitGrant;
+
+        Action(boolean requiresExplicitGrant) {
+            this.requiresExplicitGrant = requiresExplicitGrant;
+        }
+
+        /**
+         * Whether this command may only be executed if the data need explicitly grants it via
+         * {@code allowedPermissionCommands}. Commands that return {@code false} (e.g. {@code TERMINATE})
+         * are always accepted.
+         */
+        public boolean requiresExplicitGrant() {
+            return requiresExplicitGrant;
+        }
     }
 
     /**
@@ -46,7 +63,7 @@ public sealed interface PermissionCommand permits
      *
      * @param transmissionSchedule cron expression; effective schedule is capped at the data-need frequency
      */
-    record UpdateSchedule(
+    record UpdateTransmissionSchedule(
             String regionConnectorId,
             UUID permissionId,
             String transmissionSchedule
@@ -55,6 +72,8 @@ public sealed interface PermissionCommand permits
 
     /**
      * Enables or disables transmission for a permission.
+     *
+     * @param enabled whether transmission should be enabled or disabled
      */
     record SetTransmissionEnabled(
             String regionConnectorId,
@@ -63,6 +82,9 @@ public sealed interface PermissionCommand permits
     ) implements PermissionCommand {
     }
 
+    /**
+     * Terminates a permission, causing the region connector to stop transmitting data for it and clean up any associated resources.
+     */
     record Terminate(
             String regionConnectorId,
             UUID permissionId

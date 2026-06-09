@@ -139,7 +139,8 @@ public class MqttService implements AutoCloseable {
     public void publishPermissionCommand(PermissionCommand permissionCommand) throws MqttException {
         var permissionId = permissionCommand.permissionId();
 
-        var topic = MqttTopic.of(permissionId.toString(), MqttTopicType.COMMAND).eddieTopic(permissionCommand.action());
+        var topic = MqttTopic.of(permissionId.toString(), MqttTopicType.COMMAND)
+                             .eddieTopic(permissionCommand.action().name());
         publishJson(topic, permissionCommand, true);
     }
 

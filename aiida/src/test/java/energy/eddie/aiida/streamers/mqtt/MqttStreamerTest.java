@@ -62,7 +62,7 @@ class MqttStreamerTest {
     private static final DataSource DATA_SOURCE = mock(DataSource.class);
 
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
-    private final Sinks.One<UUID> terminationSink = Sinks.one();
+    private final Sinks.Many<PermissionCommand> commandSink = Sinks.many().multicast().onBackpressureBuffer();
     private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
                                                         DATA_SOURCE,
                                                         List.of(new AiidaRecordValue("1-0:1.8.0",
@@ -97,13 +97,15 @@ class MqttStreamerTest {
     private PermissionLatestRecordMap mockLatestRecordMap;
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
+    @Mock
+    private Permission permissionMock;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
     @BeforeEach()
     void setUp() {
         // Permission
-        var permissionMock = mock(Permission.class);
+        when(permissionMock.transmissionEnabled()).thenReturn(true);
 
         // Mqtt Streaming Config
         var mqttDto = new MqttDto("tcp://localhost:1883",
@@ -137,7 +139,7 @@ class MqttStreamerTest {
                 recordPublisher.flux(),
                 schemaFormatterRegistry,
                 streamingContext,
-                terminationSink);
+                commandSink);
     }
 
 
@@ -184,10 +186,9 @@ class MqttStreamerTest {
     }
 
     @Test
-    @SuppressWarnings("java:S2925")
-    void givenAiidaRecord_sendsViaMqtt() throws MqttException, InterruptedException {
+    void givenAiidaRecord_sendsViaMqtt() throws MqttException {
         // Given
-        useReflectionToSetPermissionMock();
+        mockDataNeedWithSchemas();
 
 
         streamer.connect();
@@ -198,42 +199,36 @@ class MqttStreamerTest {
         // When
         recordPublisher.next(record1, record2);
 
-        // Need to sleep because messages are handled on different thread and therefore a race condition may occur otherwise
-        Thread.sleep(200);
-
         // Then
+        // records are published on Schedulers.boundedElastic(), so await the async side effects
+        verify(mockClient, timeout(2000).times(2)).publish(eq(EXPECTED_DATA_TOPIC), any(), eq(1), eq(false));
         verify(mockClient).setCallback(any());
         verify(mockClient).subscribe(EXPECTED_COMMAND_TOPIC, 2);
-        verify(mockClient, times(2)).publish(eq(EXPECTED_DATA_TOPIC), any(), eq(1), eq(false));
     }
 
     @Test
-    void verify_close_emitsEmptyOnTerminationOne_andClosesClient() throws MqttException {
+    void verify_close_disconnectsAndClosesClient() throws MqttException {
         // Given
         when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         streamer.connect();
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono()).expectComplete().verifyLater();
 
         // When
         streamer.close();
 
         // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
         verify(mockClient).disconnect(anyLong());
         verify(mockClient).close();
     }
 
     @Test
-    void givenTerminateCommand_publishesOnMono() throws MqttException {
+    void givenTerminateCommand_forwardsToCommandSink() {
         // Given
-        when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
-        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID));
-        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
-                                                .expectNext(PERMISSION_ID)
-                                                .then(streamer::close)
-                                                .expectComplete()
+        var command = new PermissionCommand.Terminate("aiida", PERMISSION_ID);
+        when(mockMessage.getPayload()).thenReturn(new byte[]{1});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class))).thenReturn(command);
+        StepVerifier stepVerifier = StepVerifier.create(commandSink.asFlux())
+                                                .expectNext(command)
+                                                .thenCancel()
                                                 .verifyLater();
         streamer.connect();
         streamer.connectComplete(false, "fooTest");
@@ -246,16 +241,14 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenTerminateCommandWithInvalidPermissionId_doesNotPublishOnMono() throws MqttException {
+    void givenSetTransmissionEnabledCommand_forwardsToCommandSink() {
         // Given
-        when(mockMessage.getPayload()).thenReturn("82831e2c-a01c-41b8-9db6-3f51670df7a5".getBytes(StandardCharsets.UTF_8));
-        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.Terminate("aiida",
-                                                            UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5")));
-        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
-                                                .then(streamer::close)
-                                                .expectComplete()
+        var command = new PermissionCommand.SetTransmissionEnabled("aiida", PERMISSION_ID, false);
+        when(mockMessage.getPayload()).thenReturn(new byte[]{1});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class))).thenReturn(command);
+        StepVerifier stepVerifier = StepVerifier.create(commandSink.asFlux())
+                                                .expectNext(command)
+                                                .thenCancel()
                                                 .verifyLater();
         streamer.connect();
         streamer.connectComplete(false, "fooTest");
@@ -268,62 +261,36 @@ class MqttStreamerTest {
     }
 
     @Test
-    void givenUnparseableCommand_doesNotPublishOnMono() throws MqttException {
+    void givenUpdateScheduleCommand_forwardsToCommandSink() {
+        // Given
+        var command = new PermissionCommand.UpdateTransmissionSchedule("aiida", PERMISSION_ID, "0 0 * * * *");
+        when(mockMessage.getPayload()).thenReturn(new byte[]{1});
+        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class))).thenReturn(command);
+        StepVerifier stepVerifier = StepVerifier.create(commandSink.asFlux())
+                                                .expectNext(command)
+                                                .thenCancel()
+                                                .verifyLater();
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+
+        // When
+        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+
+        // Then
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void givenUnparseableCommand_doesNotForwardToCommandSink() {
         // Given
         when(mockMessage.getPayload()).thenReturn("not-json".getBytes(StandardCharsets.UTF_8));
         when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
                 .thenThrow(new JacksonException("boom") {});
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
-                                                .then(streamer::close)
-                                                .expectComplete()
+        StepVerifier stepVerifier = StepVerifier.create(commandSink.asFlux())
+                                                .expectSubscription()
+                                                .expectNoEvent(Duration.ofMillis(200))
+                                                .thenCancel()
                                                 .verifyLater();
-        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
-        streamer.connect();
-        streamer.connectComplete(false, "fooTest");
-
-        // When
-        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
-
-        // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
-    }
-
-    @Test
-    void givenSetTransmissionEnabledCommand_doesNotPublishOnMono() throws MqttException {
-        // Given
-        when(mockMessage.getPayload()).thenReturn(new byte[]{});
-        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.SetTransmissionEnabled("aiida",
-                                                                         PERMISSION_ID,
-                                                                         false));
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
-                                                .then(streamer::close)
-                                                .expectComplete()
-                                                .verifyLater();
-        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
-        streamer.connect();
-        streamer.connectComplete(false, "fooTest");
-
-        // When
-        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
-
-        // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
-    }
-
-    @Test
-    void givenUpdateScheduleCommand_doesNotPublishOnMono() throws MqttException {
-        // Given
-        when(mockMessage.getPayload()).thenReturn(new byte[]{});
-        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.UpdateSchedule("aiida",
-                                                                 PERMISSION_ID,
-                                                                 "0 0 * * * *"));
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono())
-                                                .then(streamer::close)
-                                                .expectComplete()
-                                                .verifyLater();
-        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
         streamer.connect();
         streamer.connectComplete(false, "fooTest");
 
@@ -336,17 +303,14 @@ class MqttStreamerTest {
 
     @Test
     @SuppressWarnings("java:S2925")
-    void givenAiidaRecordAfterTerminateCommand_doesNotSendViaMqtt() throws MqttException, InterruptedException {
+    void givenTransmissionDisabled_doesNotSendViaMqtt() throws MqttException, InterruptedException {
         // Given
+        mockDataNeedWithSchemas();
         streamer.connect();
-        // manually call callback
         streamer.connectComplete(false, "fooTest");
-        when(mockMessage.getPayload()).thenReturn(PERMISSION_ID.toString().getBytes(StandardCharsets.UTF_8));
-        when(mockMapper.readValue(any(byte[].class), eq(PermissionCommand.class)))
-                .thenReturn(new PermissionCommand.Terminate("aiida", PERMISSION_ID));
 
         // When
-        streamer.messageArrived(EXPECTED_COMMAND_TOPIC, mockMessage);
+        streamer.setTransmissionEnabled(false);
         recordPublisher.next(record1, record2);
         Thread.sleep(200);
 
@@ -355,26 +319,41 @@ class MqttStreamerTest {
     }
 
     @Test
-    @SuppressWarnings("java:S2925")
+    void givenUpdatedRecordFlux_resubscribesAndSendsViaMqtt() throws MqttException {
+        // Given
+        mockDataNeedWithSchemas();
+        streamer.connect();
+        streamer.connectComplete(false, "fooTest");
+        TestPublisher<AiidaRecord> newPublisher = TestPublisher.create();
+
+        // When
+        streamer.updateRecordFlux(newPublisher.flux());
+        newPublisher.next(record1);
+
+        // Then
+        // record is published on Schedulers.boundedElastic(), so await the async side effect
+        verify(mockClient, timeout(2000)).publish(eq(EXPECTED_DATA_TOPIC), any(), eq(1), eq(false));
+    }
+
+    @Test
     void givenExceptionWhileSending_savesToRepository() throws Exception {
         // Given
-        useReflectionToSetPermissionMock();
+        mockDataNeedWithSchemas();
 
         when(mockClient.publish(any(), any(), anyInt(), anyBoolean())).thenThrow(new MqttException(999));
         streamer.connect();
 
         // When
         recordPublisher.next(record1);
-        Thread.sleep(200);
 
         // Then
-        verify(mockRepository).save(any());
+        // record is published on Schedulers.boundedElastic(), so await the async side effect
+        verify(mockRepository, timeout(2000)).save(any());
     }
 
     @Test
     void verify_closeTerminally_publishesSynchronously_andDeletesFailedToSendMessages() throws MqttException {
         // Given
-        StepVerifier stepVerifier = StepVerifier.create(terminationSink.asMono()).expectComplete().verifyLater();
         var json = "MyJson".getBytes(StandardCharsets.UTF_8);
         when(mockMapper.writeValueAsBytes(any())).thenReturn(json);
         when(mockClient.publish(anyString(), any(), anyInt(), anyBoolean())).thenReturn(mockPublishToken);
@@ -385,7 +364,6 @@ class MqttStreamerTest {
         streamer.closeTerminally(mockStatusMessage);
 
         // Then
-        stepVerifier.verify(Duration.ofSeconds(2));
         verify(mockClient).publish(EXPECTED_STATUS_TOPIC, json, 1, true);
         verify(mockPublishToken).waitForCompletion(anyLong());
         verify(mockDisconnectToken).waitForCompletion();
@@ -412,16 +390,9 @@ class MqttStreamerTest {
         verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
     }
 
-    private void useReflectionToSetPermissionMock() {
-        try {
-            var field = streamer.getClass().getDeclaredField("permission");
-            field.setAccessible(true);
-            var permissionReflection = (Permission) field.get(streamer);
-            var dataNeed = mock(AiidaLocalDataNeed.class);
-            when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
-            when(permissionReflection.dataNeed()).thenReturn(dataNeed);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    private void mockDataNeedWithSchemas() {
+        var dataNeed = mock(AiidaLocalDataNeed.class);
+        when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+        when(permissionMock.dataNeed()).thenReturn(dataNeed);
     }
 }

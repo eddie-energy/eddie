@@ -96,6 +96,7 @@
  * @typedef {DataNeed} AiidaDataNeed
  * @property {Array<string>} dataTags - The tags associated with the data.
  * @property {string} transmissionSchedule - The schedule at which data is transmitted.
+ * @property {Array<string>} allowedPermissionCommands - Permission commands the eligible party may send to remotely control transmission.
  * @property {boolean} acknowledgementRequired - Indicates if an acknowledgement is required for the data.
  * @property {Array<AiidaSchema>} schemas - The schemas in which the data will be provided.
  * @property {AiidaAsset} asset - The asset type.

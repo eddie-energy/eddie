@@ -16,7 +16,6 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -44,7 +43,6 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Mono;
-import reactor.test.publisher.TestPublisher;
 
 import java.nio.charset.StandardCharsets;
 import java.time.*;
@@ -73,7 +71,6 @@ class PermissionServiceTest {
     private final String connectionId = "NewAiidaRandomConnectionId";
     private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
     private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
-    private final TestPublisher<UUID> testPublisher = TestPublisher.create();
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
     private final UUID userId = UUID.randomUUID();
@@ -97,8 +94,6 @@ class PermissionServiceTest {
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
     @Mock
-    private OutboundAiidaLocalDataNeed mockOutboundAiidaLocalDataNeed;
-    @Mock
     private AuthService mockAuthService;
     @Mock
     private Permission mockPermission;
@@ -114,8 +109,6 @@ class PermissionServiceTest {
 
     @BeforeEach
     void setUp() {
-        doReturn(testPublisher.flux()).when(streamerManager).terminationRequestsFlux();
-
         service = new PermissionService(mockPermissionRepository,
                                         clock,
                                         streamerManager,
@@ -124,30 +117,6 @@ class PermissionServiceTest {
                                         mockAuthService,
                                         mockAiidaLocalDataNeedService,
                                         mockAiidaEventPublisher);
-    }
-
-    @Test
-    void givenTerminationRequest_removesFromPermissionScheduler_andStopsStreamer() {
-        // Given
-        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
-        when(mockPermissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
-        when(mockPermission.id()).thenReturn(permissionId1);
-        when(mockPermission.connectionId()).thenReturn(connectionId);
-        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
-        when(mockPermission.dataSource()).thenReturn(mockDataSource);
-
-        // When
-        testPublisher.next(permissionId1);
-
-        // Then
-        // terminationRequestReceived runs on Schedulers.boundedElastic(), so await the async side effects
-        testPublisher.assertSubscribers(1);
-        verify(mockPermissionScheduler, timeout(2000)).removePermission(permissionId1);
-        verify(streamerManager,
-               timeout(2000)).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.EXTERNALLY_TERMINATED));
-        verify(mockPermission, timeout(2000)).setStatus(PermissionStatus.TERMINATED);
-        verify(mockPermission, timeout(2000)).setRevokeTime(any());
-        verify(mockPermissionRepository, timeout(2000)).save(any());
     }
 
     @Test

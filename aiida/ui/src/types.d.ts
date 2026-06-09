@@ -8,6 +8,7 @@ export type AiidaDataNeed = {
   policyLink: string
   transmissionSchedule: string
   schemas: string[]
+  allowedPermissionCommands: string[]
   acknowledgementRequired: boolean
   asset: string
   dataTags: string[]
@@ -56,6 +57,8 @@ export type AiidaPermission = {
   grantTime?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
+  transmissionEnabled: boolean
+  effectiveTransmissionSchedule?: string
   inboundMessageFormat?: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
   userId: string
