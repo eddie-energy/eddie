@@ -65,13 +65,13 @@
       ]
     },
     {
-      "description": "Revokes a permission.",
+      "description": "Terminates a permission, causing the region connector to stop transmitting data for it and clean up any associated resources.",
       "type": "object",
       "properties": {
         "action": {
           "type": "string",
           "enum": [
-            "REVOKE_PERMISSION"
+            "TERMINATE"
           ]
         },
         "regionConnectorId": {
