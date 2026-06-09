@@ -10,6 +10,13 @@ CREATE TABLE de_eta.permission_credentials
     refresh_token TEXT
 );
 
+-- The dedicated DeAcceptedEvent entity has been folded into the generic
+-- DeSimpleEvent (status = ACCEPTED); re-point existing rows so the single-table
+-- inheritance mapping can still resolve them.
+UPDATE de_eta.permission_event
+SET dtype = 'DeSimpleEvent'
+WHERE dtype = 'DeAcceptedEvent';
+
 INSERT INTO de_eta.permission_credentials (permission_id, access_token, refresh_token)
 SELECT permission_id, access_token, refresh_token
 FROM   de_eta.eta_permission_request

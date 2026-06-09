@@ -21,10 +21,10 @@ import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCr
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.providers.AccountingPointDataStream;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -37,17 +37,17 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 
 /**
- * Handles {@link AcceptedEvent}s for permission requests whose data need is
+ * Handles {@code ACCEPTED} permission events for permission requests whose data need is
  * {@link AccountingPointDataNeed}. Performs a single-shot fetch against the
  * accounting-point endpoint, publishes the payload to {@link AccountingPointDataStream},
  * and commits the corresponding terminal event.
  *
  * <p>On 401 the handler attempts one in-flight refresh of the customer's access token
- * using the refresh token persisted on the {@link AcceptedEvent}; the refreshed token
+ * using the persisted refresh token; the refreshed token
  * is held only for the duration of the retry and is not persisted.
  */
 @Component
-public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
+public class AccountingPointDataHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccountingPointDataHandler.class);
 
     private final DePermissionRequestRepository repository;
@@ -76,14 +76,16 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
         this.stream = stream;
         this.outbox = outbox;
         this.credentialsRepository = credentialsRepository;
-        eventBus.filteredFlux(AcceptedEvent.class).subscribe(this::accept);
+        eventBus.filteredFlux(PermissionProcessStatus.ACCEPTED).subscribe(this::accept);
     }
 
     @Override
-    public void accept(AcceptedEvent event) {
+    public void accept(PermissionEvent event) {
         Optional<DePermissionRequest> optionalPr = repository.findByPermissionId(event.permissionId());
         if (optionalPr.isEmpty()) {
-            LOGGER.warn("Permission request not found for id: {}", event.permissionId());
+            LOGGER.atWarn()
+                  .addArgument(event::permissionId)
+                  .log("Permission request not found for id: {}");
             return;
         }
         DePermissionRequest pr = optionalPr.get();
@@ -96,8 +98,10 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
         DePermissionCredentials creds = credentialsRepository.findByPermissionId(pr.permissionId())
                 .orElse(null);
         if (creds == null) {
-            LOGGER.warn("No credentials found for permission {}", pr.permissionId());
-            commitSafely(pr.permissionId(), PermissionProcessStatus.UNABLE_TO_SEND);
+            LOGGER.atWarn()
+                  .addArgument(pr::permissionId)
+                  .log("No credentials found for permission {}");
+            commitSafely(pr.permissionId(), PermissionProcessStatus.UNFULFILLABLE);
             return;
         }
 
@@ -118,22 +122,26 @@ public class AccountingPointDataHandler implements EventHandler<AcceptedEvent> {
             AuthenticationException originalError
     ) {
         if (refreshToken == null) {
-            LOGGER.warn("401 fetching accounting point data for permission {} — no refresh token available",
-                    pr.permissionId());
+            LOGGER.atWarn()
+                  .addArgument(pr::permissionId)
+                  .log("401 fetching accounting point data for permission {} — no refresh token available");
             return Mono.error(originalError);
         }
 
         return authService.refresh(refreshToken)
                 .flatMap(refreshResponse -> {
                     if (!refreshResponse.success() || refreshResponse.getAccessToken() == null) {
-                        LOGGER.warn("Refresh of access token failed for permission {}", pr.permissionId());
+                        LOGGER.atWarn()
+                              .addArgument(pr::permissionId)
+                              .log("Refresh of access token failed for permission {}");
                         return Mono.error(originalError);
                     }
                     return apiClient.fetchAccountingPointData(pr, refreshResponse.getAccessToken())
                             .onErrorResume(AuthenticationException.class, retryError -> {
-                                LOGGER.warn(
-                                        "401 fetching accounting point data for permission {} after successful token refresh",
-                                        pr.permissionId(), retryError);
+                                LOGGER.atWarn()
+                                      .addArgument(pr::permissionId)
+                                      .setCause(retryError)
+                                      .log("401 fetching accounting point data for permission {} after successful token refresh");
                                 return Mono.error(retryError);
                             });
                 });

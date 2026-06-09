@@ -9,7 +9,6 @@ import energy.eddie.regionconnector.de.eta.auth.AuthTokenResponse;
 import energy.eddie.regionconnector.de.eta.auth.EtaAuthService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
@@ -105,7 +104,7 @@ public class PermissionRequestAuthorizationService {
         LOGGER.info("Successfully obtained access token for permission request {}",
                     permissionId);
         credentialsRepository.save(new DePermissionCredentials(permissionId, accessToken, response.getRefreshToken()));
-        outbox.commit(new AcceptedEvent(permissionId));
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
     }
 
     private void handleTokenExchangeError(Throwable error, String permissionId) {

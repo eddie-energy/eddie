@@ -9,9 +9,9 @@ import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCr
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
@@ -31,7 +31,7 @@ import java.time.LocalDate;
  * from the ETA Plus API and publishes it to the ValidatedHistoricalDataStream.
  */
 @Component
-public class AcceptedHandler implements EventHandler<AcceptedEvent> {
+public class AcceptedHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AcceptedHandler.class);
 
     private final DePermissionRequestRepository repository;
@@ -60,12 +60,12 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
         this.outbox = outbox;
         this.observationRegistry = observationRegistry;
         this.credentialsRepository = credentialsRepository;
-        eventBus.filteredFlux(AcceptedEvent.class)
+        eventBus.filteredFlux(PermissionProcessStatus.ACCEPTED)
                 .subscribe(this::accept);
     }
 
     @Override
-    public void accept(AcceptedEvent event) {
+    public void accept(PermissionEvent event) {
         Observation observation = Observation.createNotStarted("de-eta.accepted-handler.process", observationRegistry)
                 .highCardinalityKeyValue("permissionId", event.permissionId());
         observation.start();
@@ -101,9 +101,9 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
             if (creds == null) {
                 LOGGER.atWarn()
                       .addArgument(pr::permissionId)
-                      .log("No credentials found for permission {}, marking UNABLE_TO_SEND");
+                      .log("No credentials found for permission {}, marking UNFULFILLABLE");
                 observation.stop();
-                commitSafely(event.permissionId(), PermissionProcessStatus.UNABLE_TO_SEND);
+                commitSafely(event.permissionId(), PermissionProcessStatus.UNFULFILLABLE);
                 return;
             }
 
@@ -114,7 +114,7 @@ public class AcceptedHandler implements EventHandler<AcceptedEvent> {
             LOGGER.atError()
                   .addArgument(event::permissionId)
                   .setCause(e)
-                  .log("Fatal error processing AcceptedEvent for permission {}");
+                  .log("Fatal error processing accepted event for permission {}");
             commitSafely(event.permissionId(), PermissionProcessStatus.UNABLE_TO_SEND);
         }
     }

@@ -20,7 +20,6 @@ import energy.eddie.regionconnector.de.eta.permission.request.DePermissionReques
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.providers.AccountingPointDataStream;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
@@ -89,7 +88,7 @@ class AccountingPointDataHandlerTest {
                 eventBus, repository, dataNeedsService, apiClient, authService, stream, outbox, credentialsRepository);
     }
 
-    private void emit(AcceptedEvent event) {
+    private void emit(SimpleEvent event) {
         eventBus.emit(event);
     }
 
@@ -102,7 +101,7 @@ class AccountingPointDataHandlerTest {
         when(repository.findByPermissionId(PID)).thenReturn(Optional.of(pr));
         when(dataNeedsService.getById(DATA_NEED_ID)).thenReturn(mock(ValidatedHistoricalDataDataNeed.class));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         verifyNoInteractions(apiClient);
         verifyNoInteractions(stream);
@@ -113,7 +112,7 @@ class AccountingPointDataHandlerTest {
     void missingPermissionRequest_logsAndReturns() {
         when(repository.findByPermissionId(PID)).thenReturn(Optional.empty());
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         verifyNoInteractions(apiClient);
         verifyNoInteractions(stream);
@@ -127,7 +126,7 @@ class AccountingPointDataHandlerTest {
         EtaPlusAccountingPointData payload = samplePayload();
         when(apiClient.fetchAccountingPointData(pr, ACCESS_TOKEN)).thenReturn(Mono.just(payload));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         verify(stream).publish(pr, payload);
         assertCommitted(PermissionProcessStatus.FULFILLED);
@@ -138,7 +137,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_403_marksUnfulfillable() {
         primeFetchFailure(new EtaPlusForbiddenException("403", 403, new RuntimeException()));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertNoStreamPublish();
         assertCommitted(PermissionProcessStatus.UNFULFILLABLE);
@@ -148,7 +147,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_404_marksUnfulfillable() {
         primeFetchFailure(new EtaPlusNotFoundException("404", 404, new RuntimeException()));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertNoStreamPublish();
         assertCommitted(PermissionProcessStatus.UNFULFILLABLE);
@@ -158,7 +157,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_400_marksUnfulfillable() {
         primeFetchFailure(new EtaPlusBadRequestException("400", 400, new RuntimeException()));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertNoStreamPublish();
         assertCommitted(PermissionProcessStatus.UNFULFILLABLE);
@@ -168,7 +167,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_429_marksUnableToSend() {
         primeFetchFailure(new RateLimitException("429"));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertNoStreamPublish();
         assertCommitted(PermissionProcessStatus.UNABLE_TO_SEND);
@@ -178,7 +177,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_5xx_marksUnableToSend() {
         primeFetchFailure(new EtaPlusServerException("500", 500, new RuntimeException()));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertCommitted(PermissionProcessStatus.UNABLE_TO_SEND);
     }
@@ -187,7 +186,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_timeout_marksUnableToSend() {
         primeFetchFailure(new EtaPlusTimeoutException("timeout", new RuntimeException()));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertCommitted(PermissionProcessStatus.UNABLE_TO_SEND);
     }
@@ -196,7 +195,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_deserializationError_marksUnableToSend() {
         primeFetchFailure(new DeserializationException("bad", new RuntimeException()));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertCommitted(PermissionProcessStatus.UNABLE_TO_SEND);
     }
@@ -205,7 +204,7 @@ class AccountingPointDataHandlerTest {
     void apDataNeed_unexpectedException_marksUnableToSend() {
         primeFetchFailure(new RuntimeException("boom"));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertCommitted(PermissionProcessStatus.UNABLE_TO_SEND);
     }
@@ -222,7 +221,7 @@ class AccountingPointDataHandlerTest {
         EtaPlusAccountingPointData payload = samplePayload();
         when(apiClient.fetchAccountingPointData(pr, "new-access")).thenReturn(Mono.just(payload));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         verify(stream).publish(pr, payload);
         assertCommitted(PermissionProcessStatus.FULFILLED);
@@ -239,7 +238,7 @@ class AccountingPointDataHandlerTest {
         when(authService.refresh(REFRESH_TOKEN))
                 .thenReturn(Mono.just(new AuthTokenResponse(null, false)));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         // Initial fetch with the original token, no retry with a different token
         verify(apiClient, times(1)).fetchAccountingPointData(pr, ACCESS_TOKEN);
@@ -260,7 +259,7 @@ class AccountingPointDataHandlerTest {
         when(apiClient.fetchAccountingPointData(pr, "new-access"))
                 .thenReturn(Mono.error(new AuthenticationException("401-again", 401, new RuntimeException())));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         assertNoStreamPublish();
         assertCommitted(PermissionProcessStatus.UNABLE_TO_SEND);
@@ -283,7 +282,7 @@ class AccountingPointDataHandlerTest {
         when(apiClient.fetchAccountingPointData(prWithoutRefresh, ACCESS_TOKEN))
                 .thenReturn(Mono.error(new AuthenticationException("401", 401, new RuntimeException())));
 
-        emit(new AcceptedEvent(PID));
+        emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 
         verifyNoInteractions(authService);
         assertNoStreamPublish();
