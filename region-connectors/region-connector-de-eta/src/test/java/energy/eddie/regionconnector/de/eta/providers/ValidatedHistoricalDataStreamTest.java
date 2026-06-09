@@ -25,9 +25,12 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import reactor.test.StepVerifier;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 class ValidatedHistoricalDataStreamTest {
@@ -157,6 +160,39 @@ class ValidatedHistoricalDataStreamTest {
         stream.publish(pr, data);
 
         assertLatestMeterReadingCommitted();
+    }
+
+    // ---- Retransmission ----
+
+    @Test
+    void publishRetransmission_emitsToStream_withoutCommittingAnyEvent() {
+        var pr = electricityRequest(Granularity.PT15M);
+        ZonedDateTime t0 = ZonedDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+        var data = new EtaPlusMeteredData("MP-1", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 1),
+                List.of(reading(t0, "kWh"), reading(t0.plusMinutes(15), "kWh")));
+
+        StepVerifier.create(stream.validatedHistoricalData())
+                    .then(() -> stream.publishRetransmission(pr, data))
+                    .assertNext(emitted -> {
+                        assertThat(emitted.permissionRequest()).isEqualTo(pr);
+                        assertThat(emitted.payload()).isEqualTo(data);
+                    })
+                    .thenCancel()
+                    .verify();
+
+        // A retransmission must not regress the watermark or change permission status.
+        verifyNoInteractions(outbox);
+    }
+
+    @Test
+    void publishRetransmission_doesNotEnforceDataNeedConstraints() {
+        // Wrong commodity unit would mark UNFULFILLABLE via publish(); retransmission must not.
+        var pr = electricityRequest(Granularity.PT15M);
+        var data = meteredData("m³", Granularity.PT15M);
+
+        stream.publishRetransmission(pr, data);
+
+        verifyNoInteractions(outbox);
     }
 
     // ---- Helpers ----

@@ -326,6 +326,32 @@ class EtaPlusApiClientTest {
     }
 
     @Test
+    void fetchMeteredData_explicitWindow_usesGivenRange_notPermissionRange() throws InterruptedException {
+        server.enqueue(new MockResponse()
+                .setResponseCode(200)
+                .setHeader("Content-Type", "application/json")
+                .setBody("[]"));
+
+        // Permission spans Jan–Jun; retransmission asks only for February.
+        DePermissionRequest request = buildRequest(
+                "perm-window", LocalDate.of(2024, 1, 1), LocalDate.of(2024, 6, 30));
+        LocalDate from = LocalDate.of(2024, 2, 1);
+        LocalDate to = LocalDate.of(2024, 2, 29);
+
+        StepVerifier.create(apiClient.fetchMeteredData(request, "test-token", from, to))
+                .assertNext(data -> {
+                    assertThat(data.startDate()).isEqualTo(from);
+                    assertThat(data.endDate()).isEqualTo(to);
+                })
+                .verifyComplete();
+
+        RecordedRequest recorded = takeLatestRequest();
+        assertThat(recorded).isNotNull();
+        assertThat(recorded.getPath()).contains("from=2024-02-01T00:00");
+        assertThat(recorded.getPath()).contains("to=2024-02-29T00:00");
+    }
+
+    @Test
     void fetchMeteredData_sendsBearerTokenInAuthorizationHeader() throws InterruptedException {
         server.enqueue(new MockResponse()
                 .setResponseCode(200)
