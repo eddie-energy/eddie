@@ -11,7 +11,6 @@ import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
@@ -140,11 +139,11 @@ class PermissionRequestAuthorizationServiceTest {
 
         service.authorizePermissionRequest(callback);
 
-        verify(outbox).commit(simpleEventCaptor.capture());
-        assertThat(simpleEventCaptor.getValue().status())
+        verify(outbox, times(2)).commit(simpleEventCaptor.capture());
+        assertThat(simpleEventCaptor.getAllValues().get(0).status())
                 .isEqualTo(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
-
-        verify(outbox).commit(any(AcceptedEvent.class));
+        assertThat(simpleEventCaptor.getAllValues().get(1).status())
+                .isEqualTo(PermissionProcessStatus.ACCEPTED);
 
         ArgumentCaptor<DePermissionCredentials> credsCaptor =
                 ArgumentCaptor.forClass(DePermissionCredentials.class);

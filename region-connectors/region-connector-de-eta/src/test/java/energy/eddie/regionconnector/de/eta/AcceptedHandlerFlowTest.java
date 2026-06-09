@@ -15,7 +15,6 @@ import energy.eddie.regionconnector.de.eta.permission.request.DePermissionReques
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
@@ -74,7 +73,7 @@ class AcceptedHandlerFlowTest {
     void setUp() {
         realStream = new ValidatedHistoricalDataStream(outbox);
 
-        when(eventBus.filteredFlux(AcceptedEvent.class)).thenReturn(Flux.empty());
+        when(eventBus.filteredFlux(PermissionProcessStatus.ACCEPTED)).thenReturn(Flux.empty());
         lenient().when(dataNeedsService.getById(anyString())).thenReturn(mock(ValidatedHistoricalDataDataNeed.class));
 
         acceptedHandler = new AcceptedHandler(
@@ -107,7 +106,7 @@ class AcceptedHandlerFlowTest {
     // --- Happy path tests ---
 
     @Test
-    @DisplayName("Should fetch data and emit LatestMeterReadingEvent when AcceptedEvent is received")
+    @DisplayName("Should fetch data and emit LatestMeterReadingEvent when accepted event is received")
     void shouldFetchDataAndEmitLatestReadingEvent() {
         String permissionId = "perm-123";
         LocalDate start = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID).minusMonths(3);
@@ -136,7 +135,7 @@ class AcceptedHandlerFlowTest {
         when(credentialsRepository.findByPermissionId(permissionId))
                 .thenReturn(Optional.of(new DePermissionCredentials(permissionId, "test-access-token", null)));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         verify(apiClient).fetchMeteredData(mockRequest, "test-access-token");
 
@@ -164,7 +163,7 @@ class AcceptedHandlerFlowTest {
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(futureRequest));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         verifyNoInteractions(apiClient);
         verifyNoInteractions(outbox);
@@ -188,7 +187,7 @@ class AcceptedHandlerFlowTest {
         when(credentialsRepository.findByPermissionId(permissionId))
                 .thenReturn(Optional.of(new DePermissionCredentials(permissionId, "test-access-token", null)));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         ArgumentCaptor<PermissionEvent> eventCaptor = ArgumentCaptor.forClass(PermissionEvent.class);
         verify(outbox).commit(eventCaptor.capture());
@@ -211,7 +210,7 @@ class AcceptedHandlerFlowTest {
         when(credentialsRepository.findByPermissionId(permissionId))
                 .thenReturn(Optional.of(new DePermissionCredentials(permissionId, "test-access-token", null)));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         ArgumentCaptor<PermissionEvent> eventCaptor = ArgumentCaptor.forClass(PermissionEvent.class);
         verify(outbox).commit(eventCaptor.capture());
@@ -227,7 +226,7 @@ class AcceptedHandlerFlowTest {
         String unknownPermissionId = "unknown-id";
         when(repository.findByPermissionId(unknownPermissionId)).thenReturn(Optional.empty());
 
-        acceptedHandler.accept(new AcceptedEvent(unknownPermissionId));
+        acceptedHandler.accept(new SimpleEvent(unknownPermissionId, PermissionProcessStatus.ACCEPTED));
 
         verifyNoInteractions(apiClient);
         verifyNoInteractions(outbox);
@@ -249,7 +248,7 @@ class AcceptedHandlerFlowTest {
         when(credentialsRepository.findByPermissionId(permissionId))
                 .thenReturn(Optional.of(new DePermissionCredentials(permissionId, "test-access-token", null)));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         ArgumentCaptor<PermissionEvent> eventCaptor = ArgumentCaptor.forClass(PermissionEvent.class);
         verify(outbox).commit(eventCaptor.capture());
@@ -276,14 +275,14 @@ class AcceptedHandlerFlowTest {
         when(credentialsRepository.findByPermissionId(permissionId))
                 .thenReturn(Optional.of(new DePermissionCredentials(permissionId, "test-access-token", null)));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         verify(outbox).commit(any());
     }
 
     @Test
-    @DisplayName("Should commit UNABLE_TO_SEND when no credentials found for permission")
-    void shouldCommitUnableToSendWhenCredentialsNotFound() {
+    @DisplayName("Should commit UNFULFILLABLE when no credentials found for permission")
+    void shouldCommitUnfulfillableWhenCredentialsNotFound() {
         String permissionId = "perm-no-creds";
         LocalDate start = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID).minusMonths(1);
         LocalDate end = LocalDate.now(EtaRegionConnectorMetadata.DE_ZONE_ID).minusDays(1);
@@ -292,12 +291,12 @@ class AcceptedHandlerFlowTest {
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(credentialsRepository.findByPermissionId(permissionId)).thenReturn(Optional.empty());
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         verify(apiClient, never()).fetchMeteredData(any(), any());
         ArgumentCaptor<PermissionEvent> captor = ArgumentCaptor.forClass(PermissionEvent.class);
         verify(outbox).commit(captor.capture());
-        assertThat(captor.getValue().status()).isEqualTo(PermissionProcessStatus.UNABLE_TO_SEND);
+        assertThat(captor.getValue().status()).isEqualTo(PermissionProcessStatus.UNFULFILLABLE);
     }
 
     @Test
@@ -312,7 +311,7 @@ class AcceptedHandlerFlowTest {
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
         when(dataNeedsService.getById(anyString())).thenReturn(mock(AccountingPointDataNeed.class));
 
-        acceptedHandler.accept(new AcceptedEvent(permissionId));
+        acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 
         verifyNoInteractions(apiClient);
         verifyNoInteractions(outbox);
