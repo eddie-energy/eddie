@@ -3,7 +3,6 @@
 
 package energy.eddie.regionconnector.at.eda.provider.v1_12;
 
-import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.serde.XmlMessageSerde;
@@ -37,19 +36,20 @@ class IntermediateEnergySharingReferenceDataMarketDocumentTest {
         // language=XML
         var expected = """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <ns:ESRDMD_Envelope xmlns:ns="https://eddie.energy/CIM/CEEDS_EnergySharingReferenceDataMarketDocument_v1.12_annotated.xsd">
+                <ns:ESRDMD_Envelope xmlns:ns="https://insieme.energy/EnergySharingReferenceDataMarketDocument_annotated_v1_12">
                     <ns:MarketDocument>
                         <ns:mRID>AT000000000000000000000000000000000</ns:mRID>
                         <ns:revisionNumber>112</ns:revisionNumber>
                         <ns:createdDateTime>2025-10-06T07:04:58Z</ns:createdDateTime>
                         <ns:sender_MarketParticipant.name>AT000000</ns:sender_MarketParticipant.name>
                         <ns:receiver_MarketParticipant.name>CC000000</ns:receiver_MarketParticipant.name>
+                        <ns:process.processType>A55</ns:process.processType>
                         <ns:EnergyCommunity>
-                            <ns:DateFrom>2025-10-05T22:00:00Z</ns:DateFrom>
                             <ns:mRID>ATCC0000DYNAMCC000000000000000000</ns:mRID>
+                            <ns:dateFrom>2025-10-05Z</ns:dateFrom>
                             <ns:AccountingPoint>
-                                <ns:energySharingParticipationFactor>100</ns:energySharingParticipationFactor>
                                 <ns:mRID codingScheme="NAT">AT0000000000000000000000000000000</ns:mRID>
+                                <ns:energySharingParticipationFactor>100</ns:energySharingParticipationFactor>
                                 <ns:energySharingEnergyDirection>A02</ns:energySharingEnergyDirection>
                             </ns:AccountingPoint>
                         </ns:EnergyCommunity>
@@ -82,7 +82,5 @@ class IntermediateEnergySharingReferenceDataMarketDocumentTest {
                                 .withNodeFilter(node -> ignoredNames.stream().noneMatch(node.getNodeName()::endsWith))
                                 .build();
         assertFalse(myDiff.hasDifferences(), myDiff.fullDescription() + "\n" + new String(xml, StandardCharsets.UTF_8));
-        var json = new JsonMessageSerde().serialize(envelope);
-        System.out.println(new String(json));
     }
 }

@@ -25,13 +25,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.xmlunit.builder.DiffBuilder;
 
-import javax.xml.datatype.DatatypeFactory;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -120,8 +118,6 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         var start = LocalDate.of(2025, 1, 1);
         var end = LocalDate.of(2025, 1, 2);
         var now = ZonedDateTime.now(AT_ZONE_ID);
-        var cal = DatatypeFactory.newDefaultInstance()
-                                 .newXMLGregorianCalendar(GregorianCalendar.from(now));
         var simpleRecord = new SimpleEdaConsumptionRecord()
                 .setMessageId("messageId")
                 .setConversationId("conversationId")
@@ -147,7 +143,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                 .setMeteringReason("reason")
                 ))
                 .setSchemaVersion("version")
-                .setProcessDate(cal);
+                .setProcessDate(now);
         var consumptionRecord = new IdentifiableConsumptionRecord(simpleRecord, List.of(pr), start, end);
         var doc = new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, consumptionRecord);
 
@@ -173,8 +169,6 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         var start = LocalDate.of(2025, 1, 1);
         var end = LocalDate.of(2025, 1, 2);
         var created = ZonedDateTime.of(2025, 1, 1, 0, 0, 0, 0, AT_ZONE_ID);
-        var cal = DatatypeFactory.newDefaultInstance()
-                                 .newXMLGregorianCalendar(GregorianCalendar.from(created));
         var simpleRecord = new SimpleEdaConsumptionRecord()
                 .setMessageId("messageId")
                 .setConversationId("conversationId")
@@ -200,7 +194,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                                 .setMeteringReason("reason")
                 ))
                 .setSchemaVersion("version")
-                .setProcessDate(cal);
+                .setProcessDate(created);
         var consumptionRecord = new IdentifiableConsumptionRecord(simpleRecord, List.of(pr), start, end);
         var doc = new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, consumptionRecord);
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41;
@@ -8,7 +8,6 @@ import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.Energy;
 import energy.eddie.regionconnector.at.eda.processing.utils.XmlGregorianCalenderUtils;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -75,8 +74,11 @@ public record EdaConsumptionRecord01p41(ConsumptionRecord consumptionRecord) imp
     }
 
     @Override
-    public XMLGregorianCalendar processDate() {
-        return consumptionRecord.getProcessDirectory().getProcessDate();
+    public ZonedDateTime processDate() {
+        return consumptionRecord.getProcessDirectory()
+                                .getProcessDate()
+                                .toGregorianCalendar()
+                                .toZonedDateTime();
     }
 
     @Override
