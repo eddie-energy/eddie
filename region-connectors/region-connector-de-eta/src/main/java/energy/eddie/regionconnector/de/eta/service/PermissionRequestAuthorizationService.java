@@ -8,8 +8,9 @@ import energy.eddie.regionconnector.de.eta.auth.AuthCallback;
 import energy.eddie.regionconnector.de.eta.auth.AuthTokenResponse;
 import energy.eddie.regionconnector.de.eta.auth.EtaAuthService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AcceptedEvent;
+import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -25,17 +26,20 @@ public class PermissionRequestAuthorizationService {
     private final Outbox outbox;
     private final EtaAuthService authService;
     private final DeEtaPlusConfiguration configuration;
+    private final DePermissionCredentialsRepository credentialsRepository;
 
     public PermissionRequestAuthorizationService(
             DePermissionRequestRepository permissionRequestRepository,
             Outbox outbox,
             EtaAuthService authService,
-            DeEtaPlusConfiguration configuration
+            DeEtaPlusConfiguration configuration,
+            DePermissionCredentialsRepository credentialsRepository
     ) {
         this.permissionRequestRepository = permissionRequestRepository;
         this.outbox = outbox;
         this.authService = authService;
         this.configuration = configuration;
+        this.credentialsRepository = credentialsRepository;
     }
 
     public void authorizePermissionRequest(AuthCallback callback) throws PermissionNotFoundException {
@@ -99,7 +103,8 @@ public class PermissionRequestAuthorizationService {
         }
         LOGGER.info("Successfully obtained access token for permission request {}",
                     permissionId);
-        outbox.commit(new AcceptedEvent(permissionId, accessToken, response.getRefreshToken()));
+        credentialsRepository.save(new DePermissionCredentials(permissionId, accessToken, response.getRefreshToken()));
+        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
     }
 
     private void handleTokenExchangeError(Throwable error, String permissionId) {
