@@ -1,0 +1,19 @@
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
+package energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.annotation.Nullable;
+
+public record CreateMandateRequestModel(
+        @Nullable @JsonProperty("referenceNumber") String referenceNumber,
+        @Nullable @JsonProperty("ean") String ean,
+        @Nullable @JsonProperty("dataServiceType") String dataServiceType,
+        @Nullable @JsonProperty("dataPeriodFrom") String dataPeriodFrom,
+        @Nullable @JsonProperty("dataPeriodTo") String dataPeriodTo,
+        @Nullable @JsonProperty("status") String status,
+        @Nullable @JsonProperty("mandateExpirationDate") String mandateExpirationDate,
+        @Nullable @JsonProperty("renewalStatus") String renewalStatus
+) {}
+

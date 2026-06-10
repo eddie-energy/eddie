@@ -1,11 +1,16 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.client;
 
 import com.nimbusds.oauth2.sdk.ParseException;
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.regionconnector.be.fluvius.client.model.*;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock.CreateMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthException;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthRequestException;
@@ -182,14 +187,14 @@ class FluviusApiClientTest {
                                .setResponseCode(200)
                                .setBody(OBJECT_MAPPER.writeValueAsString(new GetEnergyResponseModelApiDataResponse(
                                        new ApiMetaData(null),
-                                       new GetEnergyResponseModel(null, null, null)
+                                       new GetEnergyResponseModel(null)
                                ))));
         when(oAuthTokenService.accessToken()).thenReturn("token");
         var api = new FluviusApiClient(webClient, getConfiguration(), oAuthTokenService, PUBLIC_URL);
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         StepVerifier.create(res)
@@ -205,7 +210,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         StepVerifier.create(res)
@@ -223,7 +228,7 @@ class FluviusApiClientTest {
         var now = ZonedDateTime.now(ZoneOffset.UTC);
 
         // When
-        var res = api.energy("pid", "eanNumber", DataServiceType.DAILY, now, now);
+        var res = api.energy("pid", "ean", DataServiceType.DAILY, now, now);
 
         // Then
         Assertions.assertEquals(Status.UNKNOWN, api.health().getStatus());

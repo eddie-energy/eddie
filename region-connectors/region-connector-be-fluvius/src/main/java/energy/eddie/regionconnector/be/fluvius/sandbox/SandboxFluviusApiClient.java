@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.sandbox;
@@ -7,10 +7,10 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.DataServiceType;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.CreateMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock.CreateMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import jakarta.annotation.Priority;

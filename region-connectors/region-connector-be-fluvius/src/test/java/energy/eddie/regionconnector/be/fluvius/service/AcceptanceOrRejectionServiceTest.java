@@ -3,11 +3,17 @@
 
 package energy.eddie.regionconnector.be.fluvius.service;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
-import energy.eddie.regionconnector.be.fluvius.client.model.MandateResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.MandateResponseModel;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
@@ -15,6 +21,8 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -36,8 +44,12 @@ class AcceptanceOrRejectionServiceTest {
     private Outbox outbox;
     @Mock
     private BePermissionRequestRepository repository;
+    @Mock
+    private DataNeedsService dataNeedsService;
     @InjectMocks
     private AcceptanceOrRejectionService service;
+    @Captor
+    private ArgumentCaptor<PermissionEvent> eventCaptor;
 
     @Test
     void checkForAcceptance_noAcceptedRequests_noRequests() {
@@ -57,14 +69,22 @@ class AcceptanceOrRejectionServiceTest {
     @Test
     void checkForAcceptance_noAcceptedRequests_checkAcceptanceApproved() {
         // Given
-        when(repository.findByStatus(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)).thenReturn(List.of(
-                DefaultFluviusPermissionRequestBuilder.create()
-                                                      .status(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
-                                                      .build()
-        ));
+        when(repository.findByStatus(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR))
+                .thenReturn(List.of(DefaultFluviusPermissionRequestBuilder.create()
+                                                                          .status(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)
+                                                                          .dataNeedId("dnid")
+                                                                          .build()
+                ));
         when(fluviusApi.mandateFor("pid")).thenReturn(
-                Mono.just(createMandateResponse("Approved"))
+                Mono.just(createMandateResponse(MandateResponseModel.Status.APPROVED))
         );
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(new RelativeDuration(null,
+                                                                                     null,
+                                                                                     null),
+                                                                EnergyType.ELECTRICITY,
+                                                                Granularity.PT15M,
+                                                                Granularity.P1D));
 
         // When
         service.checkForAcceptance();
@@ -86,7 +106,7 @@ class AcceptanceOrRejectionServiceTest {
                                                       .build()
         ));
         when(fluviusApi.mandateFor("pid")).thenReturn(
-                Mono.just(createMandateResponse("Requested"))
+                Mono.just(createMandateResponse(MandateResponseModel.Status.REQUESTED))
         );
 
         // When
@@ -155,11 +175,17 @@ class AcceptanceOrRejectionServiceTest {
     void testAcceptOrRejectPermissionRequest_returnsAcceptForAcceptedPermissionRequest() throws PermissionNotFoundException {
         // Given
         when(repository.findByPermissionId("pid"))
-                .thenReturn(Optional.of(getPermissionRequest(
-                        PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
         var publisher = TestPublisher.<GetMandateResponseModelApiDataResponse>create();
         when(fluviusApi.mandateFor("pid"))
                 .thenReturn(publisher.mono());
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(new RelativeDuration(null,
+                                                                                     null,
+                                                                                     null),
+                                                                EnergyType.ELECTRICITY,
+                                                                Granularity.PT15M,
+                                                                Granularity.P1D));
 
         // When
         var res = service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
@@ -168,13 +194,67 @@ class AcceptanceOrRejectionServiceTest {
         assertTrue(res);
         StepVerifier.create(publisher)
                     .then(() -> {
-                        publisher.emit(createMandateResponse("Approved"));
+                        publisher.emit(createMandateResponse(MandateResponseModel.Status.APPROVED));
                         publisher.complete();
                     })
                     .expectNextCount(1)
                     .then(() -> verify(outbox)
                             .commit(assertArg(e -> assertEquals(PermissionProcessStatus.ACCEPTED, e.status()))))
                     .verifyComplete();
+    }
+
+    @Test
+    void testAcceptOrRejectPermissionRequest_emitsUnfulfillableWhenNoMeterProvidesCorrectEnergyTypeOrGranularity() throws PermissionNotFoundException {
+        // Given
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
+        var publisher = TestPublisher.<GetMandateResponseModelApiDataResponse>create();
+        when(fluviusApi.mandateFor("pid"))
+                .thenReturn(publisher.mono());
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(new RelativeDuration(null,
+                                                                                     null,
+                                                                                     null),
+                                                                EnergyType.NATURAL_GAS,
+                                                                Granularity.PT15M,
+                                                                Granularity.PT1H));
+        var mandate1 = new MandateResponseModel("pid",
+                                                MandateResponseModel.Status.APPROVED,
+                                                null,
+                                                energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY,
+                                                null,
+                                                null,
+                                                MandateResponseModel.DataServiceType.HOURLY_OR_QUARTER_HOURLY,
+                                                null,
+                                                null);
+        var mandate2 = new MandateResponseModel("pid",
+                                                MandateResponseModel.Status.APPROVED,
+                                                null,
+                                                energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.GAS,
+                                                null,
+                                                null,
+                                                MandateResponseModel.DataServiceType.UNDEFINED,
+                                                null,
+                                                null);
+        var data = new GetMandateResponseModelApiDataResponse(null,
+                                                              new GetMandateResponseModel(null,
+                                                                                          List.of(mandate1, mandate2)));
+
+        // When
+        var res = service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
+
+        // Then
+        assertTrue(res);
+        StepVerifier.create(publisher)
+                    .then(() -> {
+                        publisher.emit(data);
+                        publisher.complete();
+                    })
+                    .expectNextCount(1)
+                    .verifyComplete();
+        verify(outbox, times(2)).commit(eventCaptor.capture());
+        assertEquals(PermissionProcessStatus.ACCEPTED, eventCaptor.getAllValues().getFirst().status());
+        assertEquals(PermissionProcessStatus.UNFULFILLABLE, eventCaptor.getValue().status());
     }
 
     @Test
@@ -197,7 +277,14 @@ class AcceptanceOrRejectionServiceTest {
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(getPermissionRequest(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR)));
         when(fluviusApi.mandateFor("pid"))
-                .thenReturn(Mono.just(createMandateResponse("Rejected")));
+                .thenReturn(Mono.just(createMandateResponse(MandateResponseModel.Status.REJECTED)));
+        when(dataNeedsService.getById("dnid"))
+                .thenReturn(new ValidatedHistoricalDataDataNeed(new RelativeDuration(null,
+                                                                                     null,
+                                                                                     null),
+                                                                EnergyType.ELECTRICITY,
+                                                                Granularity.PT15M,
+                                                                Granularity.P1D));
 
         // When
         service.acceptOrRejectPermissionRequest("pid", PermissionProcessStatus.ACCEPTED);
@@ -225,11 +312,21 @@ class AcceptanceOrRejectionServiceTest {
         return new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .status(status)
+                .dataNeedId("dnid")
+                .granularity(Granularity.PT15M)
                 .build();
     }
 
-    private GetMandateResponseModelApiDataResponse createMandateResponse(String status) {
-        var mandate = new MandateResponseModel("pid", status, null, null, null, null, null, null, null);
+    private GetMandateResponseModelApiDataResponse createMandateResponse(MandateResponseModel.Status status) {
+        var mandate = new MandateResponseModel("pid",
+                                               status,
+                                               null,
+                                               energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.EnergyType.ELECTRICITY,
+                                               null,
+                                               null,
+                                               MandateResponseModel.DataServiceType.HOURLY_OR_QUARTER_HOURLY,
+                                               null,
+                                               null);
         return new GetMandateResponseModelApiDataResponse(null, new GetMandateResponseModel(null, List.of(mandate)));
     }
 }

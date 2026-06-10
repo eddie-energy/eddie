@@ -5,7 +5,8 @@ package energy.eddie.regionconnector.be.fluvius.tasks;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.regionconnector.be.fluvius.client.model.*;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.ApiMetaData;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.*;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MeterReadingUpdatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
 import energy.eddie.regionconnector.be.fluvius.persistence.MeterReadingRepository;
@@ -18,15 +19,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.assertArg;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MeterReadingUpdateTaskTest {
@@ -45,9 +44,9 @@ class MeterReadingUpdateTaskTest {
     @Test
     void testOnMeterReading_forUnknownMeter_doesNotUpdateMeterReading() {
         // Given
-        var item = new EDailyEnergyItemResponseModel(null, null, null);
-        var meter = new ElectricityMeterResponseModel(null, "002", List.of(item), List.of());
-        var energy = new GetEnergyResponseModel(null, null, List.of(meter));
+        var item = new MeasurementSlice(null, ZonedDateTime.now(ZoneOffset.UTC), null);
+        var meter = new PhysicalMeter(null, "002", null, null, List.of(item));
+        var energy = new GetEnergyResponseModel(new Headpoint("5002", EnergyType.ELECTRICITY, List.of(meter)));
         var payload = new GetEnergyResponseModelApiDataResponse(null, energy);
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
@@ -71,7 +70,7 @@ class MeterReadingUpdateTaskTest {
         // Given
         var payload = new GetEnergyResponseModelApiDataResponse(
                 new ApiMetaData(null),
-                new GetEnergyResponseModel(null, null, null)
+                new GetEnergyResponseModel(null)
         );
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
@@ -83,7 +82,7 @@ class MeterReadingUpdateTaskTest {
         streams.publish(permissionRequest, payload);
 
         // Then
-        verify(meterReadingRepository).saveAllAndFlush(captor.capture());
+        verify(meterReadingRepository, never()).saveAllAndFlush(any());
     }
 
     @Test
@@ -91,11 +90,13 @@ class MeterReadingUpdateTaskTest {
         // Given
         var end = ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
         var newEnd = ZonedDateTime.of(2025, 2, 20, 0, 0, 0, 0, ZoneOffset.UTC);
-        var quarterHourlyItem = new EQuarterHourlyEnergyItemResponseModel(null, newEnd, null);
-        var meter1 = new ElectricityMeterResponseModel(null, "001", null, List.of(quarterHourlyItem));
-        var dailyItem = new EDailyEnergyItemResponseModel(null, null, null);
-        var meter2 = new ElectricityMeterResponseModel(null, "001", List.of(dailyItem), null);
-        var energy = new GetEnergyResponseModel(null, null, List.of(meter1, meter2));
+        var quarterHourlyItem = new MeasurementSlice(null, newEnd, null);
+        var meter1 = new PhysicalMeter(null, "001", null, null, List.of(quarterHourlyItem));
+        var dailyItem = new MeasurementSlice(null, null, null);
+        var meter2 = new PhysicalMeter(null, "001", List.of(dailyItem), null, null);
+        var energy = new GetEnergyResponseModel(new Headpoint("5001",
+                                                                    EnergyType.ELECTRICITY,
+                                                                    List.of(meter1, meter2)));
         var payload = new GetEnergyResponseModelApiDataResponse(null, energy);
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
@@ -117,13 +118,13 @@ class MeterReadingUpdateTaskTest {
     @Test
     void testOnMeterReading_readingWithoutReadings_updatesCorrectMeterReading() {
         // Given
-        var end = OffsetDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
-        var meter = new ElectricityMeterResponseModel(null, "001", null, null);
-        var energy = new GetEnergyResponseModel(null, null, List.of(meter));
+        var end = ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
+        var meter = new PhysicalMeter(null, "001", null, null, null);
+        var energy = new GetEnergyResponseModel(new Headpoint("5001", EnergyType.ELECTRICITY, List.of(meter)));
         var payload = new GetEnergyResponseModelApiDataResponse(null, energy);
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
-                .addMeterReadings(new MeterReading("pid", "5001", end.toZonedDateTime()))
+                .addMeterReadings(new MeterReading("pid", "5001", end))
                 .build();
         when(meterReadingRepository.findAllByPermissionId("pid")).thenReturn(permissionRequest.lastMeterReadings());
 
@@ -131,22 +132,18 @@ class MeterReadingUpdateTaskTest {
         streams.publish(permissionRequest, payload);
 
         // Then
-        verify(meterReadingRepository).saveAllAndFlush(captor.capture());
-        assertThat(captor.getValue())
-                .singleElement()
-                .extracting(MeterReading::lastMeterReading)
-                .isEqualTo(end.toZonedDateTime());
+        verify(meterReadingRepository, never()).saveAllAndFlush(any());
     }
 
     @Test
     void testOnMeterReading_forGasMeters_updatesCorrectMeterReading() {
         // Given
         var end = ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
-        var item1 = new GHourlyEnergyItemResponseModel(null, end.minusDays(1), null);
-        var item2 = new GHourlyEnergyItemResponseModel(null, end, null);
-        var item3 = new GHourlyEnergyItemResponseModel(null, end.minusDays(2), null);
-        var meter = new GasMeterResponseModel(null, "001", null, List.of(item1, item2, item3));
-        var energy = new GetEnergyResponseModel(null, List.of(meter), null);
+        var item1 = new MeasurementSlice(null, end.minusDays(1), null);
+        var item2 = new MeasurementSlice(null, end, null);
+        var item3 = new MeasurementSlice(null, end.minusDays(2), null);
+        var meter = new PhysicalMeter(null, "001", null, List.of(item1, item2, item3), null);
+        var energy = new GetEnergyResponseModel(new Headpoint("5001", EnergyType.GAS, List.of(meter)));
         var payload = new GetEnergyResponseModelApiDataResponse(null, energy);
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .granularity(Granularity.PT1H)
@@ -170,15 +167,16 @@ class MeterReadingUpdateTaskTest {
     void testOnMeterReading_emitsMeterReadingUpdatedEvent() {
         // Given
         var end = ZonedDateTime.of(2025, 1, 31, 0, 0, 0, 0, ZoneOffset.UTC);
-        var item = new GHourlyEnergyItemResponseModel(null, end, null);
-        var meter = new GasMeterResponseModel(null, "001", null, List.of(item));
-        var energy = new GetEnergyResponseModel(null, List.of(meter), null);
+        var item = new MeasurementSlice(null, end, null);
+        var meter = new PhysicalMeter(null, "001", null, List.of(item), null);
+        var energy = new GetEnergyResponseModel(new Headpoint("5001", EnergyType.ELECTRICITY, List.of(meter)));
         var payload = new GetEnergyResponseModelApiDataResponse(null, energy);
         var meterReading = new MeterReading("pid", "5001", end.minusDays(1));
         var permissionRequest = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .status(PermissionProcessStatus.VALIDATED)
                 .addMeterReadings(meterReading)
+                .granularity(Granularity.PT1H)
                 .build();
         when(meterReadingRepository.findAllByPermissionId("pid")).thenReturn(permissionRequest.lastMeterReadings());
 

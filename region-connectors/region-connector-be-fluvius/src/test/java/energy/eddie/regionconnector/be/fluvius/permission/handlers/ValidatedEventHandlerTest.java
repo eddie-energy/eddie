@@ -11,8 +11,8 @@ import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResul
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModel;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.events.InvalidEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;

@@ -4,8 +4,10 @@
 package energy.eddie.regionconnector.be.fluvius.service;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
@@ -26,15 +28,18 @@ public class AcceptanceOrRejectionService {
     private final BePermissionRequestRepository bePermissionRequestRepository;
     private final FluviusApi fluviusApi;
     private final Outbox outbox;
+    private final DataNeedsService dataNeedsService;
 
     public AcceptanceOrRejectionService(
             BePermissionRequestRepository bePermissionRequestRepository,
             FluviusApi fluviusApi,
-            Outbox outbox
+            Outbox outbox,
+            DataNeedsService dataNeedsService
     ) {
         this.bePermissionRequestRepository = bePermissionRequestRepository;
         this.fluviusApi = fluviusApi;
         this.outbox = outbox;
+        this.dataNeedsService = dataNeedsService;
     }
 
     @Scheduled(cron = "${region-connector.be.fluvius.check-acceptance:0 0 * * * *}")
@@ -108,41 +113,38 @@ public class AcceptanceOrRejectionService {
             return;
         }
         var mandates = res.data().mandates();
+        var dn = (ValidatedHistoricalDataDataNeed) dataNeedsService.getById(permissionRequest.dataNeedId());
         var approvedMeters = new ArrayList<String>();
-        var others = 0;
         var rejected = 0;
         for (var mandate : mandates) {
+            if (!mandate.supportsGranularity(permissionRequest.granularity()) || !mandate.supportsEnergyType(dn.energyType())) {
+                continue;
+            }
             var ean = mandate.eanNumber();
             var status = mandate.status();
             switch (status) {
-                case "Approved" -> {
+                case APPROVED -> {
                     LOGGER.info("Meter {} of permission request {} approved", ean, permissionId);
                     approvedMeters.add(ean);
                 }
-                case "Rejected" -> {
+                case REJECTED -> {
                     LOGGER.info("Meter {} of permission request {} rejected", ean, permissionId);
                     rejected++;
                 }
-                case "Requested" -> {
-                    LOGGER.info("Status of meter {} of permission request {} has not changed", ean, permissionId);
-                    others++;
-                }
-                case null, default -> {
-                    LOGGER.warn("Meter {} of permission request {} has unexpected status {}",
-                                ean,
-                                permissionId,
-                                status);
-                    others++;
-                }
+                case null, default -> LOGGER.warn("Meter {} of permission request {} has unexpected status {}",
+                                                  ean,
+                                                  permissionId,
+                                                  status);
             }
-        }
-        if (others == mandates.size()) {
-            LOGGER.info("Permission request {} not accepted yet", permissionId);
-            return;
         }
         if (rejected == mandates.size()) {
             LOGGER.info("Permission request {} has been rejected", permissionId);
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
+            return;
+        }
+        if (approvedMeters.isEmpty()) {
+            outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
+            outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.UNFULFILLABLE));
             return;
         }
         var meters = new ArrayList<MeterReading>();

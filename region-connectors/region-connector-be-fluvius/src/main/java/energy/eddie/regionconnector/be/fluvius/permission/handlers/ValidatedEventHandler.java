@@ -9,7 +9,8 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
-import energy.eddie.regionconnector.be.fluvius.client.model.FluviusSessionCreateResultResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModel;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.events.InvalidEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SentToPaEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
@@ -67,9 +68,9 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
     private void handleSuccess(String permissionId, FluviusSessionCreateResultResponseModelApiDataResponse res) {
         LOGGER.info("Successfully sent permission request {} to Fluvius", permissionId);
         var data = res.data();
-        if (data == null || data.shortUrlIdentifier() == null) {
+        if (data == null || data.shortUrlIdentifier() == null || data.status() == FluviusSessionCreateResultResponseModel.Status.FAILED) {
             outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-            outbox.commit(new InvalidEvent(permissionId, "No short url identifier found"));
+            outbox.commit(new InvalidEvent(permissionId, "Creation of the short URL identifier failed"));
         } else {
             outbox.commit(new SentToPaEvent(permissionId, data.shortUrlIdentifier()));
         }

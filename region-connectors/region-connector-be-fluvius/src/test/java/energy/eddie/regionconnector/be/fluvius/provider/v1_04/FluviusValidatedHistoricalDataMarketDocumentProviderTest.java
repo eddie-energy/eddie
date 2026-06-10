@@ -1,34 +1,23 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
-import energy.eddie.dataneeds.duration.RelativeDuration;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
-import energy.eddie.regionconnector.be.fluvius.client.model.GetEnergyResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.GetEnergyResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.InputStream;
 
-import static org.mockito.Mockito.when;
-
-@ExtendWith(MockitoExtension.class)
 class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
     private final ClassLoader classLoader = this.getClass().getClassLoader();
     private final ObjectMapper mapper = new ObjectMapper();
-    @Mock
-    private DataNeedsService dataNeedsService;
 
     @Mock
     private FluviusOAuthConfiguration fluviusConfig;
@@ -36,7 +25,7 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
     @Test
     void testGetValidatedHistoricalDataMarketDocumentsStream_gas_differentUnits() {
         // Given
-        InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_daily.json");
+        InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_quarter_hourly.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
                                                                       GetEnergyResponseModelApiDataResponse.class);
 
@@ -46,21 +35,11 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
                                                        .granularity(Granularity.P1D)
                                                        .build();
 
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new ValidatedHistoricalDataDataNeed(
-                        new RelativeDuration(null, null, null),
-                        EnergyType.ELECTRICITY,
-                        Granularity.PT1H,
-                        Granularity.P1D
-                ));
-
         // When
         var streams = new IdentifiableDataStreams();
         streams.publish(pr, json);
         streams.close();
-        var provider = new FluviusValidatedHistoricalDataMarketDocumentProvider(fluviusConfig,
-                                                                                streams,
-                                                                                dataNeedsService);
+        var provider = new FluviusValidatedHistoricalDataMarketDocumentProvider(fluviusConfig, streams);
 
         // Then
         StepVerifier.create(provider.getValidatedHistoricalDataMarketDocumentsStream())
