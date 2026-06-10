@@ -12,6 +12,7 @@ import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -45,7 +46,8 @@ public class XmlMessageSerde implements MessageSerde {
             energy.eddie.cim.v1_12.rtd.RTDEnvelope.class,
             AcknowledgementEnvelope.class,
             ESRDMDEnvelope.class,
-            RECMMOEEnvelope.class
+            RECMMOEEnvelope.class,
+            RequestPermissionEnvelope.class
     );
     private final Marshaller marshaller;
     private final Unmarshaller unmarshaller;

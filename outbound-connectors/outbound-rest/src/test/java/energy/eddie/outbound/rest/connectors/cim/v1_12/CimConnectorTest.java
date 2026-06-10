@@ -6,6 +6,7 @@ package energy.eddie.outbound.rest.connectors.cim.v1_12;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
@@ -68,6 +69,21 @@ class CimConnectorTest {
 
         // Then
         StepVerifier.create(connector.getEnergySharingReferenceDataMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setRequestPermissionMarketDocument_producesRequestPermissionMarketDocument() {
+        // Given
+        var rpmdFlux = Flux.just(new RequestPermissionEnvelope());
+
+        // When
+        connector.setRequestPermissionMarketDocumentStream(rpmdFlux);
+
+        // Then
+        StepVerifier.create(connector.getRequestPermissionMarketDocumentStream())
                     .then(connector::close)
                     .expectNextCount(1)
                     .verifyComplete();

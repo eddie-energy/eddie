@@ -9,6 +9,7 @@ import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedMeterReading;
 import energy.eddie.regionconnector.simulation.permission.request.IntermediateValidatedHistoricalDataMarketDocument;
@@ -31,6 +32,7 @@ public class DocumentStreams implements AutoCloseable {
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final CommonInformationModelConfiguration cimConfig;
     private final ObjectMapper objectMapper;
+    private final Sinks.Many<RequestPermissionEnvelope> rpmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     public DocumentStreams(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig,
@@ -51,6 +53,10 @@ public class DocumentStreams implements AutoCloseable {
 
     public synchronized void publish(PermissionEnvelope permissionEnvelope) {
         pmdSink.tryEmitNext(permissionEnvelope);
+    }
+
+    public synchronized void publish(RequestPermissionEnvelope permissionMarketDocument) {
+        rpmdSink.tryEmitNext(permissionMarketDocument);
     }
 
     @MessageStream(ValidatedHistoricalDataEnvelope.class)
@@ -77,6 +83,10 @@ public class DocumentStreams implements AutoCloseable {
         return pmdSink.asFlux();
     }
 
+    @MessageStream(RequestPermissionEnvelope.class)
+    public Flux<RequestPermissionEnvelope> getRequestPermissionMarketDocumentStream() {
+        return rpmdSink.asFlux();
+    }
     @MessageStream(RawDataMessage.class)
     public Flux<RawDataMessage> getRawDataMessageStream() {
         return getSimulatedMeterReadingStream()

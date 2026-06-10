@@ -8,6 +8,7 @@ import energy.eddie.api.v1_12.outbound.MinMaxEnvelopeOutboundConnector;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
     private final Sinks.Many<RECMMOEEnvelope> minMaxEnvelopeSink = Sinks.many()
                                                                         .multicast()
                                                                         .onBackpressureBuffer();
+    private final Sinks.Many<RequestPermissionEnvelope> rpmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentStream() {
         return rtdSink.asFlux();
@@ -86,11 +88,26 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
         minMaxEnvelopeSink.tryEmitNext(minMaxEnvelope);
     }
 
+    public Flux<RequestPermissionEnvelope> getRequestPermissionMarketDocumentStream() {
+        return rpmdSink.asFlux();
+    }
+
+    @MessageStream(RequestPermissionEnvelope.class)
+    public void setRequestPermissionMarketDocumentStream(Flux<RequestPermissionEnvelope> marketDocumentStream) {
+        marketDocumentStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing request permission market document",
+                        err
+                ))
+                .subscribe(rpmdSink::tryEmitNext);
+    }
+
     @Override
     public void close() {
         rtdSink.tryEmitComplete();
         ackSink.tryEmitComplete();
         minMaxEnvelopeSink.tryEmitComplete();
         esrdmdSink.tryEmitComplete();
+        rpmdSink.tryEmitComplete();
     }
 }

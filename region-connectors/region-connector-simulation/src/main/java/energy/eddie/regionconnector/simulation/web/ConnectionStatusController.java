@@ -10,7 +10,8 @@ import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
+import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocumentV0_82;
+import energy.eddie.regionconnector.shared.cim.v1_12.rpmd.IntermediateRequestPermissionMarketDocument;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
 import energy.eddie.regionconnector.simulation.SimulationDataSourceInformation;
 import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;
@@ -59,9 +60,10 @@ public class ConnectionStatusController {
                         req.connectionStatus.toString()
                 )
         );
+        var request = new SimulationPermissionRequest(req);
         streams.publish(
-                new IntermediatePermissionMarketDocument<PermissionRequest>(
-                        new SimulationPermissionRequest(req),
+                new IntermediatePermissionMarketDocumentV0_82<PermissionRequest>(
+                        request,
                         SimulationConnectorMetadata.REGION_CONNECTOR_ID,
                         ignored -> null,
                         "N" + SimulationConnectorMetadata.getInstance().countryCode(),
@@ -72,6 +74,22 @@ public class ConnectionStatusController {
                                                             EnergyType.ELECTRICITY,
                                                             Granularity.PT5M,
                                                             Granularity.P1Y)
+                ).toPermissionMarketDocument()
+        );
+        streams.publish(
+                new IntermediateRequestPermissionMarketDocument<PermissionRequest>(
+                        request,
+                        SimulationConnectorMetadata.REGION_CONNECTOR_ID,
+                        ignored -> null,
+                        "N" + SimulationConnectorMetadata.getInstance().countryCode(),
+                        ZoneOffset.UTC,
+                        new ValidatedHistoricalDataDataNeed(new RelativeDuration(Period.ofYears(-3),
+                                                                                 Period.ofYears(3),
+                                                                                 null),
+                                                            EnergyType.ELECTRICITY,
+                                                            Granularity.PT5M,
+                                                            Granularity.P1Y),
+                        request.status()
                 ).toPermissionMarketDocument()
         );
         return ResponseEntity.ok(req.connectionId);

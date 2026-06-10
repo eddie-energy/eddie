@@ -11,6 +11,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
@@ -21,6 +22,7 @@ import energy.eddie.outbound.rest.model.cim.v0_82.ValidatedHistoricalDataMarketD
 import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketDocumentModelV1_04;
 import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_12.EnergySharingReferenceDataMarketDocumentModel;
+import energy.eddie.outbound.rest.model.cim.v1_12.RequestPermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarketDocumentRepository;
@@ -29,6 +31,7 @@ import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataM
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.EnergySharingReferenceDataMarketDocumentRepository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.RequestPermissionMarketDocumentRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -214,5 +217,23 @@ public class TaskConfig {
         return new InsertionTask<>(agnosticConnector.getRawDataMessageStream(),
                                    repository,
                                    RawDataMessageModel::new);
+    }
+
+    @Bean
+    DeletionTask<RequestPermissionMarketDocumentModel> rpmdDeletionTask(
+            RequestPermissionMarketDocumentRepository repository,
+            RestOutboundConnectorConfiguration config
+    ) {
+        return new DeletionTask<>(repository, config);
+    }
+
+    @Bean
+    InsertionTask<RequestPermissionEnvelope, RequestPermissionMarketDocumentModel> rpmdInsertionTask(
+            energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
+            RequestPermissionMarketDocumentRepository repository
+    ) {
+        return new InsertionTask<>(cimConnector.getRequestPermissionMarketDocumentStream(),
+                                   repository,
+                                   RequestPermissionMarketDocumentModel::new);
     }
 }

@@ -13,6 +13,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -144,6 +145,36 @@ public class KafkaConnector {
                 .doOnNext(this::produceEnergySharingReferenceDataMarketDocument)
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
+    }
+
+    @MessageStream(RequestPermissionEnvelope.class)
+    public void setRequestPermissionMarketDocumentStream(Flux<RequestPermissionEnvelope> marketDocumentStream) {
+        LOGGER.info("Setting stream for Request Permission Market Document");
+        marketDocumentStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceRequestPermissionMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    private void produceRequestPermissionMarketDocument(RequestPermissionEnvelope rpmdEnvelope) {
+        var header = rpmdEnvelope.getMessageDocumentHeader()
+                                 .getMetaInformation();
+        var permissionId = header.getRequestPermissionId();
+        var metaInformation = rpmdEnvelope.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.requestPermissionMarketDocument(),
+                null,
+                permissionId,
+                rpmdEnvelope,
+                List.of(
+                        new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                        new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                        new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+                )
+        );
+        sendToKafka(toSend, "Could not produce request permission market document");
     }
 
     private void produceEnergySharingReferenceDataMarketDocument(ESRDMDEnvelope esrdmdEnvelope) {

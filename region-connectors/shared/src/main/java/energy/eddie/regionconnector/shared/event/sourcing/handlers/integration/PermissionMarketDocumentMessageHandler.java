@@ -10,9 +10,11 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.shared.cim.IntermediatePermissionMarketDocument;
+import energy.eddie.regionconnector.shared.cim.IntermediatePermissionMarketDocumentFactory;
 import energy.eddie.regionconnector.shared.cim.v0_82.TransmissionScheduleProvider;
-import energy.eddie.regionconnector.shared.cim.v0_82.pmd.IntermediatePermissionMarketDocument;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
@@ -32,10 +34,8 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
     private final PermissionRequestRepository<T> repository;
     private final DataNeedsService dataNeedsService;
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final TransmissionScheduleProvider<T> transmissionScheduleProvider;
-    private final String customerIdentifier;
-    private final String countryCode;
-    private final ZoneId zoneId;
+    private final Sinks.Many<Object> genericPmdSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final IntermediatePermissionMarketDocumentFactory<T> permissionMarketDocumentFactory;
 
     public PermissionMarketDocumentMessageHandler(
             EventBus eventBus,
@@ -48,10 +48,12 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
     ) {
         this.repository = repository;
         this.dataNeedsService = dataNeedsService;
-        this.customerIdentifier = eligiblePartyId;
-        this.countryCode = cimConfig.eligiblePartyNationalCodingScheme().value();
-        this.transmissionScheduleProvider = transmissionScheduleProvider;
-        this.zoneId = zoneId;
+        this.permissionMarketDocumentFactory = new IntermediatePermissionMarketDocumentFactory<>(
+                eligiblePartyId,
+                transmissionScheduleProvider,
+                cimConfig.eligiblePartyNationalCodingScheme().value(),
+                zoneId
+        );
         eventBus.filteredFlux(PermissionEvent.class)
                 .subscribe(this::accept);
     }
@@ -65,36 +67,36 @@ public class PermissionMarketDocumentMessageHandler<T extends PermissionRequest>
         var optionalRequest = repository.findByPermissionId(permissionId);
         if (optionalRequest.isEmpty()) {
             LOGGER.warn("Got event without permission request for permission id {}", permissionId);
-            pmdSink.tryEmitError(new PermissionNotFoundException(permissionId));
+            genericPmdSink.tryEmitError(new PermissionNotFoundException(permissionId));
             return;
         }
         var permissionRequest = optionalRequest.get();
         var dataNeed = dataNeedsService.getById(permissionRequest.dataNeedId());
-        try {
-            pmdSink.tryEmitNext(
-                    new IntermediatePermissionMarketDocument<>(
-                            permissionRequest,
-                            permissionEvent.status(),
-                            customerIdentifier,
-                            transmissionScheduleProvider,
-                            countryCode,
-                            zoneId,
-                            dataNeed
-                    ).toPermissionMarketDocument()
-            );
-        } catch (RuntimeException exception) {
-            LOGGER.warn("Error while trying to emit PermissionMarketDocument.", exception);
-            pmdSink.tryEmitError(exception);
-        }
+        permissionMarketDocumentFactory.each(permissionRequest, permissionEvent.status(), dataNeed)
+                                       .map(IntermediatePermissionMarketDocument::toPermissionMarketDocument)
+                                       .onErrorContinue(PermissionMarketDocumentMessageHandler::onError)
+                                       .subscribe(genericPmdSink::tryEmitNext);
     }
 
     @MessageStream(PermissionEnvelope.class)
     public Flux<PermissionEnvelope> getPermissionMarketDocumentStream() {
-        return pmdSink.asFlux();
+        return genericPmdSink.asFlux()
+                             .ofType(PermissionEnvelope.class);
+    }
+
+    @MessageStream(RequestPermissionEnvelope.class)
+    public Flux<RequestPermissionEnvelope> getRequestPermissionDocumentStream() {
+        return genericPmdSink.asFlux()
+                             .ofType(RequestPermissionEnvelope.class);
     }
 
     @Override
     public void close() {
         pmdSink.tryEmitComplete();
+        genericPmdSink.tryEmitComplete();
+    }
+
+    private static void onError(Throwable throwable, Object obj) {
+        LOGGER.warn("Error while trying to convert PermissionMarketDocument {}.", obj, throwable);
     }
 }

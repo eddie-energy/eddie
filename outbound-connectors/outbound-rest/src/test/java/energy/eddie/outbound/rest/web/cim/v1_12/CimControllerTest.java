@@ -6,14 +6,17 @@ package energy.eddie.outbound.rest.web.cim.v1_12;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_12.EnergySharingReferenceDataMarketDocumentModel;
 import energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel;
+import energy.eddie.outbound.rest.model.cim.v1_12.RequestPermissionMarketDocumentModel;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.EnergySharingReferenceDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.RequestPermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -46,6 +49,8 @@ class CimControllerTest {
     private AcknowledgementMarketDocumentRepository ackRepository;
     @MockitoBean
     private EnergySharingReferenceDataMarketDocumentRepository esrRepository;
+    @MockitoBean
+    private RequestPermissionMarketDocumentRepository rpmdRepository;
 
     @Test
     void nearRealTimeDataMdSSE_returnsDocuments() {
@@ -186,6 +191,50 @@ class CimControllerTest {
                                   .expectStatus()
                                   .isOk()
                                   .returnResult(new ParameterizedTypeReference<List<ESRDMDEnvelope>>() {})
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void requestPermissionMdSSE_returnsDocuments() {
+        var message1 = new RequestPermissionEnvelope();
+        var message2 = new RequestPermissionEnvelope();
+
+        given(cimConnector.getRequestPermissionMarketDocumentStream())
+                .willReturn(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/request-permission-md")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(RequestPermissionEnvelope.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+
+    @Test
+    void requestPermissionMd_returnsDocuments() {
+        var msg = new RequestPermissionMarketDocumentModel(new RequestPermissionEnvelope());
+        given(rpmdRepository.findAll(ArgumentMatchers.<Specification<RequestPermissionMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/request-permission-md")
+                                  .accept(MediaType.APPLICATION_JSON)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(new ParameterizedTypeReference<List<RequestPermissionEnvelope>>() {})
                                   .getResponseBody();
 
         StepVerifier.create(result)

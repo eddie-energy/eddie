@@ -61,6 +61,9 @@ class PermissionMarketDocumentMessageHandlerTest {
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.VALIDATED));
 
         // Then
+        StepVerifier.create(handler.getRequestPermissionDocumentStream())
+                    .expectNextCount(1)
+                    .thenCancel();
         StepVerifier.create(handler.getPermissionMarketDocumentStream())
                     .then(handler::close)
                     .expectNextCount(1)

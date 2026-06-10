@@ -20,13 +20,15 @@ There are six types of CIM documents currently supported by EDDIE:
 - [Min-Max Envelope](./min-max-envelope.md)
 - [Acknowledgement Envelope](./acknowledgement-market-documents.md)
 
-## CIM envelope for v0.82
+## CIM envelope
 
 CIM documents have a shared structure, where each document is wrapped in an envelope.
 The envelope contains the document and a header.
 The following is an example of the header, that is part of each CIM document.
 
-```xml
+::: code-group
+
+```xml [v0.82]
 <MessageDocumentHeader>
     <!-- The datetime when the envelope of the document was created  -->
     <creationDateTime>2024-12-02T10:04:22Z</creationDateTime>
@@ -48,6 +50,30 @@ The following is an example of the header, that is part of each CIM document.
     </MessageDocumentHeader_MetaInformation>
 </MessageDocumentHeader>
 ```
+
+```xml [v1.12]
+
+<MessageDocumentHeader>
+    <!-- The datetime when the envelope of the document was created  -->
+    <creationDateTime>2024-12-02T10:04:22Z</creationDateTime>
+    <MetaInformation>
+        <!-- connectionID is given by the eligible party for one or more permission requests -->
+        <connectionId>1</connectionId>
+        <!-- permissionID uniquely identifies a permission request in EDDIE -->
+        <requestPermissionId>b9b06543-4f14-4081-8419-4b933e4b7f9d</requestPermissionId>
+        <!-- the data need ID shows to which data need a permission request is related to, and in turn which data is related to it too -->
+        <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+        <!-- the document type -->
+        <documentType>request-permission-market-document</documentType>
+        <!-- the region connector ID -->
+        <regionConnector>us-green-button</regionConnector>
+        <!-- the country that the permission request is from -->
+        <regionCountry>US</regionCountry>
+    </MetaInformation>
+</MessageDocumentHeader>
+```
+
+:::
 
 ## Mapping Attributes
 

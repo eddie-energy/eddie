@@ -112,3 +112,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 
 - Update EnergySharingReferenceDataMarketDocument to use some new mandatory fields
 - Replace instances of XMLGreogorianCalendar with ZonedDateTime
+
+## 3.11.0 - 2026-06-10
+
+- Add Request Permission Market Document, the direct successor to the Permission Market Document

@@ -6,10 +6,12 @@ package energy.eddie.outbound.rest.web.cim.v1_12;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.dto.v1_12.AcknowledgementMarketDocuments;
 import energy.eddie.outbound.rest.dto.v1_12.EnergySharingReferenceDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.RequestPermissionMarketDocuments;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -959,6 +961,283 @@ public interface CimSwagger {
             }
     )
     ResponseEntity<EnergySharingReferenceDataMarketDocuments> energySharingReferenceDataMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
+
+
+    @Operation(
+            operationId = "GET request permission market document stream",
+            summary = "GET request permission market document stream",
+            description = "Get all new request permission market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(implementation = RequestPermissionEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                            {
+                                              "MarketDocument": {
+                                                "mRID": "301287d3-2d73-4158-8380-089e09278ed6",
+                                                "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                "revisionNumber": "112",
+                                                "type": "B48",
+                                                "sender_MarketParticipant.mRID": {
+                                                  "value": "sim",
+                                                  "codingScheme": "NDE"
+                                                },
+                                                "sender_MarketParticipant.marketRole.type": "A20",
+                                                "receiver_MarketParticipant.mRID": {
+                                                  "value": "sim",
+                                                  "codingScheme": "NDE"
+                                                },
+                                                "receiver_MarketParticipant.marketRole.type": "A59",
+                                                "process.processType": "A74",
+                                                "period.timeInterval": {
+                                                  "start": "2021-01-01T00:00Z",
+                                                  "end": "9999-12-31T00:00Z"
+                                                },
+                                                "Request_Permission": {
+                                                  "mRID": "301287d3-2d73-4158-8380-089e09278ed6",
+                                                  "createdDateTime": "2026-05-19T11:15:43Z",
+                                                  "transmissionSchedule": "P1D",
+                                                  "AccountingPoint": [
+                                                    {
+                                                      "mRID": {
+                                                        "value": "1",
+                                                        "codingScheme": "NDE"
+                                                      },
+                                                      "name": null
+                                                    }
+                                                  ],
+                                                  "MktActivityRecord": [
+                                                    {
+                                                      "mRID": "bc2db47b-e6fe-418c-bf22-22c226964ef5",
+                                                      "createdDateTime": "2026-05-19T11:15:43Z",
+                                                      "description": "REQUIRES_EXTERNAL_TERMINATION",
+                                                      "type": "sim",
+                                                      "name": null,
+                                                      "reason": null,
+                                                      "status": "A08"
+                                                    }
+                                                  ],
+                                                  "Reason": null,
+                                                  "TimeSeries": null
+                                                }
+                                              },
+                                              "MessageDocumentHeader": {
+                                                "creationDateTime": "2026-05-19T11:15:43Z",
+                                                "MetaInformation": {
+                                                  "connectionId": "1",
+                                                  "requestPermissionId": "301287d3-2d73-4158-8380-089e09278ed6",
+                                                  "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                  "documentType": "request-permission-market-document",
+                                                  "finalCustomerId": null,
+                                                  "dataSourceId": null,
+                                                  "defaultValues": null,
+                                                  "regionConnector": "sim",
+                                                  "regionCountry": "DE",
+                                                  "Asset": null
+                                                }
+                                              }
+                                            }
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<RequestPermissionEnvelope>> requestPermissionMdSSE();
+
+
+    @Operation(
+            operationId = "GET request permission market documents",
+            summary = "GET request permission market documents",
+            description = "Get all past request permission market documents",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = RequestPermissionEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    [{
+                                                      "MarketDocument": {
+                                                        "mRID": "301287d3-2d73-4158-8380-089e09278ed6",
+                                                        "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                        "revisionNumber": "112",
+                                                        "type": "B48",
+                                                        "sender_MarketParticipant.mRID": {
+                                                          "value": "sim",
+                                                          "codingScheme": "NDE"
+                                                        },
+                                                        "sender_MarketParticipant.marketRole.type": "A20",
+                                                        "receiver_MarketParticipant.mRID": {
+                                                          "value": "sim",
+                                                          "codingScheme": "NDE"
+                                                        },
+                                                        "receiver_MarketParticipant.marketRole.type": "A59",
+                                                        "process.processType": "A74",
+                                                        "period.timeInterval": {
+                                                          "start": "2021-01-01T00:00Z",
+                                                          "end": "9999-12-31T00:00Z"
+                                                        },
+                                                        "Request_Permission": {
+                                                          "mRID": "301287d3-2d73-4158-8380-089e09278ed6",
+                                                          "createdDateTime": "2026-05-19T11:15:43Z",
+                                                          "transmissionSchedule": "P1D",
+                                                          "AccountingPoint": [
+                                                            {
+                                                              "mRID": {
+                                                                "value": "1",
+                                                                "codingScheme": "NDE"
+                                                              },
+                                                              "name": null
+                                                            }
+                                                          ],
+                                                          "MktActivityRecord": [
+                                                            {
+                                                              "mRID": "bc2db47b-e6fe-418c-bf22-22c226964ef5",
+                                                              "createdDateTime": "2026-05-19T11:15:43Z",
+                                                              "description": "REQUIRES_EXTERNAL_TERMINATION",
+                                                              "type": "sim",
+                                                              "name": null,
+                                                              "reason": null,
+                                                              "status": "A08"
+                                                            }
+                                                          ],
+                                                          "Reason": null,
+                                                          "TimeSeries": null
+                                                        }
+                                                      },
+                                                      "MessageDocumentHeader": {
+                                                        "creationDateTime": "2026-05-19T11:15:43Z",
+                                                        "MetaInformation": {
+                                                          "connectionId": "1",
+                                                          "requestPermissionId": "301287d3-2d73-4158-8380-089e09278ed6",
+                                                          "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                          "documentType": "request-permission-market-document",
+                                                          "finalCustomerId": null,
+                                                          "dataSourceId": null,
+                                                          "defaultValues": null,
+                                                          "regionConnector": "sim",
+                                                          "regionCountry": "DE",
+                                                          "Asset": null
+                                                        }
+                                                      }
+                                                    }]
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = RequestPermissionMarketDocuments.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                                    <RequestPermissionMarketDocuments xmlns:ns="https://eddie.energy/CEEDS_RequestPermissionDocument_annotated_v1.12.xsd" >
+                                                        <ns:RequestPermission_Envelope>
+                                                            <ns:MarketDocument>
+                                                                <ns:mRID>301287d3-2d73-4158-8380-089e09278ed6</ns:mRID>
+                                                                <ns:description>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns:description>
+                                                                <ns:revisionNumber>112</ns:revisionNumber>
+                                                                <ns:type>B48</ns:type>
+                                                                <ns:sender_MarketParticipant.mRID codingScheme="NDE">sim</ns:sender_MarketParticipant.mRID>
+                                                                <ns:sender_MarketParticipant.marketRole.type>A20</ns:sender_MarketParticipant.marketRole.type>
+                                                                <ns:receiver_MarketParticipant.mRID codingScheme="NDE">sim</ns:receiver_MarketParticipant.mRID>
+                                                                <ns:receiver_MarketParticipant.marketRole.type>A59</ns:receiver_MarketParticipant.marketRole.type>
+                                                                <ns:process.processType>A74</ns:process.processType>
+                                                                <ns:period.timeInterval>
+                                                                    <ns:start>2021-01-01T00:00Z</ns:start>
+                                                                    <ns:end>9999-12-31T00:00Z</ns:end>
+                                                                </ns:period.timeInterval>
+                                                                <ns:Request_Permission>
+                                                                    <ns:mRID>301287d3-2d73-4158-8380-089e09278ed6</ns:mRID>
+                                                                    <ns:createdDateTime>2026-05-19T11:48:56Z</ns:createdDateTime>
+                                                                    <ns:AccountingPoint>
+                                                                        <ns:mRID codingScheme="NDE">1</ns:mRID>
+                                                                    </ns:AccountingPoint>
+                                                                    <ns:MktActivityRecord>
+                                                                        <ns:mRID>456d8c55-971c-4694-b390-8c7bd5818660</ns:mRID>
+                                                                        <ns:createdDateTime>2026-05-19T11:48:56Z</ns:createdDateTime>
+                                                                        <ns:description>EXTERNALLY_TERMINATED</ns:description>
+                                                                        <ns:type>sim</ns:type>
+                                                                        <ns:status>A16</ns:status>
+                                                                    </ns:MktActivityRecord>
+                                                                </ns:Request_Permission>
+                                                            </ns:MarketDocument>
+                                                            <ns:MessageDocumentHeader>
+                                                                <ns:creationDateTime>2026-05-19T11:48:56Z</ns:creationDateTime>
+                                                                <ns:MetaInformation>
+                                                                    <ns:connectionId>1</ns:connectionId>
+                                                                    <ns:requestPermissionId>301287d3-2d73-4158-8380-089e09278ed6</ns:requestPermissionId>
+                                                                    <ns:dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns:dataNeedId>
+                                                                    <ns:documentType>request-permission-market-document</ns:documentType>
+                                                                    <ns:regionConnector>sim</ns:regionConnector>
+                                                                    <ns:regionCountry>DE</ns:regionCountry>
+                                                                </ns:MetaInformation>
+                                                            </ns:MessageDocumentHeader>
+                                                        </ns:RequestPermission_Envelope>
+                                                    </RequestPermissionMarketDocuments>
+                                                    """
+                                    )
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by connectionId ID",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the request permission market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<RequestPermissionMarketDocuments> requestPermissionMd(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,

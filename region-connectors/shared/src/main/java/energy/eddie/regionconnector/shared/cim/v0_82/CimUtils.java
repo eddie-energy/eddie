@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.cim.v0_82;
@@ -22,6 +22,19 @@ public class CimUtils {
     @Nullable
     public static energy.eddie.cim.v0_82.pmd.CodingSchemeTypeList getCodingSchemePmd(String countryCode) {
         return fromValue(countryCode, energy.eddie.cim.v0_82.pmd.CodingSchemeTypeList::fromValue);
+    }
+
+    @Nullable
+    public static String getCodingSchemeRpmd(String countryCode) {
+        if (countryCode.equalsIgnoreCase("aiida")) {
+            return energy.eddie.cim.v1_12.LocalCodingSchemeType.AIIDA.value();
+        }
+        var codingScheme = fromValueSilent(countryCode, energy.eddie.cim.v1_12.StandardCodingSchemeTypeList::fromValue);
+        if (codingScheme == null) {
+            var localCodingScheme = fromValue(countryCode, energy.eddie.cim.v1_12.LocalCodingSchemeType::fromValue);
+            return localCodingScheme == null ? null : localCodingScheme.value();
+        }
+        return codingScheme.value();
     }
 
     @Nullable
