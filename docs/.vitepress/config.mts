@@ -178,6 +178,10 @@ export default withMermaid(
                       text: "Opaque Envelopes",
                       link: "/2-integrating/messages/agnostic.md#opaque-envelopes",
                     },
+                    {
+                      text: "Permission Commands",
+                      link: "/2-integrating/messages/agnostic.md#permission-commands",
+                    },
                   ],
                 },
                 {

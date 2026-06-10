@@ -28,6 +28,7 @@ The data is emitted via [the validated historical data market document](./cim/va
 Furthermore, the data is forwarded **as received from the MDA** via [raw data messages](./agnostic.md#raw-data-messages).
 At this point, it is possible for the eligible party to request the termination of the permission request.
 This is done via [the termination document](./cim/permission-market-documents.md#termination-documents).
+   For AIIDA permissions, the eligible party may also remotely control the transmission of an active permission via [permission commands](./agnostic.md#permission-commands), e.g. to pause/resume transmission, adjust the transmission schedule, or terminate the permission.
 If the data that is received is incomplete, it is possible to re-request data via [the redistribution transaction request document](./cim/redistribution-transaction-request-documents.md).
 6. If the final customer revokes the permission, EDDIE emits a CSM and PMD notifying the eligible party.
 If the eligible party terminates a permission request, they are notified about the status of the permission request in the termination process described in [the permission process model](../permission-requests.md#permission-process-model).
