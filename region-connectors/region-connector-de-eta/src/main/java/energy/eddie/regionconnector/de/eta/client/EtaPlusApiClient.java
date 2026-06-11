@@ -47,6 +47,22 @@ public class EtaPlusApiClient {
     }
 
     /**
+     * Lightweight reachability probe for the ETA Plus API, used by the health indicator.
+     * Sends an unauthenticated GET to the API base URL; any received HTTP response other
+     * than a 5xx (including 401/404, which still prove the server is up and serving) is
+     * treated as alive. 5xx responses, connection failures and timeouts are not alive.
+     *
+     * @return a Mono emitting {@code true} when the API is reachable, {@code false} otherwise
+     */
+    public Mono<Boolean> isAlive() {
+        return webClient.get()
+                .uri("")
+                .exchangeToMono(response -> response.releaseBody()
+                        .thenReturn(!response.statusCode().is5xxServerError()))
+                .timeout(Duration.ofSeconds(configuration.responseTimeoutSeconds()));
+    }
+
+    /**
      * Fetch validated historical metered data for a permission request over its full range,
      * capped at today (the API holds no data for future dates).
      *
