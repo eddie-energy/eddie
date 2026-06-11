@@ -116,3 +116,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.11.0 - 2026-06-10
 
 - Add Request Permission Market Document, the direct successor to the Permission Market Document
+
+## 3.11.1 - 2026-06-11
+
+- Refactor XML serialization to only include required namespaces and not put every namespace available in the context on the root element.
