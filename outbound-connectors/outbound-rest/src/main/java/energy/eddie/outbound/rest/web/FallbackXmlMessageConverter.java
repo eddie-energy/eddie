@@ -3,6 +3,8 @@
 
 package energy.eddie.outbound.rest.web;
 
+import energy.eddie.outbound.rest.RestCimConfig;
+import energy.eddie.outbound.rest.dto.CimCollection;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
@@ -13,33 +15,42 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
 import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fallback converter for XML messages.
+ * It can serialize and deserialize CIM messages and agnostic messages.
+ * To achieve that it uses the {@link MarshallingHttpMessageConverter} for CIM messages and the {@link JacksonXmlHttpMessageConverter} for agnostic messages.
+ * Furthermore, it splits each CIM document type into its own converter to prevent namespace pollution, where all namespaces registered in the {@link Jaxb2Marshaller} are added to the final XML document, even if they are not used in the document itself.
+ */
 @SuppressWarnings("NullableProblems")
 public class FallbackXmlMessageConverter implements HttpMessageConverter<Object> {
 
-    private final MarshallingHttpMessageConverter jaxbConverter;
     private final JacksonXmlHttpMessageConverter jacksonConverter;
+    private final List<MarshallingHttpMessageConverter> converters = new ArrayList<>();
 
     public FallbackXmlMessageConverter(
-            MarshallingHttpMessageConverter jaxbConverter,
             JacksonXmlHttpMessageConverter jacksonConverter
     ) {
-        this.jaxbConverter = jaxbConverter;
         this.jacksonConverter = jacksonConverter;
+        this.initJaxbMarshallers();
     }
 
     @Override
     public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
-        return jaxbConverter.canRead(clazz, mediaType) || jacksonConverter.canRead(clazz, mediaType);
+        return converters.stream().anyMatch(m -> m.canRead(clazz, mediaType))
+               || jacksonConverter.canRead(clazz, mediaType);
     }
 
     @Override
     public boolean canWrite(Class<?> clazz, @Nullable MediaType mediaType) {
-        return jaxbConverter.canWrite(clazz, mediaType) || jacksonConverter.canWrite(clazz, mediaType);
+        return converters.stream().anyMatch(m -> m.canWrite(clazz, mediaType))
+               || jacksonConverter.canWrite(clazz, mediaType);
     }
 
     @Override
@@ -57,10 +68,13 @@ public class FallbackXmlMessageConverter implements HttpMessageConverter<Object>
             HttpInputMessage inputMessage
     ) throws IOException, HttpMessageNotReadableException {
         if (isJaxbAnnotated(clazz)) {
-            return jaxbConverter.read(clazz, inputMessage);
-        } else {
-            return jacksonConverter.read(clazz, inputMessage);
+            for (var converter : converters) {
+                if (converter.canRead(clazz, null)) {
+                    return converter.read(clazz, inputMessage);
+                }
+            }
         }
+        return jacksonConverter.read(clazz, inputMessage);
     }
 
     @Override
@@ -68,9 +82,23 @@ public class FallbackXmlMessageConverter implements HttpMessageConverter<Object>
             throws IOException, HttpMessageNotWritableException {
         Class<?> clazz = o.getClass();
         if (isJaxbAnnotated(clazz)) {
-            jaxbConverter.write(o, contentType, outputMessage);
-        } else {
-            jacksonConverter.write(o, contentType, outputMessage);
+            for (var converter : converters) {
+                if (converter.canWrite(clazz, contentType)) {
+                    converter.write(o, contentType, outputMessage);
+                    return;
+                }
+            }
+        }
+        jacksonConverter.write(o, contentType, outputMessage);
+    }
+
+    private void initJaxbMarshallers() {
+        for (var cimClass : RestCimConfig.cimClasses()) {
+            var marshaller = new Jaxb2Marshaller();
+            cimClass = new ArrayList<>(cimClass);
+            cimClass.add(CimCollection.class);
+            marshaller.setClassesToBeBound(cimClass.toArray(Class<?>[]::new));
+            converters.add(new MarshallingHttpMessageConverter(marshaller));
         }
     }
 

@@ -16,8 +16,6 @@ public class ConnectionStatusMessages {
 
     public ConnectionStatusMessages(@Nullable List<ConnectionStatusMessage> documents) {this.documents = documents;}
 
-    // Required by jackson
-    @SuppressWarnings("unused")
     @Nullable
     @JacksonXmlElementWrapper(useWrapping = false)
     @JacksonXmlProperty(localName = "ConnectionStatusMessage")
