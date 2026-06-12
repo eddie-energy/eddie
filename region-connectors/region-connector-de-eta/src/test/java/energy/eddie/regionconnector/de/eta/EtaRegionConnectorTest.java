@@ -44,7 +44,7 @@ class EtaRegionConnectorTest {
     }
 
     @Test
-    void terminatePermissionWhenPermissionExistsShouldCommitEvents() {
+    void terminatePermissionWhenPermissionAcceptedShouldCommitTerminatedEvent() {
         String permissionId = "test-permission-id";
         DePermissionRequest request = mock(DePermissionRequest.class);
         when(request.status()).thenReturn(PermissionProcessStatus.ACCEPTED);
@@ -53,14 +53,11 @@ class EtaRegionConnectorTest {
         connector.terminatePermission(permissionId);
 
         ArgumentCaptor<SimpleEvent> eventCaptor = ArgumentCaptor.forClass(SimpleEvent.class);
-        verify(outbox, times(2)).commit(eventCaptor.capture());
+        verify(outbox, times(1)).commit(eventCaptor.capture());
 
-        var events = eventCaptor.getAllValues();
-        assertThat(events).hasSize(2);
-        assertThat(events.get(0).permissionId()).isEqualTo(permissionId);
-        assertThat(events.get(0).status()).isEqualTo(PermissionProcessStatus.TERMINATED);
-        assertThat(events.get(1).permissionId()).isEqualTo(permissionId);
-        assertThat(events.get(1).status()).isEqualTo(PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
+        var event = eventCaptor.getValue();
+        assertThat(event.permissionId()).isEqualTo(permissionId);
+        assertThat(event.status()).isEqualTo(PermissionProcessStatus.TERMINATED);
     }
 
     @Test

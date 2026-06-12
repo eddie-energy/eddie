@@ -59,7 +59,6 @@ public class EtaRegionConnector implements RegionConnector {
         }
 
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
-        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
         LOGGER.info("Permission {} marked for termination", permissionId);
     }
