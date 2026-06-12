@@ -23,7 +23,10 @@ FROM   de_eta.eta_permission_request
 WHERE  access_token IS NOT NULL
   AND  status = 'ACCEPTED';
 
-CREATE OR REPLACE VIEW de_eta.eta_permission_request AS
+-- Postgres cannot drop or reorder existing columns via CREATE OR REPLACE VIEW,
+-- so the view must be dropped and recreated to remove the credential columns.
+DROP VIEW de_eta.eta_permission_request;
+CREATE VIEW de_eta.eta_permission_request AS
 SELECT DISTINCT ON (permission_id) permission_id,
     de_eta.firstval_agg(connection_id)        OVER w AS data_source_connection_id,
     de_eta.firstval_agg(metering_point_id)    OVER w AS metering_point_id,
