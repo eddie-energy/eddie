@@ -1,29 +1,7 @@
--- Credentials must not be stored in the append-only event table.
--- This migration introduces a separate mutable table for OAuth credentials,
--- migrates existing credentials for ACCEPTED permissions, and removes
--- the credential columns from the view.
-
-CREATE TABLE de_eta.permission_credentials
-(
-    permission_id VARCHAR(36) PRIMARY KEY,
-    access_token  TEXT        NOT NULL,
-    refresh_token TEXT
-);
-
--- The dedicated DeAcceptedEvent entity has been folded into the generic
--- DeSimpleEvent (status = ACCEPTED); re-point existing rows so the single-table
--- inheritance mapping can still resolve them.
-UPDATE de_eta.permission_event
-SET dtype = 'DeSimpleEvent'
-WHERE dtype = 'DeAcceptedEvent';
-
-INSERT INTO de_eta.permission_credentials (permission_id, access_token, refresh_token)
-SELECT permission_id, access_token, refresh_token
-FROM   de_eta.eta_permission_request
-WHERE  access_token IS NOT NULL
-  AND  status = 'ACCEPTED';
-
-CREATE OR REPLACE VIEW de_eta.eta_permission_request AS
+-- Postgres cannot drop or reorder existing columns via CREATE OR REPLACE VIEW,
+-- so the view must be dropped and recreated to remove the credential columns.
+DROP VIEW de_eta.eta_permission_request;
+CREATE VIEW de_eta.eta_permission_request AS
 SELECT DISTINCT ON (permission_id) permission_id,
     de_eta.firstval_agg(connection_id)        OVER w AS data_source_connection_id,
     de_eta.firstval_agg(metering_point_id)    OVER w AS metering_point_id,
