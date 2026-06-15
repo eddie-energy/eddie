@@ -101,12 +101,12 @@ export function getPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions')
 }
 
-export function getDataSources(): Promise<AiidaDataSource[]> {
-  return fetch('/datasources/outbound')
+export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {
+  return fetch('/permissions/inbound/active')
 }
 
-export function getInboundDataSources(): Promise<AiidaDataSource[]> {
-  return fetch('/datasources/inbound')
+export function getDataSources(): Promise<AiidaDataSource[]> {
+  return fetch('/datasources/outbound')
 }
 
 export function getDataSourceTypes(): Promise<AiidaDataSourceType[]> {

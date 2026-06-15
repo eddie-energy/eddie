@@ -74,22 +74,6 @@ class DataSourceControllerTest {
 
     @Test
     @WithMockUser
-    void getAllInboundDataSources_shouldReturnListOfDataSources() throws Exception {
-        List<DataSource> dataSources = List.of(DATA_SOURCE);
-
-        when(service.getInboundDataSources()).thenReturn(dataSources);
-
-        mockMvc.perform(get("/datasources/inbound")
-                                .with(csrf())
-                                .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.length()").value(1));
-
-        verify(service, times(1)).getInboundDataSources();
-    }
-
-    @Test
-    @WithMockUser
     void addDataSource_shouldReturn201() throws Exception {
         doReturn(new DataSourceSecretsDto(DATA_SOURCE_ID, PLAIN_TEXT_PASSWORD))
                 .when(service).addDataSource(any(DataSourceDto.class));

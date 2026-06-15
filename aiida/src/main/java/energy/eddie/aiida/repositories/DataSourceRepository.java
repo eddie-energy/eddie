@@ -12,9 +12,6 @@ import java.util.UUID;
 
 public interface DataSourceRepository extends JpaRepository<DataSource, UUID> {
 
-    @Query("select d from DataSource d where d.userId = :userId and d.type = DataSourceType.INBOUND")
-    List<DataSource> findInboundByUserId(UUID userId);
-
     @Query("select d from DataSource d where d.userId = :userId and not d.type = DataSourceType.INBOUND")
     List<DataSource> findOutboundByUserId(UUID userId);
 }

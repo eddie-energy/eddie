@@ -118,6 +118,18 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
+    void getActiveInboundPermissions_returnsPermissionsWithDataSource() throws Exception {
+        when(permissionService.getActiveInboundPermissions()).thenReturn(List.of(mockPermission));
+
+        mockMvc.perform(get("/permissions/inbound/active"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(1));
+
+        verify(permissionService).getActiveInboundPermissions();
+    }
+
+    @Test
+    @WithMockUser
     void givenInvalidMediaType_permissionRequest_returnsUnsupportedMediaType() throws Exception {
         mockMvc.perform(post("/permissions").with(csrf()).contentType(MediaType.APPLICATION_CBOR))
                .andExpect(status().isUnsupportedMediaType());

@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,4 +36,19 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
               AND p.status IN (energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START, energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA)
             """)
     List<UUID> findActiveOutboundPermissionIdsByDataSourceId(UUID dataSourceId);
+
+    @Query("""
+            SELECT p
+            FROM Permission p
+            WHERE p.userId = :userId
+              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed.DISCRIMINATOR_VALUE
+              AND p.dataSource IS NOT NULL
+              AND p.status IN (
+                    energy.eddie.aiida.models.permission.PermissionStatus.FETCHED_MQTT_CREDENTIALS,
+                    energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START,
+                    energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA
+              )
+            ORDER BY p.grantTime DESC
+            """)
+    List<Permission> findActiveInboundPermissionsByUserId(@Param("userId") UUID userId);
 }

@@ -56,6 +56,13 @@ public class PermissionController {
         return ResponseEntity.ok(permissionService.getAllPermissionsSortedByGrantTime());
     }
 
+    @Operation(summary = "Get active inbound permissions", description = "Get active inbound permissions that can be used as a data source selection.", operationId = "getActiveInboundPermissions", tags = {"permission"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
+    @GetMapping(path = "/inbound/active", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Permission>> getActiveInboundPermissions() throws InvalidUserException {
+        return ResponseEntity.ok(permissionService.getActiveInboundPermissions());
+    }
+
     @Operation(summary = "Set up new permissions", description = "Set up a new permissions with data from e.g. a QR code.", operationId = "setupNewPermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),

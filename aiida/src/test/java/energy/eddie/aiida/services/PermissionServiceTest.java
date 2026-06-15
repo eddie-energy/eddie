@@ -536,6 +536,20 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenValidUser_getActiveInboundPermissions() throws InvalidUserException {
+        // Given
+        var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
+        when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
+        when(mockPermissionRepository.findActiveInboundPermissionsByUserId(uuid)).thenReturn(List.of(mockPermission));
+
+        // When
+        var result = service.getActiveInboundPermissions();
+
+        // Then
+        assertEquals(List.of(mockPermission), result);
+    }
+
+    @Test
     void givenPermissionInInvalidState_revokePermission_throws() {
         // Given
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
