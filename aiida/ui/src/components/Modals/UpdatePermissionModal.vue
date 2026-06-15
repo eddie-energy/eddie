@@ -13,8 +13,10 @@ import { acceptPermission, getInboundDataSources, rejectPermission } from '@/api
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
-import type { AiidaDataSource } from '@/types'
+import type { AiidaDataSource, AiidaSchema } from '@/types'
 import { useI18n } from 'vue-i18n'
+
+const inboundSchemas: Set<AiidaSchema> = new Set(['MIN-MAX-ENVELOPE-CIM-V1-12', 'OPAQUE'])
 
 const { permission, open, resolveDialog } = usePermissionDialog()
 const { t } = useI18n()
@@ -53,11 +55,20 @@ const handleModalClose = () => {
 
 const dataSourceOptions = computed(() => {
   const requestedSchemas = permission.value?.dataNeed.schemas ?? []
-  const filteredInboundDataSources = inboundDataSources.value.filter((dataSource) =>
-    requestedSchemas.some((schema) => dataSource.schemas?.includes(schema)),
-  )
+  const matches: AiidaDataSource[] = []
 
-  return [...dataSources.value, ...filteredInboundDataSources].map(({ id, name }) => ({
+  if (requestedSchemas.some((requestedSchema) => inboundSchemas.has(requestedSchema))) {
+    const inboundMatches = inboundDataSources.value.filter((dataSource) =>
+      requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema)),
+    )
+    matches.push(...inboundMatches)
+  }
+
+  if (requestedSchemas.some((requestedSchema) => !inboundSchemas.has(requestedSchema))) {
+    matches.push(...dataSources.value)
+  }
+
+  return matches.map(({ id, name }) => ({
     label: name,
     value: id,
   }))

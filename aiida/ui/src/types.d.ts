@@ -1,13 +1,21 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+export type AiidaSchema =
+  | 'SMART-METER-P1-RAW'
+  | 'SMART-METER-P1-CIM-V1-04'
+  | 'SMART-METER-P1-CIM-V1-12'
+  | 'OPAQUE'
+  | 'ACKNOWLEDGEMENT-CIM-V1-12'
+  | 'MIN-MAX-ENVELOPE-CIM-V1-12'
+
 export type AiidaDataNeed = {
   dataNeedId: string
   name: string
   purpose: string
   policyLink: string
   transmissionSchedule: string
-  schemas: string[]
+  schemas: AiidaSchema[]
   allowedPermissionCommands: string[]
   acknowledgementRequired: boolean
   asset: string
