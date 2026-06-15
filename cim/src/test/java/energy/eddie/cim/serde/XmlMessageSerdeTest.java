@@ -28,6 +28,8 @@ import energy.eddie.cim.v1_12.esr.*;
 import energy.eddie.cim.v1_12.rtd.Quantity;
 import energy.eddie.cim.v1_12.rtd.RTDMarketDocument;
 import org.junit.jupiter.api.Test;
+import org.xmlunit.builder.Input;
+import org.xmlunit.xpath.JAXPXPathEngine;
 
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
@@ -128,12 +130,15 @@ class XmlMessageSerdeTest {
                 );
         var serde = new XmlMessageSerde();
 
+
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validatePermissionMarketDocument(new String(res, StandardCharsets.UTF_8));
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
 
     @Test
@@ -229,9 +234,11 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateAccountingPointMarketDocument(new String(res, StandardCharsets.UTF_8));
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
 
     @Test
@@ -374,9 +381,11 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateValidatedHistoricalMarketDocument(new String(res, StandardCharsets.UTF_8));
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
 
     @Test
@@ -494,9 +503,11 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateRtrEnvelope(new String(res, StandardCharsets.UTF_8));
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
 
     @Test
@@ -620,9 +631,11 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateV104ValidatedHistoricalDataMarketDocument(res);
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
 
     @Test
@@ -676,11 +689,12 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateV112EnergySharingReferenceDataMarketDocument(res);
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
-
 
     @Test
     void testSerialize_producesCIMCompliantV1_12RTDEnvelope() throws SerdeInitializationException, SerializationException {
@@ -732,11 +746,12 @@ class XmlMessageSerdeTest {
         // When
         var res = serde.serialize(document);
         var valid = XmlValidator.validateV112NearRealTimeDataMarketDocument(res);
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
     }
-
 
     @Test
     void testSerialize_producesCIMCompliantV1_12AcknowledgementEnvelope() throws SerdeInitializationException, SerializationException {
@@ -817,10 +832,19 @@ class XmlMessageSerdeTest {
 
         // When
         var res = serde.serialize(document);
-        System.out.println(new String(res, StandardCharsets.UTF_8));
         var valid = XmlValidator.validateV112AcknowledgementMarketDocument(res);
+        var count = countExplicitNamespaces(res);
 
         // Then
         assertTrue(valid);
+        assertEquals(1, count);
+    }
+
+    private static int countExplicitNamespaces(byte[] xml) {
+        var xpath = new JAXPXPathEngine();
+        // language=XPATH
+        var countExplicitNamespaces = "count(/*/namespace::*[name() != 'xml'])";
+        var count = xpath.evaluate(countExplicitNamespaces, Input.fromByteArray(xml).build());
+        return Integer.parseInt(count);
     }
 }

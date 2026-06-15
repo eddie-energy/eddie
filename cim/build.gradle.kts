@@ -22,7 +22,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.11.0"
+version = "3.11.1"
 
 repositories {
     mavenCentral()
@@ -44,6 +44,7 @@ dependencies {
     implementation(libs.jakarta.xml.bind.api)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.xmlunit.core)
     testRuntimeOnly(libs.junit.platform.launcher)
 
     // dependencies needed to generate code

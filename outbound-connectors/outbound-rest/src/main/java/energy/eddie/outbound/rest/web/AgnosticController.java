@@ -203,7 +203,7 @@ public class AgnosticController {
     )
     @GetMapping(
             value = "/connection-status-messages",
-            produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE}
+            produces = {APPLICATION_XML_VALUE}
     )
     public ResponseEntity<ConnectionStatusMessages> connectionStatusMessages(
             @RequestParam(required = false) Optional<String> permissionId,
@@ -225,6 +225,32 @@ public class AgnosticController {
         var messages = ModelWithJsonPayload.payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new ConnectionStatusMessages(messages));
+    }
+
+    @GetMapping(
+            value = "/connection-status-messages",
+            produces = {APPLICATION_JSON_VALUE}
+    )
+    public ResponseEntity<List<ConnectionStatusMessage>> connectionStatusMessagesJson(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<@Valid @Pattern(regexp = "[A-Z]{2}") String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    ) {
+        PredicateSpecification<ConnectionStatusMessageModel> specification = buildQuery(permissionId,
+                                                                                        connectionId,
+                                                                                        dataNeedId,
+                                                                                        countryCode,
+                                                                                        regionConnectorId,
+                                                                                        from,
+                                                                                        to);
+        var all = csmRepository.findAll(specification);
+        var messages = ModelWithJsonPayload.payloadsOf(all);
+        return ResponseEntity.ok()
+                             .body(messages);
     }
 
     @Operation(
@@ -365,7 +391,7 @@ public class AgnosticController {
                     ),
             }
     )
-    @GetMapping(value = "/raw-data-messages", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    @GetMapping(value = "/raw-data-messages", produces = {APPLICATION_XML_VALUE})
     public ResponseEntity<RawDataMessages> rawDataMessages(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
@@ -386,6 +412,29 @@ public class AgnosticController {
         var messages = ModelWithJsonPayload.payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new RawDataMessages(messages));
+    }
+
+    @GetMapping(value = "/raw-data-messages", produces = {APPLICATION_JSON_VALUE})
+    public ResponseEntity<List<RawDataMessage>> rawDataMessagesJSON(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    ) {
+        PredicateSpecification<RawDataMessageModel> specification = buildQuery(permissionId,
+                                                                               connectionId,
+                                                                               dataNeedId,
+                                                                               countryCode,
+                                                                               regionConnectorId,
+                                                                               from,
+                                                                               to);
+        var all = rawDataRepository.findAll(specification);
+        var messages = ModelWithJsonPayload.payloadsOf(all);
+        return ResponseEntity.ok()
+                             .body(messages);
     }
 
     @Operation(

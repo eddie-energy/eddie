@@ -9,7 +9,6 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
-import energy.eddie.outbound.rest.RestOutboundBeanConfig;
 import energy.eddie.outbound.rest.TestDataSourceInformation;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
@@ -20,7 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
-import org.springframework.http.converter.xml.MarshallingHttpMessageConverter;
 import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.mock.http.MockHttpOutputMessage;
 
@@ -34,10 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FallbackXmlMessageConverterTest {
-    private final FallbackXmlMessageConverter converter = new FallbackXmlMessageConverter(
-            new MarshallingHttpMessageConverter(new RestOutboundBeanConfig().jaxb2Marshaller()),
-            new JacksonXmlHttpMessageConverter()
-    );
+    private final FallbackXmlMessageConverter converter = new FallbackXmlMessageConverter(new JacksonXmlHttpMessageConverter());
 
     @ParameterizedTest
     @MethodSource("cimAndAgnosticClasses")

@@ -24,6 +24,8 @@ import javax.xml.stream.XMLStreamException;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,26 +51,20 @@ public class XmlMessageSerde implements MessageSerde {
             RECMMOEEnvelope.class,
             RequestPermissionEnvelope.class
     );
-    private final Marshaller marshaller;
-    private final Unmarshaller unmarshaller;
+    private final Map<Class<?>, Marshaller> marshallers = new HashMap<>();
+    private final Map<Class<?>, Unmarshaller> unmarshallers = new HashMap<>();
     private final ObjectMapper objectMapper;
 
     public XmlMessageSerde() throws SerdeInitializationException {
-        try {
-            var ctx = JAXBContext.newInstance(CIM_CLASSES.toArray(new Class<?>[0]));
-            marshaller = ctx.createMarshaller();
-            unmarshaller = ctx.createUnmarshaller();
-        } catch (JAXBException e) {
-            throw new SerdeInitializationException(e);
-        }
         objectMapper = ObjectMapperCreator.create(SerializationFormat.XML);
+        initJAXB();
     }
 
     @Override
     public synchronized byte[] serialize(Object message) throws SerializationException {
         try {
-            if (CIM_CLASSES.contains(message.getClass())) {
-                return serializeCimMessage(message);
+            if (marshallers.containsKey(message.getClass())) {
+                return serializeCimMessage(message, marshallers.get(message.getClass()));
             } else {
                 return objectMapper.writeValueAsBytes(message);
             }
@@ -80,25 +76,39 @@ public class XmlMessageSerde implements MessageSerde {
     @Override
     public <T> T deserialize(byte[] message, Class<T> messageType) throws DeserializationException {
         try {
-            return isCimType(messageType)
-                    ? deserializeCimMessage(message, messageType)
-                    : objectMapper.readValue(message, messageType);
+            for (var entry : unmarshallers.entrySet()) {
+                if (messageType.isAssignableFrom(entry.getKey())) {
+                    return deserializeCimMessage(message, messageType, entry.getValue());
+                }
+            }
+            return objectMapper.readValue(message, messageType);
         } catch (Exception e) {
             throw new DeserializationException(e);
         }
     }
 
-    private boolean isCimType(Class<?> type) {
-        return CIM_CLASSES.stream().anyMatch(type::isAssignableFrom);
+    private void initJAXB() throws SerdeInitializationException {
+        try {
+            for (var cimClass : CIM_CLASSES) {
+                var ctx = JAXBContext.newInstance(cimClass);
+                var marshaller = ctx.createMarshaller();
+                var unmarshaller = ctx.createUnmarshaller();
+                marshallers.put(cimClass, marshaller);
+                unmarshallers.put(cimClass, unmarshaller);
+            }
+        } catch (JAXBException e) {
+            throw new SerdeInitializationException(e);
+        }
     }
 
-    private byte[] serializeCimMessage(Object message) throws JAXBException {
+    private static byte[] serializeCimMessage(Object message, Marshaller marshaller) throws JAXBException {
         var os = new ByteArrayOutputStream();
         marshaller.marshal(message, os);
         return os.toByteArray();
     }
 
-    private <T> T deserializeCimMessage(byte[] message, Class<T> messageType) throws JAXBException, XMLStreamException {
+    private static <T> T deserializeCimMessage(byte[] message, Class<T> messageType, Unmarshaller unmarshaller)
+            throws JAXBException, XMLStreamException {
         XMLInputFactory factory;
         factory = XMLInputFactory.newInstance();
         factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
