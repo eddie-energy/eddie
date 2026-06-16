@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine.steps;
@@ -20,7 +20,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = Scenario.class, name = Scenario.DISCRIMINATOR_VALUE),
         @JsonSubTypes.Type(value = StatusChangeStep.class, name = StatusChangeStep.DISCRIMINATOR_VALUE),
-        @JsonSubTypes.Type(value = ValidatedHistoricalDataStep.class, name = ValidatedHistoricalDataStep.DISCRIMINATOR_VALUE)
+        @JsonSubTypes.Type(value = ValidatedHistoricalDataStep.class, name = ValidatedHistoricalDataStep.DISCRIMINATOR_VALUE),
+        @JsonSubTypes.Type(value = TerminationInteractionStep.class, name = TerminationInteractionStep.DISCRIMINATOR_VALUE)
 })
 public abstract class Model implements Step {
     protected final String type;

@@ -30,6 +30,7 @@ public class DocumentStreams implements AutoCloseable {
     private final Sinks.Many<SimulatedMeterReading> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<String> terminationSink = Sinks.many().multicast().onBackpressureBuffer();
     private final CommonInformationModelConfiguration cimConfig;
     private final ObjectMapper objectMapper;
     private final Sinks.Many<RequestPermissionEnvelope> rpmdSink = Sinks.many().multicast().onBackpressureBuffer();
@@ -59,6 +60,10 @@ public class DocumentStreams implements AutoCloseable {
         rpmdSink.tryEmitNext(permissionMarketDocument);
     }
 
+    public synchronized void publish(String permissionToBeTerminated) {
+        terminationSink.tryEmitNext(permissionToBeTerminated);
+    }
+
     @MessageStream(ValidatedHistoricalDataEnvelope.class)
     public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return getSimulatedMeterReadingStream()
@@ -71,6 +76,7 @@ public class DocumentStreams implements AutoCloseable {
         vhdSink.tryEmitComplete();
         pmdSink.tryEmitComplete();
         csmSink.tryEmitComplete();
+        terminationSink.tryEmitComplete();
     }
 
     @MessageStream(ConnectionStatusMessage.class)
@@ -87,6 +93,7 @@ public class DocumentStreams implements AutoCloseable {
     public Flux<RequestPermissionEnvelope> getRequestPermissionMarketDocumentStream() {
         return rpmdSink.asFlux();
     }
+
     @MessageStream(RawDataMessage.class)
     public Flux<RawDataMessage> getRawDataMessageStream() {
         return getSimulatedMeterReadingStream()
@@ -101,5 +108,9 @@ public class DocumentStreams implements AutoCloseable {
 
     public Flux<SimulatedMeterReading> getSimulatedMeterReadingStream() {
         return vhdSink.asFlux();
+    }
+
+    public Flux<String> getTerminationStream() {
+        return terminationSink.asFlux();
     }
 }

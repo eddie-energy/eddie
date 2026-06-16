@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine;
@@ -16,7 +16,9 @@ class SimulationConstraints {
     private final Scenario scenario;
     private final List<StructuralConstraint> structuralConstraints = List.of(
             new PermissionProcessModelConstraint(),
-            new DataFollowsAcceptedStepOrDataConstraint()
+            new DataFollowsAcceptedStepOrDataConstraint(),
+            new TerminationFollowedByConstraint(),
+            new TerminationFollowingConstraint()
     );
     private final List<ElementConstraint> elementConstraints;
 

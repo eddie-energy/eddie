@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine;
@@ -18,6 +18,7 @@ class PredefinedScenariosTest {
         // Given
         var uri = "classpath:/scenarios/*.json";
         var expected = Set.of(
+                "Eligible Party Terminating Permission Request Scenario",
                 "External Termination Scenario",
                 "Validated Historical Data Scenario",
                 "Failed To Externally Terminate Scenario",
