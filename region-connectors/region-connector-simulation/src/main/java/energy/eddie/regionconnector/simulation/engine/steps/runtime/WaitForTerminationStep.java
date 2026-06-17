@@ -5,9 +5,8 @@ package energy.eddie.regionconnector.simulation.engine.steps.runtime;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.engine.SimulationContext;
+import energy.eddie.regionconnector.simulation.engine.exceptions.ExecutionException;
 import energy.eddie.regionconnector.simulation.engine.steps.Step;
-import org.jspecify.annotations.NonNull;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.List;
@@ -21,23 +20,19 @@ public class WaitForTerminationStep implements Step {
     }
 
     @Override
-    public SequencedCollection<Step> execute(SimulationContext ctx) {
+    public SequencedCollection<Step> execute(SimulationContext ctx) throws ExecutionException {
         try {
-            return ctx.documentStreams().getTerminationStream()
-                      .any(permissionId -> permissionId.equals(ctx.permissionId()))
-                      .timeout(waitFor)
-                      .onErrorResume(throwable -> Mono.just(false))
-                      .map(WaitForTerminationStep::onTermination)
-                      .blockOptional()
-                      .orElseGet(List::of);
-        } catch (IllegalStateException e) {
-            return List.of();
+            var res = ctx.documentStreams()
+                         .getTerminationStream()
+                         .any(permissionId -> permissionId.equals(ctx.permissionId()))
+                         .timeout(waitFor)
+                         .block();
+            if (Boolean.TRUE.equals(res)) {
+                return List.of(new StatusEmissionStep(PermissionProcessStatus.TERMINATED));
+            }
+        } catch (RuntimeException ignored) {
+            // No Op
         }
-    }
-
-    private static @NonNull SequencedCollection<Step> onTermination(boolean present) {
-        return present
-                ? List.of(new StatusEmissionStep(PermissionProcessStatus.TERMINATED))
-                : List.of();
+        throw new ExecutionException("Never received termination request from eligible party for permission request " + ctx.permissionId());
     }
 }

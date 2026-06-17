@@ -4,13 +4,13 @@
 package energy.eddie.regionconnector.simulation.engine;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
-import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
-import energy.eddie.regionconnector.simulation.engine.steps.TestSimulationContext;
+import energy.eddie.regionconnector.simulation.engine.exceptions.ExecutionException;
+import energy.eddie.regionconnector.simulation.engine.steps.*;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
 import java.util.List;
+import java.util.SequencedCollection;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -40,6 +40,31 @@ class SimulationInterpretTest {
                             PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                             csm.status()
                     ))
+                    .verifyComplete();
+    }
+
+    @Test
+    void testRunWithExecutionException_stopsExecution() {
+        // Given
+        var ctx = TestSimulationContext.create();
+        var streams = ctx.documentStreams();
+        var scenario = new Scenario("Test", List.of(
+                new Model("TestModel") {
+                    @Override
+                    public SequencedCollection<Step> execute(SimulationContext ctx) throws ExecutionException {
+                        throw new ExecutionException("Test Exception");
+                    }
+                },
+                new StatusChangeStep(PermissionProcessStatus.CREATED)
+        ));
+        var interpret = new SimulationInterpret(scenario, ctx);
+
+        // When
+        interpret.run();
+
+        // Then
+        StepVerifier.create(streams.getConnectionStatusMessageStream())
+                    .then(streams::close)
                     .verifyComplete();
     }
 }

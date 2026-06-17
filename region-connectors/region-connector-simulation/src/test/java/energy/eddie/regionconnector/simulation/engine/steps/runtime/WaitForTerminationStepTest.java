@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.simulation.engine.steps.runtime;
 
+import energy.eddie.regionconnector.simulation.engine.exceptions.ExecutionException;
 import energy.eddie.regionconnector.simulation.engine.steps.TestSimulationContext;
 import org.junit.jupiter.api.Test;
 
@@ -10,40 +11,35 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class WaitForTerminationStepTest {
 
     @Test
-    void shouldReturnAnEmptyListIfNoTerminationIsSent() {
+    void shouldThrowNoTerminationIsSent() {
         // Given
         var step = new WaitForTerminationStep(Duration.ofSeconds(0));
         var ctx = TestSimulationContext.create();
 
-        // When
-        var res = step.execute(ctx);
-
-        // Then
-        assertThat(res).isEmpty();
+        // When & Then
+        assertThatThrownBy(() -> step.execute(ctx)).isInstanceOf(ExecutionException.class);
     }
 
     @Test
-    void shouldReturnAnEmptyListIfNoMatchingTerminationIsSent() {
+    void shouldThrowIfNoMatchingTerminationIsSent() {
         // Given
         var step = new WaitForTerminationStep(Duration.ofSeconds(0));
         var ctx = TestSimulationContext.create();
 
-        // When
+        // When & Then
         ctx.documentStreams().publish(UUID.randomUUID().toString());
-        var res = step.execute(ctx);
-
-        // Then
-        assertThat(res).isEmpty();
+        assertThatThrownBy(() -> step.execute(ctx)).isInstanceOf(ExecutionException.class);
     }
 
     @Test
-    void shouldReturnListWithStatusEmissionIfTerminationMatches() {
+    void shouldReturnListWithStatusEmissionIfTerminationMatches() throws ExecutionException {
         // Given
-        var step = new WaitForTerminationStep(Duration.ofSeconds(0));
+        var step = new WaitForTerminationStep(Duration.ofSeconds(1));
         var ctx = TestSimulationContext.create();
 
         // When
