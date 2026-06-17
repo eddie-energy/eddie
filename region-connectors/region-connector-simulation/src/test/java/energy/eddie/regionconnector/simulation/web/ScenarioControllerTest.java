@@ -31,7 +31,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -74,6 +73,7 @@ class ScenarioControllerTest {
                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                .andExpect(content().json("""
                                                  [
+                                                   "Eligible Party Terminating Permission Request Scenario",
                                                    "External Termination Scenario",
                                                    "Failed To Externally Terminate Scenario",
                                                    "Validated Historical Data Scenario",
@@ -96,7 +96,7 @@ class ScenarioControllerTest {
                         new StatusChangeStep(PermissionProcessStatus.ACCEPTED),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
-                                                                     ZonedDateTime.now(ZoneOffset.UTC),
+                                                                     ZonedDateTime.parse("2026-01-01T00:00:00Z"),
                                                                      Granularity.PT15M.name(),
                                                                      List.of(
                                                                              new Measurement(10.0,

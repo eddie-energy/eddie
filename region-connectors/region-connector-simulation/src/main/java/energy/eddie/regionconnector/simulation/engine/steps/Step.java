@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine.steps;
 
 import energy.eddie.regionconnector.simulation.engine.SimulationContext;
+import energy.eddie.regionconnector.simulation.engine.exceptions.ExecutionException;
 
 import java.util.SequencedCollection;
 
@@ -19,5 +20,5 @@ public interface Step {
      * @param ctx context that might be needed by the step
      * @return next steps to be executed
      */
-    SequencedCollection<Step> execute(SimulationContext ctx);
+    SequencedCollection<Step> execute(SimulationContext ctx) throws ExecutionException;
 }

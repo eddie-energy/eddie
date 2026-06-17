@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine;
 
+import energy.eddie.regionconnector.simulation.engine.exceptions.ExecutionException;
 import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
 import energy.eddie.regionconnector.simulation.engine.steps.Step;
 import org.slf4j.Logger;
@@ -26,6 +27,15 @@ class SimulationInterpret {
 
     void run() {
         LOGGER.info("Starting simulation scenario {}", scenario.name());
+        try {
+            executionLoop();
+            LOGGER.info("Finishing simulation scenario {}", scenario.name());
+        } catch (ExecutionException e) {
+            LOGGER.info("Simulation was stopped by unsuccessful step", e);
+        }
+    }
+
+    private void executionLoop() throws ExecutionException {
         final Deque<Step> stack = new ArrayDeque<>();
         stack.push(scenario);
         var stepCounter = 0;
@@ -41,8 +51,7 @@ class SimulationInterpret {
             }
         }
         var end = System.nanoTime();
-        LOGGER.info("Finishing simulation scenario {}", scenario.name());
-        LOGGER.atInfo()
+        LOGGER.atDebug()
               .addArgument(stepCounter)
               .addArgument(() -> Duration.of(end - start, ChronoUnit.NANOS).toString())
               .log("Simulation included {} steps and has been running for {}");
