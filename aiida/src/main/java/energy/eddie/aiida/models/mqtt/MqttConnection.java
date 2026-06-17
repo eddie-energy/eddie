@@ -13,7 +13,7 @@ import jakarta.transaction.Transactional;
 
 @Entity
 @Table(name = "mqtt_connection")
-public class MqttConnectionEntity {
+public class MqttConnection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -37,10 +37,10 @@ public class MqttConnectionEntity {
     private MqttUser user;
 
     @SuppressWarnings("NullAway.Init")
-    public MqttConnectionEntity() {}
+    public MqttConnection() {}
 
     @SuppressWarnings("NullAway")
-    public MqttConnectionEntity(String internalHost, String externalHost) {
+    public MqttConnection(String internalHost, String externalHost) {
         this.internalHost = internalHost;
         this.externalHost = externalHost;
     }

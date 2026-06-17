@@ -10,7 +10,7 @@ import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigExcept
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.mqtt.MqttConnectionEntity;
+import energy.eddie.aiida.models.mqtt.MqttConnection;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -45,7 +45,7 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
             throw new SinapsiAlfaEmptyConfigException();
         }
 
-        this.mqttConnection = new MqttConnectionEntity(config.mqttHost(), config.mqttHost());
+        this.mqttConnection = new MqttConnection(config.mqttHost(), config.mqttHost());
         this.activationKey = activationKey;
         this.config = config;
     }

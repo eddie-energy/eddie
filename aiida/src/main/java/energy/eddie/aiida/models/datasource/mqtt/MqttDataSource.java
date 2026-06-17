@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.mqtt.MqttConnectionEntity;
+import energy.eddie.aiida.models.mqtt.MqttConnection;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -26,7 +26,7 @@ public abstract class MqttDataSource extends DataSource {
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "mqtt_connection_id", table = TABLE_NAME, referencedColumnName = "id")
     @JsonUnwrapped
-    protected MqttConnectionEntity mqttConnection;
+    protected MqttConnection mqttConnection;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "mqtt_acl_id", table = TABLE_NAME, referencedColumnName = "id")
@@ -64,7 +64,7 @@ public abstract class MqttDataSource extends DataSource {
     @SuppressWarnings("NullAway")
     // False positive for encode call, since plaintextPassword is NonNull encode should always return non-null password
     public void configure(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
-        this.mqttConnection = new MqttConnectionEntity(config.internalHost(), config.externalHost());
+        this.mqttConnection = new MqttConnection(config.internalHost(), config.externalHost());
         this.passwordHash = encoder.encode(plaintextPassword);
     }
 
