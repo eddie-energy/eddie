@@ -290,7 +290,7 @@ public class DataSourceService {
     private void addAdapterToAggregator(
             DataSourceAdapter<? extends DataSource> adapter
     ) {
-        if (adapter.dataSource().type().equals(DataSourceType.INBOUND)) {
+        if (DataSourceType.INBOUND.equals(adapter.dataSource().type())) {
             inboundAggregator.addNewDataSourceAdapter(adapter);
         } else {
             outboundAggregator.addNewDataSourceAdapter(adapter);
@@ -300,7 +300,7 @@ public class DataSourceService {
     private void removeAdapterFromAggregator(
             DataSourceAdapter<? extends DataSource> adapter
     ) {
-        if (adapter.dataSource().type().equals(DataSourceType.INBOUND)) {
+        if (DataSourceType.INBOUND.equals(adapter.dataSource().type())) {
             inboundAggregator.removeDataSourceAdapter(adapter);
         } else {
             outboundAggregator.removeDataSourceAdapter(adapter);
