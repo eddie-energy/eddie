@@ -18,20 +18,16 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
-import reactor.test.publisher.TestPublisher;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InboundAcknowledgementStreamerTest {
+class InboundAcknowledgementPublisherTest {
     private static final String ACK_TOPIC_PREFIX = "ack/topic";
     private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
 
@@ -39,17 +35,12 @@ class InboundAcknowledgementStreamerTest {
     private ArgumentCaptor<byte[]> payloadCaptor;
 
     @Mock
-    private Flux<InboundRecord> mockFlux;
-    @Mock
-    private Disposable subscription;
-    @Mock
     private IMqttAsyncClient mqttClient;
     @Mock
     private AckFormatterStrategyRegistry ackFormatterStrategyRegistry;
     @Mock
     private AckFormatterStrategy ackFormatterStrategy;
 
-    private TestPublisher<InboundRecord> publisher;
     private ObjectMapper objectMapper;
 
     @BeforeEach
@@ -57,90 +48,16 @@ class InboundAcknowledgementStreamerTest {
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
         objectMapper = builder.build();
-
-        publisher = TestPublisher.create();
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void start_subscribesToFlux() {
-        // Given
-        when(mockFlux.subscribe(any(Consumer.class))).thenReturn(subscription);
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
-
-        // When
-        inboundAckStreamer.start(mqttClient);
-
-        // Then
-        verify(mockFlux).subscribe(any(Consumer.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void start_doesNotSubscribe_withoutMqttClient() {
-        // Given
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
-
-        // When
-        inboundAckStreamer.start(null);
-
-        // Then
-        verify(mockFlux, never()).subscribe(any(Consumer.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void start_doesNotSubscribe_withoutAckTopic() {
-        // Given
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, null, mockFlux);
-
-        // When
-        inboundAckStreamer.start(mqttClient);
-
-        // Then
-        verify(mockFlux, never()).subscribe(any(Consumer.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void start_isIdempotent() {
-        // Given
-        when(subscription.isDisposed()).thenReturn(false);
-        when(mockFlux.subscribe(any(Consumer.class))).thenReturn(subscription);
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
-
-        // When
-        inboundAckStreamer.start(mqttClient);
-        inboundAckStreamer.start(mqttClient);
-
-        // Then
-        verify(mockFlux, times(1)).subscribe(any(Consumer.class));
-    }
-
-    @SuppressWarnings("unchecked")
-    @Test
-    void stop_disposesSubscription() {
-        // Given
-        when(mockFlux.subscribe(any(Consumer.class))).thenReturn(subscription);
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
-
-        // When
-        inboundAckStreamer.start(mqttClient);
-        inboundAckStreamer.stop();
-
-        // Then
-        verify(subscription).dispose();
     }
 
     @Test
     void publishAcknowledgement_publishesMessage() throws Exception {
         // Given
         var expectedTopic = AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12.buildTopicPath(ACK_TOPIC_PREFIX);
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(
+        var inboundAckStreamer = new InboundAcknowledgementPublisher(
                 AIIDA_ID,
                 objectMapper,
                 ACK_TOPIC_PREFIX,
-                publisher.flux(),
                 ackFormatterStrategyRegistry
         );
         var inboundRecord = mock(InboundRecord.class);
@@ -154,10 +71,10 @@ class InboundAcknowledgementStreamerTest {
                 .thenReturn(ackFormatterStrategy);
         when(ackFormatterStrategy.convert(any(), any())).thenReturn(ackEnvelope);
 
-        inboundAckStreamer.start(mqttClient);
+        inboundAckStreamer.setMqttClient(mqttClient);
 
         // When
-        publisher.emit(inboundRecord);
+        inboundAckStreamer.publishAcknowledgement(inboundRecord);
 
         // Then
         verify(mqttClient).publish(eq(expectedTopic), payloadCaptor.capture(), anyInt(), anyBoolean());
@@ -177,19 +94,45 @@ class InboundAcknowledgementStreamerTest {
         when(ackFormatterStrategyRegistry.strategyFor(AiidaSchema.SMART_METER_P1_RAW, AIIDA_ID))
                 .thenThrow(new CimSchemaFormatterException(new IllegalArgumentException("No strategy found")));
 
-        var inboundAckStreamer = new InboundAcknowledgementStreamer(
+        var inboundAckStreamer = new InboundAcknowledgementPublisher(
                 AIIDA_ID,
                 objectMapper,
                 ACK_TOPIC_PREFIX,
-                publisher.flux(),
                 ackFormatterStrategyRegistry
         );
 
         // When
-        inboundAckStreamer.start(mqttClient);
-        publisher.emit(inboundRecord);
+        inboundAckStreamer.setMqttClient(mqttClient);
+        inboundAckStreamer.publishAcknowledgement(inboundRecord);
 
         // Then
         verify(mqttClient, never()).publish(anyString(), any(), any(), any());
+    }
+
+    @Test
+    void publishAcknowledgement_doesNotPublish_withoutMqttClient() throws Exception {
+        // Given
+        var inboundRecord = mock(InboundRecord.class);
+        var inboundAckStreamer = new InboundAcknowledgementPublisher(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX);
+
+        // When
+        inboundAckStreamer.publishAcknowledgement(inboundRecord);
+
+        // Then
+        verify(mqttClient, never()).publish(anyString(), any(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    void publishAcknowledgement_doesNotPublish_withoutAckTopic() throws Exception {
+        // Given
+        var inboundRecord = mock(InboundRecord.class);
+        var inboundAckStreamer = new InboundAcknowledgementPublisher(AIIDA_ID, objectMapper, null);
+        inboundAckStreamer.setMqttClient(mqttClient);
+
+        // When
+        inboundAckStreamer.publishAcknowledgement(inboundRecord);
+
+        // Then
+        verify(mqttClient, never()).publish(anyString(), any(), anyInt(), anyBoolean());
     }
 }

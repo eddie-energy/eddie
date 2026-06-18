@@ -4,7 +4,7 @@
 package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
-import energy.eddie.aiida.adapters.datasource.inbound.ack.InboundAcknowledgementStreamer;
+import energy.eddie.aiida.adapters.datasource.inbound.ack.InboundAcknowledgementPublisher;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
@@ -14,7 +14,6 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
@@ -23,8 +22,7 @@ import java.util.UUID;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
-    private final Sinks.Many<InboundRecord> inboundRecordSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final InboundAcknowledgementStreamer acknowledgementStreamer;
+    private final InboundAcknowledgementPublisher acknowledgementPublisher;
 
     /**
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
@@ -43,11 +41,10 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     ) {
         super(dataSource, LOGGER, mqttConfiguration);
 
-        acknowledgementStreamer = new InboundAcknowledgementStreamer(
+        acknowledgementPublisher = new InboundAcknowledgementPublisher(
                 aiidaId,
                 mapper,
-                dataSource.acknowledgementTopic(),
-                inboundRecordSink.asFlux()
+                dataSource.acknowledgementTopic()
         );
     }
 
@@ -76,13 +73,12 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         );
 
         recordSink.tryEmitNext(inboundRecord);
-        inboundRecordSink.tryEmitNext(inboundRecord);
+        acknowledgementPublisher.publishAcknowledgement(inboundRecord);
     }
 
     @Override
     public void close() {
-        acknowledgementStreamer.stop();
-        inboundRecordSink.tryEmitComplete();
+        acknowledgementPublisher.setMqttClient(null);
         super.close();
     }
 
@@ -93,7 +89,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
-        acknowledgementStreamer.start(asyncClient);
+        acknowledgementPublisher.setMqttClient(asyncClient);
         super.connectComplete(reconnect, serverURI);
     }
 
