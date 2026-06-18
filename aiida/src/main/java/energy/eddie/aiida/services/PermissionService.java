@@ -104,12 +104,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         LOGGER.info("Got request to revoke permission with id '{}'.", permission.id());
         authService.checkAuthorizationForPermission(permission);
 
-        if (!isEligibleForRevocation(permission))
+        if (!permission.status().isActive())
             throw new PermissionStateTransitionException(permission.id().toString(),
                                                          REVOKED.name(),
-                                                         List.of(ACCEPTED.name(),
-                                                                 STREAMING_DATA.name(),
-                                                                 WAITING_FOR_START.name()),
+                                                         ACTIVE.stream().map(Enum::name).toList(),
                                                          permission.status().name());
 
         validateInboundDataSourceNotInUse(permission);
@@ -302,7 +300,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     public List<Permission> getActiveInboundPermissions() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        return permissionRepository.findActiveInboundPermissionsByUserId(currentUserId);
+        return permissionRepository.findInboundByUserIdAndStatus(currentUserId, PermissionStatus.ACTIVE);
     }
 
     /**
@@ -326,7 +324,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        List<Permission> allActivePermissions = permissionRepository.findAllActivePermissions();
+        var allActivePermissions = permissionRepository.findByStatusIn(ACTIVE);
         LOGGER.info(
                 "Fetched {} active permissions from database and will resume streaming or update them if they are expired.",
                 allActivePermissions.size());
@@ -457,20 +455,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Indicates whether the permission's current status allows it to be revoked. The status needs to be one of the
-     * following, to be eligible for revocation: ACCEPTED, WAITING_FOR_START, STREAMING_DATA
-     *
-     * @param permission Permission to check.
-     * @return True if the permission is eligible for revocation, false otherwise.
-     */
-    private boolean isEligibleForRevocation(Permission permission) {
-        return switch (permission.status()) {
-            case ACCEPTED, WAITING_FOR_START, STREAMING_DATA -> true;
-            default -> false;
-        };
-    }
-
-    /**
      * Sets the provided {@code permission} as unfulfillable and throws a {@code PermissionUnfulfillableException}
      */
     private void markPermissionAsUnfulfillable(Permission permission) throws PermissionUnfulfillableException {
@@ -517,7 +501,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void validateInboundDataSourceNotInUse(Permission permission) throws InboundDataSourceInUseException {
         var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
         if (dataSourceId != null) {
-            var permissionIds = permissionRepository.findActiveOutboundPermissionIdsByDataSourceId(dataSourceId);
+            var permissionIds = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACTIVE);
             if (!permissionIds.isEmpty()) {
                 throw new InboundDataSourceInUseException(permission.id(), dataSourceId, permissionIds);
             }

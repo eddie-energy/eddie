@@ -53,9 +53,7 @@ public class PermissionExpiredRunnable implements Runnable {
               .log("Will expire permission permission {}, running {} ms too late compared to target time (negative number would be too early)");
 
         // safeguard if e.g. a revocation operation could not properly cancel this runnable before it runs
-        if (!(permission.status() == PermissionStatus.ACCEPTED ||
-              permission.status() == PermissionStatus.WAITING_FOR_START ||
-              permission.status() == PermissionStatus.STREAMING_DATA)) {
+        if (!permission.status().isActive()) {
             LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
                         permission.id(), permission.status());
             return;

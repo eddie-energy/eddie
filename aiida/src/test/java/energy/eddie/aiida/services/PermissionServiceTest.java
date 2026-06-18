@@ -540,7 +540,8 @@ class PermissionServiceTest {
         // Given
         var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
         when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
-        when(mockPermissionRepository.findActiveInboundPermissionsByUserId(uuid)).thenReturn(List.of(mockPermission));
+        when(mockPermissionRepository.findInboundByUserIdAndStatus(uuid, PermissionStatus.ACTIVE))
+                .thenReturn(List.of(mockPermission));
 
         // When
         var result = service.getActiveInboundPermissions();
@@ -633,7 +634,7 @@ class PermissionServiceTest {
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockInboundDataSource.permission()).thenReturn(mockPermission);
         when(mockInboundDataSource.id()).thenReturn(dataSourceId);
-        when(mockPermissionRepository.findActiveOutboundPermissionIdsByDataSourceId(dataSourceId))
+        when(mockPermissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACTIVE))
                 .thenReturn(List.of(blockingPermissionId1, blockingPermissionId2));
 
         var exception = assertThrows(InboundDataSourceInUseException.class,
@@ -759,7 +760,7 @@ class PermissionServiceTest {
             doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
             permission.setStartTime(Instant.parse(start));
             permission.setExpirationTime(Instant.parse(end));
-            when(mockPermissionRepository.findAllActivePermissions()).thenReturn(List.of(permission));
+            when(mockPermissionRepository.findByStatusIn(PermissionStatus.ACTIVE)).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
             if (expectedState == PermissionStatus.WAITING_FOR_START || expectedState == PermissionStatus.STREAMING_DATA)
