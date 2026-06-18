@@ -14,6 +14,7 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
@@ -22,6 +23,7 @@ import java.util.UUID;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
+    private final Sinks.Many<InboundRecord> inboundRecordSink = Sinks.many().multicast().onBackpressureBuffer();
     private final InboundAcknowledgementStreamer acknowledgementStreamer;
 
     /**
@@ -45,15 +47,8 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 aiidaId,
                 mapper,
                 dataSource.acknowledgementTopic(),
-                recordSink.asFlux()
-                          .ofType(InboundRecord.class)
+                inboundRecordSink.asFlux()
         );
-    }
-
-    @Override
-    public void connectComplete(boolean reconnect, String serverURI) {
-        acknowledgementStreamer.start(asyncClient);
-        super.connectComplete(reconnect, serverURI);
     }
 
     /**
@@ -79,12 +74,27 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 schema.get(),
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
+
         recordSink.tryEmitNext(inboundRecord);
+        inboundRecordSink.tryEmitNext(inboundRecord);
+    }
+
+    @Override
+    public void close() {
+        acknowledgementStreamer.stop();
+        inboundRecordSink.tryEmitComplete();
+        super.close();
     }
 
     @Override
     public void deliveryComplete(IMqttToken token) {
         LOGGER.trace("Delivery complete for MqttToken {}", token);
+    }
+
+    @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        acknowledgementStreamer.start(asyncClient);
+        super.connectComplete(reconnect, serverURI);
     }
 
     @Override
