@@ -11,6 +11,7 @@ import org.eclipse.paho.mqttv5.client.IMqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import tools.jackson.databind.ObjectMapper;
 
@@ -26,6 +27,8 @@ public class InboundAcknowledgementStreamer {
     private final String acknowledgementTopic;
     private final Flux<InboundRecord> inboundRecordFlux;
     private final AckFormatterStrategyRegistry ackFormatterStrategyRegistry;
+    @Nullable
+    private Disposable subscription;
 
     public InboundAcknowledgementStreamer(
             UUID aiidaId,
@@ -54,12 +57,22 @@ public class InboundAcknowledgementStreamer {
         this.ackFormatterStrategyRegistry = ackFormatterStrategyRegistry;
     }
 
-    public void start(@Nullable IMqttAsyncClient mqttClient) {
-        if (mqttClient != null && acknowledgementTopic != null) {
-            LOGGER.info("Starting InboundAcknowledgementStreamer with topic {}", acknowledgementTopic);
-            inboundRecordFlux.subscribe(inboundRecord -> publishAcknowledgement(mqttClient, inboundRecord));
-        } else {
+    public synchronized void start(@Nullable IMqttAsyncClient mqttClient) {
+        if (mqttClient == null || acknowledgementTopic == null) {
             LOGGER.info("Not starting InboundAcknowledgementStreamer, because mqttClient or ackTopic is null");
+        } else if (subscription == null || subscription.isDisposed()) {
+            LOGGER.info("Starting InboundAcknowledgementStreamer with topic {}", acknowledgementTopic);
+            subscription = inboundRecordFlux.subscribe(inboundRecord ->
+                                                               publishAcknowledgement(mqttClient, inboundRecord));
+        } else {
+            LOGGER.debug("InboundAcknowledgementStreamer is already running, skipping duplicate start");
+        }
+    }
+
+    public synchronized void stop() {
+        if (subscription != null) {
+            subscription.dispose();
+            subscription = null;
         }
     }
 

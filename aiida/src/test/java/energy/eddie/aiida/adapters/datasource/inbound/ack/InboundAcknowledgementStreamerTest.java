@@ -18,6 +18,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.test.publisher.TestPublisher;
 import tools.jackson.databind.ObjectMapper;
@@ -39,6 +40,8 @@ class InboundAcknowledgementStreamerTest {
 
     @Mock
     private Flux<InboundRecord> mockFlux;
+    @Mock
+    private Disposable subscription;
     @Mock
     private IMqttAsyncClient mqttClient;
     @Mock
@@ -62,6 +65,7 @@ class InboundAcknowledgementStreamerTest {
     @Test
     void start_subscribesToFlux() {
         // Given
+        when(mockFlux.subscribe(any(Consumer.class))).thenReturn(subscription);
         var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
 
         // When
@@ -95,6 +99,37 @@ class InboundAcknowledgementStreamerTest {
 
         // Then
         verify(mockFlux, never()).subscribe(any(Consumer.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void start_isIdempotent() {
+        // Given
+        when(subscription.isDisposed()).thenReturn(false);
+        when(mockFlux.subscribe(any(Consumer.class))).thenReturn(subscription);
+        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
+
+        // When
+        inboundAckStreamer.start(mqttClient);
+        inboundAckStreamer.start(mqttClient);
+
+        // Then
+        verify(mockFlux, times(1)).subscribe(any(Consumer.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void stop_disposesSubscription() {
+        // Given
+        when(mockFlux.subscribe(any(Consumer.class))).thenReturn(subscription);
+        var inboundAckStreamer = new InboundAcknowledgementStreamer(AIIDA_ID, objectMapper, ACK_TOPIC_PREFIX, mockFlux);
+
+        // When
+        inboundAckStreamer.start(mqttClient);
+        inboundAckStreamer.stop();
+
+        // Then
+        verify(subscription).dispose();
     }
 
     @Test
