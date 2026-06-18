@@ -7,16 +7,22 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.testcontainers.shaded.com.google.common.collect.Sets;
 
 import java.io.IOException;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@SuppressWarnings("DataFlowIssue")
 class ManagementApiConfigInternalEndpointsFilterTest {
     @ParameterizedTest
     @ValueSource(strings = {"/management", "/outbound-connectors", "/data-needs/management", "/region-connectors/any-region-connector/management/any/other"})
@@ -25,6 +31,32 @@ class ManagementApiConfigInternalEndpointsFilterTest {
         var req = new MockHttpServletRequest();
         req.setRequestURI(reqUri);
         req.setLocalPort(9090);
+        var resp = new MockHttpServletResponse();
+        var chain = new MockFilterChain();
+        var config = new ManagementApiConfig(9090, "management");
+        var filter = config.trustedEndpointsFilter().getFilter();
+
+        // When
+        filter.doFilter(req, resp, chain);
+
+        // Then
+        assertAll(
+                () -> assertEquals(req, chain.getRequest()),
+                () -> assertEquals(resp, chain.getResponse())
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testDoFilter_forManagementPortOnManagementUrlWithContextPath_continuesFilterChain(
+            String reqUri,
+            String contextPath
+    ) throws ServletException, IOException {
+        // Given
+        var req = new MockHttpServletRequest();
+        req.setRequestURI(reqUri);
+        req.setLocalPort(9090);
+        req.setContextPath(contextPath);
         var resp = new MockHttpServletResponse();
         var chain = new MockFilterChain();
         var config = new ManagementApiConfig(9090, "management");
@@ -95,5 +127,21 @@ class ManagementApiConfigInternalEndpointsFilterTest {
 
         // Then
         assertEquals(HttpServletResponse.SC_NOT_FOUND, resp.getStatus());
+    }
+
+    private static Stream<Arguments> testDoFilter_forManagementPortOnManagementUrlWithContextPath_continuesFilterChain() {
+        var endpoints = Set.of("/eddie/management",
+                               "/eddie/outbound-connectors",
+                               "/eddie/data-needs/management",
+                               "/eddie/region-connectors/any-region-connector/management/any/other");
+        var contextPaths = Set.of("/eddie", "/eddie/", "eddie/");
+        return cartesianProduct(endpoints, contextPaths);
+    }
+
+    @SafeVarargs
+    private static Stream<Arguments> cartesianProduct(Set<String>... sets) {
+        return Sets.cartesianProduct(sets)
+                   .stream()
+                   .map(s -> Arguments.of(s.toArray(Object[]::new)));
     }
 }
