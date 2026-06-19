@@ -4,8 +4,10 @@
 
 package energy.eddie.regionconnector.aiida.streams;
 
+import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +26,9 @@ class IdentifiableStreamsTest {
 
     private Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> rtdCimV104Sink;
     private Sinks.Many<energy.eddie.cim.v1_12.rtd.RTDEnvelope> rtdCimV112Sink;
+    private Sinks.Many<RECMMOEEnvelope> minMaxSink;
     private Sinks.Many<AcknowledgementEnvelope> ackSink;
+    private Sinks.Many<OpaqueEnvelope> opaqueSink;
     private Sinks.Many<RawDataMessage> rawSink;
     private IdentifiableStreams streams;
 
@@ -32,9 +36,11 @@ class IdentifiableStreamsTest {
     void setUp() {
         rtdCimV104Sink = Sinks.many().unicast().onBackpressureBuffer();
         rtdCimV112Sink = Sinks.many().unicast().onBackpressureBuffer();
+        minMaxSink = Sinks.many().unicast().onBackpressureBuffer();
         ackSink = Sinks.many().unicast().onBackpressureBuffer();
+        opaqueSink = Sinks.many().unicast().onBackpressureBuffer();
         rawSink = Sinks.many().unicast().onBackpressureBuffer();
-        streams = new IdentifiableStreams(rtdCimV104Sink, rtdCimV112Sink, ackSink, rawSink);
+        streams = new IdentifiableStreams(rtdCimV104Sink, rtdCimV112Sink, minMaxSink, ackSink, opaqueSink, rawSink);
     }
 
     @Test
@@ -68,6 +74,21 @@ class IdentifiableStreamsTest {
     }
 
     @Test
+    void minMaxFlux_forwardsEmittedEnvelopes() {
+        var one = new RECMMOEEnvelope();
+        var two = new RECMMOEEnvelope();
+
+        StepVerifier.create(streams.minMaxEnvelopeCimV112Flux())
+                    .then(() -> {
+                        minMaxSink.tryEmitNext(one);
+                        minMaxSink.tryEmitNext(two);
+                    })
+                    .expectNext(one, two)
+                    .thenCancel()
+                    .verify();
+    }
+
+    @Test
     void acknowledgementFlux_forwardsEmittedEnvelopes() {
         var one = new AcknowledgementEnvelope();
         var two = new AcknowledgementEnvelope();
@@ -76,6 +97,21 @@ class IdentifiableStreamsTest {
                     .then(() -> {
                         ackSink.tryEmitNext(one);
                         ackSink.tryEmitNext(two);
+                    })
+                    .expectNext(one, two)
+                    .thenCancel()
+                    .verify();
+    }
+
+    @Test
+    void opaqueFlux_forwardsEmittedEnvelopes() {
+        var one = new OpaqueEnvelope(null, null, null, null, null, null, null);
+        var two = new OpaqueEnvelope(null, null, null, null, null, null, null);
+
+        StepVerifier.create(streams.opaqueEnvelopeFlux())
+                    .then(() -> {
+                        opaqueSink.tryEmitNext(one);
+                        opaqueSink.tryEmitNext(two);
                     })
                     .expectNext(one, two)
                     .thenCancel()

@@ -5,6 +5,8 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.MessageWithHeaders;
+import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
@@ -13,6 +15,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -83,6 +86,16 @@ public class KafkaConnector {
                 .subscribe();
     }
 
+    @MessageStream(OpaqueEnvelope.class)
+    public void setOpaqueEnvelopeStream(Flux<OpaqueEnvelope> opaqueEnvelopeStream) {
+        opaqueEnvelopeStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceOpaqueEnvelope)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
     @MessageStream(AccountingPointEnvelope.class)
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
@@ -132,6 +145,16 @@ public class KafkaConnector {
                 .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(this::produceAcknowledgementMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> minMaxEnvelopeStream) {
+        minMaxEnvelopeStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceMinMaxEnvelope)
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
     }
@@ -281,6 +304,18 @@ public class KafkaConnector {
         LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
 
+    private void produceOpaqueEnvelope(OpaqueEnvelope opaqueEnvelope) {
+        var toSend = new ProducerRecord<String, Object>(
+                config.opaqueEnvelope(),
+                null,
+                opaqueEnvelope.connectionId(),
+                opaqueEnvelope,
+                toHeaders(opaqueEnvelope)
+        );
+        sendToKafka(toSend, "Could not produce opaque envelope message");
+        LOGGER.debug("Produced opaque envelope message for permission request {}", opaqueEnvelope.permissionId());
+    }
+
     private void produceAccountingPointEnvelope(AccountingPointEnvelope marketDocument) {
         var header = marketDocument.getMessageDocumentHeader()
                                    .getMessageDocumentHeaderMetaInformation();
@@ -341,6 +376,20 @@ public class KafkaConnector {
                      metaInformation.getRequestPermissionId());
     }
 
+    private void produceMinMaxEnvelope(RECMMOEEnvelope minMaxEnvelope) {
+        var metaInformation = minMaxEnvelope.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.minMaxEnvelopeDocument(),
+                null,
+                metaInformation.getConnectionId(),
+                minMaxEnvelope,
+                cimToHeaders(minMaxEnvelope)
+        );
+        sendToKafka(toSend, "Could not produce min-max envelope message");
+        LOGGER.debug("Produced min-max envelope message for permission request {}",
+                     metaInformation.getRequestPermissionId());
+    }
+
     private Iterable<Header> cimToHeaders(energy.eddie.cim.v1_04.rtd.RTDEnvelope header) {
         return List.of(
                 new StringHeader(Headers.PERMISSION_ID, header.getMessageDocumentHeaderMetaInformationPermissionId()),
@@ -364,6 +413,23 @@ public class KafkaConnector {
                 new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
                 new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
                 new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+        );
+    }
+
+    private Iterable<Header> cimToHeaders(RECMMOEEnvelope header) {
+        var metaInformation = header.getMessageDocumentHeader().getMetaInformation();
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+        );
+    }
+
+    private static List<Header> toHeaders(MessageWithHeaders raw) {
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, raw.permissionId()),
+                new StringHeader(Headers.CONNECTION_ID, raw.connectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, raw.dataNeedId())
         );
     }
 

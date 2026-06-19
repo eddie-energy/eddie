@@ -46,6 +46,8 @@ The following topics are created upon starting this outbound-connector:
   Provides status change updates related to a permission request
 - `ep.${outbound-connector.kafka.eddie-id}.agnostic.raw-data-message`:
   Provides messages from the region connectors as is, with additional metadata
+- `ep.${outbound-connector.kafka.eddie-id}.agnostic.opaque-envelope`:
+  Provides forwarded [opaque envelopes](../../2-integrating/messages/agnostic.md#opaque-envelopes)
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents
@@ -53,6 +55,8 @@ The following topics are created upon starting this outbound-connector:
   Provides near real-time data market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.acknowledgement-md`:
   Provides ackowledgement market documents
+- `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.min-max-envelope-md`:
+  Provides forwarded [min-max envelopes](../../2-integrating/messages/cim/min-max-envelope.md)
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.accounting-point-md`:
   Provides accounting point market documents
 - `fw.${outbound-connector.kafka.eddie-id}.cim_0_82.termination-md`:

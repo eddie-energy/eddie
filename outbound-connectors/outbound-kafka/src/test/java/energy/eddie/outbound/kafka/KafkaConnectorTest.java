@@ -16,7 +16,11 @@ import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.recmmoe.MetaInformation;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
+import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Tag;
@@ -45,6 +49,7 @@ class KafkaConnectorTest {
                                                                                               "at-eda",
                                                                                               "paid",
                                                                                               "mdaid");
+    private final TopicConfiguration config = new TopicConfiguration("eddie");
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     private EmbeddedKafkaBroker embeddedKafka;
@@ -181,6 +186,32 @@ class KafkaConnectorTest {
     }
 
     @Test
+    void testOpaqueEnvelope_areProducedToKafka() {
+        // Given
+        var data = new energy.eddie.cim.agnostic.OpaqueEnvelope(
+                "cid",
+                "pid",
+                "dnid",
+                "rid",
+                "mid",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                "blblblb"
+        );
+        kafkaConnector.setOpaqueEnvelopeStream(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton(config.opaqueEnvelope()));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+    @Test
     void testCIM_v1_04_ValidatedHistoricalDataMarketDocuments_areProducedToKafka() {
         // Given
         var data = new VHDEnvelope()
@@ -268,6 +299,33 @@ class KafkaConnectorTest {
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
         consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.acknowledgement-md"));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void testMinMaxEnvelope_areProducedToKafka() {
+        // Given
+        var data = new RECMMOEEnvelope()
+                .withMessageDocumentHeader(
+                        new MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                )
+                );
+        kafkaConnector.setMinMaxEnvelopeStream(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton(config.minMaxEnvelopeDocument()));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);

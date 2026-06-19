@@ -60,6 +60,13 @@ public class AgnosticConnector implements
                 .subscribe(rdSink::tryEmitNext);
     }
 
+    @MessageStream(OpaqueEnvelope.class)
+    public void setOpaqueEnvelopeStream(Flux<OpaqueEnvelope> opaqueEnvelopeStream) {
+        opaqueEnvelopeStream
+                .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing opaque envelope", err))
+                .subscribe(opaqueEnvelopeSink::tryEmitNext);
+    }
+
     @Override
     public Flux<PermissionCommand> getPermissionCommands() {
         return permissionCommandSink.asFlux();

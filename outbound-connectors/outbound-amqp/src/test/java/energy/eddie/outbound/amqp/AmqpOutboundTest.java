@@ -18,6 +18,7 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.esr.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.esr.MetaInformation;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -134,6 +135,37 @@ class AmqpOutboundTest {
                                      );
                                      latch.countDown();
                                  })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testOpaqueEnvelope_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<energy.eddie.cim.agnostic.OpaqueEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setOpaqueEnvelopeStream(publisher.flux());
+        var message = new energy.eddie.cim.agnostic.OpaqueEnvelope(
+                "pid",
+                "cid",
+                "dnid",
+                "rid",
+                "mid",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                ""
+        );
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.opaqueEnvelope())
+                                 .messageHandler((ctx, msg) -> latch.countDown())
                                  .build();
         var res = latch.await(5, TimeUnit.SECONDS);
         assertTrue(res, "Assertions in message handler might have failed");
@@ -362,6 +394,38 @@ class AmqpOutboundTest {
                                      latch.countDown();
                                  })
                                  .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testMinMaxEnvelope_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<RECMMOEEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setMinMaxEnvelopeStream(publisher.flux());
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.minMaxEnvelopeDocument())
+                                 .messageHandler((ctx, msg) -> latch.countDown())
+                                 .build();
+        var message = new RECMMOEEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.recmmoe.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.recmmoe.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                )
+                );
+        // When
+        publisher.emit(message);
+
+        // Then
         var res = latch.await(5, TimeUnit.SECONDS);
         assertTrue(res, "Assertions in message handler might have failed");
 

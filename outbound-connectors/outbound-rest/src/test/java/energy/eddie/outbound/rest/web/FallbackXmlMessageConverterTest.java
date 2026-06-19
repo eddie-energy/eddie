@@ -4,6 +4,7 @@
 package energy.eddie.outbound.rest.web;
 
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.testing.XmlValidator;
@@ -11,6 +12,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataMarketDocumentComplexType;
 import energy.eddie.outbound.rest.TestDataSourceInformation;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
+import energy.eddie.outbound.rest.dto.OpaqueEnvelopes;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,7 @@ import org.springframework.mock.http.MockHttpOutputMessage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -144,6 +147,24 @@ class FallbackXmlMessageConverterTest {
 
         // When & Then
         assertDoesNotThrow(() -> converter.write(csm, MediaType.APPLICATION_XML, msg));
+    }
+
+    @Test
+    void write_opaqueEnvelope_doesNotThrow() {
+        // Given
+        var opaque = new OpaqueEnvelopes(List.of(
+                new OpaqueEnvelope("rid",
+                                   "pid",
+                                   "cid",
+                                   "dnid",
+                                   "mid",
+                                   ZonedDateTime.parse("2026-06-19T14:06:00Z"),
+                                   "{}")
+        ));
+        var msg = new MockHttpOutputMessage();
+
+        // When & Then
+        assertDoesNotThrow(() -> converter.write(opaque, MediaType.APPLICATION_XML, msg));
     }
 
     private static Stream<Arguments> cimAndAgnosticClasses() {

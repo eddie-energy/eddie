@@ -84,6 +84,16 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
         return minMaxEnvelopeSink.asFlux();
     }
 
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> minMaxEnvelopeStream) {
+        minMaxEnvelopeStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing min-max envelope",
+                        err
+                ))
+                .subscribe(minMaxEnvelopeSink::tryEmitNext);
+    }
+
     public void publish(RECMMOEEnvelope minMaxEnvelope) {
         minMaxEnvelopeSink.tryEmitNext(minMaxEnvelope);
     }

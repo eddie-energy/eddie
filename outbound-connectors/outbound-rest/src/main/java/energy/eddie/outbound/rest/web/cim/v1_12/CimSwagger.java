@@ -8,10 +8,7 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
-import energy.eddie.outbound.rest.dto.v1_12.AcknowledgementMarketDocuments;
-import energy.eddie.outbound.rest.dto.v1_12.EnergySharingReferenceDataMarketDocuments;
-import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
-import energy.eddie.outbound.rest.dto.v1_12.RequestPermissionMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -734,6 +731,314 @@ public interface CimSwagger {
             )
     )
     ResponseEntity<Void> minMaxEnvelopeMd(RECMMOEEnvelope minMaxEnvelope);
+
+    @Operation(
+            operationId = "GET forwarded min-max envelope market document stream",
+            summary = "GET forwarded min-max envelope market document stream",
+            description = "Get all new forwarded min-max envelope market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "text/event-stream",
+                            schema = @Schema(implementation = RECMMOEEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                            {
+                                              "MessageDocumentHeader": {
+                                                "creationDateTime": "2026-02-16T10:11:58Z",
+                                                "MetaInformation": {
+                                                  "connectionId": "1",
+                                                  "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
+                                                  "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                                  "documentType": "min-max-envelope",
+                                                  "finalCustomerId": "fc-id",
+                                                  "dataSourceId": "0743c9d8-3e5f-4575-999b-34f6f83b2075",
+                                                  "defaultValues": "minPower=value",
+                                                  "regionConnector": "aiida",
+                                                  "regionCountry": "AT",
+                                                  "Asset": {
+                                                    "type": "CONNECTION-AGREEMENT-POINT",
+                                                    "operatorId": "AT003000",
+                                                    "meterId": "003114735"
+                                                  }
+                                                }
+                                              },
+                                              "MarketDocument": {
+                                                "mRID": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                                "description": "Test Min-Max Envelope",
+                                                "revisionNumber": "1",
+                                                "lastModifiedDateTime": "2026-02-16T10:11:58Z",
+                                                "comment": "This is a test min-max envelope.",
+                                                "sender_MarketParticipant.mRID": {
+                                                  "value": "AT003000",
+                                                  "codingScheme": "NAT"
+                                                },
+                                                "receiver_MarketParticipant.mRID": {
+                                                  "value": "fc-id",
+                                                  "codingScheme": "NAT"
+                                                },
+                                                "process.processType": "A14",
+                                                "TimeSeries_Series": [
+                                                  {
+                                                    "mRID": "series-1",
+                                                    "businessType": "C76",
+                                                    "curveType": "A01",
+                                                    "resourceTimeSeries.value1ScheduleType": "loadReduction",
+                                                    "flowDirection.direction": "A02",
+                                                    "registeredResource.mRID": {
+                                                      "value": "003114735",
+                                                      "codingScheme": "NAT"
+                                                    },
+                                                    "Series": [
+                                                      {
+                                                        "Period": [
+                                                          {
+                                                            "resolution": "P1D",
+                                                            "timeInterval": {
+                                                              "start": "2026-06-01T00:00:00Z",
+                                                              "end": "2026-06-02T23:59:59Z"
+                                                            },
+                                                            "Point": [
+                                                              {
+                                                                "position": 1,
+                                                                "min_Quantity.quantity": 1,
+                                                                "min_Quantity.quality": "1",
+                                                                "max_Quantity.quantity": 4,
+                                                                "max_Quantity.quality": "3"
+                                                              }
+                                                            ]
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<RECMMOEEnvelope>> minMaxEnvelopeMdSSE();
+
+    @Operation(
+            operationId = "GET forwarded min-max envelope market documents",
+            summary = "GET forwarded min-max envelope market documents",
+            description = "Query available forwarded min-max envelope market documents",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = RECMMOEEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    [
+                                                      {
+                                                        "MessageDocumentHeader": {
+                                                          "creationDateTime": "2026-02-16T10:11:58Z",
+                                                          "MetaInformation": {
+                                                            "connectionId": "1",
+                                                            "requestPermissionId": "aae63ff1-4062-4599-8f4c-686df39138e7",
+                                                            "dataNeedId": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                                            "documentType": "min-max-envelope",
+                                                            "finalCustomerId": "fc-id",
+                                                            "dataSourceId": "0743c9d8-3e5f-4575-999b-34f6f83b2075",
+                                                            "defaultValues": "minPower=value",
+                                                            "regionConnector": "aiida",
+                                                            "regionCountry": "AT",
+                                                            "Asset": {
+                                                              "type": "CONNECTION-AGREEMENT-POINT",
+                                                              "operatorId": "AT003000",
+                                                              "meterId": "003114735"
+                                                            }
+                                                          }
+                                                        },
+                                                        "MarketDocument": {
+                                                          "mRID": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                                          "description": "Test Min-Max Envelope",
+                                                          "revisionNumber": "1",
+                                                          "lastModifiedDateTime": "2026-02-16T10:11:58Z",
+                                                          "comment": "This is a test min-max envelope.",
+                                                          "sender_MarketParticipant.mRID": {
+                                                            "value": "AT003000",
+                                                            "codingScheme": "NAT"
+                                                          },
+                                                          "receiver_MarketParticipant.mRID": {
+                                                            "value": "fc-id",
+                                                            "codingScheme": "NAT"
+                                                          },
+                                                          "process.processType": "A14",
+                                                          "TimeSeries_Series": [
+                                                            {
+                                                              "mRID": "series-1",
+                                                              "businessType": "C76",
+                                                              "curveType": "A01",
+                                                              "resourceTimeSeries.value1ScheduleType": "loadReduction",
+                                                              "flowDirection.direction": "A02",
+                                                              "registeredResource.mRID": {
+                                                                "value": "003114735",
+                                                                "codingScheme": "NAT"
+                                                              },
+                                                              "Series": [
+                                                                {
+                                                                  "Period": [
+                                                                    {
+                                                                      "resolution": "P1D",
+                                                                      "timeInterval": {
+                                                                        "start": "2026-06-01T00:00:00Z",
+                                                                        "end": "2026-06-02T23:59:59Z"
+                                                                      },
+                                                                      "Point": [
+                                                                        {
+                                                                          "position": 1,
+                                                                          "min_Quantity.quantity": 1,
+                                                                          "min_Quantity.quality": "1",
+                                                                          "max_Quantity.quantity": 4,
+                                                                          "max_Quantity.quality": "3"
+                                                                        }
+                                                                      ]
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    ]
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = MinMaxEnvelopeMarketDocuments.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <MinMaxEnvelopeMarketDocuments>
+                                                        <RECMMOE_Envelope xmlns="https//eddie.energy/CIM/RECMMOE_v1.12">
+                                                            <MessageDocumentHeader>
+                                                                <creationDateTime>2026-02-16T10:17:11Z</creationDateTime>
+                                                                <MetaInformation>
+                                                                    <connectionId>1</connectionId>
+                                                                    <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+                                                                    <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</dataNeedId>
+                                                                    <documentType>min-max-envelope</documentType>
+                                                                    <finalCustomerId>fc-id</finalCustomerId>
+                                                                    <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+                                                                    <defaultValues>minPower=value</defaultValues>
+                                                                    <regionConnector>aiida</regionConnector>
+                                                                    <regionCountry>AT</regionCountry>
+                                                                    <Asset>
+                                                                        <type>CONNECTION-AGREEMENT-POINT</type>
+                                                                        <operatorId>AT003000</operatorId>
+                                                                        <meterId>003114735</meterId>
+                                                                    </Asset>
+                                                                </MetaInformation>
+                                                            </MessageDocumentHeader>
+                                                            <MarketDocument>
+                                                                <mRID>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</mRID>
+                                                                <description>Test Min-Max Envelope</description>
+                                                                <revisionNumber>1</revisionNumber>
+                                                                <lastModifiedDateTime>2026-02-16T10:17:11Z</lastModifiedDateTime>
+                                                                <comment>This is a test min-max envelope.</comment>
+                                                                <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
+                                                                <receiver_MarketParticipant.mRID codingScheme="NAT">fc-id</receiver_MarketParticipant.mRID>
+                                                                <process.processType>A14</process.processType>
+                                                                <period.timeInterval>
+                                                                    <start>2026-06-01T00:00Z</start>
+                                                                    <end>2026-06-30T23:59Z</end>
+                                                                </period.timeInterval>
+                                                                <TimeSeries_Series>
+                                                                    <mRID>series-1</mRID>
+                                                                    <businessType>C76</businessType>
+                                                                    <curveType>A01</curveType>
+                                                                    <resourceTimeSeries.value1ScheduleType>loadReduction</resourceTimeSeries.value1ScheduleType>
+                                                                    <flowDirection.direction>A02</flowDirection.direction>
+                                                                    <registeredResource.mRID codingScheme="NAT">003114735</registeredResource.mRID>
+                                                                    <Series>
+                                                                        <Period>
+                                                                            <resolution>PT15M</resolution>
+                                                                            <timeInterval>
+                                                                                <start>2026-06-01T00:00Z</start>
+                                                                                <end>2026-06-30T23:59Z</end>
+                                                                            </timeInterval>
+                                                                            <Point>
+                                                                                <position>1</position>
+                                                                                <min_Quantity.quantity>1</min_Quantity.quantity>
+                                                                                <min_Quantity.quality>A04</min_Quantity.quality>
+                                                                                <max_Quantity.quantity>4</max_Quantity.quantity>
+                                                                                <max_Quantity.quality>A04</max_Quantity.quality>
+                                                                            </Point>
+                                                                        </Period>
+                                                                    </Series>
+                                                                </TimeSeries_Series>
+                                                            </MarketDocument>
+                                                        </RECMMOE_Envelope>
+                                                    </MinMaxEnvelopeMarketDocuments>
+                                                    """
+                                    )
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by connectionId ID",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the forwarded min-max envelope market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<MinMaxEnvelopeMarketDocuments> minMaxEnvelopeMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
 
     @Operation(
             operationId = "GET energy sharing reference data market document stream",

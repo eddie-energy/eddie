@@ -7,8 +7,10 @@ import energy.eddie.cim.agnostic.*;
 import energy.eddie.outbound.rest.RestTestConfig;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
+import energy.eddie.outbound.rest.model.OpaqueEnvelopeModel;
 import energy.eddie.outbound.rest.model.RawDataMessageModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
+import energy.eddie.outbound.rest.persistence.OpaqueEnvelopeRepository;
 import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -45,6 +47,8 @@ class AgnosticControllerTest {
     private ConnectionStatusMessageRepository csmRepository;
     @MockitoBean
     private RawDataMessageRepository rawDataRepository;
+    @MockitoBean
+    private OpaqueEnvelopeRepository opaqueEnvelopeRepository;
 
     @Test
     @DirtiesContext
@@ -141,6 +145,55 @@ class AgnosticControllerTest {
                     .assertNext(next -> {
                         assertNotNull(next.getFirst());
                         assertEquals(msg.payload().permissionId(), next.getFirst().permissionId());
+                    })
+                    .verifyComplete();
+    }
+
+    @Test
+    @DirtiesContext
+    void opaqueEnvelopeSSE_returnsMessages() {
+        var message1 = new OpaqueEnvelope("pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "{}");
+        var message2 = new OpaqueEnvelope("other-pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "[]");
+
+        agnosticConnector.setOpaqueEnvelopeStream(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                 .uri("/agnostic/opaque-envelope")
+                                 .accept(MediaType.TEXT_EVENT_STREAM)
+                                 .exchange()
+                                 .expectStatus()
+                                 .isOk()
+                                 .returnResult(OpaqueEnvelope.class)
+                                 .getResponseBody();
+
+        StepVerifier.create(result)
+                    .then(agnosticConnector::close)
+                    .expectNextMatches(message -> message1.permissionId().equals(message.permissionId()))
+                    .expectNextMatches(message -> message2.permissionId().equals(message.permissionId()))
+                    .verifyComplete();
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Test
+    void opaqueEnvelope_returnsMessages() {
+        var message = new OpaqueEnvelope("pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "{}");
+        var msg = new OpaqueEnvelopeModel(message);
+        given(opaqueEnvelopeRepository.findAll(ArgumentMatchers.<PredicateSpecification<OpaqueEnvelopeModel>>any()))
+                .willReturn(List.of(msg));
+
+        var result = webTestClient.get()
+                                 .uri("/agnostic/opaque-envelope")
+                                 .accept(MediaType.APPLICATION_JSON)
+                                 .exchange()
+                                 .expectStatus()
+                                 .isOk()
+                                 .returnResult(new ParameterizedTypeReference<List<OpaqueEnvelope>>() {})
+                                 .getResponseBody();
+
+        StepVerifier.create(result)
+                    .assertNext(next -> {
+                       assertNotNull(next.getFirst());
+                       assertEquals(msg.payload().permissionId(), next.getFirst().permissionId());
                     })
                     .verifyComplete();
     }
