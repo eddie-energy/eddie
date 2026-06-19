@@ -118,6 +118,7 @@ jobs:
         env:
           E2E_EDDIE_URL: "http://eddie:8080"
           E2E_ADMIN_URL: "http://eddie:9090/outbound-connectors/admin-console"
+          E2E_REST_URL: "http://eddie:9090/outbound-connectors/rest"
           E2E_AIIDA_URL: "http://aiida:8080"
           DK_ENERGINET_REFRESH_TOKEN: ${{ secrets.DK_ENERGINET_REFRESH_TOKEN }}
           DK_ENERGINET_METERING_POINT: ${{ secrets.DK_ENERGINET_METERING_POINT }}
