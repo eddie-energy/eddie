@@ -113,7 +113,6 @@ class PermissionControllerTest {
         assertEquals(permissionId, response.getFirst().id());
         assertEquals(PermissionStatus.CREATED, permissions.get(1).status());
         assertEquals(eddieId, permissions.get(2).eddieId());
-
     }
 
     @Test
@@ -177,10 +176,12 @@ class PermissionControllerTest {
 
         // When
         mockMvc.perform(post("/permissions").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(requestJson))
-                .andExpect(status().isCreated());
+               .andExpect(status().isCreated());
 
         // Then
-        verify(permissionService).setupNewPermissions(argThat(dto -> dto.permissionIds().getFirst().equals(permissionId)));
+        verify(permissionService).setupNewPermissions(argThat(dto -> dto.permissionIds()
+                                                                        .getFirst()
+                                                                        .equals(permissionId)));
     }
 
     @Test
@@ -303,7 +304,6 @@ class PermissionControllerTest {
         when(permissionService.revokePermission(any()))
                 .thenThrow(new InboundDataSourceInUseException(
                         permissionId,
-                        dataSourceId,
                         List.of(blockingPermissionId1, blockingPermissionId2)
                 ));
 

@@ -8,18 +8,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class InboundDataSourceInUseException extends Exception {
-    public InboundDataSourceInUseException(
-            UUID inboundPermissionId,
-            UUID inboundDataSourceId,
-            List<UUID> outboundPermissionIds
-    ) {
-        super("Cannot revoke inbound permission %s because inbound data source %s is still used by outbound permissions: %s"
-                      .formatted(inboundPermissionId, inboundDataSourceId, formatPermissionIds(outboundPermissionIds)));
+    public InboundDataSourceInUseException(UUID inboundPermissionId, List<UUID> outboundPermissionIds) {
+        super("Cannot revoke inbound permission %s because it is still used by outbound permissions: %s".formatted(
+                inboundPermissionId,
+                formatPermissionIds(outboundPermissionIds)));
     }
 
     private static String formatPermissionIds(List<UUID> permissionIds) {
-        return permissionIds.stream()
-                            .map(UUID::toString)
-                            .collect(Collectors.joining(", "));
+        return permissionIds.stream().map(UUID::toString).collect(Collectors.joining(", "));
     }
 }

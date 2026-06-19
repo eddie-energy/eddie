@@ -504,7 +504,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             var permissions = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACTIVE);
             if (!permissions.isEmpty()) {
                 var blockingIds = permissions.stream().map(Permission::id).toList();
-                throw new InboundDataSourceInUseException(permission.id(), dataSourceId, blockingIds);
+                LOGGER.trace(
+                        "Revoke on inbound permission {} was blocked because its data source {} is used by outbound permissions {}.",
+                        permission.id(),
+                        dataSourceId,
+                        blockingIds);
+                throw new InboundDataSourceInUseException(permission.id(), blockingIds);
             }
         }
     }
