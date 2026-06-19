@@ -60,6 +60,7 @@ public enum ShellyEntry {
             ObisCode.INSTANTANEOUS_VOLTAGE_IN_PHASE_L3,
             UnitOfMeasurement.VOLT
     ),
+    TEMPERATURE("temperature", ObisCode.UNKNOWN, UnitOfMeasurement.CELSIUS),
     ACTIVE_POWER_EM(
             "act_power",
             ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER,

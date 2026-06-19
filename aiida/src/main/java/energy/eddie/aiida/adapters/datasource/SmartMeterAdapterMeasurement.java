@@ -45,8 +45,8 @@ public abstract class SmartMeterAdapterMeasurement implements AdapterMeasurement
         return switch (rawUnitOfMeasurement()) {
             case WATT, WATT_HOUR, VOLT_AMPERE_REACTIVE, VOLT_AMPERE_REACTIVE_HOUR, VOLT_AMPERE ->
                     String.valueOf(Double.parseDouble(rawValue) / 1000);
-            case KILO_WATT, KILO_WATT_HOUR, KILO_VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE_HOUR, AMPERE, VOLT,
-                 KILO_VOLT_AMPERE, HERTZ, NONE, UNKNOWN -> rawValue;
+              case KILO_WATT, KILO_WATT_HOUR, KILO_VOLT_AMPERE_REACTIVE, KILO_VOLT_AMPERE_REACTIVE_HOUR, AMPERE, VOLT,
+                  KILO_VOLT_AMPERE, HERTZ, CELSIUS, NONE, UNKNOWN -> rawValue;
         };
     }
 

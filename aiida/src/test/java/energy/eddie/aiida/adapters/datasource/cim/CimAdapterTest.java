@@ -8,7 +8,10 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.cim.CimDataSource;
 import energy.eddie.aiida.utils.MqttFactory;
+import energy.eddie.aiida.adapters.datasource.MqttTestFixtures;
+import energy.eddie.aiida.adapters.datasource.cim.transformer.ShellyPayloadTranslator;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.ObisCode;
 import nl.altindag.log.LogCaptor;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
@@ -23,6 +26,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +56,10 @@ class CimAdapterTest {
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
         var mapper = builder.build();
-        adapter = new CimAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
+        adapter = new CimAdapter(DATA_SOURCE,
+                                  mapper,
+                                  MQTT_CONFIGURATION,
+                                  List.of(new ShellyPayloadTranslator(mapper)));
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
@@ -178,6 +185,53 @@ class CimAdapterTest {
                                                                .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
                                                                                                              .equals(POSITIVE_ACTIVE_ENERGY) && aiidaRecordValue.value()
                                                                                                                                                                 .equals("1130")))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
+        }
+    }
+
+    @Test
+    void givenShellyJsonPayload_isTranslatedAndPublishedOnFlux() {
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
+
+            var message = new MqttMessage(MqttTestFixtures.SHELLY_PLUG_GEN3_SWITCH_PAYLOAD.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                        .then(() -> adapter.messageArrived(CIM_TOPIC, message))
+                        .expectNextMatches(received -> received.aiidaRecordValues()
+                                                               .stream()
+                                                               .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                        .equals(ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1) && aiidaRecordValue.rawValue()
+                                                                                                                                                           .equals("1235.456")))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .log()
+                        .verify();
+        }
+    }
+
+    @Test
+    void givenPrefixedShellyNotification_isTranslatedAndPublishedOnFlux() {
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(anyString(), anyString(), any()))
+                           .thenReturn(mockClient);
+
+            var payload = "shelly_notification:163 Status change of switch:0: " + MqttTestFixtures.SHELLY_PLUG_GEN3_SWITCH_PAYLOAD;
+            var message = new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
+
+            StepVerifier.create(adapter.start())
+                        .then(() -> adapter.messageArrived(CIM_TOPIC, message))
+                        .expectNextMatches(received -> received.aiidaRecordValues()
+                                                               .stream()
+                                                               .anyMatch(aiidaRecordValue -> aiidaRecordValue.dataTag()
+                                                                                                        .equals(ObisCode.POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1) && aiidaRecordValue.rawValue()
+                                                                                                                                                           .equals("1235.456")))
                         .then(adapter::close)
                         .expectComplete()
                         .log()

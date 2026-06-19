@@ -40,6 +40,7 @@ public class OesterreichsEnergieAdapterMeasurement extends SmartMeterAdapterMeas
             case AMPERE -> AMPERE;
             case VOLT -> VOLT;
             case VOLT_AMPERE, KILO_VOLT_AMPERE -> VOLT_AMPERE;
+            case CELSIUS -> CELSIUS;
             case HERTZ -> HERTZ;
             case NONE -> NONE;
             case UNKNOWN -> UNKNOWN;

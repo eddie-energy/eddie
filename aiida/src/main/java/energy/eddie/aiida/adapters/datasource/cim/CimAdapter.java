@@ -16,16 +16,26 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
+
+import energy.eddie.aiida.adapters.datasource.cim.transformer.ShellyToAiidaTransformer;
+import energy.eddie.aiida.adapters.datasource.cim.transformer.PayloadToAiidaTranslator;
 
 public class CimAdapter extends MqttDataSourceAdapter<CimDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(CimAdapter.class);
     private final ObjectMapper mapper;
     private final CimStrategy cimStrategy;
+    private final List<PayloadToAiidaTranslator> translators;
 
-    public CimAdapter(CimDataSource dataSource, ObjectMapper mapper, MqttConfiguration mqttConfiguration) {
+    public CimAdapter(CimDataSource dataSource,
+                      ObjectMapper mapper,
+                      MqttConfiguration mqttConfiguration,
+                      List<PayloadToAiidaTranslator> translators) {
         super(dataSource, LOGGER, mqttConfiguration);
         this.mapper = mapper;
         this.cimStrategy = new CimStrategy();
+        this.translators = List.copyOf(translators);
     }
 
     @Override
@@ -37,9 +47,21 @@ public class CimAdapter extends MqttDataSourceAdapter<CimDataSource> {
 
             emitAiidaRecord(cimStrategy.timeSeriesToAiidaRecordValues(cimTimeSeries));
         } catch (JacksonException e) {
-            LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
-                         new String(message.getPayload(), StandardCharsets.UTF_8),
-                         e);
+            // If the payload is not a CIM TimeSeries, try translator chain (e.g., Shelly JSON -> AIIDA)
+            var payload = new String(message.getPayload(), StandardCharsets.UTF_8).trim();
+
+            var translated = translators.stream()
+                                        .map(t -> t.tryTranslate(payload))
+                                        .flatMap(Optional::stream)
+                                        .findFirst();
+
+            if (translated.isPresent()) {
+                emitAiidaRecord(translated.get());
+            } else {
+                LOGGER.error("Error while deserializing JSON received from adapter. JSON was {}",
+                             payload,
+                             e);
+            }
         } catch (CimSchemaFormatterException e) {
             LOGGER.error("Error while serializing the AIIDA record.", e);
         }

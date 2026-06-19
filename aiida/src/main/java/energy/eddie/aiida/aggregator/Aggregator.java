@@ -232,6 +232,11 @@ public class Aggregator implements AutoCloseable {
                                             .stream()
                                             .filter(value -> allowedDataTags.contains(value.dataTag()))
                                             .toList();
+            // ensure each value references its parent record so merges can deterministically
+            // pick the latest value by inspecting the value.aiidaRecord().timestamp()
+            for (var v : filteredValues) {
+                v.setAiidaRecord(aiidaRecord);
+            }
             aiidaRecord.setAiidaRecordValues(filteredValues);
         }
 
@@ -250,20 +255,33 @@ public class Aggregator implements AutoCloseable {
     }
 
     private AiidaRecord mergeRecords(AiidaRecord r1, AiidaRecord r2) {
-        var latestRecord = r2.timestamp().isAfter(r1.timestamp()) ? r2 : r1;
-        Map<String, AiidaRecordValue> mergedValues = new HashMap<>();
+        // Prefer values from the record with the later timestamp. If timestamps are equal,
+        // prefer values from r2. Do not rely on AiidaRecordValue.aiidaRecord() being set here.
+        var preferSecond = !r1.timestamp().isAfter(r2.timestamp()); // true if r2 is after or equal
 
-        Stream.concat(r1.aiidaRecordValues().stream(), r2.aiidaRecordValues().stream())
-              .forEach(val -> mergedValues.merge(
-                      val.rawTag(),
-                      val,
-                      maxBy(comparing(v -> v.aiidaRecord().timestamp()))
-              ));
+        Map<String, AiidaRecordValue> map1 = r1.aiidaRecordValues().stream()
+                .collect(Collectors.toMap(AiidaRecordValue::rawTag, Function.identity(), (a, b) -> a));
+        Map<String, AiidaRecordValue> map2 = r2.aiidaRecordValues().stream()
+                .collect(Collectors.toMap(AiidaRecordValue::rawTag, Function.identity(), (a, b) -> a));
 
-        return new AiidaRecord(
-                latestRecord.timestamp(),
-                latestRecord.dataSource(),
-                new ArrayList<>(mergedValues.values())
-        );
+        var allKeys = Stream.concat(map1.keySet().stream(), map2.keySet().stream()).collect(Collectors.toCollection(LinkedHashSet::new));
+        List<AiidaRecordValue> resultValues = new ArrayList<>();
+
+        for (String key : allKeys) {
+            var v1 = map1.get(key);
+            var v2 = map2.get(key);
+
+            if (v1 != null && v2 != null) {
+                resultValues.add(preferSecond ? v2 : v1);
+            } else if (v2 != null) {
+                resultValues.add(v2);
+            } else if (v1 != null) {
+                resultValues.add(v1);
+            }
+        }
+
+        var latestRecord = preferSecond ? r2 : r1;
+
+        return new AiidaRecord(latestRecord.timestamp(), latestRecord.dataSource(), resultValues);
     }
 }

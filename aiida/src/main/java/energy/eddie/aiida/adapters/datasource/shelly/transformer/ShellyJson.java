@@ -17,10 +17,17 @@ public record ShellyJson(
         @JsonProperty("src") String source,
         @JsonProperty("dst") String destination,
         @JsonProperty("method") String method,
-        @JsonProperty("params") Params params
+    @JsonProperty("params") Params params,
+    @JsonProperty("result") Params result
 ) {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShellyJson.class);
     private static final String NESTED_KEY_SEPARATOR = ".";
+
+    public ShellyJson {
+        if (params == null) {
+            params = result; // If params is null, use result as params for backward compatibility
+        }
+    }
 
     public record Params(
             @JsonProperty("ts") Double timestamp,
@@ -35,6 +42,17 @@ public record ShellyJson(
             var component = ShellyComponent.fromKey(key);
 
             if (component == ShellyComponent.UNKNOWN) {
+// NOTE:
+// "temperature" is now handled directly via ShellyComponent.TEMPERATURE,
+// so the old UNKNOWN fallback branch is no longer reached.
+// Keeping this temporarily for backward compatibility / future fallback handling.
+                if ("temperature".equals(key) && value instanceof Map<?, ?> map) {
+                    var temperature = map.get("tC");
+                    if (temperature instanceof Number num) {
+                        em.put(ShellyComponent.TEMPERATURE, Map.of("temperature", num));
+                    }
+                }
+
                 LOGGER.trace("Ignoring unknown component key: {}", key);
                 return;
             }

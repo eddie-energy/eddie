@@ -11,6 +11,8 @@ import energy.eddie.aiida.adapters.datasource.it.SinapsiAlfaAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.shelly.ShellyAdapter;
+import energy.eddie.aiida.adapters.datasource.shelly.ShellyPlugGen3Adapter;
+import energy.eddie.aiida.adapters.datasource.cim.transformer.ShellyPayloadTranslator;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -23,6 +25,7 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyPlugGen3DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -84,10 +87,14 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration);
             case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
             case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
+            case ShellyPlugGen3DataSource ds -> new ShellyPlugGen3Adapter(ds, objectMapper, mqttConfiguration);
             case InboundDataSource ds -> new InboundAdapter(ds, objectMapper, mqttConfiguration, aiidaId);
             case SimulationDataSource ds -> new SimulationAdapter(ds);
             case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
-            case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);
+            case CimDataSource ds -> new CimAdapter(ds,
+                                                   objectMapper,
+                                                   mqttConfiguration,
+                                                   List.of(new ShellyPayloadTranslator(objectMapper)));
             default -> throw new IllegalArgumentException("Unknown data source: " + dataSource);
         };
     }

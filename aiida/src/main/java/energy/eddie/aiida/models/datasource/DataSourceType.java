@@ -9,6 +9,7 @@ public enum DataSourceType {
     SINAPSI_ALFA(Identifiers.SINAPSI_ALFA, "Sinapsi ALFA"),
     SMART_GATEWAYS_ADAPTER(Identifiers.SMART_GATEWAYS_ADAPTER, "Smart Gateways Adapter"),
     SHELLY(Identifiers.SHELLY, "Shelly"),
+    SHELLY_PLUG_GEN3(Identifiers.SHELLY_PLUG_GEN3, "Shelly Plug Gen3"),
     INBOUND(Identifiers.INBOUND, "Inbound"),
     SIMULATION(Identifiers.SIMULATION, "Simulation"),
     MODBUS(Identifiers.MODBUS_TCP, "Modbus"),
@@ -36,6 +37,7 @@ public enum DataSourceType {
         public static final String SINAPSI_ALFA = "SINAPSI_ALFA";
         public static final String SMART_GATEWAYS_ADAPTER = "SMART_GATEWAYS_ADAPTER";
         public static final String SHELLY = "SHELLY";
+        public static final String SHELLY_PLUG_GEN3 = "SHELLY_PLUG_GEN3";
         public static final String INBOUND = "INBOUND";
         public static final String SIMULATION = "SIMULATION";
         public static final String MODBUS_TCP = "MODBUS";

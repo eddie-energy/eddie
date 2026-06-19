@@ -14,6 +14,7 @@ public enum ShellyComponent {
     EM1_DATA_0("em1data:0", ShellyPhase.PHASE_L1),
     EM1_DATA_1("em1data:1", ShellyPhase.PHASE_L2),
     EM1_DATA_2("em1data:2", ShellyPhase.PHASE_L3),
+    TEMPERATURE("temperature", ShellyPhase.TOTAL),
     SWITCH_0("switch:0", ShellyPhase.PHASE_L1),
     SWITCH_1("switch:1", ShellyPhase.PHASE_L1),
     SWITCH_2("switch:2", ShellyPhase.PHASE_L1),

@@ -14,6 +14,7 @@ import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
 import energy.eddie.aiida.adapters.datasource.shelly.ShellyAdapter;
+import energy.eddie.aiida.adapters.datasource.shelly.ShellyPlugGen3Adapter;
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -25,6 +26,7 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyPlugGen3DataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import org.junit.jupiter.api.BeforeEach;
@@ -128,6 +130,18 @@ class DataSourceAdapterTest {
         assertInstanceOf(ShellyAdapter.class, adapter);
     }
 
+    @Test
+    void givenShellyPlugGen3_returnsAdapter() {
+        // Given
+        var dataSource = mock(ShellyPlugGen3DataSource.class);
+
+        // When
+        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID);
+
+        // Then
+        assertInstanceOf(ShellyPlugGen3Adapter.class, adapter);
+    }
+// added new data source types for Shelly Plug Gen3 and CIM adapter, also added aiidaId to the create method for inbound adapter
     @Test
     void givenInbound_returnsAdapter() {
         // Given
