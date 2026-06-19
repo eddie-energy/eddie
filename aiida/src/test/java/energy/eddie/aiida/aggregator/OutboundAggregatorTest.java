@@ -61,7 +61,7 @@ class OutboundAggregatorTest {
     private AiidaRecord unwanted3;
     private AiidaRecord wanted;
     private Instant expiration;
-    private Instant now;
+    private Instant start;
     private CronExpression transmissionSchedule;
     @Mock
     private SimulationAdapter mockAdapter1;
@@ -73,10 +73,10 @@ class OutboundAggregatorTest {
     @BeforeEach
     void setUp() {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(2));
-        now = Instant.parse("2026-06-19T12:00:00Z");
+        start = Instant.parse("2026-06-19T12:00:00Z");
 
         // add 10 minutes to the current time, as only records after the next scheduled cron timestamp are processed
-        var instant = now.plusSeconds(600);
+        var instant = start.plusSeconds(600);
 
         // prevent stub validation since setting these for every test becomes tedious
 
@@ -120,7 +120,7 @@ class OutboundAggregatorTest {
                                      KILO_WATT,
                                      "10",
                                      KILO_WATT)));
-        expiration = now.plusSeconds(300_000);
+        expiration = start.plusSeconds(300_000);
         transmissionSchedule = CronExpression.parse("* * * * * *");
 
         aggregator = new OutboundAggregator(mockAiidaRecordRepository, healthContributorRegistry);
@@ -159,7 +159,7 @@ class OutboundAggregatorTest {
 
     @Test
     void getFilteredFlux_filtersFluxFromDataSources() {
-        var instant = now.plusSeconds(600);
+        var instant = start.plusSeconds(600);
         wanted = new AiidaRecord(instant, dataSource1, List.of(
                 new AiidaRecordValue("1-0:1.8.0", POSITIVE_ACTIVE_ENERGY, "50", KILO_WATT, "10", KILO_WATT)));
         when(dataSource2.asset()).thenReturn(wantedAsset);
@@ -201,7 +201,7 @@ class OutboundAggregatorTest {
         TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher.flux());
 
-        var unwantedBeforeCron = new AiidaRecord(now.minusSeconds(10), dataSource1,
+        var unwantedBeforeCron = new AiidaRecord(start.minusSeconds(10), dataSource1,
                                                  List.of(new AiidaRecordValue("1-0:1.8.0",
                                                                               POSITIVE_ACTIVE_ENERGY,
                                                                               "50",
@@ -235,7 +235,7 @@ class OutboundAggregatorTest {
         TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher.flux());
 
-        var record1 = new AiidaRecord(now.plusSeconds(600), dataSource1,
+        var record1 = new AiidaRecord(start.plusSeconds(600), dataSource1,
                                       List.of(
                                               new AiidaRecordValue("1-0:1.8.0",
                                                                    POSITIVE_ACTIVE_ENERGY,
@@ -250,7 +250,7 @@ class OutboundAggregatorTest {
                                                                    "10",
                                                                    KILO_WATT)
                                       ));
-        var record2 = new AiidaRecord(now.plusSeconds(600), dataSource1,
+        var record2 = new AiidaRecord(start.plusSeconds(600), dataSource1,
                                       List.of(
                                               new AiidaRecordValue("1-0:2.8.0",
                                                                    POSITIVE_ACTIVE_ENERGY,
