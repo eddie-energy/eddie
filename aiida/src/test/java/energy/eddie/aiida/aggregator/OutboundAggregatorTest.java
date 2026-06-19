@@ -230,12 +230,13 @@ class OutboundAggregatorTest {
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 
+
     @Test
     void getFilteredFlux_mergeRecordsByRawTag() {
         TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
         when(mockAdapter1.start()).thenReturn(publisher.flux());
 
-        var record1 = new AiidaRecord(start.plusSeconds(600), dataSource1,
+        var record1 = new AiidaRecord(start, dataSource1,
                                       List.of(
                                               new AiidaRecordValue("1-0:1.8.0",
                                                                    POSITIVE_ACTIVE_ENERGY,
@@ -250,7 +251,7 @@ class OutboundAggregatorTest {
                                                                    "10",
                                                                    KILO_WATT)
                                       ));
-        var record2 = new AiidaRecord(start.plusSeconds(600), dataSource1,
+        var record2 = new AiidaRecord(start.plusSeconds(1), dataSource1,
                                       List.of(
                                               new AiidaRecordValue("1-0:2.8.0",
                                                                    POSITIVE_ACTIVE_ENERGY,
