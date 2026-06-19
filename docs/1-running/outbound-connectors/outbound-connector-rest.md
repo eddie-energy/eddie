@@ -23,7 +23,10 @@ outbound-connector.rest.oauth2.issuer-url=http://localhost:8888/realms/EDDIE
 
 The endpoints are documented via OpenAPI and are made available during the runtime under
 `<host>:<eddie.management.server.port>/outbound-connectors/rest/v3/api-docs`.
-They can be seen via the hosted swagger UI under `<host>:<server.port>/data-needs/swagger-ui/index.html`.
+They can be seen via the hosted swagger UI under `<host>:<server.port>/outbound-connectors/rest/swagger-ui/index.html`.
+For the [development setup](../OPERATION.md#quickstart) this would be:
+- http://localhost:9090/outbound-connectors/rest/swagger-ui/index.html
+
 While OpenAPI provides examples and schemas, it is recommended to use [the client library](../../2-integrating/messages/cim/client-libraries.md) to parse CIM documents, since the OpenAPI generated schemas are not true to the actual schema.
 
 ```http request
