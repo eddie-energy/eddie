@@ -501,9 +501,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void validateInboundDataSourceNotInUse(Permission permission) throws InboundDataSourceInUseException {
         var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
         if (dataSourceId != null) {
-            var permissionIds = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACTIVE);
-            if (!permissionIds.isEmpty()) {
-                throw new InboundDataSourceInUseException(permission.id(), dataSourceId, permissionIds);
+            var permissions = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACTIVE);
+            if (!permissions.isEmpty()) {
+                var blockingIds = permissions.stream().map(Permission::id).toList();
+                throw new InboundDataSourceInUseException(permission.id(), dataSourceId, blockingIds);
             }
         }
     }

@@ -627,6 +627,10 @@ class PermissionServiceTest {
     void givenInboundPermissionWithBlockingOutboundPermissions_revokePermission_throws() {
         var blockingPermissionId1 = UUID.fromString("a57a9f3d-2b5a-4b84-a32c-51bfa4b865c1");
         var blockingPermissionId2 = UUID.fromString("6dbc4ec9-4f2f-4aa7-b016-36c28945a6e4");
+        var blockingPermission1 = mock(Permission.class);
+        when(blockingPermission1.id()).thenReturn(blockingPermissionId1);
+        var blockingPermission2 = mock(Permission.class);
+        when(blockingPermission2.id()).thenReturn(blockingPermissionId2);
 
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId1);
@@ -635,7 +639,7 @@ class PermissionServiceTest {
         when(mockInboundDataSource.permission()).thenReturn(mockPermission);
         when(mockInboundDataSource.id()).thenReturn(dataSourceId);
         when(mockPermissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACTIVE))
-                .thenReturn(List.of(blockingPermissionId1, blockingPermissionId2));
+                .thenReturn(List.of(blockingPermission1, blockingPermission2));
 
         var exception = assertThrows(InboundDataSourceInUseException.class,
                                      () -> service.revokePermission(permissionId1));

@@ -18,13 +18,13 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     List<Permission> findByStatusIn(Set<PermissionStatus> statuses);
 
     @Query("""
-            SELECT p.permissionId
+            SELECT p
             FROM Permission p
             WHERE p.dataSource.id = :dataSourceId
               AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed.DISCRIMINATOR_VALUE
               AND p.status IN (:statuses)
             """)
-    List<UUID> findOutboundByDataSourceIdAndStatus(UUID dataSourceId, Set<PermissionStatus> statuses);
+    List<Permission> findOutboundByDataSourceIdAndStatus(UUID dataSourceId, Set<PermissionStatus> statuses);
 
     @Query("""
             SELECT p
