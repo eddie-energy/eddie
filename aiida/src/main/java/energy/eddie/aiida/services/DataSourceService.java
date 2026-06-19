@@ -4,7 +4,8 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.aggregator.InboundAggregator;
+import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
@@ -15,7 +16,7 @@ import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
-import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -46,7 +47,8 @@ public class DataSourceService {
     private final ApplicationInformationService applicationInformationService;
     private final DataSourceRepository repository;
     private final AiidaEventPublisher aiidaEventPublisher;
-    private final Aggregator aggregator;
+    private final OutboundAggregator outboundAggregator;
+    private final InboundAggregator inboundAggregator;
     private final AuthService authService;
     private final Set<DataSourceAdapter<? extends DataSource>> dataSourceAdapters = new HashSet<>();
     private final MqttConfiguration mqttConfiguration;
@@ -58,7 +60,8 @@ public class DataSourceService {
     public DataSourceService(
             ApplicationInformationService applicationInformationService,
             DataSourceRepository repository,
-            Aggregator aggregator,
+            OutboundAggregator outboundAggregator,
+            InboundAggregator inboundAggregator,
             AuthService authService,
             MqttConfiguration mqttConfiguration,
             ObjectMapper objectMapper,
@@ -68,7 +71,8 @@ public class DataSourceService {
     ) {
         this.applicationInformationService = applicationInformationService;
         this.repository = repository;
-        this.aggregator = aggregator;
+        this.outboundAggregator = outboundAggregator;
+        this.inboundAggregator = inboundAggregator;
         this.authService = authService;
         this.mqttConfiguration = mqttConfiguration;
         this.objectMapper = objectMapper;
@@ -93,7 +97,7 @@ public class DataSourceService {
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {
-            aggregator.addNewDataSourceAdapter(dataSourceAdapter);
+            addAdapterToAggregator(dataSourceAdapter);
         }
     }
 
@@ -113,7 +117,7 @@ public class DataSourceService {
     }
 
     @Transactional
-    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlflaEmptyConfigException {
+    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlfaEmptyConfigException {
         var currentUserId = authService.getCurrentUserId();
         var plaintextPassword = "";
 
@@ -248,7 +252,7 @@ public class DataSourceService {
     }
 
     private void closeDataSourceAdapter(DataSourceAdapter<? extends DataSource> dataSourceAdapter) {
-        aggregator.removeDataSourceAdapter(dataSourceAdapter);
+        removeAdapterFromAggregator(dataSourceAdapter);
         dataSourceAdapters.remove(dataSourceAdapter);
     }
 
@@ -280,6 +284,26 @@ public class DataSourceService {
             startDataSource(dataSource);
         } else {
             closeDataSourceAdapter(dataSourceAdapter);
+        }
+    }
+
+    private void addAdapterToAggregator(
+            DataSourceAdapter<? extends DataSource> adapter
+    ) {
+        if (DataSourceType.INBOUND.equals(adapter.dataSource().type())) {
+            inboundAggregator.addNewDataSourceAdapter(adapter);
+        } else {
+            outboundAggregator.addNewDataSourceAdapter(adapter);
+        }
+    }
+
+    private void removeAdapterFromAggregator(
+            DataSourceAdapter<? extends DataSource> adapter
+    ) {
+        if (DataSourceType.INBOUND.equals(adapter.dataSource().type())) {
+            inboundAggregator.removeDataSourceAdapter(adapter);
+        } else {
+            outboundAggregator.removeDataSourceAdapter(adapter);
         }
     }
 }

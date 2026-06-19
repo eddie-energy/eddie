@@ -11,59 +11,55 @@ import org.eclipse.paho.mqttv5.client.IMqttAsyncClient;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Flux;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.UUID;
 
-public class InboundAcknowledgementStreamer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(InboundAcknowledgementStreamer.class);
+public class InboundAcknowledgementPublisher {
+    private static final Logger LOGGER = LoggerFactory.getLogger(InboundAcknowledgementPublisher.class);
     private static final AiidaSchema ACK_SCHEMA = AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12;
 
     private final UUID aiidaId;
     private final ObjectMapper objectMapper;
     @Nullable
     private final String acknowledgementTopic;
-    private final Flux<InboundRecord> inboundRecordFlux;
     private final AckFormatterStrategyRegistry ackFormatterStrategyRegistry;
+    @Nullable
+    private IMqttAsyncClient mqttClient;
 
-    public InboundAcknowledgementStreamer(
+    public InboundAcknowledgementPublisher(
             UUID aiidaId,
             ObjectMapper objectMapper,
-            @Nullable String acknowledgementTopic,
-            Flux<InboundRecord> inboundRecordFlux
+            @Nullable String acknowledgementTopic
     ) {
         this(aiidaId,
              objectMapper,
              acknowledgementTopic,
-             inboundRecordFlux,
              new AckFormatterStrategyRegistry());
     }
 
-    public InboundAcknowledgementStreamer(
+    public InboundAcknowledgementPublisher(
             UUID aiidaId,
             ObjectMapper objectMapper,
             @Nullable String acknowledgementTopic,
-            Flux<InboundRecord> inboundRecordFlux,
             AckFormatterStrategyRegistry ackFormatterStrategyRegistry
     ) {
         this.aiidaId = aiidaId;
         this.objectMapper = objectMapper;
         this.acknowledgementTopic = acknowledgementTopic;
-        this.inboundRecordFlux = inboundRecordFlux;
         this.ackFormatterStrategyRegistry = ackFormatterStrategyRegistry;
     }
 
-    public void start(@Nullable IMqttAsyncClient mqttClient) {
-        if (mqttClient != null && acknowledgementTopic != null) {
-            LOGGER.info("Starting InboundAcknowledgementStreamer with topic {}", acknowledgementTopic);
-            inboundRecordFlux.subscribe(inboundRecord -> publishAcknowledgement(mqttClient, inboundRecord));
-        } else {
-            LOGGER.info("Not starting InboundAcknowledgementStreamer, because mqttClient or ackTopic is null");
-        }
+    public void setMqttClient(@Nullable IMqttAsyncClient mqttClient) {
+        this.mqttClient = mqttClient;
     }
 
-    private void publishAcknowledgement(IMqttAsyncClient mqttClient, InboundRecord inboundRecord) {
+    public void publishAcknowledgement(InboundRecord inboundRecord) {
+        if (mqttClient == null || acknowledgementTopic == null) {
+            LOGGER.debug("Skipping acknowledgement publishing because mqttClient or ackTopic is null");
+            return;
+        }
+
         try {
             var topic = ACK_SCHEMA.buildTopicPath(acknowledgementTopic);
             LOGGER.debug("Publishing acknowledgement for record {} to topic {}", inboundRecord.id(), topic);

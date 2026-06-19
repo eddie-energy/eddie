@@ -7,6 +7,7 @@ import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJsonTest;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -54,7 +55,7 @@ class SinapsiAlfaAdapterTest {
 
             MqttMessage message = new MqttMessage(SinapsiAlfaEntryJsonTest.PAYLOAD.getBytes(StandardCharsets.UTF_8));
 
-            StepVerifier.create(adapter.start())
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
                         // call method to simulate arrived message
                         .then(() -> adapter.messageArrived(TOPIC, message))
                         .expectNextMatches(received -> received.aiidaRecordValues()

@@ -6,6 +6,7 @@ package energy.eddie.aiida.adapters.datasource.sga;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysTopic;
+import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import nl.altindag.log.LogCaptor;
@@ -125,7 +126,7 @@ class SmartGatewaysAdapterTest {
             var mockClient = mock(MqttAsyncClient.class);
             mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any())).thenReturn(mockClient);
 
-            StepVerifier.create(adapter.start()).then(() -> {
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class)).then(() -> {
                             for (SmartGatewaysTopic t : SmartGatewaysTopic.values()) {
                                 if (t.isExpected()) {
                                     send(t.topic(), "45");

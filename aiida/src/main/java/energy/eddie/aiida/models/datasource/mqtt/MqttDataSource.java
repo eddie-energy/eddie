@@ -1,16 +1,15 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.datasource.mqtt;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
-import io.swagger.v3.oas.annotations.media.Schema;
+import energy.eddie.aiida.models.mqtt.MqttConnection;
 import jakarta.persistence.*;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,20 +23,10 @@ public abstract class MqttDataSource extends DataSource {
     protected static final String TOPIC_PREFIX = "aiida/";
     private static final String TOPIC_SUFFIX = "/+";
 
-    @Column(name = "internal_host", table = TABLE_NAME, nullable = false)
-    @Schema(description = "The internal host of the MQTT broker the data source connects to.")
-    @JsonProperty
-    protected String internalHost;
-
-    @Column(name = "external_host", table = TABLE_NAME, nullable = false)
-    @Schema(description = "The external host of the MQTT broker the data source connects to.")
-    @JsonProperty
-    protected String externalHost;
-
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "mqtt_user_id", table = TABLE_NAME, referencedColumnName = "id")
+    @JoinColumn(name = "mqtt_connection_id", table = TABLE_NAME, referencedColumnName = "id")
     @JsonUnwrapped
-    protected MqttUser user;
+    protected MqttConnection mqttConnection;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "mqtt_acl_id", table = TABLE_NAME, referencedColumnName = "id")
@@ -57,7 +46,7 @@ public abstract class MqttDataSource extends DataSource {
     }
 
     public String internalHost() {
-        return internalHost;
+        return mqttConnection.internalHost();
     }
 
     public String topic() {
@@ -65,18 +54,17 @@ public abstract class MqttDataSource extends DataSource {
     }
 
     public String username() {
-        return user.username();
+        return mqttConnection.username();
     }
 
     public String password() {
-        return user.password();
+        return mqttConnection.password();
     }
 
     @SuppressWarnings("NullAway")
     // False positive for encode call, since plaintextPassword is NonNull encode should always return non-null password
     public void configure(MqttConfiguration config, BCryptPasswordEncoder encoder, String plaintextPassword) {
-        this.internalHost = config.internalHost();
-        this.externalHost = config.externalHost();
+        this.mqttConnection = new MqttConnection(config.internalHost(), config.externalHost());
         this.passwordHash = encoder.encode(plaintextPassword);
     }
 
@@ -84,7 +72,7 @@ public abstract class MqttDataSource extends DataSource {
     // False positive for encode call, since plaintextPassword is NonNull encode should always return non-null password
     public void updatePassword(BCryptPasswordEncoder encoder, String plaintextPassword) {
         var password = encoder.encode(plaintextPassword);
-        this.user.updatePassword(password);
+        this.mqttConnection.updatePassword(password);
     }
 
     @PrePersist
@@ -96,7 +84,7 @@ public abstract class MqttDataSource extends DataSource {
 
     @Transactional
     protected void createMqttUser() {
-        this.user = new MqttUser(id, passwordHash);
+        mqttConnection.createMqttUser(id.toString(), passwordHash);
     }
 
     /**

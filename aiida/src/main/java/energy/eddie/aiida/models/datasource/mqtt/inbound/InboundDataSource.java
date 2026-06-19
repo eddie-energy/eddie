@@ -9,8 +9,8 @@ import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.MqttUser;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
+import energy.eddie.aiida.models.mqtt.MqttConnection;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -51,8 +51,7 @@ public class InboundDataSource extends MqttDataSource {
 
         this.config = Objects.requireNonNull(permission.mqttStreamingConfig());
 
-        this.internalHost = config.serverUri();
-        this.externalHost = config.serverUri();
+        this.mqttConnection = new MqttConnection(config.serverUri(), config.serverUri());
 
         this.accessCode = accessCode;
     }
@@ -72,7 +71,7 @@ public class InboundDataSource extends MqttDataSource {
 
     @Override
     protected void createMqttUser() {
-        this.user = new MqttUser(config.username().toString(), config.password());
+        this.mqttConnection.createMqttUser(config.username().toString(), config.password());
     }
 
     @Override

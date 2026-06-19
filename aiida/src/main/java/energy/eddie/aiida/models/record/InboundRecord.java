@@ -3,49 +3,26 @@
 
 package energy.eddie.aiida.models.record;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 
 import java.time.Instant;
 
 @Entity
-public class InboundRecord {
-    @JsonIgnore
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    // Used just as JPA ID
-    @SuppressWarnings({"unused", "NullAway"})
-    private Long id;
-    @Column(nullable = false)
-    @JsonProperty
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX", timezone = "UTC")
-    protected Instant timestamp;
-    @ManyToOne
-    @JoinColumn(name = "data_source_id", referencedColumnName = "id", nullable = false, updatable = false)
-    @JsonIgnore
-    private InboundDataSource dataSource;
+public class InboundRecord extends DataSourceRecord {
+
     @JsonProperty
     @Enumerated(EnumType.STRING)
     protected AiidaSchema schema;
+
     @Column(nullable = false)
     @JsonProperty
     private String payload;
-
-    public InboundRecord(
-            Instant timestamp,
-            InboundDataSource dataSource,
-            AiidaSchema schema,
-            String payload
-    ) {
-        this.timestamp = timestamp;
-        this.dataSource = dataSource;
-        this.schema = schema;
-        this.payload = payload;
-    }
 
     /**
      * Constructor only for JPA.
@@ -54,23 +31,26 @@ public class InboundRecord {
     protected InboundRecord() {
     }
 
-    public Long id() {
-        return id;
+    public InboundRecord(
+            Instant timestamp,
+            InboundDataSource dataSource,
+            AiidaSchema schema,
+            String payload
+    ) {
+        super(timestamp, dataSource);
+        this.schema = schema;
+        this.payload = payload;
     }
-
-    public Instant timestamp() {
-        return timestamp;
-    }
-
-    public InboundDataSource dataSource() {
-        return dataSource;
-    }
-
     public AiidaSchema schema() {
         return schema;
     }
 
     public String payload() {
         return payload;
+    }
+
+    @Override
+    public InboundDataSource dataSource() {
+        return (InboundDataSource) super.dataSource();
     }
 }

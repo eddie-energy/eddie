@@ -4,7 +4,7 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
-import energy.eddie.aiida.aggregator.Aggregator;
+import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -48,7 +48,7 @@ class StreamerManagerTest {
     private final Instant start = grant.plusSeconds(100_000);
     private final Instant expirationTime = start.plusSeconds(800_000);
     @Mock
-    private Aggregator aggregatorMock;
+    private OutboundAggregator aggregatorMock;
     @Mock
     private FailedToSendRepository mockRepository;
     @Mock

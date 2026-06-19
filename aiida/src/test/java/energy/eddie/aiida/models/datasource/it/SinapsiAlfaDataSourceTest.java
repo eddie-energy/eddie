@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.datasource.it;
 
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
-import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +26,7 @@ class SinapsiAlfaDataSourceTest {
 
         // When / Then
         assertThrows(
-                SinapsiAlflaEmptyConfigException.class,
+                SinapsiAlfaEmptyConfigException.class,
                 () -> dataSource.configure(config, "key")
         );
     }
@@ -41,7 +41,7 @@ class SinapsiAlfaDataSourceTest {
 
         // When / Then
         assertThrows(
-                SinapsiAlflaEmptyConfigException.class,
+                SinapsiAlfaEmptyConfigException.class,
                 () -> dataSource.configure(config, "key")
         );
     }

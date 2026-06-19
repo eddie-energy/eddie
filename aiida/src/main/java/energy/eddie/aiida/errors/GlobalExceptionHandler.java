@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.errors;
@@ -14,7 +14,7 @@ import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.errors.datasource.mqtt.MqttTlsCertificateNotFoundException;
 import energy.eddie.aiida.errors.datasource.mqtt.MqttUnauthorizedException;
-import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlflaEmptyConfigException;
+import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
 import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
@@ -127,7 +127,7 @@ public class GlobalExceptionHandler {
             LatestPermissionRecordNotFoundException.class,
             MqttTlsCertificateNotFoundException.class,
             PermissionNotFoundException.class,
-            SinapsiAlflaEmptyConfigException.class
+            SinapsiAlfaEmptyConfigException.class
     })
     public ResponseEntity<Map<String, List<EddieApiError>>> handleNotFoundExceptions(Exception exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
