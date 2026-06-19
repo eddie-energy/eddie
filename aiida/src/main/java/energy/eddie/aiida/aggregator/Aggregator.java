@@ -4,7 +4,6 @@
 package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.record.DataSourceRecord;
 import org.slf4j.Logger;
@@ -76,7 +75,8 @@ public abstract class Aggregator<T extends DataSourceRecord> implements AutoClos
     }
 
     /**
-     * Closes all {@link InboundAdapter}s and emits a complete signal for all the Flux returned by
+     * Closes all {@link energy.eddie.aiida.adapters.datasource.DataSourceAdapter}s and emits a complete signal for all the Flux returned by
+     * {@link DataSourceAdapter#start()}.
      */
     @Override
     public void close() {

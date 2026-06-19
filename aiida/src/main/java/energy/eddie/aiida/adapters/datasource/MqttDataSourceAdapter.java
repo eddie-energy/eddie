@@ -50,13 +50,14 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
         try {
             // persistence is only required when publishing messages with QOS 1 or 2
             var clientId = UUID.randomUUID();
-            asyncClient = MqttFactory.getMqttAsyncClient(dataSource().internalHost(), clientId.toString(), null);
+            var internalHost = dataSource().internalHost();
+            asyncClient = MqttFactory.getMqttAsyncClient(internalHost, clientId.toString(), null);
             asyncClient.setCallback(this);
 
             MqttConnectionOptions connectOptions = createConnectOptions();
 
             logger.info("Connecting to broker {} with username {}",
-                        dataSource().internalHost(),
+                        internalHost,
                         connectOptions.getUserName());
 
             asyncClient.connect(connectOptions);
@@ -133,15 +134,16 @@ public abstract class MqttDataSourceAdapter<T extends MqttDataSource> extends Da
                     dataSource().name(),
                     serverURI,
                     reconnect);
-        logger.info("Will subscribe to topic {}", dataSource().topic());
+        var topic = dataSource().topic();
+        logger.info("Will subscribe to topic {}", topic);
 
         try {
             if (asyncClient != null) {
-                asyncClient.subscribe(dataSource().topic(), 2);
+                asyncClient.subscribe(topic, 2);
                 subscribeToHealthTopic();
             }
         } catch (MqttException ex) {
-            logger.error("Error while subscribing to topic {}", dataSource().topic(), ex);
+            logger.error("Error while subscribing to topic {}", topic, ex);
             recordSink.tryEmitError(ex);
         }
     }

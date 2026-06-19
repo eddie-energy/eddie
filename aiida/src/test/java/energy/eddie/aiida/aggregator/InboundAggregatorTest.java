@@ -52,7 +52,7 @@ class InboundAggregatorTest {
                 .thenReturn(inboundPublisher.flux());
         aggregator.addNewDataSourceAdapter(inboundAdapter);
 
-        var inboundRecord = new InboundRecord(Instant.now(),
+        var inboundRecord = new InboundRecord(Instant.parse("2026-06-09T12:00:00Z"),
                                               inboundDataSource,
                                               AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
                                               "Test");
