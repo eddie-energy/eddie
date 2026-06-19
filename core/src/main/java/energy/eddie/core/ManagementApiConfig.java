@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.core;
@@ -11,8 +11,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import org.apache.catalina.connector.Connector;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.tomcat.TomcatWebServerFactory;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.servlet.ServletWebServerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -57,7 +59,7 @@ public class ManagementApiConfig {
 
     @Bean
     public ServletWebServerFactory servletContainer() {
-        Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+        Connector connector = new Connector(TomcatWebServerFactory.DEFAULT_PROTOCOL);
         connector.setScheme("http");
         connector.setPort(managementPort);
 
@@ -82,12 +84,14 @@ public class ManagementApiConfig {
                 FilterChain chain
         ) throws IOException, ServletException {
             var httpRequest = (HttpServletRequest) request;
+            var contextPath = contextPath(httpRequest);
             var isRequestOnManagementPort = httpRequest.getLocalPort() == managementPort;
             var requestURI = httpRequest.getRequestURI();
-            var isRequestOnManagementUrl = requestURI.startsWith(CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
-                                           || requestURI.startsWith("/outbound-connectors")
-                                           || requestURI.startsWith(managementUrlPrefix)
-                                           || requestURI.matches("/region-connectors/[\\w\\-]+%s/.*".formatted(managementUrlPrefix));
+            var isRequestOnManagementUrl = requestURI.startsWith(contextPath + CoreSpringConfig.DATA_NEEDS_URL_MAPPING_PREFIX + managementUrlPrefix)
+                                           || requestURI.startsWith(contextPath + "/outbound-connectors")
+                                           || requestURI.startsWith(contextPath + managementUrlPrefix)
+                                           || requestURI.matches(contextPath + "/region-connectors/[\\w\\-]+%s/.*".formatted(
+                    managementUrlPrefix));
             IEF_LOGGER.debug("{} requested on port {}, managementPort: {}, managementUrl: {}",
                              requestURI,
                              request.getLocalPort(),
@@ -100,6 +104,19 @@ public class ManagementApiConfig {
             } else {
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_NOT_FOUND);
             }
+        }
+
+        @SuppressWarnings("java:S1075")
+        private static @NonNull String contextPath(HttpServletRequest httpRequest) {
+            var contextPath = httpRequest.getContextPath();
+            if (contextPath == null || contextPath.isBlank()) {
+                contextPath = "";
+            } else {
+                contextPath = contextPath.startsWith("/") ? contextPath : "/" + contextPath;
+                contextPath = contextPath.endsWith("/") ? contextPath.substring(0,
+                                                                                contextPath.length() - 1) : contextPath;
+            }
+            return contextPath;
         }
     }
 }
