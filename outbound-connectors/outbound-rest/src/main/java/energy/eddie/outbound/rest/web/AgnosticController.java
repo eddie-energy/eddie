@@ -447,13 +447,13 @@ public class AgnosticController {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
                              .header("X-Accel-Buffering", "no")
-                             .body(agnosticConnector.getOpaqueEnvelopes());
+                             .body(agnosticConnector.getForwardedOpaqueEnvelopeStream());
     }
 
     @Operation(
-            operationId = "GET OpaqueEnvelopes",
-            summary = "Get OpaqueEnvelopes",
-            description = "Query available OpaqueEnvelopes",
+            operationId = "GET OpaqueEnvelopes forwarded to the eligible party",
+            summary = "Get OpaqueEnvelopes forwarded to the eligible party",
+            description = "Query available OpaqueEnvelopes forwarded to the eligible party",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = {

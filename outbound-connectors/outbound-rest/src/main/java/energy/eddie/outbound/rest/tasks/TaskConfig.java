@@ -202,7 +202,7 @@ public class TaskConfig {
             energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
             MinMaxEnvelopeMarketDocumentRepository repository
     ) {
-        return new InsertionTask<>(cimConnector.getMinMaxEnvelopes(),
+        return new InsertionTask<>(cimConnector.getForwardedMinMaxEnvelopeStream(),
                                    repository,
                                    MinMaxEnvelopeMarketDocumentModel::new);
     }
@@ -238,7 +238,7 @@ public class TaskConfig {
             AgnosticConnector agnosticConnector,
             OpaqueEnvelopeRepository repository
     ) {
-        return new InsertionTask<>(agnosticConnector.getOpaqueEnvelopes(),
+        return new InsertionTask<>(agnosticConnector.getForwardedOpaqueEnvelopeStream(),
                                    repository,
                                    OpaqueEnvelopeModel::new);
     }

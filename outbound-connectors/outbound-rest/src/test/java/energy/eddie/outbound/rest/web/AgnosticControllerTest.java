@@ -155,7 +155,7 @@ class AgnosticControllerTest {
         var message1 = new OpaqueEnvelope("pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "{}");
         var message2 = new OpaqueEnvelope("other-pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "[]");
 
-        agnosticConnector.setOpaqueEnvelopeStream(Flux.just(message1, message2));
+        agnosticConnector.setForwardedOpaqueEnvelopeStream(Flux.just(message1, message2));
 
         var result = webTestClient.get()
                                  .uri("/agnostic/opaque-envelope")

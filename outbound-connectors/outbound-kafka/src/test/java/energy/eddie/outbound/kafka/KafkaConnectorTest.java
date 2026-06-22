@@ -186,32 +186,6 @@ class KafkaConnectorTest {
     }
 
     @Test
-    void testOpaqueEnvelope_areProducedToKafka() {
-        // Given
-        var data = new energy.eddie.cim.agnostic.OpaqueEnvelope(
-                "cid",
-                "pid",
-                "dnid",
-                "rid",
-                "mid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "blblblb"
-        );
-        kafkaConnector.setOpaqueEnvelopeStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
-        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
-                                                         new StringDeserializer(),
-                                                         new StringDeserializer()).createConsumer();
-        consumer.subscribe(Collections.singleton(config.opaqueEnvelope()));
-
-        // When
-        var records = KafkaTestUtils.getRecords(consumer);
-
-        // Then
-        assertThat(records).hasSize(1);
-    }
-
-    @Test
     void testCIM_v1_04_ValidatedHistoricalDataMarketDocuments_areProducedToKafka() {
         // Given
         var data = new VHDEnvelope()
@@ -308,34 +282,6 @@ class KafkaConnectorTest {
     }
 
     @Test
-    void testMinMaxEnvelope_areProducedToKafka() {
-        // Given
-        var data = new RECMMOEEnvelope()
-                .withMessageDocumentHeader(
-                        new MessageDocumentHeader()
-                                .withMetaInformation(
-                                        new MetaInformation()
-                                                .withRequestPermissionId("pid")
-                                                .withConnectionId("cid")
-                                                .withDataNeedId("dnid")
-                                )
-                );
-        kafkaConnector.setMinMaxEnvelopeStream(Flux.just(data));
-        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
-        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
-                                                         new StringDeserializer(),
-                                                         new StringDeserializer()).createConsumer();
-        consumer.subscribe(Collections.singleton(config.minMaxEnvelopeDocument()));
-
-        // When
-        var records = KafkaTestUtils.getRecords(consumer);
-
-        // Then
-        assertThat(records).hasSize(1);
-    }
-
-
-    @Test
     void testEnergySharingReferenceDataMarketDocuments_areProducedToKafka() {
         // Given
         var data = new ESRDMDEnvelope()
@@ -380,6 +326,59 @@ class KafkaConnectorTest {
                                                          new StringDeserializer(),
                                                          new StringDeserializer()).createConsumer();
         consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.request-permission-md"));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void testForwardedOpaqueEnvelopes_areProducedToKafka() {
+        // Given
+        var data = new energy.eddie.cim.agnostic.OpaqueEnvelope(
+                "cid",
+                "pid",
+                "dnid",
+                "rid",
+                "mid",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                "blblblb"
+        );
+        kafkaConnector.setForwardedOpaqueEnvelopeStream(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton(config.forwardedOpaqueEnvelope()));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void testForwardedMinMaxEnvelopes_areProducedToKafka() {
+        // Given
+        var data = new RECMMOEEnvelope()
+                .withMessageDocumentHeader(
+                        new MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                )
+                );
+        kafkaConnector.setForwardedMinMaxEnvelopeStream(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton(config.forwardedMinMaxEnvelopeDocument()));
 
         // When
         var records = KafkaTestUtils.getRecords(consumer);

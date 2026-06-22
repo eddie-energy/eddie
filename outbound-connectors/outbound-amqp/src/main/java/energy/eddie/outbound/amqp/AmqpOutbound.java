@@ -50,12 +50,6 @@ public class AmqpOutbound implements AutoCloseable {
                 .subscribe(publish(config.connectionStatusMessage(), AmqpOutbound::toHeaders));
     }
 
-    @MessageStream(OpaqueEnvelope.class)
-    public void setOpaqueEnvelopeStream(Flux<OpaqueEnvelope> opaqueEnvelopeStream) {
-        opaqueEnvelopeStream
-                .subscribe(publish(config.opaqueEnvelope(), AmqpOutbound::toHeaders));
-    }
-
     @MessageStream(RawDataMessage.class)
     public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
         rawDataStream
@@ -93,11 +87,6 @@ public class AmqpOutbound implements AutoCloseable {
         marketDocumentStream.subscribe(publish(config.acknowledgementMarketDocument(), AmqpOutbound::toHeaders));
     }
 
-    @MessageStream(RECMMOEEnvelope.class)
-    public void setMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> minMaxEnvelopeStream) {
-        minMaxEnvelopeStream.subscribe(publish(config.minMaxEnvelopeDocument(), AmqpOutbound::toHeaders));
-    }
-
     @MessageStream(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class)
     @SuppressWarnings("java:S100")
     public void setNearRealTimeDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.rtd.RTDEnvelope> marketDocumentStream) {
@@ -126,6 +115,18 @@ public class AmqpOutbound implements AutoCloseable {
     public void setRequestPermissionMarketDocumentStream(Flux<RequestPermissionEnvelope> marketDocumentStream) {
         marketDocumentStream.subscribe(publish(config.requestPermissionMarketDocument(),
                                                AmqpOutbound::toHeaders));
+    }
+
+    @MessageStream(OpaqueEnvelope.class)
+    public void setForwardedOpaqueEnvelopeStream(Flux<OpaqueEnvelope> forwardedOpaqueEnvelopeStream) {
+        forwardedOpaqueEnvelopeStream
+                .subscribe(publish(config.forwardedOpaqueEnvelope(), AmqpOutbound::toHeaders));
+    }
+
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setForwardedMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> forwardedMinMaxEnvelopeStream) {
+        forwardedMinMaxEnvelopeStream.subscribe(publish(config.forwardedMinMaxEnvelopeDocument(),
+                                                        AmqpOutbound::toHeaders));
     }
 
     private void publish(Object payload, String exchange, Map<String, String> headers) {

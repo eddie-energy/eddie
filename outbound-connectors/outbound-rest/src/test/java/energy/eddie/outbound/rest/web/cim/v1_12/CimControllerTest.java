@@ -156,7 +156,7 @@ class CimControllerTest {
         var message1 = new RECMMOEEnvelope();
         var message2 = new RECMMOEEnvelope();
 
-        given(cimConnector.getMinMaxEnvelopes())
+        given(cimConnector.getForwardedMinMaxEnvelopeStream())
                 .willReturn(Flux.just(message1, message2));
 
         var result = webTestClient.get()

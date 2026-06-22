@@ -33,7 +33,9 @@ public class AmqpSetup {
                 configuration.opaqueEnvelope(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
                 configuration.energySharingReferenceDataMarketDocument(),
-                configuration.requestPermissionMarketDocument()
+                configuration.requestPermissionMarketDocument(),
+                configuration.forwardedMinMaxEnvelopeDocument(),
+                configuration.forwardedOpaqueEnvelope()
         };
         try (var management = connection.management()) {
             for (var name : topics) {

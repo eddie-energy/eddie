@@ -735,7 +735,7 @@ public interface CimSwagger {
     @Operation(
             operationId = "GET forwarded min-max envelope market document stream",
             summary = "GET forwarded min-max envelope market document stream",
-            description = "Get all new forwarded min-max envelope market documents as Server Sent Events",
+            description = "Get all new min-max envelope market documents forwarded to the eligible party as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
@@ -824,9 +824,9 @@ public interface CimSwagger {
     ResponseEntity<Flux<RECMMOEEnvelope>> minMaxEnvelopeMdSSE();
 
     @Operation(
-            operationId = "GET forwarded min-max envelope market documents",
-            summary = "GET forwarded min-max envelope market documents",
-            description = "Query available forwarded min-max envelope market documents",
+            operationId = "GET min-max envelope market documents forwarded to the eligible party",
+            summary = "GET min-max envelope market documents forwarded to the eligible party",
+            description = "Query available min-max envelope market documents forwarded to the eligible party",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = {
@@ -989,43 +989,43 @@ public interface CimSwagger {
                     @Parameter(
                             name = "permissionId",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by permission ID, use it only get the messages related to a single permission request",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by permission ID, use it only get the messages related to a single permission request",
                             schema = @Schema(implementation = UUID.class)
                     ),
                     @Parameter(
                             name = "connectionId",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by connectionId ID",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by connectionId ID",
                             schema = @Schema(implementation = String.class)
                     ),
                     @Parameter(
                             name = "dataNeedId",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by the data need ID",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by the data need ID",
                             schema = @Schema(implementation = UUID.class)
                     ),
                     @Parameter(
                             name = "countryCode",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by the country, is a uppercase two letter country code",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by the country, is a uppercase two letter country code",
                             schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
                     ),
                     @Parameter(
                             name = "regionConnectorId",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by the region connector",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by the region connector",
                             schema = @Schema(implementation = String.class)
                     ),
                     @Parameter(
                             name = "from",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by the time they were received",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by the time they were received",
                             schema = @Schema(implementation = ZonedDateTime.class)
                     ),
                     @Parameter(
                             name = "to",
                             in = ParameterIn.QUERY,
-                            description = "Filters the forwarded min-max envelope market documents by the time they were received",
+                            description = "Filters the min-max envelope market documents forwarded to the eligible party by the time they were received",
                             schema = @Schema(implementation = ZonedDateTime.class)
                     ),
             }

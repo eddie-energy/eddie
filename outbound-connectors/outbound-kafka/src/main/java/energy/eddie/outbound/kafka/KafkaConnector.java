@@ -86,16 +86,6 @@ public class KafkaConnector {
                 .subscribe();
     }
 
-    @MessageStream(OpaqueEnvelope.class)
-    public void setOpaqueEnvelopeStream(Flux<OpaqueEnvelope> opaqueEnvelopeStream) {
-        opaqueEnvelopeStream
-                .onBackpressureBuffer()
-                .publishOn(Schedulers.boundedElastic())
-                .doOnNext(this::produceOpaqueEnvelope)
-                .onErrorContinue(this::logStreamerError)
-                .subscribe();
-    }
-
     @MessageStream(AccountingPointEnvelope.class)
     public void setAccountingPointEnvelopeStream(Flux<AccountingPointEnvelope> marketDocumentStream) {
         marketDocumentStream
@@ -149,16 +139,6 @@ public class KafkaConnector {
                 .subscribe();
     }
 
-    @MessageStream(RECMMOEEnvelope.class)
-    public void setMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> minMaxEnvelopeStream) {
-        minMaxEnvelopeStream
-                .onBackpressureBuffer()
-                .publishOn(Schedulers.boundedElastic())
-                .doOnNext(this::produceMinMaxEnvelope)
-                .onErrorContinue(this::logStreamerError)
-                .subscribe();
-    }
-
     @MessageStream(ESRDMDEnvelope.class)
     public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
         LOGGER.info("Setting stream for ESRDMD");
@@ -177,6 +157,26 @@ public class KafkaConnector {
                 .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(this::produceRequestPermissionMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    @MessageStream(OpaqueEnvelope.class)
+    public void setForwardedOpaqueEnvelopeStream(Flux<OpaqueEnvelope> forwardedOpaqueEnvelopeStream) {
+        forwardedOpaqueEnvelopeStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceForwardedOpaqueEnvelope)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setForwardedMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> forwardedMinMaxEnvelopeStream) {
+        forwardedMinMaxEnvelopeStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceForwardedMinMaxEnvelope)
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
     }
@@ -304,18 +304,6 @@ public class KafkaConnector {
         LOGGER.debug("Produced raw data message for permission request {}", message.permissionId());
     }
 
-    private void produceOpaqueEnvelope(OpaqueEnvelope opaqueEnvelope) {
-        var toSend = new ProducerRecord<String, Object>(
-                config.opaqueEnvelope(),
-                null,
-                opaqueEnvelope.connectionId(),
-                opaqueEnvelope,
-                toHeaders(opaqueEnvelope)
-        );
-        sendToKafka(toSend, "Could not produce opaque envelope message");
-        LOGGER.debug("Produced opaque envelope message for permission request {}", opaqueEnvelope.permissionId());
-    }
-
     private void produceAccountingPointEnvelope(AccountingPointEnvelope marketDocument) {
         var header = marketDocument.getMessageDocumentHeader()
                                    .getMessageDocumentHeaderMetaInformation();
@@ -376,10 +364,23 @@ public class KafkaConnector {
                      metaInformation.getRequestPermissionId());
     }
 
-    private void produceMinMaxEnvelope(RECMMOEEnvelope minMaxEnvelope) {
+    private void produceForwardedOpaqueEnvelope(OpaqueEnvelope opaqueEnvelope) {
+        var toSend = new ProducerRecord<String, Object>(
+                config.forwardedOpaqueEnvelope(),
+                null,
+                opaqueEnvelope.connectionId(),
+                opaqueEnvelope,
+                toHeaders(opaqueEnvelope)
+        );
+        sendToKafka(toSend, "Could not produce forwarded opaque envelope message");
+        LOGGER.debug("Produced forwarded opaque envelope message for permission request {}", opaqueEnvelope.permissionId());
+    }
+
+
+    private void produceForwardedMinMaxEnvelope(RECMMOEEnvelope minMaxEnvelope) {
         var metaInformation = minMaxEnvelope.getMessageDocumentHeader().getMetaInformation();
         var toSend = new ProducerRecord<String, Object>(
-                config.minMaxEnvelopeDocument(),
+                config.forwardedMinMaxEnvelopeDocument(),
                 null,
                 metaInformation.getConnectionId(),
                 minMaxEnvelope,

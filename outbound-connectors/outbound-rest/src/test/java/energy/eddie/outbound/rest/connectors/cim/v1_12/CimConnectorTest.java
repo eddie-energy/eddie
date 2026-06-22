@@ -60,15 +60,15 @@ class CimConnectorTest {
     }
 
     @Test
-    void setMinMaxEnvelopeStream_producesMinMaxEnvelope() {
+    void setForwardedMinMaxEnvelopeStream_producesForwardedMinMaxEnvelope() {
         // Given
-        var minMaxEnvelopeStream = Flux.just(new RECMMOEEnvelope());
+        var forwardedMinMaxEnvelopeStream = Flux.just(new RECMMOEEnvelope());
 
         // When
-        connector.setMinMaxEnvelopeStream(minMaxEnvelopeStream);
+        connector.setForwardedMinMaxEnvelopeStream(forwardedMinMaxEnvelopeStream);
 
         // Then
-        StepVerifier.create(connector.getMinMaxEnvelopes())
+        StepVerifier.create(connector.getForwardedMinMaxEnvelopeStream())
                     .then(connector::close)
                     .expectNextCount(1)
                     .verifyComplete();

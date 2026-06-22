@@ -134,11 +134,31 @@ public class TopicConfiguration {
     }
 
     /**
+     * Endpoint for incoming CIM min-max envelopes.
+     * Used by the eligible party to receive forwarded messages from AIIDA.
+     */
+    public String forwardedMinMaxEnvelopeDocument() {
+        return toTopic(TopicStructure.Direction.EP,
+                       TopicStructure.DataModels.CIM_1_12,
+                       TopicStructure.DocumentTypes.MIN_MAX_ENVELOPE_MD);
+    }
+
+    /**
      * Endpoint for opaque envelope with any payload.
      * Used to receive messages from the eligible party.
      */
     public String opaqueEnvelope() {
         return toTopic(TopicStructure.Direction.FW,
+                       TopicStructure.DataModels.AGNOSTIC,
+                       TopicStructure.DocumentTypes.OPAQUE_ENVELOPE);
+    }
+
+    /**
+     * Endpoint for incoming opaque envelopes with any payload.
+     * Used by the eligible party to receive forwarded messages from AIIDA.
+     */
+    public String forwardedOpaqueEnvelope() {
+        return toTopic(TopicStructure.Direction.EP,
                        TopicStructure.DataModels.AGNOSTIC,
                        TopicStructure.DocumentTypes.OPAQUE_ENVELOPE);
     }
