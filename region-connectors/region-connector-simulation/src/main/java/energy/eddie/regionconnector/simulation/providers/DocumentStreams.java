@@ -30,7 +30,7 @@ public class DocumentStreams implements AutoCloseable {
     private final Sinks.Many<SimulatedMeterReading> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<ConnectionStatusMessage> csmSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<PermissionEnvelope> pmdSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final Sinks.Many<String> terminationSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<String> terminationSink = Sinks.many().replay().latest();
     private final CommonInformationModelConfiguration cimConfig;
     private final ObjectMapper objectMapper;
     private final Sinks.Many<RequestPermissionEnvelope> rpmdSink = Sinks.many().multicast().onBackpressureBuffer();
