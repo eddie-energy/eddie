@@ -764,7 +764,7 @@ class PermissionServiceTest {
             doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
             permission.setStartTime(Instant.parse(start));
             permission.setExpirationTime(Instant.parse(end));
-            when(mockPermissionRepository.findByStatusIn(PermissionStatus.ACTIVE)).thenReturn(List.of(permission));
+            when(mockPermissionRepository.findByStatusIn(PermissionStatus.STREAMING)).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
             if (expectedState == PermissionStatus.WAITING_FOR_START || expectedState == PermissionStatus.STREAMING_DATA)

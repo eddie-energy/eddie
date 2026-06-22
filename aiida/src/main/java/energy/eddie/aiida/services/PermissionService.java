@@ -316,21 +316,22 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Gets all active permissions from the database and checks if they have expired. If not, streaming is resumed,
-     * otherwise their database entry will be updated accordingly. This is done when a {@link ContextRefreshedEvent} is
-     * received, which ensures that all beans are started and the database is set up correctly.
+     * Gets all permissions from the database that should be streaming data and checks if they have expired.
+     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
+     * This is done when a {@link ContextRefreshedEvent} is received,
+     * which ensures that all beans are started and the database is set up correctly.
      */
     @Override
     @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var allActivePermissions = permissionRepository.findByStatusIn(ACTIVE);
+        var streamingPermissions = permissionRepository.findByStatusIn(STREAMING);
         LOGGER.info(
-                "Fetched {} active permissions from database and will resume streaming or update them if they are expired.",
-                allActivePermissions.size());
+                "Fetched {} permission from database that should resume streaming or be updated if expired.",
+                streamingPermissions.size());
 
         var now = clock.instant();
-        for (Permission permission : allActivePermissions) {
+        for (Permission permission : streamingPermissions) {
             var expirationTime = permission.expirationTime();
             if (expirationTime == null) {
                 LOGGER.error("expirationTime of permission {} is null, this is an unexpected error",

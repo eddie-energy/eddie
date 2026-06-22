@@ -56,6 +56,7 @@ public enum PermissionStatus {
      */
     FAILED_TO_START;
 
+    public static final Set<PermissionStatus> STREAMING = Set.of(WAITING_FOR_START, STREAMING_DATA);
     public static final Set<PermissionStatus> ACTIVE = Set.of(ACCEPTED, WAITING_FOR_START, STREAMING_DATA);
 
     public boolean isActive() {
