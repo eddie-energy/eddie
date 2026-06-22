@@ -7,15 +7,13 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistoricalData;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintOk;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintViolation;
-import energy.eddie.regionconnector.simulation.engine.steps.Model;
-import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
-import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
-import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
+import energy.eddie.regionconnector.simulation.engine.steps.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -39,9 +37,17 @@ class ScenarioConstraintTest {
         );
         return Stream.of(
                 Arguments.of(new StatusChangeStep(PermissionProcessStatus.CREATED, 0),
-                             validatedHistoricalDataStep),
+                             validatedHistoricalDataStep,
+                             "Last step in scenario must be a StatusStep with a final status or a TerminationInteractionStep"),
                 Arguments.of(validatedHistoricalDataStep,
-                             new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0))
+                             new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0),
+                             "First step in scenario must be a StatusStep with created status"),
+                Arguments.of(new StatusChangeStep(PermissionProcessStatus.CREATED),
+                             new StatusChangeStep(PermissionProcessStatus.VALIDATED),
+                             "Last step in scenario must have a final status"),
+                Arguments.of(new StatusChangeStep(PermissionProcessStatus.ACCEPTED),
+                             new StatusChangeStep(PermissionProcessStatus.FULFILLED),
+                             "First step in scenario must be a StatusStep with created status")
         );
     }
 
@@ -58,33 +64,17 @@ class ScenarioConstraintTest {
     }
 
     @Test
-    void testConstraint_firstIsNotCreatedStep_returnsViolation() {
-        // Given
-        var first = new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0);
-        var last = new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0);
-        var scenario = new Scenario("test", List.of(first, last));
-
-        // When
-        var res = constraint.violatesConstraint(scenario);
-
-        // Then
-        var violation = assertInstanceOf(ConstraintViolation.class, res);
-        assertEquals("First step in scenario must be a StatusStep with created status", violation.message());
-    }
-
-    @Test
-    void testConstraint_lastIsNotFinalStatus_returnsViolation() {
+    void testConstraint_onTerminationInteractionAsLastStep_returnsOk() {
         // Given
         var first = new StatusChangeStep(PermissionProcessStatus.CREATED, 0);
-        var last = new StatusChangeStep(PermissionProcessStatus.VALIDATED, 0);
+        var last = new TerminationInteractionStep(Duration.ZERO);
         var scenario = new Scenario("test", List.of(first, last));
 
         // When
         var res = constraint.violatesConstraint(scenario);
 
         // Then
-        var violation = assertInstanceOf(ConstraintViolation.class, res);
-        assertEquals("Last step in scenario must have a final status", violation.message());
+        assertInstanceOf(ConstraintOk.class, res);
     }
 
     @Test
@@ -103,7 +93,7 @@ class ScenarioConstraintTest {
 
     @ParameterizedTest
     @MethodSource
-    void testConstraint_onInvalidStepType_returnsViolation(Model first, Model last) {
+    void testConstraint_onInvalidStepType_returnsViolation(Model first, Model last, String message) {
         // Given
         var scenario = new Scenario("test", List.of(first, last));
 
@@ -111,6 +101,7 @@ class ScenarioConstraintTest {
         var res = constraint.violatesConstraint(scenario);
 
         // Then
-        assertInstanceOf(ConstraintViolation.class, res);
+        var violation = assertInstanceOf(ConstraintViolation.class, res);
+        assertEquals(message, violation.message());
     }
 }
