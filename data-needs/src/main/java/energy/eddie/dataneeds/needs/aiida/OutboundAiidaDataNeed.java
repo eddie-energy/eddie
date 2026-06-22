@@ -18,7 +18,9 @@ public class OutboundAiidaDataNeed extends AiidaDataNeed {
     public static final String DISCRIMINATOR_VALUE = "outbound-aiida";
     public static final Set<AiidaSchema> SUPPORTED_SCHEMAS = Set.of(AiidaSchema.SMART_METER_P1_RAW,
                                                                       AiidaSchema.SMART_METER_P1_CIM_V1_04,
-                                                                      AiidaSchema.SMART_METER_P1_CIM_V1_12);
+                                                                      AiidaSchema.SMART_METER_P1_CIM_V1_12,
+                                                                      AiidaSchema.OPAQUE,
+                                                                      AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
 
     @SuppressWarnings("NullAway.Init")
     public OutboundAiidaDataNeed() {

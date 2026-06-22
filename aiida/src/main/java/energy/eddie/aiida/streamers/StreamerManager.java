@@ -11,6 +11,7 @@ import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -114,6 +115,14 @@ public class StreamerManager implements AutoCloseable {
     public void updateSchedule(Permission permission) {
         requireStreamer(permission.id())
                 .ifPresent(streamer -> buildFilteredFlux(permission).ifPresent(streamer::updateRecordFlux));
+    }
+
+    /**
+     * Publishes a payload of the provided schema to the streamer for the provided permission.
+     */
+    public void publishSchemaPayload(UUID permissionId, AiidaSchema schema, String payload) {
+        requireStreamer(permissionId)
+                .ifPresent(streamer -> streamer.publishSchemaPayload(permissionId, schema, payload));
     }
 
     /**

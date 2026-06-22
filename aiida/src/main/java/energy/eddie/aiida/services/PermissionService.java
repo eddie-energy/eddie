@@ -9,9 +9,11 @@ import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
@@ -23,6 +25,7 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
@@ -39,9 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriTemplate;
 
 import java.time.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.*;
@@ -56,6 +57,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final HandshakeService handshakeService;
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
+    private final DataSourceService dataSourceService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
     private final AiidaEventPublisher aiidaEventPublisher;
 
@@ -67,6 +69,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
+            DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
             AiidaEventPublisher aiidaEventPublisher
     ) {
@@ -76,6 +79,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.handshakeService = handshakeService;
         this.permissionScheduler = permissionScheduler;
         this.authService = authService;
+        this.dataSourceService = dataSourceService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
     }
@@ -95,19 +99,18 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public Permission revokePermission(
             UUID permissionId
-    ) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException {
+    ) throws PermissionNotFoundException, PermissionStateTransitionException, UnauthorizedException, InvalidUserException, InboundDataSourceInUseException {
         var permission = findById(permissionId);
         LOGGER.info("Got request to revoke permission with id '{}'.", permission.id());
         authService.checkAuthorizationForPermission(permission);
 
-        if (!isEligibleForRevocation(permission))
+        if (!permission.status().isActive())
             throw new PermissionStateTransitionException(permission.id().toString(),
                                                          REVOKED.name(),
-                                                         List.of(ACCEPTED.name(),
-                                                                 STREAMING_DATA.name(),
-                                                                 WAITING_FOR_START.name()),
+                                                         ACTIVE.stream().map(Enum::name).toList(),
                                                          permission.status().name());
 
+        validateInboundDataSourceNotInUse(permission);
         permissionScheduler.removePermission(permissionId);
 
 
@@ -232,8 +235,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             UUID permissionId,
             @Nullable UUID dataSourceId,
             @Nullable InboundMessageFormat inboundMessageFormat
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
-             UnauthorizedException, InvalidUserException, InvalidInboundPermissionException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -252,6 +254,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(ACCEPTED);
 
         if (dataSourceId != null) {
+            validateDataSourceSelection(permission, dataSourceId);
             aiidaEventPublisher.publishEvent(new OutboundPermissionAcceptEvent(permissionId, dataSourceId));
         }
 
@@ -295,6 +298,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permissionRepository.findByUserIdOrderByGrantTimeDesc(currentUserId);
     }
 
+    public List<Permission> getActiveInboundPermissions() throws InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+        return permissionRepository.findInboundByUserIdAndStatus(currentUserId, PermissionStatus.ACTIVE);
+    }
+
     /**
      * Returns the permission with the specified ID.
      *
@@ -308,21 +316,22 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Gets all active permissions from the database and checks if they have expired. If not, streaming is resumed,
-     * otherwise their database entry will be updated accordingly. This is done when a {@link ContextRefreshedEvent} is
-     * received, which ensures that all beans are started and the database is set up correctly.
+     * Gets all permissions from the database that should be streaming data and checks if they have expired.
+     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
+     * This is done when a {@link ContextRefreshedEvent} is received,
+     * which ensures that all beans are started and the database is set up correctly.
      */
     @Override
     @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        List<Permission> allActivePermissions = permissionRepository.findAllActivePermissions();
+        var streamingPermissions = permissionRepository.findByStatusIn(STREAMING);
         LOGGER.info(
-                "Fetched {} active permissions from database and will resume streaming or update them if they are expired.",
-                allActivePermissions.size());
+                "Fetched {} permission from database that should resume streaming or be updated if expired.",
+                streamingPermissions.size());
 
         var now = clock.instant();
-        for (Permission permission : allActivePermissions) {
+        for (Permission permission : streamingPermissions) {
             var expirationTime = permission.expirationTime();
             if (expirationTime == null) {
                 LOGGER.error("expirationTime of permission {} is null, this is an unexpected error",
@@ -447,20 +456,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Indicates whether the permission's current status allows it to be revoked. The status needs to be one of the
-     * following, to be eligible for revocation: ACCEPTED, WAITING_FOR_START, STREAMING_DATA
-     *
-     * @param permission Permission to check.
-     * @return True if the permission is eligible for revocation, false otherwise.
-     */
-    private boolean isEligibleForRevocation(Permission permission) {
-        return switch (permission.status()) {
-            case ACCEPTED, WAITING_FOR_START, STREAMING_DATA -> true;
-            default -> false;
-        };
-    }
-
-    /**
      * Sets the provided {@code permission} as unfulfillable and throws a {@code PermissionUnfulfillableException}
      */
     private void markPermissionAsUnfulfillable(Permission permission) throws PermissionUnfulfillableException {
@@ -473,12 +468,55 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         throw new PermissionUnfulfillableException(permission.id());
     }
 
-    private void removeInboundDataSourceIfExists(Permission permission) {
-        var dataSource = permission.dataSource();
+    private void validateDataSourceSelection(Permission permission, UUID dataSourceId)
+            throws DataSourceNotFoundException, IncompatibleDataSourceException {
+        var dataSource = dataSourceService.dataSourceByIdOrThrow(dataSourceId);
 
-        if (dataSource != null && dataSource.type() == DataSourceType.INBOUND) {
-            aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSource.id()));
+        if (!Objects.equals(dataSource.userId(), permission.userId())) {
+            throw new DataSourceNotFoundException(dataSourceId);
+        }
+
+        if (dataSource instanceof InboundDataSource inboundDataSource) {
+            var requiredSchemas = requireNonNull(permission.dataNeed()).schemas();
+            if (!hasSchemaOverlap(requiredSchemas, inboundDataSource.schemas())) {
+                throw new IncompatibleDataSourceException(
+                        dataSourceId,
+                        "The selected inbound data source does not match any requested schema."
+                );
+            }
+        }
+    }
+
+    private boolean hasSchemaOverlap(Set<AiidaSchema> requiredSchemas, Set<AiidaSchema> availableSchemas) {
+        return requiredSchemas.stream().anyMatch(availableSchemas::contains);
+    }
+
+    private void removeInboundDataSourceIfExists(Permission permission) {
+        var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
+        if (dataSourceId != null) {
+            aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
             permission.setDataSource(null);
         }
+    }
+
+    private void validateInboundDataSourceNotInUse(Permission permission) throws InboundDataSourceInUseException {
+        var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
+        if (dataSourceId != null) {
+            var permissions = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACTIVE);
+            if (!permissions.isEmpty()) {
+                var blockingIds = permissions.stream().map(Permission::id).toList();
+                LOGGER.trace(
+                        "Revoke on inbound permission {} was blocked because its data source {} is used by outbound permissions {}.",
+                        permission.id(),
+                        dataSourceId,
+                        blockingIds);
+                throw new InboundDataSourceInUseException(permission.id(), blockingIds);
+            }
+        }
+    }
+
+    private @Nullable UUID inboundDataSourceIdIfInboundPermission(Permission permission) {
+        return permission.dataSource() instanceof InboundDataSource inboundDataSource &&
+               permission.equals(inboundDataSource.permission()) ? inboundDataSource.id() : null;
     }
 }

@@ -101,6 +101,10 @@ export function getPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions')
 }
 
+export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {
+  return fetch('/permissions/inbound/active')
+}
+
 export function getDataSources(): Promise<AiidaDataSource[]> {
   return fetch('/datasources/outbound')
 }

@@ -13,6 +13,7 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
@@ -184,6 +185,19 @@ class StreamerManagerTest {
 
         // Then
         verify(mockAiidaStreamer).closeTerminally(any());
+    }
+
+    @Test
+    void verify_publishSchemaPayload_publishesToStreamer() {
+        // Given
+        ReflectionTestUtils.setField(manager, "streamers", mockMap);
+        when(mockMap.get(permissionId)).thenReturn(mockAiidaStreamer);
+
+        // When
+        manager.publishSchemaPayload(permissionId, AiidaSchema.OPAQUE, "test-payload");
+
+        // Then
+        verify(mockAiidaStreamer).publishSchemaPayload(permissionId, AiidaSchema.OPAQUE, "test-payload");
     }
 
     @Test

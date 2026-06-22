@@ -106,11 +106,6 @@ public class DataSourceService {
                          .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
     }
 
-    public List<DataSource> getInboundDataSources() throws InvalidUserException {
-        var currentUserId = authService.getCurrentUserId();
-        return repository.findInboundByUserId(currentUserId);
-    }
-
     public List<DataSource> getOutboundDataSources() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
         return repository.findOutboundByUserId(currentUserId);

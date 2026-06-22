@@ -8,14 +8,17 @@ import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -94,11 +97,17 @@ class PermissionServiceTest {
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
     @Mock
+    private OutboundAiidaLocalDataNeed mockOutboundAiidaLocalDataNeed;
+    @Mock
     private AuthService mockAuthService;
+    @Mock
+    private DataSourceService mockDataSourceService;
     @Mock
     private Permission mockPermission;
     @Mock
     private DataSource mockDataSource;
+    @Mock
+    private InboundDataSource mockInboundDataSource;
     @Mock
     private MqttDto mockMqttDto;
     @Mock
@@ -108,13 +117,18 @@ class PermissionServiceTest {
     private PermissionService service;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
+        lenient().when(mockDataSourceService.dataSourceByIdOrThrow(any())).thenReturn(mockDataSource);
+        lenient().when(mockDataSource.userId()).thenReturn(userId);
+        lenient().when(mockPermission.userId()).thenReturn(userId);
+
         service = new PermissionService(mockPermissionRepository,
                                         clock,
                                         streamerManager,
                                         mockHandshakeService,
                                         mockPermissionScheduler,
                                         mockAuthService,
+                                        mockDataSourceService,
                                         mockAiidaLocalDataNeedService,
                                         mockAiidaEventPublisher);
     }
@@ -375,6 +389,80 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenDataSourceOfOtherUser_acceptPermission_throwsDataSourceNotFound() throws Exception {
+        var otherUserId = UUID.randomUUID();
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockDataSource);
+        when(mockDataSource.userId()).thenReturn(otherUserId);
+
+        assertThrows(DataSourceNotFoundException.class,
+                     () -> service.acceptPermission(permissionId1, dataSourceId, null));
+
+        verify(mockHandshakeService, never()).fetchMqttDetails(any());
+    }
+
+    @Test
+    void givenInboundDataSourceWithIncompatibleSchemas_acceptPermission_throwsIncompatibleDataSource() throws Exception {
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
+        when(mockInboundDataSource.userId()).thenReturn(userId);
+        when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
+        when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+        when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
+
+        assertThrows(IncompatibleDataSourceException.class,
+                     () -> service.acceptPermission(permissionId1, dataSourceId, null));
+
+        verify(mockHandshakeService, never()).fetchMqttDetails(any());
+    }
+
+    @Test
+    void givenInboundDataSourceWithCompatibleSchemas_acceptPermission_succeeds() throws Exception {
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
+        when(mockInboundDataSource.userId()).thenReturn(userId);
+        when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
+        when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
+        when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE, AiidaSchema.SMART_METER_P1_RAW));
+        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId1.toString());
+
+        service.acceptPermission(permissionId1, dataSourceId, null);
+
+        verify(mockAiidaEventPublisher).publishEvent(any(OutboundPermissionAcceptEvent.class));
+        verify(mockPermissionScheduler).scheduleOrStart(any());
+    }
+
+    @Test
+    void givenInboundDataSourceWithPartialSchemaOverlap_acceptPermission_succeeds() throws Exception {
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
+        when(mockPermission.userId()).thenReturn(userId);
+        when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
+        when(mockInboundDataSource.userId()).thenReturn(userId);
+        when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
+        when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE, AiidaSchema.SMART_METER_P1_RAW));
+        when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
+        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
+        when(mockMqttDto.username()).thenReturn(permissionId1.toString());
+
+        service.acceptPermission(permissionId1, dataSourceId, null);
+
+        verify(mockAiidaEventPublisher).publishEvent(any(OutboundPermissionAcceptEvent.class));
+        verify(mockPermissionScheduler).scheduleOrStart(any());
+    }
+
+    @Test
     void givenValidInboundPermission_createsAndStartsDataSource() throws Exception {
         // Given
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -448,6 +536,21 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenValidUser_getActiveInboundPermissions() throws InvalidUserException {
+        // Given
+        var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
+        when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
+        when(mockPermissionRepository.findInboundByUserIdAndStatus(uuid, PermissionStatus.ACTIVE))
+                .thenReturn(List.of(mockPermission));
+
+        // When
+        var result = service.getActiveInboundPermissions();
+
+        // Then
+        assertEquals(List.of(mockPermission), result);
+    }
+
+    @Test
     void givenPermissionInInvalidState_revokePermission_throws() {
         // Given
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
@@ -485,10 +588,10 @@ class PermissionServiceTest {
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
         when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
-        when(mockPermission.dataSource()).thenReturn(mockDataSource);
+        when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
-        when(mockPermission.dataSource()).thenReturn(mockDataSource);
-        when(mockDataSource.type()).thenReturn(DataSourceType.INBOUND);
+        when(mockInboundDataSource.permission()).thenReturn(mockPermission);
+        when(mockInboundDataSource.id()).thenReturn(UUID.randomUUID());
 
         // When
         service.revokePermission(permissionId1);
@@ -499,6 +602,51 @@ class PermissionServiceTest {
         verify(mockPermission).setRevokeTime(fixedInstant);
         verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
+    }
+
+    @Test
+    void givenOutboundPermissionUsingInboundDataSource_revokePermission_doesNotDeleteInboundDataSource() throws Exception {
+        // Given
+        var ownerPermission = mock(Permission.class);
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.connectionId()).thenReturn("connectionId");
+        when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
+        when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
+        when(mockPermission.id()).thenReturn(permissionId1);
+        when(mockInboundDataSource.permission()).thenReturn(ownerPermission);
+
+        // When
+        service.revokePermission(permissionId1);
+
+        // Then
+        verify(mockAiidaEventPublisher, never()).publishEvent(any(InboundPermissionRevokeEvent.class));
+    }
+
+    @Test
+    void givenInboundPermissionWithBlockingOutboundPermissions_revokePermission_throws() {
+        var blockingPermissionId1 = UUID.fromString("a57a9f3d-2b5a-4b84-a32c-51bfa4b865c1");
+        var blockingPermissionId2 = UUID.fromString("6dbc4ec9-4f2f-4aa7-b016-36c28945a6e4");
+        var blockingPermission1 = mock(Permission.class);
+        when(blockingPermission1.id()).thenReturn(blockingPermissionId1);
+        var blockingPermission2 = mock(Permission.class);
+        when(blockingPermission2.id()).thenReturn(blockingPermissionId2);
+
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
+        when(mockPermission.id()).thenReturn(permissionId1);
+        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
+        when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
+        when(mockInboundDataSource.permission()).thenReturn(mockPermission);
+        when(mockInboundDataSource.id()).thenReturn(dataSourceId);
+        when(mockPermissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACTIVE))
+                .thenReturn(List.of(blockingPermission1, blockingPermission2));
+
+        var exception = assertThrows(InboundDataSourceInUseException.class,
+                                     () -> service.revokePermission(permissionId1));
+
+        assertTrue(exception.getMessage().contains(blockingPermissionId1.toString()));
+        assertTrue(exception.getMessage().contains(blockingPermissionId2.toString()));
+        verify(mockPermissionScheduler, never()).removePermission(any());
     }
 
     @Test
@@ -591,6 +739,7 @@ class PermissionServiceTest {
                                             mockHandshakeService,
                                             permissionScheduler,
                                             mockAuthService,
+                                            mockDataSourceService,
                                             mockAiidaLocalDataNeedService,
                                             mockAiidaEventPublisher);
         }
@@ -615,7 +764,7 @@ class PermissionServiceTest {
             doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
             permission.setStartTime(Instant.parse(start));
             permission.setExpirationTime(Instant.parse(end));
-            when(mockPermissionRepository.findAllActivePermissions()).thenReturn(List.of(permission));
+            when(mockPermissionRepository.findByStatusIn(PermissionStatus.STREAMING)).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
             if (expectedState == PermissionStatus.WAITING_FOR_START || expectedState == PermissionStatus.STREAMING_DATA)

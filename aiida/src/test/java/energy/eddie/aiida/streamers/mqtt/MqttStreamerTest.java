@@ -47,6 +47,7 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.NEGATIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT_HOUR;
+import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -333,6 +334,20 @@ class MqttStreamerTest {
         // Then
         // record is published on Schedulers.boundedElastic(), so await the async side effect
         verify(mockClient, timeout(2000)).publish(eq(EXPECTED_DATA_TOPIC), any(), eq(1), eq(false));
+    }
+
+    @Test
+    void givenOpaquePayload_publishInboundRecord_sendsViaMqtt() throws MqttException {
+        // Given
+        streamer.connect();
+        var expectedPayload = "opaque".getBytes(StandardCharsets.UTF_8);
+        var expectedTopic = AiidaSchema.OPAQUE.buildTopicPath(DATA_TOPIC);
+
+        // When
+        streamer.publishSchemaPayload(UUID.randomUUID(), AiidaSchema.OPAQUE, "opaque");
+
+        // Then
+        verify(mockClient, timeout(2000)).publish(eq(expectedTopic), aryEq(expectedPayload), eq(1), eq(false));
     }
 
     @Test

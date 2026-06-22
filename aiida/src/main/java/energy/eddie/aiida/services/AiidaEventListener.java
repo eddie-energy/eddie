@@ -10,6 +10,7 @@ import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import jakarta.transaction.Transactional;
@@ -80,6 +81,10 @@ public class AiidaEventListener {
             } catch (PermissionStateTransitionException e) {
                 LOGGER.error(
                         "Permission {} associated with deleted data source cannot be revoked, because it is not in an eligible state.",
+                        permissionId);
+            } catch (InboundDataSourceInUseException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because its inbound data source is still used by outbound permissions.",
                         permissionId);
             } catch (UnauthorizedException | InvalidUserException e) {
                 LOGGER.error(

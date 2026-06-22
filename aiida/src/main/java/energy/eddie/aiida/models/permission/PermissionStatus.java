@@ -3,6 +3,8 @@
 
 package energy.eddie.aiida.models.permission;
 
+import java.util.Set;
+
 public enum PermissionStatus {
     /**
      * The permission has been created on AIIDA.
@@ -52,5 +54,12 @@ public enum PermissionStatus {
     /**
      * An error occurred and the permission could not be started.
      */
-    FAILED_TO_START
+    FAILED_TO_START;
+
+    public static final Set<PermissionStatus> STREAMING = Set.of(WAITING_FOR_START, STREAMING_DATA);
+    public static final Set<PermissionStatus> ACTIVE = Set.of(ACCEPTED, WAITING_FOR_START, STREAMING_DATA);
+
+    public boolean isActive() {
+        return ACTIVE.contains(this);
+    }
 }

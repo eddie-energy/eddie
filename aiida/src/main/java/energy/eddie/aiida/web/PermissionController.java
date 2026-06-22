@@ -6,6 +6,8 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.PatchPermissionDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.PermissionService;
@@ -54,6 +56,13 @@ public class PermissionController {
         return ResponseEntity.ok(permissionService.getAllPermissionsSortedByGrantTime());
     }
 
+    @Operation(summary = "Get active inbound permissions", description = "Get active inbound permissions that can be used as a data source selection.", operationId = "getActiveInboundPermissions", tags = {"permission"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
+    @GetMapping(path = "/inbound/active", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Permission>> getActiveInboundPermissions() throws InvalidUserException {
+        return ResponseEntity.ok(permissionService.getActiveInboundPermissions());
+    }
+
     @Operation(summary = "Set up new permissions", description = "Set up a new permissions with data from e.g. a QR code.", operationId = "setupNewPermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),
@@ -96,7 +105,8 @@ public class PermissionController {
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
              UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException,
-             InvalidInboundPermissionException {
+             InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException,
+             InboundDataSourceInUseException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)

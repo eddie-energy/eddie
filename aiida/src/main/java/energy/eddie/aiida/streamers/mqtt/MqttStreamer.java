@@ -34,6 +34,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
@@ -218,6 +219,17 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         subscription = recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
         LOGGER.info("MqttStreamer for permission {} resubscribed to an updated record flux",
                     streamingConfig.permissionId());
+    }
+
+    @Override
+    public void publishSchemaPayload(UUID permissionId, AiidaSchema schema, String payload) {
+        var topic = schema.buildTopicPath(streamingConfig.dataTopic());
+
+        publishMessage(topic, payload.getBytes(StandardCharsets.UTF_8));
+
+        var latestRecord = new PermissionLatestRecord(streamingConfig.dataTopic(), streamingConfig.serverUri());
+        latestRecord.putSchema(schema, new LatestRecordSchema(Instant.now(), payload));
+        permissionLatestRecordMap.put(permissionId, latestRecord);
     }
 
     @Override

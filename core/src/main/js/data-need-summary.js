@@ -37,6 +37,7 @@ class DataNeedSummary extends HTMLElement {
     const dataNeed = await getDataNeedAttributes(dataNeedId);
 
     const {
+      name,
       type,
       purpose,
       policyLink,
@@ -72,6 +73,8 @@ class DataNeedSummary extends HTMLElement {
 
       <sl-alert open>
         <dl>
+          <dt>Name</dt>
+          <dd>${name}</dd>
           <dt>Type of data</dt>
           <dd>
             <sl-tooltip content="${details}">
@@ -133,7 +136,7 @@ class DataNeedSummary extends HTMLElement {
           <!-- For AIIDA data needs -->
           ${schemas
             ? /* HTML */ `
-                <dt>Schemas:</dt>
+                <dt>Schemas</dt>
                 <dd>${schemas.join(", ")}</dd>
               `
             : ""}
@@ -150,7 +153,7 @@ class DataNeedSummary extends HTMLElement {
           ${dataTags
             ? /* HTML */ `
                 <dt>OBIS Points</dt>
-                <dd>${dataTags.join(", ")}</dd>
+                <dd>${dataTags.join(", ") || "None"}</dd>
               `
             : ""}
 

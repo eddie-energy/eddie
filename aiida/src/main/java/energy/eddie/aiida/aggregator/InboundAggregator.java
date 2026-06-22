@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.health.registry.HealthContributorRegistry;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 @Component
 public class InboundAggregator extends Aggregator<InboundRecord> {
@@ -45,5 +46,9 @@ public class InboundAggregator extends Aggregator<InboundRecord> {
     protected void saveRecordToDatabase(InboundRecord dataRecord) {
         LOGGER.trace("Saving new inbound record to db");
         inboundRecordRepository.save(dataRecord);
+    }
+
+    public Flux<InboundRecord> inboundRecordFlux() {
+        return combinedRecordSink.asFlux().ofType(InboundRecord.class);
     }
 }

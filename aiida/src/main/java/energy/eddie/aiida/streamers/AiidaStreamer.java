@@ -6,9 +6,12 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
+
+import java.util.UUID;
 
 public abstract class AiidaStreamer implements AutoCloseable {
     protected final Sinks.Many<PermissionCommand> commandSink;
@@ -64,4 +67,9 @@ public abstract class AiidaStreamer implements AutoCloseable {
      * schedule, which re-aggregates the upstream records on a different cadence.
      */
     public abstract void updateRecordFlux(Flux<AiidaRecord> recordFlux);
+
+    /**
+     * Publishes a payload of the provided schema to the permission of the provided id.
+     */
+    public abstract void publishSchemaPayload(UUID permissionId, AiidaSchema schema, String payload);
 }

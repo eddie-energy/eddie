@@ -100,21 +100,6 @@ public class DataSourceController {
         return ResponseEntity.ok(dataSources);
     }
 
-    @Operation(summary = "Get all inbound datasources", description = "Retrieve all inbound datasources.",
-            operationId = "getAllInboundDataSources", tags = {"datasource"})
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = DataSourceDto.class)))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized User",
-                    content = @Content(schema = @Schema(implementation = EddieApiError.class)))
-    })
-    @GetMapping(path = "/inbound", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataSource>> getAllInboundDataSources() throws InvalidUserException {
-        var dataSources = service.getInboundDataSources();
-
-        return ResponseEntity.ok(dataSources);
-    }
-
     @Operation(summary = "Add a new datasource", description = "Add a new datasource.",
             operationId = "addDatasource", tags = {"datasource"})
     @ApiResponses(value = {
