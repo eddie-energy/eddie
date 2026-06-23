@@ -12,6 +12,7 @@ import energy.eddie.outbound.rest.model.RawDataMessageModel;
 import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
 import energy.eddie.outbound.rest.persistence.OpaqueEnvelopeRepository;
 import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
+import energy.eddie.outbound.rest.web.agnostic.AgnosticController;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
