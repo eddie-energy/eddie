@@ -60,6 +60,21 @@ class CimConnectorTest {
     }
 
     @Test
+    void setForwardedMinMaxEnvelopeStream_producesForwardedMinMaxEnvelope() {
+        // Given
+        var forwardedMinMaxEnvelopeStream = Flux.just(new RECMMOEEnvelope());
+
+        // When
+        connector.setForwardedMinMaxEnvelopeStream(forwardedMinMaxEnvelopeStream);
+
+        // Then
+        StepVerifier.create(connector.getForwardedMinMaxEnvelopeStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
     void setEnergySharingReferenceDataMarketDocument_producesEnergySharingReferenceDataMarketDocument() {
         // Given
         var esrFlux = Flux.just(new ESRDMDEnvelope());

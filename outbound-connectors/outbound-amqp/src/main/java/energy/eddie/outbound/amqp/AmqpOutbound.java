@@ -8,6 +8,7 @@ import com.rabbitmq.client.amqp.Publisher;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.MessageWithHeaders;
+import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
@@ -16,6 +17,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -115,6 +117,18 @@ public class AmqpOutbound implements AutoCloseable {
                                                AmqpOutbound::toHeaders));
     }
 
+    @MessageStream(OpaqueEnvelope.class)
+    public void setForwardedOpaqueEnvelopeStream(Flux<OpaqueEnvelope> forwardedOpaqueEnvelopeStream) {
+        forwardedOpaqueEnvelopeStream
+                .subscribe(publish(config.forwardedOpaqueEnvelope(), AmqpOutbound::toHeaders));
+    }
+
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setForwardedMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> forwardedMinMaxEnvelopeStream) {
+        forwardedMinMaxEnvelopeStream.subscribe(publish(config.forwardedMinMaxEnvelopeDocument(),
+                                                        AmqpOutbound::toHeaders));
+    }
+
     private void publish(Object payload, String exchange, Map<String, String> headers) {
         try {
             var message = publisher
@@ -182,6 +196,15 @@ public class AmqpOutbound implements AutoCloseable {
     }
 
     private static Map<String, String> toHeaders(AcknowledgementEnvelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(RECMMOEEnvelope envelope) {
         var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
         return toHeaders(
                 metaInformation.getRequestPermissionId(),

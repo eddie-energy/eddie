@@ -18,6 +18,7 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.esr.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.esr.MetaInformation;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -467,6 +468,83 @@ class AmqpOutboundTest {
         // Then
         var consumer = connection.consumerBuilder()
                                  .queue(config.requestPermissionMarketDocument())
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testForwardedOpaqueEnvelope_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<energy.eddie.cim.agnostic.OpaqueEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setForwardedOpaqueEnvelopeStream(publisher.flux());
+        var message = new energy.eddie.cim.agnostic.OpaqueEnvelope(
+                "rid",
+                "pid",
+                "cid",
+                "dnid",
+                "mid",
+                ZonedDateTime.now(ZoneOffset.UTC),
+                ""
+        );
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.forwardedOpaqueEnvelope())
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
+    void testForwardedMinMaxEnvelope_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<RECMMOEEnvelope> publisher = TestPublisher.create();
+        amqpOutbound.setForwardedMinMaxEnvelopeStream(publisher.flux());
+        var message = new RECMMOEEnvelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.recmmoe.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.recmmoe.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                )
+                );
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.forwardedMinMaxEnvelopeDocument())
                                  .messageHandler((ctx, msg) -> {
                                      assertAll(
                                              () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),

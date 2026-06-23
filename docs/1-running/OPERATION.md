@@ -5,11 +5,13 @@
 A quickstart configuration to run the EDDIE Framework is provided in the `env` folder of the development project.
 The steps to make it run are:
 
-1. Download the quickstart configuration folder from [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env)
+1. Download the quickstart configuration folder from [EDDIE /env](https://github.com/eddie-energy/eddie/tree/main/env).
 2. Run `docker compose up -d` in that folder.
-3. Open browser on http://localhost:8080/demo and experiment with the demo button.
-4. As many permission administrators and metered data administrators require additional installation or registration
-   steps, it's best to try out the framework functionality using the permission administrator called _simulation_.
+3. Open http://localhost:8080/demo to experiment with permissions.
+    - As most regional permission administrators require additional installation or registration steps,
+      it's best to try out the framework functionality using the permission administrator called _simulation_.
+4. Open http://localhost:9090/outbound-connectors/admin-console/ for an admin to view your permissions.
+5. Open http://localhost:9090/outbound-connectors/rest/swagger-ui/index.html to see what data you can retrieve and send via the framework.
 
 ## Installation
 

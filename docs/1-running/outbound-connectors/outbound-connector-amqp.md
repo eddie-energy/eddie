@@ -15,6 +15,8 @@ The following topics are created upon starting this outbound-connector:
   Provides status change updates related to a permission request
 - `ep.${outbound-connector.amqp.eddie-id}.agnostic.raw-data-message`:
   Provides messages from the region connectors as is, with additional metadata
+- `ep.${outbound-connector.amqp.eddie-id}.agnostic.opaque-envelope`:
+  Provides forwarded [opaque envelopes](../../2-integrating/messages/agnostic.md#opaque-envelopes)
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents
@@ -22,13 +24,15 @@ The following topics are created upon starting this outbound-connector:
   Provides near real-time data market documents
 - `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.acknowledgement-md`:
   Provides acknowledgement market documents
+- `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.min-max-envelope-md`:
+  Provides forwarded [min-max envelopes](../../2-integrating/messages/cim/min-max-envelope.md)
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.accounting-point-md`:
   Provides accounting point market documents
 - `fw.${outbound-connector.amqp.eddie-id}.cim_0_82.termination-md`:
   Allows the eligible party to send [termination documents](../../2-integrating/messages/cim/permission-market-documents.md#termination-documents) to terminate a permission request.
 - `fw.${outbound-connector.amqp.eddie-id}.cim_0_91_08.retransmissions`:
   Allows the eligible party to send [redistribution transaction request documents](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md) to request validated historical data again.
-- `fw.${outbound-connector.amqp.eddie-id}.cim_0_82.min-max-envelope-md`:
+- `fw.${outbound-connector.amqp.eddie-id}.cim_1_12.min-max-envelope-md`:
   Allows the eligible party to send [min-max envelopes](../../2-integrating/messages/cim/min-max-envelope.md).
 - `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.energy-sharing-reference-data-md`:
   Provides the eligible party with [Energy Sharing Reference Data Market Documents](../../2-integrating/messages/cim/energy-sharing-reference-data-market-documents.md).

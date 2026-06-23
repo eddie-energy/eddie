@@ -35,6 +35,9 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
                                                                         .multicast()
                                                                         .onBackpressureBuffer();
     private final Sinks.Many<RequestPermissionEnvelope> rpmdSink = Sinks.many().multicast().onBackpressureBuffer();
+    private final Sinks.Many<RECMMOEEnvelope> forwardedMinMaxEnvelopeSink = Sinks.many()
+                                                                                 .replay()
+                                                                                 .limit(Duration.ofSeconds(10));
 
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentStream() {
         return rtdSink.asFlux();
@@ -102,6 +105,20 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
                 .subscribe(rpmdSink::tryEmitNext);
     }
 
+    public Flux<RECMMOEEnvelope> getForwardedMinMaxEnvelopeStream() {
+        return forwardedMinMaxEnvelopeSink.asFlux();
+    }
+
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setForwardedMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> forwardedMinMaxEnvelopeStream) {
+        forwardedMinMaxEnvelopeStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing forwarded min-max envelope",
+                        err
+                ))
+                .subscribe(forwardedMinMaxEnvelopeSink::tryEmitNext);
+    }
+
     @Override
     public void close() {
         rtdSink.tryEmitComplete();
@@ -109,5 +126,6 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
         minMaxEnvelopeSink.tryEmitComplete();
         esrdmdSink.tryEmitComplete();
         rpmdSink.tryEmitComplete();
+        forwardedMinMaxEnvelopeSink.tryEmitComplete();
     }
 }

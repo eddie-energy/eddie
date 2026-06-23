@@ -7,8 +7,10 @@ import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
@@ -73,7 +75,17 @@ public class AiidaBeanConfig {
     }
 
     @Bean
+    public Sinks.Many<RECMMOEEnvelope> minMaxEnvelopeCimV112Sink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
     public Sinks.Many<AcknowledgementEnvelope> acknowledgementCimSink() {
+        return Sinks.many().multicast().onBackpressureBuffer();
+    }
+
+    @Bean
+    public Sinks.Many<OpaqueEnvelope> opaqueEnvelopeSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 

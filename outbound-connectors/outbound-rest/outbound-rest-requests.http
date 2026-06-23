@@ -28,6 +28,21 @@ GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### GET forwarded opaque envelope messages as json
+GET http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### GET forwarded opaque envelope messages as xml
+GET http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get forwarded opaque envelope messages as event stream
+GET http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get validated historical data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: application/json
@@ -85,6 +100,21 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get acknowledgement market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/acknowledgement-md
+Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get forwarded min-max envelope market documents as json
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
+Accept: application/json
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get forwarded min-max envelope market documents as xml
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
+Accept: application/xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get forwarded min-max envelope market documents as event stream
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 

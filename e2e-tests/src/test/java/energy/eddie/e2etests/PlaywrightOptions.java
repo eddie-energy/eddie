@@ -17,6 +17,7 @@ public class PlaywrightOptions implements OptionsFactory {
     public static final String AIIDA_URL = System.getenv().getOrDefault("E2E_AIIDA_URL", "http://localhost:8081");
     public static final String ADMIN_URL = System.getenv().getOrDefault("E2E_ADMIN_URL",
                                                                         "http://localhost:9090/outbound-connectors/admin-console");
+    public static final String REST_URL = System.getenv().getOrDefault("E2E_REST_URL", "http://localhost:9090/outbound-connectors/rest");
     public static final boolean HEADLESS = !System.getenv().getOrDefault("E2E_HEADLESS", "true").equals("false");
 
     @Override

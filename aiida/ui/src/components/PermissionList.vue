@@ -217,10 +217,10 @@ const handleCategoryChange = (category: string) => {
       background-color: var(--light);
       color: var(--eddie-primary);
     }
-  }
 
-  .active {
-    border-bottom-color: var(--eddie-primary);
+    &.active {
+      border-bottom-color: var(--eddie-primary);
+    }
   }
 }
 
@@ -295,11 +295,7 @@ const handleCategoryChange = (category: string) => {
   }
   .permission-tabs {
     display: block;
-    .active {
-      pointer-events: none;
-      background-color: var(--eddie-primary);
-      color: var(--light);
-    }
+
     button {
       width: 100%;
       flex-direction: row;
@@ -308,8 +304,14 @@ const handleCategoryChange = (category: string) => {
       border: 1px solid var(--eddie-primary);
       margin-bottom: var(--spacing-md);
       gap: var(--spacing-md);
+
+      &.active {
+        background-color: var(--eddie-primary);
+        color: var(--light);
+      }
     }
   }
+
   .show-more-button {
     width: fit-content;
     justify-content: flex-start;

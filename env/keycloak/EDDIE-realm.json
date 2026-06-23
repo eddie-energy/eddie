@@ -81,7 +81,7 @@
         "cim-acknowlegement-md:read",
         "cim-termination-md:write",
         "cim-redistribution-transaction-rd:write",
-        "cim-min-max-envelope-,d:write"
+        "cim-min-max-envelope-md:write"
       ]
     }
   ],

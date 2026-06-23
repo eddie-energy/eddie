@@ -1,23 +1,15 @@
-// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.outbound.rest.web;
+package energy.eddie.outbound.rest.web.agnostic;
 
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.RawDataMessage;
-import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.dto.ConnectionStatusMessages;
+import energy.eddie.outbound.rest.dto.OpaqueEnvelopes;
 import energy.eddie.outbound.rest.dto.RawDataMessages;
-import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
-import energy.eddie.outbound.rest.model.ModelWithJsonPayload;
-import energy.eddie.outbound.rest.model.RawDataMessageModel;
-import energy.eddie.outbound.rest.persistence.ConnectionStatusMessageRepository;
-import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
-import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
-import energy.eddie.outbound.rest.persistence.specifications.JsonPathSpecification;
-import energy.eddie.outbound.shared.TopicStructure;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -25,13 +17,13 @@ import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 
 import java.time.ZonedDateTime;
@@ -39,26 +31,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.springframework.http.MediaType.*;
-
-@RestController
-@RequestMapping(TopicStructure.AGNOSTIC_VALUE)
+@SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "Agnostic EDDIE Messages", description = "Provides endpoints for non-CIM messages that are EDDIE specific.")
-public class AgnosticController {
-    private final AgnosticConnector agnosticConnector;
-    private final ConnectionStatusMessageRepository csmRepository;
-    private final RawDataMessageRepository rawDataRepository;
-
-    public AgnosticController(
-            AgnosticConnector agnosticConnector,
-            ConnectionStatusMessageRepository csmRepository,
-            RawDataMessageRepository rawDataRepository
-    ) {
-        this.agnosticConnector = agnosticConnector;
-        this.csmRepository = csmRepository;
-        this.rawDataRepository = rawDataRepository;
-    }
-
+public interface AgnosticSwagger {
     @Operation(
             operationId = "GET ConnectionStatusMessage stream",
             summary = "Get ConnectionStatusMessage stream",
@@ -89,13 +64,7 @@ public class AgnosticController {
                     )
             )
     )
-    @GetMapping(value = "/connection-status-messages", produces = TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<Flux<ConnectionStatusMessage>> connectionStatusMessagesSSE() {
-        return ResponseEntity.ok()
-                             // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no")
-                             .body(agnosticConnector.getConnectionStatusMessageStream());
-    }
+    ResponseEntity<Flux<ConnectionStatusMessage>> connectionStatusMessagesSSE();
 
     @Operation(
             operationId = "GET ConnectionStatusMessages",
@@ -104,30 +73,6 @@ public class AgnosticController {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = {
-                            @Content(
-                                    mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = ConnectionStatusMessage.class)),
-                                    examples = @ExampleObject(
-                                            // language=JSON
-                                            value = """
-                                                      [{
-                                                        "connectionId": "1",
-                                                        "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
-                                                        "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
-                                                        "dataSourceInformation": {
-                                                          "countryCode": "DE°",
-                                                          "meteredDataAdministratorId": "sim",
-                                                          "permissionAdministratorId": "sim",
-                                                          "regionConnectorId": "sim"
-                                                        },
-                                                        "timestamp": "2025-07-23T10:31:30.225890564Z",
-                                                        "status": "FULFILLED",
-                                                        "message": "Permission request is fulfilled",
-                                                        "additionalInformation": null
-                                                      }]
-                                                    """
-                                    )
-                            ),
                             @Content(
                                     mediaType = "application/xml",
                                     schema = @Schema(implementation = ConnectionStatusMessages.class),
@@ -201,37 +146,95 @@ public class AgnosticController {
                     ),
             }
     )
-    @GetMapping(
-            value = "/connection-status-messages",
-            produces = {APPLICATION_XML_VALUE}
-    )
-    public ResponseEntity<ConnectionStatusMessages> connectionStatusMessages(
+    ResponseEntity<ConnectionStatusMessages> connectionStatusMessages(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
-            @RequestParam(required = false) Optional<@Valid @Pattern(regexp = "[A-Z]{2}") String> countryCode,
+            @RequestParam(required = false) Optional<@jakarta.validation.Valid @jakarta.validation.constraints.Pattern(regexp = "[A-Z]{2}") String> countryCode,
             @RequestParam(required = false) Optional<String> regionConnectorId,
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
-    ) {
-        PredicateSpecification<ConnectionStatusMessageModel> specification = buildQuery(permissionId,
-                                                                                        connectionId,
-                                                                                        dataNeedId,
-                                                                                        countryCode,
-                                                                                        regionConnectorId,
-                                                                                        from,
-                                                                                        to);
-        var all = csmRepository.findAll(specification);
-        var messages = ModelWithJsonPayload.payloadsOf(all);
-        return ResponseEntity.ok()
-                             .body(new ConnectionStatusMessages(messages));
-    }
+    );
 
-    @GetMapping(
-            value = "/connection-status-messages",
-            produces = {APPLICATION_JSON_VALUE}
+    @Operation(
+            operationId = "GET ConnectionStatusMessages JSON",
+            summary = "Get ConnectionStatusMessages JSON",
+            description = "Query available ConnectionStatusMessages JSON",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = ConnectionStatusMessage.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                      [{
+                                                        "connectionId": "1",
+                                                        "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                        "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                        "dataSourceInformation": {
+                                                          "countryCode": "DE°",
+                                                          "meteredDataAdministratorId": "sim",
+                                                          "permissionAdministratorId": "sim",
+                                                          "regionConnectorId": "sim"
+                                                        },
+                                                        "timestamp": "2025-07-23T10:31:30.225890564Z",
+                                                        "status": "FULFILLED",
+                                                        "message": "Permission request is fulfilled",
+                                                        "additionalInformation": null
+                                                      }]
+                                                    """
+                                    )
+                            ),
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by connectionId ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the ConnectionStatusMessages by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
     )
-    public ResponseEntity<List<ConnectionStatusMessage>> connectionStatusMessagesJson(
+    ResponseEntity<List<ConnectionStatusMessage>> connectionStatusMessagesJson(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
@@ -239,19 +242,7 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<String> regionConnectorId,
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
-    ) {
-        PredicateSpecification<ConnectionStatusMessageModel> specification = buildQuery(permissionId,
-                                                                                        connectionId,
-                                                                                        dataNeedId,
-                                                                                        countryCode,
-                                                                                        regionConnectorId,
-                                                                                        from,
-                                                                                        to);
-        var all = csmRepository.findAll(specification);
-        var messages = ModelWithJsonPayload.payloadsOf(all);
-        return ResponseEntity.ok()
-                             .body(messages);
-    }
+    );
 
     @Operation(
             operationId = "GET RawDataMessage stream",
@@ -282,14 +273,7 @@ public class AgnosticController {
                     )
             )
     )
-    @GetMapping(value = "/raw-data-messages", produces = TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<Flux<RawDataMessage>> rawDataMessagesSSE() {
-        return ResponseEntity.ok()
-                             // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no")
-                             .body(agnosticConnector.getRawDataMessageStream());
-    }
-
+    ResponseEntity<Flux<RawDataMessage>> rawDataMessagesSSE();
 
     @Operation(
             operationId = "GET RawDataMessages",
@@ -391,8 +375,7 @@ public class AgnosticController {
                     ),
             }
     )
-    @GetMapping(value = "/raw-data-messages", produces = {APPLICATION_XML_VALUE})
-    public ResponseEntity<RawDataMessages> rawDataMessages(
+    ResponseEntity<RawDataMessages> rawDataMessages(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
@@ -400,22 +383,83 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<String> regionConnectorId,
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
-    ) {
-        PredicateSpecification<RawDataMessageModel> specification = buildQuery(permissionId,
-                                                                               connectionId,
-                                                                               dataNeedId,
-                                                                               countryCode,
-                                                                               regionConnectorId,
-                                                                               from,
-                                                                               to);
-        var all = rawDataRepository.findAll(specification);
-        var messages = ModelWithJsonPayload.payloadsOf(all);
-        return ResponseEntity.ok()
-                             .body(new RawDataMessages(messages));
-    }
+    );
 
-    @GetMapping(value = "/raw-data-messages", produces = {APPLICATION_JSON_VALUE})
-    public ResponseEntity<List<RawDataMessage>> rawDataMessagesJSON(
+    @Operation(
+            operationId = "GET RawDataMessages JSON",
+            summary = "Get RawDataMessages JSON",
+            description = "Query available RawDataMessages as JSON",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = RawDataMessage.class)),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                              [{
+                                                "connectionId": "1",
+                                                "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                "dataSourceInformation": {
+                                                  "countryCode": "DE",
+                                                  "meteredDataAdministratorId": "sim",
+                                                  "permissionAdministratorId": "sim",
+                                                  "regionConnectorId": "sim"
+                                                },
+                                                "timestamp": "2025-07-23T10:31:30.225890564Z",
+                                                "rawPayload": "{}"
+                                              }]
+                                            """
+                            )
+                    )
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by connectionId ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the RawDataMessages by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<List<RawDataMessage>> rawDataMessagesJSON(
             @RequestParam(required = false) Optional<String> permissionId,
             @RequestParam(required = false) Optional<String> connectionId,
             @RequestParam(required = false) Optional<String> dataNeedId,
@@ -423,19 +467,194 @@ public class AgnosticController {
             @RequestParam(required = false) Optional<String> regionConnectorId,
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
-    ) {
-        PredicateSpecification<RawDataMessageModel> specification = buildQuery(permissionId,
-                                                                               connectionId,
-                                                                               dataNeedId,
-                                                                               countryCode,
-                                                                               regionConnectorId,
-                                                                               from,
-                                                                               to);
-        var all = rawDataRepository.findAll(specification);
-        var messages = ModelWithJsonPayload.payloadsOf(all);
-        return ResponseEntity.ok()
-                             .body(messages);
-    }
+    );
+
+    @Operation(
+            operationId = "GET OpaqueEnvelope stream",
+            summary = "Get OpaqueEnvelope stream",
+            description = "Get all new OpaqueEnvelopes as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(implementation = OpaqueEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                              {
+                                                "connectionId": "1",
+                                                "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                "regionConnectorId": "aiida",
+                                                "payload": "{}"
+                                              }
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<OpaqueEnvelope>> opaqueEnvelopeSSE();
+
+    @Operation(
+            operationId = "GET OpaqueEnvelopes",
+            summary = "Get OpaqueEnvelopes",
+            description = "Query available OpaqueEnvelopes forwarded to the eligible party",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = OpaqueEnvelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                      [{
+                                                        "connectionId": "1",
+                                                        "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                        "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                        "regionConnectorId": "aiida",
+                                                        "payload": "{}"
+                                                      }]
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = OpaqueEnvelopes.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                        <OpaqueEnvelopes>
+                                                            <OpaqueEnvelope>
+                                                                <connectionId>1</connectionId>
+                                                                <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                                <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                                <regionConnectorId>aiida</regionConnectorId>
+                                                                <payload>{}</payload>
+                                                            </OpaqueEnvelope>
+                                                        </OpaqueEnvelopes>
+                                                    """
+                                    )
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by connectionId ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<OpaqueEnvelopes> opaqueEnvelopes(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
+
+    @Operation(
+            operationId = "GET OpaqueEnvelopes JSON",
+            summary = "Get OpaqueEnvelopes JSON",
+            description = "Query available OpaqueEnvelopes forwarded to the eligible party as JSON",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = OpaqueEnvelope.class)),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                              [{
+                                                "connectionId": "1",
+                                                "permissionId": "ffcb8491-1f82-4d9d-9ddf-f1312796045a",
+                                                "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                "regionConnectorId": "aiida",
+                                                "payload": "{}"
+                                              }]
+                                            """
+                            )
+                    )
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by connectionId ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the OpaqueEnvelopes by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<List<OpaqueEnvelope>> opaqueEnvelopesJson(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
 
     @Operation(
             operationId = "POST permission command",
@@ -443,7 +662,7 @@ public class AgnosticController {
             description = "POST a permission command, that will be forwarded to the region connectors",
             method = "POST",
             responses = @ApiResponse(responseCode = "202"),
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            requestBody = @RequestBody(
                     description = "The permission command, which contains control commands for permissions, that will be forwarded to the region connectors",
                     content = {
                             @Content(
@@ -479,12 +698,7 @@ public class AgnosticController {
                     }
             )
     )
-    @PostMapping(value = "permission-command", consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-    public ResponseEntity<Void> permissionCommand(@RequestBody PermissionCommand permissionCommand) {
-        agnosticConnector.publish(permissionCommand);
-        return ResponseEntity.accepted()
-                             .build();
-    }
+    ResponseEntity<Void> permissionCommand(PermissionCommand permissionCommand);
 
     @Operation(
             operationId = "POST opaque envelope",
@@ -492,7 +706,7 @@ public class AgnosticController {
             description = "POST a opaque envelope, that will be forwarded to the region connectors",
             method = "POST",
             responses = @ApiResponse(responseCode = "202"),
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            requestBody = @RequestBody(
                     description = "The opaque envelope, which contains any payload and metadata, that will be forwarded to the region connectors",
                     content = {
                             @Content(
@@ -530,42 +744,5 @@ public class AgnosticController {
                     }
             )
     )
-    @PostMapping(value = "opaque-envelope", consumes = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
-    public ResponseEntity<Void> opaqueEnvelope(@RequestBody OpaqueEnvelope opaqueEnvelope) {
-        agnosticConnector.publish(opaqueEnvelope);
-        return ResponseEntity.accepted()
-                             .build();
-    }
-
-    private static <T> PredicateSpecification<T> buildQuery(
-            Optional<String> permissionId,
-            Optional<String> connectionId,
-            Optional<String> dataNeedId,
-            Optional<String> countryCode,
-            Optional<String> regionConnectorId,
-            Optional<ZonedDateTime> from,
-            Optional<ZonedDateTime> to
-    ) {
-        var query = List.of(
-                permissionId.map(pid -> new JsonPathSpecification<T>("permissionId", pid)),
-                connectionId.map(cid -> new JsonPathSpecification<T>("connectionId", cid)),
-                dataNeedId.map(did -> new JsonPathSpecification<T>("dataNeedId", did)),
-                countryCode.map(cc -> new JsonPathSpecification<T>(
-                        List.of("dataSourceInformation", "countryCode"),
-                        cc
-                )),
-                regionConnectorId.map(rc -> new JsonPathSpecification<T>(
-                        List.of("dataSourceInformation", "regionConnectorId"),
-                        rc
-                )),
-                from.map(InsertionTimeSpecification::<T>insertedAfterEquals),
-                to.map(InsertionTimeSpecification::<T>insertedBeforeEquals)
-        );
-        return PredicateSpecification.allOf(
-                query.stream()
-                     .filter(Optional::isPresent)
-                     .map(spec -> (PredicateSpecification<T>) spec.get())
-                     .toList()
-        );
-    }
+    ResponseEntity<Void> opaqueEnvelope(OpaqueEnvelope opaqueEnvelope);
 }

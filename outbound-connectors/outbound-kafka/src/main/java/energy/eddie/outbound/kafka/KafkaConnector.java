@@ -5,6 +5,8 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.MessageWithHeaders;
+import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.ap.MessageDocumentHeaderMetaInformationComplexType;
@@ -13,6 +15,7 @@ import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
@@ -154,6 +157,26 @@ public class KafkaConnector {
                 .onBackpressureBuffer()
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext(this::produceRequestPermissionMarketDocument)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    @MessageStream(OpaqueEnvelope.class)
+    public void setForwardedOpaqueEnvelopeStream(Flux<OpaqueEnvelope> forwardedOpaqueEnvelopeStream) {
+        forwardedOpaqueEnvelopeStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceForwardedOpaqueEnvelope)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
+
+    @MessageStream(RECMMOEEnvelope.class)
+    public void setForwardedMinMaxEnvelopeStream(Flux<RECMMOEEnvelope> forwardedMinMaxEnvelopeStream) {
+        forwardedMinMaxEnvelopeStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceForwardedMinMaxEnvelope)
                 .onErrorContinue(this::logStreamerError)
                 .subscribe();
     }
@@ -341,6 +364,33 @@ public class KafkaConnector {
                      metaInformation.getRequestPermissionId());
     }
 
+    private void produceForwardedOpaqueEnvelope(OpaqueEnvelope opaqueEnvelope) {
+        var toSend = new ProducerRecord<String, Object>(
+                config.forwardedOpaqueEnvelope(),
+                null,
+                opaqueEnvelope.connectionId(),
+                opaqueEnvelope,
+                toHeaders(opaqueEnvelope)
+        );
+        sendToKafka(toSend, "Could not produce forwarded opaque envelope message");
+        LOGGER.debug("Produced forwarded opaque envelope message for permission request {}", opaqueEnvelope.permissionId());
+    }
+
+
+    private void produceForwardedMinMaxEnvelope(RECMMOEEnvelope minMaxEnvelope) {
+        var metaInformation = minMaxEnvelope.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.forwardedMinMaxEnvelopeDocument(),
+                null,
+                metaInformation.getConnectionId(),
+                minMaxEnvelope,
+                cimToHeaders(minMaxEnvelope)
+        );
+        sendToKafka(toSend, "Could not produce min-max envelope message");
+        LOGGER.debug("Produced min-max envelope message for permission request {}",
+                     metaInformation.getRequestPermissionId());
+    }
+
     private Iterable<Header> cimToHeaders(energy.eddie.cim.v1_04.rtd.RTDEnvelope header) {
         return List.of(
                 new StringHeader(Headers.PERMISSION_ID, header.getMessageDocumentHeaderMetaInformationPermissionId()),
@@ -364,6 +414,23 @@ public class KafkaConnector {
                 new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
                 new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
                 new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+        );
+    }
+
+    private Iterable<Header> cimToHeaders(RECMMOEEnvelope header) {
+        var metaInformation = header.getMessageDocumentHeader().getMetaInformation();
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+        );
+    }
+
+    private static List<Header> toHeaders(MessageWithHeaders raw) {
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, raw.permissionId()),
+                new StringHeader(Headers.CONNECTION_ID, raw.connectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, raw.dataNeedId())
         );
     }
 

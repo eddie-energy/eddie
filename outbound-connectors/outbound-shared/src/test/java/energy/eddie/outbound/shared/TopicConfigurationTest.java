@@ -129,4 +129,24 @@ class TopicConfigurationTest {
         // Then
         assertEquals("fw.e123.agnostic.opaque-envelope", res);
     }
+
+    @Test
+    void testForwardedMinMaxEnvelope_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.forwardedMinMaxEnvelopeDocument();
+
+        // Then
+        assertEquals("ep.e123.cim_1_12.min-max-envelope-md", res);
+    }
+
+    @Test
+    void testForwardedOpaqueEnvelope_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.forwardedOpaqueEnvelope();
+
+        // Then
+        assertEquals("ep.e123.agnostic.opaque-envelope", res);
+    }
 }

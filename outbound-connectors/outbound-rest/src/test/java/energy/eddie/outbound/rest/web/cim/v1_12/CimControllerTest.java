@@ -9,14 +9,8 @@ import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
-import energy.eddie.outbound.rest.model.cim.v1_12.AcknowledgementMarketDocumentModel;
-import energy.eddie.outbound.rest.model.cim.v1_12.EnergySharingReferenceDataMarketDocumentModel;
-import energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel;
-import energy.eddie.outbound.rest.model.cim.v1_12.RequestPermissionMarketDocumentModel;
-import energy.eddie.outbound.rest.persistence.cim.v1_12.AcknowledgementMarketDocumentRepository;
-import energy.eddie.outbound.rest.persistence.cim.v1_12.EnergySharingReferenceDataMarketDocumentRepository;
-import energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository;
-import energy.eddie.outbound.rest.persistence.cim.v1_12.RequestPermissionMarketDocumentRepository;
+import energy.eddie.outbound.rest.model.cim.v1_12.*;
+import energy.eddie.outbound.rest.persistence.cim.v1_12.*;
 import energy.eddie.outbound.rest.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -34,6 +28,8 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 
 @WebFluxTest(value = CimController.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
@@ -49,6 +45,8 @@ class CimControllerTest {
     private AcknowledgementMarketDocumentRepository ackRepository;
     @MockitoBean
     private EnergySharingReferenceDataMarketDocumentRepository esrRepository;
+    @MockitoBean
+    private MinMaxEnvelopeMarketDocumentRepository minMaxRepository;
     @MockitoBean
     private RequestPermissionMarketDocumentRepository rpmdRepository;
 
@@ -151,6 +149,71 @@ class CimControllerTest {
                      .exchange()
                      .expectStatus()
                      .isAccepted();
+    }
+
+    @Test
+    void minMaxEnvelopeMdSSE_returnsDocuments() {
+        var message1 = new RECMMOEEnvelope();
+        var message2 = new RECMMOEEnvelope();
+
+        given(cimConnector.getForwardedMinMaxEnvelopeStream())
+                .willReturn(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                 .uri("/cim_1_12/min-max-envelope-md")
+                                 .accept(MediaType.TEXT_EVENT_STREAM)
+                                 .exchange()
+                                 .expectStatus()
+                                 .isOk()
+                                 .returnResult(RECMMOEEnvelope.class)
+                                 .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+    @Test
+    void minMaxEnvelopeMd_returnsDocuments() {
+        var msg = new MinMaxEnvelopeMarketDocumentModel(new RECMMOEEnvelope());
+        given(minMaxRepository.findAll(ArgumentMatchers.<Specification<MinMaxEnvelopeMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+        var result = webTestClient.get()
+                                 .uri("/cim_1_12/min-max-envelope-md")
+                                 .accept(MediaType.APPLICATION_JSON)
+                                 .exchange()
+                                 .expectStatus()
+                                 .isOk()
+                                 .returnResult(new ParameterizedTypeReference<List<RECMMOEEnvelope>>() {})
+                                 .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void minMaxEnvelopeMd_returnsXmlDocuments() {
+        var msg = new MinMaxEnvelopeMarketDocumentModel(new RECMMOEEnvelope());
+        given(minMaxRepository.findAll(ArgumentMatchers.<Specification<MinMaxEnvelopeMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+        var result = webTestClient.get()
+                                 .uri("/cim_1_12/min-max-envelope-md")
+                                 .accept(MediaType.APPLICATION_XML)
+                                 .exchange()
+                                 .expectStatus()
+                                 .isOk()
+                                 .returnResult(String.class)
+                                 .getResponseBody();
+
+        StepVerifier.create(result)
+                    .assertNext(next -> {
+                        assertNotNull(next);
+                        assertTrue(next.contains("MinMaxEnvelopeMarketDocuments"));
+                    })
+                    .verifyComplete();
     }
 
 

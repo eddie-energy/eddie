@@ -36,15 +36,13 @@ public class AgnosticConnector implements
     private final Sinks.Many<PermissionCommand> permissionCommandSink = Sinks.many()
                                                                              .multicast()
                                                                              .onBackpressureBuffer();
+    private final Sinks.Many<OpaqueEnvelope> forwardedOpaqueEnvelopeSink = Sinks.many()
+                                                                                .replay()
+                                                                                .limit(Duration.ofSeconds(10));
 
     public Flux<ConnectionStatusMessage> getConnectionStatusMessageStream() {
         return csmSink.asFlux();
     }
-
-    public Flux<RawDataMessage> getRawDataMessageStream() {
-        return rdSink.asFlux();
-    }
-
 
     @MessageStream(ConnectionStatusMessage.class)
     public void setConnectionStatusMessageStream(Flux<ConnectionStatusMessage> connectionStatusMessageStream) {
@@ -53,11 +51,26 @@ public class AgnosticConnector implements
                 .subscribe(csmSink::tryEmitNext);
     }
 
+    public Flux<RawDataMessage> getRawDataMessageStream() {
+        return rdSink.asFlux();
+    }
+
     @MessageStream(RawDataMessage.class)
     public void setRawDataStream(Flux<RawDataMessage> rawDataStream) {
         rawDataStream
                 .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing raw data", err))
                 .subscribe(rdSink::tryEmitNext);
+    }
+
+    public Flux<OpaqueEnvelope> getForwardedOpaqueEnvelopeStream() {
+        return forwardedOpaqueEnvelopeSink.asFlux();
+    }
+
+    @MessageStream(OpaqueEnvelope.class)
+    public void setForwardedOpaqueEnvelopeStream(Flux<OpaqueEnvelope> forwardedOpaqueEnvelopeStream) {
+        forwardedOpaqueEnvelopeStream
+                .onErrorContinue((err, obj) -> LOGGER.warn("Got error while processing forwarded opaque envelope", err))
+                .subscribe(forwardedOpaqueEnvelopeSink::tryEmitNext);
     }
 
     @Override
@@ -83,5 +96,7 @@ public class AgnosticConnector implements
         csmSink.tryEmitComplete();
         rdSink.tryEmitComplete();
         opaqueEnvelopeSink.tryEmitComplete();
+        forwardedOpaqueEnvelopeSink.tryEmitComplete();
+        permissionCommandSink.tryEmitComplete();
     }
 }
