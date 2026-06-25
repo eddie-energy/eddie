@@ -33,6 +33,7 @@ classDiagram
         +Set~AiidaSchema~ schemas
         +AiidaAsset asset
         +Set~String~ dataTags
+        +Set~AiidaContext~ contexts
     }
     note for AiidaDataNeed "<a href='https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/scheduling/support/CronExpression.html'>Uses Spring CronExpression Syntax</a>"
 
@@ -74,6 +75,11 @@ classDiagram
         SUBMETER
     }
 
+    class AiidaContext {
+        <<enumeration>>
+        FLEXIBLE-CONNECTION-AGREEMENT
+    }
+
     class DataNeedDuration
 
     class RelativeDuration {
@@ -107,6 +113,7 @@ classDiagram
     DataNeedDuration <|-- RelativeDuration
     AiidaDataNeed *-- AiidaAsset
     AiidaDataNeed *-- AiidaSchema
+    AiidaDataNeed *-- AiidaContext
     TimeframedDataNeed <|-- AiidaDataNeed
     DataNeed <|-- CESUJoinRequestDataNeed
     CESUJoinRequestDataNeed *-- EnergyDirection

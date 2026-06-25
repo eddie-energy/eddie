@@ -22,6 +22,7 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
 | `schemas`                   | String[] | [Schemas](./schemas/schemas.md) that define the structure and format of the data, e.g. standardized schemas such as CIM or custom schemas. |
 | `asset`                     | String   | The asset that the data need is associated with, linking the data to specific physical or logical assets.                                  |
 | `dataTags`                  | String[] | Data tags that further specify the type of data that is expected.                                                                          |
+| `contexts`                  | String[] | Contexts for permission request that AIIDA can use to provide additional functionality, e.g. flexible connection agreements.               |
 
 ## Outbound
 
@@ -87,7 +88,10 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
     "OPAQUE"
   ],
   "asset": "CONNECTION-AGREEMENT-POINT",
-  "dataTags": []
+  "dataTags": [],
+  "contexts": [
+    "FLEXIBLE-CONNECTION-AGREEMENT"
+  ]
 }
 ```
 

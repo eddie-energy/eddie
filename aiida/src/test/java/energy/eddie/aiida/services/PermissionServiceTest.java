@@ -22,6 +22,7 @@ import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -186,6 +187,7 @@ class PermissionServiceTest {
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
                                                         ObisCode.NEGATIVE_ACTIVE_ENERGY));
+        when(mockDataNeed.contexts()).thenReturn(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -212,6 +214,7 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
+        assertThat(dataNeed.contexts()).hasSameElementsAs(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
         assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
                                                                  ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));

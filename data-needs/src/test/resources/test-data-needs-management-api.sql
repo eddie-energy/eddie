@@ -92,6 +92,13 @@ CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_permission_commands
     PRIMARY KEY (data_need_id, permission_command)
 );
 
+CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_contexts
+(
+    data_need_id varchar(36) NOT NULL,
+    context      text        NOT NULL,
+    PRIMARY KEY (data_need_id, context)
+);
+
 CREATE TABLE IF NOT EXISTS data_needs.relative_duration
 (
     data_need_id   varchar(255) NOT NULL

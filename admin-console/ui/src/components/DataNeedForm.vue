@@ -61,7 +61,8 @@ const aiidaDefaults: AiidaFields = {
   transmissionSchedule: '*/2 * * * * *',
   schemas: [],
   asset: 'CONNECTION-AGREEMENT-POINT',
-  dataTags: []
+  dataTags: [],
+  contexts: []
 }
 
 const form = ref<DataNeedForm>({
@@ -229,7 +230,12 @@ async function submitForm() {
       <template v-if="form.type === 'validated'">
         <div class="field">
           <label for="energyType">Energy Type</label>
-          <Select id="energyType" v-model="form.energyType" :options="ENERGY_TYPES" required />
+          <Select
+            id="energyType"
+            v-model="form.energyType"
+            :options="Array.from(ENERGY_TYPES)"
+            required
+          />
         </div>
 
         <div class="field">
@@ -237,7 +243,7 @@ async function submitForm() {
           <Select
             id="minGranularity"
             v-model="form.minGranularity"
-            :options="GRANULARITIES"
+            :options="Array.from(GRANULARITIES)"
             required
           />
         </div>
@@ -247,7 +253,7 @@ async function submitForm() {
           <Select
             id="maxGranularity"
             v-model="form.maxGranularity"
-            :options="GRANULARITIES"
+            :options="Array.from(GRANULARITIES)"
             required
           />
         </div>
@@ -256,7 +262,7 @@ async function submitForm() {
       <template v-if="form.type === 'inbound-aiida' || form.type === 'outbound-aiida'">
         <div class="field">
           <label for="asset">Asset</label>
-          <Select id="asset" v-model="form.asset" :options="ASSETS" required />
+          <Select id="asset" v-model="form.asset" :options="Array.from(ASSETS)" required />
         </div>
 
         <div class="field">
@@ -269,7 +275,7 @@ async function submitForm() {
           <MultiSelect
             id="schemas"
             v-model="form.schemas"
-            :options="SCHEMAS"
+            :options="Array.from(SCHEMAS)"
             placeholder="Select schemas"
           />
         </div>

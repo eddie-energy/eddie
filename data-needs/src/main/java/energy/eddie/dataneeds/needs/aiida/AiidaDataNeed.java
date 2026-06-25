@@ -4,10 +4,7 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
-import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
+import energy.eddie.api.agnostic.aiida.*;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
@@ -75,6 +72,16 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @JsonProperty
     private Set<ObisCode> dataTags;
 
+    @Schema(description = "Define contexts to be provided to AIIDA ('FLEXIBLE-CONNECTION-AGREEMENT')")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_data_need_contexts",
+            joinColumns = @JoinColumn(name = "data_need_id"),
+            schema = "data_needs")
+    @Column(name = "context")
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    private Set<AiidaContext> contexts;
+
     @Override
     public AiidaAsset asset() {
         return asset;
@@ -108,6 +115,11 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Override
     public Set<PermissionCommand.Action> allowedPermissionCommands() {
         return allowedPermissionCommands;
+    }
+
+    @Override
+    public Set<AiidaContext> contexts() {
+        return contexts;
     }
 
     public abstract Set<AiidaSchema> supportedSchemas();

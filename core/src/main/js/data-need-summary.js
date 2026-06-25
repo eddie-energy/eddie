@@ -51,6 +51,7 @@ class DataNeedSummary extends HTMLElement {
       schemas,
       asset,
       dataTags,
+      contexts,
       energyDirection,
       participationFactor,
     } = dataNeed;
@@ -142,7 +143,7 @@ class DataNeedSummary extends HTMLElement {
             : ""}
 
           <!-- For AIIDA data needs -->
-          ${transmissionSchedule
+          ${asset
             ? /* HTML */ `
                 <dt>Asset</dt>
                 <dd>${asset}</dd>
@@ -154,6 +155,14 @@ class DataNeedSummary extends HTMLElement {
             ? /* HTML */ `
                 <dt>OBIS Points</dt>
                 <dd>${dataTags.join(", ") || "None"}</dd>
+              `
+            : ""}
+
+          <!-- For AIIDA data needs -->
+          ${contexts
+            ? /* HTML */ `
+                <dt>Contexts</dt>
+                <dd>${contexts.join(", ") || "None"}</dd>
               `
             : ""}
 
