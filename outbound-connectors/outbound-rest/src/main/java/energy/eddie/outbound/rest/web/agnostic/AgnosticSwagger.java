@@ -66,6 +66,40 @@ public interface AgnosticSwagger {
     )
     ResponseEntity<Flux<ConnectionStatusMessage>> connectionStatusMessagesSSE();
 
+
+    @Operation(
+            operationId = "GET ConnectionStatusMessage stream",
+            summary = "Get ConnectionStatusMessage stream",
+            description = "Get all new ConnectionStatusMessages as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = ConnectionStatusMessage.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                              <ConnectionStatusMessage>
+                                                   <connectionId>1</connectionId>
+                                                   <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                   <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                   <dataSourceInformation>
+                                                       <countryCode>DE</countryCode>
+                                                       <meteredDataAdministratorId>sim</meteredDataAdministratorId>
+                                                       <permissionAdministratorId>sim</permissionAdministratorId>
+                                                       <regionConnectorId>sim</regionConnectorId>
+                                                   </dataSourceInformation>
+                                                   <timestamp>2025-07-23T10:31:30.225890564Z</timestamp>
+                                                   <status>FULFILLED</status>
+                                                   <message>Permission request is fulfilled</message>
+                                                   <additionalInformation/>
+                                               </ConnectionStatusMessage>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> connectionStatusMessagesSSEXML();
+
     @Operation(
             operationId = "GET ConnectionStatusMessages",
             summary = "Get ConnectionStatusMessages",
@@ -274,6 +308,37 @@ public interface AgnosticSwagger {
             )
     )
     ResponseEntity<Flux<RawDataMessage>> rawDataMessagesSSE();
+
+    @Operation(
+            operationId = "GET RawDataMessage stream",
+            summary = "Get RawDataMessage stream",
+            description = "Get all new RawDataMessage as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = RawDataMessage.class),
+                            examples = @ExampleObject(
+                                    // language=xml
+                                    value = """
+                                            <RawDataMessage>
+                                                 <connectionId>1</connectionId>
+                                                 <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                 <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                 <dataSourceInformation>
+                                                     <countryCode>DE</countryCode>
+                                                     <meteredDataAdministratorId>sim</meteredDataAdministratorId>
+                                                     <permissionAdministratorId>sim</permissionAdministratorId>
+                                                     <regionConnectorId>sim</regionConnectorId>
+                                                 </dataSourceInformation>
+                                                 <timestamp>2025-07-23T10:31:30.225890564Z</timestamp>
+                                                 <rawPayload>{}</rawPayload>
+                                             </RawDataMessage>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> rawDataMessagesSSEXML();
 
     @Operation(
             operationId = "GET RawDataMessages",
@@ -493,6 +558,31 @@ public interface AgnosticSwagger {
             )
     )
     ResponseEntity<Flux<OpaqueEnvelope>> opaqueEnvelopeSSE();
+
+    @Operation(
+            operationId = "GET OpaqueEnvelope stream",
+            summary = "Get OpaqueEnvelope stream",
+            description = "Get all new OpaqueEnvelopes as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(implementation = OpaqueEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <OpaqueEnvelope>
+                                                <connectionId>1</connectionId>
+                                                <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                <regionConnectorId>aiida</regionConnectorId>
+                                                <payload>{}</payload>
+                                            </OpaqueEnvelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> opaqueEnvelopeSSEXML();
 
     @Operation(
             operationId = "GET OpaqueEnvelopes",

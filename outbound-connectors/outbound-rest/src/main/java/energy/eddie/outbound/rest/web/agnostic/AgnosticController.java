@@ -20,6 +20,8 @@ import energy.eddie.outbound.rest.persistence.OpaqueEnvelopeRepository;
 import energy.eddie.outbound.rest.persistence.RawDataMessageRepository;
 import energy.eddie.outbound.rest.persistence.specifications.InsertionTimeSpecification;
 import energy.eddie.outbound.rest.persistence.specifications.JsonPathSpecification;
+import energy.eddie.outbound.rest.web.SSE;
+import energy.eddie.outbound.rest.web.XmlSSE;
 import energy.eddie.outbound.shared.TopicStructure;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
@@ -32,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static energy.eddie.outbound.rest.web.XmlSSE.TEXT_EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.*;
 
 @RestController
@@ -41,17 +44,20 @@ public class AgnosticController implements AgnosticSwagger {
     private final ConnectionStatusMessageRepository csmRepository;
     private final RawDataMessageRepository rawDataRepository;
     private final OpaqueEnvelopeRepository opaqueEnvelopeRepository;
+    private final XmlSSE xmlSSE;
 
     public AgnosticController(
             AgnosticConnector agnosticConnector,
             ConnectionStatusMessageRepository csmRepository,
             RawDataMessageRepository rawDataRepository,
-            OpaqueEnvelopeRepository opaqueEnvelopeRepository
+            OpaqueEnvelopeRepository opaqueEnvelopeRepository,
+            XmlSSE xmlSSE
     ) {
         this.agnosticConnector = agnosticConnector;
         this.csmRepository = csmRepository;
         this.rawDataRepository = rawDataRepository;
         this.opaqueEnvelopeRepository = opaqueEnvelopeRepository;
+        this.xmlSSE = xmlSSE;
     }
 
     @Override
@@ -59,8 +65,14 @@ public class AgnosticController implements AgnosticSwagger {
     public ResponseEntity<Flux<ConnectionStatusMessage>> connectionStatusMessagesSSE() {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no")
+                             .header(SSE.X_ACCEL_BUFFERING, "no")
                              .body(agnosticConnector.getConnectionStatusMessageStream());
+    }
+
+    @Override
+    @GetMapping(value = "/connection-status-messages", produces = {TEXT_EVENT_STREAM_XML_VALUE})
+    public ResponseEntity<Flux<String>> connectionStatusMessagesSSEXML() {
+        return xmlSSE.sse(agnosticConnector.getConnectionStatusMessageStream());
     }
 
     @Override
@@ -114,7 +126,13 @@ public class AgnosticController implements AgnosticSwagger {
     public ResponseEntity<Flux<RawDataMessage>> rawDataMessagesSSE() {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no").body(agnosticConnector.getRawDataMessageStream());
+                             .header(SSE.X_ACCEL_BUFFERING, "no").body(agnosticConnector.getRawDataMessageStream());
+    }
+
+    @Override
+    @GetMapping(value = "/raw-data-messages", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> rawDataMessagesSSEXML() {
+        return xmlSSE.sse(agnosticConnector.getRawDataMessageStream());
     }
 
     @Override
@@ -168,8 +186,14 @@ public class AgnosticController implements AgnosticSwagger {
     public ResponseEntity<Flux<OpaqueEnvelope>> opaqueEnvelopeSSE() {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header("X-Accel-Buffering", "no")
+                             .header(SSE.X_ACCEL_BUFFERING, "no")
                              .body(agnosticConnector.getForwardedOpaqueEnvelopeStream());
+    }
+
+    @Override
+    @GetMapping(value = "/opaque-envelope", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> opaqueEnvelopeSSEXML() {
+        return xmlSSE.sse(agnosticConnector.getForwardedOpaqueEnvelopeStream());
     }
 
     @Override
