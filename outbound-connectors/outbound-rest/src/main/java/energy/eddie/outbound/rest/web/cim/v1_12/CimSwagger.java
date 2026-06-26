@@ -96,6 +96,69 @@ public interface CimSwagger {
 
 
     @Operation(
+            operationId = "GET near real-time data market document stream",
+            summary = "GET near real-time data market document stream",
+            description = "Get all new near real-time data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = RTDEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <RTD_Envelope xmlns="https//eddie.energy/CIM/RTD_v1.12">
+                                                <MessageDocumentHeader>
+                                                    <creationDateTime>2026-02-12T08:03:40Z</creationDateTime>
+                                                    <MetaInformation>
+                                                        <connectionId>1</connectionId>
+                                                        <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+                                                        <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84</dataNeedId>
+                                                        <documentType>near-real-time-market-document</documentType>
+                                                        <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+                                                        <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+                                                        <regionConnector>aiida</regionConnector>
+                                                        <regionCountry>AT</regionCountry>
+                                                        <Asset>
+                                                            <type>CONNECTION-AGREEMENT-POINT</type>
+                                                           <operatorId>AT003000</operatorId>
+                                                           <meterId>003114735</meterId>
+                                                        </Asset>
+                                                    </MetaInformation>
+                                                </MessageDocumentHeader>
+                                                <MarketDocument>
+                                                    <mRID>78f93c55-c666-43b3-bbf2-a07059cad002</mRID>
+                                                    <createdDateTime>2026-02-12T08:03:40Z</createdDateTime>
+                                                    <TimeSeries>
+                                                        <TimeSeries>
+                                                            <version>1.0</version>
+                                                            <dateAndOrTime.dateTime>2026-02-12T08:03:38Z</dateAndOrTime.dateTime>
+                                                            <Quantity>
+                                                                <Quantity>
+                                                                    <quantity>0.117</quantity>
+                                                                    <type>2</type>
+                                                                    <quality>AS_PROVIDED</quality>
+                                                                </Quantity>
+                                                                <Quantity>
+                                                                    <quantity>65238.377</quantity>
+                                                                    <type>0</type>
+                                                                    <quality>AS_PROVIDED</quality>
+                                                                </Quantity>
+                                                            </Quantity>
+                                                            <registeredResource.mRID codingScheme="NAT">
+                                                                0743c9d8-3e5f-4575-999b-34f6f83b2075
+                                                            </registeredResource.mRID>
+                                                        </TimeSeries>
+                                                    </TimeSeries>
+                                                </MarketDocument>
+                                            </RTD_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> nearRealTimeDataMdSSEXML();
+
+    @Operation(
             operationId = "GET near real-time data market documents",
             summary = "GET near real-time data market documents",
             description = "Get all past near real-time data market documents",
@@ -353,6 +416,74 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<AcknowledgementEnvelope>> acknowledgementMdSSE();
 
+
+    @Operation(
+            operationId = "GET acknowledgement market document stream",
+            summary = "GET acknowledgement market document stream",
+            description = "Get all new acknowledgement market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = AcknowledgementEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <Acknowledgement_Envelope xmlns="https://eddie.energy/CIM/ACK_v1.12">
+                                                <MessageDocumentHeader>
+                                                    <creationDateTime>2026-02-24T11:58:05Z</creationDateTime>
+                                                    <MetaInformation>
+                                                        <connectionId>1</connectionId>
+                                                        <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+                                                        <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84</dataNeedId>
+                                                        <documentType>acknowledgement-market-document</documentType>
+                                                        <finalCustomerId>88e0fc2c-4ea7-4850-a736-8b9742757518</finalCustomerId>
+                                                        <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+                                                        <defaultValues xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                                                        <regionConnector>aiida</regionConnector>
+                                                        <regionCountry>AT</regionCountry>
+                                                        <Asset>
+                                                            <type>CONNECTION-AGREEMENT-POINT</type>
+                                                            <operatorId>AT003000</operatorId>
+                                                            <meterId>003114735</meterId>
+                                                        </Asset>
+                                                    </MetaInformation>
+                                                </MessageDocumentHeader>
+                                                <MarketDocument>
+                                                    <mRID>1cb72828-e869-463c-a447-7062bcca24b4</mRID>
+                                                    <createdDateTime>2026-02-24T11:58:05Z</createdDateTime>
+                                                    <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
+                                                    <sender_MarketParticipant.marketRole.type>CONNECTING_SYSTEM_OPERATOR</sender_MarketParticipant.marketRole.type>
+                                                    <receiver_MarketParticipant.mRID codingScheme="NAT">88e0fc2c-4ea7-4850-a736-8b9742757518
+                                                    </receiver_MarketParticipant.mRID>
+                                                    <receiver_MarketParticipant.marketRole.type>FINAL_CUSTOMER</receiver_MarketParticipant.marketRole.type>
+                                                    <received_MarketDocument.mRID>5a1cd7e9-345a-4c5a-94e3-987b3b8d2def</received_MarketDocument.mRID>
+                                                    <received_MarketDocument.revisionNumber>1</received_MarketDocument.revisionNumber>
+                                                    <received_MarketDocument.type>min-max-envelope</received_MarketDocument.type>
+                                                    <received_MarketDocument.process.processType>MIN_MAX_ENVELOPE</received_MarketDocument.process.processType>
+                                                    <received_MarketDocument.title xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+                                                    <received_MarketDocument.createdDateTime>2026-02-24T11:57:05Z</received_MarketDocument.createdDateTime>
+                                                    <Rejected_TimeSeries>
+                                                            <mRID>63c99336-d854-4ed2-be01-13dca22a2850</mRID>
+                                                            <version>1</version>
+                                                            <InError_Period>
+                                                                <timeInterval>
+                                                                    <start>2026-02-24T12:58:05Z</start>
+                                                                    <end>2026-02-24T13:58:05Z</end>
+                                                                </timeInterval>
+                                                            </InError_Period>
+                                                            <Reason>
+                                                                <code>A01</code>
+                                                                <text>Invalid time series data</text>
+                                                            </Reason>
+                                                    </Rejected_TimeSeries>
+                                                </MarketDocument>
+                                            </Acknowledgement_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> acknowledgementMdSSEXML();
 
     @Operation(
             operationId = "GET acknowledgement market documents",
@@ -824,6 +955,84 @@ public interface CimSwagger {
     ResponseEntity<Flux<RECMMOEEnvelope>> minMaxEnvelopeMdSSE();
 
     @Operation(
+            operationId = "GET forwarded min-max envelope market document stream",
+            summary = "GET forwarded min-max envelope market document stream",
+            description = "Get all new min-max envelope market documents forwarded to the eligible party as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = RECMMOEEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <RECMMOE_Envelope xmlns="https//eddie.energy/CIM/RECMMOE_v1.12">
+                                                <MessageDocumentHeader>
+                                                    <creationDateTime>2026-02-16T10:17:11Z</creationDateTime>
+                                                    <MetaInformation>
+                                                        <connectionId>1</connectionId>
+                                                        <requestPermissionId>aae63ff1-4062-4599-8f4c-686df39138e7</requestPermissionId>
+                                                        <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</dataNeedId>
+                                                        <documentType>min-max-envelope</documentType>
+                                                        <finalCustomerId>fc-id</finalCustomerId>
+                                                        <dataSourceId>0743c9d8-3e5f-4575-999b-34f6f83b2075</dataSourceId>
+                                                        <defaultValues>minPower=value</defaultValues>
+                                                        <regionConnector>aiida</regionConnector>
+                                                        <regionCountry>AT</regionCountry>
+                                                        <Asset>
+                                                            <type>CONNECTION-AGREEMENT-POINT</type>
+                                                            <operatorId>AT003000</operatorId>
+                                                            <meterId>003114735</meterId>
+                                                        </Asset>
+                                                    </MetaInformation>
+                                                </MessageDocumentHeader>
+                                                <MarketDocument>
+                                                    <mRID>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</mRID>
+                                                    <description>Test Min-Max Envelope</description>
+                                                    <revisionNumber>1</revisionNumber>
+                                                    <lastModifiedDateTime>2026-02-16T10:17:11Z</lastModifiedDateTime>
+                                                    <comment>This is a test min-max envelope.</comment>
+                                                    <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
+                                                    <receiver_MarketParticipant.mRID codingScheme="NAT">fc-id</receiver_MarketParticipant.mRID>
+                                                    <process.processType>A14</process.processType>
+                                                    <period.timeInterval>
+                                                        <start>2026-06-01T00:00Z</start>
+                                                        <end>2026-06-30T23:59Z</end>
+                                                    </period.timeInterval>
+                                                    <TimeSeries_Series>
+                                                        <mRID>series-1</mRID>
+                                                        <businessType>C76</businessType>
+                                                        <curveType>A01</curveType>
+                                                        <resourceTimeSeries.value1ScheduleType>loadReduction</resourceTimeSeries.value1ScheduleType>
+                                                        <flowDirection.direction>A02</flowDirection.direction>
+                                                        <registeredResource.mRID codingScheme="NAT">003114735</registeredResource.mRID>
+                                                        <Series>
+                                                            <Period>
+                                                                <resolution>PT15M</resolution>
+                                                                <timeInterval>
+                                                                    <start>2026-06-01T00:00Z</start>
+                                                                    <end>2026-06-30T23:59Z</end>
+                                                                </timeInterval>
+                                                                <Point>
+                                                                    <position>1</position>
+                                                                    <min_Quantity.quantity>1</min_Quantity.quantity>
+                                                                    <min_Quantity.quality>A04</min_Quantity.quality>
+                                                                    <max_Quantity.quantity>4</max_Quantity.quantity>
+                                                                    <max_Quantity.quality>A04</max_Quantity.quality>
+                                                                </Point>
+                                                            </Period>
+                                                        </Series>
+                                                    </TimeSeries_Series>
+                                                </MarketDocument>
+                                            </RECMMOE_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> minMaxEnvelopeMdSSEXML();
+
+    @Operation(
             operationId = "GET min-max envelope market documents forwarded to the eligible party",
             summary = "GET min-max envelope market documents forwarded to the eligible party",
             description = "Query available min-max envelope market documents forwarded to the eligible party",
@@ -1117,6 +1326,54 @@ public interface CimSwagger {
             description = "Get all new energy sharing reference data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = ESRDMDEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                            <ns:ESRDMD_Envelope xmlns:ns="https://eddie.energy/CIM/CEEDS_EnergySharingReferenceDataMarketDocument_v1.12_annotated.xsd">
+                                                <ns:MarketDocument>
+                                                    <ns:mRID>AT000000000000000000000000000000000</ns:mRID>
+                                                    <ns:revisionNumber>112</ns:revisionNumber>
+                                                    <ns:createdDateTime>2025-10-06T07:04:58Z</ns:createdDateTime>
+                                                    <ns:sender_MarketParticipant.name>AT000000</ns:sender_MarketParticipant.name>
+                                                    <ns:receiver_MarketParticipant.name>CC000000</ns:receiver_MarketParticipant.name>
+                                                    <ns:EnergyCommunity>
+                                                        <ns:DateFrom>2025-10-05T22:00:00Z</ns:DateFrom>
+                                                        <ns:mRID>ATCC0000DYNAMCC000000000000000000</ns:mRID>
+                                                        <ns:AccountingPoint>
+                                                            <ns:energySharingParticipationFactor>100</ns:energySharingParticipationFactor>
+                                                            <ns:mRID codingScheme="NAT">AT0000000000000000000000000000000</ns:mRID>
+                                                            <ns:energySharingEnergyDirection>A02</ns:energySharingEnergyDirection>
+                                                        </ns:AccountingPoint>
+                                                    </ns:EnergyCommunity>
+                                                </ns:MarketDocument>
+                                                <ns:MessageDocumentHeader>
+                                                    <ns:creationDateTime>2026-04-30T07:42:42Z</ns:creationDateTime>
+                                                    <ns:MetaInformation>
+                                                        <ns:connectionId>cid</ns:connectionId>
+                                                        <ns:requestPermissionId>pid</ns:requestPermissionId>
+                                                        <ns:dataNeedId>dnid</ns:dataNeedId>
+                                                        <ns:documentType>energy-sharing-reference-data-market-document</ns:documentType>
+                                                        <ns:regionConnector>at-eda</ns:regionConnector>
+                                                        <ns:regionCountry>AT</ns:regionCountry>
+                                                    </ns:MetaInformation>
+                                                </ns:MessageDocumentHeader>
+                                            </ns:ESRDMD_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> energySharingReferenceDataMdSSEXML();
+
+    @Operation(
+            operationId = "GET energy sharing reference data market document stream",
+            summary = "GET energy sharing reference data market document stream",
+            description = "Get all new energy sharing reference data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
                     content = {
                             @Content(mediaType = "application/json",
                                     array = @ArraySchema(schema = @Schema(implementation = ESRDMDEnvelope.class)),
@@ -1359,6 +1616,66 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<RequestPermissionEnvelope>> requestPermissionMdSSE();
 
+    @Operation(
+            operationId = "GET request permission market document stream",
+            summary = "GET request permission market document stream",
+            description = "Get all new request permission market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = RequestPermissionEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                            <ns:RequestPermission_Envelope xmlns:ns="https://eddie.energy/CEEDS_RequestPermissionDocument_annotated_v1.12.xsd">
+                                                <ns:MarketDocument>
+                                                    <ns:mRID>301287d3-2d73-4158-8380-089e09278ed6</ns:mRID>
+                                                    <ns:description>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns:description>
+                                                    <ns:revisionNumber>112</ns:revisionNumber>
+                                                    <ns:type>B48</ns:type>
+                                                    <ns:sender_MarketParticipant.mRID codingScheme="NDE">sim</ns:sender_MarketParticipant.mRID>
+                                                    <ns:sender_MarketParticipant.marketRole.type>A20</ns:sender_MarketParticipant.marketRole.type>
+                                                    <ns:receiver_MarketParticipant.mRID codingScheme="NDE">sim</ns:receiver_MarketParticipant.mRID>
+                                                    <ns:receiver_MarketParticipant.marketRole.type>A59</ns:receiver_MarketParticipant.marketRole.type>
+                                                    <ns:process.processType>A74</ns:process.processType>
+                                                    <ns:period.timeInterval>
+                                                        <ns:start>2021-01-01T00:00Z</ns:start>
+                                                        <ns:end>9999-12-31T00:00Z</ns:end>
+                                                    </ns:period.timeInterval>
+                                                    <ns:Request_Permission>
+                                                        <ns:mRID>301287d3-2d73-4158-8380-089e09278ed6</ns:mRID>
+                                                        <ns:createdDateTime>2026-05-19T11:48:56Z</ns:createdDateTime>
+                                                        <ns:AccountingPoint>
+                                                            <ns:mRID codingScheme="NDE">1</ns:mRID>
+                                                        </ns:AccountingPoint>
+                                                        <ns:MktActivityRecord>
+                                                            <ns:mRID>456d8c55-971c-4694-b390-8c7bd5818660</ns:mRID>
+                                                            <ns:createdDateTime>2026-05-19T11:48:56Z</ns:createdDateTime>
+                                                            <ns:description>EXTERNALLY_TERMINATED</ns:description>
+                                                            <ns:type>sim</ns:type>
+                                                            <ns:status>A16</ns:status>
+                                                        </ns:MktActivityRecord>
+                                                    </ns:Request_Permission>
+                                                </ns:MarketDocument>
+                                                <ns:MessageDocumentHeader>
+                                                    <ns:creationDateTime>2026-05-19T11:48:56Z</ns:creationDateTime>
+                                                    <ns:MetaInformation>
+                                                        <ns:connectionId>1</ns:connectionId>
+                                                        <ns:requestPermissionId>301287d3-2d73-4158-8380-089e09278ed6</ns:requestPermissionId>
+                                                        <ns:dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns:dataNeedId>
+                                                        <ns:documentType>request-permission-market-document</ns:documentType>
+                                                        <ns:regionConnector>sim</ns:regionConnector>
+                                                        <ns:regionCountry>DE</ns:regionCountry>
+                                                    </ns:MetaInformation>
+                                                </ns:MessageDocumentHeader>
+                                            </ns:RequestPermission_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> requestPermissionMdSSEXML();
 
     @Operation(
             operationId = "GET request permission market documents",
