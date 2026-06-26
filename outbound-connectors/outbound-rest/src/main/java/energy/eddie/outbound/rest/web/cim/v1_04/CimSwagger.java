@@ -135,6 +135,73 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<VHDEnvelope>> validatedHistoricalDataMdSSE();
 
+    @Operation(
+            operationId = "GET validated historical data market document stream v1.04",
+            summary = "GET validated historical data market document stream v1.04",
+            description = "Get all new validated historical data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = VHDEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                            <ns5:VHD_Envelope xmlns:ns5="https//eddie.energy/CIM/VHD_v1.04">
+                                              <ns5:messageDocumentHeader.creationDateTime>2025-11-11T08:33:39Z</ns5:messageDocumentHeader.creationDateTime>
+                                              <ns5:messageDocumentHeader.metaInformation.connectionId>1</ns5:messageDocumentHeader.metaInformation.connectionId>
+                                              <ns5:messageDocumentHeader.metaInformation.dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns5:messageDocumentHeader.metaInformation.dataNeedId>
+                                              <ns5:messageDocumentHeader.metaInformation.documentType>validated-historical-data-market-document</ns5:messageDocumentHeader.metaInformation.documentType>
+                                              <ns5:messageDocumentHeader.metaInformation.permissionId>926a6034-f1ba-46a8-8d4b-1da8244ec6cb</ns5:messageDocumentHeader.metaInformation.permissionId>
+                                              <ns5:messageDocumentHeader.metaInformation.region.connector>sim</ns5:messageDocumentHeader.metaInformation.region.connector>
+                                              <ns5:messageDocumentHeader.metaInformation.region.country>DE</ns5:messageDocumentHeader.metaInformation.region.country>
+                                              <ns5:MarketDocument>
+                                                <ns5:mRID>ff50d697-8fee-4b3e-9729-917d6fb766f8</ns5:mRID>
+                                                <ns5:revisionNumber>104</ns5:revisionNumber>
+                                                <ns5:type>A45</ns5:type>
+                                                <ns5:createdDateTime>2025-11-11T08:33:39Z</ns5:createdDateTime>
+                                                <ns5:sender_MarketParticipant.mRID codingScheme="A01">sim</ns5:sender_MarketParticipant.mRID>
+                                                <ns5:sender_MarketParticipant.marketRole.type>A26</ns5:sender_MarketParticipant.marketRole.type>
+                                                <ns5:receiver_MarketParticipant.mRID codingScheme="NAT">sim</ns5:receiver_MarketParticipant.mRID>
+                                                <ns5:receiver_MarketParticipant.marketRole.type>A13</ns5:receiver_MarketParticipant.marketRole.type>
+                                                <ns5:period.timeInterval>
+                                                  <ns5:start>2024-12-30T09:49Z</ns5:start>
+                                                  <ns5:end>2024-12-30T10:04Z</ns5:end>
+                                                </ns5:period.timeInterval>
+                                                <ns5:process.processType>A16</ns5:process.processType>
+                                                <ns5:TimeSeries>
+                                                  <ns5:version>1</ns5:version>
+                                                  <ns5:mRID>a6660ef1-891c-400e-bbb7-ac105d1fdbb7</ns5:mRID>
+                                                  <ns5:businessType>A04</ns5:businessType>
+                                                  <ns5:product>8716867000030</ns5:product>
+                                                  <ns5:energy_Measurement_Unit.name>WTT</ns5:energy_Measurement_Unit.name>
+                                                  <ns5:flowDirection.direction>A02</ns5:flowDirection.direction>
+                                                  <ns5:Period>
+                                                    <ns5:resolution>P0Y0M0DT0H15M0.000S</ns5:resolution>
+                                                    <ns5:timeInterval>
+                                                      <ns5:start>2024-12-30T09:49Z</ns5:start>
+                                                      <ns5:end>2024-12-30T10:04Z</ns5:end>
+                                                    </ns5:timeInterval>
+                                                    <ns5:Point>
+                                                      <ns5:position>1</ns5:position>
+                                                      <ns5:energy_Quantity.quantity>10.0</ns5:energy_Quantity.quantity>
+                                                      <ns5:energy_Quantity.quality>A04</ns5:energy_Quantity.quality>
+                                                    </ns5:Point>
+                                                    <ns5:reason.code>999</ns5:reason.code>
+                                                  </ns5:Period>
+                                                  <ns5:marketEvaluationPoint.mRID codingScheme="NFR">mid</ns5:marketEvaluationPoint.mRID>
+                                                  <ns5:marketEvaluationPoint.meterReadings.readings.readingType.aggregate>26</ns5:marketEvaluationPoint.meterReadings.readings.readingType.aggregate>
+                                                  <ns5:marketEvaluationPoint.meterReadings.readings.readingType.commodity>0</ns5:marketEvaluationPoint.meterReadings.readings.readingType.commodity>
+                                                  <ns5:reason.code>999</ns5:reason.code>
+                                                </ns5:TimeSeries>
+                                              </ns5:MarketDocument>
+                                            </ns5:VHD_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML();
 
     @Operation(
             operationId = "GET validated historical data market documents v1.04",
@@ -421,6 +488,59 @@ public interface CimSwagger {
 
 
     @Operation(
+            operationId = "GET near real-time data market document stream",
+            summary = "GET near real-time data market document stream",
+            description = "Get all new near real-time data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream+xml",
+                            schema = @Schema(implementation = RTDEnvelope.class),
+                            examples = @ExampleObject(
+                                    // language=XML
+                                    value = """
+                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                            <RTD_Envelope xmlns="http://www.eddie.energy/RTD/EDD01/20240614">
+                                                <messageDocumentHeader.creationDateTime>2025-07-01T09:44:00.00040249Z</messageDocumentHeader.creationDateTime>
+                                                <messageDocumentHeader.metaInformation.connectionId>3</messageDocumentHeader.metaInformation.connectionId>
+                                                <messageDocumentHeader.metaInformation.dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a84</messageDocumentHeader.metaInformation.dataNeedId>
+                                                <messageDocumentHeader.metaInformation.documentType>near-real-time-market-document</messageDocumentHeader.metaInformation.documentType>
+                                                <messageDocumentHeader.metaInformation.permissionId>150cfd97-64bb-402b-838f-57f8605713b7</messageDocumentHeader.metaInformation.permissionId>
+                                                <messageDocumentHeader.metaInformation.finalCustomerId>008cf1d6-e118-45a8-bc17-a331dfc57e77</messageDocumentHeader.metaInformation.finalCustomerId>
+                                                <messageDocumentHeader.metaInformation.asset>CONNECTION-AGREEMENT-POINT</messageDocumentHeader.metaInformation.asset>
+                                                <messageDocumentHeader.metaInformation.dataSourceId>5eef407d-d14f-49d4-b61a-769a20caa540</messageDocumentHeader.metaInformation.dataSourceId>
+                                                <messageDocumentHeader.metaInformation.regionConnector>aiida</messageDocumentHeader.metaInformation.regionConnector>
+                                                <messageDocumentHeader.metaInformation.regionCountry>AT</messageDocumentHeader.metaInformation.regionCountry>
+                                                <marketDocument>
+                                                    <mrid>bff481d5-edd8-4602-9c54-838b386ab4dd</mrid>
+                                                    <createdDateTime>2025-07-01T09:44:00.00032307Z</createdDateTime>
+                                                    <timeSeries>
+                                                        <version>1.0</version>
+                                                        <registeredResourceMRID>
+                                                            <value>5eef407d-d14f-49d4-b61a-769a20caa540</value>
+                                                            <codingScheme>NAT</codingScheme>
+                                                        </registeredResourceMRID>
+                                                        <dateAndOrTimeDateTime>2025-07-01T07:43:59.073747585Z</dateAndOrTimeDateTime>
+                                                        <quantities>
+                                                            <quantity>25</quantity>
+                                                            <type>0</type>
+                                                            <quality>AS_PROVIDED</quality>
+                                                        </quantities>
+                                                        <quantities>
+                                                            <quantity>1750</quantity>
+                                                            <type>2</type>
+                                                            <quality>AS_PROVIDED</quality>
+                                                        </quantities>
+                                                    </timeSeries>
+                                                </marketDocument>
+                                            </RTD_Envelope>
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> nearRealTimeDataMdSSEXML();
+
+    @Operation(
             operationId = "GET near real-time data market documents",
             summary = "GET near real-time data market documents",
             description = "Get all past near real-time data market documents",
@@ -481,7 +601,7 @@ public interface CimSwagger {
                                             // language=XML
                                             value = """
                                                     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                                                    <NearRealTimeDataMarketDocuments xmlns:ns2="http://www.eddie.energy/RTD/EDD01/20240614">
+                                                    <NearRealTimeDataMarketDocuments xmlns="http://www.eddie.energy/RTD/EDD01/20240614">
                                                         <RTD_Envelope>
                                                             <messageDocumentHeader.creationDateTime>2025-07-01T09:44:00.00040249Z</messageDocumentHeader.creationDateTime>
                                                             <messageDocumentHeader.metaInformation.connectionId>3</messageDocumentHeader.metaInformation.connectionId>
