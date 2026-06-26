@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.web.cim.v0_82;
@@ -17,6 +17,8 @@ import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarke
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
+import energy.eddie.outbound.rest.web.SSE;
+import energy.eddie.outbound.rest.web.XmlSSE;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
@@ -28,28 +30,31 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.outbound.rest.model.ModelWithJsonPayload.payloadsOf;
+import static energy.eddie.outbound.rest.web.XmlSSE.TEXT_EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
 @RestController
 @RequestMapping(TopicStructure.CIM_0_82_VALUE)
 public class CimController implements CimSwagger {
-    public static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
     private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
     private final PermissionMarketDocumentRepository pmdRepository;
     private final AccountingPointDataMarketDocumentRepository apRepository;
+    private final XmlSSE xmlSSE;
 
     public CimController(
             CimConnector cimConnector,
             ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
             PermissionMarketDocumentRepository pmdRepository,
-            AccountingPointDataMarketDocumentRepository apRepository
+            AccountingPointDataMarketDocumentRepository apRepository,
+            XmlSSE xmlSSE
     ) {
         this.cimConnector = cimConnector;
         this.vhdRepository = vhdRepository;
         this.pmdRepository = pmdRepository;
         this.apRepository = apRepository;
+        this.xmlSSE = xmlSSE;
     }
 
     @Override
@@ -57,8 +62,14 @@ public class CimController implements CimSwagger {
     public ResponseEntity<Flux<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMdSSE() {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header(X_ACCEL_BUFFERING, "no")
+                             .header(SSE.X_ACCEL_BUFFERING, "no")
                              .body(cimConnector.getHistoricalDataMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/validated-historical-data-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML() {
+        return xmlSSE.sse(cimConnector.getHistoricalDataMarketDocumentStream());
     }
 
     @Override
@@ -92,8 +103,14 @@ public class CimController implements CimSwagger {
     public ResponseEntity<Flux<PermissionEnvelope>> permissionMdSSE() {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header(X_ACCEL_BUFFERING, "no")
+                             .header(SSE.X_ACCEL_BUFFERING, "no")
                              .body(cimConnector.getPermissionMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/permission-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> permissionMdSSEXML() {
+        return xmlSSE.sse(cimConnector.getPermissionMarketDocumentStream());
     }
 
     @Override
@@ -127,8 +144,14 @@ public class CimController implements CimSwagger {
     public ResponseEntity<Flux<AccountingPointEnvelope>> accountingPointDataMdSSE() {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header(X_ACCEL_BUFFERING, "no")
+                             .header(SSE.X_ACCEL_BUFFERING, "no")
                              .body(cimConnector.getAccountingPointDataMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/accounting-point-data-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> accountingPointDataMdSSEXML() {
+        return xmlSSE.sse(cimConnector.getAccountingPointDataMarketDocumentStream());
     }
 
     @Override
