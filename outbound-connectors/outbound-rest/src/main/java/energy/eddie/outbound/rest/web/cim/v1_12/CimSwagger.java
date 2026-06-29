@@ -101,7 +101,7 @@ public interface CimSwagger {
             description = "Get all new near real-time data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = RTDEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -423,7 +423,7 @@ public interface CimSwagger {
             description = "Get all new acknowledgement market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = AcknowledgementEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -961,7 +961,7 @@ public interface CimSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "text/event-stream+xml",
+                            mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = RECMMOEEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -1326,7 +1326,7 @@ public interface CimSwagger {
             description = "Get all new energy sharing reference data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = ESRDMDEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -1622,7 +1622,7 @@ public interface CimSwagger {
             description = "Get all new request permission market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = RequestPermissionEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML

@@ -18,12 +18,13 @@ import java.nio.charset.StandardCharsets;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
 @Component
-public class XmlSSE {
-    public static final String TEXT_EVENT_STREAM_XML_VALUE = "text/event-stream+xml";
-    private static final Logger LOGGER = LoggerFactory.getLogger(XmlSSE.class);
+public class SSEEndpoints {
+    public static final String TEXT_EVENT_STREAM_XML_VALUE = "application/vnd.eddie.energy.sse+xml";
+    public static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SSEEndpoints.class);
     private final XmlMessageSerde serde;
 
-    public XmlSSE() throws SerdeInitializationException {
+    public SSEEndpoints() throws SerdeInitializationException {
         this.serde = new XmlMessageSerde();
     }
 
@@ -36,12 +37,19 @@ public class XmlSSE {
      * @param <T>  the type of the source of the events
      * @return a stream of XML documents
      */
-    public <T> ResponseEntity<Flux<String>> sse(Flux<T> flux) {
+    public <T> ResponseEntity<Flux<String>> xml(Flux<T> flux) {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
-                             .header(SSE.X_ACCEL_BUFFERING, "no")
+                             .header(X_ACCEL_BUFFERING, "no")
                              .header("Content-Type", TEXT_EVENT_STREAM_VALUE)
                              .body(flux.mapNotNull(this::toXml));
+    }
+
+    public <T> ResponseEntity<Flux<T>> json(Flux<T> flux) {
+        return ResponseEntity.ok()
+                             // Tell reverse proxies like Nginx not to buffer the response
+                             .header(X_ACCEL_BUFFERING, "no")
+                             .body(flux);
     }
 
     @Nullable

@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.outbound.rest.web.XmlSSE.TEXT_EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.SSEEndpoints.TEXT_EVENT_STREAM_XML_VALUE;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
 @Tag(name = "CIM v0.82 Documents", description = "Provides endpoints for CIM v0.82 documents, such as validated historical data market documents.")
@@ -154,7 +154,7 @@ public interface CimSwagger {
             description = "Get all new validated historical data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = ValidatedHistoricalDataEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -578,7 +578,7 @@ public interface CimSwagger {
             description = "Get all new permission market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = PermissionEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -971,7 +971,7 @@ public interface CimSwagger {
             description = "Get all new accounting point data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(
                                     implementation = AccountingPointEnvelope.class
                             ),

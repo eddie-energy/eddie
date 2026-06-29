@@ -73,26 +73,28 @@ public interface AgnosticSwagger {
             description = "Get all new ConnectionStatusMessages as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(
+                            mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = ConnectionStatusMessage.class),
                             examples = @ExampleObject(
                                     // language=XML
                                     value = """
-                                              <ConnectionStatusMessage>
-                                                   <connectionId>1</connectionId>
-                                                   <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
-                                                   <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
-                                                   <dataSourceInformation>
-                                                       <countryCode>DE</countryCode>
-                                                       <meteredDataAdministratorId>sim</meteredDataAdministratorId>
-                                                       <permissionAdministratorId>sim</permissionAdministratorId>
-                                                       <regionConnectorId>sim</regionConnectorId>
-                                                   </dataSourceInformation>
-                                                   <timestamp>2025-07-23T10:31:30.225890564Z</timestamp>
-                                                   <status>FULFILLED</status>
-                                                   <message>Permission request is fulfilled</message>
-                                                   <additionalInformation/>
-                                               </ConnectionStatusMessage>
+                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+                                            <ConnectionStatusMessage>
+                                                 <connectionId>1</connectionId>
+                                                 <permissionId>ffcb8491-1f82-4d9d-9ddf-f1312796045a</permissionId>
+                                                 <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                 <dataSourceInformation>
+                                                     <countryCode>DE</countryCode>
+                                                     <meteredDataAdministratorId>sim</meteredDataAdministratorId>
+                                                     <permissionAdministratorId>sim</permissionAdministratorId>
+                                                     <regionConnectorId>sim</regionConnectorId>
+                                                 </dataSourceInformation>
+                                                 <timestamp>2025-07-23T10:31:30.225890564Z</timestamp>
+                                                 <status>FULFILLED</status>
+                                                 <message>Permission request is fulfilled</message>
+                                                 <additionalInformation/>
+                                             </ConnectionStatusMessage>
                                             """
                             )
                     )
@@ -315,7 +317,7 @@ public interface AgnosticSwagger {
             description = "Get all new RawDataMessage as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = RawDataMessage.class),
                             examples = @ExampleObject(
                                     // language=xml
@@ -565,7 +567,7 @@ public interface AgnosticSwagger {
             description = "Get all new OpaqueEnvelopes as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = OpaqueEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML

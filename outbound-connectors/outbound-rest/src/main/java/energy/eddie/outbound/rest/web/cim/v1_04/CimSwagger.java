@@ -141,7 +141,7 @@ public interface CimSwagger {
             description = "Get all new validated historical data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = VHDEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
@@ -493,7 +493,7 @@ public interface CimSwagger {
             description = "Get all new near real-time data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "text/event-stream+xml",
+                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(implementation = RTDEnvelope.class),
                             examples = @ExampleObject(
                                     // language=XML
