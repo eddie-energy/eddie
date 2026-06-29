@@ -33,7 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static energy.eddie.outbound.rest.web.SSEEndpoints.TEXT_EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.*;
 
 @RestController
@@ -66,7 +66,7 @@ public class AgnosticController implements AgnosticSwagger {
     }
 
     @Override
-    @GetMapping(value = "/connection-status-messages", produces = {TEXT_EVENT_STREAM_XML_VALUE})
+    @GetMapping(value = "/connection-status-messages", produces = {EVENT_STREAM_XML_VALUE})
     public ResponseEntity<Flux<String>> connectionStatusMessagesSSEXML() {
         return sseEndpoints.xml(agnosticConnector.getConnectionStatusMessageStream());
     }
@@ -127,7 +127,7 @@ public class AgnosticController implements AgnosticSwagger {
     }
 
     @Override
-    @GetMapping(value = "/raw-data-messages", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    @GetMapping(value = "/raw-data-messages", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> rawDataMessagesSSEXML() {
         return sseEndpoints.xml(agnosticConnector.getRawDataMessageStream());
     }
@@ -185,7 +185,7 @@ public class AgnosticController implements AgnosticSwagger {
     }
 
     @Override
-    @GetMapping(value = "/opaque-envelope", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    @GetMapping(value = "/opaque-envelope", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> opaqueEnvelopeSSEXML() {
         return sseEndpoints.xml(agnosticConnector.getForwardedOpaqueEnvelopeStream());
     }

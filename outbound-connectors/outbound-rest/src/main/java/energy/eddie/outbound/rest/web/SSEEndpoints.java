@@ -9,6 +9,7 @@ import energy.eddie.cim.serde.XmlMessageSerde;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -19,7 +20,8 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
 @Component
 public class SSEEndpoints {
-    public static final String TEXT_EVENT_STREAM_XML_VALUE = "application/vnd.eddie.energy.sse+xml";
+    public static final String EVENT_STREAM_XML_VALUE = "application/vnd.eddie.energy.sse+xml";
+    public static final MediaType EVENT_STREAM_XML = MediaType.parseMediaType(EVENT_STREAM_XML_VALUE);
     public static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
     private static final Logger LOGGER = LoggerFactory.getLogger(SSEEndpoints.class);
     private final XmlMessageSerde serde;

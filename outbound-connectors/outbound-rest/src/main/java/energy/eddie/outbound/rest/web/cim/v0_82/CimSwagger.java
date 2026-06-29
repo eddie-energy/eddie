@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.outbound.rest.web.SSEEndpoints.TEXT_EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML_VALUE;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
 @Tag(name = "CIM v0.82 Documents", description = "Provides endpoints for CIM v0.82 documents, such as validated historical data market documents.")
@@ -837,7 +837,7 @@ public interface CimSwagger {
                     )
             )
     )
-    @GetMapping(value = "/accounting-point-data-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    @GetMapping(value = "/accounting-point-data-md", produces = EVENT_STREAM_XML_VALUE)
     ResponseEntity<Flux<String>> accountingPointDataMdSSEXML();
 
     @Operation(

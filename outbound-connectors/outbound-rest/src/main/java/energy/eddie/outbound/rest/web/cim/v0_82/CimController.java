@@ -29,7 +29,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.outbound.rest.model.ModelWithJsonPayload.payloadsOf;
-import static energy.eddie.outbound.rest.web.SSEEndpoints.TEXT_EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
@@ -63,7 +63,7 @@ public class CimController implements CimSwagger {
     }
 
     @Override
-    @GetMapping(value = "/validated-historical-data-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    @GetMapping(value = "/validated-historical-data-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML() {
         return sseEndpoints.xml(cimConnector.getHistoricalDataMarketDocumentStream());
     }
@@ -101,7 +101,7 @@ public class CimController implements CimSwagger {
     }
 
     @Override
-    @GetMapping(value = "/permission-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    @GetMapping(value = "/permission-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> permissionMdSSEXML() {
         return sseEndpoints.xml(cimConnector.getPermissionMarketDocumentStream());
     }
@@ -139,7 +139,7 @@ public class CimController implements CimSwagger {
     }
 
     @Override
-    @GetMapping(value = "/accounting-point-data-md", produces = TEXT_EVENT_STREAM_XML_VALUE)
+    @GetMapping(value = "/accounting-point-data-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> accountingPointDataMdSSEXML() {
         return sseEndpoints.xml(cimConnector.getAccountingPointDataMarketDocumentStream());
     }

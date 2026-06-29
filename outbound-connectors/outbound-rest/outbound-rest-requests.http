@@ -13,6 +13,11 @@ GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-me
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get connection status messages as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/agnostic/connection-status-messages
+Accept: application/vnd.eddie.energy.sse+xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### GET raw data messages as json
 GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages?from=2026-01-15T10%3A33%3A39Z
 Accept: application/json
@@ -26,6 +31,11 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get raw data messages as event stream
 GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get raw data messages as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/agnostic/raw-data-messages
+Accept: application/vnd.eddie.energy.sse+xml
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### GET forwarded opaque envelope messages as json
@@ -43,6 +53,11 @@ GET http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get forwarded opaque envelope messages as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/agnostic/opaque-envelope
+Accept: application/vnd.eddie.energy.sse+xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get validated historical data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: application/json
@@ -56,6 +71,11 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get validated historical data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get validated historical data market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/validated-historical-data-md
+Accept: application/vnd.eddie.energy.sse+xml
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get validated historical data market documents as json V1.04
@@ -73,6 +93,11 @@ GET http://localhost:9090/outbound-connectors/rest/cim_1_04/validated-historical
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get validated historical data market documents as event stream V1.04 with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_1_04/validated-historical-data-md
+Accept: application/vnd.eddie.energy.sse+xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get near real-time data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/near-real-time-data-md
 Accept: application/json
@@ -86,6 +111,11 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get near real-time data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/near-real-time-data-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get near real-time data market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/near-real-time-data-md
+Accept: application/vnd.eddie.energy.sse+xml
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get acknowledgement market documents as json
@@ -103,6 +133,11 @@ GET http://localhost:9090/outbound-connectors/rest/cim_1_12/acknowledgement-md
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get acknowledgement market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/acknowledgement-md
+Accept: application/vnd.eddie.energy.sse+xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get forwarded min-max envelope market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
 Accept: application/json
@@ -116,6 +151,11 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get forwarded min-max envelope market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get forwarded min-max envelope market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/min-max-envelope-md
+Accept: application/vnd.eddie.energy.sse+xml
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get permission market documents as json
@@ -133,6 +173,11 @@ GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get permission market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/permission-md
+Accept: application/vnd.eddie.energy.sse+xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get request permission market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/request-permission-md
 Accept: application/json
@@ -148,6 +193,11 @@ GET http://localhost:9090/outbound-connectors/rest/cim_1_12/request-permission-m
 Accept: text/event-stream
 Authorization: Bearer {{$auth.token("keycloak")}}
 
+### Get request permission market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/request-permission-md
+Accept: application/vnd.eddie.energy.sse+xml
+Authorization: Bearer {{$auth.token("keycloak")}}
+
 ### Get accounting point data market documents as json
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: application/json
@@ -161,6 +211,11 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get accounting point data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get accounting point data market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_0_82/accounting-point-data-md
+Accept: application/vnd.eddie.energy.sse+xml
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 # Termination Market Documents
@@ -476,6 +531,11 @@ Authorization: Bearer {{$auth.token("keycloak")}}
 ### Get energy sharing reference data market documents as event stream
 GET http://localhost:9090/outbound-connectors/rest/cim_1_12/energy-sharing-reference-data-md
 Accept: text/event-stream
+Authorization: Bearer {{$auth.token("keycloak")}}
+
+### Get energy sharing reference data market documents as event stream with XML payload
+GET http://localhost:9090/outbound-connectors/rest/cim_1_12/energy-sharing-reference-data-md
+Accept: application/vnd.eddie.energy.sse+xml
 Authorization: Bearer {{$auth.token("keycloak")}}
 
 ### Get energy sharing reference data market documents as json

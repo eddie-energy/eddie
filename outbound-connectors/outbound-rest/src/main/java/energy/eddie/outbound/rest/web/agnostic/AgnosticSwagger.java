@@ -172,9 +172,9 @@ public interface AgnosticSwagger {
     );
 
     @Operation(
-            operationId = "GET ConnectionStatusMessages JSON",
-            summary = "Get ConnectionStatusMessages JSON",
-            description = "Query available ConnectionStatusMessages JSON",
+            operationId = "GET ConnectionStatusMessages",
+            summary = "Get ConnectionStatusMessages",
+            description = "Query available ConnectionStatusMessages",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = {
@@ -415,9 +415,9 @@ public interface AgnosticSwagger {
     );
 
     @Operation(
-            operationId = "GET RawDataMessages JSON",
-            summary = "Get RawDataMessages JSON",
-            description = "Query available RawDataMessages as JSON",
+            operationId = "GET RawDataMessages",
+            summary = "Get RawDataMessages",
+            description = "Query available RawDataMessages",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
@@ -629,9 +629,9 @@ public interface AgnosticSwagger {
     );
 
     @Operation(
-            operationId = "GET OpaqueEnvelopes JSON",
-            summary = "Get OpaqueEnvelopes JSON",
-            description = "Query available OpaqueEnvelopes forwarded to the eligible party as JSON",
+            operationId = "GET OpaqueEnvelopes",
+            summary = "Get OpaqueEnvelopes",
+            description = "Query available OpaqueEnvelopes forwarded to the eligible party",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(

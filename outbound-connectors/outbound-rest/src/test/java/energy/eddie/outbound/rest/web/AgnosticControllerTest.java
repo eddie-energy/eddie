@@ -33,6 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.BDDMockito.given;
@@ -72,6 +73,29 @@ class AgnosticControllerTest {
                     .then(agnosticConnector::close)
                     .expectNextMatches(message -> message1.status().equals(message.status()))
                     .expectNextMatches(message -> message2.status().equals(message.status()))
+                    .verifyComplete();
+    }
+
+    @Test
+    @DirtiesContext
+    void connectionStatusMessageSSEXML_returnsMessages() {
+        var message1 = statusMessage(PermissionProcessStatus.CREATED);
+        var message2 = statusMessage(PermissionProcessStatus.VALIDATED);
+
+        agnosticConnector.setConnectionStatusMessageStream(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                  .uri("/agnostic/connection-status-messages")
+                                  .accept(EVENT_STREAM_XML)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(String.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .then(agnosticConnector::close)
+                    .expectNextCount(2)
                     .verifyComplete();
     }
 
@@ -154,18 +178,24 @@ class AgnosticControllerTest {
     @DirtiesContext
     void opaqueEnvelopeSSE_returnsMessages() {
         var message1 = new OpaqueEnvelope("pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "{}");
-        var message2 = new OpaqueEnvelope("other-pid", "cid", "dnid", "rid", "mid", ZonedDateTime.now(ZoneOffset.UTC), "[]");
+        var message2 = new OpaqueEnvelope("other-pid",
+                                          "cid",
+                                          "dnid",
+                                          "rid",
+                                          "mid",
+                                          ZonedDateTime.now(ZoneOffset.UTC),
+                                          "[]");
 
         agnosticConnector.setForwardedOpaqueEnvelopeStream(Flux.just(message1, message2));
 
         var result = webTestClient.get()
-                                 .uri("/agnostic/opaque-envelope")
-                                 .accept(MediaType.TEXT_EVENT_STREAM)
-                                 .exchange()
-                                 .expectStatus()
-                                 .isOk()
-                                 .returnResult(OpaqueEnvelope.class)
-                                 .getResponseBody();
+                                  .uri("/agnostic/opaque-envelope")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(OpaqueEnvelope.class)
+                                  .getResponseBody();
 
         StepVerifier.create(result)
                     .then(agnosticConnector::close)
@@ -183,18 +213,18 @@ class AgnosticControllerTest {
                 .willReturn(List.of(msg));
 
         var result = webTestClient.get()
-                                 .uri("/agnostic/opaque-envelope")
-                                 .accept(MediaType.APPLICATION_JSON)
-                                 .exchange()
-                                 .expectStatus()
-                                 .isOk()
-                                 .returnResult(new ParameterizedTypeReference<List<OpaqueEnvelope>>() {})
-                                 .getResponseBody();
+                                  .uri("/agnostic/opaque-envelope")
+                                  .accept(MediaType.APPLICATION_JSON)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(new ParameterizedTypeReference<List<OpaqueEnvelope>>() {})
+                                  .getResponseBody();
 
         StepVerifier.create(result)
                     .assertNext(next -> {
-                       assertNotNull(next.getFirst());
-                       assertEquals(msg.payload().permissionId(), next.getFirst().permissionId());
+                        assertNotNull(next.getFirst());
+                        assertEquals(msg.payload().permissionId(), next.getFirst().permissionId());
                     })
                     .verifyComplete();
     }
