@@ -154,89 +154,9 @@ public interface CimSwagger {
             description = "Get all new validated historical data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
-                            schema = @Schema(implementation = ValidatedHistoricalDataEnvelope.class),
-                            examples = @ExampleObject(
-                                    // language=XML
-                                    value = """
-                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                                                        <ns2:ValidatedHistoricalData_Envelope xmlns:ns2="http://www.eddie.energy/VHD/EDD01/20240614">
-                                                            <ns2:MessageDocumentHeader>
-                                                                <ns2:creationDateTime>2025-07-23T10:31:30Z</ns2:creationDateTime>
-                                                                <ns2:MessageDocumentHeader_MetaInformation>
-                                                                    <ns2:connectionid>1</ns2:connectionid>
-                                                                    <ns2:permissionid>ffcb8491-1f82-4d9d-9ddf-f1312796045a</ns2:permissionid>
-                                                                    <ns2:dataNeedid>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns2:dataNeedid>
-                                                                    <ns2:dataType>validated-historical-data-market-document</ns2:dataType>
-                                                                    <ns2:MessageDocumentHeader_Region>
-                                                                        <ns2:connector>sim</ns2:connector>
-                                                                        <ns2:country>NAT</ns2:country>
-                                                                    </ns2:MessageDocumentHeader_Region>
-                                                                </ns2:MessageDocumentHeader_MetaInformation>
-                                                            </ns2:MessageDocumentHeader>
-                                                            <ns2:ValidatedHistoricalData_MarketDocument>
-                                                                <ns2:mRID>3847de2f-45f8-44e8-8a68-591635477f94</ns2:mRID>
-                                                                <ns2:revisionNumber>0.82</ns2:revisionNumber>
-                                                                <ns2:type>A45</ns2:type>
-                                                                <ns2:createdDateTime>2025-07-23T10:31:30Z</ns2:createdDateTime>
-                                                                <ns2:sender_MarketParticipant.mRID>
-                                                                    <ns2:codingScheme>A01</ns2:codingScheme>
-                                                                    <ns2:value>sim</ns2:value>
-                                                                </ns2:sender_MarketParticipant.mRID>
-                                                                <ns2:sender_MarketParticipant.marketRole.type>A26</ns2:sender_MarketParticipant.marketRole.type>
-                                                                <ns2:receiver_MarketParticipant.mRID>
-                                                                    <ns2:codingScheme>NAT</ns2:codingScheme>
-                                                                    <ns2:value>sim</ns2:value>
-                                                                </ns2:receiver_MarketParticipant.mRID>
-                                                                <ns2:receiver_MarketParticipant.marketRole.type>A13</ns2:receiver_MarketParticipant.marketRole.type>
-                                                                <ns2:process.processType>A16</ns2:process.processType>
-                                                                <ns2:period.timeInterval>
-                                                                    <ns2:start>2024-12-30T09:49Z</ns2:start>
-                                                                    <ns2:end>2024-12-30T10:04Z</ns2:end>
-                                                                </ns2:period.timeInterval>
-                                                                <ns2:TimeSeriesList>
-                                                                    <ns2:TimeSeries>
-                                                                        <ns2:mRID>edf4c10d-91f6-4024-ad5f-43b50a433fc6</ns2:mRID>
-                                                                        <ns2:businessType>A04</ns2:businessType>
-                                                                        <ns2:product>8716867000030</ns2:product>
-                                                                        <ns2:version>1.0</ns2:version>
-                                                                        <ns2:flowDirection.direction>A02</ns2:flowDirection.direction>
-                                                                        <ns2:marketEvaluationPoint.mRID>
-                                                                            <ns2:codingScheme>NFR</ns2:codingScheme>
-                                                                            <ns2:value>mid</ns2:value>
-                                                                        </ns2:marketEvaluationPoint.mRID>
-                                                                        <ns2:marketEvaluationPoint.meterReadings.readings.ReadingType.aggregation>26
-                                                                        </ns2:marketEvaluationPoint.meterReadings.readings.ReadingType.aggregation>
-                                                                        <ns2:marketEvaluationPoint.meterReadings.readings.ReadingType.commodity>0
-                                                                        </ns2:marketEvaluationPoint.meterReadings.readings.ReadingType.commodity>
-                                                                        <ns2:energy_Measurement_Unit.name>WTT</ns2:energy_Measurement_Unit.name>
-                                                                        <ns2:Series_PeriodList>
-                                                                            <ns2:Series_Period>
-                                                                                <ns2:timeInterval>
-                                                                                    <ns2:start>2024-12-30T09:49Z</ns2:start>
-                                                                                    <ns2:end>2024-12-30T10:04Z</ns2:end>
-                                                                                </ns2:timeInterval>
-                                                                                <ns2:resolution>PT15M</ns2:resolution>
-                                                                                <ns2:PointList>
-                                                                                    <ns2:Point>
-                                                                                        <ns2:position>0</ns2:position>
-                                                                                        <ns2:energy_Quantity.quantity>10.0</ns2:energy_Quantity.quantity>
-                                                                                        <ns2:energy_Quantity.quality>A04</ns2:energy_Quantity.quality>
-                                                                                    </ns2:Point>
-                                                                                </ns2:PointList>
-                                                                            </ns2:Series_Period>
-                                                                        </ns2:Series_PeriodList>
-                                                                        <ns2:ReasonList>
-                                                                            <ns2:Reason>
-                                                                                <ns2:code>999</ns2:code>
-                                                                            </ns2:Reason>
-                                                                        </ns2:ReasonList>
-                                                                    </ns2:TimeSeries>
-                                                                </ns2:TimeSeriesList>
-                                                            </ns2:ValidatedHistoricalData_MarketDocument>
-                                                        </ns2:ValidatedHistoricalData_Envelope>
-                                            """
-                            )
+                    content = @Content(
+                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            schema = @Schema(implementation = ValidatedHistoricalDataEnvelope.class)
                     )
             )
     )
@@ -578,71 +498,9 @@ public interface CimSwagger {
             description = "Get all new permission market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
-                            schema = @Schema(implementation = PermissionEnvelope.class),
-                            examples = @ExampleObject(
-                                    // language=XML
-                                    value = """
-                                            <ns2:Permission_Envelope xmlns:ns2="http://www.eddie.energy/Consent/EDD02/20240125">
-                                                <ns2:MessageDocumentHeader>
-                                                    <ns2:creationDateTime>2025-07-29T06:26:48Z</ns2:creationDateTime>
-                                                    <ns2:MessageDocumentHeader_MetaInformation>
-                                                        <ns2:connectionid>id</ns2:connectionid>
-                                                        <ns2:permissionid>341ddb3c-1847-4b2d-be19-e6c379cfbd53</ns2:permissionid>
-                                                        <ns2:dataNeedid>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns2:dataNeedid>
-                                                        <ns2:dataType>permission-market-document</ns2:dataType>
-                                                        <ns2:MessageDocumentHeader_Region>
-                                                            <ns2:connector>sim</ns2:connector>
-                                                            <ns2:country>NDE</ns2:country>
-                                                        </ns2:MessageDocumentHeader_Region>
-                                                    </ns2:MessageDocumentHeader_MetaInformation>
-                                                </ns2:MessageDocumentHeader>
-                                                <ns2:Permission_MarketDocument>
-                                                    <ns2:mRID>341ddb3c-1847-4b2d-be19-e6c379cfbd53</ns2:mRID>
-                                                    <ns2:revisionNumber>0.82</ns2:revisionNumber>
-                                                    <ns2:type>Z04</ns2:type>
-                                                    <ns2:createdDateTime>2025-07-29T06:26:48Z</ns2:createdDateTime>
-                                                    <ns2:description>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns2:description>
-                                                    <ns2:sender_MarketParticipant.mRID>
-                                                        <ns2:codingScheme>NDE</ns2:codingScheme>
-                                                        <ns2:value>sim</ns2:value>
-                                                    </ns2:sender_MarketParticipant.mRID>
-                                                    <ns2:sender_MarketParticipant.marketRole.type>A20</ns2:sender_MarketParticipant.marketRole.type>
-                                                    <ns2:receiver_MarketParticipant.mRID>
-                                                        <ns2:codingScheme>NDE</ns2:codingScheme>
-                                                        <ns2:value>sim</ns2:value>
-                                                    </ns2:receiver_MarketParticipant.mRID>
-                                                    <ns2:receiver_MarketParticipant.marketRole.type>A50</ns2:receiver_MarketParticipant.marketRole.type>
-                                                    <ns2:process.processType>A55</ns2:process.processType>
-                                                    <ns2:period.timeInterval>
-                                                        <ns2:start>2021-01-01T00:00Z</ns2:start>
-                                                        <ns2:end>9999-12-31T00:00Z</ns2:end>
-                                                    </ns2:period.timeInterval>
-                                                    <ns2:PermissionList>
-                                                        <ns2:Permission>
-                                                            <ns2:permission.mRID>341ddb3c-1847-4b2d-be19-e6c379cfbd53</ns2:permission.mRID>
-                                                            <ns2:createdDateTime>2025-07-29T06:26:48Z</ns2:createdDateTime>
-                                                            <ns2:marketEvaluationPoint.mRID>
-                                                                <ns2:codingScheme>NDE</ns2:codingScheme>
-                                                                <ns2:value>id</ns2:value>
-                                                            </ns2:marketEvaluationPoint.mRID>
-                                                            <ns2:TimeSeriesList/>
-                                                            <ns2:MktActivityRecordList>
-                                                                <ns2:MktActivityRecord>
-                                                                    <ns2:mRID>963e2eec-e875-4cfc-913d-1ea8e2d745d2</ns2:mRID>
-                                                                    <ns2:createdDateTime>2025-07-29T06:26:48Z</ns2:createdDateTime>
-                                                                    <ns2:description>FULFILLED</ns2:description>
-                                                                    <ns2:type>sim</ns2:type>
-                                                                    <ns2:status>Confirmed</ns2:status>
-                                                                </ns2:MktActivityRecord>
-                                                            </ns2:MktActivityRecordList>
-                                                            <ns2:ReasonList/>
-                                                        </ns2:Permission>
-                                                    </ns2:PermissionList>
-                                                </ns2:Permission_MarketDocument>
-                                            </ns2:Permission_Envelope>
-                                            """
-                            )
+                    content = @Content(
+                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            schema = @Schema(implementation = PermissionEnvelope.class)
                     )
             )
     )
@@ -971,74 +829,10 @@ public interface CimSwagger {
             description = "Get all new accounting point data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
-                    content = @Content(mediaType = "application/vnd.eddie.energy.sse+xml",
+                    content = @Content(
+                            mediaType = "application/vnd.eddie.energy.sse+xml",
                             schema = @Schema(
                                     implementation = AccountingPointEnvelope.class
-                            ),
-                            examples = @ExampleObject(
-                                    // language=XML
-                                    value = """
-                                            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                                            <ns3:AccountingPoint_Envelope xmlns:ns3="htthttp://www.eddie.energy/AP/EDD04/20240422">
-                                                <ns3:MessageDocumentHeader>
-                                                    <ns3:creationDateTime>2025-07-30T07:57:15Z</ns3:creationDateTime>
-                                                    <ns3:MessageDocumentHeader_MetaInformation>
-                                                        <ns3:connectionid>1</ns3:connectionid>
-                                                        <ns3:permissionid>f08b5e93-3fbf-415b-8719-579e7c46c3ca</ns3:permissionid>
-                                                        <ns3:dataNeedid>8685eed4-ab97-4c57-9409-76295792ee1c</ns3:dataNeedid>
-                                                        <ns3:dataType>accounting-point-market-document</ns3:dataType>
-                                                        <ns3:MessageDocumentHeader_Region>
-                                                            <ns3:connector>cds</ns3:connector>
-                                                            <ns3:country>NUS</ns3:country>
-                                                        </ns3:MessageDocumentHeader_Region>
-                                                    </ns3:MessageDocumentHeader_MetaInformation>
-                                                </ns3:MessageDocumentHeader>
-                                                <ns3:AccountingPoint_MarketDocument>
-                                                    <ns3:mRID>436d9444-5f7f-4735-9c6c-b9ef624f43af</ns3:mRID>
-                                                    <ns3:revisionNumber>0.82</ns3:revisionNumber>
-                                                    <ns3:type>B99</ns3:type>
-                                                    <ns3:createdDateTime>2025-07-30T07:57:15Z</ns3:createdDateTime>
-                                                    <ns3:sender_MarketParticipant.mRID>
-                                                        <ns3:codingScheme>NUS</ns3:codingScheme>
-                                                        <ns3:value>CDSC</ns3:value>
-                                                    </ns3:sender_MarketParticipant.mRID>
-                                                    <ns3:sender_MarketParticipant.marketRole.type>A26</ns3:sender_MarketParticipant.marketRole.type>
-                                                    <ns3:receiver_MarketParticipant.mRID>
-                                                        <ns3:codingScheme>NUS</ns3:codingScheme>
-                                                    </ns3:receiver_MarketParticipant.mRID>
-                                                    <ns3:receiver_MarketParticipant.marketRole.type>A13</ns3:receiver_MarketParticipant.marketRole.type>
-                                                    <ns3:AccountingPointList>
-                                                        <ns3:AccountingPoint>
-                                                            <ns3:mRID>
-                                                                <ns3:codingScheme>NUS</ns3:codingScheme>
-                                                                <ns3:value>8a681951-2c0a-5ad9-8938-b539b59d0075</ns3:value>
-                                                            </ns3:mRID>
-                                                            <ns3:commodity>2</ns3:commodity>
-                                                            <ns3:ContractPartyList>
-                                                                <ns3:ContractParty>
-                                                                    <ns3:contractPartyRole>contractPartner</ns3:contractPartyRole>
-                                                                    <ns3:surName>Doe</ns3:surName>
-                                                                    <ns3:firstName>Jane</ns3:firstName>
-                                                                </ns3:ContractParty>
-                                                            </ns3:ContractPartyList>
-                                                            <ns3:AddressList>
-                                                                <ns3:Address>
-                                                                    <ns3:addressRole>delivery</ns3:addressRole>
-                                                                    <ns3:postalCode>11111</ns3:postalCode>
-                                                                    <ns3:cityName>Anytown</ns3:cityName>
-                                                                    <ns3:streetName>Main St - HOME</ns3:streetName>
-                                                                    <ns3:buildingNumber>123</ns3:buildingNumber>
-                                                                </ns3:Address>
-                                                                <ns3:Address>
-                                                                    <ns3:addressRole>invoice</ns3:addressRole>
-                                                                    <ns3:addressSuffix>123 Main St - HOME</ns3:addressSuffix>
-                                                                </ns3:Address>
-                                                            </ns3:AddressList>
-                                                        </ns3:AccountingPoint>
-                                                    </ns3:AccountingPointList>
-                                                </ns3:AccountingPoint_MarketDocument>
-                                            </ns3:AccountingPoint_Envelope>
-                                            """
                             )
                     )
             )
