@@ -24,6 +24,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
+
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "CIM v1.04 Documents", description = "Provides endpoints for CIM v1.04 documents, such as validated historical data market documents.")
 public interface CimSwagger {
@@ -135,6 +137,19 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<VHDEnvelope>> validatedHistoricalDataMdSSE();
 
+    @Operation(
+            operationId = "GET validated historical data market document stream v1.04",
+            summary = "GET validated historical data market document stream v1.04",
+            description = "Get all new validated historical data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = VHDEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML();
 
     @Operation(
             operationId = "GET validated historical data market documents v1.04",
@@ -421,6 +436,20 @@ public interface CimSwagger {
 
 
     @Operation(
+            operationId = "GET near real-time data market document stream",
+            summary = "GET near real-time data market document stream",
+            description = "Get all new near real-time data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = RTDEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> nearRealTimeDataMdSSEXML();
+
+    @Operation(
             operationId = "GET near real-time data market documents",
             summary = "GET near real-time data market documents",
             description = "Get all past near real-time data market documents",
@@ -481,7 +510,7 @@ public interface CimSwagger {
                                             // language=XML
                                             value = """
                                                     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                                                    <NearRealTimeDataMarketDocuments xmlns:ns2="http://www.eddie.energy/RTD/EDD01/20240614">
+                                                    <NearRealTimeDataMarketDocuments xmlns="http://www.eddie.energy/RTD/EDD01/20240614">
                                                         <RTD_Envelope>
                                                             <messageDocumentHeader.creationDateTime>2025-07-01T09:44:00.00040249Z</messageDocumentHeader.creationDateTime>
                                                             <messageDocumentHeader.metaInformation.connectionId>3</messageDocumentHeader.metaInformation.connectionId>

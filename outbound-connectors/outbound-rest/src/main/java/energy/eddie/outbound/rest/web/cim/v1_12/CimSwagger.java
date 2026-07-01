@@ -27,6 +27,8 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
+
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "CIM v1.12 Documents", description = "Provides endpoints for CIM v1.12 documents, such as validated historical data market documents.")
 public interface CimSwagger {
@@ -94,6 +96,20 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<RTDEnvelope>> nearRealTimeDataMdSSE();
 
+
+    @Operation(
+            operationId = "GET near real-time data market document stream",
+            summary = "GET near real-time data market document stream",
+            description = "Get all new near real-time data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = RTDEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> nearRealTimeDataMdSSEXML();
 
     @Operation(
             operationId = "GET near real-time data market documents",
@@ -353,6 +369,20 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<AcknowledgementEnvelope>> acknowledgementMdSSE();
 
+
+    @Operation(
+            operationId = "GET acknowledgement market document stream",
+            summary = "GET acknowledgement market document stream",
+            description = "Get all new acknowledgement market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = AcknowledgementEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> acknowledgementMdSSEXML();
 
     @Operation(
             operationId = "GET acknowledgement market documents",
@@ -824,6 +854,20 @@ public interface CimSwagger {
     ResponseEntity<Flux<RECMMOEEnvelope>> minMaxEnvelopeMdSSE();
 
     @Operation(
+            operationId = "GET forwarded min-max envelope market document stream",
+            summary = "GET forwarded min-max envelope market document stream",
+            description = "Get all new min-max envelope market documents forwarded to the eligible party as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = RECMMOEEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> minMaxEnvelopeMdSSEXML();
+
+    @Operation(
             operationId = "GET min-max envelope market documents forwarded to the eligible party",
             summary = "GET min-max envelope market documents forwarded to the eligible party",
             description = "Query available min-max envelope market documents forwarded to the eligible party",
@@ -1117,6 +1161,20 @@ public interface CimSwagger {
             description = "Get all new energy sharing reference data market documents as Server Sent Events",
             responses = @ApiResponse(
                     responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = ESRDMDEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> energySharingReferenceDataMdSSEXML();
+
+    @Operation(
+            operationId = "GET energy sharing reference data market document stream",
+            summary = "GET energy sharing reference data market document stream",
+            description = "Get all new energy sharing reference data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
                     content = {
                             @Content(mediaType = "application/json",
                                     array = @ArraySchema(schema = @Schema(implementation = ESRDMDEnvelope.class)),
@@ -1359,6 +1417,19 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<RequestPermissionEnvelope>> requestPermissionMdSSE();
 
+    @Operation(
+            operationId = "GET request permission market document stream",
+            summary = "GET request permission market document stream",
+            description = "Get all new request permission market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = RequestPermissionEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> requestPermissionMdSSEXML();
 
     @Operation(
             operationId = "GET request permission market documents",

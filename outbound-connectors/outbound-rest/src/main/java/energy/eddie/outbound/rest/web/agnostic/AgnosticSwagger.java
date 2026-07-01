@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
+
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "Agnostic EDDIE Messages", description = "Provides endpoints for non-CIM messages that are EDDIE specific.")
 public interface AgnosticSwagger {
@@ -65,6 +67,21 @@ public interface AgnosticSwagger {
             )
     )
     ResponseEntity<Flux<ConnectionStatusMessage>> connectionStatusMessagesSSE();
+
+
+    @Operation(
+            operationId = "GET ConnectionStatusMessage stream",
+            summary = "Get ConnectionStatusMessage stream",
+            description = "Get all new ConnectionStatusMessages as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = ConnectionStatusMessage.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> connectionStatusMessagesSSEXML();
 
     @Operation(
             operationId = "GET ConnectionStatusMessages",
@@ -157,9 +174,9 @@ public interface AgnosticSwagger {
     );
 
     @Operation(
-            operationId = "GET ConnectionStatusMessages JSON",
-            summary = "Get ConnectionStatusMessages JSON",
-            description = "Query available ConnectionStatusMessages JSON",
+            operationId = "GET ConnectionStatusMessages",
+            summary = "Get ConnectionStatusMessages",
+            description = "Query available ConnectionStatusMessages",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = {
@@ -276,6 +293,20 @@ public interface AgnosticSwagger {
     ResponseEntity<Flux<RawDataMessage>> rawDataMessagesSSE();
 
     @Operation(
+            operationId = "GET RawDataMessage stream",
+            summary = "Get RawDataMessage stream",
+            description = "Get all new RawDataMessage as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = RawDataMessage.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> rawDataMessagesSSEXML();
+
+    @Operation(
             operationId = "GET RawDataMessages",
             summary = "Get RawDataMessages",
             description = "Query available RawDataMessages",
@@ -386,9 +417,9 @@ public interface AgnosticSwagger {
     );
 
     @Operation(
-            operationId = "GET RawDataMessages JSON",
-            summary = "Get RawDataMessages JSON",
-            description = "Query available RawDataMessages as JSON",
+            operationId = "GET RawDataMessages",
+            summary = "Get RawDataMessages",
+            description = "Query available RawDataMessages",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
@@ -495,6 +526,20 @@ public interface AgnosticSwagger {
     ResponseEntity<Flux<OpaqueEnvelope>> opaqueEnvelopeSSE();
 
     @Operation(
+            operationId = "GET OpaqueEnvelope stream",
+            summary = "Get OpaqueEnvelope stream",
+            description = "Get all new OpaqueEnvelopes as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = OpaqueEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> opaqueEnvelopeSSEXML();
+
+    @Operation(
             operationId = "GET OpaqueEnvelopes",
             summary = "Get OpaqueEnvelopes",
             description = "Query available OpaqueEnvelopes forwarded to the eligible party",
@@ -586,9 +631,9 @@ public interface AgnosticSwagger {
     );
 
     @Operation(
-            operationId = "GET OpaqueEnvelopes JSON",
-            summary = "Get OpaqueEnvelopes JSON",
-            description = "Query available OpaqueEnvelopes forwarded to the eligible party as JSON",
+            operationId = "GET OpaqueEnvelopes",
+            summary = "Get OpaqueEnvelopes",
+            description = "Query available OpaqueEnvelopes forwarded to the eligible party",
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(

@@ -13,6 +13,7 @@ import energy.eddie.outbound.rest.dto.v1_12.*;
 import energy.eddie.outbound.rest.model.cim.v1_12.*;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.*;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
+import energy.eddie.outbound.rest.web.EventStream;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
@@ -24,7 +25,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.outbound.rest.model.ModelWithJsonPayload.payloadsOf;
-import static energy.eddie.outbound.rest.web.cim.v0_82.CimController.X_ACCEL_BUFFERING;
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
@@ -38,6 +39,7 @@ public class CimController implements CimSwagger {
     private final EnergySharingReferenceDataMarketDocumentRepository esrRepository;
     private final MinMaxEnvelopeMarketDocumentRepository minMaxRepository;
     private final RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository;
+    private final EventStream eventStream;
 
     public CimController(
             CimConnector cimConnector,
@@ -45,7 +47,8 @@ public class CimController implements CimSwagger {
             AcknowledgementMarketDocumentRepository ackRepository,
             EnergySharingReferenceDataMarketDocumentRepository esrRepository,
             MinMaxEnvelopeMarketDocumentRepository minMaxRepository,
-            RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository
+            RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository,
+            EventStream eventStream
     ) {
         this.cimConnector = cimConnector;
         this.rtdRepository = rtdRepository;
@@ -53,15 +56,19 @@ public class CimController implements CimSwagger {
         this.esrRepository = esrRepository;
         this.minMaxRepository = minMaxRepository;
         this.requestPermissionMarketDocumentRepository = requestPermissionMarketDocumentRepository;
+        this.eventStream = eventStream;
     }
 
     @Override
     @GetMapping(value = "/near-real-time-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<RTDEnvelope>> nearRealTimeDataMdSSE() {
-        return ResponseEntity.ok()
-                             // Tell reverse proxies like Nginx not to buffer the response
-                             .header(X_ACCEL_BUFFERING, "no")
-                             .body(cimConnector.getNearRealTimeDataMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getNearRealTimeDataMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/near-real-time-data-md", produces = EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> nearRealTimeDataMdSSEXML() {
+        return eventStream.toXml(cimConnector.getNearRealTimeDataMarketDocumentStream());
     }
 
     @Override
@@ -93,10 +100,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/acknowledgement-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<AcknowledgementEnvelope>> acknowledgementMdSSE() {
-        return ResponseEntity.ok()
-                             // Tell reverse proxies like Nginx not to buffer the response
-                             .header(X_ACCEL_BUFFERING, "no")
-                             .body(cimConnector.getAcknowledgementMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getAcknowledgementMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/acknowledgement-md", produces = EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> acknowledgementMdSSEXML() {
+        return eventStream.toXml(cimConnector.getAcknowledgementMarketDocumentStream());
     }
 
     @Override
@@ -136,9 +146,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/min-max-envelope-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<RECMMOEEnvelope>> minMaxEnvelopeMdSSE() {
-        return ResponseEntity.ok()
-                             .header(X_ACCEL_BUFFERING, "no")
-                             .body(cimConnector.getForwardedMinMaxEnvelopeStream());
+        return eventStream.toJson(cimConnector.getForwardedMinMaxEnvelopeStream());
+    }
+
+    @Override
+    @GetMapping(value = "/min-max-envelope-md", produces = EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> minMaxEnvelopeMdSSEXML() {
+        return eventStream.toXml(cimConnector.getForwardedMinMaxEnvelopeStream());
     }
 
     @Override
@@ -171,10 +185,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/energy-sharing-reference-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<ESRDMDEnvelope>> energySharingReferenceDataMdSSE() {
-        return ResponseEntity.ok()
-                             // Tell reverse proxies like Nginx not to buffer the response
-                             .header(X_ACCEL_BUFFERING, "no")
-                             .body(cimConnector.getEnergySharingReferenceDataMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getEnergySharingReferenceDataMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/energy-sharing-reference-data-md", produces = EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> energySharingReferenceDataMdSSEXML() {
+        return eventStream.toXml(cimConnector.getEnergySharingReferenceDataMarketDocumentStream());
     }
 
     @Override
@@ -206,9 +223,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/request-permission-md", produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
     public ResponseEntity<Flux<RequestPermissionEnvelope>> requestPermissionMdSSE() {
-        return ResponseEntity.ok()
-                             .header(X_ACCEL_BUFFERING, "no")
-                             .body(cimConnector.getRequestPermissionMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getRequestPermissionMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/request-permission-md", produces = {EVENT_STREAM_XML_VALUE})
+    public ResponseEntity<Flux<String>> requestPermissionMdSSEXML() {
+        return eventStream.toXml(cimConnector.getRequestPermissionMarketDocumentStream());
     }
 
     @Override

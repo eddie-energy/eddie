@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.outbound.rest.web.cim.v0_82;
@@ -20,12 +20,15 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import reactor.core.publisher.Flux;
 
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
+
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
 @Tag(name = "CIM v0.82 Documents", description = "Provides endpoints for CIM v0.82 documents, such as validated historical data market documents.")
@@ -144,6 +147,20 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMdSSE();
 
+
+    @Operation(
+            operationId = "GET validated historical data market document stream",
+            summary = "GET validated historical data market document stream",
+            description = "Get all new validated historical data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = ValidatedHistoricalDataEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML();
 
     @Operation(
             operationId = "GET validated historical data market documents",
@@ -476,6 +493,20 @@ public interface CimSwagger {
 
 
     @Operation(
+            operationId = "GET permission market document stream",
+            summary = "GET permission market document stream",
+            description = "Get all new permission market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = PermissionEnvelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> permissionMdSSEXML();
+
+    @Operation(
             operationId = "GET permission market documents",
             summary = "GET permission market documents",
             description = "Get all past permission market documents",
@@ -791,6 +822,23 @@ public interface CimSwagger {
     )
     ResponseEntity<Flux<AccountingPointEnvelope>> accountingPointDataMdSSE();
 
+
+    @Operation(
+            operationId = "GET accounting point data market document stream",
+            summary = "GET accounting point data market document stream",
+            description = "Get all new accounting point data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(
+                                    implementation = AccountingPointEnvelope.class
+                            )
+                    )
+            )
+    )
+    @GetMapping(value = "/accounting-point-data-md", produces = EVENT_STREAM_XML_VALUE)
+    ResponseEntity<Flux<String>> accountingPointDataMdSSEXML();
 
     @Operation(
             operationId = "GET accounting point data market documents",
