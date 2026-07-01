@@ -35,6 +35,8 @@ import { dataNeedDescription } from "./data-need-util.js";
 
 setBasePath("https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn");
 
+const EDDIE_VERSION = __EDDIE_VERSION__;
+
 const COUNTRY_NAMES = new Intl.DisplayNames(["en"], { type: "region" });
 
 const SPECIAL_PERMISSION_ADMINISTRATORS = {
@@ -1073,7 +1075,7 @@ class EddieConnectButton extends LitElement {
         <div slot="footer" class="footer">
           ${this._hasCustomLogo ? html`${unsafeSVG(headerImage)}` : ""}
           <div class="version-indicator">
-            <i>EDDIE Version: __EDDIE_VERSION__</i>
+            <i>EDDIE Version: ${EDDIE_VERSION}</i>
           </div>
         </div>
       </sl-dialog>
