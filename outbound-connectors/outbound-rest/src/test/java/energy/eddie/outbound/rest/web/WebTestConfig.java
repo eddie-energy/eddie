@@ -17,7 +17,7 @@ public class WebTestConfig {
     }
 
     @Bean
-    public SSEEndpoints sseEndpoints() throws SerdeInitializationException {
-        return new SSEEndpoints();
+    public EventStream eventStream() throws SerdeInitializationException {
+        return new EventStream();
     }
 }

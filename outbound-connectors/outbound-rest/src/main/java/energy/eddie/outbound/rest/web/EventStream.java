@@ -19,14 +19,14 @@ import java.nio.charset.StandardCharsets;
 import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 
 @Component
-public class SSEEndpoints {
+public class EventStream {
     public static final String EVENT_STREAM_XML_VALUE = "application/vnd.eddie.energy.sse+xml";
     public static final MediaType EVENT_STREAM_XML = MediaType.parseMediaType(EVENT_STREAM_XML_VALUE);
-    public static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
-    private static final Logger LOGGER = LoggerFactory.getLogger(SSEEndpoints.class);
+    private static final String X_ACCEL_BUFFERING = "X-Accel-Buffering";
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventStream.class);
     private final XmlMessageSerde serde;
 
-    public SSEEndpoints() throws SerdeInitializationException {
+    public EventStream() throws SerdeInitializationException {
         this.serde = new XmlMessageSerde();
     }
 
@@ -35,23 +35,23 @@ public class SSEEndpoints {
      * It changes the <code>Content-Type</code>-Header to <code>text/event-stream</code>, since otherwise clients are not able to receive any events.
      * Drops objects that cannot be serialized to an XML document.
      *
-     * @param flux the source for the events
+     * @param stream the source for the events
      * @param <T>  the type of the source of the events
      * @return a stream of XML documents
      */
-    public <T> ResponseEntity<Flux<String>> xml(Flux<T> flux) {
+    public <T> ResponseEntity<Flux<String>> toXml(Flux<T> stream) {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
                              .header(X_ACCEL_BUFFERING, "no")
                              .header("Content-Type", TEXT_EVENT_STREAM_VALUE)
-                             .body(flux.mapNotNull(this::toXml));
+                             .body(stream.mapNotNull(this::toXml));
     }
 
-    public <T> ResponseEntity<Flux<T>> json(Flux<T> flux) {
+    public <T> ResponseEntity<Flux<T>> toJson(Flux<T> stream) {
         return ResponseEntity.ok()
                              // Tell reverse proxies like Nginx not to buffer the response
                              .header(X_ACCEL_BUFFERING, "no")
-                             .body(flux);
+                             .body(stream);
     }
 
     @Nullable

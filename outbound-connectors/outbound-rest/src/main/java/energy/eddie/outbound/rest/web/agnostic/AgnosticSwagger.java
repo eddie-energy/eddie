@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
+
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused", "java:S114"})
 @Tag(name = "Agnostic EDDIE Messages", description = "Provides endpoints for non-CIM messages that are EDDIE specific.")
 public interface AgnosticSwagger {
@@ -74,7 +76,7 @@ public interface AgnosticSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            mediaType = EVENT_STREAM_XML_VALUE,
                             schema = @Schema(implementation = ConnectionStatusMessage.class)
                     )
             )
@@ -297,7 +299,7 @@ public interface AgnosticSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            mediaType = EVENT_STREAM_XML_VALUE,
                             schema = @Schema(implementation = RawDataMessage.class)
                     )
             )
@@ -530,7 +532,7 @@ public interface AgnosticSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            mediaType = EVENT_STREAM_XML_VALUE,
                             schema = @Schema(implementation = OpaqueEnvelope.class)
                     )
             )

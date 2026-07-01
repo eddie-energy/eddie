@@ -33,7 +33,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML;
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.BDDMockito.given;

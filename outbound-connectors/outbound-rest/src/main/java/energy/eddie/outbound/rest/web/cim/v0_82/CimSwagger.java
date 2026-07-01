@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
 @Tag(name = "CIM v0.82 Documents", description = "Provides endpoints for CIM v0.82 documents, such as validated historical data market documents.")
@@ -155,7 +155,7 @@ public interface CimSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            mediaType = EVENT_STREAM_XML_VALUE,
                             schema = @Schema(implementation = ValidatedHistoricalDataEnvelope.class)
                     )
             )
@@ -499,7 +499,7 @@ public interface CimSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            mediaType = EVENT_STREAM_XML_VALUE,
                             schema = @Schema(implementation = PermissionEnvelope.class)
                     )
             )
@@ -830,7 +830,7 @@ public interface CimSwagger {
             responses = @ApiResponse(
                     responseCode = "200",
                     content = @Content(
-                            mediaType = "application/vnd.eddie.energy.sse+xml",
+                            mediaType = EVENT_STREAM_XML_VALUE,
                             schema = @Schema(
                                     implementation = AccountingPointEnvelope.class
                             )

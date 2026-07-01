@@ -13,7 +13,7 @@ import energy.eddie.outbound.rest.model.cim.v1_04.ValidatedHistoricalDataMarketD
 import energy.eddie.outbound.rest.persistence.cim.v1_04.NearRealTimeDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v1_04.ValidatedHistoricalDataMarketDocumentV1_04Repository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
-import energy.eddie.outbound.rest.web.SSEEndpoints;
+import energy.eddie.outbound.rest.web.EventStream;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
@@ -28,7 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.outbound.rest.model.ModelWithJsonPayload.payloadsOf;
-import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
@@ -39,30 +39,30 @@ public class CimController implements CimSwagger {
     private final CimConnector cimConnector;
     private final ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository;
     private final NearRealTimeDataMarketDocumentRepository rtdRepository;
-    private final SSEEndpoints sseEndpoints;
+    private final EventStream eventStream;
 
     public CimController(
             CimConnector cimConnector,
             ValidatedHistoricalDataMarketDocumentV1_04Repository vhdRepository,
             NearRealTimeDataMarketDocumentRepository rtdRepository,
-            SSEEndpoints sseEndpoints
+            EventStream eventStream
     ) {
         this.cimConnector = cimConnector;
         this.vhdRepository = vhdRepository;
         this.rtdRepository = rtdRepository;
-        this.sseEndpoints = sseEndpoints;
+        this.eventStream = eventStream;
     }
 
     @Override
     @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<VHDEnvelope>> validatedHistoricalDataMdSSE() {
-        return sseEndpoints.json(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
     }
 
     @Override
     @GetMapping(value = "/validated-historical-data-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML() {
-        return sseEndpoints.xml(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
+        return eventStream.toXml(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
     }
 
     @Override
@@ -94,13 +94,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/near-real-time-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<RTDEnvelope>> nearRealTimeDataMdSSE() {
-        return sseEndpoints.json(cimConnector.getNearRealTimeDataMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getNearRealTimeDataMarketDocumentStream());
     }
 
     @Override
     @GetMapping(value = "/near-real-time-data-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> nearRealTimeDataMdSSEXML() {
-        return sseEndpoints.xml(cimConnector.getNearRealTimeDataMarketDocumentStream());
+        return eventStream.toXml(cimConnector.getNearRealTimeDataMarketDocumentStream());
     }
 
     @Override

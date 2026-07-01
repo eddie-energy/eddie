@@ -17,7 +17,7 @@ import energy.eddie.outbound.rest.persistence.cim.v0_82.AccountingPointDataMarke
 import energy.eddie.outbound.rest.persistence.cim.v0_82.PermissionMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.cim.v0_82.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.persistence.specifications.CimSpecification;
-import energy.eddie.outbound.rest.web.SSEEndpoints;
+import energy.eddie.outbound.rest.web.EventStream;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
@@ -29,7 +29,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static energy.eddie.outbound.rest.model.ModelWithJsonPayload.payloadsOf;
-import static energy.eddie.outbound.rest.web.SSEEndpoints.EVENT_STREAM_XML_VALUE;
+import static energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.springframework.http.MediaType.APPLICATION_XML_VALUE;
 
@@ -40,32 +40,32 @@ public class CimController implements CimSwagger {
     private final ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
     private final PermissionMarketDocumentRepository pmdRepository;
     private final AccountingPointDataMarketDocumentRepository apRepository;
-    private final SSEEndpoints sseEndpoints;
+    private final EventStream eventStream;
 
     public CimController(
             CimConnector cimConnector,
             ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
             PermissionMarketDocumentRepository pmdRepository,
             AccountingPointDataMarketDocumentRepository apRepository,
-            SSEEndpoints sseEndpoints
+            EventStream eventStream
     ) {
         this.cimConnector = cimConnector;
         this.vhdRepository = vhdRepository;
         this.pmdRepository = pmdRepository;
         this.apRepository = apRepository;
-        this.sseEndpoints = sseEndpoints;
+        this.eventStream = eventStream;
     }
 
     @Override
     @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<ValidatedHistoricalDataEnvelope>> validatedHistoricalDataMdSSE() {
-        return sseEndpoints.json(cimConnector.getHistoricalDataMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getHistoricalDataMarketDocumentStream());
     }
 
     @Override
     @GetMapping(value = "/validated-historical-data-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML() {
-        return sseEndpoints.xml(cimConnector.getHistoricalDataMarketDocumentStream());
+        return eventStream.toXml(cimConnector.getHistoricalDataMarketDocumentStream());
     }
 
     @Override
@@ -97,13 +97,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/permission-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<PermissionEnvelope>> permissionMdSSE() {
-        return sseEndpoints.json(cimConnector.getPermissionMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getPermissionMarketDocumentStream());
     }
 
     @Override
     @GetMapping(value = "/permission-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> permissionMdSSEXML() {
-        return sseEndpoints.xml(cimConnector.getPermissionMarketDocumentStream());
+        return eventStream.toXml(cimConnector.getPermissionMarketDocumentStream());
     }
 
     @Override
@@ -135,13 +135,13 @@ public class CimController implements CimSwagger {
     @Override
     @GetMapping(value = "/accounting-point-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public ResponseEntity<Flux<AccountingPointEnvelope>> accountingPointDataMdSSE() {
-        return sseEndpoints.json(cimConnector.getAccountingPointDataMarketDocumentStream());
+        return eventStream.toJson(cimConnector.getAccountingPointDataMarketDocumentStream());
     }
 
     @Override
     @GetMapping(value = "/accounting-point-data-md", produces = EVENT_STREAM_XML_VALUE)
     public ResponseEntity<Flux<String>> accountingPointDataMdSSEXML() {
-        return sseEndpoints.xml(cimConnector.getAccountingPointDataMarketDocumentStream());
+        return eventStream.toXml(cimConnector.getAccountingPointDataMarketDocumentStream());
     }
 
     @Override
