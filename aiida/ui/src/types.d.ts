@@ -20,6 +20,7 @@ export type AiidaDataNeed = {
   acknowledgementRequired: boolean
   asset: string
   dataTags: string[]
+  contexts?: string[]
   type: 'outbound-aiida' | 'inbound-aiida'
 }
 
