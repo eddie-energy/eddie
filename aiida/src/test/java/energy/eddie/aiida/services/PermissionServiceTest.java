@@ -350,6 +350,41 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenFcaPermissionWithMeterIdAndActiveDuplicate_setupNewPermissions_marksUnfulfillableAndThrows() throws Exception {
+        // Given
+        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
+        when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
+        when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        when(mockDataNeed.name()).thenReturn("My Name");
+        when(mockDataNeed.purpose()).thenReturn("Some purpose");
+        when(mockDataNeed.policyLink()).thenReturn("https://example.org");
+        when(mockDataNeed.dataTags()).thenReturn(Set.of());
+        when(mockDataNeed.contexts()).thenReturn(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
+        when(mockDataNeed.schemas()).thenReturn(Set.of());
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+        when(mockPermissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(
+                userId,
+                OutboundAiidaDataNeed.DISCRIMINATOR_VALUE,
+                AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
+                meterId,
+                PermissionStatus.ACTIVE)
+        ).thenReturn(true);
+
+        // When, Then
+        var exception = assertThrows(ActiveFcaPermissionAlreadyExistsException.class,
+                                     () -> service.setupNewPermissions(permissionRequests));
+
+        assertThat(exception.getMessage()).contains("outbound").contains(meterId);
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(permissionCaptor.capture(),
+                                                                 eq(PermissionStatus.UNFULFILLABLE));
+        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getValue().status());
+    }
+
+    @Test
     void givenExceptionFromHandshakeService_acceptPermission_throws() {
         // Given
         var exception = HttpClientErrorException.create(HttpStatus.GONE,

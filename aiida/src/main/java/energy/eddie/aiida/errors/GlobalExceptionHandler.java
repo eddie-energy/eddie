@@ -137,6 +137,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            ActiveFcaPermissionAlreadyExistsException.class,
             InboundDataSourceInUseException.class,
             PermissionUnfulfillableException.class,
             PermissionStateTransitionException.class

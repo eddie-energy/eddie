@@ -24,6 +24,7 @@ import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -150,7 +151,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public List<Permission> setupNewPermissions(
             AiidaPermissionRequestsDto permissionRequests
-    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException {
+    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException {
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
@@ -364,7 +365,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AiidaPermissionRequestsDto permissionRequests,
             UUID permissionId,
             UUID currentUserId
-    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException {
+    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException {
         if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
@@ -393,11 +394,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new DetailFetchingFailedException(permissionId);
         }
 
-        var now = LocalDate.now(ZoneId.systemDefault());
-        if (details.start().isBefore(now)) {
-            markPermissionAsUnfulfillable(permission);
-        }
-
         return updatePermissionWithDetails(permission, details);
     }
 
@@ -406,13 +402,14 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * if the permission can be fulfilled by this AIIDA instance. Returns the updated object after it has been saved in
      * the database.
      *
-     * @throws PermissionUnfulfillableException If the permission cannot be fulfilled by this AIIDA instance.
-     * @see PermissionService#isPermissionFulfillable(Permission)
+     * @see PermissionService#validatePermissionStartInTheFuture(Permission)
+     * @see PermissionService#validateDataNeedType(Permission)
+     * @see PermissionService#validateSingleActiveFcaPermissionPerMeterId(Permission)
      */
     private Permission updatePermissionWithDetails(
             Permission permission,
             PermissionDetailsDto details
-    ) throws PermissionUnfulfillableException {
+    ) throws PermissionUnfulfillableException, ActiveFcaPermissionAlreadyExistsException {
         var startInstant = ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var endInstant = ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
         var dataNeedId = details.dataNeed().dataNeedId();
@@ -431,9 +428,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             permission.setDataNeed(localDataNeed);
         }
 
-        if (!isPermissionFulfillable(permission)) {
-            markPermissionAsUnfulfillable(permission);
-        }
+        validatePermissionStartInTheFuture(permission);
+        validateDataNeedType(permission);
+        validateSingleActiveFcaPermissionPerMeterId(permission);
 
         LOGGER.debug("Updated permission {} with details fetched from EDDIE {}",
                      permission.id(),
@@ -441,14 +438,20 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permissionRepository.save(permission);
     }
 
-    /**
-     * Checks whether the data need associated with {@code permission} can be fulfilled.
-     *
-     * @return Always true until GH-1040 is properly implemented.
-     */
-    private boolean isPermissionFulfillable(Permission permission) {
+    private void validatePermissionStartInTheFuture(Permission permission) throws PermissionUnfulfillableException {
+        var start = permission.startTime();
+        if (start == null || start.atZone(AIIDA_ZONE_ID).toLocalDate().isBefore(LocalDate.now(AIIDA_ZONE_ID))) {
+            markPermissionAsUnfulfillable(permission);
+            throw new PermissionUnfulfillableException(permission.id());
+        }
+    }
+
+    private void validateDataNeedType(Permission permission) throws PermissionUnfulfillableException {
         var dataNeed = permission.dataNeed();
-        return dataNeed != null && isValidDataNeedType(dataNeed.type());
+        if (dataNeed == null || !isValidDataNeedType(dataNeed.type())) {
+            markPermissionAsUnfulfillable(permission);
+            throw new PermissionUnfulfillableException(permission.id());
+        }
     }
 
     private boolean isValidDataNeedType(String dataNeedType) {
@@ -456,17 +459,35 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                || InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType);
     }
 
-    /**
-     * Sets the provided {@code permission} as unfulfillable and throws a {@code PermissionUnfulfillableException}
-     */
-    private void markPermissionAsUnfulfillable(Permission permission) throws PermissionUnfulfillableException {
+    private void markPermissionAsUnfulfillable(Permission permission) {
         permission.setStatus(UNFULFILLABLE);
         permission.setRevokeTime(clock.instant());
         // TODO save reason or at least return to user why it cannot be fulfilled --> GH-1040
         permission = permissionRepository.save(permission);
-
         handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
-        throw new PermissionUnfulfillableException(permission.id());
+    }
+
+    private void validateSingleActiveFcaPermissionPerMeterId(Permission permission) throws ActiveFcaPermissionAlreadyExistsException {
+        var dataNeed = permission.dataNeed();
+        if (dataNeed == null || !dataNeed.contexts().contains(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT)) {
+            return;
+        }
+
+        var meterId = permission.meterId();
+        if (meterId == null || meterId.isBlank()) {
+            return;
+        }
+
+        var hasConflict = permissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(requireNonNull(permission.userId()),
+                                                                                                            dataNeed.type(),
+                                                                                                            AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
+                                                                                                            meterId,
+                                                                                                            PermissionStatus.ACTIVE);
+
+        if (hasConflict) {
+            markPermissionAsUnfulfillable(permission);
+            throw new ActiveFcaPermissionAlreadyExistsException(permission.id(), meterId, dataNeed.type());
+        }
     }
 
     private void validateDataSourceSelection(Permission permission, UUID dataSourceId)
