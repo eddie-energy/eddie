@@ -73,6 +73,7 @@ class PermissionServiceTest {
     private final String handshakeUrl = "https://example.org";
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
+    private final String meterId = "003114735";
     private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
     private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
@@ -174,7 +175,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.existsById(permissionId2)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -205,6 +206,7 @@ class PermissionServiceTest {
         assertEquals(permissionId2, permissionWithDetails.id());
         assertEquals(PermissionStatus.FETCHED_DETAILS, permissionWithDetails.status());
         assertEquals(connectionId, permissionWithDetails.connectionId());
+        assertEquals(meterId, permissionWithDetails.meterId());
         assertEquals(expectedStart, permissionWithDetails.startTime());
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
 
@@ -225,7 +227,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
@@ -271,6 +273,7 @@ class PermissionServiceTest {
         // Given
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
+                                                         meterId,
                                                          start.minusDays(1),
                                                          end,
                                                          mockDataNeed);

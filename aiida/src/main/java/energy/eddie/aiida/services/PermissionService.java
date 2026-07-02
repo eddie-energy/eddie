@@ -418,6 +418,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var dataNeedId = details.dataNeed().dataNeedId();
 
         permission.setConnectionId(details.connectionId());
+        permission.setMeterId(details.meterId());
         permission.setStartTime(startInstant);
         permission.setExpirationTime(endInstant);
         permission.setStatus(FETCHED_DETAILS);

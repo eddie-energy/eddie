@@ -142,6 +142,10 @@ onClickOutside(target, () => (showToolTip.value = false))
           {{ permission.eddieId }}
         </dd>
       </div>
+      <div class="permission-field" v-if="permission.meterId">
+        <dt>{{ t('permissions.dropdown.meterId') }}</dt>
+        <dd>{{ permission.meterId }}</dd>
+      </div>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.start') }}</dt>
         <dd>
@@ -156,7 +160,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>Data Package Graph</dt>
         <dd class="graph-data">PLACEHOLDER</dd>
       </div>
-      <div class="permission-field schedule">
+      <div class="permission-field schedule" v-if="permission.effectiveTransmissionSchedule">
         <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
         <dd>
           {{
