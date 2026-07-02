@@ -33,6 +33,10 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Column(name = "data_need_id")
     @JsonProperty(value = "data_need_id")
     private String dataNeedId;
+    @Column(name = "meter_id")
+    @JsonProperty(value = "meter_id")
+    @Nullable
+    private String meterId;
     @Column(name = "permission_start")
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -70,6 +74,12 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Override
     public String dataNeedId() {
         return dataNeedId;
+    }
+
+    @Override
+    @Nullable
+    public String meterId() {
+        return meterId;
     }
 
     @Override

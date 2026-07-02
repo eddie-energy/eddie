@@ -63,6 +63,7 @@ class AiidaPermissionServiceTest {
     private static final String HANDSHAKE_URL = "http://localhost:8080/region-connectors/aiida/permission-request/{permissionId}";
     private final String connectionId = "testConnId";
     private final String dataNeedId = "testDataNeedId";
+    private final String meterId = "meter-123";
     private final String permissionId = "10000000-0000-0000-0000-000000000000";
     private final UUID aiidaId = UUID.fromString("00000000-0000-0000-0000-000000000000");
     @Spy
@@ -147,7 +148,8 @@ class AiidaPermissionServiceTest {
         assertThrows(DataNeedNotFoundException.class,
                 // When
                      () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation("testConnId",
-                                                                                                            List.of(nonExisting))));
+                                                                                                            List.of(nonExisting),
+                                                                                                            meterId)));
     }
 
     public static Stream<Arguments> unsupportedDataNeedResults() {
@@ -171,7 +173,8 @@ class AiidaPermissionServiceTest {
         assertThrows(UnsupportedDataNeedException.class,
                      () -> service.createValidateAndSendPermissionRequests(
                              new PermissionRequestForCreation(connectionId,
-                                                              List.of(dataNeedId))));
+                                                              List.of(dataNeedId),
+                                                              meterId)));
     }
 
     @Test
@@ -191,7 +194,8 @@ class AiidaPermissionServiceTest {
         // When
         var dto = service.createValidateAndSendPermissionRequests(
                 new PermissionRequestForCreation(connectionId,
-                                                 List.of(dataNeedId)));
+                                                 List.of(dataNeedId),
+                                                 meterId));
 
         // Then
         assertAll(() -> assertDoesNotThrow(dto::permissionIds),
@@ -219,7 +223,8 @@ class AiidaPermissionServiceTest {
         assertThrows(DataNeedMalformedException.class,
                      () -> service.createValidateAndSendPermissionRequests(
                              new PermissionRequestForCreation(connectionId,
-                                                              List.of(dataNeedId))));
+                                                              List.of(dataNeedId),
+                                                              meterId)));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));
         verify(mockOutbox).commit(argThat(event -> event.status() == MALFORMED));
     }
@@ -227,7 +232,7 @@ class AiidaPermissionServiceTest {
     @Test
     void givenValidInput_createValidateAndSendPermissionRequests_commitsThreeEvents() throws Exception {
         // Given
-        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId));
+        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId), meterId);
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
@@ -248,7 +253,7 @@ class AiidaPermissionServiceTest {
     void givenMultipleDataNeeds_createValidateAndSendPermissionRequests_returnsAsExpected() throws Exception {
         // Given
         var dataNeedId2 = "testDataNeedId2";
-        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId, dataNeedId2));
+        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId, dataNeedId2), meterId);
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(

@@ -14,6 +14,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
+    meterId: { attribute: "meter-id" },
     _isConnected: { type: Boolean },
     _aiidaCode: { type: String },
     _isSubmitDisabled: { type: Boolean },
@@ -30,6 +31,7 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     let body = {
       connectionId: this.connectionId,
       dataNeedIds: this.dataNeedId.split(","),
+      meterId: this.meterId ?? null,
     };
 
     this._isSubmitDisabled = true;

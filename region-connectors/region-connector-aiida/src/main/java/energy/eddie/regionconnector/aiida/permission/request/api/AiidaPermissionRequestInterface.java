@@ -11,6 +11,12 @@ import java.util.UUID;
 
 public interface AiidaPermissionRequestInterface extends PermissionRequest {
     /**
+     * Optional pyhiscal meter ID provided by the eligible party to map flexible connection agreements and control data source selection.
+     */
+    @Nullable
+    String meterId();
+
+    /**
      * A message providing further information about the latest status.
      */
     @Nullable

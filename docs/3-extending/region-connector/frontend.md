@@ -20,6 +20,7 @@ The custom element will be loaded with the following attributes:
 - `country-code`: Country of the customer to adjust content if the region connector supports multiple countries.
 - `accounting-point-id`: Optional default for the accounting point ID.
 - `customer-identification`: Optional default for the customer identification.
+- `meter-id`: Optional physical meter ID (serial number).
 - `jump-off-url`: Optional URL to link or redirect to after the permission request is submitted.
 - `company-id`: Unique identifier of the permission administrator.
 - `company-name`: The full legal name of the permission administrator.

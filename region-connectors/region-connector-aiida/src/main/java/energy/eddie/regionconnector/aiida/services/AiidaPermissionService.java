@@ -32,6 +32,7 @@ import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import energy.eddie.regionconnector.shared.security.JwtUtil;
+import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
@@ -114,7 +115,11 @@ public class AiidaPermissionService {
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedMalformedException, JwtCreationFailedException {
         var permissionIds = new ArrayList<UUID>();
         for (var dataNeedId : forCreation.dataNeedIds()) {
-            var permissionId = createValidateAndSendPermissionRequest(forCreation.connectionId(), dataNeedId);
+            var permissionId = createValidateAndSendPermissionRequest(
+                    forCreation.connectionId(),
+                    dataNeedId,
+                    forCreation.meterId()
+            );
             permissionIds.add(permissionId);
         }
 
@@ -231,7 +236,8 @@ public class AiidaPermissionService {
 
     private UUID createValidateAndSendPermissionRequest(
             String connectionId,
-            String dataNeedId
+            String dataNeedId,
+            @Nullable String meterId
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedMalformedException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
@@ -246,6 +252,7 @@ public class AiidaPermissionService {
                 var createdEvent = new CreatedEvent(permissionId,
                                                     connectionId,
                                                     dataNeedId,
+                                                    meterId,
                                                     aiidaResult.energyTimeframe().start(),
                                                     aiidaResult.energyTimeframe().end());
                 outbox.commit(createdEvent);
