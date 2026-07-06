@@ -1,11 +1,7 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie
-
-import org.gradle.accessors.dm.LibrariesForLibs
-
-val libs = the<LibrariesForLibs>()
 
 repositories {
     mavenCentral()
@@ -17,23 +13,27 @@ plugins {
     id("net.ltgt.errorprone")
 }
 
+val libs = extensions
+    .getByType<VersionCatalogsExtension>()
+    .named("libs")
+
 dependencies {
     // Shared between region-connectors
-    implementation(libs.jakarta.xml.bind.api)
-    implementation(libs.swagger.annotations)
+    implementation(libs.findLibrary("jakarta-xml-bind-api").get())
+    implementation(libs.findLibrary("swagger-annotations").get())
     implementation(project(":cim"))
 }
 
-plugins.withId(libs.plugins.errorprone.get().pluginId) {
+plugins.withId("net.ltgt.errorprone") {
     dependencies {
-        errorprone(libs.errorprone.core)
+        errorprone(libs.findLibrary("errorprone-core").get())
     }
 }
 
 plugins.withType<JavaPlugin> {
     dependencies {
-        annotationProcessor(libs.nullaway)
-        compileOnly(libs.jsr305)
+        annotationProcessor(libs.findLibrary("nullaway").get())
+        compileOnly(libs.findLibrary("jsr305").get())
     }
 }
 
