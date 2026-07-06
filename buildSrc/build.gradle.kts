@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 plugins {
@@ -20,8 +20,6 @@ java {
 }
 
 dependencies {
-    // https://github.com/gradle/gradle/issues/15383
-    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
     implementation(libs.errorprone)
     implementation(libs.sonar)
 }
