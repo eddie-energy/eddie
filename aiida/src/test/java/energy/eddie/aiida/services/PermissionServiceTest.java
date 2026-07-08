@@ -31,7 +31,10 @@ import energy.eddie.api.agnostic.process.model.PermissionStateTransitionExceptio
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -223,7 +226,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void setupNewPermission_throwsPermissionsUnfulfillableException() throws InvalidUserException {
+    void givenInvalidDataNeedType_setsStatusToUnfulfillable_andCallsHandshakeService() throws InvalidUserException {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
@@ -243,7 +246,7 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When Then
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequests));
+        assertThrows(PermissionDataNeedTypeNotSupportedException.class, () -> service.setupNewPermissions(permissionRequests));
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
 
@@ -282,7 +285,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
 
         // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequests));
+        assertThrows(PermissionStartInThePastException.class, () -> service.setupNewPermissions(permissionRequests));
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
@@ -290,23 +293,6 @@ class PermissionServiceTest {
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
         assertEquals(permissionId1, permissionCaptor.getAllValues().getFirst().id());
         assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().getFirst().status());
-        assertEquals(permissionId1, permissionCaptor.getAllValues().get(1).id());
-        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
-    }
-
-    @Disabled("// TODO GH-1040")  // TODO GH-1040
-    @Test
-    void givenUnfulfillableQrCodeDto_setupNewPermissions_updatesStatus() {
-
-        // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequests));
-
-        // Then
-        verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.UNFULFILLABLE));
-        verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
-        assertEquals(permissionId1, permissionCaptor.getAllValues().getFirst().id());
-        assertEquals(PermissionStatus.CREATED, permissionCaptor.getAllValues().getFirst().status());
         assertEquals(permissionId1, permissionCaptor.getAllValues().get(1).id());
         assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
     }

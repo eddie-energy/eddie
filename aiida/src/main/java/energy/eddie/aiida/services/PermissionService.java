@@ -136,22 +136,24 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     /**
      * Saves a new permission in the database and fetches the details of the permission by executing the first part of
      * the handshake with the associated EDDIE framework. If the permission is not fulfillable by this AIIDA instance,
-     * e.g. because the requested data is missing or the start date lies in the past, an {@code UNFULFILLABLE} status message is sent to EDDIE, before a
-     * {@link PermissionUnfulfillableException} is thrown.
+     * e.g. because the requested data is missing or the start date lies in the past, an {@code UNFULFILLABLE} status message is sent to EDDIE,
+     * before an exception is thrown.
      * <p>
-     * After this method, the status of the permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
-     * </p>
+     * After this method, the status of the created permission will be either {@code FETCHED_DETAILS} or {@code UNFULFILLABLE}.
      *
      * @param permissionRequests Data transfer object containing the information for the new permissions.
      * @return Permission objects with the details as fetched from EDDIE.
-     * @throws PermissionAlreadyExistsException If there is already a permission with the ID.
-     * @throws PermissionUnfulfillableException If the permission cannot be fulfilled for whatever reason.
-     * @throws InvalidUserException             If the id of the current user can not be determined by the token.
+     * @throws PermissionAlreadyExistsException            There is already a permission with the ID.
+     * @throws DetailFetchingFailedException               AIIDA failed the handshake with EDDIE for permission details.
+     * @throws InvalidUserException                        The id of the current user can not be determined by the token.
+     * @throws ActiveFcaPermissionAlreadyExistsException   There is already an active inbound or outbound permission for the meter ID provided in the permission request.
+     * @throws PermissionStartInThePastException           The start date lies in the past.
+     * @throws PermissionDataNeedTypeNotSupportedException The data need type of the permission is not supported by this AIIDA instance.
      */
     @Transactional
     public List<Permission> setupNewPermissions(
             AiidaPermissionRequestsDto permissionRequests
-    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
@@ -365,7 +367,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AiidaPermissionRequestsDto permissionRequests,
             UUID permissionId,
             UUID currentUserId
-    ) throws PermissionAlreadyExistsException, PermissionUnfulfillableException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
         if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
@@ -409,7 +411,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private Permission updatePermissionWithDetails(
             Permission permission,
             PermissionDetailsDto details
-    ) throws PermissionUnfulfillableException, ActiveFcaPermissionAlreadyExistsException {
+    ) throws ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
         var startInstant = ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var endInstant = ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
         var dataNeedId = details.dataNeed().dataNeedId();
@@ -438,19 +440,20 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permissionRepository.save(permission);
     }
 
-    private void validatePermissionStartInTheFuture(Permission permission) throws PermissionUnfulfillableException {
-        var start = permission.startTime();
-        if (start == null || start.atZone(AIIDA_ZONE_ID).toLocalDate().isBefore(LocalDate.now(AIIDA_ZONE_ID))) {
+    private void validatePermissionStartInTheFuture(Permission permission) throws PermissionStartInThePastException {
+        var start = requireNonNull(permission.startTime()).atZone(AIIDA_ZONE_ID);
+        var today = LocalDate.now(AIIDA_ZONE_ID).atStartOfDay(AIIDA_ZONE_ID);
+        if (start.isBefore(today)) {
             markPermissionAsUnfulfillable(permission);
-            throw new PermissionUnfulfillableException(permission.id());
+            throw new PermissionStartInThePastException(permission.id(), start);
         }
     }
 
-    private void validateDataNeedType(Permission permission) throws PermissionUnfulfillableException {
-        var dataNeed = permission.dataNeed();
-        if (dataNeed == null || !isValidDataNeedType(dataNeed.type())) {
+    private void validateDataNeedType(Permission permission) throws PermissionDataNeedTypeNotSupportedException {
+        var dataNeedType = requireNonNull(permission.dataNeed()).type();
+        if (dataNeedType == null || !isValidDataNeedType(dataNeedType)) {
             markPermissionAsUnfulfillable(permission);
-            throw new PermissionUnfulfillableException(permission.id());
+            throw new PermissionDataNeedTypeNotSupportedException(permission.id(), dataNeedType);
         }
     }
 

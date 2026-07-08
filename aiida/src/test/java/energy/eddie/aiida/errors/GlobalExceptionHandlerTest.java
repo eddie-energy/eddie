@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.errors;
@@ -6,7 +6,10 @@ package energy.eddie.aiida.errors;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
-import energy.eddie.aiida.errors.permission.*;
+import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
+import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
+import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.Test;
@@ -156,26 +159,6 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertEquals(message, responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
-    }
-
-    @Test
-    void givenPermissionUnfulfillableException_returnsBadRequest() {
-        // Given
-        var permissionId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
-        var exception = new PermissionUnfulfillableException(permissionId);
-
-        // When
-        var response = advice.handleConflictExceptions(exception);
-
-        // Then
-        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message())
-                .contains(permissionId.toString())
-                .contains("cannot be fulfilled by your AIIDA.");
     }
 
     @Test

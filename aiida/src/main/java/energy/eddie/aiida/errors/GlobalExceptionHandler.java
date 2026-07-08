@@ -139,7 +139,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             ActiveFcaPermissionAlreadyExistsException.class,
             InboundDataSourceInUseException.class,
-            PermissionUnfulfillableException.class,
+            PermissionDataNeedTypeNotSupportedException.class,
+            PermissionStartInThePastException.class,
             PermissionStateTransitionException.class
     })
     public ResponseEntity<Map<String, List<EddieApiError>>> handleConflictExceptions(Exception exception) {
