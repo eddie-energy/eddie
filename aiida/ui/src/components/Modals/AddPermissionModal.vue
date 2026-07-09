@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import Button from '@/components/Button.vue'
@@ -62,22 +60,24 @@ const parseAiidaCode = (aiidaCode: string) => {
 const executePermissionRequests = async (permissionRequests: AiidaPermissionRequestsDTO) => {
   loading.value = true
 
-  const permissions = await addPermissions(permissionRequests)
-  fetchPermissions()
-  for (const permission of permissions) {
-    await updatePermission(permission)
-  }
-  loading.value = false
-  permissionModal.value?.close()
-}
-
-const handleAddPermissions = async () => {
   try {
-    const permissionRequest = parseAiidaCode(aiidaCode.value)
-    executePermissionRequests(permissionRequest)
+    const permissions = await addPermissions(permissionRequests)
+    for (const permission of permissions) {
+      await updatePermission(permission)
+    }
+    loading.value = false
+    permissionModal.value?.close()
   } catch (error: any) {
     aiidaCodeError.value = error?.message ?? error?.toString() ?? t('errors.unexpectedError')
+    loading.value = false
+  } finally {
+    void fetchPermissions()
   }
+}
+
+const handleAddPermissions = () => {
+  const permissionRequest = parseAiidaCode(aiidaCode.value)
+  executePermissionRequests(permissionRequest)
 }
 
 const handleValidQrCode = (permissionRequests: AiidaPermissionRequestsDTO) => {
