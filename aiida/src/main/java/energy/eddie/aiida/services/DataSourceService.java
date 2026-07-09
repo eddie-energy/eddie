@@ -12,6 +12,8 @@ import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.SecretLoadingException;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
@@ -23,9 +25,12 @@ import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +60,7 @@ public class DataSourceService {
     private final ObjectMapper objectMapper;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
+    private final SecretsService secretsService;
 
     @Autowired
     public DataSourceService(
@@ -67,7 +73,8 @@ public class DataSourceService {
             ObjectMapper objectMapper,
             BCryptPasswordEncoder bCryptPasswordEncoder,
             SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
-            AiidaEventPublisher aiidaEventPublisher
+            AiidaEventPublisher aiidaEventPublisher,
+            SecretsService secretsService
     ) {
         this.applicationInformationService = applicationInformationService;
         this.repository = repository;
@@ -79,6 +86,7 @@ public class DataSourceService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
         this.aiidaEventPublisher = aiidaEventPublisher;
+        this.secretsService = secretsService;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -93,7 +101,7 @@ public class DataSourceService {
     public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
         var aiidaId = applicationInformationService.applicationInformation().aiidaId();
 
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration, aiidaId);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration, aiidaId, secretsService);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {
@@ -112,7 +120,7 @@ public class DataSourceService {
     }
 
     @Transactional
-    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         var currentUserId = authService.getCurrentUserId();
         var plaintextPassword = "";
 
@@ -121,6 +129,10 @@ public class DataSourceService {
         if (dataSource instanceof MqttDataSource mqttDataSource) {
             if (mqttDataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource && dto instanceof SinapsiAlfaDataSourceDto sinapsiAlfaDataSourceDto) {
                 sinapsiAlfaDataSource.configure(sinapsiAlfaConfiguration, sinapsiAlfaDataSourceDto.activationKey());
+                repository.save(sinapsiAlfaDataSource);
+                secretsService.storeSecret(sinapsiAlfaDataSource.id(),
+                                           SecretType.PASSWORD,
+                                           sinapsiAlfaConfiguration.mqttPassword());
                 LOGGER.info("Generated MQTT settings for Sinapsi Alfa data source ({})", dataSource.name());
             } else {
                 plaintextPassword = SecretGenerator.generate();
@@ -227,12 +239,28 @@ public class DataSourceService {
     }
 
     @Transactional
-    public InboundDataSource createInboundDataSource(Permission permission) {
+    @SuppressWarnings("NullAway")
+    public InboundDataSource createInboundDataSource(Permission permission) throws SecretStoringException, SecretLoadingException {
         var inboundDataSource = new InboundDataSource.Builder(permission).build();
         repository.save(inboundDataSource);
+        storeInboundDataSourceSecrets(inboundDataSource, permission.mqttStreamingConfig());
+
         LOGGER.info("Created inbound data source {}", inboundDataSource.id());
 
         return inboundDataSource;
+    }
+
+    private void storeInboundDataSourceSecrets(
+            InboundDataSource inboundDataSource,
+            MqttStreamingConfig mqttStreamingConfig
+    ) throws SecretStoringException, SecretLoadingException {
+        Objects.requireNonNull(mqttStreamingConfig);
+        secretsService.storeSecret(inboundDataSource.id(),
+                                   SecretType.PASSWORD,
+                                   secretsService.loadSecret(mqttStreamingConfig.password()));
+        secretsService.storeSecret(inboundDataSource.id(),
+                                   SecretType.API_KEY,
+                                   SecretGenerator.generate());
     }
 
     private void publishDataSourceDeletionEventIfOutboundDataSource(DataSource dataSource) {

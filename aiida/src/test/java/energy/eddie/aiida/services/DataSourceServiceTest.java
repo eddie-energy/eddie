@@ -14,6 +14,7 @@ import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
@@ -30,6 +31,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -76,6 +78,8 @@ class DataSourceServiceTest {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Mock
     private AiidaEventPublisher aiidaEventPublisher;
+    @Mock
+    private SecretsService secretsService;
 
     @InjectMocks
     private DataSourceService dataSourceService;
@@ -106,7 +110,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
         when(DATA_SOURCE_DTO.enabled()).thenReturn(true);
@@ -121,7 +125,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldAddModbusDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    void shouldAddModbusDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         try (
                 MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class);
                 MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class,
@@ -156,7 +160,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
         when(DATA_SOURCE_DTO.enabled()).thenReturn(false);
@@ -260,19 +264,22 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void testCreateInboundDatasource() {
+    void testCreateInboundDatasource() throws Exception {
         // Given
         var permission = mock(Permission.class);
         var permissionId = UUID.randomUUID();
         var userId = UUID.randomUUID();
         var dataNeed = mock(AiidaLocalDataNeed.class);
         var mqttStreamingConfig = mock(MqttStreamingConfig.class);
+        var password = "password";
 
         // When
+        when(secretsService.loadSecret(anyString())).thenReturn(password);
         when(permission.id()).thenReturn(permissionId);
         when(permission.userId()).thenReturn(userId);
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(permission.mqttStreamingConfig()).thenReturn(mqttStreamingConfig);
+        when(mqttStreamingConfig.password()).thenReturn(password);
         dataSourceService.createInboundDataSource(permission);
 
         // Then

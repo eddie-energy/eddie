@@ -8,6 +8,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -36,6 +37,7 @@ public class StreamerFactory {
      * @param schemaFormatterRegistry Registry of all available schema formatters
      * @param commandSink             Sink, to which a {@link PermissionCommand} is published when the EP sends a
      *                                control command.
+     * @param secretsService          The secrets service to load the plaintext password.
      * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
@@ -45,7 +47,8 @@ public class StreamerFactory {
             Flux<AiidaRecord> recordFlux,
             SchemaFormatterRegistry schemaFormatterRegistry,
             Sinks.Many<PermissionCommand> commandSink,
-            PermissionLatestRecordMap permissionLatestRecordMap
+            PermissionLatestRecordMap permissionLatestRecordMap,
+            SecretsService secretsService
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var streamingConfig = requireNonNull(permission.mqttStreamingConfig());
@@ -63,6 +66,7 @@ public class StreamerFactory {
                                 recordFlux,
                                 schemaFormatterRegistry,
                                 streamingContext,
-                                commandSink);
+                                commandSink,
+                                secretsService);
     }
 }

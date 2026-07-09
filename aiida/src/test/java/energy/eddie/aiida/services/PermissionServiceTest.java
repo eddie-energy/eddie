@@ -21,6 +21,7 @@ import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
@@ -117,6 +118,8 @@ class PermissionServiceTest {
     private MqttDto mockMqttDto;
     @Mock
     private AiidaLocalDataNeedService mockAiidaLocalDataNeedService;
+    @Mock
+    private SecretsService mockSecretsService;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     private PermissionService service;
@@ -135,7 +138,8 @@ class PermissionServiceTest {
                                         mockAuthService,
                                         mockDataSourceService,
                                         mockAiidaLocalDataNeedService,
-                                        mockAiidaEventPublisher);
+                                        mockAiidaEventPublisher,
+                                        mockSecretsService);
     }
 
     @Test
@@ -768,7 +772,8 @@ class PermissionServiceTest {
                                             mockAuthService,
                                             mockDataSourceService,
                                             mockAiidaLocalDataNeedService,
-                                            mockAiidaEventPublisher);
+                                            mockAiidaEventPublisher,
+                                            mockSecretsService);
         }
 
         /**

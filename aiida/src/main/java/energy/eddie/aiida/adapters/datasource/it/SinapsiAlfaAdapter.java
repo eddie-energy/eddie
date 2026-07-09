@@ -8,8 +8,10 @@ import energy.eddie.aiida.adapters.datasource.SmartMeterAdapterMeasurement;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJson;
 import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaMeasurement;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
@@ -27,6 +29,7 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
     private static final Logger LOGGER = LoggerFactory.getLogger(SinapsiAlfaAdapter.class);
     private static final TypeReference<List<SinapsiAlfaEntryJson>> ENTRY_JSON_TYPE_REF = new TypeReference<>() {};
     private final ObjectMapper mapper;
+    private final SecretsService secretsService;
 
     /**
      * Creates the datasource for the Sinapsi ALFA adapter. It connects to the specified MQTT broker and expects
@@ -36,14 +39,17 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
      * @param dataSource        The entity of the data source.
      * @param mapper            {@link ObjectMapper} that is used to deserialize the JSON messages.
      * @param mqttConfiguration The MQTT configuration that is used to connect to the MQTT broker.
+     * @param secretsService    The secrets service to load the plaintext password.
      */
     public SinapsiAlfaAdapter(
             SinapsiAlfaDataSource dataSource,
             ObjectMapper mapper,
-            MqttConfiguration mqttConfiguration
+            MqttConfiguration mqttConfiguration,
+            SecretsService secretsService
     ) {
         super(dataSource, LOGGER, mqttConfiguration);
         this.mapper = mapper;
+        this.secretsService = secretsService;
     }
 
     /**
@@ -77,8 +83,13 @@ public class SinapsiAlfaAdapter extends MqttDataSourceAdapter<SinapsiAlfaDataSou
     protected MqttConnectionOptions createConnectOptions() {
         var connectOptions = super.createConnectOptions();
 
-        connectOptions.setUserName(dataSource().username());
-        connectOptions.setPassword(dataSource().password().getBytes(StandardCharsets.UTF_8));
+        try {
+            connectOptions.setUserName(dataSource().username());
+            connectOptions.setPassword(secretsService.loadSecret(dataSource().password())
+                                                     .getBytes(StandardCharsets.UTF_8));
+        } catch (SecretLoadingException e) {
+            LOGGER.error("Could not load secrets to connect to data source.", e);
+        }
 
         return connectOptions;
     }

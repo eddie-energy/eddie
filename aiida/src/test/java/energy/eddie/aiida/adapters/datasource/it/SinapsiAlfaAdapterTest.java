@@ -8,6 +8,7 @@ import energy.eddie.aiida.adapters.datasource.it.transformer.SinapsiAlfaEntryJso
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -29,10 +30,11 @@ class SinapsiAlfaAdapterTest {
     private static final String TOPIC = "/oetzi/iomtsgdata/abcdef-abcde-abcde-abcde-12345/";
     private static final SinapsiAlfaDataSource DATA_SOURCE = mock(SinapsiAlfaDataSource.class);
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
+    private static final SecretsService SECRETS_SERVICE = mock(SecretsService.class);
     private SinapsiAlfaAdapter adapter;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
@@ -41,9 +43,10 @@ class SinapsiAlfaAdapterTest {
         when(DATA_SOURCE.password()).thenReturn("other-password");
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
+        when(SECRETS_SERVICE.loadSecret(anyString())).thenReturn("other-password");
 
         var mapper = ObjectMapperCreatorUtil.mapper();
-        adapter = new SinapsiAlfaAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION);
+        adapter = new SinapsiAlfaAdapter(DATA_SOURCE, mapper, MQTT_CONFIGURATION, SECRETS_SERVICE);
     }
 
     @Test

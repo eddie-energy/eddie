@@ -4,6 +4,7 @@
 package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.DataSourceType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,4 +15,6 @@ public interface DataSourceRepository extends JpaRepository<DataSource, UUID> {
 
     @Query("select d from DataSource d where d.userId = :userId and not d.type = DataSourceType.INBOUND")
     List<DataSource> findOutboundByUserId(UUID userId);
+
+    List<DataSource> findAllByType(DataSourceType type);
 }

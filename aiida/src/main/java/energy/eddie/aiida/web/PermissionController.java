@@ -4,6 +4,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.PatchPermissionDto;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
@@ -106,7 +107,7 @@ public class PermissionController {
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException,
              UnauthorizedException, InvalidUserException, MissingInboundMessageFormatException,
              InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException,
-             InboundDataSourceInUseException {
+             InboundDataSourceInUseException, SecretStoringException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)

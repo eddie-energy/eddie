@@ -17,6 +17,7 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.schemas.rtd.raw.RawFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
@@ -100,11 +101,13 @@ class MqttStreamerTest {
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
     private Permission permissionMock;
+    @Mock
+    private SecretsService mockSecretsService;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
     @BeforeEach()
-    void setUp() {
+    void setUp() throws Exception {
         // Permission
         when(permissionMock.transmissionEnabled()).thenReturn(true);
 
@@ -117,6 +120,7 @@ class MqttStreamerTest {
                                   EXPECTED_COMMAND_TOPIC,
                                   EXPECTED_ACK_TOPIC);
         mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
+        when(mockSecretsService.loadSecret(anyString())).thenReturn(mqttStreamingConfig.password());
 
         // MQTT Streaming Context
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
@@ -140,7 +144,8 @@ class MqttStreamerTest {
                 recordPublisher.flux(),
                 schemaFormatterRegistry,
                 streamingContext,
-                commandSink);
+                commandSink,
+                mockSecretsService);
     }
 
 

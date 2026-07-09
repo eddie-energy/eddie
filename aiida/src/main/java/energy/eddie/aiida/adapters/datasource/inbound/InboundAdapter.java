@@ -6,8 +6,10 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.inbound.ack.InboundAcknowledgementPublisher;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
@@ -23,6 +25,7 @@ import java.util.UUID;
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
     private final InboundAcknowledgementPublisher acknowledgementPublisher;
+    private final SecretsService secretsService;
 
     /**
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
@@ -32,14 +35,17 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      * @param mapper            The object mapper to use for parsing the messages and formatting the acknowledgements.
      * @param mqttConfiguration The MQTT configuration to use for connecting to the broker.
      * @param aiidaId           The ID of the AiiDA instance, used for formatting the acknowledgements.
+     * @param secretsService    The secrets service to load the plaintext password.
      */
     public InboundAdapter(
             InboundDataSource dataSource,
             ObjectMapper mapper,
             MqttConfiguration mqttConfiguration,
-            UUID aiidaId
+            UUID aiidaId,
+            SecretsService secretsService
     ) {
         super(dataSource, LOGGER, mqttConfiguration);
+        this.secretsService = secretsService;
 
         acknowledgementPublisher = new InboundAcknowledgementPublisher(
                 aiidaId,
@@ -97,8 +103,13 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     protected MqttConnectionOptions createConnectOptions() {
         var connectOptions = super.createConnectOptions();
 
-        connectOptions.setUserName(dataSource().username());
-        connectOptions.setPassword(dataSource().password().getBytes(StandardCharsets.UTF_8));
+        try {
+            connectOptions.setUserName(dataSource().username());
+            connectOptions.setPassword(secretsService.loadSecret(dataSource().password())
+                                                     .getBytes(StandardCharsets.UTF_8));
+        } catch (SecretLoadingException e) {
+            LOGGER.error("Could not load secrets to connect to data source.", e);
+        }
 
         return connectOptions;
     }

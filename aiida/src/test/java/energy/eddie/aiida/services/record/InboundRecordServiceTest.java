@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.services.record;
 
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
@@ -18,6 +19,7 @@ import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.record.transform.InboundPayloadTransformationService;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -55,14 +58,17 @@ class InboundRecordServiceTest {
     private PermissionRepository permissionRepository;
     @Mock
     private InboundPayloadTransformationService inboundPayloadTransformationService;
+    @Mock
+    private SecretsService secretsService;
 
     @InjectMocks
     private InboundRecordService inboundRecordService;
 
     @BeforeEach
-    void setUp() throws InvalidInboundPermissionException {
+    void setUp() throws InvalidInboundPermissionException, SecretLoadingException {
         when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
         when(DATA_SOURCE.accessCode()).thenReturn(ACCESS_CODE);
+        lenient().when(secretsService.loadSecret(ACCESS_CODE)).thenReturn(ACCESS_CODE);
 
         PERMISSION.setDataSource(DATA_SOURCE);
         var dataNeed = mock(InboundAiidaLocalDataNeed.class);
@@ -75,7 +81,7 @@ class InboundRecordServiceTest {
     void testLatestRecord_returnsMappedRecord() throws UnauthorizedException, PermissionNotFoundException,
                                                        InvalidDataSourceTypeException, InboundRecordNotFoundException,
                                                        UnsupportedInboundRecordTransformationException,
-                                                       InvalidInboundPermissionException {
+                                                       InvalidInboundPermissionException, SecretLoadingException {
         // Given
         when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
         when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(

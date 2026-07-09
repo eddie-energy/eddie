@@ -164,4 +164,14 @@ public class GlobalExceptionHandler {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(errors);
     }
+
+    @ExceptionHandler({
+            SecretStoringException.class,
+            SecretLoadingException.class,
+            SecretDeletionException.class
+    })
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleInternalServerError(Exception exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.internalServerError().body(errors);
+    }
 }
