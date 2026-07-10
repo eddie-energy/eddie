@@ -12,3 +12,6 @@ CREATE TABLE connection_limit
     max_limit_kw   DECIMAL     NOT NULL,
     UNIQUE (permission_id, interval_start)
 );
+
+CREATE INDEX idx_connection_limit_meter_interval_start
+    ON connection_limit (meter_id, interval_start);

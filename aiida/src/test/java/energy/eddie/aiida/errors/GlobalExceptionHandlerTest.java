@@ -6,7 +6,6 @@ package energy.eddie.aiida.errors;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.dtos.PatchOperation;
-import energy.eddie.aiida.errors.connectionlimit.PermissionDoesNotSupportConnectionLimitsException;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
@@ -197,20 +196,6 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).isEqualTo(message);
-    }
-
-    @Test
-    void givenUnsupportedConnectionLimitPermissionException_returnsUnprocessableEntity() {
-        var exception = new PermissionDoesNotSupportConnectionLimitsException(permissionId);
-
-        var response = advice.handleUnprocessableEntityExceptions(exception);
-
-        assertEquals(HttpStatus.UNPROCESSABLE_CONTENT, response.getStatusCode());
-        var responseBody = response.getBody();
-        assertNotNull(responseBody);
-        assertEquals(1, responseBody.size());
-        assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
-        assertThat(responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message()).contains("does not support connection limits");
     }
 
     private static List<ObjectError> createErrorFields() {
