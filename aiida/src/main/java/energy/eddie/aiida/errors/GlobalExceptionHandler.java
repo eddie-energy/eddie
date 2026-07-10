@@ -7,6 +7,7 @@ import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.connectionlimit.PermissionDoesNotSupportConnectionLimitsException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
@@ -27,6 +28,7 @@ import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -100,6 +102,7 @@ public class GlobalExceptionHandler {
             MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,
             PermissionAlreadyExistsException.class,
+            ConstraintViolationException.class
     })
     public ResponseEntity<Map<String, List<EddieApiError>>> handleBadRequestExceptions(Exception exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
@@ -178,5 +181,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, List<EddieApiError>>> handleInternalServerError(Exception exception) {
         var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
         return ResponseEntity.internalServerError().body(errors);
+    }
+
+    @ExceptionHandler({
+            PermissionDoesNotSupportConnectionLimitsException.class
+    })
+    public ResponseEntity<Map<String, List<EddieApiError>>> handleUnprocessableEntityExceptions(Exception exception) {
+        var errors = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(errors);
     }
 }
