@@ -7,6 +7,7 @@ import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
+import energy.eddie.aiida.errors.permission.ActiveFcaPermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.MissingInboundMessageFormatException;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -226,6 +227,25 @@ class PermissionControllerTest {
                .andExpect(status().isOk());
 
         verify(permissionService).acceptPermission(permissionId, dataSourceId, null);
+    }
+
+    @Test
+    @WithMockUser
+    void givenDuplicateFcaPermissionWithMeterId_setupPermission_returnsConflict() throws Exception {
+        when(permissionService.setupNewPermissions(any()))
+                .thenThrow(new ActiveFcaPermissionAlreadyExistsException(permissionId,
+                                                                         "003114735",
+                                                                         "outbound-aiida"));
+        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionIds\":[\"" + permissionId + "\"],\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"******\"}";
+
+        mockMvc.perform(post("/permissions")
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+               .andExpect(status().isConflict())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("active outbound FCA permission")))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("003114735")));
     }
 
     @Test

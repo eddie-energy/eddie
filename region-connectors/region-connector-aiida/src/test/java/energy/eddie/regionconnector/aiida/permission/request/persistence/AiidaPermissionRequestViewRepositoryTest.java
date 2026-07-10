@@ -57,6 +57,7 @@ class AiidaPermissionRequestViewRepositoryTest {
         permissionEventRepository.saveAndFlush((PermissionEvent) new CreatedEvent("pid",
                                                                                   "cid",
                                                                                   "dnid",
+                                                                                  "mid",
                                                                                   now.toLocalDate(),
                                                                                   now.plusDays(10).toLocalDate(),
                                                                                   clock));
@@ -65,6 +66,7 @@ class AiidaPermissionRequestViewRepositoryTest {
         permissionEventRepository.saveAndFlush((PermissionEvent) new CreatedEvent("otherPid",
                                                                                   "cid",
                                                                                   "dnid",
+                                                                                  "mid",
                                                                                   now.toLocalDate(),
                                                                                   now.plusDays(20).toLocalDate()));
         permissionEventRepository.saveAndFlush((PermissionEvent) new SimpleEvent("otherPid",
@@ -78,5 +80,6 @@ class AiidaPermissionRequestViewRepositoryTest {
         assertEquals(1, res.size());
         var pr = res.getFirst();
         assertEquals("pid", pr.permissionId());
+        assertEquals("mid", pr.meterId());
     }
 }

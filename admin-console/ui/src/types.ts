@@ -1,6 +1,8 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+import { ASSETS, CONTEXTS, ENERGY_TYPES, GRANULARITIES, type SCHEMAS } from '@/constants.ts'
+
 export type RegionConnectorFilter = {
   type: 'blocklist' | 'allowlist'
   regionConnectorIds: string[]
@@ -42,15 +44,16 @@ export type AccountingPointDataNeed = DataNeed & {
   type: 'account'
 }
 
+export type AiidaSchema = (typeof SCHEMAS)[number]
+export type AiidaAsset = (typeof ASSETS)[number]
+export type AiidaContext = (typeof CONTEXTS)[number]
+
 export type AiidaDataNeed = TimeFramedDataNeed & {
   transmissionSchedule: string // cron expression
-  schemas: ('SMART-METER-P1-RAW' | 'SMART-METER-P1-CIM')[]
-  asset:
-    | 'CONNECTION-AGREEMENT-POINT'
-    | 'CONTROLLABLE-UNIT'
-    | 'DEDICATED-MEASUREMENT-DEVICE'
-    | 'SUBMETER'
+  schemas: AiidaSchema[]
+  asset: AiidaAsset
   dataTags?: string[]
+  contexts?: AiidaContext[]
 }
 
 export type InboundAiidaDataNeed = AiidaDataNeed & {
@@ -61,11 +64,14 @@ export type OutboundAiidaDataNeed = AiidaDataNeed & {
   type: 'outbound-aiida'
 }
 
+export type EnergyType = (typeof ENERGY_TYPES)[number]
+export type Granularity = (typeof GRANULARITIES)[number]
+
 export type ValidatedHistoricalDataDataNeed = TimeFramedDataNeed & {
   type: 'validated'
-  energyType: 'ELECTRICITY' | 'NATURAL_GAS' | 'HYDROGEN' | 'HEAT'
-  minGranularity: 'PT5M' | 'PT10M' | 'PT15M' | 'PT30M' | 'PT1H' | 'P1D' | 'P1M' | 'P1Y'
-  maxGranularity: 'PT5M' | 'PT10M' | 'PT15M' | 'PT30M' | 'PT1H' | 'P1D' | 'P1M' | 'P1Y'
+  energyType: EnergyType
+  minGranularity: Granularity
+  maxGranularity: Granularity
 }
 
 export type AnyDataNeed =

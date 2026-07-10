@@ -123,6 +123,7 @@
       "status": "Statut",
       "creationDate": "Date de création",
       "eddieApplication": "Application EDDIE",
+      "meterId": "Point Référence Mesure",
       "start": "Début",
       "end": "Fin",
       "transmissionSchedule": "Calendrier de transmission",

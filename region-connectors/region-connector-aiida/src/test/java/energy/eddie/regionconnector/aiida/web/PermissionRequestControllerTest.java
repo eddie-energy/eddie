@@ -134,7 +134,7 @@ class PermissionRequestControllerTest {
                         List.of(permissionId1, permissionId2),
                         "http://localhost:8080/example",
                         "accessToken"));
-        var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedIds\":[\"1\", \"2\"]}";
+        var json = "{\"connectionId\":\"Hello My Test\",\"dataNeedIds\":[\"1\"],\"meterId\":\"METER-1\"}";
 
         // When
         mockMvc.perform(post("/permission-request").content(json).contentType(MediaType.APPLICATION_JSON))

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -36,4 +37,23 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
             ORDER BY p.grantTime DESC
             """)
     List<Permission> findInboundByUserIdAndStatus(UUID userId, Set<PermissionStatus> statuses);
+
+    @Query("""
+            SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
+            FROM Permission p
+            JOIN p.dataNeed dn
+            JOIN dn.contexts c
+            WHERE p.userId = :userId
+              AND p.meterId = :meterId
+              AND p.status IN (:statuses)
+              AND dn.type = :dataNeedType
+              AND c = :context
+            """)
+    boolean existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(
+            UUID userId,
+            String dataNeedType,
+            AiidaContext context,
+            String meterId,
+            Set<PermissionStatus> statuses
+    );
 }

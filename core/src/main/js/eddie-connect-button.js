@@ -103,6 +103,7 @@ class EddieConnectButton extends LitElement {
       attribute: "customer-identification",
       type: String,
     },
+    meterId: { attribute: "meter-id", type: String },
     rememberPermissionAdministrator: {
       attribute: "remember-permission-administrator",
       type: Object,
@@ -384,6 +385,10 @@ class EddieConnectButton extends LitElement {
         "customer-identification",
         this.customerIdentification
       );
+    }
+
+    if (this.meterId) {
+      element.setAttribute("meter-id", this.meterId);
     }
 
     return html`

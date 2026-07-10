@@ -3,18 +3,36 @@
 
 import type { RegionConnectorFeature } from '@/api'
 
-export const ENERGY_TYPES = ['ELECTRICITY', 'NATURAL_GAS', 'HYDROGEN', 'HEAT']
+export const ENERGY_TYPES = ['ELECTRICITY', 'NATURAL_GAS', 'HYDROGEN', 'HEAT'] as const
 
-export const GRANULARITIES = ['PT5M', 'PT10M', 'PT15M', 'PT30M', 'PT1H', 'P1D', 'P1M', 'P1Y']
+export const GRANULARITIES = [
+  'PT5M',
+  'PT10M',
+  'PT15M',
+  'PT30M',
+  'PT1H',
+  'P1D',
+  'P1M',
+  'P1Y'
+] as const
 
 export const ASSETS = [
   'CONNECTION-AGREEMENT-POINT',
   'CONTROLLABLE-UNIT',
   'DEDICATED-MEASUREMENT-DEVICE',
   'SUBMETER'
-]
+] as const
 
-export const SCHEMAS = ['SMART-METER-P1-RAW', 'SMART-METER-P1-CIM']
+export const SCHEMAS = [
+  'OPAQUE',
+  'SMART-METER-P1-RAW',
+  'SMART-METER-P1-CIM-V1-04',
+  'SMART-METER-P1-CIM-V1-12',
+  'ACKNOWLEDGEMENT-CIM-V1-12',
+  'MIN-MAX-ENVELOPE-CIM-V1-12'
+] as const
+
+export const CONTEXTS = ['FLEXIBLE-CONNECTION-AGREEMENT'] as const
 
 export const REGION_CONNECTORS = [
   'aiida',

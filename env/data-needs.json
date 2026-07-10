@@ -59,7 +59,7 @@
     "type": "inbound-aiida",
     "id": "f7698978-b9fe-40c8-aebe-c997f7f58f2f",
     "name": "FUTURE_MIN_MAX_ENVELOPE_INBOUND",
-    "description": "Inbound reference energy curve min-max operating envelopes for flexible connection agreements",
+    "description": "Inbound reference energy curve min-max operating and opaque envelopes",
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
     "duration": {
@@ -81,7 +81,7 @@
     "type": "outbound-aiida",
     "id": "5de2a77d-1dd4-458d-b700-a84884dd04c6",
     "name": "Forward inbound opaque and min-max envelopes",
-    "description": "Forwarded reference energy curve min-max operating envelopes for flexible connection agreements",
+    "description": "Forwarded reference energy curve min-max operating and opaque envelopes",
     "purpose": "purpose",
     "policyLink": "https://example.com/toc",
     "duration": {
@@ -113,5 +113,56 @@
     "energyType": "ELECTRICITY",
     "minGranularity": "PT1H",
     "maxGranularity": "PT1H"
+  },
+  {
+    "type": "inbound-aiida",
+    "id": "e28e5fc0-2294-4bb2-a5c9-079c9b9751ff",
+    "name": "FCA Inbound",
+    "description": "Inbound reference energy curve min-max operating envelopes for a flexible connection agreement",
+    "purpose": "purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P1M"
+    },
+    "transmissionSchedule": "*/5 * * * * *",
+    "allowedPermissionCommands": [],
+    "acknowledgementRequired": true,
+    "schemas": [
+      "MIN-MAX-ENVELOPE-CIM-V1-12"
+    ],
+    "asset": "CONNECTION-AGREEMENT-POINT",
+    "dataTags": [],
+    "contexts": [
+      "FLEXIBLE-CONNECTION-AGREEMENT"
+    ]
+  },
+  {
+    "type": "outbound-aiida",
+    "id": "e75e5eaf-8c14-4b52-83bf-018daf16f239",
+    "name": "FCA Outbound",
+    "description": "Near realtime consumption data from the smart meter for a flexible connection agreement",
+    "purpose": "purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P1M"
+    },
+    "transmissionSchedule": "*/5 * * * * *",
+    "allowedPermissionCommands": [],
+    "acknowledgementRequired": false,
+    "schemas": [
+      "SMART-METER-P1-CIM-V1-12"
+    ],
+    "asset": "CONNECTION-AGREEMENT-POINT",
+    "dataTags": [
+      "1-0:1.8.0",
+      "1-0:1.7.0"
+    ],
+    "contexts": [
+      "FLEXIBLE-CONNECTION-AGREEMENT"
+    ]
   }
 ]

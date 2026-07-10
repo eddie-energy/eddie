@@ -123,6 +123,7 @@
       "status": "Status",
       "creationDate": "Creation Date",
       "eddieApplication": "EDDIE Application",
+      "meterId": "Meter ID",
       "start": "Start",
       "end": "End",
       "transmissionSchedule": "Transmission Schedule",

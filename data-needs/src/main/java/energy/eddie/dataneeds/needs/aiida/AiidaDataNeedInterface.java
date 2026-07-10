@@ -4,6 +4,7 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.agnostic.PermissionCommand;
@@ -61,4 +62,10 @@ public interface AiidaDataNeedInterface {
      * Returns the type of the Data Need
      */
     String type();
+
+    /**
+     * Returns information about the usage context of permissions created from the data need that AIIDA can use to
+     * provide additional functionality specific to that context.
+     */
+    Set<AiidaContext> contexts();
 }

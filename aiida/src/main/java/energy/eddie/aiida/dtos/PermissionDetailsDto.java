@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.dtos;
@@ -6,6 +6,7 @@ package energy.eddie.aiida.dtos;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -18,6 +19,9 @@ public class PermissionDetailsDto {
     private UUID permissionId;
     @JsonProperty(value = "connection_id")
     private String connectionId;
+    @JsonProperty(value = "meter_id")
+    @Nullable
+    private String meterId;
     @JsonProperty(value = "start")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate start;
@@ -30,12 +34,14 @@ public class PermissionDetailsDto {
     public PermissionDetailsDto(
             UUID permissionId,
             String connectionId,
+            @Nullable String meterId,
             LocalDate start,
             LocalDate end,
             AiidaDataNeed dataNeed
     ) {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
+        this.meterId = meterId;
         this.start = start;
         this.end = end;
         this.dataNeed = dataNeed;
@@ -47,6 +53,11 @@ public class PermissionDetailsDto {
 
     public String connectionId() {
         return connectionId;
+    }
+
+    @Nullable
+    public String meterId() {
+        return meterId;
     }
 
     public LocalDate start() {
@@ -65,6 +76,7 @@ public class PermissionDetailsDto {
     private void unpackPermissionRequest(Map<String, String> permissionRequest) {
         permissionId = UUID.fromString(permissionRequest.get("permission_id"));
         connectionId = permissionRequest.get("connection_id");
+        meterId = permissionRequest.get("meter_id");
         start = LocalDate.parse(permissionRequest.get("start"));
         end = LocalDate.parse(permissionRequest.get("end"));
     }

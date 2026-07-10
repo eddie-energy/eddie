@@ -123,6 +123,7 @@
       "status": "Status",
       "creationDate": "Erstellungsdatum",
       "eddieApplication": "EDDIE-Anwendung",
+      "meterId": "Zählernummer",
       "start": "Start",
       "end": "Ende",
       "transmissionSchedule": "Übertragungsplan",

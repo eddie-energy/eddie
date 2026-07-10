@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import type { AiidaPermission, PermissionTypes } from '@/types'
@@ -27,6 +25,12 @@ const isOpen = ref(false)
       <div class="header-title">
         <PermissionIcon class="icon" />
         <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
+        <span
+          v-if="permission.dataNeed.contexts?.includes('FLEXIBLE-CONNECTION-AGREEMENT')"
+          class="fca-label"
+        >
+          FCA
+        </span>
       </div>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
       <div class="non-essential">
@@ -88,6 +92,16 @@ const isOpen = ref(false)
     overflow: hidden;
     text-overflow: ellipsis;
   }
+}
+
+.fca-label {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--eddie-primary);
+  border-radius: var(--border-radius);
+  color: var(--light);
+  font-weight: var(--font-weight-bold);
+  font-size: 0.75rem;
+  line-height: 1;
 }
 
 .permission-header {

@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.aiida.permission.request.events;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
@@ -16,6 +17,9 @@ public class CreatedEvent extends PersistablePermissionEvent {
     private final String connectionId;
     @Column(name = "data_need_id")
     private final String dataNeedId;
+    @Nullable
+    @Column(name = "meter_id")
+    private final String meterId;
     @Column(name = "permission_start")
     private final LocalDate permissionStart;
     @Column(name = "permission_end")
@@ -25,6 +29,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
     protected CreatedEvent() {
         this.connectionId = null;
         this.dataNeedId = null;
+        this.meterId = null;
         this.permissionStart = null;
         this.permissionEnd = null;
     }
@@ -33,6 +38,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String permissionId,
             String connectionId,
             String dataNeedId,
+            @Nullable String meterId,
             LocalDate permissionStart,
             LocalDate permissionEnd,
             Clock clock
@@ -40,6 +46,7 @@ public class CreatedEvent extends PersistablePermissionEvent {
         super(permissionId, PermissionProcessStatus.CREATED, clock);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
+        this.meterId = meterId;
         this.permissionStart = permissionStart;
         this.permissionEnd = permissionEnd;
     }
@@ -48,12 +55,14 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String permissionId,
             String connectionId,
             String dataNeedId,
+            @Nullable String meterId,
             LocalDate permissionStart,
             LocalDate permissionEnd
     ) {
         super(permissionId, PermissionProcessStatus.CREATED);
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
+        this.meterId = meterId;
         this.permissionStart = permissionStart;
         this.permissionEnd = permissionEnd;
     }
@@ -64,6 +73,11 @@ public class CreatedEvent extends PersistablePermissionEvent {
 
     public String dataNeedId() {
         return dataNeedId;
+    }
+
+    @Nullable
+    public String meterId() {
+        return meterId;
     }
 
     public LocalDate permissionStart() {

@@ -4,10 +4,7 @@
 package energy.eddie.aiida.models.permission.dataneed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
-import energy.eddie.api.agnostic.aiida.ObisCode;
-import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
+import energy.eddie.api.agnostic.aiida.*;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeedInterface;
@@ -90,6 +87,13 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @JsonProperty
     protected Set<ObisCode> dataTags;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_local_data_need_contexts", joinColumns = @JoinColumn(name = "data_need_id"))
+    @Column(name = "context")
+    @Enumerated(EnumType.STRING)
+    @JsonProperty
+    private Set<AiidaContext> contexts;
+
     /**
      * Constructor only for JPA.
      */
@@ -109,6 +113,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
         this.acknowledgementRequired = dataNeed.acknowledgementRequired();
         this.allowedPermissionCommands = Objects.requireNonNullElse(dataNeed.allowedPermissionCommands(), Set.of());
+        this.contexts = Objects.requireNonNullElse(dataNeed.contexts(), Set.of());
     }
 
     public String name() {
@@ -148,6 +153,11 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Override
     public Set<PermissionCommand.Action> allowedPermissionCommands() {
         return allowedPermissionCommands;
+    }
+
+    @Override
+    public Set<AiidaContext> contexts() {
+        return contexts;
     }
 
     @Override

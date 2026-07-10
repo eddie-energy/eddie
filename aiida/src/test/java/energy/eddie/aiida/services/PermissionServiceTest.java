@@ -22,6 +22,7 @@ import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -30,7 +31,10 @@ import energy.eddie.api.agnostic.process.model.PermissionStateTransitionExceptio
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -72,6 +76,7 @@ class PermissionServiceTest {
     private final String handshakeUrl = "https://example.org";
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
+    private final String meterId = "003114735";
     private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
     private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
@@ -173,7 +178,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.existsById(permissionId2)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -186,6 +191,7 @@ class PermissionServiceTest {
         when(mockDataNeed.policyLink()).thenReturn("https://example.org");
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
                                                         ObisCode.NEGATIVE_ACTIVE_ENERGY));
+        when(mockDataNeed.contexts()).thenReturn(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
@@ -203,6 +209,7 @@ class PermissionServiceTest {
         assertEquals(permissionId2, permissionWithDetails.id());
         assertEquals(PermissionStatus.FETCHED_DETAILS, permissionWithDetails.status());
         assertEquals(connectionId, permissionWithDetails.connectionId());
+        assertEquals(meterId, permissionWithDetails.meterId());
         assertEquals(expectedStart, permissionWithDetails.startTime());
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
 
@@ -212,17 +219,18 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
+        assertThat(dataNeed.contexts()).hasSameElementsAs(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
         assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
                                                                  ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
     @Test
-    void setupNewPermission_throwsPermissionsUnfulfillableException() throws InvalidUserException {
+    void givenInvalidDataNeedType_setsStatusToUnfulfillable_andCallsHandshakeService() throws InvalidUserException {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
@@ -238,7 +246,7 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When Then
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequests));
+        assertThrows(PermissionDataNeedTypeNotSupportedException.class, () -> service.setupNewPermissions(permissionRequests));
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
 
@@ -268,6 +276,7 @@ class PermissionServiceTest {
         // Given
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
+                                                         meterId,
                                                          start.minusDays(1),
                                                          end,
                                                          mockDataNeed);
@@ -276,7 +285,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
 
         // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequests));
+        assertThrows(PermissionStartInThePastException.class, () -> service.setupNewPermissions(permissionRequests));
 
         // Then
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
@@ -284,23 +293,6 @@ class PermissionServiceTest {
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
         assertEquals(permissionId1, permissionCaptor.getAllValues().getFirst().id());
         assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().getFirst().status());
-        assertEquals(permissionId1, permissionCaptor.getAllValues().get(1).id());
-        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
-    }
-
-    @Disabled("// TODO GH-1040")  // TODO GH-1040
-    @Test
-    void givenUnfulfillableQrCodeDto_setupNewPermissions_updatesStatus() {
-
-        // When
-        assertThrows(PermissionUnfulfillableException.class, () -> service.setupNewPermissions(permissionRequests));
-
-        // Then
-        verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.UNFULFILLABLE));
-        verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
-        assertEquals(permissionId1, permissionCaptor.getAllValues().getFirst().id());
-        assertEquals(PermissionStatus.CREATED, permissionCaptor.getAllValues().getFirst().status());
         assertEquals(permissionId1, permissionCaptor.getAllValues().get(1).id());
         assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().get(1).status());
     }
@@ -341,6 +333,41 @@ class PermissionServiceTest {
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
                      () -> service.acceptPermission(permissionId1, dataSourceId, null));
+    }
+
+    @Test
+    void givenFcaPermissionWithMeterIdAndActiveDuplicate_setupNewPermissions_marksUnfulfillableAndThrows() throws Exception {
+        // Given
+        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
+        when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
+        when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        when(mockDataNeed.name()).thenReturn("My Name");
+        when(mockDataNeed.purpose()).thenReturn("Some purpose");
+        when(mockDataNeed.policyLink()).thenReturn("https://example.org");
+        when(mockDataNeed.dataTags()).thenReturn(Set.of());
+        when(mockDataNeed.contexts()).thenReturn(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
+        when(mockDataNeed.schemas()).thenReturn(Set.of());
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+        when(mockPermissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(
+                userId,
+                OutboundAiidaDataNeed.DISCRIMINATOR_VALUE,
+                AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
+                meterId,
+                PermissionStatus.ACTIVE)
+        ).thenReturn(true);
+
+        // When, Then
+        var exception = assertThrows(ActiveFcaPermissionAlreadyExistsException.class,
+                                     () -> service.setupNewPermissions(permissionRequests));
+
+        assertThat(exception.getMessage()).contains("outbound").contains(meterId);
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(permissionCaptor.capture(),
+                                                                 eq(PermissionStatus.UNFULFILLABLE));
+        assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getValue().status());
     }
 
     @Test

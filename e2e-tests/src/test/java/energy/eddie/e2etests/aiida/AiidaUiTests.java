@@ -164,6 +164,53 @@ class AiidaUiTests {
     }
 
     @Test
+    void fcaPermissionFlow() {
+        var dataSource = "E2E FCA Data Source";
+        var fcaOutboundDataNeed = "FCA Outbound";
+        var meterId = "e2e-meter";
+
+        // Create a data source to use for the FCA permission
+        page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
+        page.getByRole(AriaRole.BUTTON).getByText("Add Data Source").click();
+        page.getByLabel("Name").fill(dataSource);
+        page.getByRole(AriaRole.LISTBOX).getByText("Asset Type").click();
+        page.getByRole(AriaRole.OPTION).getByText("CONNECTION-AGREEMENT-POINT").click();
+        page.getByRole(AriaRole.LISTBOX).getByText("Data Source Type").click();
+        page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
+        page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
+        page.getByRole(AriaRole.OPTION).getByText("Austria").click();
+        page.getByLabel("Polling Interval").fill("120");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Meter")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+
+        // Accept an FCA outbound permission tied to the meter ID
+        var aiidaCode = aiidaCodeForDataNeedWithMeterId(fcaOutboundDataNeed, meterId);
+        var permissionId = acceptOutboundPermissionRequest(aiidaCode, dataSource);
+
+        // Attempting a second FCA outbound permission for the same meter ID must fail
+        var duplicateAiidaCode = aiidaCodeForDataNeedWithMeterId(fcaOutboundDataNeed, meterId);
+        addPermission(duplicateAiidaCode);
+        var expectedError = "active outbound FCA permission for meter ID '%s'".formatted(meterId);
+        assertThat(page.getByRole(AriaRole.DIALOG)).containsText(expectedError);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel").setExact(true)).click();
+        expectAlert(expectedError);
+
+        // Failed duplicate ends up as unable to fulfill in the complete tab
+        var failedPermission = selectPermission(fcaOutboundDataNeed, PermissionTab.OUTBOUND, PermissionStatus.COMPLETE);
+        assertThat(failedPermission).containsText("Unable to fulfill");
+
+        // Successful permission shows FCA badge and meter ID
+        var permission = selectPermission(fcaOutboundDataNeed, PermissionTab.OUTBOUND, PermissionStatus.ACTIVE);
+        assertThat(permission).containsText(permissionId);
+        assertThat(permission).containsText("FCA");
+        assertThat(permission).containsText(meterId);
+
+        // Clean up
+        revokePermission(permission);
+        deleteDataSource(dataSource);
+    }
+
+    @Test
     void logout(Page page) {
         page.getByText("Account").click();
         page.getByText("Logout").click();
@@ -180,12 +227,27 @@ class AiidaUiTests {
         return eddie.getByLabel("AIIDA code").inputValue();
     }
 
-    private String acceptInboundPermissionRequest(String aiidaCode) {
+    private String aiidaCodeForDataNeedWithMeterId(String dataNeed, String meterId) {
+        var eddie = context.newPage();
+        eddie.navigate(EDDIE_URL + "/demo");
+        eddie.getByLabel("Data need").selectOption(dataNeed);
+        eddie.getByLabel("Meter ID").fill(meterId);
+        eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).click();
+        eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue")).click();
+        eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
+        return eddie.getByLabel("AIIDA code").inputValue();
+    }
+
+    private void addPermission(String aiidaCode) {
         page.bringToFront();
         page.getByRole(AriaRole.LINK).getByText("Permissions").click();
         page.getByRole(AriaRole.BUTTON).getByText("Add Permission").click();
         page.getByPlaceholder("AIIDA Code").fill(aiidaCode);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+    }
+
+    private String acceptInboundPermissionRequest(String aiidaCode) {
+        addPermission(aiidaCode);
 
         var dialog = page.getByRole(AriaRole.DIALOG);
         var id = dialog.locator(":text('Permission ID') + dd").textContent();
@@ -195,11 +257,7 @@ class AiidaUiTests {
     }
 
     private String acceptOutboundPermissionRequest(String aiidaCode, String dataSource) {
-        page.bringToFront();
-        page.getByRole(AriaRole.LINK).getByText("Permissions").click();
-        page.getByRole(AriaRole.BUTTON).getByText("Add Permission").click();
-        page.getByPlaceholder("AIIDA Code").fill(aiidaCode);
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+        addPermission(aiidaCode);
 
         var dialog = page.getByRole(AriaRole.DIALOG);
         var id = dialog.locator(":text('Permission ID') + dd").textContent();

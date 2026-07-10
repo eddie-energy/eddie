@@ -20,6 +20,7 @@ export type AiidaDataNeed = {
   acknowledgementRequired: boolean
   asset: string
   dataTags: string[]
+  contexts?: string[]
   type: 'outbound-aiida' | 'inbound-aiida'
 }
 
@@ -64,6 +65,7 @@ export type AiidaPermission = {
   startTime: string
   expirationTime: string
   grantTime?: string
+  meterId?: string
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
   transmissionEnabled: boolean

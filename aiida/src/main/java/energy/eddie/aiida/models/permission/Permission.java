@@ -86,6 +86,12 @@ public class Permission {
     private String connectionId;
 
     @Nullable
+    @Column(name = "meter_id")
+    @Schema(description = "ID of a physical smart meter asset used to map flexible connection agreements and control data source selection.", example = "003114735")
+    @JsonProperty
+    private String meterId;
+
+    @Nullable
     @PrimaryKeyJoinColumn
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonProperty
@@ -211,6 +217,14 @@ public class Permission {
     }
 
     /**
+     * Returns the optional physical meter ID provided by the eligible party.
+     * Used to map flexible connection agreements and control data source selection in AIIDA.
+     */
+    public @Nullable String meterId() {
+        return meterId;
+    }
+
+    /**
      * Returns the service name for which this permission is for.
      */
     public @Nullable String serviceName() {
@@ -299,6 +313,10 @@ public class Permission {
 
     public void setConnectionId(String connectionId) {
         this.connectionId = requireNonNull(connectionId);
+    }
+
+    public void setMeterId(@Nullable String meterId) {
+        this.meterId = meterId;
     }
 
     public void setMqttStreamingConfig(MqttStreamingConfig mqttStreamingConfig) {
