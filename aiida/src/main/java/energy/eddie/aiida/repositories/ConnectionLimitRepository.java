@@ -16,14 +16,19 @@ import java.util.UUID;
 public interface ConnectionLimitRepository extends JpaRepository<ConnectionLimit, Long> {
     @Query("""
             SELECT cl
-            FROM ConnectionLimit cl
-            WHERE cl.permissionId = :permissionId
+            FROM ConnectionLimit cl, Permission p
+            WHERE cl.permissionId = p.permissionId
+              AND p.userId = :userId
+              AND cl.permissionId = COALESCE(:permissionId, cl.permissionId)
+              AND COALESCE(cl.meterId, '') = COALESCE(:meterId, COALESCE(cl.meterId, ''))
               AND cl.intervalEnd > :from
               AND cl.intervalStart <= COALESCE(:to, cl.intervalStart)
             ORDER BY cl.intervalStart
             """)
-    List<ConnectionLimit> findByPermissionIdFromTo(
-            UUID permissionId,
+    List<ConnectionLimit> findByUserIdAndFiltersFromTo(
+            UUID userId,
+            @Nullable UUID permissionId,
+            @Nullable String meterId,
             Instant from,
             @Nullable Instant to,
             Pageable pageable
