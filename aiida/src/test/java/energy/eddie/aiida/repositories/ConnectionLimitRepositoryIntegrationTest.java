@@ -232,7 +232,10 @@ class ConnectionLimitRepositoryIntegrationTest {
                                         Instant.parse(intervalStart),
                                         Instant.parse(intervalEnd),
                                         new BigDecimal("3.0"),
-                                        new BigDecimal("8.0"));
+                                        new BigDecimal("8.0"),
+                                        "mrid-" + permissionId,
+                                        1,
+                                        Instant.parse("2026-07-10T00:00:00Z"));
         connectionLimitRepository.saveAndFlush(limit);
     }
 }

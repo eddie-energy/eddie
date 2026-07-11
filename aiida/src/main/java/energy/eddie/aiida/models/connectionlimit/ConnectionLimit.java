@@ -11,25 +11,23 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "connection_limit",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"permission_id", "interval_start"}))
+@IdClass(ConnectionLimit.ConnectionLimitKey.class)
+@Table(name = "connection_limit")
 public class ConnectionLimit {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @SuppressWarnings({"unused", "NullAway"})
-    private Long id;
-
     @Column(name = "permission_id", nullable = false, updatable = false)
     private UUID permissionId;
 
-    @Nullable
-    @Column(name = "meter_id")
+    @Id
+    @Column(name = "meter_id", nullable = false, updatable = false)
     private String meterId;
 
+    @Id
     @Column(name = "interval_start", nullable = false, updatable = false)
     private Instant intervalStart;
 
+    @Id
     @Column(name = "interval_end", nullable = false)
     private Instant intervalEnd;
 
@@ -38,6 +36,15 @@ public class ConnectionLimit {
 
     @Column(name = "max_limit_kw", nullable = false)
     private BigDecimal maxLimitKw;
+
+    @Column(name = "mrid", nullable = false)
+    private String mrid;
+
+    @Column(name = "revision_number", nullable = false)
+    private int revisionNumber;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 
     @SuppressWarnings("NullAway.Init")
     protected ConnectionLimit() {
@@ -49,21 +56,27 @@ public class ConnectionLimit {
             Instant intervalStart,
             Instant intervalEnd,
             BigDecimal minLimitKw,
-            BigDecimal maxLimitKw
+            BigDecimal maxLimitKw,
+            String mrid,
+            int revisionNumber,
+            Instant createdAt
     ) {
         this.permissionId = permissionId;
-        this.meterId = meterId;
+        this.meterId = meterId == null ? "" : meterId;
         this.intervalStart = intervalStart;
         this.intervalEnd = intervalEnd;
         this.minLimitKw = minLimitKw;
         this.maxLimitKw = maxLimitKw;
+        this.mrid = mrid;
+        this.revisionNumber = revisionNumber;
+        this.createdAt = createdAt;
     }
 
     public UUID permissionId() {
         return permissionId;
     }
 
-    public @Nullable String meterId() {
+    public String meterId() {
         return meterId;
     }
 
@@ -82,4 +95,18 @@ public class ConnectionLimit {
     public BigDecimal maxLimitKw() {
         return maxLimitKw;
     }
+
+    public String mrid() {
+        return mrid;
+    }
+
+    public int revisionNumber() {
+        return revisionNumber;
+    }
+
+    public Instant createdAt() {
+        return createdAt;
+    }
+
+    public record ConnectionLimitKey(UUID permissionId, String meterId, Instant intervalStart, Instant intervalEnd) {}
 }
