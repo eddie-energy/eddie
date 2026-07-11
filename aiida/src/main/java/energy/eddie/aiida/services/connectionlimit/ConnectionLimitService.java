@@ -58,19 +58,16 @@ public class ConnectionLimitService {
                                                                             fromResolved,
                                                                             toResolved,
                                                                             pageable);
-        return toDto(limits);
+
+        return limits.stream().map(this::toDto).toList();
     }
 
-    private List<ConnectionLimitDto> toDto(List<ConnectionLimit> limits) {
-        return limits.stream()
-                     .map(limit -> new ConnectionLimitDto(
-                             limit.permissionId(),
-                             limit.meterId(),
-                             limit.intervalStart(),
-                             limit.intervalEnd(),
-                             limit.minLimitKw(),
-                             limit.maxLimitKw()
-                     ))
-                     .toList();
+    private ConnectionLimitDto toDto(ConnectionLimit limit) {
+        return new ConnectionLimitDto(limit.permissionId(),
+                                      limit.meterId().isBlank() ? null : limit.meterId(),
+                                      limit.intervalStart(),
+                                      limit.intervalEnd(),
+                                      limit.minLimitKw(),
+                                      limit.maxLimitKw());
     }
 }
