@@ -192,7 +192,7 @@ public class KafkaOutboundConnector {
             MessageSerde serde
     ) {
         var config = kafkaProperties(kafkaProperties);
-        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new CustomSerializer(serde));
+        return new DefaultKafkaProducerFactory<>(config, new StringSerializer(), new KafkaSerializerAdapter(serde));
     }
 
     @Bean

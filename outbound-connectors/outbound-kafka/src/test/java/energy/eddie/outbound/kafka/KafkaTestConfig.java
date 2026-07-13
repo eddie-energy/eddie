@@ -46,7 +46,7 @@ public class KafkaTestConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(props,
                                                                      new StringSerializer(),
-                                                                     new CustomSerializer(serde)));
+                                                                     new KafkaSerializerAdapter(serde)));
     }
 
     @Bean
