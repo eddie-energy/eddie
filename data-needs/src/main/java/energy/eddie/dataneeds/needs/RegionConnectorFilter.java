@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.dataneeds.needs;
@@ -14,7 +14,7 @@ import java.util.List;
 @Entity
 @Table(name = "region_connector_filter", schema = "data_needs")
 @Schema(description = "Can be used to restrict which region connectors can process a data need. The list can be used as a blocklist or allowlist.")
-public final class RegionConnectorFilter {
+public class RegionConnectorFilter {
     @Id
     @Column(name = "data_need_id")
     @JsonIgnore
