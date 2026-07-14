@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida;
 
+import energy.eddie.aiida.config.KeycloakConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.config.cleanup.CleanupConfiguration;
 import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
@@ -13,6 +14,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @SpringBootApplication
 @EnableConfigurationProperties({
         CleanupConfiguration.class,
+        KeycloakConfiguration.class,
         MqttConfiguration.class,
         SinapsiAlfaConfiguration.class
 })
