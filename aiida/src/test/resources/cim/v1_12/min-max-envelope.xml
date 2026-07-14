@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<Acknowledgement_Envelope xmlns="https://eddie.energy/CIM/ACK_v1.12">
+    <MarketDocument>
+        <mRID>9118205b-f5e0-434f-bb25-c7bf7264a3bc</mRID>
+        <createdDateTime>2026-07-14T06:06:58Z</createdDateTime>
+        <sender_MarketParticipant.mRID codingScheme="NAT">fc-id</sender_MarketParticipant.mRID>
+        <sender_MarketParticipant.marketRole.type>A13</sender_MarketParticipant.marketRole.type>
+        <receiver_MarketParticipant.mRID codingScheme="NAT">AT003000</receiver_MarketParticipant.mRID>
+        <receiver_MarketParticipant.marketRole.type>A56</receiver_MarketParticipant.marketRole.type>
+        <received_MarketDocument.mRID>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</received_MarketDocument.mRID>
+        <received_MarketDocument.revisionNumber>1</received_MarketDocument.revisionNumber>
+        <received_MarketDocument.type>A17</received_MarketDocument.type>
+        <received_MarketDocument.process.processType>A14</received_MarketDocument.process.processType>
+        <received_MarketDocument.createdDateTime>2026-02-16T10:11:58Z</received_MarketDocument.createdDateTime>
+        <Reason>
+            <code>A01</code>
+        </Reason>
+    </MarketDocument>
+    <MessageDocumentHeader>
+        <creationDateTime>2026-07-14T06:06:58Z</creationDateTime>
+        <MetaInformation>
+            <connectionId>1</connectionId>
+            <requestPermissionId>00213495-bdbf-4497-8695-5d811e45aa64</requestPermissionId>
+            <dataNeedId>5dc71d7e-e8cd-4403-a3a8-d3c095c97a12</dataNeedId>
+            <documentType>acknowledgement-market-document</documentType>
+            <finalCustomerId>00000000-0000-0000-0000-000000000001</finalCustomerId>
+            <dataSourceId>00000000-0000-0000-0000-000000000000</dataSourceId>
+            <regionConnector>aiida</regionConnector>
+            <regionCountry>ES</regionCountry>
+            <Asset>
+                <type>CONNECTION-AGREEMENT-POINT</type>
+                <operatorId>test-operator-id</operatorId>
+                <meterId>test-meter-id</meterId>
+            </Asset>
+        </MetaInformation>
+    </MessageDocumentHeader>
+</Acknowledgement_Envelope>

@@ -30,13 +30,15 @@ public class PermissionRequestMetricsService {
     private final DataNeedsService dataNeedsService;
     private final PermissionEventRepositories repositories;
 
-    public PermissionRequestMetricsService(AgnosticConnector connector,
-                                           PermissionRequestMetricsRepository metricsRepository,
-                                           PermissionRequestStatusDurationRepository statusDurationRepository,
-                                           @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-                                           DataNeedsService dataNeedsService,
-                                           @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-                                           PermissionEventRepositories repositories) {
+    public PermissionRequestMetricsService(
+            AgnosticConnector connector,
+            PermissionRequestMetricsRepository metricsRepository,
+            PermissionRequestStatusDurationRepository statusDurationRepository,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+            DataNeedsService dataNeedsService,
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+            PermissionEventRepositories repositories
+    ) {
         this.metricsRepository = metricsRepository;
         this.statusDurationRepository = statusDurationRepository;
         this.dataNeedsService = dataNeedsService;
@@ -47,7 +49,7 @@ public class PermissionRequestMetricsService {
     public void upsertMetric(ConnectionStatusMessage csm) {
 
         PermissionProcessStatus status = csm.status();
-        if(status.equals(PermissionProcessStatus.CREATED)) {
+        if (status.equals(PermissionProcessStatus.CREATED)) {
             return;
         }
 
@@ -59,54 +61,46 @@ public class PermissionRequestMetricsService {
                 regionConnectorId
         );
 
-        if(permissionEvents.size() < 2) {
+        if (permissionEvents.size() < 2) {
             return;
         }
 
         ZonedDateTime currentPermissionEventCreated = permissionEvents.getFirst().eventCreated();
         PermissionEvent prevPermissionEvent = permissionEvents.getLast();
         long durationMilliseconds = Duration.between(prevPermissionEvent.eventCreated(), currentPermissionEventCreated)
-                .toMillis();
+                                            .toMillis();
         PermissionProcessStatus prevEventStatus = prevPermissionEvent.status();
         String dataNeedType = dataNeedsService.getById(csm.dataNeedId()).type();
-        String permissionAdministratorId = csm.dataSourceInformation().permissionAdministratorId();
-        String countryCode = csm.dataSourceInformation().countryCode();
-        PermissionRequestStatusDurationModel prStatusDuration =  new PermissionRequestStatusDurationModel(
+        PermissionRequestStatusDurationModel prStatusDuration = new PermissionRequestStatusDurationModel(
                 permissionId,
                 prevEventStatus,
                 durationMilliseconds,
                 dataNeedType,
-                permissionAdministratorId,
-                regionConnectorId,
-                countryCode
+                csm.dataSourceInformation()
         );
         statusDurationRepository.save(prStatusDuration);
         Optional<PermissionRequestMetricsModel> prMetrics = metricsRepository.getPermissionRequestMetrics(
                 prevEventStatus,
                 dataNeedType,
-                permissionAdministratorId,
-                regionConnectorId,
-                countryCode
+                csm.dataSourceInformation()
         );
 
         MeanCountRecord newMeanAndCount = getNewMeanAndCount(prMetrics, durationMilliseconds);
         double median = statusDurationRepository.getMedianDurationMilliseconds(
                 prevEventStatus.name(),
                 dataNeedType,
-                permissionAdministratorId,
-                regionConnectorId,
-                countryCode
+                csm.dataSourceInformation()
         );
 
         metricsRepository.upsertPermissionRequestMetric(
-                newMeanAndCount.mean(),
-                median,
-                newMeanAndCount.count(),
-                prevEventStatus.name(),
-                dataNeedType,
-                permissionAdministratorId,
-                regionConnectorId,
-                countryCode
+                new PermissionRequestMetricsModel(
+                        newMeanAndCount.mean(),
+                        median,
+                        newMeanAndCount.count(),
+                        prevEventStatus,
+                        dataNeedType,
+                        csm.dataSourceInformation()
+                )
         );
     }
 
@@ -122,14 +116,16 @@ public class PermissionRequestMetricsService {
         return new MeanCountRecord(newMean, newCount);
     }
 
-    private List<PermissionEvent> getCurrentAndPreviousPermissionEvents(String permissionId,
-                                                                       ZonedDateTime eventCreated,
-                                                                       String regionConnectorId) {
+    private List<PermissionEvent> getCurrentAndPreviousPermissionEvents(
+            String permissionId,
+            ZonedDateTime eventCreated,
+            String regionConnectorId
+    ) {
         Optional<PermissionEventRepository> repository = repositories.getPermissionEventRepositoryByRegionConnectorId(
                 regionConnectorId
         );
 
-        if(repository.isPresent()) {
+        if (repository.isPresent()) {
             return repository.get().findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(
                     permissionId,
                     eventCreated

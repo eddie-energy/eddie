@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.health.registry.DefaultHealthContributorRegistry;
 import org.springframework.boot.health.registry.HealthContributorRegistry;
@@ -39,7 +38,7 @@ class InboundAggregatorTest {
 
     @BeforeEach
     void setUp() {
-        Mockito.when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
         aggregator = new InboundAggregator(mockInboundRecordRepository, healthContributorRegistry);
     }
 

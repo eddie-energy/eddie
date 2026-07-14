@@ -29,7 +29,7 @@ class HistoricalDataServiceTest {
     private DataApiService dataApiService;
 
     @ParameterizedTest(name = "{2}")
-    @MethodSource("pastTimeRanges")
+    @MethodSource("validTimeRanges")
     void fetchAvailableHistoricalData_callsFetchDataForPermissionRequest_withExpectedParams(
             LocalDate start,
             LocalDate end,
@@ -64,36 +64,12 @@ class HistoricalDataServiceTest {
         verifyNoInteractions(dataApiService);
     }
 
-    @ParameterizedTest(name = "{2}")
-    @MethodSource("pastToFutureTimeRanges")
-    void fetchAvailableHistoricalData_withPermissionRequestFromPastToFuture(
-            LocalDate start,
-            LocalDate end,
-            String description
-    ) {
-        // Given
-        EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
-        HistoricalDataService historicalDataService = new HistoricalDataService(dataApiService);
-
-        // When
-        historicalDataService.fetchAvailableHistoricalData(permissionRequest);
-
-        // Then
-        verify(dataApiService).pollTimeSeriesData(permissionRequest);
-    }
-
-    private static Stream<Arguments> pastTimeRanges() {
+    private static Stream<Arguments> validTimeRanges() {
         LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
         return Stream.of(
                 Arguments.of(now.minusDays(20), now.minusDays(10), "10 days: 20 days ago"),
                 Arguments.of(now.minusMonths(10), now.minusMonths(9), "1 month: 10 months ago"),
-                Arguments.of(now.minusYears(2), now.minusYears(1), "1 year: 2 years ago")
-        );
-    }
-
-    private static Stream<Arguments> pastToFutureTimeRanges() {
-        LocalDate now = LocalDate.now(ZONE_ID_SPAIN);
-        return Stream.of(
+                Arguments.of(now.minusYears(2), now.minusYears(1), "1 year: 2 years ago"),
                 Arguments.of(now.minusDays(10), now.plusDays(10), "10 days: 10 days ago to 10 days in the future"),
                 Arguments.of(now.minusMonths(9), now.plusMonths(9), "1 month: 9 months ago to 9 months in the future"),
                 Arguments.of(now.minusYears(1), now.plusYears(1), "1 year: 1 year ago to 1 year in the future")

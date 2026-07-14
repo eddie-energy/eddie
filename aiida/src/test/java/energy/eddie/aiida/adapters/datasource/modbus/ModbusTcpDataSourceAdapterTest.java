@@ -26,8 +26,7 @@ import java.util.UUID;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ModbusTcpDataSourceAdapterTest {
@@ -97,7 +96,7 @@ class ModbusTcpDataSourceAdapterTest {
         adapter.start();
         adapter.close();
 
-        Mockito.verify(mockClient).close();
+        verify(mockClient).close();
     }
 
     private List<Tuple> expectedModbusRecordTuples() {

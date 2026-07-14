@@ -3,20 +3,21 @@
 
 package energy.eddie.outbound.metric.model;
 
+import energy.eddie.cim.agnostic.DataSourceInformation;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "permission_request_metrics",
-       schema = "metric",
-       uniqueConstraints = @UniqueConstraint(
-               columnNames = {
-                       "permission_request_status",
-                       "data_need_type",
-                       "permission_administrator_id",
-                       "region_connector_id",
-                       "country_code"
-               })
+        schema = "metric",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {
+                        "permission_request_status",
+                        "data_need_type",
+                        "permission_administrator_id",
+                        "region_connector_id",
+                        "country_code"
+                })
 )
 @SuppressWarnings("NullAway")
 public class PermissionRequestMetricsModel {
@@ -54,44 +55,36 @@ public class PermissionRequestMetricsModel {
             double median,
             PermissionProcessStatus permissionRequestStatus,
             String dataNeedType,
-            String permissionAdministratorId,
-            String regionConnectorId
+            DataSourceInformation dataSourceInformation
     ) {
         this.mean = mean;
         this.median = median;
         this.permissionRequestStatus = permissionRequestStatus;
         this.dataNeedType = dataNeedType;
-        this.permissionAdministratorId = permissionAdministratorId;
-        this.regionConnectorId = regionConnectorId;
+        this.permissionAdministratorId = dataSourceInformation.permissionAdministratorId();
+        this.regionConnectorId = dataSourceInformation.regionConnectorId();
+        this.countryCode = dataSourceInformation.countryCode();
     }
 
     public PermissionRequestMetricsModel(
             double mean,
             double median,
-            PermissionProcessStatus permissionRequestStatus,
+            int count,
+            PermissionProcessStatus prevEventStatus,
             String dataNeedType,
-            String permissionAdministratorId,
-            String regionConnectorId,
-            String countryCode
+            DataSourceInformation dataSourceInformation
     ) {
-        this(mean, median, permissionRequestStatus, dataNeedType, permissionAdministratorId, regionConnectorId);
-        this.countryCode = countryCode;
+        this.mean = mean;
+        this.median = median;
+        this.permissionRequestCount = count;
+        this.permissionRequestStatus = prevEventStatus;
+        this.dataNeedType = dataNeedType;
+        this.permissionAdministratorId = dataSourceInformation.permissionAdministratorId();
+        this.regionConnectorId = dataSourceInformation.regionConnectorId();
+        this.countryCode = dataSourceInformation.countryCode();
     }
 
-    public PermissionRequestMetricsModel(
-            double mean,
-            double median,
-            int permissionRequestCount,
-            PermissionProcessStatus permissionRequestStatus,
-            String dataNeedType,
-            String permissionAdministratorId,
-            String regionConnectorId
-    ) {
-        this(mean, median, permissionRequestStatus, dataNeedType, permissionAdministratorId, regionConnectorId);
-        this.permissionRequestCount = permissionRequestCount;
-    }
-
-    protected PermissionRequestMetricsModel() { }
+    protected PermissionRequestMetricsModel() {}
 
     public Long getId() {
         return id;
@@ -127,5 +120,49 @@ public class PermissionRequestMetricsModel {
 
     public String getCountryCode() {
         return countryCode;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = id.hashCode();
+        result = 31 * result + Double.hashCode(mean);
+        result = 31 * result + Double.hashCode(median);
+        result = 31 * result + permissionRequestCount;
+        result = 31 * result + permissionRequestStatus.hashCode();
+        result = 31 * result + dataNeedType.hashCode();
+        result = 31 * result + permissionAdministratorId.hashCode();
+        result = 31 * result + regionConnectorId.hashCode();
+        result = 31 * result + countryCode.hashCode();
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof PermissionRequestMetricsModel that)) return false;
+
+        return Double.compare(mean, that.mean) == 0
+               && Double.compare(median, that.median) == 0
+               && permissionRequestCount == that.permissionRequestCount
+               && id.equals(that.id)
+               && permissionRequestStatus == that.permissionRequestStatus
+               && dataNeedType.equals(that.dataNeedType)
+               && permissionAdministratorId.equals(that.permissionAdministratorId)
+               && regionConnectorId.equals(that.regionConnectorId)
+               && countryCode.equals(that.countryCode);
+    }
+
+    @Override
+    public String toString() {
+        return "PermissionRequestMetricsModel{" +
+               "id=" + id +
+               ", mean=" + mean +
+               ", median=" + median +
+               ", permissionRequestCount=" + permissionRequestCount +
+               ", permissionRequestStatus=" + permissionRequestStatus +
+               ", dataNeedType='" + dataNeedType + '\'' +
+               ", permissionAdministratorId='" + permissionAdministratorId + '\'' +
+               ", regionConnectorId='" + regionConnectorId + '\'' +
+               ", countryCode='" + countryCode + '\'' +
+               '}';
     }
 }

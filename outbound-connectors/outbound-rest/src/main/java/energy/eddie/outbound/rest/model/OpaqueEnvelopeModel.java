@@ -56,7 +56,7 @@ public class OpaqueEnvelopeModel implements ModelWithJsonPayload<OpaqueEnvelope>
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof OpaqueEnvelopeModel that)) return false;
 
         return Objects.equals(insertedAt, that.insertedAt)

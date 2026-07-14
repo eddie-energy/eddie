@@ -60,7 +60,7 @@ public class ConnectionStatusMessageModel implements ModelWithJsonPayload<Connec
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof ConnectionStatusMessageModel that)) return false;
 
         return Objects.equals(insertedAt, that.insertedAt)

@@ -7,14 +7,15 @@ import energy.eddie.api.agnostic.outbound.PermissionEventRepositories;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.DataSourceInformation;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.outbound.metric.connectors.AgnosticConnector;
 import energy.eddie.outbound.metric.model.PermissionRequestStatusDurationModel;
 import energy.eddie.outbound.metric.repositories.PermissionRequestMetricsRepository;
 import energy.eddie.outbound.metric.repositories.PermissionRequestStatusDurationRepository;
-import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import energy.eddie.outbound.shared.testing.MockPermissionEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,38 +28,33 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestMetricsServiceTest {
 
-    @Mock
-    private AgnosticConnector agnosticConnector;
-
-    @Mock
-    private PermissionRequestMetricsRepository metricsRepository;
-
-    @Mock
-    private PermissionRequestStatusDurationRepository statusDurationRepository;
-
-    @Mock
-    private DataNeedsService dataNeedsService;
-
-    @Mock
-    private PermissionEventRepositories repositories;
-
-    @Mock
-    private PermissionEventRepository permissionEventRepository;
-
-    @Mock
-    private DataNeed dataNeed;
-
-    private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation(
+    private final DataSourceInformation dataSourceInformation = new SimpleDataSourceInformation(
             "AT",
             "at-eda",
-            "paId",
-            "mdaId"
+            "mdaId",
+            "paId"
     );
+    @Mock
+    private AgnosticConnector agnosticConnector;
+    @Mock
+    private PermissionRequestMetricsRepository metricsRepository;
+    @Mock
+    private PermissionRequestStatusDurationRepository statusDurationRepository;
+    @Mock
+    private DataNeedsService dataNeedsService;
+    @Mock
+    private PermissionEventRepositories repositories;
+    @Mock
+    private PermissionEventRepository permissionEventRepository;
+    @Mock
+    private DataNeed dataNeed;
 
     @Test
     void upsertMetricTest() {
@@ -78,16 +74,17 @@ class PermissionRequestMetricsServiceTest {
         var currEvent = new MockPermissionEvent(permissionId, PermissionProcessStatus.VALIDATED);
         List<PermissionEvent> permissionEvents = List.of(currEvent, prevEvent);
 
-        when(permissionEventRepository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(permissionId,
+        when(permissionEventRepository.findTop2ByPermissionIdAndEventCreatedLessThanEqualOrderByEventCreatedDesc(
+                permissionId,
                 now)).thenReturn(permissionEvents);
         when(repositories.getPermissionEventRepositoryByRegionConnectorId(regionConnectorId))
                 .thenReturn(Optional.of(permissionEventRepository));
         when(dataNeed.type()).thenReturn("dnType");
         when(dataNeedsService.getById("dnId")).thenReturn(dataNeed);
 
-        when(metricsRepository.getPermissionRequestMetrics(any(), any(), any(), any(), any()))
+        when(metricsRepository.getPermissionRequestMetrics(any(), any(), any()))
                 .thenReturn(Optional.empty());
-        when(statusDurationRepository.getMedianDurationMilliseconds(any(), any(), any(), any(), any()))
+        when(statusDurationRepository.getMedianDurationMilliseconds(any(), any(), any()))
                 .thenReturn(100.0);
 
         TestPublisher<ConnectionStatusMessage> csmPublisher = TestPublisher.create();
@@ -105,15 +102,12 @@ class PermissionRequestMetricsServiceTest {
 
         // Then
         verify(statusDurationRepository).save(any(PermissionRequestStatusDurationModel.class));
-        verify(metricsRepository).upsertPermissionRequestMetric(
-                anyDouble(),
-                eq(100.0),
-                eq(1),
-                eq(PermissionProcessStatus.CREATED.name()),
-                eq("dnType"),
-                eq("paId"),
-                eq("at-eda"),
-                eq("AT")
+        verify(metricsRepository).upsertPermissionRequestMetric(assertArg(pr -> assertAll(
+                                                                        () -> assertEquals(100.0, pr.getMedian()),
+                                                                        () -> assertEquals(1, pr.getPermissionRequestCount()),
+                                                                        () -> assertEquals(PermissionProcessStatus.CREATED, pr.getPermissionRequestStatus()),
+                                                                        () -> assertEquals("dnType", pr.getDataNeedType())
+                                                                ))
         );
     }
 

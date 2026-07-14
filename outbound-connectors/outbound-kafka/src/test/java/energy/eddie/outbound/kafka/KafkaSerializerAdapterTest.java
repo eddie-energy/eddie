@@ -5,12 +5,12 @@ package energy.eddie.outbound.kafka;
 
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.cim.serde.MessageSerde;
 import energy.eddie.cim.serde.SerdeFactory;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.serde.SerializationException;
 import energy.eddie.cim.v0_91_08.RTREnvelope;
-import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,10 +39,10 @@ class KafkaSerializerAdapterTest {
         ConnectionStatusMessage data = new ConnectionStatusMessage("connectionId",
                                                                    "permissionId",
                                                                    "dataNeedId",
-                                                                   new MockDataSourceInformation("cc",
-                                                                                                 "rc",
-                                                                                                 "pa",
-                                                                                                 "mda"),
+                                                                   new SimpleDataSourceInformation("cc",
+                                                                                                   "rc",
+                                                                                                   "mda",
+                                                                                                   "pa"),
                                                                    now,
                                                                    PermissionProcessStatus.ACCEPTED,
                                                                    "Granted",

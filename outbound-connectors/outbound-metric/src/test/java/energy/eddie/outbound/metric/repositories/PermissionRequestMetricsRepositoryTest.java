@@ -4,6 +4,7 @@
 package energy.eddie.outbound.metric.repositories;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +37,13 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void getPermissionRequestMetrics_withResult() {
         // Given
+        var dsi = new SimpleDataSourceInformation("CC", "rcId", "mdaId", "paId");
         PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
                 0.0,
                 0.0,
                 PermissionProcessStatus.CREATED,
                 "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                dsi
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
@@ -51,9 +51,7 @@ class PermissionRequestMetricsRepositoryTest {
         var res = permissionRequestMetricsRepository.getPermissionRequestMetrics(
                 PermissionProcessStatus.CREATED,
                 "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                dsi
         );
 
         // Then
@@ -63,14 +61,13 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void getPermissionRequestMetrics_noResult() {
         // Given
+        var dsi = new SimpleDataSourceInformation("CC", "rcId", "mdaId", "paId");
         PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
                 0.0,
                 0.0,
                 PermissionProcessStatus.CREATED,
                 "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                dsi
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
@@ -78,9 +75,7 @@ class PermissionRequestMetricsRepositoryTest {
         var res = permissionRequestMetricsRepository.getPermissionRequestMetrics(
                 PermissionProcessStatus.VALIDATED,
                 "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                dsi
         );
 
         // Then
@@ -90,27 +85,26 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void upsertPermissionRequestMetric_exists() {
         // Given
+        var dsi = new SimpleDataSourceInformation("CC", "rcId", "mdaId", "paId");
         PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
                 90,
                 90,
                 PermissionProcessStatus.CREATED,
                 "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                dsi
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
         // When
         permissionRequestMetricsRepository.upsertPermissionRequestMetric(
-                97.5,
-                97.5,
-                2,
-                PermissionProcessStatus.CREATED.name(),
-                "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                new PermissionRequestMetricsModel(
+                        97.5,
+                        97.5,
+                        2,
+                        PermissionProcessStatus.CREATED,
+                        "dnType",
+                        dsi
+                )
         );
 
         // Then
@@ -120,27 +114,26 @@ class PermissionRequestMetricsRepositoryTest {
     @Test
     void upsertPermissionRequestMetric_notExists() {
         // Given
+        var dsi = new SimpleDataSourceInformation("CC", "rcId", "mdaId", "paId");
         PermissionRequestMetricsModel prMetrics = new PermissionRequestMetricsModel(
                 90,
                 90,
                 PermissionProcessStatus.CREATED,
                 "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                dsi
         );
         permissionRequestMetricsRepository.save(prMetrics);
 
         // When
         permissionRequestMetricsRepository.upsertPermissionRequestMetric(
-                97.5,
-                97.5,
-                2,
-                PermissionProcessStatus.VALIDATED.name(),
-                "dnType",
-                "paId",
-                "rcId",
-                "CC"
+                new PermissionRequestMetricsModel(
+                        97.5,
+                        97.5,
+                        2,
+                        PermissionProcessStatus.VALIDATED,
+                        "dnType",
+                        dsi
+                )
         );
 
         // Then

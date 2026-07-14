@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.providers.ap;
@@ -40,6 +40,7 @@ public record Address(
         return null;
     }
 
+    @SuppressWarnings("java:S8786") // The address pattern is very complicated and cannot be simplified
     private static Address parseSingleLine(String line) {
         var pattern = Pattern.compile("^(\\d+)\\s+(.*?),\\s*([^,]+),\\s*([A-Z]{2})\\s+(\\d{5})(?:-\\d{4})?$");
         var matcher = pattern.matcher(line);
@@ -65,6 +66,7 @@ public record Address(
         return parseCityStateZip(lines[1].trim(), lines[0].trim());
     }
 
+    @SuppressWarnings("java:S8786") // The address pattern is very complicated and cannot be simplified
     private static Address parseCityStateZip(String cityStateZip, String streetLine) {
         var cityStateZipPattern = Pattern.compile("^(.+),\\s*([A-Z]{2})\\s+(\\d{5})(?:-\\d{4})?$");
         var cszMatcher = cityStateZipPattern.matcher(cityStateZip);

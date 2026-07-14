@@ -57,7 +57,7 @@ public class MinMaxEnvelopeMarketDocumentModel implements ModelWithJsonPayload<R
     }
 
     @Override
-    public final boolean equals(Object o) {
+    public boolean equals(Object o) {
         if (!(o instanceof MinMaxEnvelopeMarketDocumentModel that)) return false;
 
         return Objects.equals(insertedAt, that.insertedAt)

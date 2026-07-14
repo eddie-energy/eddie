@@ -4,6 +4,7 @@
 package energy.eddie.outbound.metric.repositories;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.outbound.metric.model.PermissionRequestStatusDurationModel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,16 +38,17 @@ class PermissionRequestStatusDurationRepositoryTest {
     @Test
     void getMedianDurationTest() {
         // Given
+        var dsi = new SimpleDataSourceInformation("CC", "rcId", "mdaId", "paId");
         List<PermissionRequestStatusDurationModel> prStatusDurations = new ArrayList<>();
         prStatusDurations.add(new PermissionRequestStatusDurationModel("pid1", PermissionProcessStatus.CREATED,
-                98, "dnId", "paId", "rcId", "CC"));
+                                                                       98, "dnId", dsi));
         prStatusDurations.add(new PermissionRequestStatusDurationModel("pid2", PermissionProcessStatus.CREATED,
-                100, "dnId", "paId", "rcId", "CC"));
+                                                                       100, "dnId", dsi));
         prStatusDurationRepository.saveAll(prStatusDurations);
 
         // When
         double median = prStatusDurationRepository.getMedianDurationMilliseconds(PermissionProcessStatus.CREATED.name(),
-                "dnId","paId", "rcId", "CC");
+                                                                                 "dnId", dsi);
 
         // Then
         assertThat(median).isEqualTo(99.0);

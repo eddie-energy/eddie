@@ -1,9 +1,8 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.processing.v0_82.vhd;
 
-import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.at.eda.InvalidMappingException;
@@ -20,16 +19,17 @@ import static org.mockito.Mockito.*;
 class ValidatedHistoricalDataMarketDocumentDirectorTest {
     @Test
     void constructor_withNullCommonInformationModelConfiguration_throwsNullPointerException() {
+        var builder = new ValidatedHistoricalDataMarketDocumentBuilderFactory();
         assertThrows(NullPointerException.class,
-                     () -> new ValidatedHistoricalDataMarketDocumentDirector(null,
-                                                                             mock(ValidatedHistoricalDataMarketDocumentBuilderFactory.class)));
+                     () -> new ValidatedHistoricalDataMarketDocumentDirector(null, builder));
     }
 
     @Test
     void constructor_withNullValidatedHistoricalDataMarketDocumentBuilderFactory_throwsNullPointerException() {
+        var cimConfig = new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                                                                     "fallbackId");
         assertThrows(NullPointerException.class,
-                     () -> new ValidatedHistoricalDataMarketDocumentDirector(mock(CommonInformationModelConfiguration.class),
-                                                                             null));
+                     () -> new ValidatedHistoricalDataMarketDocumentDirector(cimConfig, null));
     }
 
     @Test
