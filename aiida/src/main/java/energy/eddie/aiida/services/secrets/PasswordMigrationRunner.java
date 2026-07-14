@@ -13,6 +13,7 @@ import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.repositories.AiidaMigrationRepository;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.MqttStreamingConfigRepository;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -21,7 +22,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.stream.Stream;
 
-import static com.pivovarit.function.ThrowingFunction.sneaky;
 import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Component
@@ -34,9 +34,6 @@ public class PasswordMigrationRunner {
     private final DataSourceRepository dataSourceRepository;
     private final SecretsService secretService;
     private final MqttStreamingConfigRepository mqttStreamingConfigRepository;
-
-    private int migratedDataSources = 0;
-    private int migratedPermissions = 0;
 
     public PasswordMigrationRunner(
             AiidaMigrationRepository migrationRepository,
@@ -51,15 +48,16 @@ public class PasswordMigrationRunner {
     }
 
     @EventListener(ContextRefreshedEvent.class)
-    protected void migrate() {
+    @Transactional(rollbackOn = SecretStoringException.class)
+    protected void migrate() throws SecretStoringException {
         var migration = migrationRepository.findMigrationByMigrationKey(MIGRATION_KEY);
 
         if (migration.isPresent()) {
             return;
         }
 
-        migrateDataSources();
-        migrateMqttStreamingConfigs();
+        var migratedDataSources = migrateDataSources();
+        var migratedPermissions = migrateMqttStreamingConfigs();
         LOGGER.info("Migrated plaintext passwords to Java Keystore from {} data source(s) and {} permission(s).",
                     migratedDataSources,
                     migratedPermissions);
@@ -67,12 +65,19 @@ public class PasswordMigrationRunner {
         migrationRepository.save(new Migration(MIGRATION_KEY, DESCRIPTION));
     }
 
-    private void migrateDataSources() {
-        collectDataSources()
+    private int migrateDataSources() throws SecretStoringException {
+        var mqttDataSources = collectDataSources()
                 .filter(MqttDataSource.class::isInstance)
                 .map(MqttDataSource.class::cast)
-                .map(sneaky(this::savePasswordToKeyStore))
-                .forEach(this::replacePasswordWithAlias);
+                .toList();
+
+        for (var mqttDataSource : mqttDataSources) {
+            savePasswordToKeyStore(mqttDataSource);
+        }
+
+        mqttDataSources.forEach(this::replacePasswordWithAlias);
+
+        return mqttDataSources.size();
     }
 
     private Stream<DataSource> collectDataSources() {
@@ -80,12 +85,14 @@ public class PasswordMigrationRunner {
                              dataSourceRepository.findAllByType(DataSourceType.SINAPSI_ALFA).stream());
     }
 
-    private MqttDataSource savePasswordToKeyStore(MqttDataSource mqttDataSource) throws SecretStoringException {
+    private void savePasswordToKeyStore(MqttDataSource mqttDataSource) throws SecretStoringException {
         secretService.storeSecret(mqttDataSource.id(), SecretType.PASSWORD, mqttDataSource.password());
-        LOGGER.debug("Stored plaintext secret for data source {} in java key store", mqttDataSource.id());
-        migratedDataSources++;
 
-        return mqttDataSource;
+        if (mqttDataSource instanceof InboundDataSource inboundDataSource) {
+            secretService.storeSecret(inboundDataSource.id(), SecretType.API_KEY, inboundDataSource.accessCode());
+        }
+
+        LOGGER.debug("Stored plaintext secret(s) for data source {} in java key store", mqttDataSource.id());
     }
 
     private void replacePasswordWithAlias(MqttDataSource mqttDataSource) {
@@ -98,21 +105,23 @@ public class PasswordMigrationRunner {
         dataSourceRepository.save(mqttDataSource);
     }
 
-    private void migrateMqttStreamingConfigs() {
-        mqttStreamingConfigRepository.findAll()
-                                     .stream()
-                                     .map(sneaky(this::savePasswordToKeyStore))
-                                     .forEach(this::replacePasswordWithAlias);
+    private int migrateMqttStreamingConfigs() throws SecretStoringException {
+        var mqttStreamingConfigs = mqttStreamingConfigRepository.findAll();
+
+        for (var mqttStreamingConfig : mqttStreamingConfigs) {
+            savePasswordToKeyStore(mqttStreamingConfig);
+        }
+
+        mqttStreamingConfigs.forEach(this::replacePasswordWithAlias);
+
+        return mqttStreamingConfigs.size();
     }
 
-    private MqttStreamingConfig savePasswordToKeyStore(MqttStreamingConfig mqttStreamingConfig) throws SecretStoringException {
+    private void savePasswordToKeyStore(MqttStreamingConfig mqttStreamingConfig) throws SecretStoringException {
         secretService.storeSecret(mqttStreamingConfig.permissionId(),
                                   SecretType.PASSWORD,
                                   mqttStreamingConfig.password());
         LOGGER.debug("Stored plaintext secret for permission {} in java key store", mqttStreamingConfig.permissionId());
-        migratedPermissions++;
-
-        return mqttStreamingConfig;
     }
 
     private void replacePasswordWithAlias(MqttStreamingConfig mqttStreamingConfig) {
