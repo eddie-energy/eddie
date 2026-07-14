@@ -10,6 +10,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
+import java.util.Objects;
 
 @Entity
 @Table(name = "aiida_mqtt_acl", schema = AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID)
@@ -80,5 +81,30 @@ public class MqttAcl {
 
     public Instant createdAt() {
         return createdAt;
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(id);
+        result = 31 * result + username.hashCode();
+        result = 31 * result + action.hashCode();
+        result = 31 * result + aclType.hashCode();
+        result = 31 * result + topic.hashCode();
+        result = 31 * result + Objects.hashCode(createdAt);
+        return result;
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof MqttAcl mqttAcl)) return false;
+
+        return Objects.equals(id, mqttAcl.id)
+               && username.equals(mqttAcl.username)
+               && action == mqttAcl.action
+               && aclType == mqttAcl.aclType
+               && topic.equals(mqttAcl.topic)
+               && Objects.equals(createdAt, mqttAcl.createdAt);
     }
 }

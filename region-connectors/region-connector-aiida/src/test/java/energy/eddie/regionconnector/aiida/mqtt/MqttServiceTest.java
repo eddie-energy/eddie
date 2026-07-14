@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -111,25 +112,16 @@ class MqttServiceTest {
 
         // verify ACLs
         verify(mockAclRepository).saveAll(mqttAclCaptor.capture());
-        List<MqttAcl> acls = StreamSupport.stream(mqttAclCaptor.getValue().spliterator(), false).toList();
 
-        assertEquals(3, acls.size());
-
-        assertEquals("aiida/v1/testId/data/outbound/+", acls.getFirst().topic());
-        assertEquals(MqttAction.PUBLISH, acls.getFirst().action());
-        assertEquals(MqttAclType.ALLOW, acls.getFirst().aclType());
-        assertEquals(permissionId, acls.getFirst().username());
-
-        assertEquals("aiida/v1/testId/status", acls.get(1).topic());
-        assertEquals(MqttAction.PUBLISH, acls.get(1).action());
-        assertEquals(MqttAclType.ALLOW, acls.get(1).aclType());
-        assertEquals(permissionId, acls.get(1).username());
-
-        assertEquals("aiida/v1/testId/command/+", acls.get(2).topic());
-        assertEquals(MqttAction.SUBSCRIBE, acls.get(2).action());
-        assertEquals(MqttAclType.ALLOW, acls.get(2).aclType());
-        assertEquals(permissionId, acls.get(2).username());
-
+        assertThat(mqttAclCaptor.getValue())
+                .containsExactly(
+                        new MqttAcl(permissionId,
+                                    MqttAction.PUBLISH,
+                                    MqttAclType.ALLOW,
+                                    "aiida/v1/testId/data/outbound/+"),
+                        new MqttAcl(permissionId, MqttAction.PUBLISH, MqttAclType.ALLOW, "aiida/v1/testId/status"),
+                        new MqttAcl(permissionId, MqttAction.SUBSCRIBE, MqttAclType.ALLOW, "aiida/v1/testId/command/+")
+                );
 
         assertEquals(serverUri, dto.serverUri());
         assertEquals(permissionId, dto.username());
