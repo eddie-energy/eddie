@@ -4,9 +4,7 @@
 package energy.eddie.outbound.amqp;
 
 import com.rabbitmq.client.amqp.Connection;
-import energy.eddie.cim.agnostic.ConnectionStatusMessage;
-import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.cim.agnostic.RawDataMessage;
+import energy.eddie.cim.agnostic.*;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
@@ -23,7 +21,6 @@ import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
-import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.junit.jupiter.api.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
@@ -42,10 +39,10 @@ class AmqpOutboundTest {
     private static final RabbitMQContainer rabbit = new RabbitMQContainer(
             DockerImageName.parse("rabbitmq:4-management-alpine")
     );
-    private final MockDataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
-                                                                                                  "at-eda",
-                                                                                                  "paid",
-                                                                                                  "mdaid");
+    private final DataSourceInformation dataSourceInformation = new SimpleDataSourceInformation("AT",
+                                                                                                "at-eda",
+                                                                                                "mdaid",
+                                                                                                "paid");
     private final TopicConfiguration config = new TopicConfiguration("eddie");
     private Connection connection;
     private AmqpOutbound amqpOutbound;

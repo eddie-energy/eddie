@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.metric.model;
 
+import energy.eddie.cim.agnostic.DataSourceInformation;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.persistence.*;
 
@@ -39,17 +40,19 @@ public class PermissionRequestStatusDurationModel {
     @Column(name = "country_code", nullable = false, updatable = false)
     private String countryCode;
 
-    protected PermissionRequestStatusDurationModel() { }
+    protected PermissionRequestStatusDurationModel() {}
 
-    public PermissionRequestStatusDurationModel(String permissionId, PermissionProcessStatus status, long duration,
-            String dataNeedType, String permissionAdministratorId, String regionConnectorId, String countryCode) {
+    public PermissionRequestStatusDurationModel(
+            String permissionId, PermissionProcessStatus status, long duration,
+            String dataNeedType, DataSourceInformation dataSourceInformation
+    ) {
         this.permissionId = permissionId;
         this.status = status;
         this.duration = duration;
         this.dataNeedType = dataNeedType;
-        this.permissionAdministratorId = permissionAdministratorId;
-        this.regionConnectorId = regionConnectorId;
-        this.countryCode = countryCode;
+        this.permissionAdministratorId = dataSourceInformation.permissionAdministratorId();
+        this.regionConnectorId = dataSourceInformation.regionConnectorId();
+        this.countryCode = dataSourceInformation.countryCode();
     }
 
     public Long getId() {

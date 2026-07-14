@@ -3,10 +3,7 @@
 
 package energy.eddie.outbound.kafka;
 
-import energy.eddie.cim.agnostic.ConnectionStatusMessage;
-import energy.eddie.cim.agnostic.DataSourceInformation;
-import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.cim.agnostic.RawDataMessage;
+import energy.eddie.cim.agnostic.*;
 import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderComplexType;
 import energy.eddie.cim.v0_82.pmd.MessageDocumentHeaderMetaInformationComplexType;
@@ -21,7 +18,6 @@ import energy.eddie.cim.v1_12.recmmoe.MetaInformation;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.outbound.shared.TopicConfiguration;
-import energy.eddie.outbound.shared.testing.MockDataSourceInformation;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -45,10 +41,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Tag("Integration")
 class KafkaConnectorTest {
-    private final DataSourceInformation dataSourceInformation = new MockDataSourceInformation("AT",
-                                                                                              "at-eda",
-                                                                                              "paid",
-                                                                                              "mdaid");
+    private final DataSourceInformation dataSourceInformation = new SimpleDataSourceInformation("AT",
+                                                                                                "at-eda",
+                                                                                                "mdaid",
+                                                                                                "paid");
     private final TopicConfiguration config = new TopicConfiguration("eddie");
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired

@@ -4,6 +4,7 @@
 package energy.eddie.outbound.metric.service;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.outbound.metric.generated.PermissionRequestMetrics;
 import energy.eddie.outbound.metric.model.PermissionRequestMetricsModel;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ class MetricsReportBuilderTest {
     @Test
     void testCreateMetricsReport_jsonInput() {
         // Given
+        var dsi = new SimpleDataSourceInformation("BE", "be-fluvius", "Fluvius", "Fluvius");
         MetricsReportBuilder metricsReportBuilder = new MetricsReportBuilder();
         List<PermissionRequestMetricsModel> inputData = List.of(
                 new PermissionRequestMetricsModel(
@@ -28,8 +30,7 @@ class MetricsReportBuilderTest {
                         3,
                         PermissionProcessStatus.CREATED,
                         "validated",
-                        "Fluvius",
-                        "be-fluvius"
+                        dsi
                 ),
                 new PermissionRequestMetricsModel(
                         13588.0,
@@ -37,8 +38,7 @@ class MetricsReportBuilderTest {
                         3,
                         PermissionProcessStatus.VALIDATED,
                         "validated",
-                        "Fluvius",
-                        "be-fluvius"
+                        dsi
                 ),
                 new PermissionRequestMetricsModel(
                         2405.0,
@@ -46,8 +46,7 @@ class MetricsReportBuilderTest {
                         3,
                         PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR,
                         "validated",
-                        "Fluvius",
-                        "be-fluvius"
+                        dsi
                 ),
                 new PermissionRequestMetricsModel(
                         5.5,
@@ -55,8 +54,7 @@ class MetricsReportBuilderTest {
                         3,
                         PermissionProcessStatus.ACCEPTED,
                         "validated",
-                        "Fluvius",
-                        "be-fluvius"
+                        dsi
                 )
         );
 
