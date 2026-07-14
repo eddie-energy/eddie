@@ -48,7 +48,10 @@ public class OAuth2SecurityConfiguration {
                                 "/",
                                 "/data-sources",
                                 "/account",
-                                "/svgs/**")
+                                "/svgs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**")
                         .permitAll()
                         .anyRequest().authenticated()
                 )

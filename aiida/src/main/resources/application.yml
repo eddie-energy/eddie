@@ -21,6 +21,12 @@ spring:
           issuer-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}
           jwk-set-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
 
+springdoc:
+  swagger-ui:
+    oauth:
+      client-id: ${aiida.keycloak.client}
+      use-pkce-with-authorization-code-grant: true
+
 management:
   endpoints:
     web:
@@ -55,6 +61,8 @@ aiida:
       external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
     realm: ${KEYCLOAK_REALM:AIIDA}
     client: ${KEYCLOAK_CLIENT:AIIDA}
+    authorization-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/auth
+    token-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/token
   data-source:
     it:
       sinapsi-alfa:
