@@ -19,6 +19,7 @@ import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigExcept
 import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
+import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
@@ -139,6 +140,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             ActiveFcaPermissionAlreadyExistsException.class,
             InboundDataSourceInUseException.class,
+            ProvisioningTypeNotConfiguredException.class,
             PermissionDataNeedTypeNotSupportedException.class,
             PermissionStartInThePastException.class,
             PermissionStateTransitionException.class

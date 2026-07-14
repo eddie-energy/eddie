@@ -7,6 +7,7 @@
   "editButton": "Bearbeiten",
   "revokeButton": "Widerrufen",
   "continueButton": "Fortfahren",
+  "saveButton": "Speichern",
   "closeButton": "Schließen",
   "scrollToTop": "Nach oben scrollen",
   "header": {
@@ -114,6 +115,24 @@
     "showMqttPassword": "MQTT-Passwort anzeigen",
     "hideMqttPassword": "MQTT-Passwort ausblenden",
     "copyMqttPassword": "MQTT-Passwort kopieren",
+    "mqttProvisioning": {
+      "title": "Eingehende Bereitstellung",
+      "openButton": "Bereitstellung konfigurieren",
+      "mode": "Bereitstellungsmodus",
+      "modePlaceholder": "Bereitstellungsmodus auswählen",
+      "modeRequired": "Bitte wählen Sie einen Bereitstellungsmodus aus.",
+      "host": "MQTT-Host",
+      "username": "MQTT-Benutzername",
+      "password": "MQTT-Passwort",
+      "topic": "MQTT-Topic",
+      "required": "Bitte füllen Sie alle MQTT-Verbindungsfelder aus.",
+      "types": {
+        "REST_API_TOKEN": "REST-API-Token",
+        "REST_BEARER": "REST Bearer",
+        "MQTT_SERVER": "MQTT-Server",
+        "MQTT_CLIENT": "MQTT-Client"
+      }
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"
@@ -140,6 +159,7 @@
       "permissionId": "Berechtigungs-ID",
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "inboundTooltip": "Es gibt zwei Möglichkeiten, diesen API-Schlüssel zu verwenden, um die neuesten eingehenden Daten abzurufen:",
+      "provisioningType": "Bereitstellungstyp",
       "permissionID": "Berechtigungs-ID",
       "openDetails": "Berechtigungsdetails öffnen"
     },

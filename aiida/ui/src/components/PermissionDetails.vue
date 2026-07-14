@@ -7,11 +7,12 @@ import StatusTag from './StatusTag.vue'
 import cronstrue from 'cronstrue/i18n'
 import Button from '@/components/Button.vue'
 import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
+import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
-import { ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
@@ -27,6 +28,9 @@ const target = useTemplateRef('target')
 const { permission, status } = defineProps<{
   permission: AiidaPermission
   status?: PermissionTypes
+}>()
+const emit = defineEmits<{
+  configureInboundProvisioning: [permission: AiidaPermission]
 }>()
 
 const { updatePermission } = usePermissionDialog()
@@ -104,6 +108,10 @@ const handleInboundMessageFormatSelection = async (
   }
 }
 
+const openInboundProvisioningModal = () => {
+  emit('configureInboundProvisioning', permission)
+}
+
 const showInboundApiKey = () => {
   show.value = !show.value
 }
@@ -111,6 +119,19 @@ const showInboundApiKey = () => {
 const generateStringFromLength = (length: number, char: string) => {
   return Array.from({ length }, () => char).join('')
 }
+
+const isInboundMqttProvisioning = computed(
+  () =>
+    permission.dataNeed.type === 'inbound-aiida' &&
+    (permission.dataSource?.provisioningType === 'MQTT_SERVER' ||
+      permission.dataSource?.provisioningType === 'MQTT_CLIENT'),
+)
+
+const inboundMqttConnection = computed(() => permission.dataSource?.provisioningConfig?.connection)
+const inboundMqttServerUri = computed(
+  () => inboundMqttConnection.value?.externalHost ?? inboundMqttConnection.value?.internalHost,
+)
+const inboundMqttTopic = computed(() => permission.dataSource?.provisioningConfig?.topic)
 
 onClickOutside(target, () => (showToolTip.value = false))
 </script>
@@ -182,6 +203,24 @@ onClickOutside(target, () => (showToolTip.value = false))
           </StatusTag>
         </dd>
       </div>
+      <template v-if="isInboundMqttProvisioning && inboundMqttConnection">
+        <div class="permission-field">
+          <dt>{{ t('permissions.dropdown.provisioningType') }}</dt>
+          <dd>{{ permission.dataSource?.provisioningType }}</dd>
+        </div>
+        <div v-if="inboundMqttServerUri" class="permission-field">
+          <dt>{{ t('datasources.card.mqttServerUri') }}</dt>
+          <dd>{{ inboundMqttServerUri }}</dd>
+        </div>
+        <div class="permission-field">
+          <dt>{{ t('datasources.card.mqttUsername') }}</dt>
+          <dd>{{ inboundMqttConnection.username }}</dd>
+        </div>
+        <div v-if="inboundMqttTopic" class="permission-field">
+          <dt>{{ t('datasources.card.mqttTopic') }}</dt>
+          <dd>{{ inboundMqttTopic }}</dd>
+        </div>
+      </template>
     </div>
     <div class="column">
       <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
@@ -314,6 +353,14 @@ onClickOutside(target, () => (showToolTip.value = false))
       <div class="permission-field" v-if="permission.permissionId">
         <dt>{{ t('permissions.dropdown.permissionID') }}</dt>
         <dd>{{ permission.permissionId }}</dd>
+      </div>
+      <div
+        v-if="status === 'Active' && permission.dataNeed.type === 'inbound-aiida'"
+        class="actions-row"
+      >
+        <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
+          <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
+        </Button>
       </div>
       <div class="permission-field" v-if="permission.unimplemented">
         <dt>Last Data Package sent</dt>
