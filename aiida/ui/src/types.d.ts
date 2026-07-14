@@ -26,6 +26,12 @@ export type AiidaDataNeed = {
 
 export type AiidaDataSourceIcon = 'ELECTRICITY' | 'HEAT' | 'METER' | 'WATER' | ''
 
+export type InboundProvisioningType =
+  | 'MQTT_SERVER'
+  | 'MQTT_CLIENT'
+  | 'REST_API_TOKEN'
+  | 'REST_BEARER'
+
 export type AiidaDataSource = {
   id: string
   type: string
@@ -39,6 +45,8 @@ export type AiidaDataSource = {
   //DatasourceType = INBOUND
   accessCode?: string
   schemas?: string[]
+  provisioningType?: InboundProvisioningType
+  provisioningConfig?: InboundProvisioningConfig
   //DatasourceType = MQTT
   internalHost?: string
   externalHost?: string
@@ -107,6 +115,26 @@ export type AiidaDataSourceHealthStatus = {
   details?: {
     [key: string]: string
   }
+}
+
+export type MqttConnection = {
+  internalHost: string
+  externalHost: string
+  username: string
+}
+
+export type InboundProvisioningConfig = {
+  connection?: MqttConnection
+  topic?: string
+}
+
+export type ProvisioningTypePatchDto = {
+  permissionId: string
+  type: InboundProvisioningType
+  host: string
+  username: string
+  password: string
+  topic: string
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'

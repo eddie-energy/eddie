@@ -5,7 +5,9 @@ package energy.eddie.aiida.models.datasource.mqtt.inbound;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
+import energy.eddie.aiida.dtos.inbound.ProvisioningConnectionDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -18,6 +20,8 @@ import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.transaction.Transactional;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +35,9 @@ import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 public class InboundDataSource extends MqttDataSource {
     protected static final String TABLE_NAME = "data_source_mqtt_inbound";
 
+    @JsonIgnore
+    protected String serverModeTopic;
+
     @Column(name = "access_code", table = TABLE_NAME)
     @Schema(description = "The access code to retrieve the inbound data.")
     @JsonProperty
@@ -41,9 +48,18 @@ public class InboundDataSource extends MqttDataSource {
     @JsonIgnore
     protected Permission permission;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "provisioning_type", table = TABLE_NAME, nullable = false)
+    @Schema(description = "The type defining how inbound data will be provided.")
+    private InboundProvisioningType provisioningType;
+
     @Transient
     @JsonIgnore
     private MqttStreamingConfig config;
+
+    @Embedded
+    @JsonProperty("provisioningConfig")
+    private InboundProvisioningConfig inboundProvisioningConfig;
 
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
@@ -55,12 +71,14 @@ public class InboundDataSource extends MqttDataSource {
     public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission, String accessCode) {
         super(dto, userId);
         this.permission = permission;
-
         this.config = Objects.requireNonNull(permission.mqttStreamingConfig());
 
         this.mqttConnection = new MqttConnection(config.serverUri(), config.serverUri());
 
         this.accessCode = accessCode;
+        this.provisioningType = InboundProvisioningType.REST_BEARER;
+        this.inboundProvisioningConfig = new InboundProvisioningConfig();
+        setServerModeTopic();
     }
 
     public String accessCode() {
@@ -86,6 +104,47 @@ public class InboundDataSource extends MqttDataSource {
         return config != null ? config.acknowledgementTopic() : null;
     }
 
+    public InboundProvisioningType inboundProvisioningType() {
+        return provisioningType;
+    }
+
+    public MqttConnection provisioningConnection() {
+        return inboundProvisioningConfig.connection();
+    }
+
+    public MqttAccessControlEntry provisioningAccessControlEntry() {
+        return inboundProvisioningConfig.accessControlEntry();
+    }
+
+    @Transactional
+    public void changeInboundProvisioningType(InboundProvisioningType inboundProvisioningType) {
+        this.provisioningType = inboundProvisioningType;
+    }
+
+    @Transactional
+    public ProvisioningConnectionDto establishClientModeConnection(
+            String host,
+            String username,
+            String password,
+            String topic
+    ) {
+        changeInboundProvisioningType(InboundProvisioningType.MQTT_CLIENT);
+        return inboundProvisioningConfig.establishClientModeConnection(host, host, username, password, topic);
+    }
+
+    @Transactional
+    public ProvisioningConnectionDto establishServerModeConnection(
+            MqttConfiguration mqttConfig,
+            BCryptPasswordEncoder encoder,
+            String plaintextPassword
+    ) {
+        changeInboundProvisioningType(InboundProvisioningType.MQTT_SERVER);
+        var username = UUID.randomUUID().toString();
+        var password = encoder.encode(plaintextPassword);
+
+        return inboundProvisioningConfig.establishServerModeConnection(mqttConfig, username, password, serverModeTopic);
+    }
+
     @Override
     protected void createMqttUser() {
         this.mqttConnection.createMqttUser(config.username().toString(), alias(id, SecretType.PASSWORD));
@@ -100,6 +159,10 @@ public class InboundDataSource extends MqttDataSource {
     @Override
     protected void createAccessControlEntry() {
         this.accessControlEntry = new MqttAccessControlEntry(config.username().toString(), config.dataTopic());
+    }
+
+    private void setServerModeTopic() {
+        serverModeTopic = TOPIC_PREFIX + id + "/inboundData";
     }
 
     public static class Builder {

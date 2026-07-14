@@ -7,11 +7,13 @@ import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
@@ -50,9 +52,14 @@ public class InboundRecordService {
             throws PermissionNotFoundException, UnauthorizedException,
                    InvalidDataSourceTypeException, InboundRecordNotFoundException,
                    UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException,
-                   SecretLoadingException {
+                   ProvisioningTypeNotConfiguredException, SecretLoadingException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
+
+        if (dataSource.inboundProvisioningType() != InboundProvisioningType.REST_API_TOKEN) {
+            throw new ProvisioningTypeNotConfiguredException(permissionId, dataSource.inboundProvisioningType());
+        }
+
         var savedAccessCode = secretsService.loadSecret(dataSource.accessCode());
         if (!Objects.equals(savedAccessCode, accessCode)) {
             throw new UnauthorizedException(
@@ -64,10 +71,16 @@ public class InboundRecordService {
     }
 
     public InboundRecordDto latestRecord(UUID permissionId)
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException, ProvisioningTypeNotConfiguredException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
+
+        if (dataSource.inboundProvisioningType() != InboundProvisioningType.REST_BEARER) {
+            throw new ProvisioningTypeNotConfiguredException(permissionId, dataSource.inboundProvisioningType());
+        }
+
         return toDto(permission, latestRecord(dataSource));
     }
 

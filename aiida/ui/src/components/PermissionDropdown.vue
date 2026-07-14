@@ -15,6 +15,9 @@ const { permission, status } = defineProps<{
   permission: AiidaPermission
   status?: PermissionTypes
 }>()
+const emit = defineEmits<{
+  configureInboundProvisioning: [permission: AiidaPermission]
+}>()
 const { t } = useI18n()
 
 const isOpen = ref(false)
@@ -63,7 +66,13 @@ const isEditingDisplayName = ref(false)
       </button>
     </header>
     <Transition name="details">
-      <PermissionDetails v-if="isOpen" class="permission-details" :permission :status />
+      <PermissionDetails
+        v-if="isOpen"
+        :permission
+        :status
+        class="permission-details"
+        @configure-inbound-provisioning="emit('configureInboundProvisioning', $event)"
+      />
     </Transition>
   </li>
 </template>

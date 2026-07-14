@@ -6,6 +6,7 @@ package energy.eddie.aiida.services.record;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -73,7 +74,9 @@ class InboundRecordServiceTest {
     void testLatestRecord_returnsMappedRecord() throws UnauthorizedException, PermissionNotFoundException,
                                                        InvalidDataSourceTypeException, InboundRecordNotFoundException,
                                                        UnsupportedInboundRecordTransformationException,
-                                                       InvalidInboundPermissionException, SecretLoadingException {
+                                                       InvalidInboundPermissionException,
+                                                       ProvisioningTypeNotConfiguredException,
+                                                       SecretLoadingException {
         // Given
         var inboundRecord = inboundRecord();
         mockPermissionRepository();
