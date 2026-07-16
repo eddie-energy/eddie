@@ -14,6 +14,7 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
+import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -31,6 +32,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private final InboundAcknowledgementPublisher acknowledgementPublisher;
     private final SecretsService secretsService;
 
+    @Nullable
     private InboundDataMqttClient provisioningMqttClient;
 
     /**
@@ -71,7 +73,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         var plaintextPassword = SecretGenerator.generate();
         var connectionDto = dataSource.establishServerModeConnection(mqttConfig, encoder, plaintextPassword);
         provisioningMqttClient = new InboundDataMqttClient(dataSource.provisioningConnection(),
-                                                           dataSource.provisioningAccessControlEntry().topic());
+                                                           dataSource.provisioningTopicOrThrow());
 
         return connectionDto;
     }
@@ -88,7 +90,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
         var connectionDto = dataSource.establishClientModeConnection(host, username, password, topic);
         provisioningMqttClient = new InboundDataMqttClient(dataSource.provisioningConnection(),
-                                                           dataSource.provisioningAccessControlEntry().topic());
+                                                           dataSource.provisioningTopicOrThrow());
 
         return connectionDto;
     }
@@ -166,12 +168,21 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
             LOGGER.info("Stopping previous inbound provisioning mode for {}", dataSource().name());
 
             provisioningMqttClient.close();
+            provisioningMqttClient = null;
         }
     }
 
     private void publishRecord(InboundRecord inboundRecord) {
         switch (dataSource.inboundProvisioningType()) {
-            case MQTT_CLIENT, MQTT_SERVER -> provisioningMqttClient.publish(inboundRecord);
+            case MQTT_CLIENT, MQTT_SERVER -> {
+                if (provisioningMqttClient == null || !provisioningMqttClient.isConnected()) {
+                    LOGGER.error(
+                            "MQTT client for provisioning of permission {} is not connected. Check if provisioning type is correct.",
+                            dataSource.permission().id());
+                    return;
+                }
+                provisioningMqttClient.publish(inboundRecord);
+            }
             case REST_API_TOKEN, REST_BEARER -> recordSink.tryEmitNext(inboundRecord);
         }
     }

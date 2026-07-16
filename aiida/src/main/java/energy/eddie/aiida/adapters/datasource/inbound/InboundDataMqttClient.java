@@ -6,6 +6,7 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 import energy.eddie.aiida.models.mqtt.MqttConnection;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.utils.MqttFactory;
+import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
@@ -25,6 +26,7 @@ public class InboundDataMqttClient implements MqttCallback {
 
     private final MqttConnection mqttConnection;
     private final String topic;
+    @Nullable
     private IMqttAsyncClient client;
 
     public InboundDataMqttClient(MqttConnection mqttConnection, String topic) {
@@ -63,6 +65,10 @@ public class InboundDataMqttClient implements MqttCallback {
                 LOGGER.warn("Error while disconnecting or closing MQTT client {}", clientId, ex);
             }
         }
+    }
+
+    public boolean isConnected() {
+        return client != null && client.isConnected();
     }
 
     @Override

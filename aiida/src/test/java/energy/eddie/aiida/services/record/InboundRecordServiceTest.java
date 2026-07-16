@@ -13,6 +13,7 @@ import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
@@ -25,6 +26,8 @@ import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -62,6 +65,7 @@ class InboundRecordServiceTest {
     @BeforeEach
     void setUp() throws InvalidInboundPermissionException, SecretLoadingException {
         lenient().when(secretsService.loadSecret(ACCESS_CODE)).thenReturn(ACCESS_CODE);
+        lenient().when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.REST_API_TOKEN);
 
         PERMISSION.setDataSource(dataSource);
         var dataNeed = mock(InboundAiidaLocalDataNeed.class);
@@ -172,5 +176,21 @@ class InboundRecordServiceTest {
     private void mockInboundRecordRepository(InboundRecord inboundRecord) {
         when(inboundRecordRepository.findTopByDataSourceIdOrderByTimestampDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(
                 inboundRecord));
+    }
+
+    @ParameterizedTest
+    @EnumSource(
+            value = InboundProvisioningType.class,
+            names = {"REST_BEARER", "MQTT_CLIENT", "MQTT_SERVER"}
+    )
+    void testLatestRecord_withWrongProvisioningType_throwsException(InboundProvisioningType provisioningType) {
+        // Given
+        mockPermissionRepository();
+        when(dataSource.inboundProvisioningType()).thenReturn(provisioningType);
+
+        assertThrows(
+                ProvisioningTypeNotConfiguredException.class,
+                () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE)
+        );
     }
 }
