@@ -44,6 +44,26 @@ public class KeyStoreSecretsService implements SecretsService {
     }
 
     @Override
+    public void storeSecret(UUID id, SecretType type, String secret) throws SecretStoringException {
+        try {
+            var keyStore = loadKeyStore().orElseThrow(new SecretStoringException());
+
+            var secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+            if (secretBytes.length == 0) {
+                throw new IllegalArgumentException("Secret content cannot be empty.");
+            }
+
+            var secretKey = new SecretKeySpec(secretBytes, SECRET_ALGORITHM);
+            var secretEntry = new KeyStore.SecretKeyEntry(secretKey);
+
+            keyStore.setEntry(alias(id, type), secretEntry, protectionParameter());
+            storeKeystore(keyStore);
+        } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
+            throw new SecretStoringException(id, e);
+        }
+    }
+
+    @Override
     public String loadSecret(String alias) throws SecretLoadingException {
         try {
             var keyStore = loadKeyStore().orElseThrow(new SecretLoadingException());
@@ -116,25 +136,5 @@ public class KeyStoreSecretsService implements SecretsService {
         }
 
         return keyStore;
-    }
-
-    @Override
-    public void storeSecret(UUID id, SecretType type, String secret) throws SecretStoringException {
-        try {
-            var keyStore = loadKeyStore().orElseThrow(new SecretStoringException());
-
-            var secretBytes = secret.getBytes(StandardCharsets.UTF_8);
-            if (secretBytes.length == 0) {
-                throw new IllegalArgumentException("Secret content cannot be empty.");
-            }
-
-            var secretKey = new SecretKeySpec(secretBytes, SECRET_ALGORITHM);
-            var secretEntry = new KeyStore.SecretKeyEntry(secretKey);
-
-            keyStore.setEntry(alias(id, type), secretEntry, protectionParameter());
-            storeKeystore(keyStore);
-        } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
-            throw new SecretStoringException(id, e);
-        }
     }
 }

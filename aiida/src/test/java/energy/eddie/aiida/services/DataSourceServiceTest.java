@@ -14,6 +14,7 @@ import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.SecretDeletionException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
@@ -26,6 +27,7 @@ import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSo
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -179,6 +181,40 @@ class DataSourceServiceTest {
         verify(repository).findById(DATA_SOURCE_ID);
         verify(aiidaEventPublisher).publishEvent(any(DataSourceDeletionEvent.class));
         verify(repository).delete(any(DataSource.class));
+    }
+
+    @Test
+    void shouldDeleteSecretsWhenDeletingSinapsiAlfaDataSource() throws SecretDeletionException {
+        var dataSource = mock(SinapsiAlfaDataSource.class);
+        when(dataSource.password()).thenReturn("password_" + DATA_SOURCE_ID);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
+
+        dataSourceService.deleteDataSource(DATA_SOURCE_ID);
+
+        verify(secretsService).deleteSecret("password_" + DATA_SOURCE_ID);
+        verifyNoMoreInteractions(secretsService);
+    }
+
+    @Test
+    void shouldDeleteSecretsWhenDeletingInboundDataSource() throws SecretDeletionException {
+        var dataSource = mock(InboundDataSource.class);
+        when(dataSource.password()).thenReturn("password_" + DATA_SOURCE_ID);
+        when(dataSource.accessCode()).thenReturn("api_key_" + DATA_SOURCE_ID);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
+
+        dataSourceService.deleteDataSource(DATA_SOURCE_ID);
+
+        verify(secretsService).deleteSecret("password_" + DATA_SOURCE_ID);
+        verify(secretsService).deleteSecret("api_key_" + DATA_SOURCE_ID);
+    }
+
+    @Test
+    void shouldNotDeleteSecretsWhenDeletingNonKeystoreDataSource() {
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mock(DataSource.class)));
+
+        dataSourceService.deleteDataSource(DATA_SOURCE_ID);
+
+        verifyNoInteractions(secretsService);
     }
 
     @Test

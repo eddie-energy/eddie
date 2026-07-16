@@ -12,6 +12,7 @@ import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.SecretDeletionException;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
@@ -162,6 +163,7 @@ public class DataSourceService {
                               publishDataSourceDeletionEventIfOutboundDataSource(dataSource);
                               var dataSourceName = dataSource.name();
                               repository.delete(dataSource);
+                              deleteDataSourceSecrets(dataSource);
                               LOGGER.info("Deleted data source {} ({})", dataSourceName, dataSourceId);
                           },
                           () -> LOGGER.warn("Tried to delete data source ({}) but it could not found be found.",
@@ -261,6 +263,23 @@ public class DataSourceService {
         secretsService.storeSecret(inboundDataSource.id(),
                                    SecretType.API_KEY,
                                    SecretGenerator.generate());
+    }
+
+    private void deleteDataSourceSecrets(DataSource dataSource) {
+        if (dataSource instanceof SinapsiAlfaDataSource sinapsiAlfaDataSource) {
+            deleteSecretQuietly(sinapsiAlfaDataSource.password());
+        } else if (dataSource instanceof InboundDataSource inboundDataSource) {
+            deleteSecretQuietly(inboundDataSource.password());
+            deleteSecretQuietly(inboundDataSource.accessCode());
+        }
+    }
+
+    private void deleteSecretQuietly(String alias) {
+        try {
+            secretsService.deleteSecret(alias);
+        } catch (SecretDeletionException e) {
+            LOGGER.error("Failed to delete secret with alias {}", alias, e);
+        }
     }
 
     private void publishDataSourceDeletionEventIfOutboundDataSource(DataSource dataSource) {

@@ -26,11 +26,11 @@ public class Migration {
     @CreationTimestamp
     private Instant createdAt;
 
-    @SuppressWarnings("NullAway")
+    @SuppressWarnings("NullAway.Init")
     protected Migration() {
     }
 
-    @SuppressWarnings("NullAway")
+    @SuppressWarnings("NullAway.Init")
     public Migration(String migrationKey, String description) {
         this.migrationKey = migrationKey;
         this.description = description;
