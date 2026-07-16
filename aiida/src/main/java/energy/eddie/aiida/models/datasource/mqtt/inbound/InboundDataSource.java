@@ -109,16 +109,28 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     public MqttConnection provisioningConnection() {
-        return inboundProvisioningConfig.connection();
+        return Objects.requireNonNull(
+                inboundProvisioningConfig.connection(),
+                "Provisioning MQTT connection is not configured"
+        );
     }
 
-    public MqttAccessControlEntry provisioningAccessControlEntry() {
-        return inboundProvisioningConfig.accessControlEntry();
+    public String provisioningTopicOrThrow() {
+        var accessControlEntry = Objects.requireNonNull(
+                inboundProvisioningConfig.accessControlEntry(),
+                "Provisioning MQTT ACL is not configured"
+        );
+        return accessControlEntry.topic();
     }
 
     @Transactional
     public void changeInboundProvisioningType(InboundProvisioningType inboundProvisioningType) {
         this.provisioningType = inboundProvisioningType;
+
+        if (inboundProvisioningType == InboundProvisioningType.REST_API_TOKEN ||
+            inboundProvisioningType == InboundProvisioningType.REST_BEARER) {
+            inboundProvisioningConfig.clearMqttProvisioning();
+        }
     }
 
     @Transactional
@@ -140,7 +152,7 @@ public class InboundDataSource extends MqttDataSource {
     ) {
         changeInboundProvisioningType(InboundProvisioningType.MQTT_SERVER);
         var username = UUID.randomUUID().toString();
-        var password = encoder.encode(plaintextPassword);
+        var password = Objects.requireNonNull(encoder.encode(plaintextPassword));
 
         return inboundProvisioningConfig.establishServerModeConnection(mqttConfig, username, password, serverModeTopic);
     }

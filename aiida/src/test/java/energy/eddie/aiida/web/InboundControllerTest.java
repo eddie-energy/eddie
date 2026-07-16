@@ -6,6 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import energy.eddie.aiida.services.InboundProvisioningService;
 import energy.eddie.aiida.services.record.InboundRecordService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,9 @@ class InboundControllerTest {
 
     @MockitoBean
     private InboundRecordService inboundRecordService;
+
+    @MockitoBean
+    private InboundProvisioningService inboundProvisioningService;
 
     @Test
     void latestRecord_withHeader_isOk() throws Exception {
