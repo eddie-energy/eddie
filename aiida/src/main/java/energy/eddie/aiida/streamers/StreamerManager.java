@@ -90,16 +90,14 @@ public class StreamerManager implements AutoCloseable {
             return;
         }
 
-        var streamer = StreamerFactory.getAiidaStreamer(
-                failedToSendRepository,
-                mapper,
-                permission,
-                recordFlux.get(),
-                schemaFormatterRegistry,
-                commands,
-                permissionLatestRecordMap,
-                secretsService
-        );
+        var dependencies = new StreamerDependencies(failedToSendRepository,
+                                                    mapper,
+                                                    schemaFormatterRegistry,
+                                                    commands,
+                                                    permissionLatestRecordMap,
+                                                    secretsService);
+
+        var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux.get());
         streamer.connect();
         streamers.put(id, streamer);
     }

@@ -46,15 +46,15 @@ class StreamerFactoryTest {
             mqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any()))
                        .thenReturn(mock(MqttAsyncClient.class));
 
+            var dependencies = new StreamerDependencies(mock(FailedToSendRepository.class),
+                                                        mapper,
+                                                        mock(SchemaFormatterRegistry.class),
+                                                        Sinks.many().multicast().onBackpressureBuffer(),
+                                                        mock(PermissionLatestRecordMap.class),
+                                                        mock(SecretsService.class));
+
             // When
-            var streamer = StreamerFactory.getAiidaStreamer(mock(FailedToSendRepository.class),
-                                                             mapper,
-                                                             permission,
-                                                             Flux.empty(),
-                                                             mock(SchemaFormatterRegistry.class),
-                                                             Sinks.many().multicast().onBackpressureBuffer(),
-                                                             mock(PermissionLatestRecordMap.class),
-                                                             mock(SecretsService.class));
+            var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, Flux.empty());
 
             // Then
             assertInstanceOf(MqttStreamer.class, streamer);

@@ -9,7 +9,6 @@ import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
@@ -24,7 +23,6 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
@@ -53,10 +51,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DataSourceServiceTest {
-    private static final DataSourceDto DATA_SOURCE_DTO = mock(OesterreichsEnergieDataSourceDto.class);
-    private static final DataSource OUTBOUND_DATA_SOURCE = mock(SimulationDataSource.class);
-    private static final MqttDataSource MQTT_OUTBOUND_DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
-    private static final DataSource INBOUND_DATA_SOURCE = mock(InboundDataSource.class);
     private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -64,6 +58,14 @@ class DataSourceServiceTest {
     private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
+    @Mock
+    private OesterreichsEnergieDataSourceDto dataSourceDto;
+    @Mock
+    private SimulationDataSource outboundDataSource;
+    @Mock
+    private OesterreichsEnergieDataSource mqttOutboundDataSource;
+    @Mock
+    private InboundDataSource inboundDataSource;
     @Mock
     private ApplicationInformationService applicationInformationService;
     @Mock
@@ -95,8 +97,8 @@ class DataSourceServiceTest {
 
     @Test
     void shouldReturndataSourceByIdOrThrow() throws DataSourceNotFoundException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(INBOUND_DATA_SOURCE));
-        when(INBOUND_DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(inboundDataSource));
+        when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
 
         var result = dataSourceService.dataSourceByIdOrThrow(DATA_SOURCE_ID);
 
@@ -115,10 +117,10 @@ class DataSourceServiceTest {
     void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
-        when(DATA_SOURCE_DTO.enabled()).thenReturn(true);
-        when(DATA_SOURCE_DTO.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
+        when(dataSourceDto.enabled()).thenReturn(true);
+        when(dataSourceDto.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
 
-        var result = dataSourceService.addDataSource(DATA_SOURCE_DTO);
+        var result = dataSourceService.addDataSource(dataSourceDto);
 
         assertNotNull(result.plaintextPassword());
         verify(bCryptPasswordEncoder).encode(anyString());
@@ -165,9 +167,9 @@ class DataSourceServiceTest {
     void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
-        when(DATA_SOURCE_DTO.enabled()).thenReturn(false);
+        when(dataSourceDto.enabled()).thenReturn(false);
 
-        dataSourceService.addDataSource(DATA_SOURCE_DTO);
+        dataSourceService.addDataSource(dataSourceDto);
 
         verify(repository).save(any());
         verify(outboundAggregator, never()).addNewDataSourceAdapter(any());
@@ -219,31 +221,29 @@ class DataSourceServiceTest {
 
     @Test
     void shouldUpdateDataSource() throws DataSourceNotFoundException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mqttOutboundDataSource));
 
-        when(DATA_SOURCE_DTO.id()).thenReturn(DATA_SOURCE_ID);
-        dataSourceService.updateDataSource(DATA_SOURCE_DTO);
+        when(dataSourceDto.id()).thenReturn(DATA_SOURCE_ID);
+        dataSourceService.updateDataSource(dataSourceDto);
 
-        verify(MQTT_OUTBOUND_DATA_SOURCE).update(DATA_SOURCE_DTO);
+        verify(mqttOutboundDataSource).update(dataSourceDto);
     }
 
     @Test
     void shouldAddDataSourcesOnStartDataSources() {
         UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
-        when(OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
-        when(OUTBOUND_DATA_SOURCE.id()).thenReturn(UUID.randomUUID());
-        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
-        when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(false);
-        when(MQTT_OUTBOUND_DATA_SOURCE.id()).thenReturn(dataSourceId2);
-        when(MQTT_OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
-        when(INBOUND_DATA_SOURCE.enabled()).thenReturn(true);
-        when(INBOUND_DATA_SOURCE.id()).thenReturn(UUID.randomUUID());
-        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
+        when(outboundDataSource.enabled()).thenReturn(true);
+        when(outboundDataSource.id()).thenReturn(UUID.randomUUID());
+        when(outboundDataSource.type()).thenReturn(DataSourceType.SIMULATION);
+        when(mqttOutboundDataSource.enabled()).thenReturn(false);
+        when(inboundDataSource.enabled()).thenReturn(true);
+        when(inboundDataSource.id()).thenReturn(UUID.randomUUID());
+        when(inboundDataSource.type()).thenReturn(DataSourceType.INBOUND);
 
-        when(repository.findAll()).thenReturn(List.of(OUTBOUND_DATA_SOURCE,
-                                                      MQTT_OUTBOUND_DATA_SOURCE,
-                                                      INBOUND_DATA_SOURCE));
+        when(repository.findAll()).thenReturn(List.of(outboundDataSource,
+                                                      mqttOutboundDataSource,
+                                                      inboundDataSource));
 
         dataSourceService.startDataSources();
 
@@ -280,20 +280,20 @@ class DataSourceServiceTest {
 
     @Test
     void shouldRegenerateSecrets() throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
-        when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
-        when(MQTT_OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mqttOutboundDataSource));
+        when(mqttOutboundDataSource.enabled()).thenReturn(true);
+        when(mqttOutboundDataSource.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
 
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
-        verify(MQTT_OUTBOUND_DATA_SOURCE).updatePassword(eq(bCryptPasswordEncoder), anyString());
+        verify(mqttOutboundDataSource).updatePassword(eq(bCryptPasswordEncoder), anyString());
         verify(outboundAggregator).addNewDataSourceAdapter(any());
     }
 
     @Test
     void shouldNotRegenerateSecretsIfNotMqtt() {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(OUTBOUND_DATA_SOURCE));
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(outboundDataSource));
 
         assertThrows(DataSourceSecretGenerationNotSupportedException.class,
                      () -> dataSourceService.regenerateSecrets(DATA_SOURCE_ID));
