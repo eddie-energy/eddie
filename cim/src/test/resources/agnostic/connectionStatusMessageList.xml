@@ -1,0 +1,35 @@
+<!-- SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<ConnectionStatusMessages>
+    <ConnectionStatusMessage>
+        <connectionId>1</connectionId>
+        <permissionId>5c945d84-8120-4f30-9c69-2dc1dbbb4a43</permissionId>
+        <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+        <dataSourceInformation>
+            <countryCode>DE</countryCode>
+            <meteredDataAdministratorId>sim</meteredDataAdministratorId>
+            <permissionAdministratorId>sim</permissionAdministratorId>
+            <regionConnectorId>sim</regionConnectorId>
+        </dataSourceInformation>
+        <timestamp>2026-07-13T00:00:00.000000000Z</timestamp>
+        <status>CREATED</status>
+        <message></message>
+        <additionalInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+    </ConnectionStatusMessage>
+    <ConnectionStatusMessage>
+        <connectionId>1</connectionId>
+        <permissionId>5c945d84-8120-4f30-9c69-2dc1dbbb4a43</permissionId>
+        <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+        <dataSourceInformation>
+            <countryCode>DE</countryCode>
+            <meteredDataAdministratorId>sim</meteredDataAdministratorId>
+            <permissionAdministratorId>sim</permissionAdministratorId>
+            <regionConnectorId>sim</regionConnectorId>
+        </dataSourceInformation>
+        <timestamp>2026-07-13T00:00:00.000000000Z</timestamp>
+        <status>VALIDATED</status>
+        <message></message>
+        <additionalInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:nil="true"/>
+    </ConnectionStatusMessage>
+</ConnectionStatusMessages>

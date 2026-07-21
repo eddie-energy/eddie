@@ -120,3 +120,9 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.11.1 - 2026-06-11
 
 - Refactor XML serialization to only include required namespaces and not put every namespace available in the context on the root element.
+
+## 3.12.0 - 2026-07-21
+
+- Add possiblity to deserialize a collection of CIM and agnostic documents
+  - The XML SerDE can now deserialize a collection of CIM and agnostic documents from an arbitrary XML root element
+  - The JSON SerDE can now deserialize a collection of CIM and agnostic documents from a JSON array

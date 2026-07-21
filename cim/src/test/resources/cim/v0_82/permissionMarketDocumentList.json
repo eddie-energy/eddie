@@ -1,0 +1,140 @@
+[
+  {
+    "MessageDocumentHeader": {
+      "creationDateTime": "2026-07-21T11:38:05Z",
+      "MessageDocumentHeader_MetaInformation": {
+        "connectionid": "1",
+        "permissionid": "333774a5-212e-4887-b231-86efac97ac04",
+        "dataNeedid": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+        "dataType": "permission-market-document",
+        "MessageDocumentHeader_Region": {
+          "connector": "sim",
+          "country": "NDE"
+        }
+      }
+    },
+    "Permission_MarketDocument": {
+      "mRID": "333774a5-212e-4887-b231-86efac97ac04",
+      "revisionNumber": "0.82",
+      "type": "Z04",
+      "createdDateTime": "2026-07-21T11:38:05Z",
+      "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+      "sender_MarketParticipant.mRID": {
+        "codingScheme": "NDE",
+        "value": "sim"
+      },
+      "sender_MarketParticipant.marketRole.type": "A20",
+      "receiver_MarketParticipant.mRID": {
+        "codingScheme": "NDE",
+        "value": "sim"
+      },
+      "receiver_MarketParticipant.marketRole.type": "A50",
+      "process.processType": "A55",
+      "period.timeInterval": {
+        "start": "2021-01-01T00:00Z",
+        "end": "9999-12-31T00:00Z"
+      },
+      "PermissionList": {
+        "Permission": [
+          {
+            "permission.mRID": "333774a5-212e-4887-b231-86efac97ac04",
+            "createdDateTime": "2026-07-21T11:38:05Z",
+            "transmissionSchedule": null,
+            "marketEvaluationPoint.mRID": {
+              "codingScheme": "NDE",
+              "value": "1"
+            },
+            "TimeSeriesList": {
+              "TimeSeries": null
+            },
+            "MktActivityRecordList": {
+              "MktActivityRecord": [
+                {
+                  "mRID": "1c86522f-35d5-494e-b8d2-650d96237586",
+                  "createdDateTime": "2026-07-21T11:38:05Z",
+                  "description": "CREATED",
+                  "type": "sim",
+                  "reason": null,
+                  "name": null,
+                  "status": "Creation"
+                }
+              ]
+            },
+            "ReasonList": {
+              "Reason": null
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "MessageDocumentHeader": {
+      "creationDateTime": "2026-07-21T11:38:05Z",
+      "MessageDocumentHeader_MetaInformation": {
+        "connectionid": "1",
+        "permissionid": "333774a5-212e-4887-b231-86efac97ac04",
+        "dataNeedid": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+        "dataType": "permission-market-document",
+        "MessageDocumentHeader_Region": {
+          "connector": "sim",
+          "country": "NDE"
+        }
+      }
+    },
+    "Permission_MarketDocument": {
+      "mRID": "333774a5-212e-4887-b231-86efac97ac04",
+      "revisionNumber": "0.82",
+      "type": "Z04",
+      "createdDateTime": "2026-07-21T11:38:05Z",
+      "description": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+      "sender_MarketParticipant.mRID": {
+        "codingScheme": "NDE",
+        "value": "sim"
+      },
+      "sender_MarketParticipant.marketRole.type": "A20",
+      "receiver_MarketParticipant.mRID": {
+        "codingScheme": "NDE",
+        "value": "sim"
+      },
+      "receiver_MarketParticipant.marketRole.type": "A50",
+      "process.processType": "A55",
+      "period.timeInterval": {
+        "start": "2021-01-01T00:00Z",
+        "end": "9999-12-31T00:00Z"
+      },
+      "PermissionList": {
+        "Permission": [
+          {
+            "permission.mRID": "333774a5-212e-4887-b231-86efac97ac04",
+            "createdDateTime": "2026-07-21T11:38:05Z",
+            "transmissionSchedule": null,
+            "marketEvaluationPoint.mRID": {
+              "codingScheme": "NDE",
+              "value": "1"
+            },
+            "TimeSeriesList": {
+              "TimeSeries": null
+            },
+            "MktActivityRecordList": {
+              "MktActivityRecord": [
+                {
+                  "mRID": "43b2fd8d-8ca5-4c72-8496-436630a40c42",
+                  "createdDateTime": "2026-07-21T11:38:05Z",
+                  "description": "VALIDATED",
+                  "type": "sim",
+                  "reason": null,
+                  "name": null,
+                  "status": "VALIDATED"
+                }
+              ]
+            },
+            "ReasonList": {
+              "Reason": null
+            }
+          }
+        ]
+      }
+    }
+  }
+]
