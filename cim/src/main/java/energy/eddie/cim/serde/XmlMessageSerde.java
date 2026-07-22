@@ -20,13 +20,13 @@ import jakarta.xml.bind.Unmarshaller;
 import tools.jackson.databind.ObjectMapper;
 
 import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A {@link MessageSerde} implementation that produces CIM compliant XML.
@@ -87,6 +87,49 @@ public class XmlMessageSerde implements MessageSerde {
         }
     }
 
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public <T> List<T> deserializeList(byte[] message, Class<T> elementType) throws DeserializationException {
+        try {
+            var unmarshaller = findUnmarshaller(elementType);
+            if (unmarshaller.isEmpty()) {
+                return objectMapper.readValue(message,
+                                              objectMapper.getTypeFactory()
+                                                          .constructCollectionType(List.class, elementType));
+            }
+            var factory = XMLInputFactory.newInstance();
+            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+            var reader = factory.createXMLStreamReader(
+                    new StringReader(new String(message, StandardCharsets.UTF_8))
+            );
+
+            // Skip to the root START_ELEMENT (container, name ignored)
+            while (reader.hasNext() && reader.next() != XMLStreamConstants.START_ELEMENT) ;
+
+            List<T> result = new ArrayList<>();
+            while (reader.hasNext()) {
+                var event = reader.next();
+                if (event != XMLStreamConstants.START_ELEMENT) {
+                    continue;
+                }
+                var res = deserializeCimMessage(reader, elementType, unmarshaller.get());
+                result.add(res);
+            }
+            return result;
+        } catch (Exception e) {
+            throw new DeserializationException(e);
+        }
+    }
+
+    private <T> Optional<Unmarshaller> findUnmarshaller(Class<T> elementType) {
+        for (var entry : unmarshallers.entrySet()) {
+            if (elementType.isAssignableFrom(entry.getKey())) {
+                return Optional.of(entry.getValue());
+            }
+        }
+        return Optional.empty();
+    }
+
     private void initJAXB() throws SerdeInitializationException {
         try {
             for (var cimClass : CIM_CLASSES) {
@@ -115,6 +158,11 @@ public class XmlMessageSerde implements MessageSerde {
         var reader = factory.createXMLStreamReader(
                 new StringReader(new String(message, StandardCharsets.UTF_8))
         );
-        return unmarshaller.unmarshal(reader, messageType).getValue();
+        return deserializeCimMessage(reader, messageType, unmarshaller);
+    }
+
+    private static <T> T deserializeCimMessage(XMLStreamReader message, Class<T> messageType, Unmarshaller unmarshaller)
+            throws JAXBException {
+        return unmarshaller.unmarshal(message, messageType).getValue();
     }
 }

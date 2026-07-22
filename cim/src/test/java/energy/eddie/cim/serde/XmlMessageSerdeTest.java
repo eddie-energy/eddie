@@ -4,6 +4,9 @@
 package energy.eddie.cim.serde;
 
 import energy.eddie.cim.CommonInformationModelVersions;
+import energy.eddie.cim.agnostic.ConnectionStatusMessage;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.cim.v0_82.ap.CommodityKind;
@@ -30,14 +33,17 @@ import energy.eddie.cim.v1_12.rtd.RTDMarketDocument;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.builder.Input;
 import org.xmlunit.xpath.JAXPXPathEngine;
+import tools.jackson.databind.node.NullNode;
 
 import javax.xml.datatype.DatatypeFactory;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -412,7 +418,7 @@ class XmlMessageSerdeTest {
         //language=XML
         var pmd = """
                 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-                <Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125" xmlns:ns2="htthttp://www.eddie.energy/AP/EDD04/20240422" xmlns:ns3="http://www.eddie.energy/VHD/EDD01/20240614">
+                <Permission_Envelope xmlns="http://www.eddie.energy/Consent/EDD02/20240125"  >
                   <MessageDocumentHeader>
                     <creationDateTime>2024-01-01T00:00:00.000Z</creationDateTime>
                     <MessageDocumentHeader_MetaInformation>
@@ -838,6 +844,60 @@ class XmlMessageSerdeTest {
         // Then
         assertTrue(valid);
         assertEquals(1, count);
+    }
+
+    @SuppressWarnings({"resource", "DataFlowIssue"})
+    @Test
+    void testDeserializeList_forNonCimType() throws SerdeInitializationException, IOException, DeserializationException {
+        // Given
+        var expected = List.of(
+                new ConnectionStatusMessage(
+                        "1",
+                        "5c945d84-8120-4f30-9c69-2dc1dbbb4a43",
+                        "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                        new SimpleDataSourceInformation("DE", "sim", "sim", "sim"),
+                        ZonedDateTime.parse("2026-07-13T00:00:00.000000000Z"),
+                        PermissionProcessStatus.CREATED,
+                        "",
+                        NullNode.getInstance()
+                ),
+                new ConnectionStatusMessage(
+                        "1",
+                        "5c945d84-8120-4f30-9c69-2dc1dbbb4a43",
+                        "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                        new SimpleDataSourceInformation("DE", "sim", "sim", "sim"),
+                        ZonedDateTime.parse("2026-07-13T00:00:00.000000000Z"),
+                        PermissionProcessStatus.VALIDATED,
+                        "",
+                        NullNode.getInstance()
+                )
+        );
+        var input = XmlMessageSerdeTest.class
+                .getResourceAsStream("/agnostic/connectionStatusMessageList.xml")
+                .readAllBytes();
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.deserializeList(input, ConnectionStatusMessage.class);
+
+        // Then
+        assertEquals(expected, res);
+    }
+
+    @SuppressWarnings({"resource", "DataFlowIssue"})
+    @Test
+    void testDeserializeList_forCimType() throws SerdeInitializationException, IOException, DeserializationException {
+        // Given
+        var input = XmlMessageSerdeTest.class
+                .getResourceAsStream("/cim/v0_82/permissionMarketDocumentList.xml")
+                .readAllBytes();
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.deserializeList(input, PermissionEnvelope.class);
+
+        // Then
+        assertEquals(2, res.size());
     }
 
     private static int countExplicitNamespaces(byte[] xml) {
