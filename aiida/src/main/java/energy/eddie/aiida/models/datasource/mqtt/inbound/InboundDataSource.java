@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
-import energy.eddie.aiida.dtos.inbound.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -35,6 +35,7 @@ import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 public class InboundDataSource extends MqttDataSource {
     protected static final String TABLE_NAME = "data_source_mqtt_inbound";
 
+    @Transient
     @JsonIgnore
     protected String serverModeTopic;
 
@@ -104,10 +105,21 @@ public class InboundDataSource extends MqttDataSource {
         return config != null ? config.acknowledgementTopic() : null;
     }
 
+    /**
+     * Returns the currently configured method for provisioning inbound data.
+     *
+     * @return The active inbound provisioning type.
+     */
     public InboundProvisioningType inboundProvisioningType() {
         return provisioningType;
     }
 
+    /**
+     * Returns the MQTT connection configured for inbound provisioning.
+     *
+     * @return The configured provisioning MQTT connection.
+     * @throws NullPointerException If MQTT provisioning has not been configured.
+     */
     public MqttConnection provisioningConnection() {
         return Objects.requireNonNull(
                 inboundProvisioningConfig.connection(),
@@ -115,6 +127,12 @@ public class InboundDataSource extends MqttDataSource {
         );
     }
 
+    /**
+     * Returns the MQTT topic configured for inbound provisioning.
+     *
+     * @return The configured provisioning topic.
+     * @throws NullPointerException If an MQTT provisioning access-control entry has not been configured.
+     */
     public String provisioningTopicOrThrow() {
         var accessControlEntry = Objects.requireNonNull(
                 inboundProvisioningConfig.accessControlEntry(),
@@ -123,6 +141,12 @@ public class InboundDataSource extends MqttDataSource {
         return accessControlEntry.topic();
     }
 
+    /**
+     * Changes the inbound provisioning type. Switching to a REST type also removes any stored MQTT provisioning
+     * connection and access-control entry.
+     *
+     * @param inboundProvisioningType Provisioning type to activate.
+     */
     @Transactional
     public void changeInboundProvisioningType(InboundProvisioningType inboundProvisioningType) {
         this.provisioningType = inboundProvisioningType;
@@ -133,6 +157,15 @@ public class InboundDataSource extends MqttDataSource {
         }
     }
 
+    /**
+     * Configures MQTT client-mode provisioning with externally supplied broker credentials and activates that mode.
+     *
+     * @param host     MQTT broker host exposed to the publisher.
+     * @param username MQTT username used for publishing.
+     * @param password MQTT password used for publishing.
+     * @param topic    Topic to which inbound records are published.
+     * @return The connection details stored for client-mode provisioning.
+     */
     @Transactional
     public ProvisioningConnectionDto establishClientModeConnection(
             String host,
@@ -144,6 +177,15 @@ public class InboundDataSource extends MqttDataSource {
         return inboundProvisioningConfig.establishClientModeConnection(host, host, username, password, topic);
     }
 
+    /**
+     * Configures MQTT server-mode provisioning using the local broker configuration and activates that mode. A unique
+     * username is created and the supplied plaintext password is encoded before it is stored.
+     *
+     * @param mqttConfig        Local MQTT broker configuration.
+     * @param encoder           Encoder used to protect the generated credential before storage.
+     * @param plaintextPassword Plaintext password generated for the provisioning connection.
+     * @return The connection details stored for server-mode provisioning.
+     */
     @Transactional
     public ProvisioningConnectionDto establishServerModeConnection(
             MqttConfiguration mqttConfig,

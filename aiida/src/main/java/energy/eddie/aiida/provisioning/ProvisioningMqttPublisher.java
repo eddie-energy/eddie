@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.adapters.datasource.inbound;
+package energy.eddie.aiida.provisioning;
 
 import energy.eddie.aiida.models.mqtt.MqttConnection;
 import energy.eddie.aiida.models.record.InboundRecord;
@@ -18,9 +18,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.UUID;
 
-public class InboundDataMqttClient implements MqttCallback {
+public class ProvisioningMqttPublisher implements MqttCallback, AutoCloseable {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(InboundDataMqttClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProvisioningMqttPublisher.class);
     private static final int DEFAULT_KEEP_ALIVE_INTERVAL = 60;
     private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
 
@@ -29,17 +29,29 @@ public class InboundDataMqttClient implements MqttCallback {
     @Nullable
     private IMqttAsyncClient client;
 
-    public InboundDataMqttClient(MqttConnection mqttConnection, String topic) {
+    /**
+     * Creates a publisher and starts an asynchronous connection to the configured MQTT broker.
+     *
+     * @param mqttConnection MQTT connection and credentials used by the publisher.
+     * @param topic          Topic to which inbound records are published.
+     */
+    public ProvisioningMqttPublisher(MqttConnection mqttConnection, String topic) {
         this.mqttConnection = mqttConnection;
         this.topic = topic;
 
         connect();
     }
 
+    /**
+     * Publishes the payload of an inbound record when the MQTT client is connected. If the client is disconnected or
+     * publishing fails, the record is not sent and the method returns without propagating an MQTT exception.
+     *
+     * @param inboundRecord Record whose payload should be published.
+     */
     public void publish(InboundRecord inboundRecord) {
         var message = new MqttMessage(inboundRecord.payload().getBytes(StandardCharsets.UTF_8));
         try {
-            if (client == null || client.isConnected()) {
+            if (client == null || !client.isConnected()) {
                 return;
             }
 
@@ -52,6 +64,10 @@ public class InboundDataMqttClient implements MqttCallback {
         }
     }
 
+    /**
+     * Disconnects and closes the MQTT client. MQTT errors encountered during shutdown are logged and not propagated.
+     */
+    @Override
     public void close() {
         if (client != null) {
             var clientId = client.getClientId();
@@ -67,47 +83,61 @@ public class InboundDataMqttClient implements MqttCallback {
         }
     }
 
+    /**
+     * Indicates whether the publisher currently has an established MQTT connection.
+     *
+     * @return {@code true} when an MQTT client exists and is connected; otherwise {@code false}.
+     */
     public boolean isConnected() {
         return client != null && client.isConnected();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void disconnected(MqttDisconnectResponse disconnectResponse) {
         LOGGER.warn("Disconnected from MQTT broker", disconnectResponse.getException());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void mqttErrorOccurred(MqttException exception) {
         LOGGER.error("MQTT error occurred", exception);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void messageArrived(String topic, MqttMessage message) throws Exception {
-        // Messages don't need to be processed here
+        // This client only publishes to the given topic.
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void deliveryComplete(IMqttToken token) {
         LOGGER.info("Delivery complete for topic {}", topic);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
         LOGGER.info("{} connected successfully to broker {}, automatic reconnect is {}",
                     mqttConnection.internalHost(),
                     serverURI,
                     reconnect);
-        LOGGER.info("Will subscribe to topic {}", topic);
-
-        try {
-            if (client != null) {
-                client.subscribe(topic, 2);
-            }
-        } catch (MqttException ex) {
-            LOGGER.error("Error while subscribing to topic {}", topic, ex);
-        }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void authPacketArrived(int reasonCode, MqttProperties properties) {
         // AuthPacket doesn't need to be processed here
@@ -133,7 +163,7 @@ public class InboundDataMqttClient implements MqttCallback {
     }
 
     private MqttConnectionOptions createConnectOptions() {
-        MqttConnectionOptions options = new MqttConnectionOptions();
+        var options = new MqttConnectionOptions();
 
         options.setCleanStart(false);
         options.setAutomaticReconnect(true);

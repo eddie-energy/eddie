@@ -36,6 +36,14 @@ public class InboundRecordService {
     private final InboundPayloadTransformationService inboundPayloadTransformationService;
     private final SecretsService secretsService;
 
+    /**
+     * Creates a service for retrieving, authorizing, and transforming inbound records.
+     *
+     * @param inboundRecordRepository             Repository containing inbound records.
+     * @param permissionRepository                Repository used to resolve inbound permissions.
+     * @param inboundPayloadTransformationService Service used to transform stored payloads into the requested format.
+     * @param secretsService                      Service used to load the inbound access code.
+     */
     public InboundRecordService(
             InboundRecordRepository inboundRecordRepository,
             PermissionRepository permissionRepository,
@@ -48,15 +56,34 @@ public class InboundRecordService {
         this.secretsService = secretsService;
     }
 
-    public InboundRecordDto latestRecord(UUID permissionId, String accessCode)
-            throws PermissionNotFoundException, UnauthorizedException,
-                   InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException,
-                   ProvisioningTypeNotConfiguredException, SecretLoadingException {
+    /**
+     * Returns the latest inbound record after validating the access code and configured REST provisioning type.
+     *
+     * @param permissionId     ID of the inbound permission whose latest record should be returned.
+     * @param accessCode       Access code supplied by the caller.
+     * @param provisioningType REST provisioning type through which the caller supplied the access code.
+     * @return The latest inbound record transformed to the permission's configured message format.
+     * @throws PermissionNotFoundException                     If the permission does not exist.
+     * @throws UnauthorizedException                           If the supplied access code is invalid.
+     * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
+     * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
+     * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
+     * @throws InvalidInboundPermissionException               If the permission has no inbound message format.
+     * @throws ProvisioningTypeNotConfiguredException          If the requested REST provisioning type is not active.
+     * @throws SecretLoadingException                          If the stored access code cannot be loaded.
+     */
+    public InboundRecordDto latestRecord(
+            UUID permissionId,
+            String accessCode,
+            InboundProvisioningType provisioningType
+    ) throws PermissionNotFoundException, UnauthorizedException,
+             InvalidDataSourceTypeException, InboundRecordNotFoundException,
+             UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException,
+             ProvisioningTypeNotConfiguredException, SecretLoadingException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
 
-        if (dataSource.inboundProvisioningType() != InboundProvisioningType.REST_API_TOKEN) {
+        if (dataSource.inboundProvisioningType() != provisioningType) {
             throw new ProvisioningTypeNotConfiguredException(permissionId, dataSource.inboundProvisioningType());
         }
 
@@ -70,16 +97,23 @@ public class InboundRecordService {
         return toDto(permission, latestRecord(dataSource));
     }
 
+    /**
+     * Returns the latest inbound record without performing access-code or provisioning-type validation.
+     *
+     * @param permissionId ID of the inbound permission whose latest record should be returned.
+     * @return The latest inbound record transformed to the permission's configured message format.
+     * @throws PermissionNotFoundException                     If the permission does not exist.
+     * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
+     * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
+     * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
+     * @throws InvalidInboundPermissionException               If the permission has no inbound message format.
+     */
     public InboundRecordDto latestRecord(UUID permissionId)
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException, ProvisioningTypeNotConfiguredException {
+                   InvalidInboundPermissionException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
-
-        if (dataSource.inboundProvisioningType() != InboundProvisioningType.REST_BEARER) {
-            throw new ProvisioningTypeNotConfiguredException(permissionId, dataSource.inboundProvisioningType());
-        }
 
         return toDto(permission, latestRecord(dataSource));
     }

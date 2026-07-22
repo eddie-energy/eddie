@@ -6,21 +6,16 @@ package energy.eddie.aiida.adapters.datasource.inbound;
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.inbound.ack.InboundAcknowledgementPublisher;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.inbound.ProvisioningConnectionDto;
 import energy.eddie.aiida.errors.SecretLoadingException;
-import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
-import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
@@ -31,9 +26,6 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
     private final InboundAcknowledgementPublisher acknowledgementPublisher;
     private final SecretsService secretsService;
-
-    @Nullable
-    private InboundDataMqttClient provisioningMqttClient;
 
     /**
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
@@ -62,47 +54,6 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         );
     }
 
-    public ProvisioningConnectionDto activateMqttServerProvisioningMode(
-            MqttConfiguration mqttConfig,
-            BCryptPasswordEncoder encoder
-    ) {
-        closeProvisioningClient();
-
-        LOGGER.info("Starting server mode for inbound provisioning of {}", dataSource().name());
-
-        var plaintextPassword = SecretGenerator.generate();
-        var connectionDto = dataSource.establishServerModeConnection(mqttConfig, encoder, plaintextPassword);
-        provisioningMqttClient = new InboundDataMqttClient(dataSource.provisioningConnection(),
-                                                           dataSource.provisioningTopicOrThrow());
-
-        return connectionDto;
-    }
-
-    public ProvisioningConnectionDto activateMqttClientProvisioningMode(
-            String host,
-            String username,
-            String password,
-            String topic
-    ) {
-        closeProvisioningClient();
-
-        LOGGER.info("Starting client mode for inbound provisioning of {}", dataSource().name());
-
-        var connectionDto = dataSource.establishClientModeConnection(host, username, password, topic);
-        provisioningMqttClient = new InboundDataMqttClient(dataSource.provisioningConnection(),
-                                                           dataSource.provisioningTopicOrThrow());
-
-        return connectionDto;
-    }
-
-    public void activateRestMode(InboundProvisioningType type) {
-        closeProvisioningClient();
-
-        LOGGER.info("Starting rest mode for inbound provisioning of {}", dataSource().name());
-
-        dataSource.changeInboundProvisioningType(type);
-    }
-
     /**
      * MQTT callback function that is called when a new message from the broker is received. Will store the message in
      * plaintext format in the database, as this datasource is not designed to parse the messages.
@@ -127,7 +78,7 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
 
-        publishRecord(inboundRecord);
+        recordSink.tryEmitNext(inboundRecord);
         acknowledgementPublisher.publishAcknowledgement(inboundRecord);
     }
 
@@ -161,29 +112,5 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
         }
 
         return connectOptions;
-    }
-
-    private void closeProvisioningClient() {
-        if (provisioningMqttClient != null) {
-            LOGGER.info("Stopping previous inbound provisioning mode for {}", dataSource().name());
-
-            provisioningMqttClient.close();
-            provisioningMqttClient = null;
-        }
-    }
-
-    private void publishRecord(InboundRecord inboundRecord) {
-        switch (dataSource.inboundProvisioningType()) {
-            case MQTT_CLIENT, MQTT_SERVER -> {
-                if (provisioningMqttClient == null || !provisioningMqttClient.isConnected()) {
-                    LOGGER.error(
-                            "MQTT client for provisioning of permission {} is not connected. Check if provisioning type is correct.",
-                            dataSource.permission().id());
-                    return;
-                }
-                provisioningMqttClient.publish(inboundRecord);
-            }
-            case REST_API_TOKEN, REST_BEARER -> recordSink.tryEmitNext(inboundRecord);
-        }
     }
 }
