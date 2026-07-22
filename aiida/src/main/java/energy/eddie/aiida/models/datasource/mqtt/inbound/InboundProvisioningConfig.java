@@ -6,7 +6,7 @@ package energy.eddie.aiida.models.datasource.mqtt.inbound;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.inbound.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.mqtt.MqttConnection;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -35,12 +35,27 @@ public class InboundProvisioningConfig {
     @JsonProperty
     private MqttConnection connection;
 
+    /**
+     * Returns the topic from the current provisioning access-control entry.
+     *
+     * @return The configured provisioning topic, or {@code null} when MQTT provisioning is not configured.
+     */
     @Nullable
     @JsonProperty
     public String topic() {
         return accessControlEntry == null ? null : accessControlEntry.topic();
     }
 
+    /**
+     * Stores an MQTT client-mode connection and matching publish access-control entry.
+     *
+     * @param internalHost Broker host used internally by the publisher.
+     * @param externalHost Broker host exposed to the provisioning client.
+     * @param username     MQTT username used for publishing.
+     * @param password     MQTT password used for publishing.
+     * @param topic        Topic to which inbound records are published.
+     * @return Connection details for the configured MQTT client mode.
+     */
     public ProvisioningConnectionDto establishClientModeConnection(
             String internalHost,
             String externalHost,
@@ -55,6 +70,15 @@ public class InboundProvisioningConfig {
         return new ProvisioningConnectionDto(internalHost, username, password, topic);
     }
 
+    /**
+     * Stores an MQTT server-mode connection and matching publish access-control entry.
+     *
+     * @param mqttConnection    MQTT broker configuration supplying the internal and external hosts.
+     * @param username          Generated MQTT username used for publishing.
+     * @param encryptedPassword Encoded MQTT password stored for the generated user.
+     * @param topic             Topic to which inbound records are published.
+     * @return Connection details for the configured MQTT server mode.
+     */
     public ProvisioningConnectionDto establishServerModeConnection(
             MqttConfiguration mqttConnection,
             String username,
@@ -68,16 +92,29 @@ public class InboundProvisioningConfig {
         return new ProvisioningConnectionDto(mqttConnection.internalHost(), username, encryptedPassword, topic);
     }
 
+    /**
+     * Removes the MQTT connection and access-control entry from this provisioning configuration.
+     */
     public void clearMqttProvisioning() {
         connection = null;
         accessControlEntry = null;
     }
 
+    /**
+     * Returns the current MQTT provisioning connection.
+     *
+     * @return The provisioning connection, or {@code null} when MQTT provisioning is not configured.
+     */
     @Nullable
     public MqttConnection connection() {
         return connection;
     }
 
+    /**
+     * Returns the current MQTT provisioning access-control entry.
+     *
+     * @return The access-control entry, or {@code null} when MQTT provisioning is not configured.
+     */
     @Nullable
     public MqttAccessControlEntry accessControlEntry() {
         return accessControlEntry;

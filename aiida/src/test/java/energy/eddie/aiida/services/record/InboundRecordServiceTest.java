@@ -90,7 +90,9 @@ class InboundRecordServiceTest {
         mockDataSource();
 
         // When
-        var latestRecord = inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE);
+        var latestRecord = inboundRecordService.latestRecord(PERMISSION_ID,
+                                                             ACCESS_CODE,
+                                                             InboundProvisioningType.REST_API_TOKEN);
 
         // Then
         assertEquals(DATA_SOURCE_ID, latestRecord.dataSourceId());
@@ -109,7 +111,9 @@ class InboundRecordServiceTest {
 
         // When, Then
         assertThrows(InvalidDataSourceTypeException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
+                                                             ACCESS_CODE,
+                                                             InboundProvisioningType.REST_API_TOKEN));
     }
 
     @Test
@@ -118,7 +122,10 @@ class InboundRecordServiceTest {
         mockPermissionRepository();
 
         // When, Then
-        assertThrows(UnauthorizedException.class, () -> inboundRecordService.latestRecord(PERMISSION_ID, "wrong"));
+        assertThrows(UnauthorizedException.class,
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
+                                                             "wrong",
+                                                             InboundProvisioningType.REST_API_TOKEN));
     }
 
     @Test
@@ -128,7 +135,9 @@ class InboundRecordServiceTest {
 
         // When, Then
         assertThrows(PermissionNotFoundException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
+                                                             ACCESS_CODE,
+                                                             InboundProvisioningType.REST_API_TOKEN));
     }
 
     @Test
@@ -139,7 +148,9 @@ class InboundRecordServiceTest {
 
         // When, Then
         assertThrows(InboundRecordNotFoundException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
+                                                             ACCESS_CODE,
+                                                             InboundProvisioningType.REST_API_TOKEN));
     }
 
     @Test
@@ -152,7 +163,9 @@ class InboundRecordServiceTest {
         mockInboundRecordRepository(inboundRecord());
 
         assertThrows(InvalidInboundPermissionException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE));
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
+                                                             ACCESS_CODE,
+                                                             InboundProvisioningType.REST_API_TOKEN));
     }
 
     private InboundRecord inboundRecord() {
@@ -190,7 +203,9 @@ class InboundRecordServiceTest {
 
         assertThrows(
                 ProvisioningTypeNotConfiguredException.class,
-                () -> inboundRecordService.latestRecord(PERMISSION_ID, ACCESS_CODE)
+                () -> inboundRecordService.latestRecord(PERMISSION_ID,
+                                                        ACCESS_CODE,
+                                                        InboundProvisioningType.REST_API_TOKEN)
         );
     }
 }

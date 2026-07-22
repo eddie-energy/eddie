@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.datasource.mqtt;
@@ -14,6 +14,11 @@ public class SecretGenerator {
         throw new IllegalStateException("Utility class");
     }
 
+    /**
+     * Generates a cryptographically secure, ten-character Base62 secret.
+     *
+     * @return A newly generated provisioning secret.
+     */
     public static String generate() {
         StringBuilder builder = new StringBuilder(LENGTH);
         for (int i = 0; i < LENGTH; i++) {

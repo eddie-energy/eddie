@@ -293,15 +293,14 @@ export async function patchInboundProvisioning(
   permissionId: string,
   payload: ProvisioningTypePatchDto,
 ): Promise<void> {
-  await fetch(`/inbound/permission/${permissionId}/patchInboundProvisioning`, {
+  await fetch(`/provisioning/permission/${permissionId}/patchInboundProvisioning`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
-  //success('toasts.acceptPermission')
 }
 
 export function getInboundProvisioningTypes(): Promise<{ provisioningTypes: string[] }> {
-  return fetch('/inbound/provisioningTypes', {
+  return fetch('/provisioning/types', {
     method: 'GET',
   })
 }
