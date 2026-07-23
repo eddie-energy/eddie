@@ -65,6 +65,34 @@ public class InboundDataSource extends MqttDataSource {
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
 
+    /**
+     * Configures MQTT server-mode provisioning using the local broker configuration and activates that mode. A unique
+     * username is created and the supplied plaintext password is encoded before it is stored.
+     *
+     * @param mqttConfig        Local MQTT broker configuration.
+     * @param encoder           Encoder used to protect the generated credential before storage.
+     * @param plaintextPassword Plaintext password generated for the provisioning connection.
+     * @return The connection details stored for server-mode provisioning.
+     */
+    @Transactional
+    public ProvisioningConnectionDto establishServerModeConnection(
+            MqttConfiguration mqttConfig,
+            BCryptPasswordEncoder encoder,
+            String plaintextPassword
+    ) {
+        changeInboundProvisioningType(InboundProvisioningType.MQTT_SERVER);
+        var username = UUID.randomUUID().toString();
+        var password = Objects.requireNonNull(encoder.encode(plaintextPassword));
+
+        return inboundProvisioningConfig.establishServerModeConnection(
+                mqttConfig,
+                username,
+                password,
+                plaintextPassword,
+                serverModeTopic
+        );
+    }
+
     public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission) {
         this(dto, userId, permission, SecretGenerator.generate());
     }
@@ -178,25 +206,16 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     /**
-     * Configures MQTT server-mode provisioning using the local broker configuration and activates that mode. A unique
-     * username is created and the supplied plaintext password is encoded before it is stored.
-     *
-     * @param mqttConfig        Local MQTT broker configuration.
-     * @param encoder           Encoder used to protect the generated credential before storage.
-     * @param plaintextPassword Plaintext password generated for the provisioning connection.
-     * @return The connection details stored for server-mode provisioning.
+     * Reconstructs state that is not reliably materialized by JPA. Hibernate maps an embeddable whose columns are all
+     * {@code null} to {@code null}, while the streaming configuration and server topic are intentionally transient.
      */
-    @Transactional
-    public ProvisioningConnectionDto establishServerModeConnection(
-            MqttConfiguration mqttConfig,
-            BCryptPasswordEncoder encoder,
-            String plaintextPassword
-    ) {
-        changeInboundProvisioningType(InboundProvisioningType.MQTT_SERVER);
-        var username = UUID.randomUUID().toString();
-        var password = Objects.requireNonNull(encoder.encode(plaintextPassword));
-
-        return inboundProvisioningConfig.establishServerModeConnection(mqttConfig, username, password, serverModeTopic);
+    @PostLoad
+    private void restoreTransientState() {
+        if (inboundProvisioningConfig == null) {
+            inboundProvisioningConfig = new InboundProvisioningConfig();
+        }
+        config = Objects.requireNonNull(permission.mqttStreamingConfig());
+        setServerModeTopic();
     }
 
     @Override

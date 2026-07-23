@@ -14,6 +14,7 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.provisioning.ProvisioningMqttPublisher;
+import energy.eddie.aiida.repositories.InboundDataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
@@ -27,6 +28,7 @@ import reactor.core.Disposable;
 import reactor.core.scheduler.Schedulers;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +37,13 @@ public class ProvisioningService {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ProvisioningService.class);
+    private static final Set<InboundProvisioningType> MQTT_PROVISIONING_TYPES =
+            Set.of(
+                    InboundProvisioningType.MQTT_CLIENT,
+                    InboundProvisioningType.MQTT_SERVER
+            );
 
+    private final InboundDataSourceRepository inboundDataSourceRepository;
     private final InboundAggregator inboundAggregator;
     private final PermissionRepository permissionRepository;
     private final MqttConfiguration mqttConfiguration;
@@ -54,17 +62,20 @@ public class ProvisioningService {
      * @param permissionRepository Repository used to resolve the permission and its inbound data source.
      * @param mqttConfiguration    MQTT broker configuration used for server-mode provisioning.
      * @param passwordEncoder      Encoder used to store server-mode MQTT credentials securely.
+     * @param inboundDataSourceRepository Repository used to restore persisted MQTT provisioning publishers.
      */
     public ProvisioningService(
             InboundAggregator inboundAggregator,
             PermissionRepository permissionRepository,
             MqttConfiguration mqttConfiguration,
-            BCryptPasswordEncoder passwordEncoder
+            BCryptPasswordEncoder passwordEncoder,
+            InboundDataSourceRepository inboundDataSourceRepository
     ) {
         this.inboundAggregator = inboundAggregator;
         this.permissionRepository = permissionRepository;
         this.mqttConfiguration = mqttConfiguration;
         this.passwordEncoder = passwordEncoder;
+        this.inboundDataSourceRepository = inboundDataSourceRepository;
     }
 
     /**
@@ -96,12 +107,23 @@ public class ProvisioningService {
         };
     }
 
+    /**
+     * Starts forwarding inbound records and restores publishers for existing MQTT provisioning configurations.
+     */
     @PostConstruct
+    void initialize() {
+        subscribeToInboundRecords();
+        restartPersistedMqttPublishers();
+    }
+
+    /**
+     * Subscribes once to the inbound record stream and forwards records asynchronously to their provisioning publisher.
+     */
     void subscribeToInboundRecords() {
         inboundRecordSubscription = inboundAggregator.inboundRecordFlux()
                                                      .publishOn(Schedulers.boundedElastic())
                                                      .subscribe(
-                                                             this::provisionRecord,
+                                                             this::publishProvisionRecord,
                                                              error -> LOGGER.error("Inbound provisioning stream failed",
                                                                                    error)
                                                      );
@@ -145,7 +167,45 @@ public class ProvisioningService {
         return response;
     }
 
-    private void provisionRecord(InboundRecord inboundRecord) {
+    /**
+     * Stops and removes the MQTT publisher for an inbound data source.
+     *
+     * @param dataSourceId ID of the inbound data source whose publisher should be stopped.
+     */
+    void stopPublisher(UUID dataSourceId) {
+        var publisher = mqttPublishers.remove(dataSourceId);
+        if (publisher != null) {
+            publisher.close();
+        }
+    }
+
+    /**
+     * Recreates publishers for client- and server-mode provisioning after application startup.
+     */
+    private void restartPersistedMqttPublishers() {
+        var dataSources =
+                inboundDataSourceRepository.findByProvisioningTypeIn(
+                        MQTT_PROVISIONING_TYPES
+                );
+
+        for (var dataSource : dataSources) {
+            try {
+                replacePublisher(dataSource);
+                LOGGER.info(
+                        "Restarted MQTT provisioning publisher for data source {}",
+                        dataSource.id()
+                );
+            } catch (RuntimeException exception) {
+                LOGGER.error(
+                        "Could not restart MQTT provisioning publisher for data source {}",
+                        dataSource.id(),
+                        exception
+                );
+            }
+        }
+    }
+
+    private void publishProvisionRecord(InboundRecord inboundRecord) {
         var dataSource = inboundRecord.dataSource();
         var type = dataSource.inboundProvisioningType();
 
@@ -166,22 +226,28 @@ public class ProvisioningService {
         publisher.publish(inboundRecord);
     }
 
+    /**
+     * Creates and registers a publisher for the current provisioning mode, closing any publisher it replaces. Client
+     * mode authenticates with its persisted external credentials; server mode uses AIIDA's broker identity because the
+     * persisted per-permission password is a one-way hash intended for broker authentication.
+     *
+     * @param dataSource Inbound data source whose publisher should be created or replaced.
+     */
     private void replacePublisher(InboundDataSource dataSource) {
-        var publisher = new ProvisioningMqttPublisher(
-                dataSource.provisioningConnection(),
-                dataSource.provisioningTopicOrThrow()
-        );
+        var connection = dataSource.provisioningConnection();
+        var topic = dataSource.provisioningTopicOrThrow();
+        var publisher = dataSource.inboundProvisioningType() == InboundProvisioningType.MQTT_SERVER
+                ? new ProvisioningMqttPublisher(
+                connection,
+                topic,
+                mqttConfiguration.username(),
+                mqttConfiguration.password()
+        )
+                : new ProvisioningMqttPublisher(connection, topic);
 
         var previous = mqttPublishers.put(dataSource.id(), publisher);
         if (previous != null) {
             previous.close();
-        }
-    }
-
-    private void stopPublisher(UUID dataSourceId) {
-        var publisher = mqttPublishers.remove(dataSourceId);
-        if (publisher != null) {
-            publisher.close();
         }
     }
 

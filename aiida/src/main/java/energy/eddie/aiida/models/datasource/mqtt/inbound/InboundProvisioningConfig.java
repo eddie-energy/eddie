@@ -76,6 +76,7 @@ public class InboundProvisioningConfig {
      * @param mqttConnection    MQTT broker configuration supplying the internal and external hosts.
      * @param username          Generated MQTT username used for publishing.
      * @param encryptedPassword Encoded MQTT password stored for the generated user.
+     * @param plaintextPassword Plaintext MQTT password returned once to the provisioning client.
      * @param topic             Topic to which inbound records are published.
      * @return Connection details for the configured MQTT server mode.
      */
@@ -83,13 +84,14 @@ public class InboundProvisioningConfig {
             MqttConfiguration mqttConnection,
             String username,
             String encryptedPassword,
+            String plaintextPassword,
             String topic
     ) {
         connection = new MqttConnection(mqttConnection.internalHost(), mqttConnection.externalHost());
         connection.createMqttUser(username, encryptedPassword);
         accessControlEntry = new MqttAccessControlEntry(username, topic);
 
-        return new ProvisioningConnectionDto(mqttConnection.internalHost(), username, encryptedPassword, topic);
+        return new ProvisioningConnectionDto(mqttConnection.externalHost(), username, plaintextPassword, topic);
     }
 
     /**
