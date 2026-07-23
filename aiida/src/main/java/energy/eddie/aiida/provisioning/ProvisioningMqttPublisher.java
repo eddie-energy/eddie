@@ -25,6 +25,8 @@ public class ProvisioningMqttPublisher implements MqttCallback, AutoCloseable {
     private static final Duration DISCONNECT_TIMEOUT = Duration.ofSeconds(30);
 
     private final MqttConnection mqttConnection;
+    private final String connectionUsername;
+    private final String connectionPassword;
     private final String topic;
     @Nullable
     private IMqttAsyncClient client;
@@ -36,8 +38,29 @@ public class ProvisioningMqttPublisher implements MqttCallback, AutoCloseable {
      * @param topic          Topic to which inbound records are published.
      */
     public ProvisioningMqttPublisher(MqttConnection mqttConnection, String topic) {
+        this(mqttConnection, topic, mqttConnection.username(), mqttConnection.password());
+    }
+
+    /**
+     * Creates a publisher with connection credentials that are independent of the persisted provisioning user.
+     * Server mode uses this overload so AIIDA connects with its stable broker identity while the generated
+     * per-permission user remains dedicated to the provisioning client.
+     *
+     * @param mqttConnection     MQTT connection and persisted username.
+     * @param topic              Topic to which inbound records are published.
+     * @param connectionUsername Username used to authenticate this publisher.
+     * @param connectionPassword Plaintext password used to authenticate this publisher.
+     */
+    public ProvisioningMqttPublisher(
+            MqttConnection mqttConnection,
+            String topic,
+            String connectionUsername,
+            String connectionPassword
+    ) {
         this.mqttConnection = mqttConnection;
         this.topic = topic;
+        this.connectionUsername = connectionUsername;
+        this.connectionPassword = connectionPassword;
 
         connect();
     }
@@ -168,8 +191,8 @@ public class ProvisioningMqttPublisher implements MqttCallback, AutoCloseable {
         options.setCleanStart(false);
         options.setAutomaticReconnect(true);
         options.setKeepAliveInterval(DEFAULT_KEEP_ALIVE_INTERVAL);
-        options.setUserName(mqttConnection.username());
-        options.setPassword(mqttConnection.password().getBytes(StandardCharsets.UTF_8));
+        options.setUserName(connectionUsername);
+        options.setPassword(connectionPassword.getBytes(StandardCharsets.UTF_8));
 
         return options;
     }
