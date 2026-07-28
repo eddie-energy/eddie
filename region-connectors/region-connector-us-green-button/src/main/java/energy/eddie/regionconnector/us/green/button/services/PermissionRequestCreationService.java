@@ -8,7 +8,6 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.config.exceptions.MissingApiTokenException;
@@ -44,13 +43,13 @@ public class PermissionRequestCreationService {
     private static final String DATA_NEED_ID = "dataNeedId";
     private final UsPermissionRequestRepository repository;
     private final GreenButtonConfiguration configuration;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final Outbox outbox;
 
     public PermissionRequestCreationService(
             UsPermissionRequestRepository repository,
             GreenButtonConfiguration configuration,
-            DataNeedCalculationService<DataNeed> calculationService,
+            DataNeedCalculationService calculationService,
             Outbox outbox
     ) {
         this.repository = repository;

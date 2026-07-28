@@ -3,16 +3,16 @@
 
 package energy.eddie.regionconnector.shared.services;
 
-import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
-import energy.eddie.api.agnostic.data.needs.Timeframe;
-import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.cim.agnostic.DataSourceInformation;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.duration.RelativeDuration;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ class CommonFutureDataServiceTest {
     @Mock
     private StatusPermissionRequestRepository<MeterReadingPermissionRequest> repository;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     private CommonFutureDataService<MeterReadingPermissionRequest> service;
 
     @BeforeEach
@@ -123,12 +123,13 @@ class CommonFutureDataServiceTest {
         // Given
         LocalDate today = LocalDate.now(ZoneId.of("Europe/Brussels"));
         var validPr = createPermissionRequest(today.minusDays(1),
-                                               today,
-                                               Optional.empty()); //Permission: start = yesterday, end = today, no latest meter reading
+                                              today,
+                                              Optional.empty()); //Permission: start = yesterday, end = today, no latest meter reading
         when(repository.findByStatus(PermissionProcessStatus.ACCEPTED))
-                .thenReturn(List.of(validPr ));
+                .thenReturn(List.of(validPr));
         when(calculationService.calculate("dnID"))
-                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(today, today)));
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(today, today),
+                                                              new AccountingPointDataNeed()));
 
         // When
         service.fetchMeterData();
@@ -139,9 +140,14 @@ class CommonFutureDataServiceTest {
 
     private static ValidatedHistoricalDataDataNeedResult createValidatedHistoricalDataNeedResult() {
         var today = LocalDate.now(ZoneOffset.UTC);
+        var dataNeed = new ValidatedHistoricalDataDataNeed(new RelativeDuration(null, null, null),
+                                                           EnergyType.ELECTRICITY,
+                                                           Granularity.PT5M,
+                                                           Granularity.P1Y);
         return new ValidatedHistoricalDataDataNeedResult(List.of(),
                                                          new Timeframe(today, today),
-                                                         new Timeframe(today, today));
+                                                         new Timeframe(today, today),
+                                                         dataNeed);
     }
 
     private static MeterReadingPermissionRequest createPermissionRequest(

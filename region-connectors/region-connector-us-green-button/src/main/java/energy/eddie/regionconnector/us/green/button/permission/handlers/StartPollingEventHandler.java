@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.us.green.button.permission.handlers;
@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.us.green.button.permission.handlers;
 import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.handlers.EventHandler;
 import energy.eddie.regionconnector.us.green.button.permission.events.UsStartPollingEvent;
@@ -20,11 +19,11 @@ import org.springframework.stereotype.Component;
 public class StartPollingEventHandler implements EventHandler<UsStartPollingEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(StartPollingEventHandler.class);
     private final PollingService pollingService;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final UsPermissionRequestRepository repository;
 
     public StartPollingEventHandler(
-            PollingService pollingService, EventBus eventBus, DataNeedCalculationService<DataNeed> calculationService,
+            PollingService pollingService, EventBus eventBus, DataNeedCalculationService calculationService,
             UsPermissionRequestRepository repository
     ) {
         this.pollingService = pollingService;

@@ -9,7 +9,7 @@ import energy.eddie.api.agnostic.data.needs.EnergyDirection;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestProjection;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
@@ -45,7 +45,7 @@ class CMRejectHandlerTest {
     @InjectMocks
     CMRejectHandler handler;
     @Mock
-    private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private DataNeedCalculationService dataNeedCalculationService;
     @Spy
     @SuppressWarnings("unused") // injected
     private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new AtConfiguration("test",
@@ -62,6 +62,7 @@ class CMRejectHandlerTest {
     @Captor
     private ArgumentCaptor<EdaAnswerEvent> edaAnswerEventCaptor;
 
+    @SuppressWarnings("DataFlowIssue")
     @Test
     void testCmRequestStatusMessage_retriesOnConsentRequestIdAlreadyExists() {
         // Given
@@ -95,7 +96,8 @@ class CMRejectHandlerTest {
         when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M, Granularity.P1D),
                                                                       timeframe,
-                                                                      timeframe));
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         handler.handleCMReject(cmRequestStatus);
@@ -117,7 +119,8 @@ class CMRejectHandlerTest {
         when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       timeframe,
-                                                                      timeframe));
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         handler.handleCMReject(cmRequestStatus);

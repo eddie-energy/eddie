@@ -7,7 +7,10 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DkCreatedEvent;
@@ -41,7 +44,7 @@ class PermissionCreationServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @InjectMocks
     private PermissionCreationService service;
     @Captor
@@ -92,7 +95,8 @@ class PermissionCreationServiceTest {
                 .thenReturn(new AiidaDataNeedResult(Set.of(),
                                                     Set.of(),
                                                     new Timeframe(LocalDate.now(DK_ZONE_ID),
-                                                                  LocalDate.now(DK_ZONE_ID))));
+                                                                  LocalDate.now(DK_ZONE_ID)),
+                                                    new InboundAiidaDataNeed()));
 
         // When
         // Then
@@ -113,7 +117,8 @@ class PermissionCreationServiceTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         new Timeframe(now, now.plusYears(2)),
-                        new Timeframe(now.minusYears(2), now.plusYears(2))
+                        new Timeframe(now.minusYears(2), now.plusYears(2)),
+                        new ValidatedHistoricalDataDataNeed()
                 ));
         // When
         // Then
@@ -138,7 +143,8 @@ class PermissionCreationServiceTest {
                                                                       new Timeframe(
                                                                               now.minusYears(2),
                                                                               now.plusYears(2)
-                                                                      )
+                                                                      ),
+                                                                      new ValidatedHistoricalDataDataNeed()
                 ));
 
         // When
@@ -169,7 +175,7 @@ class PermissionCreationServiceTest {
                                                        "dnid");
         var now = LocalDate.now(DK_ZONE_ID);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now), new AccountingPointDataNeed()));
 
         // When
         service.createPermissionRequest(request);
@@ -196,7 +202,9 @@ class PermissionCreationServiceTest {
         var request = new PermissionRequestForCreation("cid", "token", VALID_REFRESH_TOKEN, "dnid");
         var now = LocalDate.now(DK_ZONE_ID);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now),
+                                                              List.of(),
+                                                              new CESUJoinRequestDataNeed()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

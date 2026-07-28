@@ -184,7 +184,7 @@ And the metadata.
 package energy.eddie.regionconnector.foo.bar;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.DataNeedInterface;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
@@ -1335,7 +1335,7 @@ public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
         BarPermissionRequestRepository repository,
         RegionConnectorMetadata metadata,
         TaskSchedular taskSchedular,
-        DataNeedCalculationService<DataNeed> calculationService
+        DataNeedCalculationService calculationService
 ) {
   return new CommonFutureDataService<>(
           pollingService,

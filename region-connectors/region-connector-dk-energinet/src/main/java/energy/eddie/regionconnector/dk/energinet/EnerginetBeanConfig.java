@@ -7,7 +7,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.dk.energinet.config.EnerginetConfiguration;
@@ -107,7 +106,7 @@ public class EnerginetBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+    public DataNeedCalculationService dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             DataNeedRuleSet ruleSet
     ) {
@@ -136,7 +135,7 @@ public class EnerginetBeanConfig {
             @Value("${region-connector.dk.energinet.polling:0 0 17 * * *}") String cronExpr,
             EnerginetRegionConnector connector,
             TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+            DataNeedCalculationService dataNeedCalculationService
     ) {
         return new CommonFutureDataService<>(
                 pollingService,

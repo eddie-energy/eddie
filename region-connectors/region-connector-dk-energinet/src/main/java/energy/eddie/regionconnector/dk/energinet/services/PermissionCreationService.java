@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.dk.energinet.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.dk.energinet.permission.events.DKValidatedEvent;
@@ -30,11 +29,11 @@ import static energy.eddie.regionconnector.shared.jwt.JwtValidations.isValidUnti
 public class PermissionCreationService {
     private static final String DATA_NEED_ID = "dataNeedId";
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedCalculationService dataNeedCalculationService;
 
     public PermissionCreationService(
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+            DataNeedCalculationService dataNeedCalculationService
     ) {
         this.outbox = outbox;
         this.dataNeedCalculationService = dataNeedCalculationService;
@@ -66,7 +65,7 @@ public class PermissionCreationService {
                                                        dataNeedId,
                                                        message);
             }
-            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe, var ignored) -> {
                 validateToken(requestForCreation, permissionTimeframe, permissionId);
                 createAccountingPointMasterDataEvent(permissionId);
             }

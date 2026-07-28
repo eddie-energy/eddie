@@ -10,7 +10,10 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.es.datadis.AuthorizedCupsProvider;
 import energy.eddie.regionconnector.es.datadis.api.DatadisApiException;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
@@ -65,7 +68,7 @@ class PermissionRequestServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private BundleService bundleService;
     @InjectMocks
@@ -173,7 +176,8 @@ class PermissionRequestServiceTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         granularities,
                         new Timeframe(now, now),
-                        new Timeframe(now, now)
+                        new Timeframe(now, now),
+                        new ValidatedHistoricalDataDataNeed()
                 ));
 
         // When
@@ -197,7 +201,7 @@ class PermissionRequestServiceTest {
         var today = LocalDate.now(ZONE_ID_SPAIN);
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now)));
+                .thenReturn(new AccountingPointDataNeedResult(new Timeframe(now, now), new AccountingPointDataNeed()));
 
         // When
         service.createAndSendPermissionRequest(creationRequest);
@@ -225,11 +229,12 @@ class PermissionRequestServiceTest {
                 .thenReturn(new CalculationResult(
                         Map.of(
                                 "dnid1",
-                                new AccountingPointDataNeedResult(timeframe),
+                                new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()),
                                 "dnid2",
                                 new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT1H),
                                                                           timeframe,
-                                                                          timeframe)
+                                                                          timeframe,
+                                                                          new ValidatedHistoricalDataDataNeed())
                         )
                 ));
 
@@ -261,7 +266,7 @@ class PermissionRequestServiceTest {
                 .thenReturn(new CalculationResult(
                         Map.of(
                                 "dnid1",
-                                new AccountingPointDataNeedResult(timeframe),
+                                new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()),
                                 "dnid2",
                                 new DataNeedNotFoundResult()
                         )
@@ -293,7 +298,10 @@ class PermissionRequestServiceTest {
         // Given
         var mockCreationRequest = new PermissionRequestForCreation("cid", Set.of("dnid"), "00000000T", "mid");
         var timeframe = new Timeframe(LocalDate.now(ZONE_ID_SPAIN), LocalDate.now(ZONE_ID_SPAIN));
-        when(calculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(), Set.of(), timeframe));
+        when(calculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(),
+                                                                                      Set.of(),
+                                                                                      timeframe,
+                                                                                      new InboundAiidaDataNeed()));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -373,7 +381,9 @@ class PermissionRequestServiceTest {
                                                        "meteringPointId");
         var now = LocalDate.now(ZONE_ID_SPAIN);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now),
+                                                              List.of(),
+                                                              new CESUJoinRequestDataNeed()));
         // When
         var res = service.createAndSendPermissionRequest(request);
 

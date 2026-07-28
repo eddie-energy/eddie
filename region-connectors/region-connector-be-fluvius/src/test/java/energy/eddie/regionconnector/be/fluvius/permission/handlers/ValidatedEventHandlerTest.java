@@ -9,7 +9,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModel;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
@@ -53,7 +53,7 @@ class ValidatedEventHandlerTest {
     @Mock
     private BePermissionRequestRepository bePermissionRequestRepository;
     @Mock
-    private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private DataNeedCalculationService dataNeedCalculationService;
     @Spy
     private EventBus eventBus = new EventBusImpl();
     @Mock
@@ -103,7 +103,10 @@ class ValidatedEventHandlerTest {
                                                                                                                       .build());
         when(dataNeedCalculationService.calculate(eq("did"), any()))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
-                        List.of(Granularity.PT15M), permissionTimeFrame, customEnergyTimeframe)
+                        List.of(Granularity.PT15M),
+                        permissionTimeFrame,
+                        customEnergyTimeframe,
+                        new ValidatedHistoricalDataDataNeed())
                 );
         var responseModel = new FluviusSessionCreateResultResponseModel(null, "shortUrlIdentifier", null);
         when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
@@ -127,7 +130,8 @@ class ValidatedEventHandlerTest {
                 .thenReturn(
                         new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                   permissionTimeFrame,
-                                                                  energyTimeFrame)
+                                                                  energyTimeFrame,
+                                                                  new ValidatedHistoricalDataDataNeed())
                 );
         when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M))).thenReturn(
                 Mono.error(WebClientResponseException.create(400, "400 Error", null, null, null))
@@ -153,7 +157,10 @@ class ValidatedEventHandlerTest {
         when(dataNeedCalculationService.calculate(eq("did"), any()))
                 .thenReturn(
                         new ValidatedHistoricalDataDataNeedResult(
-                                List.of(Granularity.PT15M), permissionTimeFrame, energyTimeFrame
+                                List.of(Granularity.PT15M),
+                                permissionTimeFrame,
+                                energyTimeFrame,
+                                new ValidatedHistoricalDataDataNeed()
                         )
                 );
         when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
@@ -184,7 +191,8 @@ class ValidatedEventHandlerTest {
                 .thenReturn(
                         new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                   permissionTimeFrame,
-                                                                  energyTimeFrame)
+                                                                  energyTimeFrame,
+                                                                  new ValidatedHistoricalDataDataNeed())
                 );
         when(fluviusApi.shortUrlIdentifier(eq("pid"), eq(Flow.B2C), any(), any(), eq(Granularity.PT15M)))
                 .thenReturn(Mono.error(ex));

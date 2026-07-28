@@ -7,7 +7,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fi.fingrid.client.model.EventReason;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
@@ -28,11 +27,11 @@ public class UpdateGranularityService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateGranularityService.class);
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
 
     public UpdateGranularityService(
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> calculationService
+            DataNeedCalculationService calculationService
     ) {
         this.outbox = outbox;
         this.calculationService = calculationService;

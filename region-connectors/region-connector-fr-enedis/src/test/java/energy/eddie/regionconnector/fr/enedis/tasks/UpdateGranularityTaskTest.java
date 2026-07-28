@@ -8,7 +8,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.dto.EnedisApiError;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrGranularityUpdateEvent;
@@ -50,7 +50,7 @@ class UpdateGranularityTaskTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @InjectMocks
     private UpdateGranularityTask updateGranularityTask;
 
@@ -107,7 +107,10 @@ class UpdateGranularityTaskTest {
         var today = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(today, today);
         when(calculationService.calculate(eq("dataNeedId"), any()))
-                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(), timeframe, timeframe));
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(),
+                                                                      timeframe,
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         updateGranularityTask.update(pr, exception);
@@ -135,7 +138,10 @@ class UpdateGranularityTaskTest {
         var today = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(today, today);
         when(calculationService.calculate(eq("dataNeedId"), any()))
-                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D), timeframe, timeframe));
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D),
+                                                                      timeframe,
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         updateGranularityTask.update(pr, exception);

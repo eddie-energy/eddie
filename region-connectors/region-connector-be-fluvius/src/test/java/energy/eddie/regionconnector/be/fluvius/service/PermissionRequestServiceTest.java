@@ -7,7 +7,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.be.fluvius.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.be.fluvius.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.MalformedEvent;
@@ -39,7 +41,7 @@ class PermissionRequestServiceTest {
     @InjectMocks
     private PermissionRequestService permissionRequestService;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private Outbox outbox;
     @Captor
@@ -48,8 +50,11 @@ class PermissionRequestServiceTest {
     public static Stream<Arguments> testCreatePermissionRequest_withInvalidDataNeed_throwsUnsupportedDataNeedException() {
         var now = LocalDate.now(ZoneOffset.UTC);
         return Stream.of(
-                Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now))),
-                Arguments.of(new AiidaDataNeedResult(Set.of(), Set.of(), new Timeframe(now, now))),
+                Arguments.of(new AccountingPointDataNeedResult(new Timeframe(now, now), new AccountingPointDataNeed())),
+                Arguments.of(new AiidaDataNeedResult(Set.of(),
+                                                     Set.of(),
+                                                     new Timeframe(now, now),
+                                                     new InboundAiidaDataNeed())),
                 Arguments.of(new DataNeedNotSupportedResult("unsupported"))
         );
     }
@@ -87,7 +92,8 @@ class PermissionRequestServiceTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         new Timeframe(now, now.plusDays(1)),
-                        new Timeframe(now.minusDays(10), now.minusDays(1))
+                        new Timeframe(now.minusDays(10), now.minusDays(1)),
+                        new ValidatedHistoricalDataDataNeed()
                 ));
         var pr = new PermissionRequestForCreation("cid", "dnid", Flow.B2B);
 

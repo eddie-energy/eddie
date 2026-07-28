@@ -29,10 +29,10 @@ public class PermissionRequestService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
-    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedCalculationService dataNeedCalculationService;
     private final Outbox outbox;
 
-    public PermissionRequestService(DataNeedCalculationService<DataNeed> dataNeedCalculationService, Outbox outbox) {
+    public PermissionRequestService(DataNeedCalculationService dataNeedCalculationService, Outbox outbox) {
         this.dataNeedCalculationService = dataNeedCalculationService;
         this.outbox = outbox;
     }
@@ -71,8 +71,9 @@ public class PermissionRequestService {
             }
             case ValidatedHistoricalDataDataNeedResult(
                     List<Granularity> granularities,
-                    Timeframe ignored,
-                    Timeframe energyTimeframe
+                    Timeframe ignored1,
+                    Timeframe energyTimeframe,
+                    DataNeed ignored2
             ) -> {
                 LOGGER.info("Validated permission request {}", permissionId);
                 outbox.commit(new ValidatedEvent(permissionId,

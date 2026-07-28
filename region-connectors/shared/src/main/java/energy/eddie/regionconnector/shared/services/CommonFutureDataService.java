@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.MeterReadingPermissionRequest;
 import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.api.v0.RegionConnectorMetadata;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -27,7 +26,7 @@ public class CommonFutureDataService<T extends MeterReadingPermissionRequest> {
     private final CommonPollingService<T> pollingService;
     private final StatusPermissionRequestRepository<T> repository;
     private final RegionConnectorMetadata metadata;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
 
     @SuppressWarnings("FutureReturnValueIgnored")
     public CommonFutureDataService(
@@ -36,7 +35,7 @@ public class CommonFutureDataService<T extends MeterReadingPermissionRequest> {
             String cronExpression,
             RegionConnectorMetadata metadata,
             TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> calculationService
+            DataNeedCalculationService calculationService
     ) {
         this.pollingService = pollingService;
         this.repository = repository;

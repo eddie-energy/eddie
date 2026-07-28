@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fi.fingrid.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.*;
@@ -31,12 +30,12 @@ public class PermissionCreationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionCreationService.class);
     private static final String DATA_NEED_ID = "dataNeedId";
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedCalculationService dataNeedCalculationService;
     private final FiPermissionRequestRepository permissionRequestRepository;
 
     public PermissionCreationService(
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService,
+            DataNeedCalculationService dataNeedCalculationService,
             FiPermissionRequestRepository permissionRequestRepository
     ) {
         this.outbox = outbox;
@@ -76,7 +75,7 @@ public class PermissionCreationService {
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> new ValidatedEvent(
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe, var ignored) -> new ValidatedEvent(
                     permissionId,
                     permissionTimeframe.start(),
                     permissionTimeframe.end()

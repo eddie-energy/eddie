@@ -3,16 +3,20 @@
 
 package energy.eddie.regionconnector.aiida.services;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
@@ -89,7 +93,7 @@ class AiidaPermissionServiceTest {
     @Mock
     private MqttDto mockMqttDto;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private ApplicationContext applicationContext;
     @Mock
@@ -97,6 +101,24 @@ class AiidaPermissionServiceTest {
     private AiidaPermissionService service;
     @Captor
     private ArgumentCaptor<PermissionEvent> permissionEventCaptor;
+
+    public static Stream<Arguments> unsupportedDataNeedResults() {
+        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
+        return Stream.of(
+                Arguments.of(new DataNeedNotSupportedResult("")),
+                Arguments.of(new ValidatedHistoricalDataDataNeedResult(List.of(),
+                                                                       timeframe,
+                                                                       timeframe,
+                                                                       new ValidatedHistoricalDataDataNeed(new RelativeDuration(
+                                                                               null,
+                                                                               null,
+                                                                               null),
+                                                                                                           EnergyType.ELECTRICITY,
+                                                                                                           Granularity.PT5M,
+                                                                                                           Granularity.P1Y))),
+                Arguments.of(new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()))
+        );
+    }
 
     @BeforeEach
     void setUp() {
@@ -152,15 +174,6 @@ class AiidaPermissionServiceTest {
                                                                                                             meterId)));
     }
 
-    public static Stream<Arguments> unsupportedDataNeedResults() {
-        var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
-        return Stream.of(
-                Arguments.of(new DataNeedNotSupportedResult("")),
-                Arguments.of(new ValidatedHistoricalDataDataNeedResult(List.of(), timeframe, timeframe)),
-                Arguments.of(new AccountingPointDataNeedResult(timeframe))
-        );
-    }
-
     @ParameterizedTest
     @MethodSource("unsupportedDataNeedResults")
     void givenUnsupportedDataNeed_createValidateAndSendPermissionRequests_throwsException(
@@ -188,7 +201,8 @@ class AiidaPermissionServiceTest {
                                         Set.of(AiidaSchema.SMART_METER_P1_RAW,
                                                AiidaSchema.SMART_METER_P1_CIM_V1_04,
                                                AiidaSchema.SMART_METER_P1_CIM_V1_12),
-                                        new Timeframe(start, end)));
+                                        new Timeframe(start, end),
+                                        new InboundAiidaDataNeed()));
         when(jwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("jwtToken");
 
         // When
@@ -217,7 +231,8 @@ class AiidaPermissionServiceTest {
                                                AiidaSchema.SMART_METER_P1_CIM_V1_12),
                                         Set.of(AiidaSchema.SMART_METER_P1_RAW,
                                                AiidaSchema.SMART_METER_P1_CIM_V1_12),
-                                        new Timeframe(start, end)));
+                                        new Timeframe(start, end),
+                                        new InboundAiidaDataNeed()));
 
         // When
         assertThrows(DataNeedMalformedException.class,
@@ -238,7 +253,8 @@ class AiidaPermissionServiceTest {
         when(calculationService.calculate(anyString())).thenReturn(
                 new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
                                         Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
-                                        new Timeframe(start, end)));
+                                        new Timeframe(start, end),
+                                        new InboundAiidaDataNeed()));
 
         // When
         service.createValidateAndSendPermissionRequests(forCreation);
@@ -259,7 +275,8 @@ class AiidaPermissionServiceTest {
         when(calculationService.calculate(anyString())).thenReturn(
                 new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
                                         Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
-                                        new Timeframe(start, end)));
+                                        new Timeframe(start, end),
+                                        new InboundAiidaDataNeed()));
 
         // When
         var dto = service.createValidateAndSendPermissionRequests(forCreation);

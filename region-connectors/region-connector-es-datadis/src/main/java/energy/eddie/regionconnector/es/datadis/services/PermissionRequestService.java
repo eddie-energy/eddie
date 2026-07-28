@@ -11,7 +11,6 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.es.datadis.consumer.PermissionRequestConsumer;
 import energy.eddie.regionconnector.es.datadis.dtos.AllowedGranularity;
 import energy.eddie.regionconnector.es.datadis.dtos.CreatedPermissionRequest;
@@ -46,7 +45,7 @@ public class PermissionRequestService {
     private final AccountingPointDataService accountingPointDataService;
     private final PermissionRequestConsumer permissionRequestConsumer;
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final BundleService bundleService;
 
     @Autowired
@@ -55,7 +54,7 @@ public class PermissionRequestService {
             AccountingPointDataService accountingPointDataService,
             PermissionRequestConsumer permissionRequestConsumer,
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> calculationService,
+            DataNeedCalculationService calculationService,
             BundleService bundleService
     ) {
         this.repository = repository;

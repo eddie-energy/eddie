@@ -4,6 +4,7 @@
 package energy.eddie.api.agnostic.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +14,15 @@ public record CESUJoinRequestDataNeedResult(
         Timeframe energyDataTimeframe,
         List<Granularity> supportedGranularities,
         Optional<EnergyDirection> energyDirection,
-        Optional<Integer> participationFactor
-) implements DataNeedCalculationResult {
-    public CESUJoinRequestDataNeedResult(Timeframe timeframe, List<Granularity> supportedGranularities) {
-        this(timeframe, timeframe, supportedGranularities, Optional.empty(), Optional.empty());
+        Optional<Integer> participationFactor,
+        CESUJoinRequestDataNeed dataNeed
+) implements DataNeedCalculationResult.DataNeedCalculationSuccessResult<CESUJoinRequestDataNeed> {
+    public CESUJoinRequestDataNeedResult(
+            Timeframe timeframe,
+            List<Granularity> supportedGranularities,
+            CESUJoinRequestDataNeed dataNeed
+    ) {
+        this(timeframe, timeframe, supportedGranularities, Optional.empty(), Optional.empty(), dataNeed);
     }
 
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -24,8 +30,9 @@ public record CESUJoinRequestDataNeedResult(
             Timeframe timeframe,
             List<Granularity> supportedGranularities,
             Optional<EnergyDirection> energyDirection,
-            Optional<Integer> participationFactor
+            Optional<Integer> participationFactor,
+            CESUJoinRequestDataNeed dataNeed
     ) {
-        this(timeframe, timeframe, supportedGranularities, energyDirection, participationFactor);
+        this(timeframe, timeframe, supportedGranularities, energyDirection, participationFactor, dataNeed);
     }
 }

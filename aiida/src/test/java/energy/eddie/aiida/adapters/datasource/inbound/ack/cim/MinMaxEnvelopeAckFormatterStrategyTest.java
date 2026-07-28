@@ -22,6 +22,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
@@ -92,7 +93,7 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
             );
             var expectedStream = classLoader.getResourceAsStream("cim/v1_12/min-max-envelope.xml");
             assert expectedStream != null;
-            var expected = new BufferedReader(new InputStreamReader(expectedStream))
+            var expected = new BufferedReader(new InputStreamReader(expectedStream, Charset.defaultCharset()))
                     .lines()
                     .collect(Collectors.joining("\n"));
 

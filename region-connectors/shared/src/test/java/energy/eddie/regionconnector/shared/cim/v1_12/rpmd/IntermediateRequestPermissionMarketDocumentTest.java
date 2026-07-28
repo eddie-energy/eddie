@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 
 class IntermediateRequestPermissionMarketDocumentTest {
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("toPermissionMarketDocument_mapsSuccessfully")
     void toPermissionMarketDocument_mapsSuccessfully(
             String countryCode,
             String codingScheme
@@ -144,7 +144,7 @@ class IntermediateRequestPermissionMarketDocumentTest {
     }
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("toPermissionMarketDocument_respectsDataNeed")
     void toPermissionMarketDocument_respectsDataNeed(DataNeed dataNeed, StandardProcessTypeList processType) {
         // Given
         var clock = Clock.fixed(Instant.now(Clock.systemUTC()), ZoneOffset.UTC);

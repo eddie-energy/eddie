@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.fi.fingrid.permission.handlers;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.MeterReadingEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
@@ -24,12 +23,12 @@ import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 @Component
 public class MeterReadingEventHandler implements EventHandler<MeterReadingEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MeterReadingEventHandler.class);
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final FiPermissionRequestRepository repository;
     private final Outbox outbox;
 
     public MeterReadingEventHandler(
-            DataNeedCalculationService<DataNeed> calculationService,
+            DataNeedCalculationService calculationService,
             FiPermissionRequestRepository repository,
             Outbox outbox,
             EventBus eventBus

@@ -16,6 +16,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.annotation.DirtiesContext;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
 
@@ -34,7 +35,7 @@ class OpaqueEnvelopeKafkaConnectorTest {
                                                                       ID,
                                                                       ID,
                                                                       ID,
-                                                                      ZonedDateTime.now(),
+                                                                      ZonedDateTime.now(ZoneOffset.UTC),
                                                                       "test-payload");
 
     @Autowired

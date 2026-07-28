@@ -9,7 +9,7 @@ import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.MeterReadingEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
 import energy.eddie.regionconnector.fi.fingrid.persistence.FiPermissionRequestRepository;
@@ -38,7 +38,7 @@ class MeterReadingEventHandlerTest {
     @Spy
     private final EventBus eventBus = new EventBusImpl();
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private FiPermissionRequestRepository repository;
     @Mock
@@ -84,7 +84,8 @@ class MeterReadingEventHandlerTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D),
                                                                       new Timeframe(today, today),
                                                                       new Timeframe(today.minusDays(10),
-                                                                                    yesterday)));
+                                                                                    yesterday),
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         eventBus.emit(new MeterReadingEvent("pid", Map.of("mid", yesterday.atStartOfDay(ZoneOffset.UTC))));
@@ -109,7 +110,8 @@ class MeterReadingEventHandlerTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.P1D),
                                                                       new Timeframe(today, today),
                                                                       new Timeframe(today.minusDays(10),
-                                                                                    yesterday)));
+                                                                                    yesterday),
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         eventBus.emit(new MeterReadingEvent("pid", Map.of("mid", now)));

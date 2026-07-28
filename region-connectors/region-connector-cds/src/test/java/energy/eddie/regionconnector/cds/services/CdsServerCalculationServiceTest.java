@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.services;
@@ -6,15 +6,13 @@ package energy.eddie.regionconnector.cds.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.duration.AbsoluteDuration;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.cds.client.CdsServerClient;
 import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.dtos.CdsServerMasterData;
 import energy.eddie.regionconnector.cds.master.data.CdsServerBuilder;
 import energy.eddie.regionconnector.cds.master.data.Coverage;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,13 +33,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CdsServerCalculationServiceTest {
     @Mock
-    private DataNeedsService dataNeedsService;
-    @Mock
     private CdsServerClientFactory factory;
     @Mock
     private CdsServerClient client;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @InjectMocks
     private CdsServerCalculationService cdsServerCalculationService;
 
@@ -64,38 +60,11 @@ class CdsServerCalculationServiceTest {
     }
 
     @Test
-    void testCalculate_withDataNeedNotMatchingResult_returnCalculation() {
-        // Given
-        var cdsServer = new CdsServerBuilder()
-                .build();
-        var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var today = now.toLocalDate();
-        var calculationResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                                          new Timeframe(today, today),
-                                                                          new Timeframe(today, today));
-        when(calculationService.calculate("dnid", now))
-                .thenReturn(calculationResult);
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new OutboundAiidaDataNeed());
-
-
-        // When
-        var res = cdsServerCalculationService.calculate("dnid", cdsServer, now);
-
-        // Then
-        assertEquals(calculationResult, res);
-    }
-
-    @Test
     void testCalculate_whereDataNeedRequiresDifferentEnergyTypeThanCdsServerProvides_returnCalculation() {
         // Given
-        var cdsServer = new CdsServerBuilder()
-                .build();
         var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var today = now.toLocalDate();
-        var calculationResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                                          new Timeframe(today, today),
-                                                                          new Timeframe(today, today));
+        var cdsServer = new CdsServerBuilder().build();
+        var calculationResult = createDataNeedResult(now, EnergyType.NATURAL_GAS);
         when(factory.get(cdsServer)).thenReturn(client);
         when(client.masterData()).thenReturn(Mono.just(
                 new CdsServerMasterData(
@@ -107,12 +76,6 @@ class CdsServerCalculationServiceTest {
         ));
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calculationResult);
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new ValidatedHistoricalDataDataNeed(new AbsoluteDuration(today, today),
-                                                                EnergyType.NATURAL_GAS,
-                                                                Granularity.PT5M,
-                                                                Granularity.P1Y));
-
 
         // When
         var res = cdsServerCalculationService.calculate("dnid", cdsServer, now);
@@ -127,17 +90,9 @@ class CdsServerCalculationServiceTest {
         var cdsServer = new CdsServerBuilder()
                 .build();
         var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var today = now.toLocalDate();
-        var calculationResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
-                                                                          new Timeframe(today, today),
-                                                                          new Timeframe(today, today));
+        var calculationResult = createDataNeedResult(now, EnergyType.ELECTRICITY);
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calculationResult);
-        when(dataNeedsService.getById("dnid"))
-                .thenReturn(new ValidatedHistoricalDataDataNeed(new AbsoluteDuration(today, today),
-                                                                EnergyType.ELECTRICITY,
-                                                                Granularity.PT5M,
-                                                                Granularity.P1Y));
         when(factory.get(cdsServer)).thenReturn(client);
         when(client.masterData()).thenReturn(Mono.just(
                 new CdsServerMasterData(
@@ -154,5 +109,20 @@ class CdsServerCalculationServiceTest {
 
         // Then
         assertEquals(calculationResult, res);
+    }
+
+    private static @NonNull ValidatedHistoricalDataDataNeedResult createDataNeedResult(
+            ZonedDateTime now,
+            EnergyType energyType
+    ) {
+        var today = now.toLocalDate();
+        var validatedHistoricalDataDataNeed = new ValidatedHistoricalDataDataNeed(new AbsoluteDuration(today, today),
+                                                                                  energyType,
+                                                                                  Granularity.PT5M,
+                                                                                  Granularity.P1Y);
+        return new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
+                                                         new Timeframe(today, today),
+                                                         new Timeframe(today, today),
+                                                         validatedHistoricalDataDataNeed);
     }
 }

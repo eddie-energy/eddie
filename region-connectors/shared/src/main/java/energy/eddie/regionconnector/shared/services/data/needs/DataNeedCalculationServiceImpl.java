@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * Implementation of the {@link DataNeedCalculationService} that can be customized to fit the requirements of the region connector.
  */
 @Transactional(value = Transactional.TxType.REQUIRED)
-public class DataNeedCalculationServiceImpl implements DataNeedCalculationService<DataNeed> {
+public class DataNeedCalculationServiceImpl implements DataNeedCalculationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataNeedCalculationServiceImpl.class);
     private final DataNeedsService dataNeedsService;
     private final RegionConnectorMetadata regionConnectorMetadata;
@@ -151,8 +151,10 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
             }
             case AiidaDataNeed aiidaDataNeed -> new AiidaDataNeedResult(aiidaDataNeed.schemas(),
                                                                         aiidaDataNeed.supportedSchemas(),
-                                                                        energyStartAndEndDate);
-            case AccountingPointDataNeed ignored -> new AccountingPointDataNeedResult(permissionStartAndEndDate);
+                                                                        energyStartAndEndDate,
+                                                                        aiidaDataNeed);
+            case AccountingPointDataNeed apDataNeed ->
+                    new AccountingPointDataNeedResult(permissionStartAndEndDate, apDataNeed);
             case CESUJoinRequestDataNeed need -> {
                 var rule = List.copyOf(dataNeedRuleSet.dataNeedRules(CESUJoinRequestDataNeedRule.class))
                                .getFirst();
@@ -162,7 +164,8 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                                                         energyStartAndEndDate,
                                                         supportedGranularities,
                                                         need.energyDirection(),
-                                                        need.participationFactor());
+                                                        need.participationFactor(),
+                                                        need);
             }
             default -> new DataNeedNotSupportedResult("Unknown data need type: %s".formatted(dataNeed.getClass()));
         };
@@ -299,7 +302,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
                     return new DataNeedNotSupportedResult("Granularities are not supported");
                 }
                 return new ValidatedHistoricalDataDataNeedResult(
-                        supportedGranularities, permissionStartAndEndDate, energyStartAndEndDate);
+                        supportedGranularities, permissionStartAndEndDate, energyStartAndEndDate, vhdDataNeed);
             }
         }
 
