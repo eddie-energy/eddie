@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 rootProject.name = "eddie"
 
 plugins {
@@ -44,3 +47,6 @@ include("european-masterdata")
 include("admin-console")
 
 include("examples:new-example-app")
+
+include("data-need-api")
+include("common-types")

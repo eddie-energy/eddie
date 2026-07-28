@@ -3,10 +3,11 @@
 
 package energy.eddie.api.agnostic.data.needs;
 
-public sealed interface DataNeedCalculationResult permits
-        AccountingPointDataNeedResult,
-        AiidaDataNeedResult,
-        DataNeedNotFoundResult,
-        DataNeedNotSupportedResult,
-        ValidatedHistoricalDataDataNeedResult,
-        CESUJoinRequestDataNeedResult {}
+import energy.eddie.dataneeds.needs.DataNeed;
+
+public sealed interface DataNeedCalculationResult permits DataNeedCalculationResult.DataNeedCalculationSuccessResult, DataNeedNotFoundResult, DataNeedNotSupportedResult {
+
+    sealed interface DataNeedCalculationSuccessResult<T extends DataNeed> extends DataNeedCalculationResult permits AccountingPointDataNeedResult, AiidaDataNeedResult, CESUJoinRequestDataNeedResult, ValidatedHistoricalDataDataNeedResult {
+        T dataNeed();
+    }
+}

@@ -1,11 +1,10 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.core.services.DataNeedCalculationRouter;
-import energy.eddie.dataneeds.needs.DataNeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -22,12 +21,12 @@ class DataNeedCalculationServiceRegistrarTest {
     @Mock
     private DataNeedCalculationRouter router;
     @Mock
-    private DataNeedCalculationService<DataNeed> service;
+    private DataNeedCalculationService service;
 
     @Test
     void givenNull_constructor_throws() {
         // Given
-        Optional<DataNeedCalculationService<DataNeed>> empty = Optional.empty();
+        Optional<DataNeedCalculationService> empty = Optional.empty();
 
         // When, Then
         assertThrows(NullPointerException.class, () -> new DataNeedCalculationServiceRegistrar(null, router));

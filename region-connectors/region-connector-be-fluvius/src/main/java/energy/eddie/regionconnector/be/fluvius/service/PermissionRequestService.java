@@ -28,10 +28,10 @@ import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMeta
 public class PermissionRequestService {
     public static final String DATA_NEED_ID = "dataNeedId";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestService.class);
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final Outbox outbox;
 
-    public PermissionRequestService(DataNeedCalculationService<DataNeed> calculationService, Outbox outbox) {
+    public PermissionRequestService(DataNeedCalculationService calculationService, Outbox outbox) {
         this.calculationService = calculationService;
         this.outbox = outbox;
     }
@@ -60,7 +60,8 @@ public class PermissionRequestService {
             case ValidatedHistoricalDataDataNeedResult(
                     List<Granularity> granularities,
                     Timeframe ignored,
-                    Timeframe energyTimeframe
+                    Timeframe energyTimeframe,
+                    DataNeed ignored2
             ) -> {
                 LOGGER.info("Created permission request {}", permissionId);
                 outbox.commit(new ValidatedEvent(permissionId,

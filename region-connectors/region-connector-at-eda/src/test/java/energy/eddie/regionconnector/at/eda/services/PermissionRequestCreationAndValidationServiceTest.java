@@ -7,7 +7,10 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
@@ -48,7 +51,7 @@ class PermissionRequestCreationAndValidationServiceTest {
     @Mock
     private Outbox mockOutbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @InjectMocks
     private PermissionRequestCreationAndValidationService creationService;
     @Captor
@@ -62,7 +65,8 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(calculationService.calculate("dnid"))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       timeframe,
-                                                                      timeframe));
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
 
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
@@ -84,7 +88,8 @@ class PermissionRequestCreationAndValidationServiceTest {
         when(calculationService.calculate("dnid1"))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       timeframe,
-                                                                      timeframe));
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
         when(calculationService.calculate("dnid2"))
                 .thenReturn(new DataNeedNotSupportedResult("msg"));
 
@@ -105,7 +110,7 @@ class PermissionRequestCreationAndValidationServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(now, now);
         when(calculationService.calculate("dnid"))
-                .thenReturn(new AccountingPointDataNeedResult(timeframe));
+                .thenReturn(new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()));
         var pr = new PermissionRequestForCreation("cid", "AT0000000699900000000000206868100",
                                                   List.of("dnid"), "AT000000");
 
@@ -135,7 +140,8 @@ class PermissionRequestCreationAndValidationServiceTest {
                 .thenReturn(new AiidaDataNeedResult(Set.of(),
                                                     Set.of(),
                                                     new Timeframe(LocalDate.now(AT_ZONE_ID),
-                                                                  LocalDate.now(AT_ZONE_ID))));
+                                                                  LocalDate.now(AT_ZONE_ID)),
+                                                    new InboundAiidaDataNeed()));
         var pr = new PermissionRequestForCreation("cid",
                                                   "AT0000000699900000000000206868100",
                                                   List.of("dnid"),
@@ -186,7 +192,8 @@ class PermissionRequestCreationAndValidationServiceTest {
                 .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, null),
                                                               List.of(Granularity.PT15M, Granularity.P1D),
                                                               dataNeedEnergyDirection,
-                                                              dataNeedParticipationFactor));
+                                                              dataNeedParticipationFactor,
+                                                              new CESUJoinRequestDataNeed()));
         var pr = new PermissionRequestForCreation("cid",
                                                   "AT0000000699900000000000206868100",
                                                   List.of("dnid"),

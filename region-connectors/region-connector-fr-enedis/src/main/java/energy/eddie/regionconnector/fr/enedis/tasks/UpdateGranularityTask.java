@@ -7,7 +7,6 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.dto.EnedisApiError;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrGranularityUpdateEvent;
@@ -22,9 +21,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 public class UpdateGranularityTask {
     private static final Logger LOGGER = LoggerFactory.getLogger(UpdateGranularityTask.class);
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
 
-    public UpdateGranularityTask(Outbox outbox, DataNeedCalculationService<DataNeed> calculationService) {
+    public UpdateGranularityTask(Outbox outbox, DataNeedCalculationService calculationService) {
         this.outbox = outbox;
         this.calculationService = calculationService;
     }

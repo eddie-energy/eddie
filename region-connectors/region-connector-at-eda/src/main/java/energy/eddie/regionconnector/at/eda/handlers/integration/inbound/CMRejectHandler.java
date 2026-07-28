@@ -10,7 +10,6 @@ import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -26,14 +25,14 @@ import java.util.List;
 
 @Component
 public class CMRejectHandler {
-    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedCalculationService dataNeedCalculationService;
     private final ValidatedEventFactory validatedEventFactory;
     private final AtPermissionRequestRepository repository;
 
     private final Outbox outbox;
 
     public CMRejectHandler(
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService,
+            DataNeedCalculationService dataNeedCalculationService,
             ValidatedEventFactory validatedEventFactory,
             AtPermissionRequestRepository repository,
             Outbox outbox
@@ -104,7 +103,8 @@ public class CMRejectHandler {
                 List<Granularity> granularities,
                 // False positive
                 @SuppressWarnings("java:S1481")Timeframe ignored1,
-                @SuppressWarnings("java:S1481")Timeframe ignored2
+                @SuppressWarnings("java:S1481")Timeframe ignored2,
+                var ignored
         ))
             || !granularities.contains(Granularity.P1D)) {
             return false;

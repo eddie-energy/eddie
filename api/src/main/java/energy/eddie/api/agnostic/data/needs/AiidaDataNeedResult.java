@@ -4,6 +4,7 @@
 package energy.eddie.api.agnostic.data.needs;
 
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 
 import java.util.Set;
 
@@ -17,8 +18,9 @@ import java.util.Set;
 public record AiidaDataNeedResult(
         Set<AiidaSchema> schemas,
         Set<AiidaSchema> supportedSchemas,
-        Timeframe energyTimeframe
-) implements DataNeedCalculationResult {
+        Timeframe energyTimeframe,
+        AiidaDataNeed dataNeed
+) implements DataNeedCalculationResult.DataNeedCalculationSuccessResult<AiidaDataNeed> {
     public boolean supportsAllSchemas() {
         return supportedSchemas().containsAll(schemas);
     }

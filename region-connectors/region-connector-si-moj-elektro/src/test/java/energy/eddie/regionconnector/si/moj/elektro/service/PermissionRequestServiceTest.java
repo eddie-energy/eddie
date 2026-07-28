@@ -7,7 +7,9 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.si.moj.elektro.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.si.moj.elektro.permission.events.CreatedEvent;
@@ -34,7 +36,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestServiceTest {
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private Outbox outbox;
     @InjectMocks
@@ -67,7 +69,7 @@ class PermissionRequestServiceTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid")).thenReturn(
-                new AccountingPointDataNeedResult(new Timeframe(now, now))
+                new AccountingPointDataNeedResult(new Timeframe(now, now), new AccountingPointDataNeed())
         );
 
         // When
@@ -83,7 +85,7 @@ class PermissionRequestServiceTest {
         // Given
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate("dnid")).thenReturn(
-                new AiidaDataNeedResult(Set.of(), Set.of(), new Timeframe(now, now))
+                new AiidaDataNeedResult(Set.of(), Set.of(), new Timeframe(now, now), new InboundAiidaDataNeed())
         );
 
         // When
@@ -115,7 +117,8 @@ class PermissionRequestServiceTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         new Timeframe(now, now.plusDays(1)),
-                        new Timeframe(now.minusDays(10), now.minusDays(1))
+                        new Timeframe(now.minusDays(10), now.minusDays(1)),
+                        new ValidatedHistoricalDataDataNeed()
                 ));
 
         // When

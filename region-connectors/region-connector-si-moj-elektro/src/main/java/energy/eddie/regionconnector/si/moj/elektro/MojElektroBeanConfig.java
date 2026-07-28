@@ -7,7 +7,6 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -63,7 +62,7 @@ public class MojElektroBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+    public DataNeedCalculationService dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             RegionConnectorMetadata metadata,
             DataNeedRuleSet ruleSet

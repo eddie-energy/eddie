@@ -6,7 +6,7 @@ package energy.eddie.regionconnector.fi.fingrid.services;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.fi.fingrid.client.model.*;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.UpdateGranularityEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequestBuilder;
@@ -50,7 +50,7 @@ class UpdateGranularityServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @InjectMocks
     private UpdateGranularityService updateGranularityService;
     @Captor
@@ -135,7 +135,8 @@ class UpdateGranularityServiceTest {
         var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT5M, Granularity.PT15M, Granularity.PT1H),
                 null,
-                null
+                null,
+                new ValidatedHistoricalDataDataNeed()
         );
         when(calculationService.calculate("dnid"))
                 .thenReturn(calc);
@@ -208,7 +209,8 @@ class UpdateGranularityServiceTest {
         var calc = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT5M, Granularity.PT15M),
                 null,
-                null
+                null,
+                new ValidatedHistoricalDataDataNeed()
         );
         when(calculationService.calculate("dnid")).thenReturn(calc);
 

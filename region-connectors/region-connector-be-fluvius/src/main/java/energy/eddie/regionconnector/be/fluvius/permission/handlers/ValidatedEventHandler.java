@@ -7,7 +7,6 @@ import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModel;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
@@ -33,13 +32,13 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(ValidatedEventHandler.class);
     private final FluviusApi fluviusApi;
     private final BePermissionRequestRepository bePermissionRequestRepository;
-    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedCalculationService dataNeedCalculationService;
     private final Outbox outbox;
 
     public ValidatedEventHandler(
             EventBus eventBus, FluviusApi fluviusApi,
             BePermissionRequestRepository bePermissionRequestRepository,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService,
+            DataNeedCalculationService dataNeedCalculationService,
             Outbox outbox
     ) {
         eventBus.filteredFlux(ValidatedEvent.class).subscribe(this::accept);

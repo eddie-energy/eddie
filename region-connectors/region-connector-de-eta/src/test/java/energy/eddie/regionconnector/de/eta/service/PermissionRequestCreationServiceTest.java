@@ -7,16 +7,13 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.de.eta.dtos.PermissionRequestForCreation;
-import energy.eddie.regionconnector.de.eta.permission.request.events.AccountingPointValidatedEvent;
-import energy.eddie.regionconnector.de.eta.permission.request.events.CreatedEvent;
-import energy.eddie.regionconnector.de.eta.permission.request.events.MalformedEvent;
-import energy.eddie.regionconnector.de.eta.permission.request.events.ValidatedEvent;
+import energy.eddie.regionconnector.de.eta.permission.request.events.*;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
-import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-
-import energy.eddie.regionconnector.de.eta.permission.request.events.PersistablePermissionEvent;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -39,17 +36,8 @@ class PermissionRequestCreationServiceTest {
 
     private static final String CONNECTION_ID = "conn-1";
 
-    @Mock
-    private DataNeedCalculationService<energy.eddie.dataneeds.needs.DataNeed> dataNeedCalculationService;
-
-    @Mock
-    private Outbox outbox;
-
-    @InjectMocks
-    private PermissionRequestCreationService service;
-
     @Spy
-    @SuppressWarnings("UnusedVariable") // injected into service via @InjectMocks
+    @SuppressWarnings({"UnusedVariable", "unused"}) // injected into service via @InjectMocks
     private final DeEtaPlusConfiguration configuration = new DeEtaPlusConfiguration(
             "partner", "http://api.url", "api-client", "api-secret",
             "/meters/historical", "/meters/accounting-point", 30,
@@ -61,6 +49,14 @@ class PermissionRequestCreationServiceTest {
             null
     );
 
+    @Mock
+    private Outbox outbox;
+
+    @InjectMocks
+    private PermissionRequestCreationService service;
+    @Mock
+    private DataNeedCalculationService dataNeedCalculationService;
+
     @Test
     void createPermissionRequestWhenDataNeedIsValidatedShouldReturnCreatedPermissionRequest() throws Exception {
         PermissionRequestForCreation request = new PermissionRequestForCreation(CONNECTION_ID, "dn-1", "mp-1");
@@ -71,7 +67,8 @@ class PermissionRequestCreationServiceTest {
         ValidatedHistoricalDataDataNeedResult result = new ValidatedHistoricalDataDataNeedResult(
                 List.of(Granularity.PT15M),
                 timeframe,
-                timeframe
+                timeframe,
+                new ValidatedHistoricalDataDataNeed()
         );
 
         when(dataNeedCalculationService.calculate(anyString())).thenReturn(result);
@@ -102,7 +99,7 @@ class PermissionRequestCreationServiceTest {
         LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(1);
         Timeframe timeframe = new Timeframe(start, end);
         when(dataNeedCalculationService.calculate(anyString()))
-                .thenReturn(new AccountingPointDataNeedResult(timeframe));
+                .thenReturn(new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()));
 
         CreatedPermissionRequest result = service.createPermissionRequest(request);
 

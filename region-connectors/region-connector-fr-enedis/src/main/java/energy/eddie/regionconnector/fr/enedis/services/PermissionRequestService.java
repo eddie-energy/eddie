@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
@@ -39,13 +38,13 @@ public class PermissionRequestService {
     private final FrPermissionRequestRepository repository;
     private final EnedisConfiguration configuration;
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
 
     public PermissionRequestService(
             FrPermissionRequestRepository repository,
             EnedisConfiguration configuration,
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> calculationService
+            DataNeedCalculationService calculationService
     ) {
         this.repository = repository;
         this.configuration = configuration;
@@ -75,7 +74,7 @@ public class PermissionRequestService {
                                                        dataNeedId,
                                                        message);
             }
-            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) -> {
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe, var ignored) -> {
                 handleAccountingPointDataNeed(permissionId, permissionTimeframe);
                 yield permissionTimeframe.end();
             }

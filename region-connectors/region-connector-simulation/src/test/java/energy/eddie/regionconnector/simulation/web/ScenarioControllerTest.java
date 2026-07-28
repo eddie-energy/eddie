@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.simulation.web;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.simulation.dtos.Measurement;
 import energy.eddie.regionconnector.simulation.dtos.ScenarioMetadata;
@@ -51,7 +50,7 @@ class ScenarioControllerTest {
     @MockitoBean
     private SimulationEngine engine;
     @MockitoBean
-    private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private DataNeedCalculationService dataNeedCalculationService;
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired

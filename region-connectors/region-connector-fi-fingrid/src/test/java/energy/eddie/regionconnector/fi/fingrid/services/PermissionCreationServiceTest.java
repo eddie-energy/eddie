@@ -9,7 +9,10 @@ import energy.eddie.api.agnostic.process.model.PermissionStateTransitionExceptio
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.fi.fingrid.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.CreatedEvent;
 import energy.eddie.regionconnector.fi.fingrid.permission.events.MalformedEvent;
@@ -47,7 +50,7 @@ class PermissionCreationServiceTest {
     @Mock
     private Outbox outbox;
     @Mock
-    private DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private DataNeedCalculationService dataNeedCalculationService;
     @Mock
     private FiPermissionRequestRepository permissionRequestRepository;
     @InjectMocks
@@ -85,7 +88,8 @@ class PermissionCreationServiceTest {
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
         when(dataNeedCalculationService.calculate("dnid")).thenReturn(new AiidaDataNeedResult(Set.of(),
                                                                                               Set.of(),
-                                                                                              timeframe));
+                                                                                              timeframe,
+                                                                                              new InboundAiidaDataNeed()));
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -196,7 +200,8 @@ class PermissionCreationServiceTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         when(dataNeedCalculationService.calculate("dnid"))
                 .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now),
-                                                              List.of(Granularity.PT1H)));
+                                                              List.of(Granularity.PT1H),
+                                                              new CESUJoinRequestDataNeed()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,
@@ -213,10 +218,11 @@ class PermissionCreationServiceTest {
                         new ValidatedHistoricalDataDataNeedResult(
                                 List.of(Granularity.PT1H),
                                 timeframe,
-                                new Timeframe(today.minusDays(10), today.minusDays(1))
+                                new Timeframe(today.minusDays(10), today.minusDays(1)),
+                                new ValidatedHistoricalDataDataNeed()
                         )
                 ),
-                Arguments.of(new AccountingPointDataNeedResult(timeframe))
+                Arguments.of(new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()))
         );
     }
 }

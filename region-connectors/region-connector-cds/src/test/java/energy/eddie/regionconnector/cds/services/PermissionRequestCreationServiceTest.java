@@ -10,6 +10,10 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.cds.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.cds.exceptions.UnknownPermissionAdministratorException;
 import energy.eddie.regionconnector.cds.master.data.CdsServer;
@@ -99,7 +103,7 @@ class PermissionRequestCreationServiceTest {
         var today = LocalDate.now(ZoneOffset.UTC);
         var timeframe = new Timeframe(today, today);
         when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
-                .thenReturn(new AccountingPointDataNeedResult(timeframe));
+                .thenReturn(new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()));
         var uri = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
         when(authorizationService.createOAuthRequest(eq(cdsServer), anyString()))
                 .thenReturn(uri);
@@ -130,7 +134,8 @@ class PermissionRequestCreationServiceTest {
                 .thenReturn(new AiidaDataNeedResult(Set.of(),
                                                     Set.of(),
                                                     new Timeframe(LocalDate.now(ZoneOffset.UTC),
-                                                                  LocalDate.now(ZoneOffset.UTC))));
+                                                                  LocalDate.now(ZoneOffset.UTC)),
+                                                    new InboundAiidaDataNeed()));
         var creation = new PermissionRequestForCreation(0L, "dnid", "cid");
 
         // When & Then
@@ -167,7 +172,8 @@ class PermissionRequestCreationServiceTest {
         when(calculationService.calculate(eq("dnid"), eq(cdsServer), any()))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       timeframe,
-                                                                      timeframe));
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
         var uri = URI.create("urn:example:bwc4JK-ESC0w8acc191e-Y1LTC2");
         when(authorizationService.createOAuthRequest(eq(cdsServer), anyString()))
                 .thenReturn(uri);
@@ -198,7 +204,9 @@ class PermissionRequestCreationServiceTest {
         var request = new PermissionRequestForCreation(0L, "dnid", "cid");
         var now = LocalDate.now(ZoneOffset.UTC);
         when(calculationService.calculate(eq("dnid"), any(), any()))
-                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now), List.of()));
+                .thenReturn(new CESUJoinRequestDataNeedResult(new Timeframe(now, now),
+                                                              List.of(),
+                                                              new CESUJoinRequestDataNeed()));
         // When
         // Then
         assertThrows(UnsupportedDataNeedException.class,

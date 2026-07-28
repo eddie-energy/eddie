@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.de.eta;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.data.needs.EtaDataNeedRuleSet;
@@ -87,7 +86,7 @@ public class DeEtaBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+    public DataNeedCalculationService dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             EtaDataNeedRuleSet dataNeedRuleSet) {
         return new DataNeedCalculationServiceImpl(dataNeedsService, EtaRegionConnectorMetadata.getInstance(), dataNeedRuleSet);
@@ -114,7 +113,7 @@ public class DeEtaBeanConfig {
             DePermissionRequestRepository repository,
             @Value("${region-connector.de.eta.polling:0 0 17 * * *}") String cronExpr,
             TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+            DataNeedCalculationService dataNeedCalculationService
     ) {
         return new CommonFutureDataService<>(
                 pollingService,

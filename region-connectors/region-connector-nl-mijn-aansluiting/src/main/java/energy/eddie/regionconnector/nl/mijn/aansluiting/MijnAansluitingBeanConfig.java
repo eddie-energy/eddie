@@ -20,7 +20,6 @@ import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.config.MijnAansluitingConfiguration;
@@ -124,7 +123,7 @@ public class MijnAansluitingBeanConfig {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+    public DataNeedCalculationService dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             DataNeedRuleSet ruleSet
     ) {
@@ -180,7 +179,7 @@ public class MijnAansluitingBeanConfig {
             @Value("${region-connector.nl.mijn.aansluiting.polling:0 0 17 * * *}") String cronExpr,
             MijnAansluitingRegionConnector connector,
             TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+            DataNeedCalculationService dataNeedCalculationService
     ) {
         return new CommonFutureDataService<>(
                 pollingService,

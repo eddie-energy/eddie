@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.api.agnostic.data.needs;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ import java.util.List;
 public record ValidatedHistoricalDataDataNeedResult(
         List<Granularity> granularities,
         Timeframe permissionTimeframe,
-        Timeframe energyTimeframe
-) implements DataNeedCalculationResult {
+        Timeframe energyTimeframe,
+        ValidatedHistoricalDataDataNeed dataNeed
+) implements DataNeedCalculationResult.DataNeedCalculationSuccessResult<ValidatedHistoricalDataDataNeed> {
 }

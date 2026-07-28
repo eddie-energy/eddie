@@ -32,6 +32,7 @@ class ConnectionStatusMessageControllerTest {
     @Autowired
     private WebTestClient webTestClient;
     @Autowired
+    @SuppressWarnings("unused")
     private ConnectionStatusMessageController controller;
     @Autowired
     private MessageStreamHub messageStreamHub;

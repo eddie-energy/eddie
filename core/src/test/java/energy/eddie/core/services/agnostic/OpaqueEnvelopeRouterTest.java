@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.test.publisher.TestPublisher;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.mockito.Mockito.*;
@@ -89,7 +90,7 @@ class OpaqueEnvelopeRouterTest {
 
     private static OpaqueEnvelope envelopeFor(String regionConnectorId) {
         var id = "test-id";
-        return new OpaqueEnvelope(regionConnectorId, id, id, id, id, ZonedDateTime.now(), "test-payload");
+        return new OpaqueEnvelope(regionConnectorId, id, id, id, id, ZonedDateTime.now(ZoneOffset.UTC), "test-payload");
     }
 
     private record PlainOpaqueEnvelopeOutboundConnector(

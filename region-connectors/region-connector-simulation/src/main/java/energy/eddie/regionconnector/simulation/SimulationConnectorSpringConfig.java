@@ -5,7 +5,6 @@ package energy.eddie.regionconnector.simulation;
 
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.cim.agnostic.ConnectionStatusMessage;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import energy.eddie.regionconnector.shared.utils.CommonPaths;
@@ -38,7 +37,7 @@ public class SimulationConnectorSpringConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+    public DataNeedCalculationService dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             SimulationDataNeedRuleSet simulationDataNeedRuleSet
     ) {

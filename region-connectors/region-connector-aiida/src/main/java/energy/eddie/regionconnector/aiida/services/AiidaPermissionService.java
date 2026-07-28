@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
 import java.util.ArrayList;
@@ -52,14 +52,14 @@ import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.RE
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 
-@Component
+@Service
 public class AiidaPermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaPermissionService.class);
     private final Outbox outbox;
     private final DataNeedsService dataNeedsService;
     private final MqttService mqttService;
     private final AiidaPermissionRequestViewRepository viewRepository;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final UUID eddieId;
     private final JwtUtil jwtUtil;
     private final String eddiePublicUrl;
@@ -70,7 +70,7 @@ public class AiidaPermissionService {
             DataNeedsService dataNeedsService,
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
-            DataNeedCalculationService<DataNeed> calculationService,
+            DataNeedCalculationService calculationService,
             Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
             ApplicationContext applicationContext,
             JwtUtil jwtUtil,

@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.api.agnostic.data.needs;
+
+import energy.eddie.dataneeds.needs.DataNeed;
 
 import java.time.ZonedDateTime;
 import java.util.Set;
@@ -9,17 +11,15 @@ import java.util.Set;
 /**
  * Used to by a region-connector to calculate start and end data of a data need, as well as reporting if it supports a
  * certain data need.
- *
- * @param <T> Should always be {@code DataNeed}, but this is only available in the core itself.
  */
-public interface DataNeedCalculationService<T extends DataNeedInterface> {
+public interface DataNeedCalculationService {
     /**
      * Calculates relevant information for a data need
      *
      * @param dataNeed the data need
      * @return the calculation results for the data need
      */
-    DataNeedCalculationResult calculate(T dataNeed);
+    DataNeedCalculationResult calculate(DataNeed dataNeed);
 
     /**
      * Calculates relevant information for a data need, using the reference datetime
@@ -28,7 +28,7 @@ public interface DataNeedCalculationService<T extends DataNeedInterface> {
      * @param referenceDateTime the reference datetime the calculations are based on
      * @return the calculation results for the data need
      */
-    DataNeedCalculationResult calculate(T dataNeed, ZonedDateTime referenceDateTime);
+    DataNeedCalculationResult calculate(DataNeed dataNeed, ZonedDateTime referenceDateTime);
 
     /**
      * Calculate relevant information for a given data need ID

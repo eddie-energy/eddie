@@ -1,11 +1,12 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.services;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.*;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.cds.client.CdsServerClient;
 import energy.eddie.regionconnector.cds.client.CdsServerClientFactory;
 import energy.eddie.regionconnector.cds.client.customer.data.CustomerDataClientErrorHandler;
@@ -40,7 +41,7 @@ class PollingServiceTest {
     @Spy
     private final IdentifiableDataStreams streams = new IdentifiableDataStreams();
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private CdsServerClientFactory factory;
     @Mock
@@ -112,7 +113,8 @@ class PollingServiceTest {
         when(calculationService.calculate("dnid", now))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       new Timeframe(start, end),
-                                                                      new Timeframe(start, end)));
+                                                                      new Timeframe(start, end),
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         pollingService.poll(pr);
@@ -140,7 +142,8 @@ class PollingServiceTest {
         when(calculationService.calculate("dnid", now))
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                       new Timeframe(start, end),
-                                                                      new Timeframe(start, end)));
+                                                                      new Timeframe(start, end),
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         pollingService.poll(pr);
@@ -167,7 +170,8 @@ class PollingServiceTest {
                 .build();
         var calcResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                    new Timeframe(start, today),
-                                                                   new Timeframe(start, end));
+                                                                   new Timeframe(start, end),
+                                                                   new ValidatedHistoricalDataDataNeed());
         when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
         when(handler.thenRevoke(any())).thenCallRealMethod();
         when(factory.get(pr)).thenReturn(client);
@@ -199,7 +203,8 @@ class PollingServiceTest {
                 .build();
         var calcResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                    new Timeframe(start, today),
-                                                                   new Timeframe(start, end));
+                                                                   new Timeframe(start, end),
+                                                                   new ValidatedHistoricalDataDataNeed());
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calcResult);
         when(factory.get(pr)).thenReturn(client);
@@ -233,7 +238,8 @@ class PollingServiceTest {
                 .build();
         var calcResult = new ValidatedHistoricalDataDataNeedResult(List.of(Granularity.PT15M),
                                                                    new Timeframe(start, today),
-                                                                   new Timeframe(start, end));
+                                                                   new Timeframe(start, end),
+                                                                   new ValidatedHistoricalDataDataNeed());
         when(calculationService.calculate("dnid", now))
                 .thenReturn(calcResult);
         when(factory.get(pr)).thenReturn(client);
@@ -266,7 +272,7 @@ class PollingServiceTest {
                 .setCreated(now)
                 .setCdsServer(1)
                 .build();
-        var calcResult = new AccountingPointDataNeedResult(new Timeframe(start, end));
+        var calcResult = new AccountingPointDataNeedResult(new Timeframe(start, end), new AccountingPointDataNeed());
         when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
         when(factory.get(pr)).thenReturn(client);
         when(client.accountingPointData(pr)).thenReturn(Mono.error(exception));
@@ -292,7 +298,7 @@ class PollingServiceTest {
                 .setCreated(now)
                 .setCdsServer(1)
                 .build();
-        var calcResult = new AccountingPointDataNeedResult(new Timeframe(today, today));
+        var calcResult = new AccountingPointDataNeedResult(new Timeframe(today, today), new AccountingPointDataNeed());
         when(calculationService.calculate("dnid", now)).thenReturn(calcResult);
         when(factory.get(pr)).thenReturn(client);
         when(client.accountingPointData(pr))

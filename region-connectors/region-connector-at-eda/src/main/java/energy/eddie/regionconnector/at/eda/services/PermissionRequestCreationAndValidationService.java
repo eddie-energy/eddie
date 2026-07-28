@@ -7,7 +7,6 @@ import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaDataSourceInformation;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.CreatedPermissionRequest;
@@ -20,7 +19,7 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGran
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -31,17 +30,17 @@ import java.util.UUID;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.REGION_CONNECTOR_ID;
 
-@Component
+@Service
 public class PermissionRequestCreationAndValidationService {
     private static final String DATA_NEED_ID = "dataNeedId";
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestCreationAndValidationService.class);
     private final Outbox outbox;
-    private final DataNeedCalculationService<DataNeed> dataNeedCalculationService;
+    private final DataNeedCalculationService dataNeedCalculationService;
     private final ValidatedEventFactory validatedEventFactory;
 
     public PermissionRequestCreationAndValidationService(
             Outbox outbox,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService,
+            DataNeedCalculationService dataNeedCalculationService,
             ValidatedEventFactory validatedEventFactory
     ) {
         this.outbox = outbox;
@@ -127,7 +126,8 @@ public class PermissionRequestCreationAndValidationService {
                     var ignoredEnergyDataTimeframe,
                     var supportedGranularities,
                     var energyDirection,
-                    var participationFactor
+                    var participationFactor,
+                    var ignored
             ) -> validatedEventFactory.createValidatedEvent(
                     permissionId,
                     permissionTimeframe.start(),

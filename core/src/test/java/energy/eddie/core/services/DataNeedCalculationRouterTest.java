@@ -12,8 +12,10 @@ import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeeds;
 import energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleDataNeedsError;
 import energy.eddie.dataneeds.exceptions.DataNeedDisabledException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +47,7 @@ class DataNeedCalculationRouterTest {
     @Mock
     private ValidatedHistoricalDataDataNeed dataNeed;
     @Mock
-    private DataNeedCalculationService<DataNeed> service;
+    private DataNeedCalculationService service;
     @Mock
     private DataNeedsService dataNeedsService;
     @InjectMocks
@@ -82,7 +84,8 @@ class DataNeedCalculationRouterTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         timeframe,
-                        timeframe
+                        timeframe,
+                        new ValidatedHistoricalDataDataNeed()
                 ));
 
         // When
@@ -100,7 +103,8 @@ class DataNeedCalculationRouterTest {
     @Test
     void testCalculateFor_returnsCalculation_withAccountingPointData() throws UnknownRegionConnectorException, DataNeedNotFoundException {
         var timeframe = new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC));
-        when(service.calculate("dnid")).thenReturn(new AccountingPointDataNeedResult(timeframe));
+        when(service.calculate("dnid")).thenReturn(new AccountingPointDataNeedResult(timeframe,
+                                                                                     new AccountingPointDataNeed()));
 
         // When
         var res = router.calculateFor("at-eda", "dnid");
@@ -121,7 +125,8 @@ class DataNeedCalculationRouterTest {
                                                                                      timeframe,
                                                                                      List.of(Granularity.PT15M),
                                                                                      Optional.empty(),
-                                                                                     Optional.empty()));
+                                                                                     Optional.empty(),
+                                                                                     new CESUJoinRequestDataNeed()));
 
         // When
         var res = router.calculateFor("at-eda", "dnid");
@@ -141,7 +146,8 @@ class DataNeedCalculationRouterTest {
         when(service.calculate("dnid")).thenReturn(new AiidaDataNeedResult(
                 Set.of(AiidaSchema.SMART_METER_P1_RAW),
                 Set.of(AiidaSchema.SMART_METER_P1_RAW),
-                timeframe));
+                timeframe,
+                new InboundAiidaDataNeed()));
 
         // When
         var res = router.calculateFor("at-eda", "dnid");
@@ -192,7 +198,8 @@ class DataNeedCalculationRouterTest {
                 .thenReturn(new ValidatedHistoricalDataDataNeedResult(
                         List.of(Granularity.PT15M),
                         timeframe,
-                        timeframe
+                        timeframe,
+                        new ValidatedHistoricalDataDataNeed()
                 ));
         // When
         var res = router.calculate("dnid");
@@ -259,7 +266,9 @@ class DataNeedCalculationRouterTest {
         var now = LocalDate.now(ZoneOffset.UTC);
         when(service.calculateAll(Set.of("dnid")))
                 .thenReturn(new CalculationResult(
-                        Map.of("dnid", new AccountingPointDataNeedResult(new Timeframe(now, now)))
+                        Map.of("dnid",
+                               new AccountingPointDataNeedResult(new Timeframe(now, now),
+                                                                 new AccountingPointDataNeed()))
                 ));
         // When
         var res = router.findRegionConnectorsSupportingDataNeeds(Set.of("dnid"));

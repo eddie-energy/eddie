@@ -4,6 +4,7 @@
 package energy.eddie.api.agnostic.data.needs;
 
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -24,7 +25,8 @@ class AiidaDataNeedResultTest {
         var result = new AiidaDataNeedResult(
                 Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_12, AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12),
                 Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_12, AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12),
-                timeframe
+                timeframe,
+                new InboundAiidaDataNeed()
         );
 
         assertTrue(result.supportsAllSchemas());
@@ -35,7 +37,8 @@ class AiidaDataNeedResultTest {
         var result = new AiidaDataNeedResult(
                 Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_12),
                 Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_12, AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12),
-                timeframe
+                timeframe,
+                new InboundAiidaDataNeed()
         );
 
         assertTrue(result.supportsAllSchemas());
@@ -46,7 +49,8 @@ class AiidaDataNeedResultTest {
         var result = new AiidaDataNeedResult(
                 Set.of(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.SMART_METER_P1_CIM_V1_12),
                 Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_12, AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12),
-                timeframe
+                timeframe,
+                new InboundAiidaDataNeed()
         );
 
         assertFalse(result.supportsAllSchemas());

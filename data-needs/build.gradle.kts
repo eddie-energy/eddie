@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import energy.eddie.configureJavaCompileWithErrorProne
@@ -20,6 +20,8 @@ repositories {
 
 dependencies {
     implementation(project(":api"))
+    implementation(project(":data-need-api"))
+    implementation(project(":common-types"))
 
     implementation(libs.jackson.annotations)
     implementation(libs.jakarta.annotation.api)

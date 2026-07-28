@@ -6,7 +6,8 @@ package energy.eddie.regionconnector.us.green.button.permission.handlers;
 import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.DataNeed;
+import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
@@ -40,7 +41,7 @@ class StartPollingEventHandlerTest {
     @Mock
     private PollingService pollingService;
     @Mock
-    private DataNeedCalculationService<DataNeed> calculationService;
+    private DataNeedCalculationService calculationService;
     @Mock
     private UsPermissionRequestRepository repository;
     @InjectMocks
@@ -67,7 +68,10 @@ class StartPollingEventHandlerTest {
                                     .build());
         var timeframe = new Timeframe(today, today);
         when(calculationService.calculate("dnid", now))
-                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(), timeframe, timeframe));
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(List.of(),
+                                                                      timeframe,
+                                                                      timeframe,
+                                                                      new ValidatedHistoricalDataDataNeed()));
 
         // When
         eventBus.emit(new UsStartPollingEvent("pid"));
@@ -90,7 +94,7 @@ class StartPollingEventHandlerTest {
                 .thenReturn(pr);
         var timeframe = new Timeframe(today, today);
         when(calculationService.calculate("dnid", now))
-                .thenReturn(new AccountingPointDataNeedResult(timeframe));
+                .thenReturn(new AccountingPointDataNeedResult(timeframe, new AccountingPointDataNeed()));
 
         // When
         eventBus.emit(new UsStartPollingEvent("pid"));

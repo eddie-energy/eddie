@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.fi.fingrid;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fi.fingrid.config.FingridConfiguration;
@@ -61,7 +60,7 @@ public class FingridBeanConfiguration {
     }
 
     @Bean
-    public DataNeedCalculationService<DataNeed> dataNeedCalculationService(
+    public DataNeedCalculationService dataNeedCalculationService(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService,
             DataNeedRuleSet ruleSet
     ) {
@@ -106,7 +105,7 @@ public class FingridBeanConfiguration {
             @Value("${region-connector.fi.fingrid.polling:0 0 17 * * *}") String cronExpr,
             FingridRegionConnector connector,
             TaskScheduler taskScheduler,
-            DataNeedCalculationService<DataNeed> dataNeedCalculationService
+            DataNeedCalculationService dataNeedCalculationService
     ) {
         return new CommonFutureDataService<>(
                 pollingService,

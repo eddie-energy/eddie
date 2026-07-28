@@ -25,7 +25,7 @@ import static energy.eddie.core.dtos.MultipleDataNeedsOrErrorResult.MultipleData
 @Service
 public class DataNeedCalculationRouter {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataNeedCalculationRouter.class);
-    private final Map<String, DataNeedCalculationService<DataNeed>> services = new HashMap<>();
+    private final Map<String, DataNeedCalculationService> services = new HashMap<>();
     private final DataNeedsService dataNeedsService;
 
     public DataNeedCalculationRouter(
@@ -36,7 +36,7 @@ public class DataNeedCalculationRouter {
         this.dataNeedsService = dataNeedsService;
     }
 
-    public void register(DataNeedCalculationService<DataNeed> dataNeedCalculationService) {
+    public void register(DataNeedCalculationService dataNeedCalculationService) {
         services.put(dataNeedCalculationService.regionConnectorId(), dataNeedCalculationService);
     }
 
@@ -120,19 +120,21 @@ public class DataNeedCalculationRouter {
             case AiidaDataNeedResult aiidaRes -> new DataNeedCalculation(true, null, null, aiidaRes.energyTimeframe());
             case DataNeedNotFoundResult ignored -> throw new DataNeedNotFoundException(dataNeedId);
             case DataNeedNotSupportedResult(String message) -> new DataNeedCalculation(false, message);
-            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) ->
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe, DataNeed ignored) ->
                     new DataNeedCalculation(true, null, permissionTimeframe, null);
             case ValidatedHistoricalDataDataNeedResult(
                     List<Granularity> granularities,
                     Timeframe permissionTimeframe,
-                    Timeframe energyTimeframe
+                    Timeframe energyTimeframe,
+                    DataNeed ignored
             ) -> new DataNeedCalculation(true, granularities, permissionTimeframe, energyTimeframe);
             case CESUJoinRequestDataNeedResult(
                     var permissionTimeframe,
                     var energyDataTimeframe,
                     var supportedGranularities,
                     var ignoredEnergyDirection,
-                    var ignoredParticipationFactor
+                    var ignoredParticipationFactor,
+                    var ignored
             ) -> new DataNeedCalculation(true, supportedGranularities, permissionTimeframe, energyDataTimeframe);
         };
     }

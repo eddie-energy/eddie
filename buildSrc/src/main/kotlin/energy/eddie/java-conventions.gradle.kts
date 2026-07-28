@@ -22,6 +22,8 @@ dependencies {
     implementation(libs.findLibrary("jakarta-xml-bind-api").get())
     implementation(libs.findLibrary("swagger-annotations").get())
     implementation(project(":cim"))
+    implementation(project(":data-need-api"))
+    implementation(project(":common-types"))
 }
 
 plugins.withId("net.ltgt.errorprone") {

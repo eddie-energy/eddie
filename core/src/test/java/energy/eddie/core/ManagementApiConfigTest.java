@@ -47,7 +47,7 @@ class ManagementApiConfigInternalEndpointsFilterTest {
     }
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("testDoFilter_forManagementPortOnManagementUrlWithContextPath_continuesFilterChain")
     void testDoFilter_forManagementPortOnManagementUrlWithContextPath_continuesFilterChain(
             String reqUri,
             String contextPath

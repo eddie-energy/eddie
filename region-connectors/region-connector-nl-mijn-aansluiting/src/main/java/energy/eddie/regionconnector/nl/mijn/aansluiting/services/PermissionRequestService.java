@@ -9,7 +9,6 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.client.CodeboekApiClient;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.nl.mijn.aansluiting.dtos.PermissionRequestForCreation;
@@ -41,14 +40,14 @@ public class PermissionRequestService {
     private final OAuthManager oAuthManager;
     private final Outbox outbox;
     private final NlPermissionRequestRepository permissionRequestRepository;
-    private final DataNeedCalculationService<DataNeed> calculationService;
+    private final DataNeedCalculationService calculationService;
     private final CodeboekApiClient codeboekApiClient;
 
     public PermissionRequestService(
             OAuthManager oAuthManager,
             Outbox outbox,
             NlPermissionRequestRepository permissionRequestRepository,
-            DataNeedCalculationService<DataNeed> calculationService,
+            DataNeedCalculationService calculationService,
             CodeboekApiClient codeboekApiClient
     ) {
         this.oAuthManager = oAuthManager;
@@ -91,7 +90,7 @@ public class PermissionRequestService {
                 outbox.commit(new NlMalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-            case AccountingPointDataNeedResult(Timeframe permissionTimeframe) ->
+            case AccountingPointDataNeedResult(Timeframe permissionTimeframe, var ignored) ->
                     createAccountingPointDataPermissionRequest(permissionRequest, permissionTimeframe, permissionId);
             case ValidatedHistoricalDataDataNeedResult vhdResult -> {
                 var authorizationUrl = oAuthManager.createAuthorizationUrl(permissionRequest.verificationCode());
