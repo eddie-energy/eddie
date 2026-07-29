@@ -50,3 +50,4 @@ include("examples:new-example-app")
 
 include("data-need-api")
 include("common-types")
+include("region-connectors:region-connector-onenet")
