@@ -127,6 +127,36 @@ class ProvisioningServiceIntegrationTest {
     }
 
     @Test
+    void loadingPermissionWithInboundDataSource_eagerlyLoadsStreamingConfig() {
+        var permissionId = createInboundPermission();
+
+        entityManager.flush();
+        entityManager.clear();
+
+        var permission = permissionRepository.findById(permissionId).orElseThrow();
+
+        assertThat(permission.dataSource())
+                .isInstanceOfSatisfying(
+                        InboundDataSource.class,
+                        dataSource -> assertThat(dataSource.acknowledgementTopic()).isEqualTo("aiida/ack")
+                );
+    }
+
+    @Test
+    void loadingInboundDataSource_eagerlyLoadsStreamingConfigForDetachedAdapterCreation() {
+        var permissionId = createInboundPermission();
+        var dataSourceId = dataSourceId(permissionId);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        var dataSource = inboundDataSourceRepository.findById(dataSourceId).orElseThrow();
+        entityManager.clear();
+
+        assertThat(dataSource.acknowledgementTopic()).isEqualTo("aiida/ack");
+    }
+
+    @Test
     void mqttServer_persistsGeneratedCredentialsAndBrokerConfiguration() throws Exception {
         var permissionId = createInboundPermission();
         var dataSourceId = dataSourceId(permissionId);

@@ -5,8 +5,9 @@
 import { computed, ref } from 'vue'
 import ModalDialog from '@/components/ModalDialog.vue'
 import Button from '@/components/Button.vue'
+import CopyButton from '@/components/CopyButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
-import type { AiidaPermission, ProvisioningTypePatchDto } from '@/types'
+import type { AiidaPermission, ProvisioningConnectionDto, ProvisioningTypePatchDto } from '@/types'
 import { patchInboundProvisioning } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
 import { useI18n } from 'vue-i18n'
@@ -23,6 +24,7 @@ const permission = ref<AiidaPermission>()
 const provisioningType = ref<ProvisioningType>('REST_API_TOKEN')
 const loading = ref(false)
 const error = ref('')
+const provisioningResult = ref<ProvisioningConnectionDto>()
 
 const host = ref('')
 const username = ref('')
@@ -37,8 +39,31 @@ const provisioningTypeOptions = computed(() =>
 )
 
 const requiresMqttClientDetails = computed(() => provisioningType.value === 'MQTT_CLIENT')
+const credentialsText = computed(() => {
+  if (!provisioningResult.value) {
+    return ''
+  }
+
+  return [
+    `MQTT_HOST=${provisioningResult.value.host}`,
+    `MQTT_USERNAME=${provisioningResult.value.username}`,
+    `MQTT_PASSWORD=${provisioningResult.value.password}`,
+    `MQTT_TOPIC=${provisioningResult.value.topic}`,
+  ].join('\n')
+})
+
+const clearSensitiveState = () => {
+  provisioningResult.value = undefined
+  password.value = ''
+}
+
+const closeModal = () => {
+  clearSensitiveState()
+  modal.value?.close()
+}
 
 const showModal = async (targetPermission: AiidaPermission) => {
+  clearSensitiveState()
   permission.value = targetPermission
   error.value = ''
   provisioningType.value = (targetPermission.dataSource?.provisioningType ??
@@ -90,7 +115,7 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    await patchInboundProvisioning(permission.value.permissionId, {
+    const result = await patchInboundProvisioning(permission.value.permissionId, {
       permissionId: permission.value.permissionId,
       type: provisioningType.value,
       host: requiresMqttClientDetails.value ? host.value : '',
@@ -98,8 +123,15 @@ const handleSubmit = async () => {
       password: requiresMqttClientDetails.value ? password.value : '',
       topic: requiresMqttClientDetails.value ? topic.value : '',
     })
+
+    if (provisioningType.value === 'MQTT_SERVER') {
+      provisioningResult.value = result
+    }
+
     await fetchPermissions()
-    modal.value?.close()
+    if (provisioningType.value !== 'MQTT_SERVER') {
+      closeModal()
+    }
   } catch (e: any) {
     error.value = e?.message ?? t('errors.unexpectedError')
   } finally {
@@ -115,8 +147,75 @@ defineExpose({ showModal })
     ref="modal"
     :class="{ 'is-loading': loading }"
     :title="t('permissions.mqttProvisioning.title')"
+    @close="clearSensitiveState"
   >
-    <form class="mqtt-form" @submit.prevent="handleSubmit">
+    <section v-if="provisioningResult" class="mqtt-credentials">
+      <h3 class="heading-3">
+        {{ t('permissions.mqttProvisioning.credentialsTitle') }}
+      </h3>
+      <p class="credential-warning" role="alert">
+        {{ t('permissions.mqttProvisioning.credentialsWarning') }}
+      </p>
+
+      <dl class="credential-list">
+        <div class="credential-row">
+          <dt>{{ t('permissions.mqttProvisioning.host') }}</dt>
+          <dd>
+            <code>{{ provisioningResult.host }}</code>
+            <CopyButton
+              :aria-label="t('permissions.mqttProvisioning.copyHost')"
+              :copy-text="provisioningResult.host"
+            />
+          </dd>
+        </div>
+        <div class="credential-row">
+          <dt>{{ t('permissions.mqttProvisioning.username') }}</dt>
+          <dd>
+            <code>{{ provisioningResult.username }}</code>
+            <CopyButton
+              :aria-label="t('permissions.mqttProvisioning.copyUsername')"
+              :copy-text="provisioningResult.username"
+            />
+          </dd>
+        </div>
+        <div class="credential-row">
+          <dt>{{ t('permissions.mqttProvisioning.password') }}</dt>
+          <dd>
+            <code>{{ provisioningResult.password }}</code>
+            <CopyButton
+              :aria-label="t('permissions.mqttProvisioning.copyPassword')"
+              :copy-text="provisioningResult.password"
+            />
+          </dd>
+        </div>
+        <div class="credential-row">
+          <dt>{{ t('permissions.mqttProvisioning.topic') }}</dt>
+          <dd>
+            <code>{{ provisioningResult.topic }}</code>
+            <CopyButton
+              :aria-label="t('permissions.mqttProvisioning.copyTopic')"
+              :copy-text="provisioningResult.topic"
+            />
+          </dd>
+        </div>
+      </dl>
+
+      <div class="copy-all">
+        <span>{{ t('permissions.mqttProvisioning.copyAll') }}</span>
+        <CopyButton
+          :aria-label="t('permissions.mqttProvisioning.copyAll')"
+          :copy-text="credentialsText"
+        />
+      </div>
+
+      <div class="credentials-actions">
+        <Button @click="closeModal">
+          {{ t('permissions.mqttProvisioning.credentialsSaved') }}
+        </Button>
+      </div>
+    </section>
+
+    <form v-else class="mqtt-form" @submit.prevent="handleSubmit">
       <label id="provisioningTypeLabel"> {{ t('permissions.mqttProvisioning.mode') }}* </label>
       <CustomSelect
         v-model="provisioningType"
@@ -142,7 +241,7 @@ defineExpose({ showModal })
       <p v-if="error" class="heading-3 error-text">{{ error }}</p>
 
       <div class="action-buttons">
-        <Button button-style="error-secondary" type="button" @click="modal?.close()">
+        <Button button-style="error-secondary" type="button" @click="closeModal">
           {{ t('cancelButton') }}
         </Button>
         <Button :disabled="loading">
@@ -157,12 +256,14 @@ defineExpose({ showModal })
 
 <style scoped>
 .is-loading {
-  .mqtt-form {
+  .mqtt-form,
+  .mqtt-credentials {
     opacity: 0;
   }
 }
 
-.mqtt-form {
+.mqtt-form,
+.mqtt-credentials {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
@@ -177,6 +278,56 @@ input {
 .error-text {
   margin-top: var(--spacing-md);
   color: var(--eddie-red-medium);
+}
+
+.credential-warning {
+  margin: var(--spacing-sm) 0 var(--spacing-lg);
+  padding: var(--spacing-md);
+  color: var(--eddie-red-dark);
+  background: var(--eddie-red-background);
+  border-radius: var(--border-radius);
+}
+
+.credential-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.credential-row {
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.credential-row dt {
+  font-weight: 600;
+}
+
+.credential-row dd,
+.copy-all {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  min-width: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--eddie-secondary);
+  border-radius: var(--border-radius);
+}
+
+.credential-row code {
+  overflow-wrap: anywhere;
+}
+
+.copy-all {
+  margin-top: var(--spacing-md);
+  font-weight: 600;
+}
+
+.credentials-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--spacing-xl);
 }
 
 .action-buttons {
