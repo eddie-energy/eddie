@@ -52,9 +52,17 @@ public class InboundDataSource extends MqttDataSource {
     @Enumerated(EnumType.STRING)
     @Column(name = "provisioning_type", table = TABLE_NAME, nullable = false)
     @Schema(description = "The type defining how inbound data will be provided.")
+    @JsonProperty
     private InboundProvisioningType provisioningType;
 
-    @Transient
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(
+            name = "permission_id",
+            table = TABLE_NAME,
+            referencedColumnName = "permission_id",
+            insertable = false,
+            updatable = false
+    )
     @JsonIgnore
     private MqttStreamingConfig config;
 
@@ -130,7 +138,7 @@ public class InboundDataSource extends MqttDataSource {
 
     @Nullable
     public String acknowledgementTopic() {
-        return config != null ? config.acknowledgementTopic() : null;
+        return streamingConfigOrThrow().acknowledgementTopic();
     }
 
     /**
@@ -207,14 +215,14 @@ public class InboundDataSource extends MqttDataSource {
 
     /**
      * Reconstructs state that is not reliably materialized by JPA. Hibernate maps an embeddable whose columns are all
-     * {@code null} to {@code null}, while the streaming configuration and server topic are intentionally transient.
+     * {@code null} to {@code null}, while the server topic is intentionally transient. This callback deliberately does
+     * not access the owning permission because Hibernate can invoke it before that permission is fully initialized.
      */
     @PostLoad
     private void restoreTransientState() {
         if (inboundProvisioningConfig == null) {
             inboundProvisioningConfig = new InboundProvisioningConfig();
         }
-        config = Objects.requireNonNull(permission.mqttStreamingConfig());
         setServerModeTopic();
     }
 
@@ -232,6 +240,13 @@ public class InboundDataSource extends MqttDataSource {
     @Override
     protected void createAccessControlEntry() {
         this.accessControlEntry = new MqttAccessControlEntry(config.username().toString(), config.dataTopic());
+    }
+
+    private MqttStreamingConfig streamingConfigOrThrow() {
+        return Objects.requireNonNull(
+                config,
+                "MQTT streaming configuration is not configured for inbound data source " + id
+        );
     }
 
     private void setServerModeTopic() {

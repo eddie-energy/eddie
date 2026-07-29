@@ -354,25 +354,24 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dt>{{ t('permissions.dropdown.permissionID') }}</dt>
         <dd>{{ permission.permissionId }}</dd>
       </div>
-      <div
-        v-if="status === 'Active' && permission.dataNeed.type === 'inbound-aiida'"
-        class="actions-row"
-      >
-        <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
-          <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
-        </Button>
-      </div>
       <div class="permission-field" v-if="permission.unimplemented">
         <dt>Last Data Package sent</dt>
         <dd>PLACEHOLDER</dd>
       </div>
-      <div v-if="status === 'Active'" class="actions-row">
-        <Button button-style="error" class="action-btn" @click="handleRevoke">
-          <RevokeIcon /> {{ t('revokeButton') }}
-        </Button>
-        <MessageDownloadButton :data="permission" class="action-btn">
-          <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
-        </MessageDownloadButton>
+      <div v-if="status === 'Active'" class="permission-actions">
+        <div class="actions-row actions-row--end">
+          <MessageDownloadButton :data="permission" class="action-btn">
+            <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
+          </MessageDownloadButton>
+        </div>
+        <div v-if="permission.dataNeed.type === 'inbound-aiida'" class="actions-row">
+          <Button button-style="error" class="action-btn" @click="handleRevoke">
+            <RevokeIcon /> {{ t('revokeButton') }}
+          </Button>
+          <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
+            <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
+          </Button>
+        </div>
       </div>
       <Button
         v-if="status === 'Pending'"
@@ -453,18 +452,34 @@ onClickOutside(target, () => (showToolTip.value = false))
   margin: auto 0 0 auto;
 }
 
+.permission-actions,
 .actions-row {
   display: flex;
   flex-direction: column;
-
   gap: var(--spacing-sm);
-  align-items: center;
+}
+
+.permission-actions {
   margin-top: auto;
+}
+
+.actions-row {
+  align-items: center;
   justify-content: space-between;
 }
+
+.actions-row--end {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
 .actions-row .action-btn {
   width: 100%;
   justify-content: center;
+}
+
+.actions-row--end .action-btn {
+  width: fit-content;
 }
 
 .access-code-field {

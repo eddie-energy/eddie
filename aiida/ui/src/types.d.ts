@@ -136,6 +136,13 @@ export type ProvisioningTypePatchDto = {
   topic: string
 }
 
+export type ProvisioningConnectionDto = {
+  host: string
+  username: string
+  password: string
+  topic: string
+}
+
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
 export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'

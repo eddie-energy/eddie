@@ -11,6 +11,7 @@ import type {
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   InboundMessageFormat,
+  ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
 } from './types'
 
@@ -292,8 +293,8 @@ export async function getTlsCertificateFile() {
 export async function patchInboundProvisioning(
   permissionId: string,
   payload: ProvisioningTypePatchDto,
-): Promise<void> {
-  await fetch(`/provisioning/permission/${permissionId}/patchInboundProvisioning`, {
+): Promise<ProvisioningConnectionDto> {
+  return fetch(`/provisioning/permission/${permissionId}/patchInboundProvisioning`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })

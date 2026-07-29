@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.models.datasource.mqtt.inbound;
 
+import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -32,6 +33,8 @@ class InboundDataSourceTest {
     private static final UUID USER_ID =
             UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String STREAMING_HOST = "tcp://aiida-broker:1883";
+    private static final String STREAMING_PASSWORD = "streaming-password";
+    private static final String STREAMING_TOPIC = "aiida/streaming";
     private static final String ACKNOWLEDGEMENT_TOPIC = "aiida/ack";
     private static final String ACCESS_CODE = "access-code";
     private static final String CLIENT_HOST = "tcp://client-broker:1883";
@@ -41,7 +44,7 @@ class InboundDataSourceTest {
     private static final String SERVER_INTERNAL_HOST = "tcp://internal-broker:1883";
     private static final String SERVER_EXTERNAL_HOST = "ssl://external-broker:8883";
     private static final String SERVER_PASSWORD = "server-password";
-    private static final String SERVER_PASSWORD_HASH = "server-password-hash";
+    private static final String SERVER_PASSWORD_HASH = "encoded-server-credential";
 
     private Permission permission;
     private InboundDataSource dataSource;
@@ -54,10 +57,15 @@ class InboundDataSourceTest {
 
         when(dto.id()).thenReturn(DATA_SOURCE_ID);
         when(streamingConfig.serverUri()).thenReturn(STREAMING_HOST);
+        when(streamingConfig.username()).thenReturn(DATA_SOURCE_ID);
+        when(streamingConfig.password()).thenReturn(STREAMING_PASSWORD);
+        when(streamingConfig.dataTopic()).thenReturn(STREAMING_TOPIC);
         when(streamingConfig.acknowledgementTopic()).thenReturn(ACKNOWLEDGEMENT_TOPIC);
         when(permission.mqttStreamingConfig()).thenReturn(streamingConfig);
 
         dataSource = new InboundDataSource(dto, USER_ID, permission, ACCESS_CODE);
+        dataSource.createMqttUser();
+        dataSource.createAccessControlEntry();
     }
 
     @Test
@@ -115,6 +123,53 @@ class InboundDataSourceTest {
         assertThat(dataSource.provisioningConnection().password()).isEqualTo(SERVER_PASSWORD_HASH);
         assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo(result.topic());
         verify(passwordEncoder).encode(SERVER_PASSWORD);
+    }
+
+    @Test
+    void mqttClient_serializationExposesConnectionDetailsWithoutPassword() {
+        var credentials = dataSource.establishClientModeConnection(
+                CLIENT_HOST,
+                CLIENT_USERNAME,
+                CLIENT_PASSWORD,
+                CLIENT_TOPIC
+        );
+
+        var json = ObjectMapperCreatorUtil.mapper().writeValueAsString(dataSource);
+
+        assertThat(credentials.password()).isEqualTo(CLIENT_PASSWORD);
+        assertThat(json)
+                .contains("\"provisioningType\":\"MQTT_CLIENT\"")
+                .contains("\"externalHost\":\"" + CLIENT_HOST + "\"")
+                .contains("\"username\":\"" + CLIENT_USERNAME + "\"")
+                .contains("\"topic\":\"" + CLIENT_TOPIC + "\"")
+                .doesNotContain("\"password\"")
+                .doesNotContain(CLIENT_PASSWORD);
+    }
+
+    @Test
+    void mqttServer_serializationExposesConnectionDetailsWithoutPassword() {
+        var mqttConfiguration = mock(MqttConfiguration.class);
+        var passwordEncoder = mock(BCryptPasswordEncoder.class);
+        when(mqttConfiguration.internalHost()).thenReturn(SERVER_INTERNAL_HOST);
+        when(mqttConfiguration.externalHost()).thenReturn(SERVER_EXTERNAL_HOST);
+        when(passwordEncoder.encode(SERVER_PASSWORD)).thenReturn(SERVER_PASSWORD_HASH);
+        var credentials = dataSource.establishServerModeConnection(
+                mqttConfiguration,
+                passwordEncoder,
+                SERVER_PASSWORD
+        );
+
+        var json = ObjectMapperCreatorUtil.mapper().writeValueAsString(dataSource);
+
+        assertThat(credentials.password()).isEqualTo(SERVER_PASSWORD);
+        assertThat(json)
+                .contains("\"provisioningType\":\"MQTT_SERVER\"")
+                .contains("\"externalHost\":\"" + SERVER_EXTERNAL_HOST + "\"")
+                .contains("\"topic\":\"aiida/" + DATA_SOURCE_ID + "/inboundData\"")
+                .doesNotContain("\"password\"")
+                .doesNotContain(SERVER_PASSWORD)
+                .doesNotContain(SERVER_PASSWORD_HASH)
+                .containsPattern("\"username\":\"[0-9a-f-]{36}\"");
     }
 
     @Test
