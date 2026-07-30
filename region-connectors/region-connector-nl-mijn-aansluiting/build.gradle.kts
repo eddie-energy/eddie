@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import de.undercouch.gradle.tasks.download.Download
@@ -108,7 +108,7 @@ sourceSets {
 }
 
 val eancodeboekUrl = "https://gateway.edsn.nl/eancodeboek/v3/api-docs"
-val eancodeboekChecksum = "b84b118a7f3d11e49571bb4b1c2920c0"
+val eancodeboekChecksum = "6558eedb0738711ab83db41920e98496"
 
 val openApiDownloadTask = tasks.register<Download>("eancodeboekOpenApiDownload") {
     group = "download"
@@ -141,7 +141,9 @@ openApiGenerate {
         mapOf(
             "sourceFolder" to "/",
             "useJakartaEe" to "true",
-            "dateLibrary" to "java8"
+            "dateLibrary" to "java8",
+            "openApiNullable" to "false",
+            "useOptional" to "true"
         )
     )
     typeMappings.set(
