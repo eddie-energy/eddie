@@ -203,11 +203,11 @@ onClickOutside(target, () => (showToolTip.value = false))
           </StatusTag>
         </dd>
       </div>
+      <div class="permission-field">
+        <dt>{{ t('permissions.dropdown.provisioningType') }}</dt>
+        <dd>{{ permission.dataSource?.provisioningType }}</dd>
+      </div>
       <template v-if="isInboundMqttProvisioning && inboundMqttConnection">
-        <div class="permission-field">
-          <dt>{{ t('permissions.dropdown.provisioningType') }}</dt>
-          <dd>{{ permission.dataSource?.provisioningType }}</dd>
-        </div>
         <div v-if="inboundMqttServerUri" class="permission-field">
           <dt>{{ t('datasources.card.mqttServerUri') }}</dt>
           <dd>{{ inboundMqttServerUri }}</dd>
