@@ -11,9 +11,11 @@ import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
 import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -79,7 +81,10 @@ class DataFollowsAcceptedStepOrDataConstraintTest {
 
     private static ValidatedHistoricalDataStep getValidatedHistoricalDataStep() {
         return new ValidatedHistoricalDataStep(
-                new SimulatedValidatedHistoricalData("mid", ZonedDateTime.now(ZoneOffset.UTC), "mid", List.of())
+                new SimulatedValidatedHistoricalData("mid",
+                                                     Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
+                                                     Duration.ofMinutes(15),
+                                                     List.of())
         );
     }
 }

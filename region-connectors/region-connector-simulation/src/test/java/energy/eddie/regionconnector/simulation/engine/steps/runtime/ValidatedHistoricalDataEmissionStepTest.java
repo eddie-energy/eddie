@@ -5,11 +5,13 @@ package energy.eddie.regionconnector.simulation.engine.steps.runtime;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistoricalData;
+import energy.eddie.regionconnector.simulation.engine.exceptions.ExecutionException;
 import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
 import energy.eddie.regionconnector.simulation.engine.steps.TestSimulationContext;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -18,7 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class ValidatedHistoricalDataEmissionStepTest {
     @Test
-    void testExecute_emitsValidatedHistoricalDataMarketDocument() {
+    void testExecute_emitsValidatedHistoricalDataMarketDocument() throws ExecutionException {
         // Given
         var ctx = TestSimulationContext.create();
         var streams = ctx.documentStreams();
@@ -26,7 +28,7 @@ class ValidatedHistoricalDataEmissionStepTest {
                 new SimulatedValidatedHistoricalData(
                         "mid",
                         ZonedDateTime.now(ZoneOffset.UTC),
-                        "PT15M",
+                        Duration.ofMinutes(15),
                         List.of()
                 )
         );
@@ -47,7 +49,7 @@ class ValidatedHistoricalDataEmissionStepTest {
         var data = new SimulatedValidatedHistoricalData(
                 "mid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var step1 = new ValidatedHistoricalDataEmissionStep(data);
@@ -66,7 +68,7 @@ class ValidatedHistoricalDataEmissionStepTest {
         var data = new SimulatedValidatedHistoricalData(
                 "mid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var step1 = new ValidatedHistoricalDataEmissionStep(data);
@@ -86,13 +88,13 @@ class ValidatedHistoricalDataEmissionStepTest {
         var data1 = new SimulatedValidatedHistoricalData(
                 "mid1",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var data2 = new SimulatedValidatedHistoricalData(
                 "mid2",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var step1 = new ValidatedHistoricalDataEmissionStep(data1);
@@ -111,13 +113,13 @@ class ValidatedHistoricalDataEmissionStepTest {
         var data1 = new SimulatedValidatedHistoricalData(
                 "mid1",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var data2 = new SimulatedValidatedHistoricalData(
                 "mid2",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var step1 = new ValidatedHistoricalDataEmissionStep(data1);
@@ -138,7 +140,7 @@ class ValidatedHistoricalDataEmissionStepTest {
         var data = new SimulatedValidatedHistoricalData(
                 "mid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var step1 = new ValidatedHistoricalDataEmissionStep(data);

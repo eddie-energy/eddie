@@ -11,15 +11,31 @@ import energy.eddie.regionconnector.simulation.dtos.SetConnectionStatusRequest;
 import jakarta.annotation.Nullable;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
-public record SimulationPermissionRequest(@Nullable String connectionId, @Nullable String permissionId,
+public record SimulationPermissionRequest(@Nullable String connectionId,
+                                          @Nullable String permissionId,
                                           @Nullable String dataNeedId,
-                                          @Nullable PermissionProcessStatus status) implements PermissionRequest {
+                                          @Nullable PermissionProcessStatus status,
+                                          LocalDate start,
+                                          LocalDate end) implements PermissionRequest {
+
+    public static final LocalDate DEFAULT_START = LocalDate.of(2021, Month.JANUARY, 1);
+    public static final LocalDate DEFAULT_END = LocalDate.of(9999, Month.DECEMBER, 31);
 
     public SimulationPermissionRequest(SetConnectionStatusRequest req) {
         this(req.connectionId, req.permissionId, req.dataNeedId, req.connectionStatus);
+    }
+
+    public SimulationPermissionRequest(
+            @Nullable String connectionId,
+            @Nullable String permissionId,
+            @Nullable String dataNeedId,
+            @Nullable PermissionProcessStatus status
+    ) {
+        this(connectionId, permissionId, dataNeedId, status, DEFAULT_START, DEFAULT_END);
     }
 
     @Override
@@ -34,11 +50,6 @@ public record SimulationPermissionRequest(@Nullable String connectionId, @Nullab
 
     @Override
     public LocalDate start() {
-        return LocalDate.of(2021, 1, 1);
-    }
-
-    @Override
-    public LocalDate end() {
-        return LocalDate.of(9999, 12, 31);
+        return start;
     }
 }

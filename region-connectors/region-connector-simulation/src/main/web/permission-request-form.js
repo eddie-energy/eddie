@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { css, html } from "https://esm.sh/lit";
@@ -8,8 +8,6 @@ import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/compone
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/select/select.js";
 import "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.0/cdn/components/input/input.js";
 
-const baseUrl = import.meta.url.substring(0, import.meta.url.lastIndexOf("/"));
-
 class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   static properties = {
     connectionId: { attribute: "connection-id" },
@@ -17,6 +15,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
     baseUrl: { attribute: "base-url" },
     _scenarios: { type: Array },
     _permissionId: { type: String },
+    _startDate: { type: String },
   };
 
   static styles = css`
@@ -34,7 +33,8 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   constructor() {
     super();
     this._scenarios = [];
-    this._permissionId = crypto.randomUUID().toString();
+    this._permissionId = crypto.randomUUID();
+    this._startDate = new Date().toISOString().split("T")[0];
   }
 
   connectedCallback() {
@@ -53,6 +53,12 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
   async handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
+    let creationDateTime = formData.get("start-date");
+    if (creationDateTime == null) {
+      creationDateTime = new Date().toISOString();
+    } else {
+      creationDateTime += "T00:00:00.000Z";
+    }
     const response = await fetch(
       `${this.baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
       {
@@ -64,6 +70,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
           connectionId: this.connectionId,
           permissionId: formData.get("permission-id"),
           dataNeedId: this.dataNeedId,
+          creationDateTime: creationDateTime,
         }),
       }
     );
@@ -113,6 +120,18 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
               value="${this._permissionId}"
               filled
               required
+            />
+          </div>
+          <br />
+          <div>
+            <sl-input
+              id="start-date"
+              name="start-date"
+              type="date"
+              label="Start Date (in UTC)"
+              value="${this._startDate}"
+              valueAsDate="${this._startDate}"
+              filled
             />
           </div>
           <br />

@@ -30,6 +30,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.validation.beanvalidation.MethodValidationPostProcessor;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -63,7 +64,7 @@ class ScenarioControllerTest {
         // Given
         when(engine.run(any(), any()))
                 .thenReturn(new SimulationStarted(Thread.startVirtualThread(() -> {})));
-        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
+        var metadata = new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC));
 
         // When
         mockMvc.perform(get("/scenarios"))
@@ -96,7 +97,7 @@ class ScenarioControllerTest {
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
                                                                      ZonedDateTime.parse("2026-01-01T00:00:00Z"),
-                                                                     Granularity.PT15M.name(),
+                                                                     Granularity.PT15M.duration(),
                                                                      List.of(
                                                                              new Measurement(10.0,
                                                                                              Measurement.MeasurementType.MEASURED)
@@ -107,7 +108,7 @@ class ScenarioControllerTest {
         );
         var scenarioConfig = new ScenarioRunConfiguration(
                 scenario,
-                new ScenarioMetadata("cid", "pid", "dnid")
+                new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC))
         );
         var content = objectMapper.writeValueAsString(scenarioConfig);
 
@@ -133,7 +134,7 @@ class ScenarioControllerTest {
         );
         var scenarioConfig = new ScenarioRunConfiguration(
                 scenario,
-                new ScenarioMetadata("cid", "pid", "dnid")
+                new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC))
         );
         var content = objectMapper.writeValueAsString(scenarioConfig);
 
@@ -151,7 +152,7 @@ class ScenarioControllerTest {
         // Given
         when(engine.run(any(), any()))
                 .thenReturn(new SimulationStarted(Thread.startVirtualThread(() -> {})));
-        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
+        var metadata = new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC));
         var content = objectMapper.writeValueAsString(metadata);
 
         // When
@@ -168,7 +169,7 @@ class ScenarioControllerTest {
         // Given
         when(engine.run(any(), any()))
                 .thenReturn(new SimulationStarted(Thread.startVirtualThread(() -> {})));
-        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
+        var metadata = new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC));
         var content = objectMapper.writeValueAsString(metadata);
 
         // When

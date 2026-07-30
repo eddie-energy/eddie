@@ -31,7 +31,7 @@ class ScenarioConstraintTest {
                 new SimulatedValidatedHistoricalData(
                         "Mid",
                         ZonedDateTime.now(ZoneOffset.UTC),
-                        "PT15M",
+                        Duration.ofMinutes(15),
                         List.of()
                 )
         );
