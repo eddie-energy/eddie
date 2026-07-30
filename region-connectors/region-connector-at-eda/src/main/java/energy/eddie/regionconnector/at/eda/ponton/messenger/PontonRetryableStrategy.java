@@ -5,13 +5,13 @@ package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
 import java.io.IOException;
 
-class PontonRetryStrategy {
+class PontonRetryableStrategy {
     private final MessengerHealth healthApi;
 
-    PontonRetryStrategy(MessengerHealth healthApi) {this.healthApi = healthApi;}
+    PontonRetryableStrategy(MessengerHealth healthApi) {this.healthApi = healthApi;}
 
-    boolean isRetryable(Exception sendException) {
-        Throwable cause = sendException;
+    boolean isRetryable(Throwable throwable) {
+        Throwable cause = throwable;
         while (cause != null) {
             if (cause instanceof IOException) {
                 return this.healthApi.messengerStatus().ok();

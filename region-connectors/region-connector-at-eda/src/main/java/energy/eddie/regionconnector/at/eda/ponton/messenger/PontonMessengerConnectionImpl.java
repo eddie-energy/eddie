@@ -43,7 +43,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     private final MessengerHealth healthApi;
     private final MessengerMonitor messengerMonitor;
     private final ReentrantLock lock = new ReentrantLock();
-    private final PontonRetryStrategy retryStrategy;
+    private final PontonRetryableStrategy retryStrategy;
     @Nullable
     private OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler;
     @Nullable
@@ -71,7 +71,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.healthApi = healthApi;
-        this.retryStrategy = new PontonRetryStrategy(healthApi);
+        this.retryStrategy = new PontonRetryableStrategy(healthApi);
         this.messengerMonitor = messengerMonitor;
         final AdapterInfo adapterInfo = createAdapterInfo(config);
         this.messengerConnectionBuilder = createMessengerConnectionBuilder(config, workFolder, adapterInfo);
