@@ -4,6 +4,7 @@
 package energy.eddie.aiida.models.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
@@ -12,6 +13,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 import java.util.UUID;
+
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Entity
 @Table(name = "mqtt_streaming_config")
@@ -41,7 +44,7 @@ public class MqttStreamingConfig {
 
     public MqttStreamingConfig(MqttDto mqttDto) {
         this.permissionId = UUID.fromString(mqttDto.username());
-        this.password = mqttDto.password();
+        this.password = alias(permissionId, SecretType.PASSWORD);
         this.serverUri = mqttDto.serverUri();
         this.dataTopic = mqttDto.dataTopic();
         this.statusTopic = mqttDto.statusTopic();
@@ -59,6 +62,10 @@ public class MqttStreamingConfig {
 
     public String password() {
         return password;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
     }
 
     public String serverUri() {

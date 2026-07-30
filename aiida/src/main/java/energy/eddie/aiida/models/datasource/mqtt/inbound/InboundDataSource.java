@@ -13,6 +13,7 @@ import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.mqtt.MqttConnection;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -21,6 +22,8 @@ import jakarta.persistence.*;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Entity
 @SecondaryTable(name = InboundDataSource.TABLE_NAME)
@@ -64,6 +67,10 @@ public class InboundDataSource extends MqttDataSource {
         return accessCode;
     }
 
+    public void updateAccessCode(String accessCode) {
+        this.accessCode = accessCode;
+    }
+
     public Permission permission() {
         return permission;
     }
@@ -81,7 +88,13 @@ public class InboundDataSource extends MqttDataSource {
 
     @Override
     protected void createMqttUser() {
-        this.mqttConnection.createMqttUser(config.username().toString(), config.password());
+        this.mqttConnection.createMqttUser(config.username().toString(), alias(id, SecretType.PASSWORD));
+    }
+
+    @Override
+    protected void postPersist() {
+        super.postPersist();
+        this.accessCode = alias(id, SecretType.API_KEY);
     }
 
     @Override

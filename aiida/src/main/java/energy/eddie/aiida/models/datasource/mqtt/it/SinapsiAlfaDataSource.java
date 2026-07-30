@@ -11,12 +11,15 @@ import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.mqtt.MqttConnection;
+import energy.eddie.aiida.services.secrets.SecretType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.UUID;
+
+import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 
 @Entity
 @DiscriminatorValue(DataSourceType.Identifiers.SINAPSI_ALFA)
@@ -57,7 +60,7 @@ public class SinapsiAlfaDataSource extends MqttDataSource {
 
     @Override
     protected void createMqttUser() {
-        this.mqttConnection.createMqttUser(config.mqttUsername(), config.mqttPassword());
+        this.mqttConnection.createMqttUser(config.mqttUsername(), alias(id, SecretType.PASSWORD));
     }
 
     @Override

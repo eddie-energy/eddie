@@ -30,3 +30,6 @@ aiida:
   mqtt:
     bcrypt-salt-rounds: 12
     password: Test123!
+  keystore:
+    password: Test123!
+    path: ${java.io.tmpdir}/aiida-test-keystore.p12

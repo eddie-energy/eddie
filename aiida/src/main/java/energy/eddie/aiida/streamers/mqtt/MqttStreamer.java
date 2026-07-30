@@ -3,14 +3,16 @@
 
 package energy.eddie.aiida.streamers.mqtt;
 
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.AiidaStreamer;
+import energy.eddie.aiida.streamers.StreamerDependencies;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
@@ -23,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -44,6 +45,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final Permission permission;
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
+    private final SecretsService secretsService;
     private boolean isBeingTerminated = false;
     private volatile boolean transmissionEnabled;
     @Nullable
@@ -52,33 +54,27 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     /**
      * Creates a new MqttStreamer and initialized the client callback.
      *
-     * @param failedToSendRepository  Repository where messages that could not be transmitted are stored.
-     * @param mapper                  {@link ObjectMapper} used to transform the values to be sent into JSON strings.
-     * @param permission              Permission for which this streamer is created.
-     * @param recordFlux              Flux, where records that should be sent are published.
-     * @param schemaFormatterRegistry Registry of all available schema formatters
-     * @param streamingContext        Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
-     *                                MQTT configuration values.
-     * @param commandSink             Sink, to which a {@link PermissionCommand} is published when the EP sends a
-     *                                control command.
+     * @param dependencies     Streamer dependencies shared by every streamer implementation.
+     * @param permission       Permission for which this streamer is created.
+     * @param recordFlux       Flux, where records that should be sent are published.
+     * @param streamingContext Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
+     *                         MQTT configuration values.
      */
     public MqttStreamer(
-            FailedToSendRepository failedToSendRepository,
-            ObjectMapper mapper,
+            StreamerDependencies dependencies,
             Permission permission,
             Flux<AiidaRecord> recordFlux,
-            SchemaFormatterRegistry schemaFormatterRegistry,
-            MqttStreamingContext streamingContext,
-            Sinks.Many<PermissionCommand> commandSink
+            MqttStreamingContext streamingContext
     ) {
-        super(recordFlux, schemaFormatterRegistry, commandSink);
+        super(recordFlux, dependencies.schemaFormatterRegistry(), dependencies.commandSink());
 
         this.client = streamingContext.client();
-        this.failedToSendRepository = failedToSendRepository;
-        this.mapper = mapper;
+        this.failedToSendRepository = dependencies.failedToSendRepository();
+        this.mapper = dependencies.mapper();
         this.permission = permission;
         this.streamingConfig = streamingContext.streamingConfig();
         this.permissionLatestRecordMap = streamingContext.permissionLatestRecordMap();
+        this.secretsService = dependencies.secretsService();
         this.transmissionEnabled = permission.transmissionEnabled();
 
         client.setCallback(this);
@@ -91,7 +87,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         connOpts.setAutomaticReconnect(true);
         connOpts.setAutomaticReconnectDelay(30, 60 * 5);
         connOpts.setUserName(streamingConfig.username().toString());
-        connOpts.setPassword(streamingConfig.password().getBytes(StandardCharsets.UTF_8));
+        connOpts.setPassword(loadPassword(streamingConfig).getBytes(StandardCharsets.UTF_8));
 
         // pending tokens are messages that are saved by the MqttClient to its persistence config
         LOGGER.atInfo()
@@ -362,5 +358,16 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
               .addArgument(streamingConfig.permissionId())
               .addArgument(failedToSend.size())
               .log("MqttStreamer for permission {} fetched and enqueued {} messages for sending that previously failed to send");
+    }
+
+    private String loadPassword(MqttStreamingConfig mqttStreamingConfig) {
+        try {
+            return secretsService.loadSecret(mqttStreamingConfig.password());
+        } catch (SecretLoadingException e) {
+            LOGGER.warn("Streamer found no password for permission {}. Continuing with empty password.",
+                        mqttStreamingConfig.password(),
+                        e);
+            return "";
+        }
     }
 }

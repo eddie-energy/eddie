@@ -8,6 +8,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -42,10 +43,11 @@ class InboundAdapterTest {
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID MQTT_USERNAME = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
+    private static final SecretsService SECRETS_SERVICE = mock(SecretsService.class);
     private InboundAdapter adapter;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         // Mock mqtt configuration
@@ -61,11 +63,12 @@ class InboundAdapterTest {
         when(dataSource.username()).thenReturn(String.valueOf(MQTT_USERNAME));
         when(dataSource.password()).thenReturn("testPassword");
         when(dataSource.acknowledgementTopic()).thenReturn("aiida/ack");
+        when(SECRETS_SERVICE.loadSecret(anyString())).thenReturn("testPassword");
 
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
         var mapper = builder.build();
-        adapter = new InboundAdapter(dataSource, mapper, MQTT_CONFIGURATION, AIIDA_ID);
+        adapter = new InboundAdapter(dataSource, mapper, MQTT_CONFIGURATION, AIIDA_ID, SECRETS_SERVICE);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 

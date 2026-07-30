@@ -17,6 +17,8 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.schemas.rtd.raw.RawFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.aiida.services.secrets.SecretsService;
+import energy.eddie.aiida.streamers.StreamerDependencies;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
@@ -60,26 +62,13 @@ class MqttStreamerTest {
     private static final String EXPECTED_COMMAND_TOPIC = "aiida/v1/permission-id/command";
     private static final String EXPECTED_ACK_TOPIC = "aiida/v1/permission-id/acknowledgement";
     private static final UUID PERMISSION_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final DataSource DATA_SOURCE = mock(DataSource.class);
 
     private final TestPublisher<AiidaRecord> recordPublisher = TestPublisher.create();
     private final Sinks.Many<PermissionCommand> commandSink = Sinks.many().multicast().onBackpressureBuffer();
-    private final AiidaRecord record1 = new AiidaRecord(Instant.now(),
-                                                        DATA_SOURCE,
-                                                        List.of(new AiidaRecordValue("1-0:1.8.0",
-                                                                                     POSITIVE_ACTIVE_ENERGY,
-                                                                                     "444",
-                                                                                     KILO_WATT_HOUR,
-                                                                                     "10",
-                                                                                     KILO_WATT_HOUR)));
-    private final AiidaRecord record2 = new AiidaRecord(Instant.now(),
-                                                        DATA_SOURCE,
-                                                        List.of(new AiidaRecordValue("1-0:2.8.0",
-                                                                                     NEGATIVE_ACTIVE_ENERGY,
-                                                                                     "888",
-                                                                                     KILO_WATT_HOUR,
-                                                                                     "10",
-                                                                                     KILO_WATT_HOUR)));
+
+    @Mock
+    private DataSource dataSource;
+
     @Mock
     private MqttAsyncClient mockClient;
     @Mock
@@ -100,11 +89,13 @@ class MqttStreamerTest {
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
     private Permission permissionMock;
+    @Mock
+    private SecretsService mockSecretsService;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
     @BeforeEach()
-    void setUp() {
+    void setUp() throws Exception {
         // Permission
         when(permissionMock.transmissionEnabled()).thenReturn(true);
 
@@ -117,6 +108,7 @@ class MqttStreamerTest {
                                   EXPECTED_COMMAND_TOPIC,
                                   EXPECTED_ACK_TOPIC);
         mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
+        when(mockSecretsService.loadSecret(anyString())).thenReturn(mqttStreamingConfig.password());
 
         // MQTT Streaming Context
         when(mockClient.getPendingTokens()).thenReturn(new IMqttToken[]{});
@@ -133,14 +125,14 @@ class MqttStreamerTest {
         var rawSchemaFormatter = new RawFormatter(mockApplicationInformationService, mapper);
         var schemaFormatterRegistry = new SchemaFormatterRegistry(List.of(rawSchemaFormatter));
 
-        streamer = new MqttStreamer(
-                mockRepository,
-                mockMapper,
-                permissionMock,
-                recordPublisher.flux(),
-                schemaFormatterRegistry,
-                streamingContext,
-                commandSink);
+        var dependencies = new StreamerDependencies(mockRepository,
+                                                    mockMapper,
+                                                    schemaFormatterRegistry,
+                                                    commandSink,
+                                                    mockLatestRecordMap,
+                                                    mockSecretsService);
+
+        streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), streamingContext);
     }
 
 
@@ -198,7 +190,7 @@ class MqttStreamerTest {
         streamer.connectComplete(false, "fooTest");
 
         // When
-        recordPublisher.next(record1, record2);
+        recordPublisher.next(aiidaRecord1(), aiidaRecord2());
 
         // Then
         // records are published on Schedulers.boundedElastic(), so await the async side effects
@@ -312,7 +304,7 @@ class MqttStreamerTest {
 
         // When
         streamer.setTransmissionEnabled(false);
-        recordPublisher.next(record1, record2);
+        recordPublisher.next(aiidaRecord1(), aiidaRecord2());
         Thread.sleep(200);
 
         // Then
@@ -329,7 +321,7 @@ class MqttStreamerTest {
 
         // When
         streamer.updateRecordFlux(newPublisher.flux());
-        newPublisher.next(record1);
+        newPublisher.next(aiidaRecord1());
 
         // Then
         // record is published on Schedulers.boundedElastic(), so await the async side effect
@@ -359,7 +351,7 @@ class MqttStreamerTest {
         streamer.connect();
 
         // When
-        recordPublisher.next(record1);
+        recordPublisher.next(aiidaRecord1());
 
         // Then
         // record is published on Schedulers.boundedElastic(), so await the async side effect
@@ -409,5 +401,26 @@ class MqttStreamerTest {
         var dataNeed = mock(AiidaLocalDataNeed.class);
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
         when(permissionMock.dataNeed()).thenReturn(dataNeed);
+    }
+
+    private AiidaRecord aiidaRecord1() {
+        return new AiidaRecord(Instant.now(),
+                               dataSource,
+                               List.of(new AiidaRecordValue("1-0:1.8.0",
+                                                            POSITIVE_ACTIVE_ENERGY,
+                                                            "444",
+                                                            KILO_WATT_HOUR,
+                                                            "10",
+                                                            KILO_WATT_HOUR)));
+    }
+
+    private AiidaRecord aiidaRecord2() {
+        return new AiidaRecord(Instant.now(),
+                               dataSource,
+                               List.of(new AiidaRecordValue("1-0:2.8.0",
+                                                            NEGATIVE_ACTIVE_ENERGY,
+                                                            "888",
+                                                            KILO_WATT_HOUR,
+                                                            "10", KILO_WATT_HOUR)));
     }
 }

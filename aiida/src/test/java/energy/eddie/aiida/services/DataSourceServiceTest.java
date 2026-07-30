@@ -9,11 +9,12 @@ import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
+import energy.eddie.aiida.errors.SecretDeletionException;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
@@ -22,14 +23,15 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.interval.modbus.ModbusDataSource;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
-import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,10 +51,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DataSourceServiceTest {
-    private static final DataSourceDto DATA_SOURCE_DTO = mock(OesterreichsEnergieDataSourceDto.class);
-    private static final DataSource OUTBOUND_DATA_SOURCE = mock(SimulationDataSource.class);
-    private static final MqttDataSource MQTT_OUTBOUND_DATA_SOURCE = mock(OesterreichsEnergieDataSource.class);
-    private static final DataSource INBOUND_DATA_SOURCE = mock(InboundDataSource.class);
     private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
@@ -60,6 +58,14 @@ class DataSourceServiceTest {
     private static final UUID MODEL_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
     private static final UUID DEVICE_ID = UUID.fromString("33333333-3333-3333-3333-333333333333");
 
+    @Mock
+    private OesterreichsEnergieDataSourceDto dataSourceDto;
+    @Mock
+    private SimulationDataSource outboundDataSource;
+    @Mock
+    private OesterreichsEnergieDataSource mqttOutboundDataSource;
+    @Mock
+    private InboundDataSource inboundDataSource;
     @Mock
     private ApplicationInformationService applicationInformationService;
     @Mock
@@ -76,6 +82,8 @@ class DataSourceServiceTest {
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     @Mock
     private AiidaEventPublisher aiidaEventPublisher;
+    @Mock
+    private SecretsService secretsService;
 
     @InjectMocks
     private DataSourceService dataSourceService;
@@ -89,8 +97,8 @@ class DataSourceServiceTest {
 
     @Test
     void shouldReturndataSourceByIdOrThrow() throws DataSourceNotFoundException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(INBOUND_DATA_SOURCE));
-        when(INBOUND_DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(inboundDataSource));
+        when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
 
         var result = dataSourceService.dataSourceByIdOrThrow(DATA_SOURCE_ID);
 
@@ -106,13 +114,13 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
-        when(DATA_SOURCE_DTO.enabled()).thenReturn(true);
-        when(DATA_SOURCE_DTO.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
+        when(dataSourceDto.enabled()).thenReturn(true);
+        when(dataSourceDto.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
 
-        var result = dataSourceService.addDataSource(DATA_SOURCE_DTO);
+        var result = dataSourceService.addDataSource(dataSourceDto);
 
         assertNotNull(result.plaintextPassword());
         verify(bCryptPasswordEncoder).encode(anyString());
@@ -121,7 +129,7 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldAddModbusDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    void shouldAddModbusDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         try (
                 MockedStatic<ModbusDeviceService> mockedStatic = mockStatic(ModbusDeviceService.class);
                 MockedConstruction<ModbusTcpDataSourceAdapter> ignored = mockConstruction(ModbusTcpDataSourceAdapter.class,
@@ -156,12 +164,12 @@ class DataSourceServiceTest {
     }
 
     @Test
-    void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException {
+    void shouldNotAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");
-        when(DATA_SOURCE_DTO.enabled()).thenReturn(false);
+        when(dataSourceDto.enabled()).thenReturn(false);
 
-        dataSourceService.addDataSource(DATA_SOURCE_DTO);
+        dataSourceService.addDataSource(dataSourceDto);
 
         verify(repository).save(any());
         verify(outboundAggregator, never()).addNewDataSourceAdapter(any());
@@ -178,32 +186,64 @@ class DataSourceServiceTest {
     }
 
     @Test
+    void shouldDeleteSecretsWhenDeletingSinapsiAlfaDataSource() throws SecretDeletionException {
+        var dataSource = mock(SinapsiAlfaDataSource.class);
+        when(dataSource.password()).thenReturn("password_" + DATA_SOURCE_ID);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
+
+        dataSourceService.deleteDataSource(DATA_SOURCE_ID);
+
+        verify(secretsService).deleteSecret("password_" + DATA_SOURCE_ID);
+        verifyNoMoreInteractions(secretsService);
+    }
+
+    @Test
+    void shouldDeleteSecretsWhenDeletingInboundDataSource() throws SecretDeletionException {
+        var dataSource = mock(InboundDataSource.class);
+        when(dataSource.password()).thenReturn("password_" + DATA_SOURCE_ID);
+        when(dataSource.accessCode()).thenReturn("api_key_" + DATA_SOURCE_ID);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(dataSource));
+
+        dataSourceService.deleteDataSource(DATA_SOURCE_ID);
+
+        verify(secretsService).deleteSecret("password_" + DATA_SOURCE_ID);
+        verify(secretsService).deleteSecret("api_key_" + DATA_SOURCE_ID);
+    }
+
+    @Test
+    void shouldNotDeleteSecretsWhenDeletingNonKeystoreDataSource() {
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mock(DataSource.class)));
+
+        dataSourceService.deleteDataSource(DATA_SOURCE_ID);
+
+        verifyNoInteractions(secretsService);
+    }
+
+    @Test
     void shouldUpdateDataSource() throws DataSourceNotFoundException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mqttOutboundDataSource));
 
-        when(DATA_SOURCE_DTO.id()).thenReturn(DATA_SOURCE_ID);
-        dataSourceService.updateDataSource(DATA_SOURCE_DTO);
+        when(dataSourceDto.id()).thenReturn(DATA_SOURCE_ID);
+        dataSourceService.updateDataSource(dataSourceDto);
 
-        verify(MQTT_OUTBOUND_DATA_SOURCE).update(DATA_SOURCE_DTO);
+        verify(mqttOutboundDataSource).update(dataSourceDto);
     }
 
     @Test
     void shouldAddDataSourcesOnStartDataSources() {
         UUID dataSourceId2 = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
 
-        when(OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
-        when(OUTBOUND_DATA_SOURCE.id()).thenReturn(UUID.randomUUID());
-        when(OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SIMULATION);
-        when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(false);
-        when(MQTT_OUTBOUND_DATA_SOURCE.id()).thenReturn(dataSourceId2);
-        when(MQTT_OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
-        when(INBOUND_DATA_SOURCE.enabled()).thenReturn(true);
-        when(INBOUND_DATA_SOURCE.id()).thenReturn(UUID.randomUUID());
-        when(INBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.INBOUND);
+        when(outboundDataSource.enabled()).thenReturn(true);
+        when(outboundDataSource.id()).thenReturn(UUID.randomUUID());
+        when(outboundDataSource.type()).thenReturn(DataSourceType.SIMULATION);
+        when(mqttOutboundDataSource.enabled()).thenReturn(false);
+        when(inboundDataSource.enabled()).thenReturn(true);
+        when(inboundDataSource.id()).thenReturn(UUID.randomUUID());
+        when(inboundDataSource.type()).thenReturn(DataSourceType.INBOUND);
 
-        when(repository.findAll()).thenReturn(List.of(OUTBOUND_DATA_SOURCE,
-                                                      MQTT_OUTBOUND_DATA_SOURCE,
-                                                      INBOUND_DATA_SOURCE));
+        when(repository.findAll()).thenReturn(List.of(outboundDataSource,
+                                                      mqttOutboundDataSource,
+                                                      inboundDataSource));
 
         dataSourceService.startDataSources();
 
@@ -240,39 +280,42 @@ class DataSourceServiceTest {
 
     @Test
     void shouldRegenerateSecrets() throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(MQTT_OUTBOUND_DATA_SOURCE));
-        when(MQTT_OUTBOUND_DATA_SOURCE.enabled()).thenReturn(true);
-        when(MQTT_OUTBOUND_DATA_SOURCE.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(mqttOutboundDataSource));
+        when(mqttOutboundDataSource.enabled()).thenReturn(true);
+        when(mqttOutboundDataSource.type()).thenReturn(DataSourceType.SMART_METER_ADAPTER);
 
         var result = dataSourceService.regenerateSecrets(DATA_SOURCE_ID);
 
         assertNotNull(result.plaintextPassword());
-        verify(MQTT_OUTBOUND_DATA_SOURCE).updatePassword(eq(bCryptPasswordEncoder), anyString());
+        verify(mqttOutboundDataSource).updatePassword(eq(bCryptPasswordEncoder), anyString());
         verify(outboundAggregator).addNewDataSourceAdapter(any());
     }
 
     @Test
     void shouldNotRegenerateSecretsIfNotMqtt() {
-        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(OUTBOUND_DATA_SOURCE));
+        when(repository.findById(DATA_SOURCE_ID)).thenReturn(Optional.of(outboundDataSource));
 
         assertThrows(DataSourceSecretGenerationNotSupportedException.class,
                      () -> dataSourceService.regenerateSecrets(DATA_SOURCE_ID));
     }
 
     @Test
-    void testCreateInboundDatasource() {
+    void testCreateInboundDatasource() throws Exception {
         // Given
         var permission = mock(Permission.class);
         var permissionId = UUID.randomUUID();
         var userId = UUID.randomUUID();
         var dataNeed = mock(AiidaLocalDataNeed.class);
         var mqttStreamingConfig = mock(MqttStreamingConfig.class);
+        var password = "password";
 
         // When
+        when(secretsService.loadSecret(anyString())).thenReturn(password);
         when(permission.id()).thenReturn(permissionId);
         when(permission.userId()).thenReturn(userId);
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(permission.mqttStreamingConfig()).thenReturn(mqttStreamingConfig);
+        when(mqttStreamingConfig.password()).thenReturn(password);
         dataSourceService.createInboundDataSource(permission);
 
         // Then

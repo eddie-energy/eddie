@@ -41,6 +41,7 @@ services:
         required: false
     volumes:
       - ./svgs:/container-assets/svgs
+      - aiida_security:/opt/security
 
   emqx:
     image: emqx/emqx:5.8.6
@@ -112,3 +113,4 @@ volumes:
   db_data:
   emqx_data:
   keycloak_data:
+  aiida_security:

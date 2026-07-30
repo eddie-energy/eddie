@@ -11,6 +11,7 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -69,6 +70,8 @@ class StreamerManagerTest {
     private PermissionLatestRecordMap mockLatestRecordMap;
     @Mock
     private SchemaFormatterRegistry schemaFormatterRegistry;
+    @Mock
+    private SecretsService mockSecretsService;
 
     @BeforeEach
     void setUp() {
@@ -78,7 +81,8 @@ class StreamerManagerTest {
                                       mockRepository,
                                       mapper,
                                       schemaFormatterRegistry,
-                                      mockLatestRecordMap);
+                                      mockLatestRecordMap,
+                                      mockSecretsService);
     }
 
     @Test
@@ -95,7 +99,7 @@ class StreamerManagerTest {
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
-            utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any()))
+            utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
 
             // first time should result in valid creation
@@ -153,7 +157,7 @@ class StreamerManagerTest {
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
-            utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any()))
+            utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
 
             // When
@@ -212,7 +216,7 @@ class StreamerManagerTest {
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.effectiveTransmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
-            utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), any(), any(), any(), any()))
+            utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any()))
                      .thenReturn(mockAiidaStreamer);
 
             manager.createNewStreamer(mockPermission);

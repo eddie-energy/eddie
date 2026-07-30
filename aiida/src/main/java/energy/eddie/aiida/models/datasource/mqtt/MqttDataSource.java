@@ -75,6 +75,10 @@ public abstract class MqttDataSource extends DataSource {
         this.mqttConnection.updatePassword(password);
     }
 
+    public void updatePassword(String password) {
+        this.mqttConnection.updatePassword(password);
+    }
+
     @PrePersist
     @Transactional
     protected void postPersist() {

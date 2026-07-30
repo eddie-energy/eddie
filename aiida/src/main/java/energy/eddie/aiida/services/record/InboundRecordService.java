@@ -4,6 +4,7 @@
 package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
@@ -16,6 +17,7 @@ import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.record.transform.InboundPayloadTransformationService;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -30,24 +32,29 @@ public class InboundRecordService {
     private final InboundRecordRepository inboundRecordRepository;
     private final PermissionRepository permissionRepository;
     private final InboundPayloadTransformationService inboundPayloadTransformationService;
+    private final SecretsService secretsService;
 
     public InboundRecordService(
             InboundRecordRepository inboundRecordRepository,
             PermissionRepository permissionRepository,
-            InboundPayloadTransformationService inboundPayloadTransformationService
+            InboundPayloadTransformationService inboundPayloadTransformationService,
+            SecretsService secretsService
     ) {
         this.inboundRecordRepository = inboundRecordRepository;
         this.permissionRepository = permissionRepository;
         this.inboundPayloadTransformationService = inboundPayloadTransformationService;
+        this.secretsService = secretsService;
     }
 
     public InboundRecordDto latestRecord(UUID permissionId, String accessCode)
             throws PermissionNotFoundException, UnauthorizedException,
                    InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException,
+                   SecretLoadingException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
-        if (!Objects.equals(dataSource.accessCode(), accessCode)) {
+        var savedAccessCode = secretsService.loadSecret(dataSource.accessCode());
+        if (!Objects.equals(savedAccessCode, accessCode)) {
             throw new UnauthorizedException(
                     "Access code does not match for data source with ID: " + dataSource.id()
             );

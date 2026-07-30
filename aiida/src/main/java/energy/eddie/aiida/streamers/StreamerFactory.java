@@ -5,19 +5,13 @@ package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
-import energy.eddie.aiida.repositories.FailedToSendRepository;
-import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
 import energy.eddie.aiida.utils.MqttFactory;
-import energy.eddie.cim.agnostic.PermissionCommand;
 import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
-import tools.jackson.databind.ObjectMapper;
 
 import static java.util.Objects.requireNonNull;
 
@@ -29,23 +23,15 @@ public class StreamerFactory {
     /**
      * Creates a new {@link AiidaStreamer} applying the specified streamingConfig.
      *
-     * @param failedToSendRepository  Repository to save messages that could not be sent.
-     * @param mapper                  {@link ObjectMapper} that should be used to convert the records to JSON.
-     * @param permission              Permission for which to create the AiidaStreamer.
-     * @param recordFlux              Flux on which the records that should be sent are published.
-     * @param schemaFormatterRegistry Registry of all available schema formatters
-     * @param commandSink             Sink, to which a {@link PermissionCommand} is published when the EP sends a
-     *                                control command.
+     * @param dependencies Streamer dependencies shared by every streamer implementation.
+     * @param permission   Permission for which to create the AiidaStreamer.
+     * @param recordFlux   Flux on which the records that should be sent are published.
      * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
-            FailedToSendRepository failedToSendRepository,
-            ObjectMapper mapper,
+            StreamerDependencies dependencies,
             Permission permission,
-            Flux<AiidaRecord> recordFlux,
-            SchemaFormatterRegistry schemaFormatterRegistry,
-            Sinks.Many<PermissionCommand> commandSink,
-            PermissionLatestRecordMap permissionLatestRecordMap
+            Flux<AiidaRecord> recordFlux
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var streamingConfig = requireNonNull(permission.mqttStreamingConfig());
@@ -55,14 +41,8 @@ public class StreamerFactory {
                                                             mqttFilePersistenceDirectory).expand(permission.eddieId(),
                                                                                                  permission.id())
                                                                                          .getPath()));
-        var streamingContext = new MqttStreamingContext(client, streamingConfig, permissionLatestRecordMap);
+        var streamingContext = new MqttStreamingContext(client, streamingConfig, dependencies.permissionLatestRecordMap());
 
-        return new MqttStreamer(failedToSendRepository,
-                                mapper,
-                                permission,
-                                recordFlux,
-                                schemaFormatterRegistry,
-                                streamingContext,
-                                commandSink);
+        return new MqttStreamer(dependencies, permission, recordFlux, streamingContext);
     }
 }

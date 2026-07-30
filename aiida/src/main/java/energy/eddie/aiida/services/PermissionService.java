@@ -7,6 +7,7 @@ import energy.eddie.aiida.dtos.PermissionDetailsDto;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
+import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
@@ -22,6 +23,8 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
@@ -61,6 +64,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final DataSourceService dataSourceService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
     private final AiidaEventPublisher aiidaEventPublisher;
+    private final SecretsService secretsService;
 
     @Autowired
     public PermissionService(
@@ -72,7 +76,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AuthService authService,
             DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
-            AiidaEventPublisher aiidaEventPublisher
+            AiidaEventPublisher aiidaEventPublisher,
+            SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
         this.clock = clock;
@@ -83,6 +88,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.dataSourceService = dataSourceService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
+        this.secretsService = secretsService;
     }
 
     /**
@@ -238,7 +244,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             UUID permissionId,
             @Nullable UUID dataSourceId,
             @Nullable InboundMessageFormat inboundMessageFormat
-    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException {
+    ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException, SecretStoringException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
 
@@ -278,6 +284,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         var mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
+        secretsService.storeSecret(mqttStreamingConfig.permissionId(), SecretType.PASSWORD, mqttDto.password());
 
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         permission.setStatus(FETCHED_MQTT_CREDENTIALS);
