@@ -1,0 +1,42 @@
+{
+  "type": "Scenario",
+  "name": "Generated Validated Historical Data Scenario",
+  "steps": [
+    {
+      "type": "StatusChangeStep",
+      "status": "CREATED",
+      "delayInSeconds": 0
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "VALIDATED",
+      "delayInSeconds": 5
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "SENT_TO_PERMISSION_ADMINISTRATOR",
+      "delayInSeconds": 4
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "ACCEPTED",
+      "delayInSeconds": 10
+    },
+    {
+      "type": "LoadProfileCurveStep",
+      "meteringPoint": "mid",
+      "meteringInterval": "PT15M",
+      "maxEnergy": 10.0,
+      "defaultProfile": "Early morning & evening",
+      "profilesPerWeekday": {
+        "SATURDAY": "All daytime",
+        "SUNDAY": "All daytime"
+      }
+    },
+    {
+      "type": "StatusChangeStep",
+      "status": "FULFILLED",
+      "delayInSeconds": 0
+    }
+  ]
+}
