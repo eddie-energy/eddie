@@ -43,6 +43,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     private final MessengerHealth healthApi;
     private final MessengerMonitor messengerMonitor;
     private final ReentrantLock lock = new ReentrantLock();
+    private final PontonRetryableStrategy retryStrategy;
     @Nullable
     private OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler;
     @Nullable
@@ -70,6 +71,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.healthApi = healthApi;
+        this.retryStrategy = new PontonRetryableStrategy(healthApi);
         this.messengerMonitor = messengerMonitor;
         final AdapterInfo adapterInfo = createAdapterInfo(config);
         this.messengerConnectionBuilder = createMessengerConnectionBuilder(config, workFolder, adapterInfo);
@@ -151,7 +153,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         } catch (Exception sendException) {
             LOGGER.error("Error while sending message to Ponton XP Messenger", sendException);
             // check if the exception is retryable and no other thread is already trying to restart the connection
-            if (!(isRetryable(sendException) && lock.tryLock())) {
+            if (!(retryStrategy.isRetryable(sendException) && lock.tryLock())) {
                 throw new ConnectionException("Error while sending message to Ponton XP Messenger", sendException);
             }
             LOGGER.info("Restarting Ponton XP adapter messengerConnection.");
@@ -366,9 +368,5 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
                 .activeCMRevokeFactory()
                 .parseInputStream(inputStream);
         return cmRevokeHandler.handle(cmRevoke);
-    }
-
-    private boolean isRetryable(Exception sendException) {
-        return sendException instanceof IOException && healthApi.messengerStatus().ok();
     }
 }
