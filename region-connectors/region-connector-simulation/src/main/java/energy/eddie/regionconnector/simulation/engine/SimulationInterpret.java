@@ -26,10 +26,16 @@ class SimulationInterpret {
 
 
     void run() {
-        LOGGER.info("Starting simulation scenario {}", scenario.name());
+        LOGGER.info("Starting simulation scenario {} with permissionID {}, and connectionID {}",
+                    scenario.name(),
+                    ctx.permissionId(),
+                    ctx.connectionId());
         try {
             executionLoop();
-            LOGGER.info("Finishing simulation scenario {}", scenario.name());
+            LOGGER.info("Finishing simulation scenario {} with permissionID {}, and connectionID {}",
+                        scenario.name(),
+                        ctx.permissionId(),
+                        ctx.connectionId());
         } catch (ExecutionException e) {
             LOGGER.info("Simulation was stopped by unsuccessful step", e);
         }

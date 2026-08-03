@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.simulation.engine.SimulationContext;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintOk;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintResult;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintViolation;
+import energy.eddie.regionconnector.simulation.engine.steps.LoadProfileCurveStep;
 import energy.eddie.regionconnector.simulation.engine.steps.Model;
 import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
 
@@ -25,7 +26,14 @@ public class DataNeedConstraint implements ElementConstraint {
 
     @Override
     public ConstraintResult violatesConstraint(Model model) {
-        if (!(model instanceof ValidatedHistoricalDataStep)) {return new ConstraintOk();}
+        return switch (model) {
+            case ValidatedHistoricalDataStep ignored -> getConstraintViolation(model);
+            case LoadProfileCurveStep ignored -> getConstraintViolation(model);
+            default -> new ConstraintOk();
+        };
+    }
+
+    private ConstraintResult getConstraintViolation(Model model) {
         var dataNeed = dataNeedsService.calculate(ctx.dataNeedId(), ctx.creationDateTime());
         return switch (dataNeed) {
             case DataNeedNotFoundResult ignored ->
