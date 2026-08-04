@@ -84,6 +84,39 @@ configureJavaCompileWithErrorProne("energy.eddie.foo.bar")
 
 For more details on the setup see the [build and setup section](./build-and-setup.md).
 
+### Register the Permission Administrator and Metered Data Administrator
+
+The permission administrator (PA) and metered data administrator (MDA) that the region connector communicates with have to be registered in the European masterdata JSON files.
+This makes the region connector discoverable to the EDDIE core and allows it to route permission requests to the correct PA and MDA.
+
+Add an entry for the PA in [`european-masterdata/src/main/resources/permission-administrators.json`](https://github.com/eddie-energy/eddie/blob/main/european-masterdata/src/main/resources/permission-administrators.json):
+
+```json
+{
+  "country": "at",
+  "company": "foo-bar",
+  "name": "foo-bar",
+  "companyId": "foo-bar",
+  "jumpOffUrl": "https://www.foo-bar.example/",
+  "regionConnector": "foo-bar"
+}
+```
+
+Add an entry for the MDA in [`european-masterdata/src/main/resources/metered-data-administrators.json`](https://github.com/eddie-energy/eddie/blob/main/european-masterdata/src/main/resources/metered-data-administrators.json):
+
+```json
+{
+  "country": "at",
+  "company": "foo-bar",
+  "companyId": "",
+  "websiteUrl": "https://www.foo-bar.example/",
+  "officialContact": "contact@foo-bar.example",
+  "permissionAdministrator": "foo-bar"
+}
+```
+
+The `regionConnector` field in the PA entry and the `companyId` field in both entries should match the identifiers used in the [`FooBarDataSourceInformation`](#creating-the-permission-request-class).
+
 ## Bean Configuration
 
 The permission event supplier bean is for retrieving permission events externally (e.g., from an outbound connector) through the region connector.
@@ -145,6 +178,7 @@ For more details, see [API](./api.md).
 package energy.eddie.regionconnector.foo.bar;
 
 import energy.eddie.api.agnostic.RegionConnector;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @RegionConnector(name = "foo-bar")
@@ -156,7 +190,6 @@ Next the metadata and the region connector itself have to be implemented.
 The metadata is necessary for the core to root between the different region connectors, as well as supplying crucial information regarding the PA and MDA.
 
 ```java
-
 package energy.eddie.regionconnector.foo.bar;
 
 import energy.eddie.api.v0.RegionConnector;
@@ -165,10 +198,15 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class FooBarRegionConnector implements RegionConnector {
+  private final RegionConnectorMetadata metadata;
+
+  public FooBarRegionConnector(RegionConnectorMetadata metadata) {
+    this.metadata = metadata;
+  }
 
   @Override
   public RegionConnectorMetadata getMetadata() {
-    return FooBarRegionConnectorMetadata.getInstance();
+    return metadata;
   }
 
   @Override
@@ -183,25 +221,16 @@ And the metadata.
 ```java
 package energy.eddie.regionconnector.foo.bar;
 
-import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.api.v0.RegionConnectorMetadata;
-import energy.eddie.dataneeds.needs.DataNeed;
-import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import org.springframework.stereotype.Component;
 
 import java.time.Period;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.util.List;
 
+@Component
 public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
   public static final String REGION_CONNECTOR_ID = "foo-bar";
-  private static final FooBarRegionConnectorMetadata INSTANCE = new FooBarRegionConnectorMetadata();
-
-  private FooBarRegionConnectorMetadata() {}
-
-  public static RegionConnectorMetadata getInstance() {
-    return INSTANCE;
-  }
 
   @Override
   public String id() {
@@ -230,12 +259,22 @@ public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
     // TODO: find out for your region, what the newest data is that you can request
     return Period.ofYears(0);
   }
+
+  @Override
+  public ZoneId timeZone() {
+    // TODO: find out the time zone of your region
+    return ZoneOffset.UTC;
+  }
 }
 ```
 
 With the region connector metadata in place go ahead and update the `FooBarSpringConfig`.
 
 ```java
+package energy.eddie.regionconnector.foo.bar;
+
+import energy.eddie.api.agnostic.RegionConnector;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 @RegionConnector(name = FooBarRegionConnectorMetadata.REGION_CONNECTOR_ID)
@@ -257,14 +296,25 @@ Second, it allows ValidatedHistoricalDataDataNeeds, but only for Electricity dat
 ```java
 package energy.eddie.regionconnector.foo.bar.data.needs;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.dataneeds.rules.DataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.AccountingPointDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRule.ValidatedHistoricalDataDataNeedRule;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
 @Component
 public class FooBarDataNeedRuleSet implements DataNeedRuleSet {
     @Override
     public List<DataNeedRule> dataNeedRules() {
         return List.of(
-                new AcountingPointDataNeedRule();
-      new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, List.of(Granularity.PT15M, Granularity.P1D))
-        )
+                new AccountingPointDataNeedRule(),
+                new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY,
+                                                        List.of(Granularity.PT15M, Granularity.P1D))
+        );
     }
 }
 ```
@@ -496,12 +546,19 @@ ORDER BY permission_id, event_created;
 ### Creating the permission request via REST calls
 
 Now, the permission request and repositories are implemented the next part is to create the REST endpoints to create a permission request.
-First enable WebMvc for this region connector and create instances of the event bus and outbox.
+First, enable WebMvc for this region connector and create instances of the event bus and outbox.
 
 ```java
+package energy.eddie.regionconnector.foo.bar;
+
+import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionEventRepository;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @SpringBootApplication
 @RegionConnector(name = FooBarRegionConnectorMetadata.REGION_CONNECTOR_ID)
@@ -523,6 +580,11 @@ Since we want to create a permission request, we need to emit a created event.
 Which indicates that a permission request was created and contains all the data sent by the final customer.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.permission.events;
+
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 
 @Entity(name = "CreatedEvent")
 public class CreatedEvent extends PersistablePermissionEvent {
@@ -541,9 +603,60 @@ public class CreatedEvent extends PersistablePermissionEvent {
 }
 ```
 
+Before creating the controller, define the DTOs used for creating a permission request as separate classes.
+
+The `PermissionRequestForCreation` class should contain all attributes required from the final customer to create a permission request on the permission administrators side.
+This could be an accounting point ID or a Tax number.
+These attributes can differ vastly between regions and permission processes.
+Sometimes there might not even be additional attributes required, it depends on the concrete permission process.
+
+```java
+package energy.eddie.regionconnector.foo.bar.dtos;
+
+/**
+ * @param connectionId the connection ID
+ * @param dataNeedId   the data need ID
+ */
+public record PermissionRequestForCreation(String dataNeedId,
+                                           String connectionId) {}
+```
+
+The `CreatedPermissionRequest` DTO is sent back to the frontend and should contain everything that is required by the final customer to accept the permission request, which was sent by EDDIE to the permission administrator.
+This could be a redirect URL for permission processes that use OAuth 2.0 for authorization, or just an ID with which the final customer can look up the permission request in the permission administrators portal.
+
+```java
+package energy.eddie.regionconnector.foo.bar.dtos;
+
+/**
+ * @param permissionId the final permission ID
+ */
+public record CreatedPermissionRequest(String permissionId) {}
+```
+
 Next, a rest controller can be created, which gets the data from the EDDIE button and creates the permission request.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.web;
+
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.regionconnector.foo.bar.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.foo.bar.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.foo.bar.permission.events.CreatedEvent;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
+
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PermissionRequestController {
@@ -567,11 +680,6 @@ public class PermissionRequestController {
     return ResponseEntity.created(connectionStatusMessagesStreamFor(permissionId))
                          .body(pr);
   }
-
-  public record CreatedPermissionRequest(String permissionId) {}
-
-  public record PermissionRequestForCreation(String dataNeedId,
-                                             String connectionId /* Information needed from the final customer */) {}
 }
 ```
 
@@ -581,16 +689,24 @@ The malformed event should include all the validation errors.
 For the mapping see [malformed event](./internal-architecture.md#malformed-event).
 
 ```java
+package energy.eddie.regionconnector.foo.bar.permission.events;
+
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 public class ValidatedEvent extends PersistablePermissionEvent {
   @Column(name = "data_start")
-  private final LocalDate DataStart;
-  @Column(name = "end_start")
-  private final LocalDate DataEnd;
+  private final LocalDate dataStart;
+  @Column(name = "data_end")
+  private final LocalDate dataEnd;
   @Enumerated(EnumType.STRING)
   @Column(columnDefinition = "text")
-  private final AllowedGranularity granularity;
+  private final Granularity granularity;
 }
 
 @Entity
@@ -615,10 +731,21 @@ To validate the data need ID an instance of the [`DataNeedCalculationService`](.
 Create a bean of this type in your `FooBarSpringConfig` class.
 
 ```java
+package energy.eddie.regionconnector.foo.bar;
+
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.dataneeds.rules.DataNeedRuleSet;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.foo.bar.data.needs.FooBarDataNeedRuleSet;
+import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 
 @Bean
-public DataNeedCalculationService calcService(DataNeedsService dataNeedsService) {
-  return new DataNeedCalculationServiceImpl(dataNeedsService, FooBarRegionConnectorMetadata.getInstance());
+public DataNeedCalculationService calcService(
+        DataNeedsService dataNeedsService,
+        FooBarRegionConnectorMetadata metadata,
+        FooBarDataNeedRuleSet dataNeedRuleSet
+) {
+  return new DataNeedCalculationServiceImpl(dataNeedsService, metadata, dataNeedRuleSet);
 }
 ```
 
@@ -631,12 +758,45 @@ That is everything needed to create and validate a permission request on EDDIE's
 > The token is also available on the frontend via the permission-request-form-base.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.web;
+
+import energy.eddie.api.agnostic.data.needs.AccountingPointDataNeedResult;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
+import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
+import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
+import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.regionconnector.foo.bar.dtos.CreatedPermissionRequest;
+import energy.eddie.regionconnector.foo.bar.dtos.PermissionRequestForCreation;
+import energy.eddie.regionconnector.foo.bar.permission.events.CreatedEvent;
+import energy.eddie.regionconnector.foo.bar.permission.events.MalformedEvent;
+import energy.eddie.regionconnector.foo.bar.permission.events.ValidatedEvent;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+import static energy.eddie.regionconnector.foo.bar.FooBarRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
+
 @RestController
 public class PermissionRequestController {
+  private final Outbox outbox;
   private final DataNeedCalculationService calculationService;
+
+  public PermissionRequestController(Outbox outbox, DataNeedCalculationService calculationService) {
+    this.outbox = outbox;
+    this.calculationService = calculationService;
+  }
 
   @PostMapping(
           value = PATH_PERMISSION_REQUEST,
@@ -647,10 +807,9 @@ public class PermissionRequestController {
   public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(@Valid @RequestBody PermissionRequestForCreation dto) throws DataNeedNotFoundException, UnsupportedDataNeedException {
     var permissionId = UUID.randomUUID().toString();
     outbox.commit(new CreatedEvent(permissionId, dto.dataNeedId(), dto.connectionId()));
-    // new code start
     if (!isValid(dto)) {
       outbox.commit(new MalformedEvent(permissionId, /* TODO: Include the validation errors here */));
-      return ResponseEntity.badRequest().body("Invalid request body");
+      return ResponseEntity.badRequest().body(/* TODO */ null);
     }
     var calculation = calculationService.calculate(dto.dataNeedId());
     switch (calculation) {
@@ -667,13 +826,12 @@ public class PermissionRequestController {
                                                "data need not supported");
       }
       case ValidatedHistoricalDataDataNeedResult result -> outbox.commit(new ValidatedEvent(permissionId,
-                                                                                            result.energyTimeframe.start(),
-                                                                                            result.energyTimeframe.end(),
-                                                                                            result.energyTimeframe.granularities()
-                                                                                                                  .getFirst()));
+                                                                                            result.energyTimeframe().start(),
+                                                                                            result.energyTimeframe().end(),
+                                                                                            result.energyTimeframe().granularities()
+                                                                                                  .getFirst()));
       case AccountingPointDataNeedResult ignored -> outbox.commit(new ValidatedEvent(permissionId, null, null, null));
     }
-    // new code end
     var pr = new CreatedPermissionRequest(permissionId);
     return ResponseEntity.created(connectionStatusMessagesStreamFor(permissionId))
                          .body(pr);
@@ -681,6 +839,7 @@ public class PermissionRequestController {
 
   private boolean isValid(PermissionRequestForCreation dto) {
     // TODO: validate
+    return true;
   }
 }
 ```
@@ -700,12 +859,21 @@ We then await the response from the API client, which we assume uses Project Rea
 If the request was successful, a sent to PA event is emitted, otherwise a unable to send is emitted to the event bus.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.handlers;
+
+import energy.eddie.regionconnector.foo.bar.permission.events.ValidatedEvent;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+
+// TODO: Implement your own API client for your PA
+// import energy.eddie.regionconnector.foo.bar.ApiClient;
 
 @Component
 public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
   private final FooBarPermissionRequestRepository repo;
   private final Outbox outbox;
-  // TODO: Implement your own api client for your PA
   private final ApiClient api;
 
   public ValidatedEventHandler(
@@ -735,18 +903,25 @@ public class ValidatedEventHandler implements EventHandler<ValidatedEvent> {
 }
 ```
 
-Now everything is implemented to create permission request on the PA's side too, but since we could run into errors when sending the request, we can implement a retry too.
+Now everything is implemented to create permission requests on the PA's side too, but since we could run into errors when sending the request, we can implement a retry too.
 A new validated event implementation is used, since the old one described in the [section above](#creating-the-permission-request-via-rest-calls) would require the start, end, and granularity again, which we already know and didn't change.
 This service searches for permission requests with the unable to send status every hour, or using the value provided by the configuration property.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.service;
+
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 @Service
 public class RetryService {
   private final FooBarPermissionRequestRepository repo;
   private final Outbox outbox;
 
-  public RetryService(FooBarPermissionRequestrepo repo, Outbox outbox) {
+  public RetryService(FooBarPermissionRequestRepository repo, Outbox outbox) {
     this.repo = repo;
     this.outbox = outbox;
   }
@@ -769,6 +944,7 @@ package energy.eddie.regionconnector.foo.bar.persistence;
 import energy.eddie.api.agnostic.process.model.persistence.PermissionRequestRepository;
 import energy.eddie.api.agnostic.process.model.persistence.StatusPermissionRequestRepository;
 import energy.eddie.regionconnector.foo.bar.permission.request.FooBarPermissionRequest;
+import org.springframework.data.repository.Repository;
 
 @org.springframework.stereotype.Repository
 public interface FooBarPermissionRequestRepository
@@ -901,6 +1077,19 @@ It is rather easy to enable [permission market documents](./shared-functionality
 The implementations just have to be defined as Spring beans in your Spring config.
 
 ```java
+package energy.eddie.regionconnector.foo.bar;
+
+import energy.eddie.api.agnostic.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.regionconnector.foo.bar.permission.request.FooBarPermissionRequest;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.ConnectionStatusMessageHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.PermissionMarketDocumentMessageHandler;
+import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 @RegionConnector(name = "foo-bar")
@@ -915,7 +1104,7 @@ public class FooBarSpringConfig {
     return new ConnectionStatusMessageHandler<>(
             eventBus,
             repository,
-            pr -> ""
+            pr -> null
     );
   }
 
@@ -925,7 +1114,8 @@ public class FooBarSpringConfig {
           EventBus eventBus,
           FooBarPermissionRequestRepository repo,
           DataNeedsService dataNeedsService,
-          CommonInformationModelConfiguration cimConfig
+          CommonInformationModelConfiguration cimConfig,
+          RegionConnectorMetadata metadata
   ) {
     return new PermissionMarketDocumentMessageHandler<>(
             eventBus,
@@ -934,7 +1124,7 @@ public class FooBarSpringConfig {
             cimConfig.eligiblePartyFallbackId(),
             cimConfig,
             pr -> null,
-            ZoneOffset.UTC
+            metadata.timeZone()
     );
   }
 }
@@ -966,35 +1156,32 @@ When they receive a new event, they generate a new connection status message or 
 - Implement health indicators for external APIs and services
   :::
 
-Now we want to support historical validated data, so we have to update the supported data needs list in the region connector metadata implementation.
 Validated historical data is a term that describes metering data that was validated by the MDA.
-We take that validated historical data in the MDA's format and want to publish it.
+The region connector already supports `ValidatedHistoricalDataDataNeed` through the [`FooBarDataNeedRuleSet`](#dataneedruleset) defined earlier.
+We take the validated historical data in the MDA's format and want to publish it.
 First, we are going to emit it as raw data, so we take the validated historical data as is and emit it to the outbound connectors.
 Later on, we will map the validated historical data to the validated historical data market documents, which is a CIM format.
-
-```java
-public class FooBarRegionConnectorMetadata implements RegionConnectorMetadata {
-  public static final List<Class<? extends DataNeed>> SUPPORTED_DATA_NEEDS = List.of(
-          ValidatedHistoricalDataDataNeed.class
-  );
-}
-```
-
-When a permission request is created now, it won't be malformed anymore, since one data need is supported now.
 Next, the validated historical data has to be requested and published to the raw data stream.
 Since the same data is going to be emitted as a validated historical data market document later on, there should be one base stream that gets converted into the necessary format.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.streams;
+
+import energy.eddie.regionconnector.foo.bar.permission.request.FooBarPermissionRequest;
+import energy.eddie.api.agnostic.IdentifiablePayload;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 
 @Component
 public class ValidatedHistoricalDataStream {
-  private final Sink<IdentifiableValidatedHistoricalData> sink = Sinks.many().multicast().onBackpressureBuffer();
+  private final Sinks.Many<IdentifiableValidatedHistoricalData> sink = Sinks.many().multicast().onBackpressureBuffer();
 
   public Flux<IdentifiableValidatedHistoricalData> validatedHistoricalData() {
     return sink.asFlux();
   }
 
-  public void publish(FooBarPermissionRequest pr, Data data) {
+  public void publish(FooBarPermissionRequest pr, MeteredData data) {
     sink.tryEmitNext(new IdentifiableValidatedHistoricalData(pr, data));
   }
 }
@@ -1004,6 +1191,11 @@ The `IdentifiableValidatedHistoricalData` class is used to identify a specific A
 It is used to convert the same API response to raw data messages and validated historical data market documents, which will be done later.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.streams;
+
+import energy.eddie.regionconnector.foo.bar.permission.request.FooBarPermissionRequest;
+import energy.eddie.regionconnector.shared.providers.IdentifiablePayload;
+
 public record IdentifiableValidatedHistoricalData(
         FooBarPermissionRequest permissionRequest,
         MeteredData payload
@@ -1022,6 +1214,18 @@ If the request resulted in an exception, it is handled differently.
 If the exception indicates that the final customer revoked the permission, a `RevokedEvent` is emitted.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.handlers;
+
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
+import energy.eddie.regionconnector.foo.bar.permission.events.AcceptedEvent;
+import energy.eddie.regionconnector.foo.bar.permission.events.RevokedEvent;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.foo.bar.streams.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 @Component
 public class AcceptedHandler implements EventHandler<PermissionEvent> {
@@ -1072,6 +1276,16 @@ If you implement the [`MeterReadingPermissionRequest`](./api.md#meterreadingperm
 It provides a default implementation that updates a permission request with the latest meter reading and fulfills it too if all data was requested.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.service;
+
+import energy.eddie.regionconnector.foo.bar.permission.events.InternalPermissionEvent;
+import energy.eddie.regionconnector.foo.bar.permission.events.LatestMeterReadingEvent;
+import energy.eddie.regionconnector.foo.bar.streams.IdentifiableValidatedHistoricalData;
+import energy.eddie.regionconnector.foo.bar.streams.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.springframework.stereotype.Service;
+
+import java.time.ZonedDateTime;
 
 @Service
 public class MeterReadingUpdateService {
@@ -1084,8 +1298,9 @@ public class MeterReadingUpdateService {
   }
 
   public void handleMeterReading(IdentifiableValidatedHistoricalData data) {
-    ZonedDateTime latestReading = // TODO: get latest reading date time from data.payload()
-            outbox.commit(new LatestMeterReadingEvent(data.permissionRequest().permissionId(), latestReading));
+    // TODO: get latest reading date time from data.payload()
+    ZonedDateTime latestReading = ZonedDateTime.now();
+    outbox.commit(new LatestMeterReadingEvent(data.permissionRequest().permissionId(), latestReading));
   }
 }
 ```
@@ -1096,12 +1311,18 @@ Internal events should not change the `PermissionProcessStatus` of a permission 
 Since we are polling data, we can be sure that the permission request has the `ACCEPTED` status.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.permission.events;
+
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import jakarta.persistence.Entity;
+
+import java.time.ZonedDateTime;
 
 @Entity(name = "LatestMeterReadingEvent")
 public class LatestMeterReadingEvent extends PersistablePermissionEvent implements InternalPermissionEvent {
   private final ZonedDateTime latestReading;
 
-  public CreatedEvent(String permissionId, ZonedDateTime latestReading) {
+  public LatestMeterReadingEvent(String permissionId, ZonedDateTime latestReading) {
     super(permissionId, PermissionProcessStatus.ACCEPTED);
     this.latestReading = latestReading;
   }
@@ -1189,6 +1410,18 @@ With the `LatestMeterReadingEvent` is rather simple to check if a permission req
 This event handler simply checks for fulfillment by comparing the latest reading DateTime to the end date of the permission request.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.handlers;
+
+import energy.eddie.regionconnector.foo.bar.permission.events.FulfilledEvent;
+import energy.eddie.regionconnector.foo.bar.permission.events.LatestMeterReadingEvent;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import energy.eddie.regionconnector.shared.utils.DateTimeUtils;
+import org.springframework.stereotype.Component;
+
+import java.time.ZoneOffset;
 
 @Component
 public class LatestMeterReadingEventHandler implements EventHandler<LatestMeterReadingEvent> {
@@ -1203,7 +1436,7 @@ public class LatestMeterReadingEventHandler implements EventHandler<LatestMeterR
   }
 
   public void accept(LatestMeterReadingEvent event) {
-    var pr = repo.getbyPermissionId(event.permissionId());
+    var pr = repo.getByPermissionId(event.permissionId());
     if (DateTimeUtils.endOfDay(pr.end(), ZoneOffset.UTC).isAfter(event.latestReading())) {
       return;
     }
@@ -1221,6 +1454,14 @@ The implementation subscribes to the `ValidatedHistoricalDataStream` and convert
 If the API responses are in JSON the default implementation [`JsonRawDataProvider`](./shared-functionality.md#jsonrawdataprovider) for JSON values can be used instead.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.providers;
+
+import energy.eddie.regionconnector.foo.bar.streams.IdentifiableValidatedHistoricalData;
+import energy.eddie.regionconnector.foo.bar.streams.ValidatedHistoricalDataStream;
+import energy.eddie.api.agnostic.MessageStream;
+import energy.eddie.cim.agnostic.RawDataMessage;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 @Component
 public class FooBarRawDataProvider {
@@ -1237,8 +1478,8 @@ public class FooBarRawDataProvider {
   }
 
   private RawDataMessage toRawDataMessage(IdentifiableValidatedHistoricalData identifiableData) {
-    String rawString = // TODO: serialize identifiableData.payload() to a String
-    return new RawDataMessage(identifiableData.permissionRequest(), rawString);
+    // TODO: serialize identifiableData.payload() to a String
+    return new RawDataMessage(identifiableData.permissionRequest(), "");
   }
 }
 ```
@@ -1274,6 +1515,15 @@ Since the mapping of the data to a CIM document depends on the data given, that 
 There are some [helpers](./shared-functionality.md#cim-utilities-and-helper-classes) for the mapping available.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.providers;
+
+import energy.eddie.regionconnector.foo.bar.streams.IdentifiableValidatedHistoricalData;
+import energy.eddie.regionconnector.foo.bar.streams.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.shared.messages.MessageStream;
+import energy.eddie.cim.v0_82.vhd.*;
+import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 @Component
 public class FooBarValidatedHistoricalDataEnvelopeProvider {
@@ -1285,13 +1535,13 @@ public class FooBarValidatedHistoricalDataEnvelopeProvider {
   }
 
   @MessageStream(ValidatedHistoricalDataEnvelope.class)
-  public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
+  public Flux<ValidatedHistoricalDataEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
     return data;
   }
 
   private ValidatedHistoricalDataEnvelope toValidatedHistoricalDataMarketDocument(IdentifiableValidatedHistoricalData message) {
-    VHDEnvelope vhdDocument = // TODO: Convert message to validated historical data market document
-    return new VhdEnvelopeWrapper(vhdDocument, message.permissionRequest()).wrap();
+    ValidatedHistoricalDataMarketDocumentComplexType vhdDocument = // TODO: Convert message to validated historical data market document
+    return new VhdEnvelope(vhdDocument, message.permissionRequest()).wrap();
   }
 }
 ```
@@ -1334,7 +1584,7 @@ public CommonFutureDataService<FooPermissionRequest> commonFutureDataService(
         PollingService pollingService,
         BarPermissionRequestRepository repository,
         RegionConnectorMetadata metadata,
-        TaskSchedular taskSchedular,
+        TaskScheduler taskSchedular,
         DataNeedCalculationService calculationService
 ) {
   return new CommonFutureDataService<>(
@@ -1419,7 +1669,7 @@ The region connector is now ready to poll data from the MDA for permission reque
 
 Requesting accounting point data is almost the same as [requesting validated historical data](#request-validated-historical-data).
 Therefore, this section does not contain any code examples.
-To request accounting point data include the `AcountingPointDataNeed` in the list of supported data needs in your metadata implementation.
+To request accounting point data include the `AccountingPointDataNeed` in the list of supported data needs in your metadata implementation.
 When you get a permission request for accounting point data, don't request validated historical data from the MDA, but accounting point data.
 Emit the data via the [`RawDataProvider`](#emitting-validated-historical-data-via-raw-data-messages) and via a custom Spring bean annotated with the [`MessageStream` annotation](./api.md#message-streams).
 
@@ -1485,20 +1735,31 @@ We already implemented the interface for terminations, but a TODO comment was le
 > This is subject to change.
 
 ```java
+package energy.eddie.regionconnector.foo.bar;
+
+import energy.eddie.api.v0.RegionConnector;
+import energy.eddie.api.v0.RegionConnectorMetadata;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.regionconnector.foo.bar.permission.events.TerminatedEvent;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.springframework.stereotype.Component;
 
 @Component
 public class FooBarRegionConnector implements RegionConnector {
+  private final RegionConnectorMetadata metadata;
   private final Outbox outbox;
   private final FooBarPermissionRequestRepository repo;
 
-  public FooBarRegionConnector(Outbox outbox, FooBarPermissionRequestRepository repo) {
+  public FooBarRegionConnector(RegionConnectorMetadata metadata, Outbox outbox, FooBarPermissionRequestRepository repo) {
+    this.metadata = metadata;
     this.outbox = outbox;
     this.repo = repo;
   }
 
   @Override
   public RegionConnectorMetadata getMetadata() {
-    return FooBarRegionConnectorMetadata.getInstance();
+    return metadata;
   }
 
   @Override
@@ -1622,11 +1883,20 @@ Therefore, it is better to save any credentials in its own database table that a
 > Don't store credentials in the [permission event table](./internal-architecture.md#event-store).
 
 ```java
+package energy.eddie.regionconnector.foo.bar.handlers;
+
+import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.regionconnector.foo.bar.persistence.FooBarPermissionRequestRepository;
+import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
+import energy.eddie.regionconnector.shared.event.sourcing.EventHandler;
+import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
+import org.springframework.stereotype.Component;
 
 @Component
 public class PermissionRequestFinishedHandler implements EventHandler<PermissionEvent> {
 
-  public RequiresExternalTerminationHandler(
+  public PermissionRequestFinishedHandler(
           Outbox outbox,
           ApiClient api,
           FooBarPermissionRequestRepository repo,
@@ -1769,11 +2039,15 @@ public class FooBarSpringConfig {
 ```
 
 ```java
+package energy.eddie.regionconnector.foo.bar.permission.events;
+
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import jakarta.persistence.Entity;
 
 @Entity(name = "SimpleEvent")
 public class SimpleEvent extends PersistablePermissionEvent {
 
-  public CreatedEvent(String permissionId, PermissionProcessStatus status) {
+  public SimpleEvent(String permissionId, PermissionProcessStatus status) {
     super(permissionId, status);
   }
 
@@ -1828,14 +2102,19 @@ Last, the region connector should provide at least one health indicator, that in
 Here is a simple example that assumes that the API provides a health endpoint.
 
 ```java
+package energy.eddie.regionconnector.foo.bar.health;
+
+import energy.eddie.regionconnector.foo.bar.ApiClient;
+import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.actuate.health.HealthIndicator;
+import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 public class FooBarHealthIndicator implements HealthIndicator {
   private final ApiClient api;
 
-  public GreenButtonApiHealthIndicator(
-          ApiClient api
-  ) {
+  public FooBarHealthIndicator(ApiClient api) {
     this.api = api;
   }
 
@@ -1871,6 +2150,6 @@ If any errors in this document are found, please let us know or [edit the docume
 - :white_check_mark: Allow termination of permission requests
   - :white_check_mark: Remove credentials if possible
   - :white_check_mark: Terminate on the permission administrators side if possible
-- :white_check_mark: Allow retransmission of validated historical dat for a specific permission request
+- :white_check_mark: Allow retransmission of validated historical data for a specific permission request
 - :white_check_mark: Time out stale permission requests
 - :white_check_mark: Implement health indicators for external APIs and services
