@@ -3,8 +3,12 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
 
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.EnergyDirection;
 import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactoryTest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
@@ -18,6 +22,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
@@ -74,5 +79,60 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                 () -> assertEquals("CM_REQ_ONL_01.40", res.getMessageType().getSchemaSet().getValue()),
                 () -> assertEquals("01.40", res.getMessageType().getVersion().getValue())
         );
+    }
+
+    @Test
+    void forECRequest_returnsECRequestType() {
+        // Given
+        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
+                                          new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
+                                          "cmReqId",
+                                          "messageId",
+                                          AllowedGranularity.PT15M,
+                                          AllowedTransmissionCycle.D,
+                                          new AtConfiguration("ep-id", "ecId", "ecId"),
+                                          ZonedDateTime.now(ZoneOffset.UTC),
+                                          new CESUJoinRequestDataNeed(1,
+                                                                      Granularity.PT15M,
+                                                                      Granularity.PT15M,
+                                                                      EnergyDirection.CONSUMPTION));
+
+        // When
+        var res = factory.createOutboundMessage(ccmoRequest);
+
+        // Then
+        assertThat(res.getOutboundMetaData())
+                .satisfies(metaData -> {
+                    assertEquals(MessageCodes.EcRequest.SCHEMA, metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.EcRequest.CODE, metaData.getMessageType().getName().getValue());
+                    assertEquals(MessageCodes.EcRequest.VERSION, metaData.getMessageType().getVersion().getValue());
+                });
+    }
+
+    @Test
+    void forCCMORequest_returnsCCMORequestType() {
+        // Given
+        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
+                                          new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
+                                          "cmReqId",
+                                          "messageId",
+                                          AllowedGranularity.PT15M,
+                                          AllowedTransmissionCycle.D,
+                                          new AtConfiguration("ep-id", "ecId", "ecId"),
+                                          ZonedDateTime.now(ZoneOffset.UTC),
+                                          new AccountingPointDataNeed());
+
+        // When
+        var res = factory.createOutboundMessage(ccmoRequest);
+
+        // Then
+        assertThat(res.getOutboundMetaData())
+                .satisfies(metaData -> {
+                    assertEquals(MessageCodes.Request.SCHEMA, metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.Request.CODE, metaData.getMessageType().getName().getValue());
+                    assertEquals(MessageCodes.Request.VERSION, metaData.getMessageType().getVersion().getValue());
+                });
     }
 }

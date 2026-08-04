@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30;
@@ -8,6 +8,7 @@ import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest.CMRequestOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
+import energy.eddie.regionconnector.at.eda.requests.RequestDataType;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 
@@ -26,10 +27,16 @@ public class CMRequest01p30OutboundMessageFactory implements CMRequestOutboundMe
      * @see <a href="https://www.ebutilities.at/schemas/298">ebutilities</a>
      */
     public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 4, 13);
-    private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
+    private static final MessageType CCMO_MESSAGE_TYPE = new MessageType.MessageTypeBuilder()
             .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA))
             .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
+            .setMimeType(new MimeType("text/xml"))
+            .build();
+    private static final MessageType EC_MESSAGE_TYPE = new MessageType.MessageTypeBuilder()
+            .setSchemaSet(new SchemaSet(MessageCodes.EcRequest.SCHEMA))
+            .setVersion(new MessageTypeVersion(MessageCodes.EcRequest.VERSION))
+            .setName(new MessageTypeName(MessageCodes.EcRequest.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
 
@@ -58,7 +65,7 @@ public class CMRequest01p30OutboundMessageFactory implements CMRequestOutboundMe
                 .newBuilder()
                 .setSenderId(new SenderId(ccmoRequest.eligiblePartyId()))
                 .setReceiverId(new ReceiverId(ccmoRequest.dsoId()))
-                .setMessageType(MESSAGETYPE)
+                .setMessageType(ccmoRequest.requestDataType() == RequestDataType.ENERGY_COMMUNITY_REGISTRATION ? EC_MESSAGE_TYPE : CCMO_MESSAGE_TYPE)
                 .build();
     }
 
