@@ -5,11 +5,13 @@ package energy.eddie.cim.agnostic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Information about the data source such as the country code, the region connector id, the metered data administrator id and the permission administrator id.
  */
+@JsonDeserialize(as = SimpleDataSourceInformation.class)
 @JsonSerialize(as = DataSourceInformation.class)
 @JsonPropertyOrder(alphabetic = true)
 public interface DataSourceInformation {
