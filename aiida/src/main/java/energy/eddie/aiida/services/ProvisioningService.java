@@ -5,7 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -90,7 +90,7 @@ public class ProvisioningService {
      * @throws InvalidDataSourceTypeException If the permission is not associated with an inbound data source.
      */
     @Transactional
-    public ProvisioningConnectionDto changeProvisioningType(
+    public MqttProvisioningConnectionDto changeProvisioningType(
             UUID permissionId,
             ProvisioningTypePatchDto patch
     ) throws PermissionNotFoundException, InvalidDataSourceTypeException {
@@ -102,7 +102,7 @@ public class ProvisioningService {
             case REST_API_TOKEN, REST_BEARER -> {
                 stopPublisher(dataSource.id());
                 dataSource.changeInboundProvisioningType(patch.type());
-                yield ProvisioningConnectionDto.empty();
+                yield MqttProvisioningConnectionDto.empty();
             }
         };
     }
@@ -139,7 +139,7 @@ public class ProvisioningService {
         mqttPublishers.clear();
     }
 
-    private ProvisioningConnectionDto activateMqttClient(
+    private MqttProvisioningConnectionDto activateMqttClient(
             InboundDataSource dataSource,
             ProvisioningTypePatchDto patch
     ) {
@@ -154,7 +154,7 @@ public class ProvisioningService {
         return response;
     }
 
-    private ProvisioningConnectionDto activateMqttServer(InboundDataSource dataSource) {
+    private MqttProvisioningConnectionDto activateMqttServer(InboundDataSource dataSource) {
         var plaintextPassword = SecretGenerator.generate();
 
         var response = dataSource.establishServerModeConnection(

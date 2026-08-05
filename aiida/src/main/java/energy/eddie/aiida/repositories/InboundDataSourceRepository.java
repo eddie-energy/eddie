@@ -22,9 +22,9 @@ public interface InboundDataSourceRepository extends JpaRepository<InboundDataSo
      * @return Matching inbound data sources with their provisioning configuration loaded.
      */
     @EntityGraph(attributePaths = {
-            "inboundProvisioningConfig.connection",
-            "inboundProvisioningConfig.connection.user",
-            "inboundProvisioningConfig.accessControlEntry"
+            "inboundProvisioningMqttConfig.connection",
+            "inboundProvisioningMqttConfig.connection.user",
+            "inboundProvisioningMqttConfig.accessControlEntry"
     })
     List<InboundDataSource> findByProvisioningTypeIn(
             Set<InboundProvisioningType> provisioningTypes

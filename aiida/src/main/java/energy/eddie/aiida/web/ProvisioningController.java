@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -56,12 +56,12 @@ public class ProvisioningController {
      */
     @Operation(summary = "Patch provisioning type for permission and activate given inbound retrieval method.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ProvisioningConnectionDto.class))}),
+            @ApiResponse(responseCode = "200", description = "Successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = MqttProvisioningConnectionDto.class))}),
             @ApiResponse(responseCode = "400", description = "Bad request", content = @Content),
             @ApiResponse(responseCode = "404", description = "Entity not found", content = @Content),
     })
     @PatchMapping(value = "/permission/{id}/patchInboundProvisioning")
-    public ResponseEntity<ProvisioningConnectionDto> patchInboundProvisioningType(
+    public ResponseEntity<MqttProvisioningConnectionDto> patchInboundProvisioningType(
             @PathVariable("id") UUID permissionId,
             @RequestBody ProvisioningTypePatchDto provisioningTypePatchDto
     ) throws PermissionNotFoundException, InvalidDataSourceTypeException {

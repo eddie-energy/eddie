@@ -46,7 +46,7 @@ export type AiidaDataSource = {
   accessCode?: string
   schemas?: string[]
   provisioningType?: InboundProvisioningType
-  provisioningConfig?: InboundProvisioningConfig
+  mqttProvisioningConfig?: InboundProvisioningMqttConfig
   //DatasourceType = MQTT
   internalHost?: string
   externalHost?: string
@@ -123,9 +123,9 @@ export type MqttConnection = {
   username: string
 }
 
-export type InboundProvisioningConfig = {
-  connection?: MqttConnection
-  topic?: string
+export type InboundProvisioningMqttConfig = {
+  connection: MqttConnection
+  topic: string
 }
 
 export type ProvisioningTypePatchDto = {

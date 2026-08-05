@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -48,7 +48,7 @@ class ProvisioningControllerTest {
 
     @Test
     void patchInboundProvisioningType_withMqttClient_returnsConnectionDto() throws Exception {
-        var response = new ProvisioningConnectionDto(
+        var response = new MqttProvisioningConnectionDto(
                 "mqtt://broker.example.test",
                 "mqtt-user",
                 "mqtt-password",

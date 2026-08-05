@@ -24,6 +24,7 @@ Once a permission has been added, it is displayed in the "Inbound Permissions" t
 
 The inbound permission also includes an API key that allows access to inbound data through the REST interface.
 In the information dialog, ready-to-use `curl` command examples can be copied.
+Additionally, MQTT credentials are displayed which may be used to subscribe to a broker's topic.
 
 ## EP: Publishing Inbound Data
 
@@ -35,27 +36,37 @@ The following schemas are currently supported for inbound data:
 - `MIN_MAX_ENVELOPE_CIM_V1_12` (min-max envelope in CIM v1.12 format - see [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/min-max-envelope.html))
 
 EDDIE subscribes to these topics and forwards the data to the MQTT broker of the EDDIE instance, where AIIDA subscribes to this topic and receives any data published to it.
-The data is stored in the `inbound_record` database table and can be accessed via a secured REST interface.
+The data is stored in the `inbound_record` database table and can either be accessed via a secured REST interface or via subscribing to a dedicated MQTT topic.
 
 ## Accessing Inbound Data
 
-The REST interface is secured with an **API key** stored in the `data_source` table and shown in the UI. 
-There are two ways to use this key to retrieve the latest inbound record:
+The provisioning mode defines how the latest data received for an inbound permission is made available.
+It can be changed from the permission details by selecting **Configure Provisioning**.
+
+![Configure provisioning for an inbound permission](../../../../images/data-sources/mqtt/inbound/img-inbound-provisioning-configuration.png)
+
+AIIDA supports the following provisioning modes:
 
 > - `{URL_TO_AIIDA}` is the base URL of the AIIDA instance (e.g. `http://192.168.0.12`).
 > - `{PERMISSION_ID}` is the ID of the inbound permission.
 > - `{API_KEY}` is the API key stored in the `data_source` table and shown in the UI.
 
-1. **Via Query Parameter**
+1. **REST API Token:** Retrieves the latest record through the REST interface with the API key supplied as a query parameter.
    ```bash
    curl {URL_TO_AIIDA}/inbound/latest/{PERMISSION_ID}?apiKey={API_KEY}
    ```
-2. **Via Header**
+2. **REST Bearer:** Retrieves the latest record through the REST interface with the API key supplied in the `X-API-Key` header.
     ```bash
     curl {URL_TO_AIIDA}/inbound/latest/{PERMISSION_ID} \
       --header "X-API-Key: {API_KEY}"
     ```
-   
+3. **MQTT Client:** Connects AIIDA to an external MQTT broker using the host, username, password, and topic entered in the configuration dialog. AIIDA publishes inbound records to that topic.
+4. **MQTT Server:** Uses the MQTT broker managed by AIIDA. AIIDA generates the host, username, password, and topic required to subscribe to inbound records. Save these credentials when they are shown, as the password cannot be displayed again.
+
+The active provisioning mode and, for MQTT provisioning, its connection details are shown in the permission details. The MQTT password is intentionally omitted.
+
+![Provisioning information in the inbound permission details](../../../../images/data-sources/mqtt/inbound/img-inbound-provisioning-details.png)
+
 ### Example Response
 
 ```json

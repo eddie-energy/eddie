@@ -170,7 +170,6 @@
       "permissionId": "ID d’autorisation",
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "inboundTooltip": "Il existe deux façons d’utiliser cette clé API pour récupérer les dernières données entrantes :",
-      "provisioningType": "Type de provisionnement",
       "permissionID": "ID d’autorisation",
       "openDetails": "Ouvrir les détails de l’autorisation"
     },

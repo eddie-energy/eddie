@@ -157,6 +157,30 @@ class ProvisioningServiceIntegrationTest {
     }
 
     @Test
+    void loadingMqttProvisioningDataSourcesForStartup_eagerlyLoadsMqttConfig() throws Exception {
+        var permissionId = createInboundPermission();
+        var mqttClient = mock(MqttAsyncClient.class);
+
+        try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
+            provisioningService.changeProvisioningType(
+                    permissionId,
+                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_CLIENT)
+            );
+            entityManager.flush();
+            entityManager.clear();
+
+            var dataSource = inboundDataSourceRepository
+                    .findByProvisioningTypeIn(Set.of(InboundProvisioningType.MQTT_CLIENT))
+                    .getFirst();
+            entityManager.clear();
+
+            assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(CLIENT_HOST);
+            assertThat(dataSource.provisioningConnection().username()).isEqualTo(CLIENT_USERNAME);
+            assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo(CLIENT_TOPIC);
+        }
+    }
+
+    @Test
     void mqttServer_persistsGeneratedCredentialsAndBrokerConfiguration() throws Exception {
         var permissionId = createInboundPermission();
         var dataSourceId = dataSourceId(permissionId);
@@ -177,7 +201,7 @@ class ProvisioningServiceIntegrationTest {
             var responseUsername = result.username();
             var responsePassword = result.password();
             assertThat(result.host()).isEqualTo(SERVER_EXTERNAL_HOST);
-            assertThat(result.topic()).isEqualTo("aiida/" + dataSourceId + "/inboundData");
+            assertThat(result.topic()).isEqualTo("aiida/" + responseUsername + "/inboundData");
             assertThat(responseUsername).isNotBlank();
             assertThatCode(() -> UUID.fromString(responseUsername)).doesNotThrowAnyException();
             assertThat(responsePassword).isEqualTo(plaintextPasswordCaptor.getValue());
@@ -192,7 +216,7 @@ class ProvisioningServiceIntegrationTest {
             assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(SERVER_INTERNAL_HOST);
             assertThat(dataSource.provisioningConnection().username()).isEqualTo(responseUsername);
             assertThat(dataSource.provisioningConnection().password()).isEqualTo(ENCODED_SERVER_PASSWORD);
-            assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo("aiida/" + dataSourceId + "/inboundData");
+            assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo("aiida/" + responseUsername + "/inboundData");
             assertThat(provisioningExternalHost(dataSourceId)).isEqualTo(SERVER_EXTERNAL_HOST);
             assertThat(provisioningAclUsername(dataSourceId)).isEqualTo(responseUsername);
 
@@ -218,15 +242,20 @@ class ProvisioningServiceIntegrationTest {
             );
             entityManager.flush();
 
-            var connectionId = jdbcTemplate.queryForObject(
-                    "SELECT mqtt_connection_id FROM data_source_mqtt_inbound WHERE id = ?",
+            var provisioningConfigId = jdbcTemplate.queryForObject(
+                    "SELECT mqtt_provisioning_config_id FROM data_source_mqtt_inbound WHERE id = ?",
                     Long.class,
                     dataSourceId
             );
-            var accessControlEntryId = jdbcTemplate.queryForObject(
-                    "SELECT mqtt_acl_id FROM data_source_mqtt_inbound WHERE id = ?",
+            var connectionId = jdbcTemplate.queryForObject(
+                    "SELECT mqtt_connection_id FROM data_source_mqtt_inbound_provisioning WHERE id = ?",
                     Long.class,
-                    dataSourceId
+                    provisioningConfigId
+            );
+            var accessControlEntryId = jdbcTemplate.queryForObject(
+                    "SELECT mqtt_acl_id FROM data_source_mqtt_inbound_provisioning WHERE id = ?",
+                    Long.class,
+                    provisioningConfigId
             );
             var mqttUserId = jdbcTemplate.queryForObject(
                     "SELECT mqtt_user_id FROM mqtt_connection WHERE id = ?",
@@ -248,8 +277,8 @@ class ProvisioningServiceIntegrationTest {
 
             var dataSource = inboundDataSourceRepository.findById(dataSourceId).orElseThrow();
             assertThat(dataSource.inboundProvisioningType()).isEqualTo(InboundProvisioningType.REST_API_TOKEN);
-            assertThat(nullableForeignKey("mqtt_connection_id", dataSourceId)).isNull();
-            assertThat(nullableForeignKey("mqtt_acl_id", dataSourceId)).isNull();
+            assertThat(nullableForeignKey("mqtt_provisioning_config_id", dataSourceId)).isNull();
+            assertThat(rowCount("data_source_mqtt_inbound_provisioning", provisioningConfigId)).isZero();
             assertThat(rowCount("mqtt_connection", connectionId)).isZero();
             assertThat(rowCount("data_source_mqtt_acl", accessControlEntryId)).isZero();
             assertThat(rowCount("data_source_mqtt_user", mqttUserId)).isZero();
@@ -356,7 +385,9 @@ class ProvisioningServiceIntegrationTest {
                 """
                         SELECT connection.external_host
                         FROM data_source_mqtt_inbound inbound
-                        JOIN mqtt_connection connection ON connection.id = inbound.mqtt_connection_id
+                        JOIN data_source_mqtt_inbound_provisioning config
+                            ON config.id = inbound.mqtt_provisioning_config_id
+                        JOIN mqtt_connection connection ON connection.id = config.mqtt_connection_id
                         WHERE inbound.id = ?
                         """,
                 String.class,
@@ -369,7 +400,9 @@ class ProvisioningServiceIntegrationTest {
                 """
                         SELECT acl.username
                         FROM data_source_mqtt_inbound inbound
-                        JOIN data_source_mqtt_acl acl ON acl.id = inbound.mqtt_acl_id
+                        JOIN data_source_mqtt_inbound_provisioning config
+                            ON config.id = inbound.mqtt_provisioning_config_id
+                        JOIN data_source_mqtt_acl acl ON acl.id = config.mqtt_acl_id
                         WHERE inbound.id = ?
                         """,
                 String.class,

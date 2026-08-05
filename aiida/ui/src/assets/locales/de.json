@@ -118,7 +118,7 @@
     "hideMqttPassword": "MQTT-Passwort ausblenden",
     "copyMqttPassword": "MQTT-Passwort kopieren",
     "mqttProvisioning": {
-      "title": "Eingehende Bereitstellung",
+      "title": "Bereitstellung konfigurieren",
       "openButton": "Bereitstellung konfigurieren",
       "mode": "Bereitstellungsmodus",
       "modePlaceholder": "Bereitstellungsmodus auswählen",
@@ -170,7 +170,6 @@
       "permissionId": "Berechtigungs-ID",
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "inboundTooltip": "Es gibt zwei Möglichkeiten, diesen API-Schlüssel zu verwenden, um die neuesten eingehenden Daten abzurufen:",
-      "provisioningType": "Bereitstellungstyp",
       "permissionID": "Berechtigungs-ID",
       "openDetails": "Berechtigungsdetails öffnen"
     },

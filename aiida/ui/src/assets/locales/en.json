@@ -118,7 +118,7 @@
     "hideMqttPassword": "Hide MQTT Password",
     "copyMqttPassword": "Copy MQTT Password",
     "mqttProvisioning": {
-      "title": "Inbound Provisioning",
+      "title": "Configure Provisioning",
       "openButton": "Configure Provisioning",
       "mode": "Provisioning Mode",
       "modePlaceholder": "Select Provisioning Mode",
@@ -170,7 +170,6 @@
       "permissionId": "Permission ID",
       "downloadLatestMessageButton": "Download Latest Message",
       "inboundTooltip": "There are two ways to use this API Key to retrieve the latest inbound data:",
-      "provisioningType": "Provisioning Type",
       "permissionID": "Permission ID",
       "openDetails": "Open Permission Details"
     },
