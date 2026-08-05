@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine.steps;
@@ -7,6 +7,7 @@ import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistorical
 import energy.eddie.regionconnector.simulation.engine.steps.runtime.ValidatedHistoricalDataEmissionStep;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -21,7 +22,7 @@ class ValidatedHistoricalDataStepTest {
         var reading = new SimulatedValidatedHistoricalData(
                 "mid",
                 ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Duration.ofMinutes(15),
                 List.of()
         );
         var expected = List.of(new ValidatedHistoricalDataEmissionStep(reading));

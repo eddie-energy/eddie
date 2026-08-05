@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
 import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -53,7 +54,7 @@ class StatusChangeStepConstraintTest {
                 new SimulatedValidatedHistoricalData(
                         "mid",
                         ZonedDateTime.now(ZoneOffset.UTC),
-                        "PT15M",
+                        Duration.ofMinutes(15),
                         List.of()
                 )
         );

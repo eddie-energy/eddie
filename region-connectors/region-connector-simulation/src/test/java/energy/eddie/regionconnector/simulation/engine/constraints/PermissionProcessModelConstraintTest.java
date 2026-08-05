@@ -16,9 +16,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.time.Duration;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -119,8 +121,8 @@ class PermissionProcessModelConstraintTest {
     private static ValidatedHistoricalDataStep getValidatedHistoricalDataStep() {
         return new ValidatedHistoricalDataStep(new SimulatedValidatedHistoricalData(
                 "mid",
-                ZonedDateTime.now(ZoneOffset.UTC),
-                "PT15M",
+                Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
+                Duration.ofMinutes(15),
                 List.of()
         ));
     }

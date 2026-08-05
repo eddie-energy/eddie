@@ -4,8 +4,9 @@
 package energy.eddie.regionconnector.simulation.engine;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
+import energy.eddie.api.agnostic.data.needs.DataNeedNotFoundResult;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.simulation.dtos.Measurement;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistoricalData;
 import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
@@ -28,13 +29,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class SimulationConstraintsTest {
     @Mock
-    private DataNeedsService dataNeedsService;
+    private DataNeedCalculationService dataNeedsService;
 
     @Test
     void testViolatesConstraints_returnsViolations() {
         // Given
-        when(dataNeedsService.findById("dnid")).thenReturn(Optional.empty());
         var ctx = TestSimulationContext.create();
+        when(dataNeedsService.calculate("dnid", ctx.creationDateTime())).thenReturn(new DataNeedNotFoundResult());
         var scenario = new Scenario(
                 "Test Scenario",
                 List.of(
@@ -43,8 +44,8 @@ class SimulationConstraintsTest {
                         ),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
-                                                                     ZonedDateTime.now(ZoneOffset.UTC),
-                                                                     Granularity.PT15M.name(),
+                                                                     Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
+                                                                     Granularity.PT15M.duration(),
                                                                      List.of(
                                                                              new Measurement(10.0,
                                                                                              Measurement.MeasurementType.MEASURED)

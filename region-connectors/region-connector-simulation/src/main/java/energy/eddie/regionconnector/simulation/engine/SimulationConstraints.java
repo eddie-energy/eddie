@@ -3,7 +3,7 @@
 
 package energy.eddie.regionconnector.simulation.engine;
 
-import energy.eddie.dataneeds.services.DataNeedsService;
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.regionconnector.simulation.engine.constraints.*;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintViolation;
 import energy.eddie.regionconnector.simulation.engine.steps.Scenario;
@@ -22,13 +22,14 @@ class SimulationConstraints {
     );
     private final List<ElementConstraint> elementConstraints;
 
-    SimulationConstraints(Scenario scenario, SimulationContext ctx, DataNeedsService dataNeedsService) {
+    SimulationConstraints(Scenario scenario, SimulationContext ctx, DataNeedCalculationService dataNeedsService) {
         this.scenario = scenario;
         this.elementConstraints = List.of(
                 new DataNeedConstraint(dataNeedsService, ctx),
                 new ScenarioConstraint(),
                 new ScenarioNotNestedConstraint(),
-                new StatusChangeStepConstraint()
+                new StatusChangeStepConstraint(),
+                new ValidatedHistoricalDataStepConstraint(ctx)
         );
     }
 

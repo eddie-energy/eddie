@@ -87,7 +87,7 @@ class TerminationFollowingConstraintTest {
                 new SimulatedValidatedHistoricalData(
                         "",
                         ZonedDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC),
-                        "",
+                        Duration.ofMinutes(15),
                         List.of()
                 )
         );

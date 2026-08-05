@@ -4,14 +4,13 @@
 package energy.eddie.regionconnector.simulation.engine;
 
 import energy.eddie.api.agnostic.Granularity;
-import energy.eddie.api.agnostic.data.needs.EnergyType;
+import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
-import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.simulation.dtos.Measurement;
 import energy.eddie.regionconnector.simulation.dtos.ScenarioMetadata;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistoricalData;
@@ -28,6 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDate;
 import java.time.Period;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -36,6 +36,8 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,18 +46,22 @@ class SimulationEngineTest {
             CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "EP-ID"
     );
     @Mock
-    private DataNeedsService dataNeedsService;
+    private DataNeedCalculationService dataNeedsService;
 
     @Test
     void testRun_withValidatedHistoricalData_emitsValidatedHistoricalDataAndPermissionMarketDocuments() throws InterruptedException {
         // Given
-        when(dataNeedsService.findById("dnid"))
-                .thenReturn(Optional.of(new ValidatedHistoricalDataDataNeed(new RelativeDuration(Period.ZERO,
-                                                                                                 Period.ZERO,
-                                                                                                 null),
-                                                                            EnergyType.ELECTRICITY,
-                                                                            Granularity.PT5M,
-                                                                            Granularity.P1Y)));
+        when(dataNeedsService.calculate(eq("dnid"), any()))
+                .thenReturn(new ValidatedHistoricalDataDataNeedResult(
+                        List.of(),
+                        new Timeframe(null, null),
+                        new Timeframe(LocalDate.now(ZoneOffset.UTC), LocalDate.now(ZoneOffset.UTC)),
+                        new ValidatedHistoricalDataDataNeed(new RelativeDuration(Period.ZERO,
+                                                                                 Period.ZERO,
+                                                                                 null),
+                                                            EnergyType.ELECTRICITY,
+                                                            Granularity.PT5M,
+                                                            Granularity.P1Y)));
         var scenario = new Scenario(
                 "Test Scenario",
                 List.of(
@@ -67,8 +73,8 @@ class SimulationEngineTest {
                         new StatusChangeStep(PermissionProcessStatus.ACCEPTED, 0),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
-                                                                     ZonedDateTime.now(ZoneOffset.UTC),
-                                                                     Granularity.PT15M.name(),
+                                                                     Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
+                                                                     Granularity.PT15M.duration(),
                                                                      List.of(
                                                                              new Measurement(10.0,
                                                                                              Measurement.MeasurementType.MEASURED)
@@ -77,7 +83,7 @@ class SimulationEngineTest {
                         new StatusChangeStep(PermissionProcessStatus.FULFILLED, 0)
                 )
         );
-        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
+        var metadata = new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC));
         var streams = new DocumentStreams(cimConfig, new ObjectMapper());
         var engine = new SimulationEngine(streams, dataNeedsService);
 
@@ -104,47 +110,10 @@ class SimulationEngineTest {
                     .verifyComplete();
     }
 
-    void testRun_withValidatedHistoricalData_emitsRawData() {
-        // Given
-        when(dataNeedsService.findById("dnid")).thenReturn(
-                Optional.of(new ValidatedHistoricalDataDataNeed(
-                        new RelativeDuration(Period.ZERO,
-                                             Period.ZERO,
-                                             null),
-                        EnergyType.ELECTRICITY,
-                        Granularity.PT5M,
-                        Granularity.P1Y)));
-        var scenario = new Scenario(
-                "Test Scenario",
-                List.of(new ValidatedHistoricalDataStep(new SimulatedValidatedHistoricalData(
-                                "mid",
-                                ZonedDateTime.now(ZoneOffset.UTC),
-                                Granularity.PT15M.name(),
-                                List.of(
-                                        new Measurement(10.0,
-                                                        Measurement.MeasurementType.MEASURED)
-                                ))
-                        )
-                )
-        );
-        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
-        var streams = new DocumentStreams(cimConfig, new ObjectMapper());
-        var engine = new SimulationEngine(streams, dataNeedsService);
-
-        // When
-        engine.run(scenario, metadata);
-
-        // Then
-        StepVerifier.create(streams.getRawDataMessageStream())
-                    .expectNextCount(1)
-                    .then(streams::close)
-                    .verifyComplete();
-    }
-
     @Test
     void testRun_invalidScenario_returnsViolations() {
         // Given
-        when(dataNeedsService.findById("dnid")).thenReturn(Optional.empty());
+        when(dataNeedsService.calculate(eq("dnid"), any())).thenReturn(new DataNeedNotFoundResult());
         var scenario = new Scenario(
                 "Test Scenario",
                 List.of(
@@ -154,8 +123,8 @@ class SimulationEngineTest {
                         ),
                         new ValidatedHistoricalDataStep(
                                 new SimulatedValidatedHistoricalData("mid",
-                                                                     ZonedDateTime.now(ZoneOffset.UTC),
-                                                                     Granularity.PT15M.name(),
+                                                                     Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
+                                                                     Granularity.PT15M.duration(),
                                                                      List.of(
                                                                              new Measurement(10.0,
                                                                                              Measurement.MeasurementType.MEASURED)
@@ -163,7 +132,7 @@ class SimulationEngineTest {
                         )
                 )
         );
-        var metadata = new ScenarioMetadata("cid", "pid", "dnid");
+        var metadata = new ScenarioMetadata("cid", "pid", "dnid", ZonedDateTime.now(ZoneOffset.UTC));
         var streams = new DocumentStreams(cimConfig, new ObjectMapper());
         var engine = new SimulationEngine(streams, dataNeedsService);
 

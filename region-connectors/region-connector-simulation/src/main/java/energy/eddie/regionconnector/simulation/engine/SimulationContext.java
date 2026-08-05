@@ -1,9 +1,13 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.simulation.engine;
 
+import energy.eddie.api.agnostic.data.needs.DataNeedCalculationResult;
+import energy.eddie.dataneeds.needs.DataNeed;
 import energy.eddie.regionconnector.simulation.providers.DocumentStreams;
+
+import java.time.ZonedDateTime;
 
 /**
  * The simulation context contains information, which is not available during the {@link energy.eddie.regionconnector.simulation.engine.steps.Model} creation, but during the runtime phase.
@@ -17,5 +21,16 @@ import energy.eddie.regionconnector.simulation.providers.DocumentStreams;
 public record SimulationContext(DocumentStreams documentStreams,
                                 String permissionId,
                                 String connectionId,
-                                String dataNeedId) {
+                                String dataNeedId,
+                                ZonedDateTime creationDateTime,
+                                DataNeedCalculationResult calculationResult) {
+
+
+    public DataNeed dataNeed() {
+        return switch (calculationResult) {
+            case DataNeedCalculationResult.DataNeedCalculationSuccessResult<?> r -> r.dataNeed();
+            default -> throw new IllegalStateException(
+                    "Data need calculation result is not of type DataNeedCalculationSuccessResult");
+        };
+    }
 }

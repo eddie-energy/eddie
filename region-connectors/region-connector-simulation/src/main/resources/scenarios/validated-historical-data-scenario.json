@@ -25,10 +25,389 @@
     {
       "type": "ValidatedHistoricalDataStep",
       "meterReading": {
-        "startDateTime": "2024-12-30T09:49:05.458Z",
         "meteringPoint": "mid",
         "meteringInterval": "PT15M",
         "measurements": [
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
+          {
+            "value": 10.0,
+            "measurementType": "MEASURED"
+          },
           {
             "value": 10.0,
             "measurementType": "MEASURED"
