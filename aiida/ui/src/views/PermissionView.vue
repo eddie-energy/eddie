@@ -6,14 +6,14 @@ import PermissionList from '@/components/PermissionList.vue'
 import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import AddPermissionModal from '@/components/Modals/AddPermissionModal.vue'
-import EnterInboundProvisioningMqttDataModal from '@/components/Modals/EnterInboundProvisioningMqttDataModal.vue'
+import UpdateMqttProvisioningConnectionModal from '@/components/Modals/UpdateMqttProvisioningConnectionModal.vue'
 import type { AiidaPermission } from '@/types'
 import { ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const permissionModalRef = ref<HTMLDialogElement>()
 const inboundProvisioningModal = useTemplateRef<
-  InstanceType<typeof EnterInboundProvisioningMqttDataModal>
+  InstanceType<typeof UpdateMqttProvisioningConnectionModal>
 >('inboundProvisioningModal')
 const { t } = useI18n()
 const showAddPermissionModal = () => {
@@ -35,7 +35,7 @@ const configureInboundProvisioning = (permission: AiidaPermission) => {
     </header>
     <PermissionList @configure-inbound-provisioning="configureInboundProvisioning" />
     <AddPermissionModal ref="permissionModalRef" />
-    <EnterInboundProvisioningMqttDataModal ref="inboundProvisioningModal" />
+    <UpdateMqttProvisioningConnectionModal ref="inboundProvisioningModal" />
   </main>
 </template>
 
