@@ -73,11 +73,15 @@ public class ProvisioningMqttPublisher implements MqttCallback, AutoCloseable {
      */
     public void publish(InboundRecord inboundRecord) {
         var message = new MqttMessage(inboundRecord.payload().getBytes(StandardCharsets.UTF_8));
-        try {
-            if (client == null || !client.isConnected()) {
-                return;
-            }
 
+        if (client == null || !client.isConnected()) {
+            LOGGER.debug("Cannot publish message to {} onto topic {} since the client is not connected.",
+                         mqttConnection.internalHost(),
+                         topic);
+            return;
+        }
+
+        try {
             client.publish(topic, message);
         } catch (MqttException ex) {
             LOGGER.error("Error while publishing message to {} onto topic {}",
@@ -104,15 +108,6 @@ public class ProvisioningMqttPublisher implements MqttCallback, AutoCloseable {
                 LOGGER.warn("Error while disconnecting or closing MQTT client {}", clientId, ex);
             }
         }
-    }
-
-    /**
-     * Indicates whether the publisher currently has an established MQTT connection.
-     *
-     * @return {@code true} when an MQTT client exists and is connected; otherwise {@code false}.
-     */
-    public boolean isConnected() {
-        return client != null && client.isConnected();
     }
 
     /**

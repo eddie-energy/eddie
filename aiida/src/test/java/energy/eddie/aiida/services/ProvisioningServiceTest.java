@@ -5,7 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
-import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -77,7 +77,7 @@ class ProvisioningServiceTest {
         var dataSource = inboundDataSource();
         var connection = mock(MqttConnection.class);
         var patch = patch(InboundProvisioningType.MQTT_CLIENT);
-        var expected = new ProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC);
+        var expected = new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC);
 
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC)).thenReturn(expected);
         when(dataSource.provisioningConnection()).thenReturn(connection);
@@ -101,7 +101,7 @@ class ProvisioningServiceTest {
         var dataSource = inboundDataSource();
         var connection = mock(MqttConnection.class);
         var patch = patch(InboundProvisioningType.MQTT_SERVER);
-        var expected = new ProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC);
+        var expected = new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC);
         var generatedPassword = ArgumentCaptor.forClass(String.class);
 
         when(dataSource.establishServerModeConnection(eq(mqttConfiguration), eq(passwordEncoder), anyString()))
@@ -153,7 +153,7 @@ class ProvisioningServiceTest {
         var connection = mock(MqttConnection.class);
 
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC))
-                .thenReturn(new ProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
+                .thenReturn(new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
         when(dataSource.provisioningConnection()).thenReturn(connection);
         when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
 
@@ -172,7 +172,7 @@ class ProvisioningServiceTest {
             throws Exception {
         var dataSource = inboundDataSource();
         var connection = mock(MqttConnection.class);
-        var expected = new ProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC);
+        var expected = new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC);
 
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC)).thenReturn(expected);
         when(dataSource.provisioningConnection()).thenReturn(connection);
@@ -184,7 +184,7 @@ class ProvisioningServiceTest {
 
             var result = service.changeProvisioningType(PERMISSION_ID, patch(InboundProvisioningType.REST_BEARER));
 
-            assertThat(result).isEqualTo(ProvisioningConnectionDto.empty());
+            assertThat(result).isEqualTo(MqttProvisioningConnectionDto.empty());
             verify(dataSource).changeInboundProvisioningType(InboundProvisioningType.REST_BEARER);
             verify(publishers.constructed().getFirst()).close();
         }
@@ -198,7 +198,7 @@ class ProvisioningServiceTest {
         var records = Sinks.many().unicast().<InboundRecord>onBackpressureBuffer();
 
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC))
-                .thenReturn(new ProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
+                .thenReturn(new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
         when(dataSource.provisioningConnection()).thenReturn(connection);
         when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
         when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.MQTT_CLIENT);

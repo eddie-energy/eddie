@@ -13,7 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param password MQTT password used for publishing.
  * @param topic    Topic to which inbound records are published.
  */
-public record ProvisioningConnectionDto(
+public record MqttProvisioningConnectionDto(
         @JsonProperty("host")
         String host,
 
@@ -32,7 +32,7 @@ public record ProvisioningConnectionDto(
      *
      * @return A provisioning connection DTO whose fields are empty strings.
      */
-    public static ProvisioningConnectionDto empty() {
-        return new ProvisioningConnectionDto("", "", "", "");
+    public static MqttProvisioningConnectionDto empty() {
+        return new MqttProvisioningConnectionDto("", "", "", "");
     }
 }

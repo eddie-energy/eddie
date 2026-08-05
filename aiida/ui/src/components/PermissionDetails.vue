@@ -127,11 +127,13 @@ const isInboundMqttProvisioning = computed(
       permission.dataSource?.provisioningType === 'MQTT_CLIENT'),
 )
 
-const inboundMqttConnection = computed(() => permission.dataSource?.provisioningConfig?.connection)
+const inboundMqttConnection = computed(
+  () => permission.dataSource?.mqttProvisioningConfig?.connection,
+)
 const inboundMqttServerUri = computed(
   () => inboundMqttConnection.value?.externalHost ?? inboundMqttConnection.value?.internalHost,
 )
-const inboundMqttTopic = computed(() => permission.dataSource?.provisioningConfig?.topic)
+const inboundMqttTopic = computed(() => permission.dataSource?.mqttProvisioningConfig?.topic)
 
 onClickOutside(target, () => (showToolTip.value = false))
 </script>
@@ -204,7 +206,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         </dd>
       </div>
       <div class="permission-field">
-        <dt>{{ t('permissions.dropdown.provisioningType') }}</dt>
+        <dt>{{ t('permissions.mqttProvisioning.mode') }}</dt>
         <dd>{{ permission.dataSource?.provisioningType }}</dd>
       </div>
       <template v-if="isInboundMqttProvisioning && inboundMqttConnection">
@@ -359,18 +361,21 @@ onClickOutside(target, () => (showToolTip.value = false))
         <dd>PLACEHOLDER</dd>
       </div>
       <div v-if="status === 'Active'" class="permission-actions">
-        <div class="actions-row actions-row--end">
-          <MessageDownloadButton :data="permission" class="action-btn">
-            <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
-          </MessageDownloadButton>
-        </div>
-        <div v-if="permission.dataNeed.type === 'inbound-aiida'" class="actions-row">
-          <Button button-style="error" class="action-btn" @click="handleRevoke">
-            <RevokeIcon /> {{ t('revokeButton') }}
-          </Button>
+        <div
+          v-if="permission.dataNeed.type === 'inbound-aiida'"
+          class="actions-row actions-row--end"
+        >
           <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
             <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
           </Button>
+        </div>
+        <div class="actions-row">
+          <Button button-style="error" class="action-btn" @click="handleRevoke">
+            <RevokeIcon /> {{ t('revokeButton') }}
+          </Button>
+          <MessageDownloadButton :data="permission" class="action-btn">
+            <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
+          </MessageDownloadButton>
         </div>
       </div>
       <Button

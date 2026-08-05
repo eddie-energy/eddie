@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
-import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -34,10 +34,6 @@ import static energy.eddie.aiida.services.secrets.KeyStoreSecretsService.alias;
 @DiscriminatorValue(DataSourceType.Identifiers.INBOUND)
 public class InboundDataSource extends MqttDataSource {
     protected static final String TABLE_NAME = "data_source_mqtt_inbound";
-
-    @Transient
-    @JsonIgnore
-    protected String serverModeTopic;
 
     @Column(name = "access_code", table = TABLE_NAME)
     @Schema(description = "The access code to retrieve the inbound data.")
@@ -66,9 +62,11 @@ public class InboundDataSource extends MqttDataSource {
     @JsonIgnore
     private MqttStreamingConfig config;
 
-    @Embedded
-    @JsonProperty("provisioningConfig")
-    private InboundProvisioningConfig inboundProvisioningConfig;
+    @Nullable
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "mqtt_provisioning_config_id", table = TABLE_NAME, referencedColumnName = "id")
+    @JsonProperty("mqttProvisioningConfig")
+    private InboundProvisioningMqttConfig inboundProvisioningMqttConfig;
 
     @SuppressWarnings("NullAway")
     protected InboundDataSource() {}
@@ -83,19 +81,26 @@ public class InboundDataSource extends MqttDataSource {
      * @return The connection details stored for server-mode provisioning.
      */
     @Transactional
-    public ProvisioningConnectionDto establishServerModeConnection(
+    public MqttProvisioningConnectionDto establishServerModeConnection(
             MqttConfiguration mqttConfig,
             BCryptPasswordEncoder encoder,
             String plaintextPassword
     ) {
-        changeInboundProvisioningType(InboundProvisioningType.MQTT_SERVER);
         var username = UUID.randomUUID().toString();
         var password = Objects.requireNonNull(encoder.encode(plaintextPassword));
-
-        return inboundProvisioningConfig.establishServerModeConnection(
-                mqttConfig,
+        var serverModeTopic = TOPIC_PREFIX + username + "/inboundData";
+        this.provisioningType = InboundProvisioningType.MQTT_SERVER;
+        this.inboundProvisioningMqttConfig = InboundProvisioningMqttConfig.create(
+                mqttConfig.internalHost(),
+                mqttConfig.externalHost(),
                 username,
                 password,
+                serverModeTopic
+        );
+
+        return new MqttProvisioningConnectionDto(
+                mqttConfig.externalHost(),
+                username,
                 plaintextPassword,
                 serverModeTopic
         );
@@ -114,8 +119,6 @@ public class InboundDataSource extends MqttDataSource {
 
         this.accessCode = accessCode;
         this.provisioningType = InboundProvisioningType.REST_BEARER;
-        this.inboundProvisioningConfig = new InboundProvisioningConfig();
-        setServerModeTopic();
     }
 
     public String accessCode() {
@@ -157,10 +160,7 @@ public class InboundDataSource extends MqttDataSource {
      * @throws NullPointerException If MQTT provisioning has not been configured.
      */
     public MqttConnection provisioningConnection() {
-        return Objects.requireNonNull(
-                inboundProvisioningConfig.connection(),
-                "Provisioning MQTT connection is not configured"
-        );
+        return mqttProvisioningConfigOrThrow().connection();
     }
 
     /**
@@ -170,11 +170,7 @@ public class InboundDataSource extends MqttDataSource {
      * @throws NullPointerException If an MQTT provisioning access-control entry has not been configured.
      */
     public String provisioningTopicOrThrow() {
-        var accessControlEntry = Objects.requireNonNull(
-                inboundProvisioningConfig.accessControlEntry(),
-                "Provisioning MQTT ACL is not configured"
-        );
-        return accessControlEntry.topic();
+        return mqttProvisioningConfigOrThrow().accessControlEntry().topic();
     }
 
     /**
@@ -189,7 +185,7 @@ public class InboundDataSource extends MqttDataSource {
 
         if (inboundProvisioningType == InboundProvisioningType.REST_API_TOKEN ||
             inboundProvisioningType == InboundProvisioningType.REST_BEARER) {
-            inboundProvisioningConfig.clearMqttProvisioning();
+            inboundProvisioningMqttConfig = null;
         }
     }
 
@@ -203,27 +199,21 @@ public class InboundDataSource extends MqttDataSource {
      * @return The connection details stored for client-mode provisioning.
      */
     @Transactional
-    public ProvisioningConnectionDto establishClientModeConnection(
+    public MqttProvisioningConnectionDto establishClientModeConnection(
             String host,
             String username,
             String password,
             String topic
     ) {
-        changeInboundProvisioningType(InboundProvisioningType.MQTT_CLIENT);
-        return inboundProvisioningConfig.establishClientModeConnection(host, host, username, password, topic);
-    }
-
-    /**
-     * Reconstructs state that is not reliably materialized by JPA. Hibernate maps an embeddable whose columns are all
-     * {@code null} to {@code null}, while the server topic is intentionally transient. This callback deliberately does
-     * not access the owning permission because Hibernate can invoke it before that permission is fully initialized.
-     */
-    @PostLoad
-    private void restoreTransientState() {
-        if (inboundProvisioningConfig == null) {
-            inboundProvisioningConfig = new InboundProvisioningConfig();
-        }
-        setServerModeTopic();
+        this.provisioningType = InboundProvisioningType.MQTT_CLIENT;
+        this.inboundProvisioningMqttConfig = InboundProvisioningMqttConfig.create(
+                host,
+                host,
+                username,
+                password,
+                topic
+        );
+        return new MqttProvisioningConnectionDto(host, username, password, topic);
     }
 
     @Override
@@ -242,15 +232,18 @@ public class InboundDataSource extends MqttDataSource {
         this.accessControlEntry = new MqttAccessControlEntry(config.username().toString(), config.dataTopic());
     }
 
+    private InboundProvisioningMqttConfig mqttProvisioningConfigOrThrow() {
+        return Objects.requireNonNull(
+                inboundProvisioningMqttConfig,
+                "Provisioning MQTT configuration is not configured"
+        );
+    }
+
     private MqttStreamingConfig streamingConfigOrThrow() {
         return Objects.requireNonNull(
                 config,
                 "MQTT streaming configuration is not configured for inbound data source " + id
         );
-    }
-
-    private void setServerModeTopic() {
-        serverModeTopic = TOPIC_PREFIX + id + "/inboundData";
     }
 
     public static class Builder {

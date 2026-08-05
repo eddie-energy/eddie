@@ -76,7 +76,7 @@ class InboundDataSourceTest {
         assertThat(dataSource.acknowledgementTopic()).isEqualTo(ACKNOWLEDGEMENT_TOPIC);
         assertThatThrownBy(dataSource::provisioningConnection)
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("Provisioning MQTT connection is not configured");
+                .hasMessage("Provisioning MQTT configuration is not configured");
     }
 
     @Test
@@ -117,7 +117,7 @@ class InboundDataSourceTest {
         assertThat(result.host()).isEqualTo(SERVER_EXTERNAL_HOST);
         assertThatCode(() -> UUID.fromString(result.username())).doesNotThrowAnyException();
         assertThat(result.password()).isEqualTo(SERVER_PASSWORD);
-        assertThat(result.topic()).isEqualTo("aiida/" + DATA_SOURCE_ID + "/inboundData");
+        assertThat(result.topic()).isEqualTo("aiida/" + result.username() + "/inboundData");
         assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(SERVER_INTERNAL_HOST);
         assertThat(dataSource.provisioningConnection().username()).isEqualTo(result.username());
         assertThat(dataSource.provisioningConnection().password()).isEqualTo(SERVER_PASSWORD_HASH);
@@ -139,6 +139,7 @@ class InboundDataSourceTest {
         assertThat(credentials.password()).isEqualTo(CLIENT_PASSWORD);
         assertThat(json)
                 .contains("\"provisioningType\":\"MQTT_CLIENT\"")
+                .contains("\"mqttProvisioningConfig\"")
                 .contains("\"externalHost\":\"" + CLIENT_HOST + "\"")
                 .contains("\"username\":\"" + CLIENT_USERNAME + "\"")
                 .contains("\"topic\":\"" + CLIENT_TOPIC + "\"")
@@ -165,7 +166,7 @@ class InboundDataSourceTest {
         assertThat(json)
                 .contains("\"provisioningType\":\"MQTT_SERVER\"")
                 .contains("\"externalHost\":\"" + SERVER_EXTERNAL_HOST + "\"")
-                .contains("\"topic\":\"aiida/" + DATA_SOURCE_ID + "/inboundData\"")
+                .contains("\"topic\":\"aiida/" + credentials.username() + "/inboundData\"")
                 .doesNotContain("\"password\"")
                 .doesNotContain(SERVER_PASSWORD)
                 .doesNotContain(SERVER_PASSWORD_HASH)
@@ -186,10 +187,10 @@ class InboundDataSourceTest {
         assertThat(dataSource.inboundProvisioningType()).isEqualTo(InboundProvisioningType.REST_API_TOKEN);
         assertThatThrownBy(dataSource::provisioningConnection)
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("Provisioning MQTT connection is not configured");
+                .hasMessage("Provisioning MQTT configuration is not configured");
         assertThatThrownBy(dataSource::provisioningTopicOrThrow)
                 .isInstanceOf(NullPointerException.class)
-                .hasMessage("Provisioning MQTT ACL is not configured");
+                .hasMessage("Provisioning MQTT configuration is not configured");
     }
 
     @Test

@@ -4,7 +4,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.config.OAuth2SecurityConfiguration;
-import energy.eddie.aiida.dtos.provisioning.ProvisioningConnectionDto;
+import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.services.ProvisioningService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,7 @@ class ProvisioningControllerSecurityIntegrationTest {
     @Test
     void patchProvisioningType_withAuthenticationWithoutCsrf_reachesController() throws Exception {
         when(provisioningService.changeProvisioningType(eq(PERMISSION_ID), any()))
-                .thenReturn(ProvisioningConnectionDto.empty());
+                .thenReturn(MqttProvisioningConnectionDto.empty());
 
         mockMvc.perform(validPatch().with(jwt()))
                .andExpect(status().isOk());

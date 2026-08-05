@@ -73,7 +73,7 @@ const showModal = async (targetPermission: AiidaPermission) => {
     await fetchInboundProvisioningTypes()
   }
 
-  const connection = targetPermission.dataSource?.provisioningConfig?.connection
+  const connection = targetPermission.dataSource?.mqttProvisioningConfig?.connection
 
   host.value = connection?.externalHost ?? ''
   username.value = connection?.username ?? ''
