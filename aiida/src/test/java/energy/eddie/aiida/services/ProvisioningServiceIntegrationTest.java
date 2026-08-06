@@ -121,7 +121,7 @@ class ProvisioningServiceIntegrationTest {
             assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(CLIENT_HOST);
             assertThat(dataSource.provisioningConnection().username()).isEqualTo(CLIENT_USERNAME);
             assertThat(dataSource.provisioningConnection().password()).isEqualTo(CLIENT_PASSWORD);
-            assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo(CLIENT_TOPIC);
+            assertThat(dataSource.provisioningTopic()).isEqualTo(CLIENT_TOPIC);
             verify(mqttClient).connect(any());
         }
     }
@@ -176,7 +176,7 @@ class ProvisioningServiceIntegrationTest {
 
             assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(CLIENT_HOST);
             assertThat(dataSource.provisioningConnection().username()).isEqualTo(CLIENT_USERNAME);
-            assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo(CLIENT_TOPIC);
+            assertThat(dataSource.provisioningTopic()).isEqualTo(CLIENT_TOPIC);
         }
     }
 
@@ -216,7 +216,7 @@ class ProvisioningServiceIntegrationTest {
             assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(SERVER_INTERNAL_HOST);
             assertThat(dataSource.provisioningConnection().username()).isEqualTo(responseUsername);
             assertThat(dataSource.provisioningConnection().password()).isEqualTo(ENCODED_SERVER_PASSWORD);
-            assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo("aiida/" + responseUsername + "/inboundData");
+            assertThat(dataSource.provisioningTopic()).isEqualTo("aiida/" + responseUsername + "/inboundData");
             assertThat(provisioningExternalHost(dataSourceId)).isEqualTo(SERVER_EXTERNAL_HOST);
             assertThat(provisioningAclUsername(dataSourceId)).isEqualTo(responseUsername);
 

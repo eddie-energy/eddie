@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
+import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -141,43 +142,24 @@ public class InboundDataSource extends MqttDataSource {
 
     @Nullable
     public String acknowledgementTopic() {
-        return streamingConfigOrThrow().acknowledgementTopic();
+        return config.acknowledgementTopic();
     }
 
-    /**
-     * Returns the currently configured method for provisioning inbound data.
-     *
-     * @return The active inbound provisioning type.
-     */
     public InboundProvisioningType inboundProvisioningType() {
         return provisioningType;
     }
 
-    /**
-     * Returns the MQTT connection configured for inbound provisioning.
-     *
-     * @return The configured provisioning MQTT connection.
-     * @throws NullPointerException If MQTT provisioning has not been configured.
-     */
-    public MqttConnection provisioningConnection() {
-        return mqttProvisioningConfigOrThrow().connection();
+    public MqttConnection provisioningConnection() throws ProvisioningConfigurationException {
+        return mqttProvisioningConfig().connection();
     }
 
-    /**
-     * Returns the MQTT topic configured for inbound provisioning.
-     *
-     * @return The configured provisioning topic.
-     * @throws NullPointerException If an MQTT provisioning access-control entry has not been configured.
-     */
-    public String provisioningTopicOrThrow() {
-        return mqttProvisioningConfigOrThrow().accessControlEntry().topic();
+    public String provisioningTopic() throws ProvisioningConfigurationException {
+        return mqttProvisioningConfig().accessControlEntry().topic();
     }
 
     /**
      * Changes the inbound provisioning type. Switching to a REST type also removes any stored MQTT provisioning
      * connection and access-control entry.
-     *
-     * @param inboundProvisioningType Provisioning type to activate.
      */
     @Transactional
     public void changeInboundProvisioningType(InboundProvisioningType inboundProvisioningType) {
@@ -192,10 +174,6 @@ public class InboundDataSource extends MqttDataSource {
     /**
      * Configures MQTT client-mode provisioning with externally supplied broker credentials and activates that mode.
      *
-     * @param host     MQTT broker host exposed to the publisher.
-     * @param username MQTT username used for publishing.
-     * @param password MQTT password used for publishing.
-     * @param topic    Topic to which inbound records are published.
      * @return The connection details stored for client-mode provisioning.
      */
     @Transactional
@@ -229,21 +207,19 @@ public class InboundDataSource extends MqttDataSource {
 
     @Override
     protected void createAccessControlEntry() {
-        this.accessControlEntry = new MqttAccessControlEntry(config.username().toString(), config.dataTopic());
-    }
-
-    private InboundProvisioningMqttConfig mqttProvisioningConfigOrThrow() {
-        return Objects.requireNonNull(
-                inboundProvisioningMqttConfig,
-                "Provisioning MQTT configuration is not configured"
+        this.accessControlEntry = new MqttAccessControlEntry(
+                config.username().toString(),
+                config.dataTopic()
         );
     }
 
-    private MqttStreamingConfig streamingConfigOrThrow() {
-        return Objects.requireNonNull(
-                config,
-                "MQTT streaming configuration is not configured for inbound data source " + id
-        );
+    private InboundProvisioningMqttConfig mqttProvisioningConfig()
+            throws ProvisioningConfigurationException {
+        if (inboundProvisioningMqttConfig != null) {
+            return inboundProvisioningMqttConfig;
+        }
+
+        throw new ProvisioningConfigurationException(id, provisioningType);
     }
 
     public static class Builder {
