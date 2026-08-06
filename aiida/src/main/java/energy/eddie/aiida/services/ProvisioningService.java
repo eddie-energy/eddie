@@ -8,6 +8,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
@@ -55,15 +56,6 @@ public class ProvisioningService {
     @Nullable
     private Disposable inboundRecordSubscription;
 
-    /**
-     * Creates a service that manages provisioning configuration and MQTT publishers for inbound data sources.
-     *
-     * @param inboundAggregator    Aggregator whose inbound records are forwarded to active provisioning publishers.
-     * @param permissionRepository Repository used to resolve the permission and its inbound data source.
-     * @param mqttConfiguration    MQTT broker configuration used for server-mode provisioning.
-     * @param passwordEncoder      Encoder used to store server-mode MQTT credentials securely.
-     * @param inboundDataSourceRepository Repository used to restore persisted MQTT provisioning publishers.
-     */
     public ProvisioningService(
             InboundAggregator inboundAggregator,
             PermissionRepository permissionRepository,
@@ -86,14 +78,14 @@ public class ProvisioningService {
      * @param permissionId ID of the permission whose inbound data source should be reconfigured.
      * @param patch        Requested provisioning type and, for MQTT client mode, its connection parameters.
      * @return Connection details for MQTT provisioning, or an empty DTO for REST provisioning.
-     * @throws PermissionNotFoundException    If no permission exists for {@code permissionId}.
-     * @throws InvalidDataSourceTypeException If the permission is not associated with an inbound data source.
      */
-    @Transactional
+    @Transactional(rollbackOn = ProvisioningConfigurationException.class)
     public MqttProvisioningConnectionDto changeProvisioningType(
             UUID permissionId,
             ProvisioningTypePatchDto patch
-    ) throws PermissionNotFoundException, InvalidDataSourceTypeException {
+    ) throws PermissionNotFoundException,
+             InvalidDataSourceTypeException,
+             ProvisioningConfigurationException {
         var dataSource = inboundDataSource(permissionId);
 
         return switch (patch.type()) {
@@ -142,7 +134,7 @@ public class ProvisioningService {
     private MqttProvisioningConnectionDto activateMqttClient(
             InboundDataSource dataSource,
             ProvisioningTypePatchDto patch
-    ) {
+    ) throws ProvisioningConfigurationException {
         var response = dataSource.establishClientModeConnection(
                 patch.host(),
                 patch.username(),
@@ -154,7 +146,8 @@ public class ProvisioningService {
         return response;
     }
 
-    private MqttProvisioningConnectionDto activateMqttServer(InboundDataSource dataSource) {
+    private MqttProvisioningConnectionDto activateMqttServer(InboundDataSource dataSource)
+            throws ProvisioningConfigurationException {
         var plaintextPassword = SecretGenerator.generate();
 
         var response = dataSource.establishServerModeConnection(
@@ -195,7 +188,7 @@ public class ProvisioningService {
                         "Restarted MQTT provisioning publisher for data source {}",
                         dataSource.id()
                 );
-            } catch (RuntimeException exception) {
+            } catch (ProvisioningConfigurationException | RuntimeException exception) {
                 LOGGER.error(
                         "Could not restart MQTT provisioning publisher for data source {}",
                         dataSource.id(),
@@ -233,9 +226,9 @@ public class ProvisioningService {
      *
      * @param dataSource Inbound data source whose publisher should be created or replaced.
      */
-    private void replacePublisher(InboundDataSource dataSource) {
+    private void replacePublisher(InboundDataSource dataSource) throws ProvisioningConfigurationException {
         var connection = dataSource.provisioningConnection();
-        var topic = dataSource.provisioningTopicOrThrow();
+        var topic = dataSource.provisioningTopic();
         var publisher = dataSource.inboundProvisioningType() == InboundProvisioningType.MQTT_SERVER
                 ? new ProvisioningMqttPublisher(
                 connection,
@@ -256,10 +249,10 @@ public class ProvisioningService {
         var permission = permissionRepository.findById(permissionId)
                                              .orElseThrow(() -> new PermissionNotFoundException(permissionId));
 
-        if (!(permission.dataSource() instanceof InboundDataSource dataSource)) {
-            throw new InvalidDataSourceTypeException();
+        if (permission.dataSource() instanceof InboundDataSource dataSource) {
+            return dataSource;
         }
 
-        return dataSource;
+        throw new InvalidDataSourceTypeException();
     }
 }

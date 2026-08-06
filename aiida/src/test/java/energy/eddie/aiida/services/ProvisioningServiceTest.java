@@ -8,6 +8,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
@@ -81,7 +82,7 @@ class ProvisioningServiceTest {
 
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC)).thenReturn(expected);
         when(dataSource.provisioningConnection()).thenReturn(connection);
-        when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
+        when(dataSource.provisioningTopic()).thenReturn(TOPIC);
 
         try (MockedConstruction<ProvisioningMqttPublisher> publishers =
                      mockConstruction(ProvisioningMqttPublisher.class)) {
@@ -90,7 +91,7 @@ class ProvisioningServiceTest {
             assertThat(result).isEqualTo(expected);
             verify(dataSource).establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC);
             verify(dataSource).provisioningConnection();
-            verify(dataSource).provisioningTopicOrThrow();
+            verify(dataSource).provisioningTopic();
             assertThat(publishers.constructed()).hasSize(1);
         }
     }
@@ -107,7 +108,7 @@ class ProvisioningServiceTest {
         when(dataSource.establishServerModeConnection(eq(mqttConfiguration), eq(passwordEncoder), anyString()))
                 .thenReturn(expected);
         when(dataSource.provisioningConnection()).thenReturn(connection);
-        when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
+        when(dataSource.provisioningTopic()).thenReturn(TOPIC);
         when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.MQTT_SERVER);
         when(mqttConfiguration.username()).thenReturn(AIIDA_USERNAME);
         when(mqttConfiguration.password()).thenReturn(AIIDA_PASSWORD);
@@ -123,7 +124,7 @@ class ProvisioningServiceTest {
                     generatedPassword.capture()
             );
             verify(dataSource).provisioningConnection();
-            verify(dataSource).provisioningTopicOrThrow();
+            verify(dataSource).provisioningTopic();
             assertThat(publishers.constructed()).hasSize(1);
             assertThat(generatedPassword.getValue()).hasSize(10);
             verify(mqttConfiguration).username();
@@ -155,7 +156,7 @@ class ProvisioningServiceTest {
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC))
                 .thenReturn(new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
         when(dataSource.provisioningConnection()).thenReturn(connection);
-        when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
+        when(dataSource.provisioningTopic()).thenReturn(TOPIC);
 
         try (MockedConstruction<ProvisioningMqttPublisher> publishers =
                      mockConstruction(ProvisioningMqttPublisher.class)) {
@@ -176,7 +177,7 @@ class ProvisioningServiceTest {
 
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC)).thenReturn(expected);
         when(dataSource.provisioningConnection()).thenReturn(connection);
-        when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
+        when(dataSource.provisioningTopic()).thenReturn(TOPIC);
 
         try (MockedConstruction<ProvisioningMqttPublisher> publishers =
                      mockConstruction(ProvisioningMqttPublisher.class)) {
@@ -200,7 +201,7 @@ class ProvisioningServiceTest {
         when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC))
                 .thenReturn(new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
         when(dataSource.provisioningConnection()).thenReturn(connection);
-        when(dataSource.provisioningTopicOrThrow()).thenReturn(TOPIC);
+        when(dataSource.provisioningTopic()).thenReturn(TOPIC);
         when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.MQTT_CLIENT);
         when(inboundRecord.dataSource()).thenReturn(dataSource);
         when(inboundAggregator.inboundRecordFlux()).thenReturn(records.asFlux());
@@ -223,6 +224,30 @@ class ProvisioningServiceTest {
                 PermissionNotFoundException.class,
                 () -> service.changeProvisioningType(PERMISSION_ID, patch(InboundProvisioningType.MQTT_CLIENT))
         );
+    }
+
+    @Test
+    void changeProvisioningType_withoutMqttConfiguration_throwsProvisioningConfigurationException()
+            throws Exception {
+        var permission = mock(Permission.class);
+        var dataSource = mock(InboundDataSource.class);
+        var expected = new ProvisioningConfigurationException(DATA_SOURCE_ID, InboundProvisioningType.MQTT_CLIENT);
+
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        when(permission.dataSource()).thenReturn(dataSource);
+        when(dataSource.establishClientModeConnection(HOST, USERNAME, PASSWORD, TOPIC))
+                .thenReturn(new MqttProvisioningConnectionDto(HOST, USERNAME, PASSWORD, TOPIC));
+        when(dataSource.provisioningConnection()).thenThrow(expected);
+
+        var exception = assertThrows(
+                ProvisioningConfigurationException.class,
+                () -> service.changeProvisioningType(
+                        PERMISSION_ID,
+                        patch(InboundProvisioningType.MQTT_CLIENT)
+                )
+        );
+
+        assertThat(exception).isSameAs(expected);
     }
 
     @Test

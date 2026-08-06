@@ -7,6 +7,7 @@ import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -75,12 +76,14 @@ class InboundDataSourceTest {
         assertThat(dataSource.permission()).isSameAs(permission);
         assertThat(dataSource.acknowledgementTopic()).isEqualTo(ACKNOWLEDGEMENT_TOPIC);
         assertThatThrownBy(dataSource::provisioningConnection)
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Provisioning MQTT configuration is not configured");
+                .isInstanceOf(ProvisioningConfigurationException.class)
+                .hasMessageContaining(DATA_SOURCE_ID.toString())
+                .hasMessageContaining(InboundProvisioningType.REST_BEARER.toString());
     }
 
     @Test
-    void establishClientModeConnection_activatesClientModeAndStoresSuppliedConnection() {
+    void establishClientModeConnection_activatesClientModeAndStoresSuppliedConnection()
+            throws ProvisioningConfigurationException {
         var result = dataSource.establishClientModeConnection(
                 CLIENT_HOST,
                 CLIENT_USERNAME,
@@ -96,11 +99,12 @@ class InboundDataSourceTest {
         assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(CLIENT_HOST);
         assertThat(dataSource.provisioningConnection().username()).isEqualTo(CLIENT_USERNAME);
         assertThat(dataSource.provisioningConnection().password()).isEqualTo(CLIENT_PASSWORD);
-        assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo(CLIENT_TOPIC);
+        assertThat(dataSource.provisioningTopic()).isEqualTo(CLIENT_TOPIC);
     }
 
     @Test
-    void establishServerModeConnection_returnsPlaintextButStoresEncodedPassword() {
+    void establishServerModeConnection_returnsPlaintextButStoresEncodedPassword()
+            throws ProvisioningConfigurationException {
         var mqttConfiguration = mock(MqttConfiguration.class);
         var passwordEncoder = mock(BCryptPasswordEncoder.class);
         when(mqttConfiguration.internalHost()).thenReturn(SERVER_INTERNAL_HOST);
@@ -121,7 +125,7 @@ class InboundDataSourceTest {
         assertThat(dataSource.provisioningConnection().internalHost()).isEqualTo(SERVER_INTERNAL_HOST);
         assertThat(dataSource.provisioningConnection().username()).isEqualTo(result.username());
         assertThat(dataSource.provisioningConnection().password()).isEqualTo(SERVER_PASSWORD_HASH);
-        assertThat(dataSource.provisioningTopicOrThrow()).isEqualTo(result.topic());
+        assertThat(dataSource.provisioningTopic()).isEqualTo(result.topic());
         verify(passwordEncoder).encode(SERVER_PASSWORD);
     }
 
@@ -186,11 +190,9 @@ class InboundDataSourceTest {
 
         assertThat(dataSource.inboundProvisioningType()).isEqualTo(InboundProvisioningType.REST_API_TOKEN);
         assertThatThrownBy(dataSource::provisioningConnection)
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Provisioning MQTT configuration is not configured");
-        assertThatThrownBy(dataSource::provisioningTopicOrThrow)
-                .isInstanceOf(NullPointerException.class)
-                .hasMessage("Provisioning MQTT configuration is not configured");
+                .isInstanceOf(ProvisioningConfigurationException.class);
+        assertThatThrownBy(dataSource::provisioningTopic)
+                .isInstanceOf(ProvisioningConfigurationException.class);
     }
 
     @Test

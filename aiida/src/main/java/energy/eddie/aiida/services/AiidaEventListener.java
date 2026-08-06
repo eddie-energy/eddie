@@ -30,10 +30,6 @@ public class AiidaEventListener {
 
     /**
      * Creates the central listener for permission and data-source lifecycle events.
-     *
-     * @param dataSourceService   Service used to create and delete data sources.
-     * @param permissionService   Service used to update associated permissions.
-     * @param provisioningService Service used to stop runtime provisioning publishers.
      */
     public AiidaEventListener(
             DataSourceService dataSourceService,

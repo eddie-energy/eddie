@@ -6,6 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.services.ProvisioningService;
@@ -88,6 +89,18 @@ class ProvisioningControllerTest {
 
         mockMvc.perform(validPatch())
                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void patchInboundProvisioningType_withoutMqttConfiguration_returnsConflict() throws Exception {
+        when(provisioningService.changeProvisioningType(eq(PERMISSION_ID), any()))
+                .thenThrow(new ProvisioningConfigurationException(
+                        PERMISSION_ID,
+                        InboundProvisioningType.MQTT_CLIENT
+                ));
+
+        mockMvc.perform(validPatch())
+               .andExpect(status().isConflict());
     }
 
     @Test
