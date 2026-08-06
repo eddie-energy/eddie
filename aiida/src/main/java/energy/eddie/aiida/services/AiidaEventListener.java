@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -26,10 +26,19 @@ public class AiidaEventListener {
     private static final Logger LOGGER = LoggerFactory.getLogger(AiidaEventListener.class);
     private final DataSourceService dataSourceService;
     private final PermissionService permissionService;
+    private final ProvisioningService provisioningService;
 
-    public AiidaEventListener(DataSourceService dataSourceService, PermissionService permissionService) {
+    /**
+     * Creates the central listener for permission and data-source lifecycle events.
+     */
+    public AiidaEventListener(
+            DataSourceService dataSourceService,
+            PermissionService permissionService,
+            ProvisioningService provisioningService
+    ) {
         this.dataSourceService = dataSourceService;
         this.permissionService = permissionService;
+        this.provisioningService = provisioningService;
     }
 
     @EventListener
@@ -62,9 +71,16 @@ public class AiidaEventListener {
         }
     }
 
+    /**
+     * Stops the runtime publisher and deletes the revoked permission's inbound data source. Deleting the entity also
+     * removes its persisted provisioning connection, MQTT user credentials, and ACL through JPA cascade removal.
+     *
+     * @param event Revocation event identifying the inbound data source.
+     */
     @EventListener
     protected void deleteInboundDataSource(InboundPermissionRevokeEvent event) {
         LOGGER.trace("Received InboundPermissionDeletionEvent: {}", event);
+        provisioningService.stopPublisher(event.dataSourceId());
         dataSourceService.deleteDataSource(event.dataSourceId());
     }
 

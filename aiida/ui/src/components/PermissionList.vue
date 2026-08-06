@@ -1,12 +1,11 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
+import { fetchInboundProvisioningTypes } from '@/stores/provisioningTypes.ts'
 import type { AiidaPermission, PermissionTypes } from '@/types'
 import Button from '@/components/Button.vue'
 import CompleteIcon from '@/assets/icons/CompleteIcon.svg'
@@ -19,6 +18,9 @@ import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
+const emit = defineEmits<{
+  configureInboundProvisioning: [permission: AiidaPermission]
+}>()
 const selectedTab = ref<PermissionTypes>('Active')
 const showMore = ref(false)
 const scrollTarget = ref()
@@ -32,6 +34,7 @@ const activePermissions = ref<AiidaPermission[]>(
 
 onMounted(async () => {
   await fetchPermissions()
+  await fetchInboundProvisioningTypes()
 })
 
 const tabs = [
@@ -138,6 +141,7 @@ const handleCategoryChange = (category: string) => {
           :key="permission.permissionId"
           :permission
           :status="selectedTab"
+          @configure-inbound-provisioning="emit('configureInboundProvisioning', $event)"
         />
         <Button
           v-if="activePermissions.length > initialPermissionsCount"

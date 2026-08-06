@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
@@ -64,6 +65,7 @@ class InboundAdapterTest {
         when(dataSource.password()).thenReturn("testPassword");
         when(dataSource.acknowledgementTopic()).thenReturn("aiida/ack");
         when(SECRETS_SERVICE.loadSecret(anyString())).thenReturn("testPassword");
+        when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.REST_BEARER);
 
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);

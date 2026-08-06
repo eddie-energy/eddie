@@ -7,6 +7,7 @@
   "editButton": "Modifier",
   "revokeButton": "Révoquer",
   "continueButton": "Continuer",
+  "saveButton": "Enregistrer",
   "closeButton": "Fermer",
   "scrollToTop": "Revenir en haut de la page",
   "header": {
@@ -114,6 +115,32 @@
     "showMqttPassword": "Afficher le mot de passe MQTT",
     "hideMqttPassword": "Masquer le mot de passe MQTT",
     "copyMqttPassword": "Copier le mot de passe MQTT",
+    "mqttProvisioning": {
+      "title": "Provisionnement entrant",
+      "openButton": "Configurer le provisionnement",
+      "mode": "Mode de provisionnement",
+      "modePlaceholder": "Sélectionner le mode de provisionnement",
+      "modeRequired": "Veuillez sélectionner un mode de provisionnement.",
+      "host": "Hôte MQTT",
+      "username": "Nom d’utilisateur MQTT",
+      "password": "Mot de passe MQTT",
+      "topic": "Sujet MQTT",
+      "required": "Veuillez remplir tous les champs de connexion MQTT.",
+      "credentialsTitle": "Connexion MQTT créée",
+      "credentialsWarning": "Enregistrez ces identifiants maintenant. Le mot de passe ne pourra plus être affiché.",
+      "copyHost": "Copier l’hôte MQTT",
+      "copyUsername": "Copier le nom d’utilisateur MQTT",
+      "copyPassword": "Copier le mot de passe MQTT",
+      "copyTopic": "Copier le sujet MQTT",
+      "copyAll": "Copier tous les identifiants",
+      "credentialsSaved": "J’ai enregistré les identifiants",
+      "types": {
+        "REST_API_TOKEN": "Jeton API REST",
+        "REST_BEARER": "REST Bearer",
+        "MQTT_SERVER": "Serveur MQTT",
+        "MQTT_CLIENT": "Client MQTT"
+      }
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"

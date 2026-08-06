@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import useToast from './composables/useToast'
@@ -11,6 +11,8 @@ import type {
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   InboundMessageFormat,
+  ProvisioningConnectionDto,
+  ProvisioningTypePatchDto,
 } from './types'
 
 const { danger, success } = useToast()
@@ -284,6 +286,22 @@ export async function getLatestInboundPermissionMessage(id: string) {
 
 export async function getTlsCertificateFile() {
   return fetch('/mqtt/download/tls-certificate', {
+    method: 'GET',
+  })
+}
+
+export async function patchInboundProvisioning(
+  permissionId: string,
+  payload: ProvisioningTypePatchDto,
+): Promise<ProvisioningConnectionDto> {
+  return fetch(`/provisioning/permission/${permissionId}/patchInboundProvisioning`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getInboundProvisioningTypes(): Promise<{ provisioningTypes: string[] }> {
+  return fetch('/provisioning/types', {
     method: 'GET',
   })
 }

@@ -1,20 +1,27 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import PermissionList from '@/components/PermissionList.vue'
 import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import AddPermissionModal from '@/components/Modals/AddPermissionModal.vue'
-import { ref } from 'vue'
+import UpdateMqttProvisioningConnectionModal from '@/components/Modals/UpdateMqttProvisioningConnectionModal.vue'
+import type { AiidaPermission } from '@/types'
+import { ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const permissionModalRef = ref<HTMLDialogElement>()
+const inboundProvisioningModal = useTemplateRef<
+  InstanceType<typeof UpdateMqttProvisioningConnectionModal>
+>('inboundProvisioningModal')
 const { t } = useI18n()
 const showAddPermissionModal = () => {
   permissionModalRef.value?.showModal()
+}
+
+const configureInboundProvisioning = (permission: AiidaPermission) => {
+  inboundProvisioningModal.value?.showModal(permission)
 }
 </script>
 
@@ -26,8 +33,9 @@ const showAddPermissionModal = () => {
         <PlusIcon />{{ t('permissions.addButton') }}
       </Button>
     </header>
-    <PermissionList />
+    <PermissionList @configure-inbound-provisioning="configureInboundProvisioning" />
     <AddPermissionModal ref="permissionModalRef" />
+    <UpdateMqttProvisioningConnectionModal ref="inboundProvisioningModal" />
   </main>
 </template>
 
