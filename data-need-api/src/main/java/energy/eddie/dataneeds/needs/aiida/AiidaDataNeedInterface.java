@@ -6,7 +6,6 @@ package energy.eddie.dataneeds.needs.aiida;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
-import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import org.springframework.scheduling.support.CronExpression;
 
@@ -15,6 +14,21 @@ import java.util.UUID;
 
 public interface AiidaDataNeedInterface {
     /**
+     * Returns whether the receiving party should acknowledge the reception of the data.
+     * If true, the receiving party is expected to send an acknowledgment envelope back to the sender after receiving the data.
+     * If false, no acknowledgment is expected.
+     */
+    boolean acknowledgementRequired();
+
+    /**
+     * Returns the permission commands the eligible party is explicitly granted to send for this data need.
+     * A command whose action {@link PermissionCommand.Action#requiresExplicitGrant() requires an explicit grant}
+     * (e.g. {@code SET_TRANSMISSION_ENABLED}, {@code UPDATE_TRANSMISSION_SCHEDULE}) is accepted only if its action is contained
+     * in this set; otherwise it is rejected. {@code TERMINATE} is always accepted, regardless of this set.
+     */
+    Set<PermissionCommand.Action> allowedPermissionCommands();
+
+    /**
      * Returns the kind of asset the data is retrieved from
      *
      * @see AiidaAsset
@@ -22,14 +36,15 @@ public interface AiidaDataNeedInterface {
     AiidaAsset asset();
 
     /**
+     * Returns information about the usage context of permissions created from the data need that AIIDA can use to
+     * provide additional functionality specific to that context.
+     */
+    Set<AiidaContext> contexts();
+
+    /**
      * Returns the data need ID
      */
     UUID dataNeedId();
-
-    /**
-     * Returns the set of identifiers for the data that should be shared.
-     */
-    Set<ObisCode> dataTags();
 
     /**
      * Returns the schema for the data
@@ -44,28 +59,7 @@ public interface AiidaDataNeedInterface {
     CronExpression transmissionSchedule();
 
     /**
-     * Returns the permission commands the eligible party is explicitly granted to send for this data need.
-     * A command whose action {@link PermissionCommand.Action#requiresExplicitGrant() requires an explicit grant}
-     * (e.g. {@code SET_TRANSMISSION_ENABLED}, {@code UPDATE_TRANSMISSION_SCHEDULE}) is accepted only if its action is contained
-     * in this set; otherwise it is rejected. {@code TERMINATE} is always accepted, regardless of this set.
-     */
-    Set<PermissionCommand.Action> allowedPermissionCommands();
-
-    /**
-     * Returns whether the receiving party should acknowledge the reception of the data.
-     * If true, the receiving party is expected to send an acknowledgment envelope back to the sender after receiving the data.
-     * If false, no acknowledgment is expected.
-     */
-    boolean acknowledgementRequired();
-
-    /**
      * Returns the type of the Data Need
      */
     String type();
-
-    /**
-     * Returns information about the usage context of permissions created from the data need that AIIDA can use to
-     * provide additional functionality specific to that context.
-     */
-    Set<AiidaContext> contexts();
 }

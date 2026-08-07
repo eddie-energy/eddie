@@ -4,7 +4,9 @@
 package energy.eddie.aiida.models.permission.dataneed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.*;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeedInterface;
@@ -81,13 +83,6 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     protected AiidaAsset asset;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "aiida_local_data_need_data_tags", joinColumns = {@JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")})
-    @Column(name = "data_tag")
-    @Convert(converter = ObisCodeConverter.class)
-    @JsonProperty
-    protected Set<ObisCode> dataTags;
-
-    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_contexts", joinColumns = @JoinColumn(name = "data_need_id"))
     @Column(name = "context")
     @Enumerated(EnumType.STRING)
@@ -110,7 +105,6 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.transmissionSchedule = dataNeed.transmissionSchedule();
         this.schemas = dataNeed.schemas();
         this.asset = dataNeed.asset();
-        this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
         this.acknowledgementRequired = dataNeed.acknowledgementRequired();
         this.allowedPermissionCommands = Objects.requireNonNullElse(dataNeed.allowedPermissionCommands(), Set.of());
         this.contexts = Objects.requireNonNullElse(dataNeed.contexts(), Set.of());
@@ -118,31 +112,6 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
 
     public String name() {
         return name;
-    }
-
-    @Override
-    public AiidaAsset asset() {
-        return asset;
-    }
-
-    @Override
-    public UUID dataNeedId() {
-        return dataNeedId;
-    }
-
-    @Override
-    public Set<ObisCode> dataTags() {
-        return dataTags;
-    }
-
-    @Override
-    public Set<AiidaSchema> schemas() {
-        return schemas;
-    }
-
-    @Override
-    public CronExpression transmissionSchedule() {
-        return transmissionSchedule;
     }
 
     @Override
@@ -156,8 +125,28 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     }
 
     @Override
+    public AiidaAsset asset() {
+        return asset;
+    }
+
+    @Override
     public Set<AiidaContext> contexts() {
         return contexts;
+    }
+
+    @Override
+    public UUID dataNeedId() {
+        return dataNeedId;
+    }
+
+    @Override
+    public Set<AiidaSchema> schemas() {
+        return schemas;
+    }
+
+    @Override
+    public CronExpression transmissionSchedule() {
+        return transmissionSchedule;
     }
 
     @Override
