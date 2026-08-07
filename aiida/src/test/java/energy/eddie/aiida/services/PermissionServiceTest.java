@@ -30,7 +30,6 @@ import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -99,7 +98,7 @@ class PermissionServiceTest {
     @Mock
     private HandshakeService mockHandshakeService;
     @Mock
-    private AiidaDataNeed mockDataNeed;
+    private OutboundAiidaDataNeed mockDataNeed;
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
     @Mock
@@ -182,7 +181,12 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1,
+                                                         connectionId,
+                                                         meterId,
+                                                         start,
+                                                         end,
+                                                         mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.existsById(permissionId2)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -224,8 +228,8 @@ class PermissionServiceTest {
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE, dataNeed.type());
         assertThat(dataNeed.contexts()).hasSameElementsAs(Set.of(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT));
-        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
-                                                                 ObisCode.NEGATIVE_ACTIVE_ENERGY));
+        assertThat(((OutboundAiidaLocalDataNeed) dataNeed).dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                                                                ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
@@ -234,7 +238,12 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1,
+                                                         connectionId,
+                                                         meterId,
+                                                         start,
+                                                         end,
+                                                         mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
@@ -250,7 +259,8 @@ class PermissionServiceTest {
         when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When Then
-        assertThrows(PermissionDataNeedTypeNotSupportedException.class, () -> service.setupNewPermissions(permissionRequests));
+        assertThrows(PermissionDataNeedTypeNotSupportedException.class,
+                     () -> service.setupNewPermissions(permissionRequests));
         verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
 
@@ -270,8 +280,8 @@ class PermissionServiceTest {
         assertEquals(dataNeedId, dataNeed.dataNeedId());
         assertEquals("*/23 * * * * *", dataNeed.transmissionSchedule().toString());
         assertEquals("illegalValue", dataNeed.type());
-        assertThat(dataNeed.dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
-                                                                 ObisCode.NEGATIVE_ACTIVE_ENERGY));
+        assertThat(((OutboundAiidaLocalDataNeed) dataNeed).dataTags()).hasSameElementsAs(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                                                                ObisCode.NEGATIVE_ACTIVE_ENERGY));
         assertThat(dataNeed.schemas()).hasSameElementsAs(Set.of(AiidaSchema.SMART_METER_P1_RAW));
     }
 
@@ -342,7 +352,12 @@ class PermissionServiceTest {
     @Test
     void givenFcaPermissionWithMeterIdAndActiveDuplicate_setupNewPermissions_marksUnfulfillableAndThrows() throws Exception {
         // Given
-        var permissionDetails = new PermissionDetailsDto(permissionId1, connectionId, meterId, start, end, mockDataNeed);
+        var permissionDetails = new PermissionDetailsDto(permissionId1,
+                                                         connectionId,
+                                                         meterId,
+                                                         start,
+                                                         end,
+                                                         mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
@@ -389,7 +404,8 @@ class PermissionServiceTest {
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
 
         // When, Then
-        assertThrows(DetailFetchingFailedException.class, () -> service.acceptPermission(permissionId1, dataSourceId, null));
+        assertThrows(DetailFetchingFailedException.class,
+                     () -> service.acceptPermission(permissionId1, dataSourceId, null));
     }
 
     @Test
@@ -481,7 +497,8 @@ class PermissionServiceTest {
         when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
         when(mockInboundDataSource.userId()).thenReturn(userId);
         when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
-        when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE, AiidaSchema.SMART_METER_P1_RAW));
+        when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE,
+                                                                         AiidaSchema.SMART_METER_P1_RAW));
         when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
         when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
