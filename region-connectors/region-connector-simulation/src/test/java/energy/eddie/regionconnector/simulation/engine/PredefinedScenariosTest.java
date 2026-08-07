@@ -20,6 +20,7 @@ class PredefinedScenariosTest {
         var expected = Set.of(
                 "Eligible Party Terminating Permission Request Scenario",
                 "External Termination Scenario",
+                "Generated Validated Historical Data Scenario",
                 "Validated Historical Data Scenario",
                 "Failed To Externally Terminate Scenario",
                 "Unable To Send Scenario"

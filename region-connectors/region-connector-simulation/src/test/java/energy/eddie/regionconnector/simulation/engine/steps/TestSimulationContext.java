@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.simulation.engine.steps;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.data.needs.Timeframe;
 import energy.eddie.api.agnostic.data.needs.ValidatedHistoricalDataDataNeedResult;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
@@ -28,7 +29,7 @@ public class TestSimulationContext {
                 "dnid",
                 ZonedDateTime.now(ZoneOffset.UTC),
                 new ValidatedHistoricalDataDataNeedResult(
-                        List.of(),
+                        List.of(Granularity.PT15M),
                         null,
                         new Timeframe(now, now),
                         new ValidatedHistoricalDataDataNeed()

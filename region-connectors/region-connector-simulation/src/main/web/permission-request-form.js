@@ -50,42 +50,80 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
       .catch((error) => console.error(error));
   }
 
-  async handleSubmit(event) {
+  handleSubmit(event) {
     event.preventDefault();
     const formData = new FormData(event.target);
-    let creationDateTime = formData.get("start-date");
-    if (creationDateTime == null) {
-      creationDateTime = new Date().toISOString();
-    } else {
-      creationDateTime += "T00:00:00.000Z";
-    }
-    const response = await fetch(
-      `${this.baseUrl}/scenarios/${formData.get("scenario").replaceAll("-", " ")}/run`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          connectionId: this.connectionId,
-          permissionId: formData.get("permission-id"),
-          dataNeedId: this.dataNeedId,
-          creationDateTime: creationDateTime,
-        }),
-      }
+    this.submitScenario(formData).catch((error) =>
+      this.error(error.message ?? error)
     );
-    const data = await response.json();
-    if (response.ok) {
-      this.notify({
-        title: "Executing Scenario!",
-        message: "Your scenario is currently being executed.",
-        variant: "success",
-        duration: 10000,
-      });
+  }
+
+  async submitScenario(formData) {
+    let creationDateTime = formData.get("start-date");
+    if (creationDateTime) {
+      creationDateTime += "T00:00:00.000Z";
     } else {
-      const { errors } = data;
-      errors.forEach((err) => this.error(err.message));
+      creationDateTime = new Date().toISOString();
     }
+    const metadata = {
+      connectionId: this.connectionId,
+      permissionId: formData.get("permission-id"),
+      dataNeedId: this.dataNeedId,
+      creationDateTime,
+    };
+    const file = formData.get("scenario-file");
+    const scenario = formData.get("scenario");
+
+    let response;
+    if (file?.name) {
+      response = await this.postFileScenario(file, metadata);
+    } else if (scenario) {
+      response = await this.postSelectedScenario(scenario, metadata);
+    } else {
+      throw new Error("Please select a scenario or upload a scenario file");
+    }
+
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      const error = data.errors?.map((error) => error.message).join("\n");
+      throw new Error(
+        error ?? "Something went wrong when running the scenario"
+      );
+    }
+
+    this.notify({
+      title: "Executing Scenario!",
+      message: "Your scenario is currently being executed.",
+      variant: "success",
+      duration: 10000,
+    });
+  }
+
+  async postFileScenario(file, metadata) {
+    const fileScenarioUrl = `${this.baseUrl}/scenarios/run`;
+    let scenario;
+    try {
+      scenario = JSON.parse(await file.text());
+    } catch {
+      throw new Error("The uploaded scenario is not valid JSON");
+    }
+
+    return await this.postScenario(fileScenarioUrl, { metadata, scenario });
+  }
+
+  postSelectedScenario(scenario, metadata) {
+    const selectedScenarioUrl = `${this.baseUrl}/scenarios/${scenario.replaceAll("-", " ")}/run`;
+    return this.postScenario(selectedScenarioUrl, metadata);
+  }
+
+  postScenario(url, body) {
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
   }
 
   render() {
@@ -136,7 +174,7 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
           </div>
           <br />
           <div>
-            <sl-select id="scenario" name="scenario" label="Scenario" required>
+            <sl-select id="scenario" name="scenario" label="Scenario">
               ${this._scenarios.map(
                 (scenario) => html`
                   <sl-option value="${scenario.replaceAll(" ", "-")}">
@@ -145,6 +183,16 @@ class SimulationConnectorButtonCe extends PermissionRequestFormBase {
                 `
               )}
             </sl-select>
+          </div>
+          <br />
+          <div>
+            <label for="scenario-file">Or upload a scenario:</label>
+            <input
+              id="scenario-file"
+              name="scenario-file"
+              type="file"
+              accept=".json,application/json"
+            />
           </div>
           <br />
           <sl-button type="submit" variant="primary">Run Scenario</sl-button>
