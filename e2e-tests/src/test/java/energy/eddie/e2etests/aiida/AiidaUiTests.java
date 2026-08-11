@@ -110,14 +110,15 @@ class AiidaUiTests {
 
         var inboundDataNeed = "FUTURE_MIN_MAX_ENVELOPE_INBOUND";
         var inboundDataNeedId = "f7698978-b9fe-40c8-aebe-c997f7f58f2f";
+        var inboundPermissionDisplayName = "Control signal for my living room";
         var outboundDataNeed = "Forward inbound opaque and min-max envelopes";
         var outboundDataNeedId = "5de2a77d-1dd4-458d-b700-a84884dd04c6";
 
         var inboundAiidaCode = aiidaCodeForDataNeed(inboundDataNeed);
-        var inboundPermissionId = acceptInboundPermissionRequest(inboundAiidaCode);
+        var inboundPermissionId = acceptInboundPermissionRequest(inboundAiidaCode, inboundPermissionDisplayName);
 
         var outboundAiidaCode = aiidaCodeForDataNeed(outboundDataNeed);
-        var outboundPermissionId = acceptOutboundPermissionRequest(outboundAiidaCode, inboundPermissionId);
+        var outboundPermissionId = acceptOutboundPermissionRequest(outboundAiidaCode, inboundPermissionDisplayName);
 
         // Wait for connector to start
         page.waitForTimeout(1000);
@@ -151,7 +152,7 @@ class AiidaUiTests {
         assertEquals(outboundDataNeedId, message.path("dataNeedId").asString());
 
         // Try revoke inbound while blocked
-        revokeInboundPermission(inboundDataNeed);
+        revokeInboundPermission(inboundPermissionDisplayName);
         expectAlert("Cannot revoke inbound permission %s because it is still used by outbound permissions: %s"
                             .formatted(inboundPermissionId, outboundPermissionId));
         // Revoke outbound
@@ -159,7 +160,7 @@ class AiidaUiTests {
         expectAlert("The permission for this service was revoked.");
 
         // Revoke inbound
-        revokeInboundPermission(inboundDataNeed);
+        revokeInboundPermission(inboundPermissionDisplayName);
         expectAlert("The permission for this service was revoked.");
     }
 
@@ -246,11 +247,12 @@ class AiidaUiTests {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
     }
 
-    private String acceptInboundPermissionRequest(String aiidaCode) {
+    private String acceptInboundPermissionRequest(String aiidaCode, String displayName) {
         addPermission(aiidaCode);
 
         var dialog = page.getByRole(AriaRole.DIALOG);
         var id = dialog.locator(":text('Permission ID') + dd").textContent();
+        dialog.getByPlaceholder("Enter a display name for this permission").fill(displayName);
         dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
 
         return id;

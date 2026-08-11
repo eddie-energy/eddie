@@ -16,6 +16,7 @@ import java.util.UUID;
  * @param operation The operation that should be applied to the permission.
  * @param dataSourceId The data source assigned to the permission.
  * @param inboundMessageFormat The inbound message format to assign to the permission.
+ * @param displayName The display name to assign to the permission.
  */
 public record PatchPermissionDto(
         @Schema(description = "Operation to apply to the permission.", example = "REVOKE")
@@ -28,6 +29,10 @@ public record PatchPermissionDto(
 
         @Schema(description = "Selected inbound message format for inbound permissions.", example = "OPENADR_3_1")
         @Nullable
-        InboundMessageFormat inboundMessageFormat
+        InboundMessageFormat inboundMessageFormat,
+
+        @Schema(description = "Display name to assign to the permission.", example = "My smart meter")
+        @Nullable
+        String displayName
 ) {
 }

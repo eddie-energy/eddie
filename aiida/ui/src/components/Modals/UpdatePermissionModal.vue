@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import ModalDialog from '@/components/ModalDialog.vue'
@@ -23,12 +21,14 @@ const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
+const displayName = ref<string>('')
 const inboundPermissions = ref<AiidaPermission[]>([])
 const emit = defineEmits(['update'])
 
 watch([open], async () => {
   if (open.value) {
     selectedDataSource.value = ''
+    displayName.value = permission.value?.dataNeed.name ?? ''
     modal.value?.showModal()
 
     await fetchDataSources()
@@ -39,7 +39,11 @@ watch([open], async () => {
 const handleInput = async (confirm: boolean) => {
   loading.value = true
   if (confirm) {
-    await acceptPermission(permission.value!.permissionId, selectedDataSource.value)
+    await acceptPermission(
+      permission.value!.permissionId,
+      selectedDataSource.value,
+      displayName.value,
+    )
   } else {
     await rejectPermission(permission.value!.permissionId)
   }
@@ -59,12 +63,12 @@ const dataSourceOptions = computed(() => {
 
   // Request includes inbound schemas
   if (requestedSchemas.some((requestedSchema) => inboundSchemas.has(requestedSchema))) {
-    for (const { dataSource } of inboundPermissions.value) {
+    for (const { dataSource, displayName } of inboundPermissions.value) {
       if (
         dataSource && // For TypeScript, even though it should always be set here
         requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema))
       ) {
-        matches.push({ label: dataSource.name, value: dataSource.id })
+        matches.push({ label: displayName, value: dataSource.id })
       }
     }
   }
@@ -92,6 +96,19 @@ const dataSourceOptions = computed(() => {
   >
     <div v-if="!loading">
       <PermissionDetails v-if="permission" :permission />
+      <form v-if="permission" class="form">
+        <label id="displayNameLabel" class="heading-3" for="displayNameInput">
+          {{ t('permissions.modal.displayNameInputLabel') }}
+        </label>
+        <input
+          id="displayNameInput"
+          v-model="displayName"
+          :placeholder="t('permissions.modal.displayNameInputPlaceholder')"
+          aria-labelledby="displayNameLabel"
+          class="display-name-input"
+          type="text"
+        />
+      </form>
       <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
         <label class="heading-3" id="updatePermLabel">
           {{ t('permissions.modal.datasourceInputLabel') }}
@@ -140,6 +157,15 @@ const dataSourceOptions = computed(() => {
   flex-direction: column;
   gap: 0.5rem;
   margin: 2rem 0;
+}
+.display-name-input {
+  border: 1px solid var(--eddie-grey-medium);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius);
+  background-color: var(--light);
+  color: var(--dark);
+  font-size: 1rem;
+  line-height: 1.5;
 }
 .two-item-pair {
   margin-top: var(--spacing-xxl);

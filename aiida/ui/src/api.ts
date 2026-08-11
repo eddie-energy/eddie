@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import useToast from './composables/useToast'
@@ -165,12 +165,17 @@ export async function rejectPermission(permissionId: string): Promise<any> {
   return result
 }
 
-export async function acceptPermission(permissionId: string, dataSourceId: string): Promise<void> {
+export async function acceptPermission(
+  permissionId: string,
+  dataSourceId: string,
+  displayName?: string,
+): Promise<void> {
   await fetch(`/permissions/${permissionId}`, {
     method: 'PATCH',
     body: JSON.stringify({
       operation: 'ACCEPT',
       dataSourceId,
+      displayName,
     }),
   })
   success('toasts.acceptPermission')
@@ -198,6 +203,17 @@ export async function updateInboundMessageFormat(
     }),
   })
   success('toasts.updateInboundMessageFormat')
+}
+
+export async function updateDisplayName(permissionId: string, displayName: string): Promise<void> {
+  await fetch(`/permissions/${permissionId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      operation: 'UPDATE_DISPLAY_NAME',
+      displayName,
+    }),
+  })
+  success('toasts.updateDisplayName')
 }
 
 export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Promise<{

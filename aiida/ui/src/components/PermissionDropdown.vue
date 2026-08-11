@@ -8,6 +8,7 @@ import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
 import StatusTag from './StatusTag.vue'
 import { ref } from 'vue'
 import PermissionDetails from './PermissionDetails.vue'
+import EditableDisplayName from './EditableDisplayName.vue'
 import { useI18n } from 'vue-i18n'
 
 const { permission, status } = defineProps<{
@@ -17,14 +18,19 @@ const { permission, status } = defineProps<{
 const { t } = useI18n()
 
 const isOpen = ref(false)
+const isEditingDisplayName = ref(false)
 </script>
 
 <template>
   <li class="permission" :class="{ 'is-open': isOpen }">
-    <header class="permission-header" @click="isOpen = !isOpen">
+    <header
+      :class="{ 'is-editing-name': isEditingDisplayName }"
+      class="permission-header"
+      @click="isOpen = !isOpen"
+    >
       <div class="header-title">
         <PermissionIcon class="icon" />
-        <h2 class="heading-5 title">{{ permission.serviceName }}</h2>
+        <EditableDisplayName v-model:editing="isEditingDisplayName" :permission />
         <span
           v-if="permission.dataNeed.contexts?.includes('FLEXIBLE-CONNECTION-AGREEMENT')"
           class="fca-label"
@@ -33,7 +39,7 @@ const isOpen = ref(false)
         </span>
       </div>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
-      <div class="non-essential">
+      <div v-if="!isEditingDisplayName" class="non-essential">
         <time>{{
           new Date(permission.startTime).toLocaleDateString(undefined, {
             day: '2-digit',
@@ -45,7 +51,11 @@ const isOpen = ref(false)
           {{ new Date(permission.grantTime).toLocaleTimeString() }}
         </time>
       </div>
-      <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'" minimal-on-mobile>
+      <StatusTag
+        v-if="!isEditingDisplayName"
+        :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'"
+        minimal-on-mobile
+      >
         {{ t(permission.status) }}
       </StatusTag>
       <button class="chevron" :aria-label="t('permissions.dropdown.openDetails')">
@@ -87,11 +97,6 @@ const isOpen = ref(false)
   justify-self: start;
 
   width: 100%;
-
-  .title {
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
 
 .fca-label {
@@ -115,6 +120,10 @@ const isOpen = ref(false)
   transition: margin-bottom 0.3s ease-out;
   > * {
     transition: opacity 0.5s ease-in;
+  }
+
+  &.is-editing-name {
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
