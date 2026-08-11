@@ -9,6 +9,7 @@ import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
+import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
@@ -91,12 +92,33 @@ public class ProvisioningService {
         return switch (patch.type()) {
             case MQTT_CLIENT -> activateMqttClient(dataSource, patch);
             case MQTT_SERVER -> activateMqttServer(dataSource);
-            case REST_API_TOKEN, REST_BEARER -> {
+            case NONE, REST_API_TOKEN, REST_BEARER -> {
                 stopPublisher(dataSource.id());
                 dataSource.changeInboundProvisioningType(patch.type());
                 yield MqttProvisioningConnectionDto.empty();
             }
         };
+    }
+
+    @Transactional(rollbackOn = {ProvisioningConfigurationException.class,
+            ProvisioningTypeNotConfiguredException.class})
+    public MqttProvisioningConnectionDto resetServerModePassword(UUID permissionId)
+            throws PermissionNotFoundException,
+                   InvalidDataSourceTypeException,
+                   ProvisioningTypeNotConfiguredException,
+                   ProvisioningConfigurationException {
+        var dataSource = inboundDataSource(permissionId);
+        var provisioningType = dataSource.inboundProvisioningType();
+
+        if (provisioningType != InboundProvisioningType.MQTT_SERVER) {
+            throw new ProvisioningTypeNotConfiguredException(permissionId, provisioningType);
+        }
+
+        var plaintextPassword = SecretGenerator.generate();
+        var connectionDetails = dataSource.resetServerModePassword(passwordEncoder, plaintextPassword);
+
+        LOGGER.info("Reset MQTT server provisioning password for inbound data source {}", dataSource.id());
+        return connectionDetails;
     }
 
     /**

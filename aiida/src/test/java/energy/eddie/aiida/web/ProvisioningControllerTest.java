@@ -28,8 +28,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -114,6 +113,26 @@ class ProvisioningControllerTest {
                        "MQTT_SERVER",
                        "MQTT_CLIENT"
                )));
+    }
+
+    @Test
+    void resetServerModePassword_returnsGeneratedPassword() throws Exception {
+        when(provisioningService.resetServerModePassword(PERMISSION_ID))
+                .thenReturn(new MqttProvisioningConnectionDto(
+                        "mqtt://broker.example.test",
+                        "mqtt-user",
+                        "new-password",
+                        "aiida/inbound/test"
+                ));
+
+        mockMvc.perform(post("/provisioning/permission/" + PERMISSION_ID + "/regenerate-server-provisioning-password"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("host").value("mqtt://broker.example.test"))
+               .andExpect(jsonPath("username").value("mqtt-user"))
+               .andExpect(jsonPath("password").value("new-password"))
+               .andExpect(jsonPath("topic").value("aiida/inbound/test"));
+
+        verify(provisioningService).resetServerModePassword(PERMISSION_ID);
     }
 
     private static boolean hasMqttClientPatchValues(ProvisioningTypePatchDto dto) {

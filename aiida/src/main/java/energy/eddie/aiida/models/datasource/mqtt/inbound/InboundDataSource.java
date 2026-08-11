@@ -119,7 +119,7 @@ public class InboundDataSource extends MqttDataSource {
         this.mqttConnection = new MqttConnection(config.serverUri(), config.serverUri());
 
         this.accessCode = accessCode;
-        this.provisioningType = InboundProvisioningType.REST_BEARER;
+        this.provisioningType = InboundProvisioningType.NONE;
     }
 
     public String accessCode() {
@@ -192,6 +192,24 @@ public class InboundDataSource extends MqttDataSource {
                 topic
         );
         return new MqttProvisioningConnectionDto(host, username, password, topic);
+    }
+
+    @Transactional
+    public MqttProvisioningConnectionDto resetServerModePassword(
+            BCryptPasswordEncoder encoder,
+            String plaintextPassword
+    ) throws ProvisioningConfigurationException {
+        var provisioningConfig = mqttProvisioningConfig();
+        var connection = provisioningConfig.connection();
+        var encodedPassword = Objects.requireNonNull(encoder.encode(plaintextPassword));
+        connection.updatePassword(encodedPassword);
+
+        return new MqttProvisioningConnectionDto(
+                connection.externalHost(),
+                connection.username(),
+                plaintextPassword,
+                provisioningConfig.topic()
+        );
     }
 
     @Override

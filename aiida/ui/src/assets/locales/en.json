@@ -137,6 +137,7 @@
       "copyAll": "Copy all credentials",
       "credentialsSaved": "I have saved the credentials",
       "types": {
+        "NONE": "Not configured",
         "REST_API_TOKEN": "REST API Token",
         "REST_BEARER": "REST Bearer",
         "MQTT_SERVER": "MQTT Server",

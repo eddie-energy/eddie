@@ -7,6 +7,7 @@ package energy.eddie.aiida.models.datasource.mqtt.inbound;
  * Supported mechanisms for provisioning inbound data.
  */
 public enum InboundProvisioningType {
+    NONE,
     /**
      * Retrieves records through the REST endpoint with an API key supplied in a request header.
      */

@@ -9,6 +9,7 @@ import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
+import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
@@ -189,6 +190,48 @@ class ProvisioningServiceTest {
             verify(dataSource).changeInboundProvisioningType(InboundProvisioningType.REST_BEARER);
             verify(publishers.constructed().getFirst()).close();
         }
+    }
+
+    @Test
+    void resetServerModePassword_withMqttServer_returnsGeneratedPassword() throws Exception {
+        var dataSource = inboundDataSource();
+        var generatedPassword = ArgumentCaptor.forClass(String.class);
+        when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.MQTT_SERVER);
+        when(dataSource.resetServerModePassword(eq(passwordEncoder), anyString())).thenAnswer(invocation ->
+                                                                                                      new MqttProvisioningConnectionDto(
+                                                                                                              HOST,
+                                                                                                              USERNAME,
+                                                                                                              invocation.getArgument(
+                                                                                                                      1,
+                                                                                                                      String.class),
+                                                                                                              TOPIC
+                                                                                                      )
+        );
+
+        var result = service.resetServerModePassword(PERMISSION_ID);
+
+        assertThat(result.host()).isEqualTo(HOST);
+        assertThat(result.username()).isEqualTo(USERNAME);
+        assertThat(result.password()).hasSize(10);
+        assertThat(result.topic()).isEqualTo(TOPIC);
+        verify(dataSource).resetServerModePassword(eq(passwordEncoder), generatedPassword.capture());
+        assertThat(generatedPassword.getValue()).isEqualTo(result.password());
+    }
+
+    @Test
+    void resetServerModePassword_withoutMqttServer_throwsProvisioningTypeNotConfiguredException() throws Exception {
+        var permission = mock(Permission.class);
+        var dataSource = mock(InboundDataSource.class);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        when(permission.dataSource()).thenReturn(dataSource);
+        when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.MQTT_CLIENT);
+
+        assertThrows(
+                ProvisioningTypeNotConfiguredException.class,
+                () -> service.resetServerModePassword(PERMISSION_ID)
+        );
+
+        verify(dataSource, never()).resetServerModePassword(any(), anyString());
     }
 
     @Test

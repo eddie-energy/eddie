@@ -49,6 +49,10 @@ public class MqttConnection {
         return internalHost;
     }
 
+    public String externalHost() {
+        return externalHost;
+    }
+
     public String username() {
         return user.username();
     }

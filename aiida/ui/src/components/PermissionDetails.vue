@@ -31,6 +31,7 @@ const { permission, status } = defineProps<{
 }>()
 const emit = defineEmits<{
   configureInboundProvisioning: [permission: AiidaPermission]
+  resetInboundServerPassword: [permission: AiidaPermission]
 }>()
 
 const { updatePermission } = usePermissionDialog()
@@ -215,7 +216,9 @@ const dataSourceDisplayName = computed(() => {
       </div>
       <div class="permission-field">
         <dt>{{ t('permissions.mqttProvisioning.mode') }}</dt>
-        <dd>{{ permission.dataSource?.provisioningType }}</dd>
+        <dd>
+          {{ t(`permissions.mqttProvisioning.types.${permission.dataSource?.provisioningType}`) }}
+        </dd>
       </div>
       <template v-if="isInboundMqttProvisioning && inboundMqttConnection">
         <div v-if="inboundMqttServerUri" class="permission-field">
@@ -373,6 +376,14 @@ const dataSourceDisplayName = computed(() => {
           v-if="permission.dataNeed.type === 'inbound-aiida'"
           class="actions-row actions-row--end"
         >
+          <Button
+            v-if="permission.dataSource?.provisioningType === 'MQTT_SERVER'"
+            button-style="secondary"
+            class="action-btn"
+            @click="emit('resetInboundServerPassword', permission)"
+          >
+            {{ t('datasources.card.resetPasswordButton') }}
+          </Button>
           <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
             <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
           </Button>

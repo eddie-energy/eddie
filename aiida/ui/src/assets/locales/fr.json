@@ -137,6 +137,7 @@
       "copyAll": "Copier tous les identifiants",
       "credentialsSaved": "J’ai enregistré les identifiants",
       "types": {
+        "NONE": "Non configuré",
         "REST_API_TOKEN": "Jeton API REST",
         "REST_BEARER": "REST Bearer",
         "MQTT_SERVER": "Serveur MQTT",

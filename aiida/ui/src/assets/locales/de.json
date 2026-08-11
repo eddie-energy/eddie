@@ -137,6 +137,7 @@
       "copyAll": "Alle Zugangsdaten kopieren",
       "credentialsSaved": "Ich habe die Zugangsdaten gespeichert",
       "types": {
+        "NONE": "Nicht konfiguriert",
         "REST_API_TOKEN": "REST-API-Token",
         "REST_BEARER": "REST Bearer",
         "MQTT_SERVER": "MQTT-Server",

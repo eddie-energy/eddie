@@ -7,6 +7,7 @@ import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
+import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.services.ProvisioningService;
@@ -58,6 +59,27 @@ public class ProvisioningController {
 
         var dto = provisioningService.changeProvisioningType(permissionId, provisioningTypePatchDto);
         return ResponseEntity.ok(dto);
+    }
+
+    @Operation(summary = "Reset the password for MQTT server provisioning.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Password reset successfully",
+                    content = @Content(schema = @Schema(implementation = MqttProvisioningConnectionDto.class))),
+            @ApiResponse(responseCode = "400", description = "Permission does not use an inbound data source",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Permission not found", content = @Content),
+            @ApiResponse(responseCode = "409", description = "MQTT server provisioning is not active",
+                    content = @Content)
+    })
+    @PostMapping(value = "/permission/{id}/regenerate-server-provisioning-password")
+    public ResponseEntity<MqttProvisioningConnectionDto> resetServerModePassword(
+            @PathVariable("id") UUID permissionId
+    ) throws PermissionNotFoundException,
+             InvalidDataSourceTypeException,
+             ProvisioningTypeNotConfiguredException,
+             ProvisioningConfigurationException {
+        var connectionDetails = provisioningService.resetServerModePassword(permissionId);
+        return ResponseEntity.ok(connectionDetails);
     }
 
     @Operation(summary = "Get all provisioning types", description = "Retrieve all provisioning types.",

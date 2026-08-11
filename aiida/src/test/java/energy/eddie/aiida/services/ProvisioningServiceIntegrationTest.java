@@ -229,6 +229,45 @@ class ProvisioningServiceIntegrationTest {
     }
 
     @Test
+    void resetMqttServerPassword_persistsPasswordWithoutChangingUsernameOrTopic() throws Exception {
+        var permissionId = createInboundPermission();
+        var dataSourceId = dataSourceId(permissionId);
+        var mqttClient = mock(MqttAsyncClient.class);
+
+        when(mqttConfiguration.internalHost()).thenReturn(SERVER_INTERNAL_HOST);
+        when(mqttConfiguration.externalHost()).thenReturn(SERVER_EXTERNAL_HOST);
+        when(mqttConfiguration.username()).thenReturn(AIIDA_USERNAME);
+        when(mqttConfiguration.password()).thenReturn(AIIDA_PASSWORD);
+        when(passwordEncoder.encode(anyString())).thenAnswer(invocation ->
+                                                                     "encoded-" + invocation.getArgument(0,
+                                                                                                         String.class)
+        );
+
+        try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
+            var initialConnection = provisioningService.changeProvisioningType(
+                    permissionId,
+                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_SERVER)
+            );
+
+            var result = provisioningService.resetServerModePassword(permissionId);
+
+            assertThat(result.host()).isEqualTo(initialConnection.host());
+            assertThat(result.username()).isEqualTo(initialConnection.username());
+            assertThat(result.password()).hasSize(10).isNotEqualTo(initialConnection.password());
+            assertThat(result.topic()).isEqualTo(initialConnection.topic());
+
+            entityManager.flush();
+            entityManager.clear();
+
+            var dataSource = inboundDataSourceRepository.findById(dataSourceId).orElseThrow();
+            assertThat(dataSource.provisioningConnection().password())
+                    .isEqualTo("encoded-" + result.password());
+            assertThat(dataSource.provisioningConnection().username()).isEqualTo(initialConnection.username());
+            assertThat(dataSource.provisioningTopic()).isEqualTo(initialConnection.topic());
+        }
+    }
+
+    @Test
     void mqttClientToRest_removesProvisioningRowsAndClosesPublisher() throws Exception {
         var permissionId = createInboundPermission();
         var dataSourceId = dataSourceId(permissionId);

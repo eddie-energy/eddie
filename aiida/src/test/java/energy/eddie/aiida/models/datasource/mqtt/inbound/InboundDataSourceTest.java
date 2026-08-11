@@ -6,8 +6,8 @@ package energy.eddie.aiida.models.datasource.mqtt.inbound;
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
-import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
+import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -46,6 +46,8 @@ class InboundDataSourceTest {
     private static final String SERVER_EXTERNAL_HOST = "ssl://external-broker:8883";
     private static final String SERVER_PASSWORD = "server-password";
     private static final String SERVER_PASSWORD_HASH = "encoded-server-credential";
+    private static final String RESET_SERVER_PASSWORD = "reset-server-password";
+    private static final String RESET_SERVER_PASSWORD_HASH = "reset-server-password-hash";
 
     private Permission permission;
     private InboundDataSource dataSource;
@@ -71,14 +73,14 @@ class InboundDataSourceTest {
 
     @Test
     void constructor_initializesRestProvisioningAndPermissionDetails() {
-        assertThat(dataSource.inboundProvisioningType()).isEqualTo(InboundProvisioningType.REST_BEARER);
+        assertThat(dataSource.inboundProvisioningType()).isEqualTo(InboundProvisioningType.NONE);
         assertThat(dataSource.accessCode()).isEqualTo(ACCESS_CODE);
         assertThat(dataSource.permission()).isSameAs(permission);
         assertThat(dataSource.acknowledgementTopic()).isEqualTo(ACKNOWLEDGEMENT_TOPIC);
         assertThatThrownBy(dataSource::provisioningConnection)
                 .isInstanceOf(ProvisioningConfigurationException.class)
                 .hasMessageContaining(DATA_SOURCE_ID.toString())
-                .hasMessageContaining(InboundProvisioningType.REST_BEARER.toString());
+                .hasMessageContaining(InboundProvisioningType.NONE.toString());
     }
 
     @Test
@@ -127,6 +129,33 @@ class InboundDataSourceTest {
         assertThat(dataSource.provisioningConnection().password()).isEqualTo(SERVER_PASSWORD_HASH);
         assertThat(dataSource.provisioningTopic()).isEqualTo(result.topic());
         verify(passwordEncoder).encode(SERVER_PASSWORD);
+    }
+
+    @Test
+    void resetServerModePassword_replacesOnlyEncodedPassword()
+            throws ProvisioningConfigurationException {
+        var mqttConfiguration = mock(MqttConfiguration.class);
+        var passwordEncoder = mock(BCryptPasswordEncoder.class);
+        when(mqttConfiguration.internalHost()).thenReturn(SERVER_INTERNAL_HOST);
+        when(mqttConfiguration.externalHost()).thenReturn(SERVER_EXTERNAL_HOST);
+        when(passwordEncoder.encode(SERVER_PASSWORD)).thenReturn(SERVER_PASSWORD_HASH);
+        when(passwordEncoder.encode(RESET_SERVER_PASSWORD)).thenReturn(RESET_SERVER_PASSWORD_HASH);
+        var initialCredentials = dataSource.establishServerModeConnection(
+                mqttConfiguration,
+                passwordEncoder,
+                SERVER_PASSWORD
+        );
+
+        var resetConnection = dataSource.resetServerModePassword(passwordEncoder, RESET_SERVER_PASSWORD);
+
+        assertThat(dataSource.provisioningConnection().password()).isEqualTo(RESET_SERVER_PASSWORD_HASH);
+        assertThat(dataSource.provisioningConnection().username()).isEqualTo(initialCredentials.username());
+        assertThat(dataSource.provisioningTopic()).isEqualTo(initialCredentials.topic());
+        assertThat(resetConnection.host()).isEqualTo(SERVER_EXTERNAL_HOST);
+        assertThat(resetConnection.username()).isEqualTo(initialCredentials.username());
+        assertThat(resetConnection.password()).isEqualTo(RESET_SERVER_PASSWORD);
+        assertThat(resetConnection.topic()).isEqualTo(initialCredentials.topic());
+        verify(passwordEncoder).encode(RESET_SERVER_PASSWORD);
     }
 
     @Test

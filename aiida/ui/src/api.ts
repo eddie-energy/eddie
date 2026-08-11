@@ -322,3 +322,11 @@ export function getInboundProvisioningTypes(): Promise<{ provisioningTypes: stri
     method: 'GET',
   })
 }
+
+export function regenerateInboundServerPassword(
+  permissionId: string,
+): Promise<ProvisioningConnectionDto> {
+  return fetch(`/provisioning/permission/${permissionId}/regenerate-server-provisioning-password`, {
+    method: 'POST',
+  })
+}

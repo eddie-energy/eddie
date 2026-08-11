@@ -17,6 +17,7 @@ const { permission, status } = defineProps<{
 }>()
 const emit = defineEmits<{
   configureInboundProvisioning: [permission: AiidaPermission]
+  resetInboundServerPassword: [permission: AiidaPermission]
 }>()
 const { t } = useI18n()
 
@@ -72,6 +73,7 @@ const isEditingDisplayName = ref(false)
         :status
         class="permission-details"
         @configure-inbound-provisioning="emit('configureInboundProvisioning', $event)"
+        @reset-inbound-server-password="emit('resetInboundServerPassword', $event)"
       />
     </Transition>
   </li>
