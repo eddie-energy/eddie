@@ -4,15 +4,19 @@
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
 import de.ponton.xp.adapter.api.ConnectionException;
+import de.ponton.xp.adapter.api.AdapterStatusRequestHandler;
+import de.ponton.xp.adapter.api.ConnectionStatusChangeHandler;
 import de.ponton.xp.adapter.api.MessengerConnection;
 import de.ponton.xp.adapter.api.TransmissionException;
 import de.ponton.xp.adapter.api.messages.OutboundMessage;
+import de.ponton.xp.adapter.api.domainvalues.MessengerInstance;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Answers;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -218,6 +222,31 @@ class PontonMessengerConnectionImplTest {
             connection.resendFailedMessage(date, "message-id");
 
             verify(monitor).resendFailedMessage(date, "message-id");
+        }
+    }
+
+    @Test
+    void registeredStatusCallbacks_updateAndReportWebSocketState() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            when(builder.build()).thenReturn(mock(MessengerConnection.class));
+            var connectionStatusHandler = ArgumentCaptor.forClass(ConnectionStatusChangeHandler.class);
+            var adapterStatusHandler = ArgumentCaptor.forClass(AdapterStatusRequestHandler.class);
+            connection();
+            verify(builder).onConnectionStatusChanged(connectionStatusHandler.capture());
+            verify(builder).onAdapterStatusRequest(adapterStatusHandler.capture());
+            var messengerInstance = mock(MessengerInstance.class);
+
+            connectionStatusHandler.getValue().connectionCountChanged(messengerInstance, 0, 0, 0);
+            connectionStatusHandler.getValue().connectionCountChanged(messengerInstance, 1, 1, 0);
+            var adapterStatus = adapterStatusHandler.getValue().onAdapterStatusRequest();
+
+            assertThat(adapterStatus).contains(
+                    CONFIG.adapterId(),
+                    CONFIG.adapterVersion(),
+                    "outbound=1",
+                    "inbound=1"
+            );
         }
     }
 

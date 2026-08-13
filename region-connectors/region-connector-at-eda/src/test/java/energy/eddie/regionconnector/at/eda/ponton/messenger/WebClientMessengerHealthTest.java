@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,8 +41,8 @@ class WebClientMessengerHealthTest {
                 "password",
                 1,
                 1,
-                java.time.Duration.ofMinutes(1),
-                java.time.Duration.ofMinutes(2)
+                Duration.ofMinutes(1),
+                Duration.ofMinutes(2)
         );
     }
 

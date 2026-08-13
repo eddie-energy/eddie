@@ -45,14 +45,11 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
     private final MessengerConnection.MessengerConnectionBuilder messengerConnectionBuilder;
     private final PontonXPAdapterConfiguration config;
-    // The clock is injected instead of calling Instant.now(Clock.systemUTC()) directly. Production still supplies the
-    // suggested UTC clock, while tests can supply a fixed clock to verify timeout behavior without relying on wall time.
-    private final Clock clock;
     private final MessengerHealth healthApi;
     private final MessengerMonitor messengerMonitor;
     private final ReentrantLock lock = new ReentrantLock();
     private final PontonRetryableStrategy retryStrategy;
-    private final PontonWebSocketConnectionState webSocketConnectionState = new PontonWebSocketConnectionState();
+    private final PontonWebSocketConnectionState webSocketConnectionState;
     private volatile boolean closed;
     @Nullable
     private OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler;
@@ -80,7 +77,9 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
             Clock clock
     ) throws ConnectionException {
         this.config = config;
-        this.clock = clock;
+        // The state owns the injected clock instead of calling Instant.now() directly. Production supplies the suggested
+        // UTC clock, while tests can supply a fixed clock to verify timeout behavior without relying on wall time.
+        this.webSocketConnectionState = new PontonWebSocketConnectionState(config, clock);
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.healthApi = healthApi;
@@ -110,7 +109,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         lock.lock();
         try {
             ensureOpen();
-            webSocketConnectionState.markReceptionStarted(clock.instant());
+            webSocketConnectionState.markReceptionStarted();
             messengerConnection.startReception();
         } finally {
             lock.unlock();
@@ -199,7 +198,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     public MessengerStatus messengerStatus() {
         var messengerStatus = healthApi.messengerStatus();
         var healthChecks = new HashMap<>(messengerStatus.healthChecks());
-        var adapterConnectionHealthCheck = webSocketConnectionState.healthCheck(config, clock.instant());
+        var adapterConnectionHealthCheck = webSocketConnectionState.healthCheck();
         healthChecks.put(adapterConnectionHealthCheck.name(), adapterConnectionHealthCheck);
         return new MessengerStatus(healthChecks, messengerStatus.ok() && adapterConnectionHealthCheck.ok());
     }
@@ -207,28 +206,29 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     @Override
     public void reconnectIfConnectionStale() throws TransmissionException, ConnectionException {
         // Keep the common healthy/closed path lock-free so the watchdog never waits behind sends or shutdown.
-        if (closed || !webSocketConnectionState.needsReconnect(config, clock.instant())) {
+        if (shouldSkipReconnect()) {
             return;
         }
         if (!lock.tryLock()) {
             LOGGER.atWarn()
                   .addArgument(webSocketConnectionState::describe)
-                  .log("Skipping Ponton XP adapter WebSocket reconnect because another reconnect is already running. State: {}");
+                  .log("Skipping Ponton XP adapter WebSocket reconnect because another connection operation is running. State: {}");
             return;
         }
         try {
-            if (closed) {
-                return;
-            }
             // Connection-status callbacks can update the state while this thread waits for the lock. Rechecking after
             // acquiring it prevents reconnecting a connection that recovered after the initial lock-free fast-path check.
-            if (!webSocketConnectionState.needsReconnect(config, clock.instant())) {
+            if (shouldSkipReconnect()) {
                 return;
             }
             reconnect("stale or insufficient WebSocket connection state: " + webSocketConnectionState.describe());
         } finally {
             lock.unlock();
         }
+    }
+
+    private boolean shouldSkipReconnect() {
+        return closed || !webSocketConnectionState.needsReconnect();
     }
 
     @Override
@@ -276,7 +276,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     }
 
     private String handleAdapterStatusRequest() {
-        webSocketConnectionState.markAdapterStatusRequested(clock.instant());
+        webSocketConnectionState.markAdapterStatusRequested();
         return config.adapterId() + " " + config.adapterVersion() + " is running. " + webSocketConnectionState.describe();
     }
 
@@ -288,8 +288,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     ) {
         webSocketConnectionState.updateConnectionCounts(
                 outboundConnectionCount,
-                inboundConnectionCount,
-                clock.instant()
+                inboundConnectionCount
         );
         if (outboundConnectionCount < config.outboundConnections() ||
             inboundConnectionCount < config.inboundConnections()) {
@@ -484,7 +483,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         LOGGER.warn("Restarting Ponton XP adapter WebSocket connection because {}.", reason);
         messengerConnection.close();
         messengerConnection = messengerConnectionBuilder.build();
-        webSocketConnectionState.markRestarted(clock.instant());
+        webSocketConnectionState.markRestarted();
         messengerConnection.startReception();
         LOGGER.info("Ponton XP adapter WebSocket connection restarted.");
     }

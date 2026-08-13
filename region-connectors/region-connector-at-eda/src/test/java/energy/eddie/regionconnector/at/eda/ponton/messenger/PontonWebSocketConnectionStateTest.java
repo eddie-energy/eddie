@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.Clock;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,71 +24,76 @@ class PontonWebSocketConnectionStateTest {
 
     @Test
     void needsReconnect_returnsFalseBeforeReceptionStarted() {
-        var state = new PontonWebSocketConnectionState();
+        var clock = new MutableClock(START.plus(STATUS_TIMEOUT).plusSeconds(1));
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
 
-        assertThat(state.needsReconnect(CONFIG, START.plus(STATUS_TIMEOUT).plusSeconds(1)))
-                .isFalse();
+        assertThat(state.needsReconnect()).isFalse();
     }
 
     @Test
     void needsReconnect_returnsTrueWhenInitialConnectionStatusCallbackIsStale() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        clock.set(START.plus(STATUS_TIMEOUT).plusSeconds(1));
 
-        assertThat(state.needsReconnect(CONFIG, START.plus(STATUS_TIMEOUT).plusSeconds(1)))
-                .isTrue();
+        assertThat(state.needsReconnect()).isTrue();
     }
 
     @Test
     void needsReconnect_returnsTrueWhenInboundConnectionCountIsBelowExpected() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
-        state.updateConnectionCounts(1, 0, START.plusSeconds(1));
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        clock.set(START.plusSeconds(1));
+        state.updateConnectionCounts(1, 0);
 
-        assertThat(state.needsReconnect(CONFIG, START.plusSeconds(2)))
-                .isTrue();
+        assertThat(state.needsReconnect()).isTrue();
     }
 
     @Test
     void needsReconnect_returnsFalseWhenConnectionCountsMatchExpectedCounts() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
-        state.updateConnectionCounts(1, 1, START.plusSeconds(1));
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        state.updateConnectionCounts(1, 1);
 
-        assertThat(state.needsReconnect(CONFIG, START.plusSeconds(2)))
-                .isFalse();
+        assertThat(state.needsReconnect()).isFalse();
     }
 
     @Test
     void needsReconnect_returnsTrueWhenOutboundConnectionCountIsBelowExpected() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
-        state.updateConnectionCounts(0, 1, START.plusSeconds(1));
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        state.updateConnectionCounts(0, 1);
 
-        assertThat(state.needsReconnect(CONFIG, START.plusSeconds(2)))
-                .isTrue();
+        assertThat(state.needsReconnect()).isTrue();
     }
 
     @Test
     void needsReconnect_returnsFalseAtStatusTimeoutBoundary() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        clock.set(START.plus(STATUS_TIMEOUT));
 
-        assertThat(state.needsReconnect(CONFIG, START.plus(STATUS_TIMEOUT)))
-                .isFalse();
+        assertThat(state.needsReconnect()).isFalse();
     }
 
     @Test
     void markRestarted_resetsConnectionCountsAndStartsStatusTimeoutAgain() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
-        state.updateConnectionCounts(1, 1, START.plusSeconds(1));
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        state.updateConnectionCounts(1, 1);
         var restartedAt = START.plusSeconds(10);
+        clock.set(restartedAt);
 
-        state.markRestarted(restartedAt);
+        state.markRestarted();
+        clock.set(restartedAt.plus(STATUS_TIMEOUT).plusSeconds(1));
 
-        assertThat(state.needsReconnect(CONFIG, restartedAt.plus(STATUS_TIMEOUT).plusSeconds(1)))
-                .isTrue();
+        assertThat(state.needsReconnect()).isTrue();
         assertThat(state.describe()).contains(
                 "outbound=0",
                 "inbound=0",
@@ -96,12 +104,15 @@ class PontonWebSocketConnectionStateTest {
 
     @Test
     void healthCheck_reportsWebSocketState() {
-        var state = new PontonWebSocketConnectionState();
-        state.markReceptionStarted(START);
-        state.markAdapterStatusRequested(START.plusSeconds(1));
-        state.updateConnectionCounts(1, 1, START.plusSeconds(2));
+        var clock = new MutableClock(START);
+        var state = new PontonWebSocketConnectionState(CONFIG, clock);
+        state.markReceptionStarted();
+        clock.set(START.plusSeconds(1));
+        state.markAdapterStatusRequested();
+        clock.set(START.plusSeconds(2));
+        state.updateConnectionCounts(1, 1);
 
-        var healthCheck = state.healthCheck(CONFIG, START.plusSeconds(3));
+        var healthCheck = state.healthCheck();
 
         assertThat(healthCheck.name()).isEqualTo("adapterWebSocketConnection");
         assertThat(healthCheck.ok()).isTrue();
@@ -109,5 +120,32 @@ class PontonWebSocketConnectionStateTest {
                 "started=true",
                 "lastAdapterStatusRequestAt=" + START.plusSeconds(1)
         );
+    }
+
+    private static final class MutableClock extends Clock {
+        private Instant instant;
+
+        private MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        void set(Instant instant) {
+            this.instant = instant;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
     }
 }
