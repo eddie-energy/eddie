@@ -10,6 +10,7 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
 
     private boolean throwTransmissionException = false;
     private boolean throwConnectionException = false;
+    private int reconnectIfConnectionStaleCalls;
     public ECMPListHandler ecmpListHandler;
 
     public void setThrowTransmissionException(boolean throwTransmissionException) {
@@ -50,6 +52,23 @@ public class PontonMessengerConnectionTestImpl implements PontonMessengerConnect
         if (throwTransmissionException) {
             throw new TransmissionException("TransmissionException");
         }
+    }
+
+    @Override
+    public void reconnectIfConnectionStale() throws TransmissionException {
+        reconnectIfConnectionStaleCalls++;
+        if (throwTransmissionException) {
+            throw new TransmissionException("TransmissionException");
+        }
+    }
+
+    public int reconnectIfConnectionStaleCalls() {
+        return reconnectIfConnectionStaleCalls;
+    }
+
+    @Override
+    public Duration connectionWatchdogInterval() {
+        return Duration.ofMinutes(1);
     }
 
     @Override
