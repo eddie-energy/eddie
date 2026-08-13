@@ -90,6 +90,27 @@ class InboundPayloadTransformationServiceTest {
         assertEquals(mapper.readTree(expected), mapper.readTree(transformed));
     }
 
+    @Test
+    void transform_shouldMapMinMaxEnvelopeWithBracketedZoneIdToOpenAdr3Event() throws IOException, UnsupportedInboundRecordTransformationException {
+        var mapper = ObjectMapperCreatorUtil.mapper();
+        var dataSource = mock(InboundDataSource.class);
+        var payload = readResource("record/transform/min-max-envelope-openadr3-input.json")
+                .replace("2026-06-01T00:00:00Z", "2026-08-13T07:00Z[GMT]")
+                .replace("2026-06-01T00:30:00Z", "2026-08-13T07:30Z[GMT]");
+        var inboundRecord = new InboundRecord(
+                Instant.parse("2024-01-15T10:30:00Z"),
+                dataSource,
+                AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
+                payload
+        );
+
+        var transformed = inboundPayloadTransformationService.transform(inboundRecord, InboundMessageFormat.OPENADR_3_1);
+        var expected = readResource("record/transform/min-max-envelope-openadr3-expected.json")
+                .replace("2026-06-01T00:00:00Z", "2026-08-13T07:00:00Z");
+
+        assertEquals(mapper.readTree(expected), mapper.readTree(transformed));
+    }
+
     private String readResource(String path) throws IOException {
         return new ClassPathResource(path).getContentAsString(StandardCharsets.UTF_8);
     }

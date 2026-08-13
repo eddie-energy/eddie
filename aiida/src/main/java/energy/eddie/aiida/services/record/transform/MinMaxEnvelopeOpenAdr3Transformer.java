@@ -14,7 +14,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -26,6 +25,9 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
     private static final String IMPORT_CAPACITY_LIMIT = "IMPORT_CAPACITY_LIMIT";
     private static final String EXPORT_CAPACITY_LIMIT = "EXPORT_CAPACITY_LIMIT";
     private static final String CAPACITY_LIMIT_UNIT = "W";
+    private static final String PERIOD_TIME_INTERVAL = "marketDocument.period.timeInterval";
+    private static final String PERIOD_TIME_INTERVAL_START = PERIOD_TIME_INTERVAL + ".start";
+    private static final String PERIOD_TIME_INTERVAL_END = PERIOD_TIME_INTERVAL + ".end";
     private static final BigDecimal WATT_PER_KILO_WATT = BigDecimal.valueOf(1000);
     private static final List<EventPayloadDescriptor> PAYLOAD_DESCRIPTORS = List.of(
             new EventPayloadDescriptor(EVENT_PAYLOAD_DESCRIPTOR, IMPORT_CAPACITY_LIMIT, CAPACITY_LIMIT_UNIT),
@@ -84,14 +86,18 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
     }
 
     private Duration duration(RECMMOEMarketDocument marketDocument) {
-        var interval = requireNonNull(marketDocument.getPeriodTimeInterval(), "marketDocument.period.timeInterval");
-        return Duration.between(OffsetDateTime.parse(interval.getStart()), OffsetDateTime.parse(interval.getEnd()));
+        var interval = requireNonNull(marketDocument.getPeriodTimeInterval(), PERIOD_TIME_INTERVAL);
+        return Duration.between(
+                parseCimDateTime(interval.getStart(), PERIOD_TIME_INTERVAL_START),
+                parseCimDateTime(interval.getEnd(), PERIOD_TIME_INTERVAL_END)
+        );
     }
 
     private IntervalPeriod intervalPeriod(RECMMOEMarketDocument marketDocument, SeriesPeriod period) {
-        var interval = requireNonNull(marketDocument.getPeriodTimeInterval(), "marketDocument.period.timeInterval");
-        var start = requireNonBlank(interval.getStart(), "marketDocument.period.timeInterval.start");
-        var normalizedStart = OffsetDateTime.parse(start).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        var interval = requireNonNull(marketDocument.getPeriodTimeInterval(), PERIOD_TIME_INTERVAL);
+        var start = requireNonBlank(interval.getStart(), PERIOD_TIME_INTERVAL_START);
+        var normalizedStart = parseCimDateTime(start, PERIOD_TIME_INTERVAL_START)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
         var resolution = requireNonNull(period.getResolution(), "period.resolution");
 
         return new IntervalPeriod(normalizedStart, resolution);
@@ -159,6 +165,10 @@ public class MinMaxEnvelopeOpenAdr3Transformer implements InboundPayloadTransfor
 
     private @Nullable String dateTimeOrNull(@Nullable ZonedDateTime value) {
         return value == null ? null : value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+    }
+
+    private ZonedDateTime parseCimDateTime(String value, String fieldName) {
+        return ZonedDateTime.parse(requireNonBlank(value, fieldName));
     }
 
     private @Nullable String notBlankOrNull(@Nullable String value) {
