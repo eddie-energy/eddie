@@ -603,6 +603,22 @@ class PontonXPAdapterTest {
     }
 
     @Test
+    void scheduledConnectionWatchdog_keepsRunningWhenReconnectFails() throws TransmissionException {
+        // Given
+        var taskCaptor = ArgumentCaptor.forClass(Runnable.class);
+        doReturn(connectionWatchdogTask)
+                .when(taskScheduler)
+                .scheduleAtFixedRate(taskCaptor.capture(), eq(Duration.ofMinutes(1)));
+        pontonXPAdapter.start();
+        pontonMessengerConnection.setThrowTransmissionException(true);
+
+        // When & Then
+        assertDoesNotThrow(() -> taskCaptor.getValue().run());
+        assertEquals(1, pontonMessengerConnection.reconnectIfConnectionStaleCalls());
+        pontonXPAdapter.close();
+    }
+
+    @Test
     void close_cancelsConnectionWatchdog() throws TransmissionException {
         // Given
         doReturn(connectionWatchdogTask)

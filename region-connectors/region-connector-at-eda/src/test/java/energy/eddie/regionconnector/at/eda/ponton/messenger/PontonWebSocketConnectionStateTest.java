@@ -55,4 +55,59 @@ class PontonWebSocketConnectionStateTest {
         assertThat(state.needsReconnect(CONFIG, START.plusSeconds(2)))
                 .isFalse();
     }
+
+    @Test
+    void needsReconnect_returnsTrueWhenOutboundConnectionCountIsBelowExpected() {
+        var state = new PontonWebSocketConnectionState();
+        state.markReceptionStarted(START);
+        state.updateConnectionCounts(0, 1, START.plusSeconds(1));
+
+        assertThat(state.needsReconnect(CONFIG, START.plusSeconds(2)))
+                .isTrue();
+    }
+
+    @Test
+    void needsReconnect_returnsFalseAtStatusTimeoutBoundary() {
+        var state = new PontonWebSocketConnectionState();
+        state.markReceptionStarted(START);
+
+        assertThat(state.needsReconnect(CONFIG, START.plus(STATUS_TIMEOUT)))
+                .isFalse();
+    }
+
+    @Test
+    void markRestarted_resetsConnectionCountsAndStartsStatusTimeoutAgain() {
+        var state = new PontonWebSocketConnectionState();
+        state.markReceptionStarted(START);
+        state.updateConnectionCounts(1, 1, START.plusSeconds(1));
+        var restartedAt = START.plusSeconds(10);
+
+        state.markRestarted(restartedAt);
+
+        assertThat(state.needsReconnect(CONFIG, restartedAt.plus(STATUS_TIMEOUT).plusSeconds(1)))
+                .isTrue();
+        assertThat(state.describe()).contains(
+                "outbound=0",
+                "inbound=0",
+                "lastRestartAt=" + restartedAt,
+                "lastConnectionStatusChangedAt=null"
+        );
+    }
+
+    @Test
+    void healthCheck_reportsWebSocketState() {
+        var state = new PontonWebSocketConnectionState();
+        state.markReceptionStarted(START);
+        state.markAdapterStatusRequested(START.plusSeconds(1));
+        state.updateConnectionCounts(1, 1, START.plusSeconds(2));
+
+        var healthCheck = state.healthCheck(CONFIG, START.plusSeconds(3));
+
+        assertThat(healthCheck.name()).isEqualTo("adapterWebSocketConnection");
+        assertThat(healthCheck.ok()).isTrue();
+        assertThat(healthCheck.content()).contains(
+                "started=true",
+                "lastAdapterStatusRequestAt=" + START.plusSeconds(1)
+        );
+    }
 }

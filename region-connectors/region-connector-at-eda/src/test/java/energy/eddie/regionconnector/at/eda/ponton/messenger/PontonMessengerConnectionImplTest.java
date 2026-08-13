@@ -17,11 +17,15 @@ import org.mockito.Answers;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class PontonMessengerConnectionImplTest {
@@ -99,15 +103,145 @@ class PontonMessengerConnectionImplTest {
         }
     }
 
+    @Test
+    void start_startsReceptionAndExposesConfiguredWatchdogInterval() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            var messengerConnection = mock(MessengerConnection.class);
+            when(builder.build()).thenReturn(messengerConnection);
+            var connection = connection();
+
+            connection.start();
+
+            verify(messengerConnection).startReception();
+            assertThat(connection.connectionWatchdogInterval()).isEqualTo(CONFIG.connectionWatchdogInterval());
+        }
+    }
+
+    @Test
+    void sendMessage_sendsWithoutReconnectWhenFirstAttemptSucceeds() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            var messengerConnection = mock(MessengerConnection.class);
+            var outboundMessage = mock(OutboundMessage.class);
+            when(builder.build()).thenReturn(messengerConnection);
+            var connection = connection();
+
+            connection.sendMessage(outboundMessage);
+
+            verify(messengerConnection).sendMessage(outboundMessage);
+            verify(messengerConnection, never()).close();
+            verify(builder).build();
+        }
+    }
+
+    @Test
+    void sendMessage_wrapsNonRetryableFailureWithoutReconnect() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            var messengerConnection = mock(MessengerConnection.class);
+            var outboundMessage = mock(OutboundMessage.class);
+            when(builder.build()).thenReturn(messengerConnection);
+            doThrow(new IllegalArgumentException("invalid message"))
+                    .when(messengerConnection)
+                    .sendMessage(outboundMessage);
+            var connection = connection();
+
+            assertThrows(ConnectionException.class, () -> connection.sendMessage(outboundMessage));
+
+            verify(messengerConnection, never()).close();
+            verify(builder).build();
+        }
+    }
+
+    @Test
+    void messengerStatus_combinesMessengerAndWebSocketHealth() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            when(builder.build()).thenReturn(mock(MessengerConnection.class));
+            var healthApi = mock(MessengerHealth.class);
+            when(healthApi.messengerStatus()).thenReturn(new MessengerStatus(Map.of(), true));
+            var connection = connection(healthApi, mock(MessengerMonitor.class), CLOCK);
+
+            var status = connection.messengerStatus();
+
+            assertThat(status.ok()).isTrue();
+            assertThat(status.healthChecks()).containsKey("adapterWebSocketConnection");
+        }
+    }
+
+    @Test
+    void reconnectIfConnectionStale_rebuildsAndStartsConnectionAfterTimeout() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            var firstMessengerConnection = mock(MessengerConnection.class);
+            var secondMessengerConnection = mock(MessengerConnection.class);
+            when(builder.build()).thenReturn(firstMessengerConnection, secondMessengerConnection);
+            var clock = new MutableClock(CLOCK.instant());
+            var connection = connection(mock(MessengerHealth.class), mock(MessengerMonitor.class), clock);
+            connection.start();
+            clock.advance(CONFIG.connectionStatusTimeout().plusSeconds(1));
+
+            connection.reconnectIfConnectionStale();
+
+            verify(firstMessengerConnection).close();
+            verify(secondMessengerConnection).startReception();
+            verify(builder, times(2)).build();
+        }
+    }
+
+    @Test
+    void reconnectIfConnectionStale_doesNothingAfterClose() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            var messengerConnection = mock(MessengerConnection.class);
+            when(builder.build()).thenReturn(messengerConnection);
+            var connection = connection();
+            connection.close();
+
+            connection.reconnectIfConnectionStale();
+
+            verify(messengerConnection).close();
+            verify(builder).build();
+        }
+    }
+
+    @Test
+    void resendFailedMessage_delegatesToMonitor() throws Exception {
+        try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
+            var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
+            when(builder.build()).thenReturn(mock(MessengerConnection.class));
+            var monitor = mock(MessengerMonitor.class);
+            var connection = connection(mock(MessengerHealth.class), monitor, CLOCK);
+            var date = ZonedDateTime.parse("2026-08-13T12:00:00Z");
+
+            connection.resendFailedMessage(date, "message-id");
+
+            verify(monitor).resendFailedMessage(date, "message-id");
+        }
+    }
+
     private PontonMessengerConnectionImpl connection() throws Exception {
+        return connection(
+                () -> new MessengerStatus(Map.of(), true),
+                mock(MessengerMonitor.class),
+                CLOCK
+        );
+    }
+
+    private PontonMessengerConnectionImpl connection(
+            MessengerHealth healthApi,
+            MessengerMonitor monitor,
+            Clock clock
+    ) throws Exception {
         return new PontonMessengerConnectionImpl(
                 CONFIG,
                 workFolder.toFile(),
                 mock(InboundMessageFactoryCollection.class),
                 mock(OutboundMessageFactoryCollection.class),
-                () -> new MessengerStatus(Map.of(), true),
-                mock(MessengerMonitor.class),
-                CLOCK
+                healthApi,
+                monitor,
+                clock
         );
     }
 
@@ -117,5 +251,32 @@ class PontonMessengerConnectionImplTest {
         var builder = mock(MessengerConnection.MessengerConnectionBuilder.class, Answers.RETURNS_SELF);
         messengerConnectionFactory.when(MessengerConnection::newBuilder).thenReturn(builder);
         return builder;
+    }
+
+    private static final class MutableClock extends Clock {
+        private Instant instant;
+
+        private MutableClock(Instant instant) {
+            this.instant = instant;
+        }
+
+        void advance(Duration duration) {
+            instant = instant.plus(duration);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return instant;
+        }
     }
 }

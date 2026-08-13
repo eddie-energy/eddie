@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.at.eda.ponton;
 import jakarta.validation.constraints.Positive;
 import org.hibernate.validator.constraints.time.DurationMin;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.boot.context.properties.bind.Name;
 import org.springframework.validation.annotation.Validated;
@@ -51,7 +50,4 @@ public record PontonXPAdapterConfiguration(
         @DurationMin(nanos = 1)
         @DefaultValue("2m") Duration connectionStatusTimeout
 ) {
-    @ConstructorBinding
-    public PontonXPAdapterConfiguration {
-    }
 }
