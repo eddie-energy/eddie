@@ -33,7 +33,11 @@ class PontonQueueGaugeTest {
             "https://localhost:8080/api",
             "/",
             "admin",
-            "password"
+            "password",
+            1,
+            1,
+            java.time.Duration.ofMinutes(1),
+            java.time.Duration.ofMinutes(2)
     );
     @Mock
     private FindMessagesClient client;

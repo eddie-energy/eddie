@@ -11,6 +11,7 @@ import jakarta.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Clock;
 
 import static java.util.Objects.requireNonNull;
 
@@ -75,7 +76,10 @@ public class PontonMessengerConnectionBuilder {
                 inboundMessageFactoryCollection,
                 outboundMessageFactoryCollection,
                 healthApi,
-                messengerMonitor
+                messengerMonitor,
+                // Keep UTC as the production time source while allowing the implementation to receive a deterministic
+                // Clock in tests. Hard-coding this clock inside the implementation would prevent timeout testing.
+                Clock.systemUTC()
         );
     }
 }

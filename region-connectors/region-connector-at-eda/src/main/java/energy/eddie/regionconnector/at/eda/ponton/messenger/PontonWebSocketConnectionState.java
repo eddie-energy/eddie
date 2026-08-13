@@ -3,9 +3,9 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
+import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import jakarta.annotation.Nullable;
 
-import java.time.Duration;
 import java.time.Instant;
 
 /**
@@ -31,7 +31,6 @@ final class PontonWebSocketConnectionState {
     private Instant lastAdapterStatusRequestAt;
     private int outboundConnectionCount;
     private int inboundConnectionCount;
-    private int archiveConnectionCount;
 
     /**
      * Marks that {@code startReception()} was called and the adapter now expects connection-status callbacks.
@@ -50,7 +49,6 @@ final class PontonWebSocketConnectionState {
         lastConnectionStatusChangedAt = null;
         outboundConnectionCount = 0;
         inboundConnectionCount = 0;
-        archiveConnectionCount = 0;
     }
 
     synchronized void markAdapterStatusRequested(Instant now) {
@@ -63,57 +61,41 @@ final class PontonWebSocketConnectionState {
     synchronized void updateConnectionCounts(
             int outboundConnectionCount,
             int inboundConnectionCount,
-            int archiveConnectionCount,
             Instant now
     ) {
         this.outboundConnectionCount = outboundConnectionCount;
         this.inboundConnectionCount = inboundConnectionCount;
-        this.archiveConnectionCount = archiveConnectionCount;
         lastConnectionStatusChangedAt = now;
     }
 
     synchronized boolean needsReconnect(
-            int expectedOutboundConnections,
-            int expectedInboundConnections,
-            int expectedArchiveConnections,
-            Duration connectionStatusTimeout,
+            PontonXPAdapterConfiguration config,
             Instant now
     ) {
         if (!receptionStarted) {
             return false;
         }
         if (lastConnectionStatusChangedAt == null) {
-            return lastStartAt != null && lastStartAt.plus(connectionStatusTimeout).isBefore(now);
+            return lastStartAt != null && lastStartAt.plus(config.connectionStatusTimeout()).isBefore(now);
         }
-        return outboundConnectionCount < expectedOutboundConnections ||
-               inboundConnectionCount < expectedInboundConnections ||
-               archiveConnectionCount < expectedArchiveConnections;
+        return outboundConnectionCount < config.outboundConnections() ||
+               inboundConnectionCount < config.inboundConnections();
     }
 
     synchronized HealthCheck healthCheck(
-            int expectedOutboundConnections,
-            int expectedInboundConnections,
-            int expectedArchiveConnections,
-            Duration connectionStatusTimeout,
+            PontonXPAdapterConfiguration config,
             Instant now
     ) {
-        var ok = !needsReconnect(
-                expectedOutboundConnections,
-                expectedInboundConnections,
-                expectedArchiveConnections,
-                connectionStatusTimeout,
-                now
-        );
+        var ok = !needsReconnect(config, now);
         return new HealthCheck("adapterWebSocketConnection", ok, describe());
     }
 
     synchronized String describe() {
-        return "started=%s, outbound=%d, inbound=%d, archive=%d, lastStartAt=%s, lastRestartAt=%s, lastConnectionStatusChangedAt=%s, lastAdapterStatusRequestAt=%s"
+        return "started=%s, outbound=%d, inbound=%d, lastStartAt=%s, lastRestartAt=%s, lastConnectionStatusChangedAt=%s, lastAdapterStatusRequestAt=%s"
                 .formatted(
                         receptionStarted,
                         outboundConnectionCount,
                         inboundConnectionCount,
-                        archiveConnectionCount,
                         lastStartAt,
                         lastRestartAt,
                         lastConnectionStatusChangedAt,

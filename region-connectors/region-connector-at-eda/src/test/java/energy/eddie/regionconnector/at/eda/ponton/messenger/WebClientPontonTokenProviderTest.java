@@ -52,7 +52,11 @@ class WebClientPontonTokenProviderTest {
                 "http://localhost:" + mockBackEnd.getPort(),
                 "folder",
                 "user",
-                "password"
+                "password",
+                1,
+                1,
+                java.time.Duration.ofMinutes(1),
+                java.time.Duration.ofMinutes(2)
         );
     }
 

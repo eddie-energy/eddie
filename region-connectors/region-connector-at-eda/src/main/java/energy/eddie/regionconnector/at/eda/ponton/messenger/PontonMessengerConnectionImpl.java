@@ -32,24 +32,28 @@ import org.springframework.oxm.XmlMappingException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Clock;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMessengerConnection {
     private static final Logger LOGGER = LoggerFactory.getLogger(PontonMessengerConnectionImpl.class);
+    private static final int ARCHIVE_CONNECTIONS = 0;
     private final InboundMessageFactoryCollection inboundMessageFactoryCollection;
     private final OutboundMessageFactoryCollection outboundMessageFactoryCollection;
     private final MessengerConnection.MessengerConnectionBuilder messengerConnectionBuilder;
     private final PontonXPAdapterConfiguration config;
+    // The clock is injected instead of calling Instant.now(Clock.systemUTC()) directly. Production still supplies the
+    // suggested UTC clock, while tests can supply a fixed clock to verify timeout behavior without relying on wall time.
+    private final Clock clock;
     private final MessengerHealth healthApi;
     private final MessengerMonitor messengerMonitor;
     private final ReentrantLock lock = new ReentrantLock();
     private final PontonRetryableStrategy retryStrategy;
     private final PontonWebSocketConnectionState webSocketConnectionState = new PontonWebSocketConnectionState();
-    private boolean closed;
+    private volatile boolean closed;
     @Nullable
     private OutboundMessageStatusUpdateHandler outboundMessageStatusUpdateHandler;
     @Nullable
@@ -72,9 +76,11 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
             InboundMessageFactoryCollection inboundMessageFactoryCollection,
             OutboundMessageFactoryCollection outboundMessageFactoryCollection,
             MessengerHealth healthApi,
-            MessengerMonitor messengerMonitor
+            MessengerMonitor messengerMonitor,
+            Clock clock
     ) throws ConnectionException {
         this.config = config;
+        this.clock = clock;
         this.inboundMessageFactoryCollection = inboundMessageFactoryCollection;
         this.outboundMessageFactoryCollection = outboundMessageFactoryCollection;
         this.healthApi = healthApi;
@@ -104,7 +110,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         lock.lock();
         try {
             ensureOpen();
-            webSocketConnectionState.markReceptionStarted(Instant.now());
+            webSocketConnectionState.markReceptionStarted(clock.instant());
             messengerConnection.startReception();
         } finally {
             lock.unlock();
@@ -193,48 +199,30 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     public MessengerStatus messengerStatus() {
         var messengerStatus = healthApi.messengerStatus();
         var healthChecks = new HashMap<>(messengerStatus.healthChecks());
-        var adapterConnectionHealthCheck = webSocketConnectionState.healthCheck(
-                config.outboundConnections(),
-                config.inboundConnections(),
-                config.archiveConnections(),
-                config.connectionStatusTimeout(),
-                Instant.now()
-        );
+        var adapterConnectionHealthCheck = webSocketConnectionState.healthCheck(config, clock.instant());
         healthChecks.put(adapterConnectionHealthCheck.name(), adapterConnectionHealthCheck);
         return new MessengerStatus(healthChecks, messengerStatus.ok() && adapterConnectionHealthCheck.ok());
     }
 
     @Override
     public void reconnectIfConnectionStale() throws TransmissionException, ConnectionException {
-        if (!webSocketConnectionState.needsReconnect(
-                config.outboundConnections(),
-                config.inboundConnections(),
-                config.archiveConnections(),
-                config.connectionStatusTimeout(),
-                Instant.now()
-        )) {
+        // Keep the common healthy/closed path lock-free so the watchdog never waits behind sends or shutdown.
+        if (closed || !webSocketConnectionState.needsReconnect(config, clock.instant())) {
             return;
         }
         if (!lock.tryLock()) {
-            if (LOGGER.isWarnEnabled()) {
-                LOGGER.warn(
-                        "Skipping Ponton XP adapter WebSocket reconnect because another reconnect is already running. State: {}",
-                        webSocketConnectionState.describe()
-                );
-            }
+            LOGGER.atWarn()
+                  .addArgument(webSocketConnectionState::describe)
+                  .log("Skipping Ponton XP adapter WebSocket reconnect because another reconnect is already running. State: {}");
             return;
         }
         try {
             if (closed) {
                 return;
             }
-            if (!webSocketConnectionState.needsReconnect(
-                    config.outboundConnections(),
-                    config.inboundConnections(),
-                    config.archiveConnections(),
-                    config.connectionStatusTimeout(),
-                    Instant.now()
-            )) {
+            // Connection-status callbacks can update the state while this thread waits for the lock. Rechecking after
+            // acquiring it prevents reconnecting a connection that recovered after the initial lock-free fast-path check.
+            if (!webSocketConnectionState.needsReconnect(config, clock.instant())) {
                 return;
             }
             reconnect("stale or insufficient WebSocket connection state: " + webSocketConnectionState.describe());
@@ -275,7 +263,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
                         config.port(),
                         config.inboundConnections(),
                         config.outboundConnections(),
-                        config.archiveConnections()
+                        ARCHIVE_CONNECTIONS
                 ))
                 .onAdapterStatusRequest(this::handleAdapterStatusRequest)
                 .onMessageStatusUpdate(outboundMessageStatusUpdate -> {
@@ -288,7 +276,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
     }
 
     private String handleAdapterStatusRequest() {
-        webSocketConnectionState.markAdapterStatusRequested(Instant.now());
+        webSocketConnectionState.markAdapterStatusRequested(clock.instant());
         return config.adapterId() + " " + config.adapterVersion() + " is running. " + webSocketConnectionState.describe();
     }
 
@@ -301,21 +289,18 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         webSocketConnectionState.updateConnectionCounts(
                 outboundConnectionCount,
                 inboundConnectionCount,
-                archiveConnectionCount,
-                Instant.now()
+                clock.instant()
         );
         if (outboundConnectionCount < config.outboundConnections() ||
-            inboundConnectionCount < config.inboundConnections() ||
-            archiveConnectionCount < config.archiveConnections()) {
+            inboundConnectionCount < config.inboundConnections()) {
             LOGGER.warn(
-                    "Ponton XP adapter WebSocket connection count below expected for '{}': outbound {}/{}, inbound {}/{}, archive {}/{}",
+                    "Ponton XP adapter WebSocket connection count below expected for '{}': outbound {}/{}, inbound {}/{}, archive {}",
                     messengerInstance,
                     outboundConnectionCount,
                     config.outboundConnections(),
                     inboundConnectionCount,
                     config.inboundConnections(),
-                    archiveConnectionCount,
-                    config.archiveConnections()
+                    archiveConnectionCount
             );
         } else {
             LOGGER.info(
@@ -499,7 +484,7 @@ public class PontonMessengerConnectionImpl implements AutoCloseable, PontonMesse
         LOGGER.warn("Restarting Ponton XP adapter WebSocket connection because {}.", reason);
         messengerConnection.close();
         messengerConnection = messengerConnectionBuilder.build();
-        webSocketConnectionState.markRestarted(Instant.now());
+        webSocketConnectionState.markRestarted(clock.instant());
         messengerConnection.startReception();
         LOGGER.info("Ponton XP adapter WebSocket connection restarted.");
     }

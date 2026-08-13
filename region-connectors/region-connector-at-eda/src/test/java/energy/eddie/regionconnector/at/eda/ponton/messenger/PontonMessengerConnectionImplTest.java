@@ -16,12 +16,16 @@ import org.mockito.Answers;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class PontonMessengerConnectionImplTest {
+    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-08-13T10:00:00Z"), ZoneOffset.UTC);
     private static final PontonXPAdapterConfiguration CONFIG = new PontonXPAdapterConfiguration(
             "adapter-id",
             "adapter-version",
@@ -30,7 +34,11 @@ class PontonMessengerConnectionImplTest {
             "http://localhost:8081",
             "work",
             "user",
-            "password"
+            "password",
+            1,
+            1,
+            java.time.Duration.ofMinutes(1),
+            java.time.Duration.ofMinutes(2)
     );
 
     @TempDir
@@ -98,7 +106,8 @@ class PontonMessengerConnectionImplTest {
                 mock(InboundMessageFactoryCollection.class),
                 mock(OutboundMessageFactoryCollection.class),
                 () -> new MessengerStatus(Map.of(), true),
-                mock(MessengerMonitor.class)
+                mock(MessengerMonitor.class),
+                CLOCK
         );
     }
 

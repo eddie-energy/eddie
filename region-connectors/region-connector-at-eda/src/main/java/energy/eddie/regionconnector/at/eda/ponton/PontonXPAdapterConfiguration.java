@@ -3,9 +3,13 @@
 
 package energy.eddie.regionconnector.at.eda.ponton;
 
+import jakarta.validation.constraints.Positive;
+import org.hibernate.validator.constraints.time.DurationMin;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.boot.context.properties.bind.Name;
+import org.springframework.validation.annotation.Validated;
 
 import java.time.Duration;
 
@@ -24,10 +28,10 @@ import java.time.Duration;
  * @param password       Password for the given username.
  * @param inboundConnections Expected amount of inbound WebSocket connections to the Ponton XP Messenger.
  * @param outboundConnections Expected amount of outbound WebSocket connections to the Ponton XP Messenger.
- * @param archiveConnections Expected amount of archive WebSocket connections to the Ponton XP Messenger.
  * @param connectionWatchdogInterval How often the Ponton XP Messenger adapter WebSocket connection is checked.
  * @param connectionStatusTimeout Maximum time after start or reconnect until a connection-status callback must be received.
  */
+@Validated
 @ConfigurationProperties("region-connector.at.eda.ponton.messenger")
 public record PontonXPAdapterConfiguration(
         @Name("adapter.id") String adapterId,
@@ -38,55 +42,16 @@ public record PontonXPAdapterConfiguration(
         @Name("folder") String workFolder,
         @Name("username") String username,
         @Name("password") String password,
-        @Name("inbound-connections") int inboundConnections,
-        @Name("outbound-connections") int outboundConnections,
-        @Name("archive-connections") int archiveConnections,
-        @Name("connection-watchdog.interval") Duration connectionWatchdogInterval,
-        @Name("connection-watchdog.status-timeout") Duration connectionStatusTimeout
+        @Name("inbound-connections") @Positive @DefaultValue("1") int inboundConnections,
+        @Name("outbound-connections") @Positive @DefaultValue("1") int outboundConnections,
+        @Name("connection-watchdog.interval")
+        @DurationMin(nanos = 1)
+        @DefaultValue("1m") Duration connectionWatchdogInterval,
+        @Name("connection-watchdog.status-timeout")
+        @DurationMin(nanos = 1)
+        @DefaultValue("2m") Duration connectionStatusTimeout
 ) {
-    private static final int DEFAULT_INBOUND_CONNECTIONS = 1;
-    private static final int DEFAULT_OUTBOUND_CONNECTIONS = 1;
-    private static final int DEFAULT_ARCHIVE_CONNECTIONS = 0;
-    private static final Duration DEFAULT_CONNECTION_WATCHDOG_INTERVAL = Duration.ofMinutes(1);
-    private static final Duration DEFAULT_CONNECTION_STATUS_TIMEOUT = Duration.ofMinutes(2);
-
     @ConstructorBinding
     public PontonXPAdapterConfiguration {
-        inboundConnections = inboundConnections <= 0 ? DEFAULT_INBOUND_CONNECTIONS : inboundConnections;
-        outboundConnections = outboundConnections <= 0 ? DEFAULT_OUTBOUND_CONNECTIONS : outboundConnections;
-        archiveConnections = Math.max(archiveConnections, DEFAULT_ARCHIVE_CONNECTIONS);
-        connectionWatchdogInterval = connectionWatchdogInterval == null
-                ? DEFAULT_CONNECTION_WATCHDOG_INTERVAL
-                : connectionWatchdogInterval;
-        connectionStatusTimeout = connectionStatusTimeout == null
-                ? DEFAULT_CONNECTION_STATUS_TIMEOUT
-                : connectionStatusTimeout;
-    }
-
-    public PontonXPAdapterConfiguration(
-            String adapterId,
-            String adapterVersion,
-            String hostname,
-            int port,
-            String apiEndpoint,
-            String workFolder,
-            String username,
-            String password
-    ) {
-        this(
-                adapterId,
-                adapterVersion,
-                hostname,
-                port,
-                apiEndpoint,
-                workFolder,
-                username,
-                password,
-                DEFAULT_INBOUND_CONNECTIONS,
-                DEFAULT_OUTBOUND_CONNECTIONS,
-                DEFAULT_ARCHIVE_CONNECTIONS,
-                DEFAULT_CONNECTION_WATCHDOG_INTERVAL,
-                DEFAULT_CONNECTION_STATUS_TIMEOUT
-        );
     }
 }
