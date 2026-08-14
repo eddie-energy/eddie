@@ -6,9 +6,9 @@ package energy.eddie.regionconnector.at.eda.ponton.messenger;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import org.junit.jupiter.api.Test;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 
@@ -28,6 +28,12 @@ class PontonWebSocketConnectionStateTest {
         var state = new PontonWebSocketConnectionState(CONFIG, clock);
 
         assertThat(state.needsReconnect()).isFalse();
+    }
+
+    @Test
+    void describe_reportsNotStartedWithoutReceptionStartTimestamp() {
+        var state = new PontonWebSocketConnectionState(CONFIG, new MutableClock(START));
+
         assertThat(state.describe()).contains(
                 "started=false",
                 "lastReceptionStartAt=null"
@@ -86,10 +92,9 @@ class PontonWebSocketConnectionStateTest {
     }
 
     @Test
-    void markRestarted_resetsConnectionCountsAndStartsStatusTimeoutAgain() {
+    void markRestarted_setsReceptionStartTimestampAndStartsStatusTimeout() {
         var clock = new MutableClock(START);
         var state = new PontonWebSocketConnectionState(CONFIG, clock);
-        state.markReceptionStarted();
         state.updateConnectionCounts(1, 1);
         var restartedAt = START.plusSeconds(10);
         clock.set(restartedAt);
