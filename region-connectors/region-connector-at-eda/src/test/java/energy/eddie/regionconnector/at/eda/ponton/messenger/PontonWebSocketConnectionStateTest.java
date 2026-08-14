@@ -28,6 +28,10 @@ class PontonWebSocketConnectionStateTest {
         var state = new PontonWebSocketConnectionState(CONFIG, clock);
 
         assertThat(state.needsReconnect()).isFalse();
+        assertThat(state.describe()).contains(
+                "started=false",
+                "lastReceptionStartAt=null"
+        );
     }
 
     @Test
@@ -97,6 +101,7 @@ class PontonWebSocketConnectionStateTest {
         assertThat(state.describe()).contains(
                 "outbound=0",
                 "inbound=0",
+                "lastReceptionStartAt=" + restartedAt,
                 "lastRestartAt=" + restartedAt,
                 "lastConnectionStatusChangedAt=null"
         );

@@ -3,20 +3,20 @@
 
 package energy.eddie.regionconnector.at.eda.ponton.messenger;
 
-import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.AdapterStatusRequestHandler;
+import de.ponton.xp.adapter.api.ConnectionException;
 import de.ponton.xp.adapter.api.ConnectionStatusChangeHandler;
 import de.ponton.xp.adapter.api.MessengerConnection;
 import de.ponton.xp.adapter.api.TransmissionException;
-import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import de.ponton.xp.adapter.api.domainvalues.MessengerInstance;
+import de.ponton.xp.adapter.api.messages.OutboundMessage;
 import energy.eddie.regionconnector.at.eda.ponton.PontonXPAdapterConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Answers;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Answers;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -28,8 +28,8 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class PontonMessengerConnectionImplTest {
@@ -45,8 +45,8 @@ class PontonMessengerConnectionImplTest {
             "password",
             1,
             1,
-            java.time.Duration.ofMinutes(1),
-            java.time.Duration.ofMinutes(2)
+            Duration.ofMinutes(1),
+            Duration.ofMinutes(2)
     );
 
     @TempDir
@@ -162,7 +162,8 @@ class PontonMessengerConnectionImplTest {
     void messengerStatus_combinesMessengerAndWebSocketHealth() throws Exception {
         try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
             var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
-            when(builder.build()).thenReturn(mock(MessengerConnection.class));
+            var messengerConnection = mock(MessengerConnection.class);
+            when(builder.build()).thenReturn(messengerConnection);
             var healthApi = mock(MessengerHealth.class);
             when(healthApi.messengerStatus()).thenReturn(new MessengerStatus(Map.of(), true));
             var connection = connection(healthApi, mock(MessengerMonitor.class), CLOCK);
@@ -214,7 +215,8 @@ class PontonMessengerConnectionImplTest {
     void resendFailedMessage_delegatesToMonitor() throws Exception {
         try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
             var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
-            when(builder.build()).thenReturn(mock(MessengerConnection.class));
+            var messengerConnection = mock(MessengerConnection.class);
+            when(builder.build()).thenReturn(messengerConnection);
             var monitor = mock(MessengerMonitor.class);
             var connection = connection(mock(MessengerHealth.class), monitor, CLOCK);
             var date = ZonedDateTime.parse("2026-08-13T12:00:00Z");
@@ -229,7 +231,8 @@ class PontonMessengerConnectionImplTest {
     void registeredStatusCallbacks_updateAndReportWebSocketState() throws Exception {
         try (var messengerConnectionFactory = mockStatic(MessengerConnection.class)) {
             var builder = messengerConnectionBuilderReturning(messengerConnectionFactory);
-            when(builder.build()).thenReturn(mock(MessengerConnection.class));
+            var messengerConnection = mock(MessengerConnection.class);
+            when(builder.build()).thenReturn(messengerConnection);
             var connectionStatusHandler = ArgumentCaptor.forClass(ConnectionStatusChangeHandler.class);
             var adapterStatusHandler = ArgumentCaptor.forClass(AdapterStatusRequestHandler.class);
             connection();

@@ -23,9 +23,8 @@ import java.time.Instant;
 final class PontonWebSocketConnectionState {
     private final PontonXPAdapterConfiguration config;
     private final Clock clock;
-    private boolean receptionStarted;
     @Nullable
-    private Instant lastStartAt;
+    private Instant lastReceptionStartAt;
     @Nullable
     private Instant lastRestartAt;
     @Nullable
@@ -44,8 +43,7 @@ final class PontonWebSocketConnectionState {
      * Marks that {@code startReception()} was called and the adapter now expects connection-status callbacks.
      */
     synchronized void markReceptionStarted() {
-        receptionStarted = true;
-        lastStartAt = clock.instant();
+        lastReceptionStartAt = clock.instant();
     }
 
     /**
@@ -54,7 +52,7 @@ final class PontonWebSocketConnectionState {
     synchronized void markRestarted() {
         var now = clock.instant();
         lastRestartAt = now;
-        lastStartAt = now;
+        lastReceptionStartAt = now;
         lastConnectionStatusChangedAt = null;
         outboundConnectionCount = 0;
         inboundConnectionCount = 0;
@@ -77,11 +75,11 @@ final class PontonWebSocketConnectionState {
     }
 
     synchronized boolean needsReconnect() {
-        if (!receptionStarted) {
+        if (lastReceptionStartAt == null) {
             return false;
         }
         if (lastConnectionStatusChangedAt == null) {
-            return lastStartAt != null && lastStartAt.plus(config.connectionStatusTimeout()).isBefore(clock.instant());
+            return lastReceptionStartAt.plus(config.connectionStatusTimeout()).isBefore(clock.instant());
         }
         return outboundConnectionCount < config.outboundConnections() ||
                inboundConnectionCount < config.inboundConnections();
@@ -93,12 +91,12 @@ final class PontonWebSocketConnectionState {
     }
 
     synchronized String describe() {
-        return "started=%s, outbound=%d, inbound=%d, lastStartAt=%s, lastRestartAt=%s, lastConnectionStatusChangedAt=%s, lastAdapterStatusRequestAt=%s"
+        return "started=%s, outbound=%d, inbound=%d, lastReceptionStartAt=%s, lastRestartAt=%s, lastConnectionStatusChangedAt=%s, lastAdapterStatusRequestAt=%s"
                 .formatted(
-                        receptionStarted,
+                        lastReceptionStartAt != null,
                         outboundConnectionCount,
                         inboundConnectionCount,
-                        lastStartAt,
+                        lastReceptionStartAt,
                         lastRestartAt,
                         lastConnectionStatusChangedAt,
                         lastAdapterStatusRequestAt
