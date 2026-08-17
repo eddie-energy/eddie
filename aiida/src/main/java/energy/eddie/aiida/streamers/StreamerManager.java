@@ -6,6 +6,7 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -113,9 +114,14 @@ public class StreamerManager implements AutoCloseable {
 
     /**
      * Applies a new transmission schedule to the streamer of the passed permission by rebuilding its record flux with
-     * the new aggregation cadence.
+     * the new aggregation cadence. No-op for permissions whose data need is not outbound, since only outbound
+     * permissions currently have a record flux to rebuild.
      */
     public void updateSchedule(Permission permission) {
+        if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed)) {
+            return;
+        }
+
         requireStreamer(permission.id())
                 .ifPresent(streamer -> buildFilteredFlux(permission).ifPresent(streamer::updateRecordFlux));
     }
@@ -165,9 +171,9 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Builds the filtered and aggregated record flux for the passed permission. Returns an empty {@link Optional} if a
-     * required field is missing, after logging which one; the caller is responsible for not creating or for closing the
-     * corresponding streamer.
+     * Builds the filtered and aggregated record flux for the passed permission if it was created by an outbound data need.
+     * Returns an empty {@link Optional} if a required field is missing, after logging which one.
+     * The caller is responsible for not creating or for closing the corresponding streamer.
      */
     private Optional<Flux<AiidaRecord>> buildFilteredFlux(Permission permission) {
         try {
@@ -177,7 +183,11 @@ public class StreamerManager implements AutoCloseable {
             var dataSource = Objects.requireNonNull(permission.dataSource(), "data source");
             var schedule = Objects.requireNonNull(permission.effectiveTransmissionSchedule(), "transmission schedule");
 
-            return Optional.of(aggregator.getFilteredFlux(dataNeed.dataTags(),
+            if (!(dataNeed instanceof OutboundAiidaLocalDataNeed outboundDataNeed)) {
+                return Optional.of(Flux.never());
+            }
+
+            return Optional.of(aggregator.getFilteredFlux(outboundDataNeed.dataTags(),
                                                           dataNeed.asset(),
                                                           expirationTime,
                                                           schedule,

@@ -4,7 +4,9 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.*;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.api.agnostic.aiida.AiidaContext;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.dataneeds.needs.TimeframedDataNeed;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
@@ -63,15 +65,6 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Enumerated(EnumType.STRING)
     private AiidaAsset asset;
 
-    @Column(name = "data_tag")
-    @ElementCollection
-    @CollectionTable(name = "aiida_data_need_data_tags",
-            joinColumns = @JoinColumn(name = "data_need_id"),
-            schema = "data_needs")
-    @Convert(converter = ObisCodeConverter.class)
-    @JsonProperty
-    private Set<ObisCode> dataTags;
-
     @Schema(description = "Define contexts to be provided to AIIDA ('FLEXIBLE-CONNECTION-AGREEMENT')")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_data_need_contexts",
@@ -81,31 +74,6 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @JsonProperty
     @Enumerated(EnumType.STRING)
     private Set<AiidaContext> contexts;
-
-    @Override
-    public AiidaAsset asset() {
-        return asset;
-    }
-
-    @Override
-    public UUID dataNeedId() {
-        return UUID.fromString(id());
-    }
-
-    @Override
-    public Set<ObisCode> dataTags() {
-        return dataTags;
-    }
-
-    @Override
-    public Set<AiidaSchema> schemas() {
-        return schemas;
-    }
-
-    @Override
-    public CronExpression transmissionSchedule() {
-        return transmissionSchedule;
-    }
 
     @Override
     public boolean acknowledgementRequired() {
@@ -118,8 +86,28 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     }
 
     @Override
+    public AiidaAsset asset() {
+        return asset;
+    }
+
+    @Override
     public Set<AiidaContext> contexts() {
         return contexts;
+    }
+
+    @Override
+    public UUID dataNeedId() {
+        return UUID.fromString(id());
+    }
+
+    @Override
+    public Set<AiidaSchema> schemas() {
+        return schemas;
+    }
+
+    @Override
+    public CronExpression transmissionSchedule() {
+        return transmissionSchedule;
     }
 
     public abstract Set<AiidaSchema> supportedSchemas();
