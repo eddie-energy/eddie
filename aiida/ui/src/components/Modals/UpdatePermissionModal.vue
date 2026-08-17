@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import ModalDialog from '@/components/ModalDialog.vue'
@@ -9,11 +7,15 @@ import ModalDialog from '@/components/ModalDialog.vue'
 import Button from '@/components/Button.vue'
 import { computed, ref, watch } from 'vue'
 import PermissionDetails from '@/components/PermissionDetails.vue'
-import { acceptPermission, getActiveInboundPermissions, rejectPermission } from '@/api'
+import {
+  acceptPermission,
+  getActiveInboundPermissions,
+  getDataSources,
+  rejectPermission,
+} from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
-import { dataSources, fetchDataSources } from '@/stores/dataSources'
-import type { AiidaPermission, AiidaSchema } from '@/types'
+import type { AiidaDataSource, AiidaPermission, AiidaSchema } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const inboundSchemas: Set<AiidaSchema> = new Set(['MIN-MAX-ENVELOPE-CIM-V1-12', 'OPAQUE'])
@@ -24,6 +26,7 @@ const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
 const inboundPermissions = ref<AiidaPermission[]>([])
+const outboundDataSources = ref<AiidaDataSource[]>([])
 const emit = defineEmits(['update'])
 
 watch([open], async () => {
@@ -31,8 +34,12 @@ watch([open], async () => {
     selectedDataSource.value = ''
     modal.value?.showModal()
 
-    await fetchDataSources()
+    outboundDataSources.value = await getDataSources(permission.value?.meterId)
     inboundPermissions.value = await getActiveInboundPermissions()
+
+    if (dataSourceOptions.value.length === 1) {
+      selectedDataSource.value = dataSourceOptions.value[0].value
+    }
   }
 })
 
@@ -55,6 +62,7 @@ const handleModalClose = () => {
 
 const dataSourceOptions = computed(() => {
   const requestedSchemas = permission.value?.dataNeed.schemas ?? []
+  const permissionMeterId = permission.value?.meterId
   const matches: { label: string; value: string }[] = []
 
   // Request includes inbound schemas
@@ -62,7 +70,8 @@ const dataSourceOptions = computed(() => {
     for (const { dataSource } of inboundPermissions.value) {
       if (
         dataSource && // For TypeScript, even though it should always be set here
-        requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema))
+        requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema)) &&
+        (!permissionMeterId || dataSource.meterId === permissionMeterId)
       ) {
         matches.push({ label: dataSource.name, value: dataSource.id })
       }
@@ -72,7 +81,7 @@ const dataSourceOptions = computed(() => {
   // Request includes outbound schemas
   if (requestedSchemas.some((requestedSchema) => !inboundSchemas.has(requestedSchema))) {
     matches.push(
-      ...dataSources.value.map(({ id, name }) => ({
+      ...outboundDataSources.value.map(({ id, name }) => ({
         label: name,
         value: id,
       })),

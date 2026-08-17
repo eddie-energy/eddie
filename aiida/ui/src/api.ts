@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import useToast from './composables/useToast'
@@ -105,8 +105,9 @@ export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions/inbound/active')
 }
 
-export function getDataSources(): Promise<AiidaDataSource[]> {
-  return fetch('/datasources/outbound')
+export function getDataSources(meterId?: string): Promise<AiidaDataSource[]> {
+  const query = meterId ? `?${new URLSearchParams({ meterId })}` : ''
+  return fetch(`/datasources/outbound${query}`)
 }
 
 export function getDataSourceTypes(): Promise<AiidaDataSourceType[]> {

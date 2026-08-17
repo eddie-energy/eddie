@@ -19,6 +19,7 @@ import energy.eddie.aiida.services.DataSourceService;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -95,8 +96,12 @@ public class DataSourceController {
                     content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @GetMapping(path = "/outbound", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<DataSource>> getAllOutboundDataSources() throws InvalidUserException {
-        var dataSources = service.getOutboundDataSources();
+    public ResponseEntity<List<DataSource>> getAllOutboundDataSources(
+            @Parameter(description = "Filter data sources by physical meter ID")
+            @RequestParam(required = false) String meterId) throws InvalidUserException {
+        var dataSources = meterId != null
+                ? service.getOutboundDataSourcesByMeterId(meterId)
+                : service.getOutboundDataSources();
 
         return ResponseEntity.ok(dataSources);
     }
