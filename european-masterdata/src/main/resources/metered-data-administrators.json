@@ -2006,5 +2006,13 @@
     "websiteUrl": "https://www.etaplus.energy/",
     "officialContact": "info@etaplus.energy",
     "permissionAdministrator": "ETA+"
+  },
+  {
+    "country": "ee",
+    "company": "Elering",
+    "companyId": "11022625",
+    "websiteUrl": "https://elering.ee",
+    "officialContact": "klienditugi@elering.ee",
+    "permissionAdministrator": "Elering Estfeed"
   }
 ]
