@@ -2,12 +2,17 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, useTemplateRef } from 'vue'
 import ModalDialog from '@/components/ModalDialog.vue'
 import Button from '@/components/Button.vue'
 import CopyButton from '@/components/CopyButton.vue'
 import CustomSelect from '@/components/CustomSelect.vue'
-import type { AiidaPermission, ProvisioningConnectionDto, ProvisioningTypePatchDto } from '@/types'
+import type {
+  AiidaPermission,
+  InboundProvisioningType,
+  ProvisioningConnectionDto,
+  ProvisioningTypePatchDto,
+} from '@/types'
 import { patchInboundProvisioning } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
 import { useI18n } from 'vue-i18n'
@@ -16,12 +21,10 @@ import {
   inboundProvisioningTypes,
 } from '@/stores/provisioningTypes.ts'
 
-type ProvisioningType = ProvisioningTypePatchDto['type']
-
 const { t } = useI18n()
-const modal = ref<HTMLDialogElement>()
+const modalRef = useTemplateRef('modal')
 const permission = ref<AiidaPermission>()
-const provisioningType = ref<ProvisioningType>('REST_API_TOKEN')
+const inboundProvisioningType = ref<InboundProvisioningType>('REST_API_TOKEN')
 const loading = ref(false)
 const error = ref('')
 const provisioningResult = ref<ProvisioningConnectionDto>()
@@ -31,14 +34,14 @@ const username = ref('')
 const password = ref('')
 const topic = ref('')
 
-const provisioningTypeOptions = computed(() =>
+const inboundProvisioningTypeOptions = computed(() =>
   inboundProvisioningTypes.value.provisioningTypes.map((type) => ({
     label: t(`permissions.mqttProvisioning.types.${type}`),
     value: type,
   })),
 )
 
-const requiresMqttClientDetails = computed(() => provisioningType.value === 'MQTT_CLIENT')
+const requiresMqttClientDetails = computed(() => inboundProvisioningType.value === 'MQTT_CLIENT')
 const credentialsText = computed(() => {
   if (!provisioningResult.value) {
     return ''
@@ -58,16 +61,14 @@ const clearSensitiveState = () => {
 }
 
 const closeModal = () => {
-  clearSensitiveState()
-  modal.value?.close()
+  modalRef.value?.close()
 }
 
 const showModal = async (targetPermission: AiidaPermission) => {
   clearSensitiveState()
   permission.value = targetPermission
   error.value = ''
-  provisioningType.value = (targetPermission.dataSource?.provisioningType ??
-    'REST_BEARER') as ProvisioningType
+  inboundProvisioningType.value = targetPermission.dataSource?.provisioningType ?? 'REST_BEARER'
 
   if (!inboundProvisioningTypes.value.provisioningTypes.length) {
     await fetchInboundProvisioningTypes()
@@ -77,37 +78,13 @@ const showModal = async (targetPermission: AiidaPermission) => {
 
   host.value = connection?.externalHost ?? ''
   username.value = connection?.username ?? ''
-  password.value = ''
   topic.value = ''
 
-  modal.value?.showModal()
-}
-
-const validate = () => {
-  if (!provisioningType.value) {
-    error.value = t('permissions.mqttProvisioning.modeRequired')
-    return false
-  }
-
-  if (!requiresMqttClientDetails.value) {
-    return true
-  }
-
-  if (
-    !host.value.trim() ||
-    !username.value.trim() ||
-    !password.value.trim() ||
-    !topic.value.trim()
-  ) {
-    error.value = t('permissions.mqttProvisioning.required')
-    return false
-  }
-
-  return true
+  modalRef.value?.showModal()
 }
 
 const handleSubmit = async () => {
-  if (!permission.value || !validate()) {
+  if (!permission.value) {
     return
   }
 
@@ -115,21 +92,24 @@ const handleSubmit = async () => {
   error.value = ''
 
   try {
-    const result = await patchInboundProvisioning(permission.value.permissionId, {
-      permissionId: permission.value.permissionId,
-      type: provisioningType.value,
-      host: requiresMqttClientDetails.value ? host.value : '',
-      username: requiresMqttClientDetails.value ? username.value : '',
-      password: requiresMqttClientDetails.value ? password.value : '',
-      topic: requiresMqttClientDetails.value ? topic.value : '',
-    })
+    const payload: ProvisioningTypePatchDto =
+      inboundProvisioningType.value === 'MQTT_CLIENT'
+        ? {
+            type: inboundProvisioningType.value,
+            host: host.value,
+            username: username.value,
+            password: password.value,
+            topic: topic.value,
+          }
+        : { type: inboundProvisioningType.value }
+    const result = await patchInboundProvisioning(permission.value.permissionId, payload)
 
-    if (provisioningType.value === 'MQTT_SERVER') {
+    if (inboundProvisioningType.value === 'MQTT_SERVER') {
       provisioningResult.value = result
     }
 
     await fetchPermissions()
-    if (provisioningType.value !== 'MQTT_SERVER') {
+    if (inboundProvisioningType.value !== 'MQTT_SERVER') {
       closeModal()
     }
   } catch (e: any) {
@@ -216,12 +196,14 @@ defineExpose({ showModal })
     </section>
 
     <form v-else class="mqtt-form" @submit.prevent="handleSubmit">
-      <label id="provisioningTypeLabel"> {{ t('permissions.mqttProvisioning.mode') }}* </label>
+      <label id="inboundProvisioningTypeLabel">
+        {{ t('permissions.mqttProvisioning.mode') }}*
+      </label>
       <CustomSelect
-        v-model="provisioningType"
-        :options="provisioningTypeOptions"
+        v-model="inboundProvisioningType"
+        :options="inboundProvisioningTypeOptions"
         :placeholder="t('permissions.mqttProvisioning.modePlaceholder')"
-        aria-labelledby="provisioningTypeLabel"
+        aria-labelledby="inboundProvisioningTypeLabel"
       />
 
       <template v-if="requiresMqttClientDetails">

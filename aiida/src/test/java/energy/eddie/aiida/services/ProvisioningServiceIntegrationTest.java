@@ -5,7 +5,9 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.dtos.provisioning.MqttClientProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
+import energy.eddie.aiida.dtos.provisioning.ProvisioningTypeSelectionPatchDto;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
@@ -106,7 +108,7 @@ class ProvisioningServiceIntegrationTest {
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
             var result = provisioningService.changeProvisioningType(
                     permissionId,
-                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_CLIENT)
+                    provisioningPatch(InboundProvisioningType.MQTT_CLIENT)
             );
             assertThat(result.host()).isEqualTo(CLIENT_HOST);
             assertThat(result.username()).isEqualTo(CLIENT_USERNAME);
@@ -164,7 +166,7 @@ class ProvisioningServiceIntegrationTest {
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
             provisioningService.changeProvisioningType(
                     permissionId,
-                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_CLIENT)
+                    provisioningPatch(InboundProvisioningType.MQTT_CLIENT)
             );
             entityManager.flush();
             entityManager.clear();
@@ -196,7 +198,7 @@ class ProvisioningServiceIntegrationTest {
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
             var result = provisioningService.changeProvisioningType(
                     permissionId,
-                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_SERVER)
+                    provisioningPatch(InboundProvisioningType.MQTT_SERVER)
             );
             var responseUsername = result.username();
             var responsePassword = result.password();
@@ -246,7 +248,7 @@ class ProvisioningServiceIntegrationTest {
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
             var initialConnection = provisioningService.changeProvisioningType(
                     permissionId,
-                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_SERVER)
+                    provisioningPatch(InboundProvisioningType.MQTT_SERVER)
             );
 
             var result = provisioningService.resetServerModePassword(permissionId);
@@ -277,7 +279,7 @@ class ProvisioningServiceIntegrationTest {
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
             provisioningService.changeProvisioningType(
                     permissionId,
-                    provisioningPatch(permissionId, InboundProvisioningType.MQTT_CLIENT)
+                    provisioningPatch(InboundProvisioningType.MQTT_CLIENT)
             );
             entityManager.flush();
 
@@ -304,7 +306,7 @@ class ProvisioningServiceIntegrationTest {
 
             var result = provisioningService.changeProvisioningType(
                     permissionId,
-                    provisioningPatch(permissionId, InboundProvisioningType.REST_API_TOKEN)
+                    provisioningPatch(InboundProvisioningType.REST_API_TOKEN)
             );
             assertThat(result.host()).isEmpty();
             assertThat(result.username()).isEmpty();
@@ -326,18 +328,17 @@ class ProvisioningServiceIntegrationTest {
         }
     }
 
-    private static ProvisioningTypePatchDto provisioningPatch(
-            UUID permissionId,
-            InboundProvisioningType provisioningType
-    ) {
-        return new ProvisioningTypePatchDto(
-                permissionId,
-                provisioningType,
-                CLIENT_HOST,
-                CLIENT_USERNAME,
-                CLIENT_PASSWORD,
-                CLIENT_TOPIC
-        );
+    private static ProvisioningTypePatchDto provisioningPatch(InboundProvisioningType provisioningType) {
+        if (provisioningType == InboundProvisioningType.MQTT_CLIENT) {
+            return new MqttClientProvisioningTypePatchDto(
+                    provisioningType,
+                    CLIENT_HOST,
+                    CLIENT_USERNAME,
+                    CLIENT_PASSWORD,
+                    CLIENT_TOPIC
+            );
+        }
+        return new ProvisioningTypeSelectionPatchDto(provisioningType);
     }
 
     private UUID createInboundPermission() {

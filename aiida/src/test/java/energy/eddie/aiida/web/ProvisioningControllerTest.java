@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.web;
 
+import energy.eddie.aiida.dtos.provisioning.MqttClientProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
@@ -26,8 +27,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -103,6 +103,60 @@ class ProvisioningControllerTest {
     }
 
     @Test
+    void patchInboundProvisioningType_withBlankMqttClientConfiguration_returnsBadRequest() throws Exception {
+        mockMvc.perform(patch("/provisioning/permission/" + PERMISSION_ID + "/patchInboundProvisioning")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                 {
+                                                   "type": "MQTT_CLIENT",
+                                                   "host": " ",
+                                                   "username": "mqtt-user",
+                                                   "password": "mqtt-password",
+                                                   "topic": "aiida/inbound/test"
+                                                 }
+                                                 """))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("errors").isArray());
+
+        verifyNoInteractions(provisioningService);
+    }
+
+    @Test
+    void patchInboundProvisioningType_withMissingMqttClientConfiguration_returnsBadRequest() throws Exception {
+        mockMvc.perform(patch("/provisioning/permission/" + PERMISSION_ID + "/patchInboundProvisioning")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                 {
+                                                   "type": "MQTT_CLIENT"
+                                                 }
+                                                 """))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("errors").isArray());
+
+        verifyNoInteractions(provisioningService);
+    }
+
+    @Test
+    void patchInboundProvisioningType_withTypeOnly_returnsOk() throws Exception {
+        when(provisioningService.changeProvisioningType(eq(PERMISSION_ID), any()))
+                .thenReturn(MqttProvisioningConnectionDto.empty());
+
+        mockMvc.perform(patch("/provisioning/permission/" + PERMISSION_ID + "/patchInboundProvisioning")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                                 {
+                                                   "type": "REST_BEARER"
+                                                 }
+                                                 """))
+               .andExpect(status().isOk());
+
+        verify(provisioningService).changeProvisioningType(
+                eq(PERMISSION_ID),
+                argThat(dto -> dto.type() == InboundProvisioningType.REST_BEARER)
+        );
+    }
+
+    @Test
     void getProvisioningTypes_returnsAllProvisioningTypes() throws Exception {
         mockMvc.perform(get("/provisioning/types"))
                .andExpect(status().isOk())
@@ -136,12 +190,14 @@ class ProvisioningControllerTest {
     }
 
     private static boolean hasMqttClientPatchValues(ProvisioningTypePatchDto dto) {
-        return dto.permissionId().equals(PERMISSION_ID)
-               && dto.type() == InboundProvisioningType.MQTT_CLIENT
-               && dto.host().equals("mqtt://broker.example.test")
-               && dto.username().equals("mqtt-user")
-               && dto.password().equals("mqtt-password")
-               && dto.topic().equals("aiida/inbound/test");
+        return dto instanceof MqttClientProvisioningTypePatchDto(
+                InboundProvisioningType type, String host, String username, String password, String topic
+        )
+               && type == InboundProvisioningType.MQTT_CLIENT
+               && host.equals("mqtt://broker.example.test")
+               && username.equals("mqtt-user")
+               && password.equals("mqtt-password")
+               && topic.equals("aiida/inbound/test");
     }
 
     private static MockHttpServletRequestBuilder validPatch() {
@@ -149,7 +205,6 @@ class ProvisioningControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                                  {
-                                   "permissionId": "00000000-0000-0000-0000-000000000000",
                                    "type": "MQTT_CLIENT",
                                    "host": "mqtt://broker.example.test",
                                    "username": "mqtt-user",

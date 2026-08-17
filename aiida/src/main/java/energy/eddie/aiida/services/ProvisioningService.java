@@ -5,8 +5,10 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.dtos.provisioning.MqttClientProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
+import energy.eddie.aiida.dtos.provisioning.ProvisioningTypeSelectionPatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
@@ -89,14 +91,10 @@ public class ProvisioningService {
              ProvisioningConfigurationException {
         var dataSource = inboundDataSource(permissionId);
 
-        return switch (patch.type()) {
-            case MQTT_CLIENT -> activateMqttClient(dataSource, patch);
-            case MQTT_SERVER -> activateMqttServer(dataSource);
-            case NONE, REST_API_TOKEN, REST_BEARER -> {
-                stopPublisher(dataSource.id());
-                dataSource.changeInboundProvisioningType(patch.type());
-                yield MqttProvisioningConnectionDto.empty();
-            }
+        return switch (patch) {
+            case MqttClientProvisioningTypePatchDto mqttClientPatch -> activateMqttClient(dataSource, mqttClientPatch);
+            case ProvisioningTypeSelectionPatchDto(var provisioningType) ->
+                    activateSelectedType(dataSource, provisioningType);
         };
     }
 
@@ -153,9 +151,26 @@ public class ProvisioningService {
         mqttPublishers.clear();
     }
 
+    private MqttProvisioningConnectionDto activateSelectedType(
+            InboundDataSource dataSource,
+            InboundProvisioningType provisioningType
+    ) throws ProvisioningConfigurationException {
+        return switch (provisioningType) {
+            case MQTT_SERVER -> activateMqttServer(dataSource);
+            case NONE, REST_API_TOKEN, REST_BEARER -> {
+                stopPublisher(dataSource.id());
+                dataSource.changeInboundProvisioningType(provisioningType);
+                yield MqttProvisioningConnectionDto.empty();
+            }
+            case MQTT_CLIENT -> throw new IllegalArgumentException(
+                    "MQTT_CLIENT requires MQTT client provisioning details"
+            );
+        };
+    }
+
     private MqttProvisioningConnectionDto activateMqttClient(
             InboundDataSource dataSource,
-            ProvisioningTypePatchDto patch
+            MqttClientProvisioningTypePatchDto patch
     ) throws ProvisioningConfigurationException {
         var response = dataSource.establishClientModeConnection(
                 patch.host(),

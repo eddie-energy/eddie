@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
@@ -52,7 +53,8 @@ public class InboundDataSource extends MqttDataSource {
     @JsonProperty
     private InboundProvisioningType provisioningType;
 
-    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @Nullable
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(
             name = "permission_id",
             table = TABLE_NAME,
@@ -114,9 +116,10 @@ public class InboundDataSource extends MqttDataSource {
     public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission, String accessCode) {
         super(dto, userId);
         this.permission = permission;
-        this.config = Objects.requireNonNull(permission.mqttStreamingConfig());
+        this.config = permission.mqttStreamingConfig();
 
-        this.mqttConnection = new MqttConnection(config.serverUri(), config.serverUri());
+        var streamingConfig = streamingConfig();
+        this.mqttConnection = new MqttConnection(streamingConfig.serverUri(), streamingConfig.serverUri());
 
         this.accessCode = accessCode;
         this.provisioningType = InboundProvisioningType.NONE;
@@ -142,7 +145,7 @@ public class InboundDataSource extends MqttDataSource {
 
     @Nullable
     public String acknowledgementTopic() {
-        return config.acknowledgementTopic();
+        return config == null ? null : config.acknowledgementTopic();
     }
 
     public InboundProvisioningType inboundProvisioningType() {
@@ -214,7 +217,11 @@ public class InboundDataSource extends MqttDataSource {
 
     @Override
     protected void createMqttUser() {
-        this.mqttConnection.createMqttUser(config.username().toString(), alias(id, SecretType.PASSWORD));
+        var streamingConfig = streamingConfig();
+        this.mqttConnection.createMqttUser(
+                streamingConfig.username().toString(),
+                alias(id, SecretType.PASSWORD)
+        );
     }
 
     @Override
@@ -225,10 +232,19 @@ public class InboundDataSource extends MqttDataSource {
 
     @Override
     protected void createAccessControlEntry() {
+        var streamingConfig = streamingConfig();
         this.accessControlEntry = new MqttAccessControlEntry(
-                config.username().toString(),
-                config.dataTopic()
+                streamingConfig.username().toString(),
+                streamingConfig.dataTopic()
         );
+    }
+
+    private MqttStreamingConfig streamingConfig() {
+        if (config != null) {
+            return config;
+        }
+
+        throw new MissingMqttStreamingConfigException(id);
     }
 
     private InboundProvisioningMqttConfig mqttProvisioningConfig()

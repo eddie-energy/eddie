@@ -6,7 +6,6 @@ package energy.eddie.aiida.services.record;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
-import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -240,7 +239,7 @@ class LatestRecordServiceTest {
     void latestInboundPermissionRecord_shouldReturnLatestRecord_whenFound()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException, ProvisioningTypeNotConfiguredException {
+                   InvalidInboundPermissionException {
         var inboundRecord = mock(InboundRecordDto.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
         when(inboundRecord.dataSourceId()).thenReturn(DATA_SOURCE_ID);
@@ -265,7 +264,7 @@ class LatestRecordServiceTest {
     void latestInboundPermissionRecord_shouldPropagatePermissionNotFoundException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException, ProvisioningTypeNotConfiguredException {
+                   InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
 
@@ -280,7 +279,7 @@ class LatestRecordServiceTest {
     void latestInboundPermissionRecord_shouldPropagateInboundRecordNotFoundException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException, ProvisioningTypeNotConfiguredException {
+                   InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InboundRecordNotFoundException(UUID.randomUUID()));
 
@@ -295,7 +294,7 @@ class LatestRecordServiceTest {
     void latestInboundPermissionRecord_shouldPropagateInvalidInboundPermissionException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException, ProvisioningTypeNotConfiguredException {
+                   InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InvalidInboundPermissionException(PERMISSION_ID));
 

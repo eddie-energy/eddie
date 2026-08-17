@@ -214,12 +214,14 @@ const dataSourceDisplayName = computed(() => {
           </StatusTag>
         </dd>
       </div>
-      <div class="permission-field">
-        <dt>{{ t('permissions.mqttProvisioning.mode') }}</dt>
-        <dd>
-          {{ t(`permissions.mqttProvisioning.types.${permission.dataSource?.provisioningType}`) }}
-        </dd>
-      </div>
+      <template v-if="isInboundMqttProvisioning">
+        <div class="permission-field">
+          <dt>{{ t('permissions.mqttProvisioning.mode') }}</dt>
+          <dd>
+            {{ t(`permissions.mqttProvisioning.types.${permission.dataSource?.provisioningType}`) }}
+          </dd>
+        </div>
+      </template>
       <template v-if="isInboundMqttProvisioning && inboundMqttConnection">
         <div v-if="inboundMqttServerUri" class="permission-field">
           <dt>{{ t('datasources.card.mqttServerUri') }}</dt>

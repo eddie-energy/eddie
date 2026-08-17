@@ -5,8 +5,10 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
+import energy.eddie.aiida.dtos.provisioning.MqttClientProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
+import energy.eddie.aiida.dtos.provisioning.ProvisioningTypeSelectionPatchDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
@@ -319,6 +321,9 @@ class ProvisioningServiceTest {
     }
 
     private static ProvisioningTypePatchDto patch(InboundProvisioningType type) {
-        return new ProvisioningTypePatchDto(PERMISSION_ID, type, HOST, USERNAME, PASSWORD, TOPIC);
+        if (type == InboundProvisioningType.MQTT_CLIENT) {
+            return new MqttClientProvisioningTypePatchDto(type, HOST, USERNAME, PASSWORD, TOPIC);
+        }
+        return new ProvisioningTypeSelectionPatchDto(type);
     }
 }

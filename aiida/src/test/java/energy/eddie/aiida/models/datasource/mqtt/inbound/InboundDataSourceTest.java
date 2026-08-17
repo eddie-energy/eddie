@@ -6,6 +6,7 @@ package energy.eddie.aiida.models.datasource.mqtt.inbound;
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
@@ -225,13 +226,33 @@ class InboundDataSourceTest {
     }
 
     @Test
-    void constructor_throwsNpe_whenMqttStreamingConfigMissing() {
+    void constructor_throwsMissingMqttStreamingConfigException_whenMqttStreamingConfigMissing() {
         var permissionWithoutConfig = mock(Permission.class);
+        var dto = dto();
 
-        assertThrows(
-                NullPointerException.class,
-                () -> new InboundDataSource(dto(), USER_ID, permissionWithoutConfig)
-        );
+        assertThatThrownBy(() -> new InboundDataSource(dto, USER_ID, permissionWithoutConfig))
+                .isInstanceOf(MissingMqttStreamingConfigException.class)
+                .hasMessage("MQTT streaming configuration is missing for an unpersisted inbound data source");
+    }
+
+    @Test
+    void legacyDataSource_withoutMqttStreamingConfig_returnsNoAcknowledgementTopic() {
+        var legacyDataSource = new InboundDataSource();
+
+        assertThat(legacyDataSource.acknowledgementTopic()).isNull();
+    }
+
+    @Test
+    void legacyDataSource_withoutMqttStreamingConfig_failsExplicitlyWhenCreatingMqttResources() throws Exception {
+        var legacyDataSource = new InboundDataSource();
+        setId(legacyDataSource, DATA_SOURCE_ID);
+
+        assertThatThrownBy(legacyDataSource::createMqttUser)
+                .isInstanceOf(MissingMqttStreamingConfigException.class)
+                .hasMessage("MQTT streaming configuration is missing for inbound data source " + DATA_SOURCE_ID);
+        assertThatThrownBy(legacyDataSource::createAccessControlEntry)
+                .isInstanceOf(MissingMqttStreamingConfigException.class)
+                .hasMessage("MQTT streaming configuration is missing for inbound data source " + DATA_SOURCE_ID);
     }
 
     @Test
@@ -285,12 +306,13 @@ class InboundDataSourceTest {
     void builder_build_createsInboundDataSourceLinkedToPermission() {
         var permissionId = UUID.randomUUID();
         var dataNeed = mock(AiidaLocalDataNeed.class);
+        var streamingConfig = mock(MqttStreamingConfig.class);
         when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         var owningPermission = mock(Permission.class);
         when(owningPermission.userId()).thenReturn(USER_ID);
         when(owningPermission.id()).thenReturn(permissionId);
         when(owningPermission.dataNeed()).thenReturn(dataNeed);
-        when(owningPermission.mqttStreamingConfig()).thenReturn(mock(MqttStreamingConfig.class));
+        when(owningPermission.mqttStreamingConfig()).thenReturn(streamingConfig);
 
         var inboundDataSource = new InboundDataSource.Builder(owningPermission).build();
 

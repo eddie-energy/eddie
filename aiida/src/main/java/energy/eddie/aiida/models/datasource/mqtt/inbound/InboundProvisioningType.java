@@ -22,5 +22,12 @@ public enum InboundProvisioningType {
     MQTT_SERVER,
 
     /** Publishes records to an externally configured MQTT broker. */
-    MQTT_CLIENT
+    MQTT_CLIENT;
+
+    public static class Identifiers {
+        public static final String MQTT_CLIENT = "MQTT_CLIENT";
+
+        private Identifiers() {
+        }
+    }
 }

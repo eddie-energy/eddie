@@ -128,14 +128,17 @@ export type InboundProvisioningMqttConfig = {
   topic: string
 }
 
-export type ProvisioningTypePatchDto = {
-  permissionId: string
-  type: InboundProvisioningType
-  host: string
-  username: string
-  password: string
-  topic: string
-}
+export type ProvisioningTypePatchDto =
+  | {
+      type: 'MQTT_CLIENT'
+      host: string
+      username: string
+      password: string
+      topic: string
+    }
+  | {
+      type: Exclude<InboundProvisioningType, 'MQTT_CLIENT'>
+    }
 
 export type ProvisioningConnectionDto = {
   host: string
