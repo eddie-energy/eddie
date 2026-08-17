@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import ModalDialog from './ModalDialog.vue'
@@ -15,6 +13,7 @@ const {
   descriptionRef,
   cancelLabelRef,
   confirmLabelRef,
+  confirmButtonStyleRef,
   confirmModalRef,
   onConfirm,
   onCancel,
@@ -34,7 +33,7 @@ onMounted(() => {
       <Button button-style="secondary" @click="modal?.close()">
         {{ cancelLabelRef }}
       </Button>
-      <Button button-style="error" @click="onConfirm">
+      <Button :key="confirmButtonStyleRef" :button-style="confirmButtonStyleRef" @click="onConfirm">
         {{ confirmLabelRef }}
       </Button>
     </div>

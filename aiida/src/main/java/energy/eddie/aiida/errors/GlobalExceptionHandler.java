@@ -94,6 +94,7 @@ public class GlobalExceptionHandler {
             InvalidDataSourceTypeException.class,
             IncompatibleDataSourceException.class,
             InvalidInboundPermissionException.class,
+            MissingDisplayNameException.class,
             MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,
             PermissionAlreadyExistsException.class,

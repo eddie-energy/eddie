@@ -228,12 +228,42 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
+     * Updates the display name of the permission with the passed id.
+     *
+     * @param permissionId The ID of the permission that should be renamed.
+     * @param displayName  The new display name for the permission.
+     * @return The updated permission object.
+     * @throws UnauthorizedException        If the current user is not the owner of the Permission.
+     * @throws MissingDisplayNameException  If displayName is null or blank.
+     */
+    @Transactional
+    public Permission updateDisplayName(
+            UUID permissionId,
+            @Nullable String displayName
+    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException, MissingDisplayNameException {
+        if (displayName == null || displayName.isBlank()) {
+            throw new MissingDisplayNameException();
+        }
+
+        var permission = findById(permissionId);
+        authService.checkAuthorizationForPermission(permission);
+
+        permission.setDisplayName(displayName);
+
+        LOGGER.info("Updated display name for permission {}.", permission.id());
+
+        return permission;
+    }
+
+    /**
      * Accept the permission with the passed id. Updates the database and informs the EDDIE framework about the
      * acceptance. Will fetch the MQTT details from the EDDIE framework and either schedules the start (if start date is
      * in the future) or starts the data sharing right away.
      *
      * @param permissionId The ID of the permission that should be accpted.
      * @param dataSourceId The ID of the data source that should be used for the permission.
+     * @param displayName  Optional custom display name for the permission. Falls back to the data need's name if
+     *                     not set.
      * @return The updated permission object.
      * @throws PermissionStateTransitionException Thrown if the permission is not in the state
      *                                            {@link PermissionStatus#FETCHED_DETAILS}.
@@ -243,7 +273,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public Permission acceptPermission(
             UUID permissionId,
             @Nullable UUID dataSourceId,
-            @Nullable InboundMessageFormat inboundMessageFormat
+            @Nullable InboundMessageFormat inboundMessageFormat,
+            @Nullable String displayName
     ) throws PermissionStateTransitionException, PermissionNotFoundException, DetailFetchingFailedException, UnauthorizedException, InvalidUserException, InvalidInboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException, SecretStoringException {
         var permission = findById(permissionId);
         authService.checkAuthorizationForPermission(permission);
@@ -257,6 +288,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         if (inboundMessageFormat != null) {
             permission.updateInboundMessageFormat(inboundMessageFormat);
+        }
+
+        if (displayName != null && !displayName.isBlank()) {
+            permission.setDisplayName(displayName);
         }
 
         permission.setGrantTime(Instant.now(clock));
@@ -431,10 +466,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         var aiidaLocalDataNeed = aiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId);
         if (aiidaLocalDataNeed.isPresent()) {
-            permission.setDataNeed(aiidaLocalDataNeed.get());
+            permission.initializeFromDataNeed(aiidaLocalDataNeed.get());
         } else {
             var localDataNeed = AiidaLocalDataNeedFactory.create(details.dataNeed());
-            permission.setDataNeed(localDataNeed);
+            permission.initializeFromDataNeed(localDataNeed);
         }
 
         validatePermissionStartInTheFuture(permission);

@@ -65,7 +65,7 @@ class InboundRecordServiceTest {
         PERMISSION.setDataSource(dataSource);
         var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         when(dataNeed.name()).thenReturn("someDataNeed");
-        PERMISSION.setDataNeed(dataNeed);
+        PERMISSION.initializeFromDataNeed(dataNeed);
         PERMISSION.updateInboundMessageFormat(InboundMessageFormat.CIM_1_12);
     }
 

@@ -10,8 +10,8 @@ import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
-import { fetchPermissions } from '@/stores/permissions'
-import { ref, useTemplateRef, watch } from 'vue'
+import { fetchPermissions, permissions } from '@/stores/permissions'
+import { computed, ref, useTemplateRef, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
 import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
@@ -113,6 +113,14 @@ const generateStringFromLength = (length: number, char: string) => {
 }
 
 onClickOutside(target, () => (showToolTip.value = false))
+
+const dataSourceDisplayName = computed(() => {
+  if (!permission.dataSource) return undefined
+  const inboundPermission = permissions.value.find(
+    (p) => p.dataNeed.type === 'inbound-aiida' && p.dataSource?.id === permission.dataSource?.id,
+  )
+  return inboundPermission?.displayName ?? permission.dataSource.name
+})
 </script>
 
 <template>
@@ -201,7 +209,7 @@ onClickOutside(target, () => (showToolTip.value = false))
         </div>
         <div class="permission-field" v-if="permission.dataSource">
           <dt>{{ t('permissions.dropdown.dataSource') }}</dt>
-          <dd>{{ permission.dataSource?.name ?? 'undefined' }}</dd>
+          <dd>{{ dataSourceDisplayName ?? 'undefined' }}</dd>
         </div>
         <div
           class="permission-field"

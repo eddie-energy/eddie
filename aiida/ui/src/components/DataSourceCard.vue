@@ -100,7 +100,7 @@ const healthStatusConfig = computed<HealthStatusConfig>(
 
       <div>
         <dt>{{ t('datasources.card.healthStatus') }}</dt>
-        <Tooltip :enabled="enabled" :text="healthStatusConfig.tooltip">
+        <Tooltip :enabled :text="healthStatusConfig.tooltip">
           <StatusTag :status-type="healthStatusConfig.type" minimal-on-mobile>
             {{ healthStatusConfig.label }}
           </StatusTag>

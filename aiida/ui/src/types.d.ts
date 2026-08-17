@@ -62,6 +62,7 @@ export type AiidaPermission = {
   eddieId: string
   status: string
   serviceName: string
+  displayName: string
   startTime: string
   expirationTime: string
   grantTime?: string

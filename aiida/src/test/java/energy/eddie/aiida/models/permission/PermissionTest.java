@@ -63,10 +63,26 @@ class PermissionTest {
         when(dataNeed.name()).thenReturn("someDataNeed");
 
         // When
-        permission.setDataNeed(dataNeed);
+        permission.initializeFromDataNeed(dataNeed);
 
         // Then
         assertEquals(dataNeed, permission.dataNeed());
+        assertEquals("someDataNeed", permission.serviceName());
+        assertEquals("someDataNeed", permission.displayName());
+    }
+
+    @Test
+    void setDisplayName_overridesDefault() {
+        // Given
+        var dataNeed = mock(AiidaLocalDataNeed.class);
+        when(dataNeed.name()).thenReturn("someDataNeed");
+        permission.initializeFromDataNeed(dataNeed);
+
+        // When
+        permission.setDisplayName("My custom name");
+
+        // Then
+        assertEquals("My custom name", permission.displayName());
         assertEquals("someDataNeed", permission.serviceName());
     }
 
@@ -75,7 +91,7 @@ class PermissionTest {
         var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         when(dataNeed.name()).thenReturn("someDataNeed");
 
-        permission.setDataNeed(dataNeed);
+        permission.initializeFromDataNeed(dataNeed);
 
         assertEquals(InboundMessageFormat.CIM_1_12, permission.inboundMessageFormat());
     }
@@ -85,7 +101,7 @@ class PermissionTest {
         var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
         when(dataNeed.name()).thenReturn("someDataNeed");
 
-        permission.setDataNeed(dataNeed);
+        permission.initializeFromDataNeed(dataNeed);
 
         assertNull(permission.inboundMessageFormat());
     }
@@ -94,7 +110,7 @@ class PermissionTest {
     void givenInboundDataNeed_updateInboundMessageFormat_updatesField() throws Exception {
         var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         when(dataNeed.name()).thenReturn("someDataNeed");
-        permission.setDataNeed(dataNeed);
+        permission.initializeFromDataNeed(dataNeed);
 
         permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
 
@@ -105,7 +121,7 @@ class PermissionTest {
     void givenOutboundDataNeed_updateInboundMessageFormat_throws() {
         var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
         when(dataNeed.name()).thenReturn("someDataNeed");
-        permission.setDataNeed(dataNeed);
+        permission.initializeFromDataNeed(dataNeed);
 
         assertThrows(InvalidInboundPermissionException.class,
                      () -> permission.updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1));
@@ -114,6 +130,6 @@ class PermissionTest {
     @Test
     void givenNull_setDataNeed_throws() {
         // When, Then
-        assertThrows(NullPointerException.class, () -> permission.setDataNeed(null));
+        assertThrows(NullPointerException.class, () -> permission.initializeFromDataNeed(null));
     }
 }

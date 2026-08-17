@@ -9,6 +9,7 @@ import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.ActiveFcaPermissionAlreadyExistsException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
+import energy.eddie.aiida.errors.permission.MissingDisplayNameException;
 import energy.eddie.aiida.errors.permission.MissingInboundMessageFormatException;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
@@ -226,7 +227,7 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isOk());
 
-        verify(permissionService).acceptPermission(permissionId, dataSourceId, null);
+        verify(permissionService).acceptPermission(permissionId, dataSourceId, null, null);
     }
 
     @Test
@@ -262,7 +263,7 @@ class PermissionControllerTest {
                // Then
                .andExpect(status().isOk());
 
-        verify(permissionService).acceptPermission(permissionId, null, InboundMessageFormat.OPENADR_3_1);
+        verify(permissionService).acceptPermission(permissionId, null, InboundMessageFormat.OPENADR_3_1, null);
     }
 
     @Test
@@ -371,8 +372,41 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
+    void givenUpdateDisplayName_updatePermission_callsService() throws Exception {
+        // Given
+        var requestJson = "{\"operation\": \"UPDATE_DISPLAY_NAME\", \"displayName\": \"My smart meter\"}";
+
+        // When
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(requestJson))
+               // Then
+               .andExpect(status().isOk());
+
+        verify(permissionService).updateDisplayName(permissionId, "My smart meter");
+    }
+
+    @Test
+    @WithMockUser
+    void givenMissingDisplayName_updatePermission_returnsBadRequest() throws Exception {
+        when(permissionService.updateDisplayName(permissionId, null))
+                .thenThrow(new MissingDisplayNameException());
+
+        mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"operation\": \"UPDATE_DISPLAY_NAME\"}"))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
+                                   is("displayName must not be blank when operation is UPDATE_DISPLAY_NAME.")));
+    }
+
+    @Test
+    @WithMockUser
     void givenIncompatibleDataSource_updatePermission_returnsBadRequest() throws Exception {
-        when(permissionService.acceptPermission(permissionId, dataSourceId, null))
+        when(permissionService.acceptPermission(permissionId, dataSourceId, null, null))
                 .thenThrow(new IncompatibleDataSourceException("Data source is incompatible."));
 
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
@@ -387,7 +421,7 @@ class PermissionControllerTest {
     @Test
     @WithMockUser
     void givenDataSourceNotFound_updatePermission_returnsNotFound() throws Exception {
-        when(permissionService.acceptPermission(permissionId, dataSourceId, null))
+        when(permissionService.acceptPermission(permissionId, dataSourceId, null, null))
                 .thenThrow(new DataSourceNotFoundException(dataSourceId));
 
         mockMvc.perform(patch("/permissions/{permissionId}", permissionId)
