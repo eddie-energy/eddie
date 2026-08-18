@@ -81,6 +81,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
     private MqttConfiguration mqttConfiguration;
     private ObjectMapper mapper;
     private Proxy proxy;
+    private String topic;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -94,10 +95,11 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var portViaToxiproxy = toxiproxy.getMappedPort(8666);
         var serverURI = "tcp://" + ipAddressViaToxiproxy + ":" + portViaToxiproxy;
         mqttConfiguration = new MqttConfiguration(serverURI, serverURI, 10, PASSWORD, "");
+        topic = TOPIC + "/" + UUID.randomUUID();
 
         when(DATA_SOURCE.enabled()).thenReturn(true);
         when(DATA_SOURCE.internalHost()).thenReturn(serverURI);
-        when(DATA_SOURCE.topic()).thenReturn(TOPIC);
+        when(DATA_SOURCE.topic()).thenReturn(topic);
         when(DATA_SOURCE.username()).thenReturn(USERNAME);
         when(DATA_SOURCE.password()).thenReturn(PASSWORD);
 
@@ -120,7 +122,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
         var adapter = new OesterreichsEnergieAdapter(DATA_SOURCE, mapper, mqttConfiguration);
 
         StepVerifier.create(adapter.start())
-                    .then(() -> publishSampleMqttMessage(TOPIC, sampleJson))
+                    .then(() -> publishSampleMqttMessage(topic, sampleJson, true))
                     .expectNextCount(1)
                     .then(adapter::close)
                     .expectComplete()
@@ -142,7 +144,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
 
         scheduler.schedule(this::cutConnection, 1, TimeUnit.SECONDS);
         scheduler.schedule(this::restoreConnection, 3, TimeUnit.SECONDS);
-        scheduler.schedule(() -> publishSampleMqttMessage(TOPIC, json), 4, TimeUnit.SECONDS);
+        scheduler.schedule(() -> publishSampleMqttMessage(topic, json, false), 4, TimeUnit.SECONDS);
 
 
         StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
@@ -161,7 +163,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
      * Blockingly publishes the msg <b>directly</b> to the server, i.e. without the proxy.
      */
     @SuppressWarnings("FutureReturnValueIgnored")
-    private void publishSampleMqttMessage(String topic, String msg) {
+    private void publishSampleMqttMessage(String topic, String msg, boolean retained) {
         var directServerURI = "tcp://" + mqtt.getHost() + ":" + mqtt.getMappedPort(1883);
 
         try (var executor = Executors.newSingleThreadExecutor()) {
@@ -174,7 +176,7 @@ class OesterreichsEnergieAdapterIntegrationTest {
                     options.setUserName(USERNAME);
                     options.setPassword(PASSWORD.getBytes(StandardCharsets.UTF_8));
                     client.connect(options);
-                    client.publish(topic, msg.getBytes(StandardCharsets.UTF_8), 2, false);
+                    client.publish(topic, msg.getBytes(StandardCharsets.UTF_8), 2, retained);
                     client.disconnect();
                     client.close();
                 } catch (MqttException ignored) {
