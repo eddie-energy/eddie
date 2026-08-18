@@ -20,7 +20,7 @@ import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import jakarta.persistence.EntityManager;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
@@ -363,7 +363,8 @@ class ProvisioningServiceIntegrationTest {
         );
         permissionRepository.saveAndFlush(permission);
 
-        permission.setDataNeed(aiidaLocalDataNeedRepository.saveAndFlush(inboundDataNeed()));
+        var localDataNeed = aiidaLocalDataNeedRepository.saveAndFlush(inboundDataNeed());
+        permission.initializeFromDataNeed(localDataNeed);
         permissionRepository.saveAndFlush(permission);
 
         permission.setMqttStreamingConfig(new MqttStreamingConfig(new MqttDto(
@@ -379,9 +380,9 @@ class ProvisioningServiceIntegrationTest {
     }
 
     private static InboundAiidaLocalDataNeed inboundDataNeed() {
-        var dataNeed = mock(AiidaDataNeed.class);
+        var dataNeed = mock(InboundAiidaDataNeed.class);
         when(dataNeed.dataNeedId()).thenReturn(UUID.randomUUID());
-        when(dataNeed.type()).thenReturn("inbound-aiida");
+        when(dataNeed.type()).thenReturn(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
         when(dataNeed.name()).thenReturn("Integration test inbound data need");
         when(dataNeed.purpose()).thenReturn("Provisioning integration test");
         when(dataNeed.policyLink()).thenReturn("https://example.test/policy");
@@ -390,7 +391,6 @@ class ProvisioningServiceIntegrationTest {
         );
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
         when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
-        when(dataNeed.dataTags()).thenReturn(Set.of());
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of());
         when(dataNeed.contexts()).thenReturn(Set.of());
         return new InboundAiidaLocalDataNeed(dataNeed);
