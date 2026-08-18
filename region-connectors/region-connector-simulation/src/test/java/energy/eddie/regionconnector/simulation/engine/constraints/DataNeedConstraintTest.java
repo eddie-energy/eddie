@@ -12,11 +12,12 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedValidatedHistoricalData;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintOk;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintViolation;
-import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
-import energy.eddie.regionconnector.simulation.engine.steps.TestSimulationContext;
-import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
+import energy.eddie.regionconnector.simulation.engine.steps.*;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -27,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -96,16 +98,11 @@ class DataNeedConstraintTest {
         );
     }
 
-    @Test
-    void testConstraint_withValidDataNeed_returnsOk() {
+    @ParameterizedTest
+    @MethodSource("stepSource")
+    void testConstraint_withValidDataNeed_returnsOk(Model step) {
         // Given
         var ctx = TestSimulationContext.create();
-        var step = new ValidatedHistoricalDataStep(
-                new SimulatedValidatedHistoricalData("mid",
-                                                     Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
-                                                     Duration.ofMinutes(15),
-                                                     List.of())
-        );
         var constraint = new DataNeedConstraint(dataNeedsService, ctx);
         when(dataNeedsService.calculate("dnid", ctx.creationDateTime()))
                 .thenReturn(
@@ -124,5 +121,17 @@ class DataNeedConstraintTest {
 
         // Then
         assertEquals(new ConstraintOk(), res);
+    }
+
+    private static Stream<Arguments> stepSource() {
+        return Stream.of(
+                Arguments.of(new ValidatedHistoricalDataStep(
+                        new SimulatedValidatedHistoricalData("mid",
+                                                             Optional.of(ZonedDateTime.now(ZoneOffset.UTC)),
+                                                             Duration.ofMinutes(15),
+                                                             List.of())
+                )),
+                Arguments.of(new LoadProfileCurveStep(null, "default", 10, "mid"))
+        );
     }
 }

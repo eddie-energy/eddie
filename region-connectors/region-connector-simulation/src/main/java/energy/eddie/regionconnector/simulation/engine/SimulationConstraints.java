@@ -29,7 +29,8 @@ class SimulationConstraints {
                 new ScenarioConstraint(),
                 new ScenarioNotNestedConstraint(),
                 new StatusChangeStepConstraint(),
-                new ValidatedHistoricalDataStepConstraint(ctx)
+                new ValidatedHistoricalDataStepConstraint(ctx),
+                new LoadProfileCurveStepConstraint()
         );
     }
 

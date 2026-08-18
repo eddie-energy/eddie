@@ -32,14 +32,20 @@ public class SimulationEngine {
     }
 
     public SimulationResult run(Scenario scenario, ScenarioMetadata metadata) {
-        LOGGER.info("Checking scenario for constraint violations");
+        LOGGER.info("Checking scenario {} with permissionID {} and connectionId {} for constraint violations",
+                    scenario.name(),
+                    metadata.permissionId(),
+                    metadata.connectionId());
         var ctx = createSimulationContext(metadata);
         var constraints = new SimulationConstraints(scenario, ctx, calculationService);
         var violations = constraints.violatesConstraints();
         if (!violations.isEmpty()) {
             return new SimulationConstraintViolations(violations);
         }
-        LOGGER.info("Running scenario");
+        LOGGER.info("Running scenario {} with permissionID {} and connectionId {}",
+                    scenario.name(),
+                    metadata.permissionId(),
+                    metadata.connectionId());
         var interpret = new SimulationInterpret(scenario, ctx);
         var thread = Thread.startVirtualThread(interpret::run);
         return new SimulationStarted(thread);

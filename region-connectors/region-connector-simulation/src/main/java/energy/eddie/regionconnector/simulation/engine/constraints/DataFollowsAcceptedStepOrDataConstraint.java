@@ -7,10 +7,7 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintOk;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintResult;
 import energy.eddie.regionconnector.simulation.engine.constraints.results.ConstraintViolation;
-import energy.eddie.regionconnector.simulation.engine.steps.Model;
-import energy.eddie.regionconnector.simulation.engine.steps.StatusChangeStep;
-import energy.eddie.regionconnector.simulation.engine.steps.Step;
-import energy.eddie.regionconnector.simulation.engine.steps.ValidatedHistoricalDataStep;
+import energy.eddie.regionconnector.simulation.engine.steps.*;
 
 public class DataFollowsAcceptedStepOrDataConstraint implements StructuralConstraint {
     @Override
@@ -19,6 +16,11 @@ public class DataFollowsAcceptedStepOrDataConstraint implements StructuralConstr
             && !(isAcceptedStatusStep(current) || current instanceof ValidatedHistoricalDataStep)) {
             return new ConstraintViolation(
                     "ValidatedHistoricalDataStep must follow ACCEPTED StatusChangeStep or another ValidatedHistoricalDataStep"
+            );
+        }
+        if (next instanceof LoadProfileCurveStep && !isAcceptedStatusStep(current)) {
+            return new ConstraintViolation(
+                    "LoadProfileCurveStep must follow ACCEPTED StatusChangeStep"
             );
         }
         return new ConstraintOk();
