@@ -19,6 +19,9 @@ public class ConnectionLimit {
     @Column(name = "permission_id", nullable = false, updatable = false)
     private UUID permissionId;
 
+    /**
+     * A missing meter id is persisted as an empty string so the meter id can be a primary key.
+     */
     @Id
     @Column(name = "meter_id", nullable = false, updatable = false)
     private String meterId;
