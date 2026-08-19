@@ -7,6 +7,7 @@ import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -50,6 +51,8 @@ class ConnectionLimitPersistenceServiceTest {
     private TransactionTemplate transactionTemplate;
     @Mock
     private InboundDataSource inboundDataSource;
+    @Mock
+    private Permission permission;
     @Captor
     private ArgumentCaptor<ConnectionLimit> limitCaptor;
     @Captor
@@ -65,6 +68,8 @@ class ConnectionLimitPersistenceServiceTest {
                                                             transactionTemplate);
         publisher = TestPublisher.create();
         when(inboundAggregator.inboundRecordFlux()).thenReturn(publisher.flux());
+        lenient().when(inboundDataSource.permission()).thenReturn(permission);
+        lenient().when(permission.meterId()).thenReturn(METER_ID);
         service.subscribeToInboundRecords();
     }
 
@@ -91,6 +96,27 @@ class ConnectionLimitPersistenceServiceTest {
         assertEquals("document-1", first.mrid());
         assertEquals(1, first.revisionNumber());
         assertEquals(Instant.parse("2026-02-16T10:11:58Z"), first.createdAt());
+    }
+
+    @Test
+    void givenMissingAssetMeterId_fallsBackToPermissionMeterId() {
+        when(connectionLimitRepository.findMaxRevisionNumberByMrid("document-1")).thenReturn(Optional.empty());
+        when(connectionLimitRepository.findCreatedAtByPermissionMeterAndInterval(any(),
+                                                                                 any(),
+                                                                                 any(),
+                                                                                 any())).thenReturn(Optional.empty());
+
+        publisher.next(inboundRecord(payload("",
+                                             "document-1",
+                                             "1",
+                                             "2.0",
+                                             "8.0",
+                                             "3.0",
+                                             "7.0",
+                                             "2026-02-16T10:11:58Z")));
+
+        verify(connectionLimitRepository, timeout(1000).times(2)).save(limitCaptor.capture());
+        assertEquals(METER_ID, limitCaptor.getAllValues().getFirst().meterId());
     }
 
     @Test
@@ -194,7 +220,7 @@ class ConnectionLimitPersistenceServiceTest {
                          argumentSet("Invalid revision number",
                                      payload("document-1", "0", "2.0", "8.0", "3.0", "7.0")),
                          argumentSet("Empty creationDateTime",
-                                     payload("document-1", "1", "2.0", "8.0", "3.0", "7.0", ""))
+                                     payload(METER_ID, "document-1", "1", "2.0", "8.0", "3.0", "7.0", ""))
         );
     }
 
@@ -206,10 +232,11 @@ class ConnectionLimitPersistenceServiceTest {
     }
 
     private static String payload(String mrid, String revision, String min1, String max1, String min2, String max2) {
-        return payload(mrid, revision, min1, max1, min2, max2, "2026-02-16T10:11:58Z");
+        return payload(METER_ID, mrid, revision, min1, max1, min2, max2, "2026-02-16T10:11:58Z");
     }
 
     private static String payload(
+            String meterId,
             String mrid,
             String revision,
             String min1,
@@ -227,7 +254,7 @@ class ConnectionLimitPersistenceServiceTest {
                     "creationDateTime": "%s",
                     "MetaInformation": {
                       "requestPermissionId": "00213495-bdbf-4497-8695-5d811e45aa64",
-                      "Asset": { "meterId": "003114735" }
+                      "Asset": { "meterId": "%s" }
                     }
                   },
                   "MarketDocument": {
@@ -256,6 +283,7 @@ class ConnectionLimitPersistenceServiceTest {
                   }
                 }
                 """.formatted(creationDateTime,
+                              meterId,
                               mrid,
                               revision,
                               intervalStart,

@@ -66,7 +66,10 @@ public class ConnectionLimitPersistenceService {
         var marketDocument = envelope.getMarketDocument();
 
         var permissionId = UUID.fromString(meta.getRequestPermissionId());
-        var meterId = meta.getAsset() != null ? meta.getAsset().getMeterId() : null;
+        var documentMeterId = meta.getAsset() == null ? null : meta.getAsset().getMeterId();
+        var inferredMeterId = documentMeterId == null || documentMeterId.isBlank() ? inboundRecord.dataSource()
+                                                                                                  .permission()
+                                                                                                  .meterId() : documentMeterId;
         var mrid = marketDocument.getMRID();
 
         if (mrid == null || mrid.isBlank()) {
@@ -108,7 +111,7 @@ public class ConnectionLimitPersistenceService {
             for (var series : timeSeriesSeries.getSeries()) {
                 for (var period : series.getPeriods()) {
                     incomingLimits.addAll(toConnectionLimits(permissionId,
-                                                             meterId,
+                                                             inferredMeterId,
                                                              mrid,
                                                              revisionNumber,
                                                              createdAt,
