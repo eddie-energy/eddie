@@ -114,6 +114,18 @@ class DataSourceServiceTest {
     }
 
     @Test
+    void shouldReturnOutboundDataSourcesFilteredByMeterId() throws InvalidUserException {
+        var meterId = "e2e-meter";
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(repository.findOutboundByUserIdAndMeterId(USER_ID, meterId)).thenReturn(List.of(outboundDataSource));
+
+        var result = dataSourceService.getOutboundDataSourcesByMeterId(meterId);
+
+        assertEquals(List.of(outboundDataSource), result);
+        verify(repository).findOutboundByUserIdAndMeterId(USER_ID, meterId);
+    }
+
+    @Test
     void shouldAddNewDataSource() throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(mqttConfiguration.internalHost()).thenReturn("mqtt://test-broker");

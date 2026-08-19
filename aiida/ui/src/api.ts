@@ -105,8 +105,9 @@ export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions/inbound/active')
 }
 
-export function getDataSources(): Promise<AiidaDataSource[]> {
-  return fetch('/datasources/outbound')
+export function getDataSources(meterId?: string): Promise<AiidaDataSource[]> {
+  const query = meterId ? `?${new URLSearchParams({ meterId })}` : ''
+  return fetch(`/datasources/outbound${query}`)
 }
 
 export function getDataSourceTypes(): Promise<AiidaDataSourceType[]> {

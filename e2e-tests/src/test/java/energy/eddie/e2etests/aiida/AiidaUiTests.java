@@ -167,26 +167,21 @@ class AiidaUiTests {
     @Test
     void fcaPermissionFlow() {
         var dataSource = "E2E FCA Data Source";
+        var otherDataSource = "E2E FCA Other Data Source";
         var fcaOutboundDataNeed = "FCA Outbound";
         var meterId = "e2e-meter";
+        var otherMeterId = "e2e-meter-other";
 
-        // Create a data source to use for the FCA permission
-        page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
-        page.getByRole(AriaRole.BUTTON).getByText("Add Data Source").click();
-        page.getByLabel("Name").fill(dataSource);
-        page.getByRole(AriaRole.LISTBOX).getByText("Asset Type").click();
-        page.getByRole(AriaRole.OPTION).getByText("CONNECTION-AGREEMENT-POINT").click();
-        page.getByRole(AriaRole.LISTBOX).getByText("Data Source Type").click();
-        page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
-        page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
-        page.getByRole(AriaRole.OPTION).getByText("Austria").click();
-        page.getByLabel("Polling Interval").fill("120");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Meter")).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+        // Create a data source matching the FCA meter ID, and one that doesn't match
+        createSimulationDataSource(dataSource, meterId);
+        createSimulationDataSource(otherDataSource, otherMeterId);
 
         // Accept an FCA outbound permission tied to the meter ID
+        // The data source with a different meter ID is not shown
+        // The matching data source with the same meter ID gets pre-selected
         var aiidaCode = aiidaCodeForDataNeedWithMeterId(fcaOutboundDataNeed, meterId);
-        var permissionId = acceptOutboundPermissionRequest(aiidaCode, dataSource);
+        var permissionId =
+                acceptOutboundPermissionRequestWithPreselectedDataSource(aiidaCode, dataSource, otherDataSource);
 
         // Attempting a second FCA outbound permission for the same meter ID must fail
         var duplicateAiidaCode = aiidaCodeForDataNeedWithMeterId(fcaOutboundDataNeed, meterId);
@@ -209,6 +204,7 @@ class AiidaUiTests {
         // Clean up
         revokePermission(permission);
         deleteDataSource(dataSource);
+        deleteDataSource(otherDataSource);
     }
 
     @Test
@@ -270,6 +266,44 @@ class AiidaUiTests {
         dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
 
         return id;
+    }
+
+    private String acceptOutboundPermissionRequestWithPreselectedDataSource(
+            String aiidaCode, String expectedDataSource, String excludedDataSource) {
+        addPermission(aiidaCode);
+
+        var dialog = page.getByRole(AriaRole.DIALOG);
+        var id = dialog.locator(":text('Permission ID') + dd").textContent();
+        var listbox = dialog.getByRole(AriaRole.LISTBOX);
+
+        // The one data source that matches the meter ID is pre-selected
+        assertThat(listbox).containsText(expectedDataSource);
+
+        // The data source with a different meter ID is not displayed
+        listbox.click();
+        assertThat(dialog.getByRole(AriaRole.OPTION).getByText(excludedDataSource)).hasCount(0);
+        listbox.click();
+
+        assertThat(dialog.getByRole(AriaRole.BUTTON).getByText("Accept")).isEnabled();
+        dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
+
+        return id;
+    }
+
+    private void createSimulationDataSource(String name, String meterId) {
+        page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
+        page.getByRole(AriaRole.BUTTON).getByText("Add Data Source").click();
+        page.getByLabel("Name").fill(name);
+        page.getByRole(AriaRole.LISTBOX).getByText("Asset Type").click();
+        page.getByRole(AriaRole.OPTION).getByText("CONNECTION-AGREEMENT-POINT").click();
+        page.getByRole(AriaRole.LISTBOX).getByText("Data Source Type").click();
+        page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
+        page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
+        page.getByRole(AriaRole.OPTION).getByText("Austria").click();
+        page.getByLabel("Polling Interval").fill("120");
+        page.getByLabel("Physical Meter ID").fill(meterId);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Meter")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
     }
 
     private void revokeInboundPermission(String name) {

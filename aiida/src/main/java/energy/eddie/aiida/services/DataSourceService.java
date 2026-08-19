@@ -120,6 +120,11 @@ public class DataSourceService {
         return repository.findOutboundByUserId(currentUserId);
     }
 
+    public List<DataSource> getOutboundDataSourcesByMeterId(String meterId) throws InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+        return repository.findOutboundByUserIdAndMeterId(currentUserId, meterId);
+    }
+
     @Transactional
     public DataSourceSecretsDto addDataSource(DataSourceDto dto) throws InvalidUserException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         var currentUserId = authService.getCurrentUserId();

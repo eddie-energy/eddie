@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.repositories;
@@ -15,6 +15,10 @@ public interface DataSourceRepository extends JpaRepository<DataSource, UUID> {
 
     @Query("select d from DataSource d where d.userId = :userId and not d.type = DataSourceType.INBOUND")
     List<DataSource> findOutboundByUserId(UUID userId);
+
+    @Query("select d from DataSource d where d.userId = :userId and not d.type = DataSourceType.INBOUND "
+            + "and d.meterId = :meterId")
+    List<DataSource> findOutboundByUserIdAndMeterId(UUID userId, String meterId);
 
     List<DataSource> findAllByType(DataSourceType type);
 }
