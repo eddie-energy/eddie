@@ -5,7 +5,7 @@
 import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
-import { fetchInboundProvisioningTypes } from '@/stores/provisioningTypes.ts'
+import { fetchInboundProvisioningTypes } from '@/stores/inboundProvisioningTypes.ts'
 import type { AiidaPermission, PermissionTypes } from '@/types'
 import Button from '@/components/Button.vue'
 import CompleteIcon from '@/assets/icons/CompleteIcon.svg'

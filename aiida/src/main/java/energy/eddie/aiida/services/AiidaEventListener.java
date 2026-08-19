@@ -12,6 +12,7 @@ import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -68,6 +69,10 @@ public class AiidaEventListener {
             LOGGER.error("No permission found with id {}", event.permissionId(), e);
         } catch (SecretStoringException | SecretLoadingException e) {
             LOGGER.error("Could not create secrets for inbound datasource.", e);
+        } catch (MissingMqttStreamingConfigException e) {
+            LOGGER.error(
+                    "Could not create inbound data source because its permission has no MQTT streaming configuration.",
+                    e);
         }
     }
 

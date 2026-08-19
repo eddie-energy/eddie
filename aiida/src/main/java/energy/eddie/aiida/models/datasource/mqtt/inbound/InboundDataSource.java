@@ -109,11 +109,13 @@ public class InboundDataSource extends MqttDataSource {
         );
     }
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission) {
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission)
+            throws MissingMqttStreamingConfigException {
         this(dto, userId, permission, SecretGenerator.generate());
     }
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission, String accessCode) {
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission, String accessCode)
+            throws MissingMqttStreamingConfigException {
         super(dto, userId);
         this.permission = permission;
         this.config = permission.mqttStreamingConfig();
@@ -216,7 +218,13 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void createMqttUser() {
+    protected void postPersist() throws MissingMqttStreamingConfigException {
+        super.postPersist();
+        this.accessCode = alias(id, SecretType.API_KEY);
+    }
+
+    @Override
+    protected void createMqttUser() throws MissingMqttStreamingConfigException {
         var streamingConfig = streamingConfig();
         this.mqttConnection.createMqttUser(
                 streamingConfig.username().toString(),
@@ -225,13 +233,7 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     @Override
-    protected void postPersist() {
-        super.postPersist();
-        this.accessCode = alias(id, SecretType.API_KEY);
-    }
-
-    @Override
-    protected void createAccessControlEntry() {
+    protected void createAccessControlEntry() throws MissingMqttStreamingConfigException {
         var streamingConfig = streamingConfig();
         this.accessControlEntry = new MqttAccessControlEntry(
                 streamingConfig.username().toString(),
@@ -239,7 +241,7 @@ public class InboundDataSource extends MqttDataSource {
         );
     }
 
-    private MqttStreamingConfig streamingConfig() {
+    private MqttStreamingConfig streamingConfig() throws MissingMqttStreamingConfigException {
         if (config != null) {
             return config;
         }
@@ -271,7 +273,7 @@ public class InboundDataSource extends MqttDataSource {
             this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
         }
 
-        public InboundDataSource build() {
+        public InboundDataSource build() throws MissingMqttStreamingConfigException {
             return new InboundDataSource(dataSourceDto, userId, permission);
         }
     }

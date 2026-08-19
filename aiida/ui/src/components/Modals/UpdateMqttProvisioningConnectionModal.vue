@@ -19,7 +19,7 @@ import { useI18n } from 'vue-i18n'
 import {
   fetchInboundProvisioningTypes,
   inboundProvisioningTypes,
-} from '@/stores/provisioningTypes.ts'
+} from '@/stores/inboundProvisioningTypes.ts'
 
 const { t } = useI18n()
 const modalRef = useTemplateRef('modal')
