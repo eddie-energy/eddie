@@ -5,12 +5,9 @@ package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
-import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
 import energy.eddie.aiida.services.AuthService;
 import jakarta.annotation.Nullable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
@@ -51,23 +48,23 @@ public class ConnectionLimitService {
             return List.of();
         }
 
-        var pageable = offset == null ? Pageable.unpaged() : PageRequest.ofSize(offset + 1);
-        var limits = connectionLimitRepository.findByUserIdAndFiltersFromTo(currentUserId,
-                                                                            permissionId,
-                                                                            meterId,
-                                                                            fromResolved,
-                                                                            toResolved,
-                                                                            pageable);
+        var limit = offset == null ? null : offset + 1;
+        var effectiveLimits = connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(currentUserId,
+                                                                                              permissionId,
+                                                                                              meterId,
+                                                                                              fromResolved,
+                                                                                              toResolved,
+                                                                                              limit);
 
-        return limits.stream().map(this::toDto).toList();
+        return effectiveLimits.stream().map(this::toDto).toList();
     }
 
-    private ConnectionLimitDto toDto(ConnectionLimit limit) {
-        return new ConnectionLimitDto(limit.permissionId(),
-                                      limit.meterId().isBlank() ? null : limit.meterId(),
-                                      limit.intervalStart(),
-                                      limit.intervalEnd(),
-                                      limit.minLimitKw(),
-                                      limit.maxLimitKw());
+    private ConnectionLimitDto toDto(ConnectionLimitRepository.EffectiveConnectionLimitProjection limit) {
+        return new ConnectionLimitDto(limit.getPermissionId(),
+                                      limit.getMeterId().isBlank() ? null : limit.getMeterId(),
+                                      limit.getIntervalStart(),
+                                      limit.getIntervalEnd(),
+                                      limit.getMinLimitKw(),
+                                      limit.getMaxLimitKw());
     }
 }

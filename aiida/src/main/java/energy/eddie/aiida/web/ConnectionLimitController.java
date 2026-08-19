@@ -45,6 +45,8 @@ public class ConnectionLimitController {
             description = """
                     Returns all currently active connection limits by default.
                     Limits can be filtered by permission ID, meter ID, and time frame.
+                    Overlapping limits are resolved to one effective timeline per permission and meter.
+                    The most recently added limit is chosen as the effective limit.
                     An offset can be provided to return the next N limits from now or in the time frame.
                     No checks are made if the permission actually exists and can yield connection limits!
                     """

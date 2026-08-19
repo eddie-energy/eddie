@@ -50,6 +50,7 @@ class ConnectionLimitRepositoryIntegrationTest {
     private static final UUID USER_B = UUID.fromString("e4b6d77a-1d35-4bf2-bc2e-eaf0f5a5757d");
     private static final UUID PERMISSION_A1 = UUID.fromString("c7bca673-ef90-4f47-a6f6-42d0b47bb109");
     private static final UUID PERMISSION_A2 = UUID.fromString("7c981f8f-a3f0-4c59-aa43-185958758b50");
+    private static final UUID PERMISSION_A3 = UUID.fromString("5298bfa2-fb44-4f84-b95f-c2a5af76844d");
     private static final UUID PERMISSION_B1 = UUID.fromString("752f0e41-0cea-4a3e-a1ee-8f12f27f7d8e");
     private static final UUID DATA_NEED_ID = UUID.fromString("f6d2054e-174d-4637-ae8b-cfdb205f462a");
     private static final String METER_1 = "meter-1";
@@ -65,6 +66,7 @@ class ConnectionLimitRepositoryIntegrationTest {
         saveDataNeed();
         savePermission(PERMISSION_A1, USER_A);
         savePermission(PERMISSION_A2, USER_A);
+        savePermission(PERMISSION_A3, USER_A);
         savePermission(PERMISSION_B1, USER_B);
 
         saveLimit(PERMISSION_A1, METER_1, "2026-07-10T09:45:00Z", "2026-07-10T10:00:00Z");
@@ -177,6 +179,54 @@ class ConnectionLimitRepositoryIntegrationTest {
         assertEquals(1, result.size());
     }
 
+    @Test
+    void findEffectiveByUserIdAndFiltersFromTo_withOverlaps_returnsNewestCreatedAtTimeline() {
+        saveLimit(PERMISSION_A3,
+                  METER_1,
+                  "2026-07-10T10:00:00Z",
+                  "2026-07-10T10:15:00Z",
+                  "2.0",
+                  "8.0",
+                  "2026-07-10T10:00:00Z");
+        saveLimit(PERMISSION_A3,
+                  METER_1,
+                  "2026-07-10T10:10:00Z",
+                  "2026-07-10T10:25:00Z",
+                  "3.0",
+                  "9.0",
+                  "2026-07-10T10:05:00Z");
+        saveLimit(PERMISSION_A3,
+                  METER_1,
+                  "2026-07-10T10:25:00Z",
+                  "2026-07-10T10:30:00Z",
+                  "1.0",
+                  "7.0",
+                  "2026-07-10T10:01:00Z");
+
+        var result = connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(USER_A,
+                                                                                      PERMISSION_A3,
+                                                                                      METER_1,
+                                                                                      Instant.parse("2026-07-10T10:00:00Z"),
+                                                                                      Instant.parse("2026-07-10T10:30:00Z"),
+                                                                                      null);
+
+        assertEquals(3, result.size());
+        assertEquals(Instant.parse("2026-07-10T10:00:00Z"), result.get(0).getIntervalStart());
+        assertEquals(Instant.parse("2026-07-10T10:10:00Z"), result.get(0).getIntervalEnd());
+        assertEquals(0, new BigDecimal("2.0").compareTo(result.get(0).getMinLimitKw()));
+        assertEquals(0, new BigDecimal("8.0").compareTo(result.get(0).getMaxLimitKw()));
+
+        assertEquals(Instant.parse("2026-07-10T10:10:00Z"), result.get(1).getIntervalStart());
+        assertEquals(Instant.parse("2026-07-10T10:25:00Z"), result.get(1).getIntervalEnd());
+        assertEquals(0, new BigDecimal("3.0").compareTo(result.get(1).getMinLimitKw()));
+        assertEquals(0, new BigDecimal("9.0").compareTo(result.get(1).getMaxLimitKw()));
+
+        assertEquals(Instant.parse("2026-07-10T10:25:00Z"), result.get(2).getIntervalStart());
+        assertEquals(Instant.parse("2026-07-10T10:30:00Z"), result.get(2).getIntervalEnd());
+        assertEquals(0, new BigDecimal("1.0").compareTo(result.get(2).getMinLimitKw()));
+        assertEquals(0, new BigDecimal("7.0").compareTo(result.get(2).getMaxLimitKw()));
+    }
+
     private void savePermission(UUID permissionId, UUID userId) {
         var eddieId = UUID.fromString("ab8ef940-8f7a-4994-a626-c63bbf4f99c7");
         jdbcTemplate.update("""
@@ -227,15 +277,33 @@ class ConnectionLimitRepositoryIntegrationTest {
     }
 
     private void saveLimit(UUID permissionId, String meterId, String intervalStart, String intervalEnd) {
+        saveLimit(permissionId,
+                  meterId,
+                  intervalStart,
+                  intervalEnd,
+                  "3.0",
+                  "8.0",
+                  "2026-07-10T00:00:00Z");
+    }
+
+    private void saveLimit(
+            UUID permissionId,
+            String meterId,
+            String intervalStart,
+            String intervalEnd,
+            String minLimitKw,
+            String maxLimitKw,
+            String createdAt
+    ) {
         var limit = new ConnectionLimit(permissionId,
                                         meterId,
                                         Instant.parse(intervalStart),
                                         Instant.parse(intervalEnd),
-                                        new BigDecimal("3.0"),
-                                        new BigDecimal("8.0"),
+                                        new BigDecimal(minLimitKw),
+                                        new BigDecimal(maxLimitKw),
                                         "mrid-" + permissionId,
                                         1,
-                                        Instant.parse("2026-07-10T00:00:00Z"));
+                                        Instant.parse(createdAt));
         connectionLimitRepository.saveAndFlush(limit);
     }
 }
