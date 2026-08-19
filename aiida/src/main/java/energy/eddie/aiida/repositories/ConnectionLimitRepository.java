@@ -128,15 +128,13 @@ public interface ConnectionLimitRepository extends JpaRepository<ConnectionLimit
             FROM grouped
             GROUP BY permission_id, meter_id, grp, min_limit_kw, max_limit_kw, mrid
             ORDER BY intervalstart, permissionid, meterid
-            LIMIT CAST(:limit AS INTEGER)
             """, nativeQuery = true)
     List<EffectiveConnectionLimitProjection> findEffectiveByUserIdAndFiltersFromTo(
             @Param("userId") UUID userId,
             @Param("permissionId") @Nullable UUID permissionId,
             @Param("meterId") @Nullable String meterId,
             @Param("from") Instant from,
-            @Param("to") @Nullable Instant to,
-            @Param("limit") @Nullable Integer limit,
+            @Param("to") Instant to,
             @Param("defaultMinLimitKw") @Nullable BigDecimal defaultMinLimitKw,
             @Param("defaultMaxLimitKw") @Nullable BigDecimal defaultMaxLimitKw
     );
@@ -146,10 +144,9 @@ public interface ConnectionLimitRepository extends JpaRepository<ConnectionLimit
             @Nullable UUID permissionId,
             @Nullable String meterId,
             Instant from,
-            @Nullable Instant to,
-            @Nullable Integer limit
+            Instant to
     ) {
-        return findEffectiveByUserIdAndFiltersFromTo(userId, permissionId, meterId, from, to, limit, null, null);
+        return findEffectiveByUserIdAndFiltersFromTo(userId, permissionId, meterId, from, to, null, null);
     }
 
     @Query("SELECT MAX(cl.revisionNumber) FROM ConnectionLimit cl WHERE cl.mrid = :mrid")

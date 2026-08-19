@@ -10,7 +10,6 @@ import energy.eddie.aiida.services.AuthService;
 import jakarta.annotation.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -19,42 +18,30 @@ import java.util.UUID;
 public class ConnectionLimitService {
     private final ConnectionLimitRepository connectionLimitRepository;
     private final AuthService authService;
-    private final Clock clock;
 
     public ConnectionLimitService(
             ConnectionLimitRepository connectionLimitRepository,
-            AuthService authService,
-            Clock clock
+            AuthService authService
     ) {
         this.connectionLimitRepository = connectionLimitRepository;
         this.authService = authService;
-        this.clock = clock;
     }
 
     public List<ConnectionLimitDto> getConnectionLimits(
             @Nullable UUID permissionId,
             @Nullable String meterId,
             Instant from,
-            Instant to,
-            Integer offset
+            Instant to
     ) throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-
-        var now = clock.instant();
-        var fromResolved = from != null ? from : now;
-        var toResolved = offset == null && to == null ? now : to;
-
-        if (toResolved != null && fromResolved.isAfter(toResolved)) {
+        if (from.isAfter(to)) {
             return List.of();
         }
-
-        var limit = offset == null ? null : offset + 1;
         var effectiveLimits = connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(currentUserId,
                                                                                               permissionId,
                                                                                               meterId,
-                                                                                              fromResolved,
-                                                                                              toResolved,
-                                                                                              limit);
+                                                                                              from,
+                                                                                              to);
 
         return effectiveLimits.stream().map(this::toDto).toList();
     }

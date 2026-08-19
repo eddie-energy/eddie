@@ -207,8 +207,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                                                                                       PERMISSION_A3,
                                                                                       METER_1,
                                                                                       Instant.parse("2026-07-10T10:00:00Z"),
-                                                                                      Instant.parse("2026-07-10T10:30:00Z"),
-                                                                                      null);
+                                                                                      Instant.parse("2026-07-10T10:30:00Z"));
 
         assertEquals(3, result.size());
         assertEquals(Instant.parse("2026-07-10T10:00:00Z"), result.get(0).getIntervalStart());

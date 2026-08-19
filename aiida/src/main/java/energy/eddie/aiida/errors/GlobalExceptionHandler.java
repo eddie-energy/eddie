@@ -7,6 +7,7 @@ import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
@@ -97,6 +98,7 @@ public class GlobalExceptionHandler {
             InvalidDataSourceTypeException.class,
             IncompatibleDataSourceException.class,
             InvalidInboundPermissionException.class,
+            InvalidInstantOrDurationException.class,
             MissingDisplayNameException.class,
             MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,

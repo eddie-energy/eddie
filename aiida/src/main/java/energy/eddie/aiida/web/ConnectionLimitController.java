@@ -5,6 +5,7 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
 import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.constraints.Min;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,7 +26,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,19 +39,20 @@ import java.util.UUID;
 @Tag(name = "Connection Limit Controller")
 public class ConnectionLimitController {
     private final ConnectionLimitService connectionLimitService;
+    private final Clock clock;
 
-    public ConnectionLimitController(ConnectionLimitService connectionLimitService) {
+    public ConnectionLimitController(ConnectionLimitService connectionLimitService, Clock clock) {
         this.connectionLimitService = connectionLimitService;
+        this.clock = clock;
     }
 
     @Operation(
             summary = "Get connection limits",
             description = """
-                    Returns all currently active connection limits by default.
+                    If no time frame is provided, returns all connection limits that apply NOW.
                     Limits can be filtered by permission ID, meter ID, and time frame.
                     Overlapping limits are resolved to one effective timeline per permission and meter.
                     The most recently added limit is chosen as the effective limit.
-                    An offset can be provided to return the next N limits from now or in the time frame.
                     No checks are made if the permission actually exists and can yield connection limits!
                     """
     )
@@ -56,7 +61,15 @@ public class ConnectionLimitController {
             @ApiResponse(responseCode = "400", description = "Invalid input data",
                     content = @Content(
                             schema = @Schema(implementation = EddieApiError.class),
-                            examples = @ExampleObject(value = "{\"errors\":[{\"message\":\"getConnectionLimits.offset: must be greater than or equal to 0\"}]}")
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "errors": [
+                                        {
+                                          "message": "Could not parse Instant or Duration from 'foo'"
+                                        }
+                                      ]
+                                    }
+                                    """)
                     )
             ),
             @ApiResponse(responseCode = "401", description = "Unauthorized User", content = @Content)
@@ -67,13 +80,29 @@ public class ConnectionLimitController {
             @RequestParam(required = false) UUID permissionId,
             @Parameter(description = "Meter ID to query limits for.", example = "003114735")
             @RequestParam(required = false) String meterId,
-            @Parameter(description = "Lower bound of the search interval (inclusive), UTC instant.", example = "2026-07-10T08:00:00Z")
-            @RequestParam(required = false) Instant from,
-            @Parameter(description = "Upper bound of the search interval (inclusive), UTC instant. Acts as cap when used with offset.", example = "2026-07-12T08:00:00Z")
-            @RequestParam(required = false) Instant to,
-            @Parameter(description = "Returns current/from plus N next limits. Must be >= 0.", example = "2")
-            @RequestParam(required = false) @Min(0) Integer offset
-    ) throws InvalidUserException {
-        return ResponseEntity.ok(connectionLimitService.getConnectionLimits(permissionId, meterId, from, to, offset));
+            @Parameter(description = "Lower bound of the search interval (inclusive), UTC instant or ISO duration.", example = "2026-07-10T08:00:00Z", examples = {@ExampleObject("2026-07-10T08:00:00Z"), @ExampleObject("-P1D")})
+            @RequestParam(required = false) String from,
+            @Parameter(description = "Upper bound of the search interval (inclusive), UTC instant or ISO duration.", example = "P1D", examples = {@ExampleObject("2026-07-12T08:00:00Z"), @ExampleObject("P1D")})
+            @RequestParam(required = false) String to
+    ) throws InvalidUserException, InvalidInstantOrDurationException {
+        return ResponseEntity.ok(connectionLimitService.getConnectionLimits(permissionId,
+                                                                            meterId,
+                                                                            fromInstantOrDuration(from),
+                                                                            fromInstantOrDuration(to)));
+    }
+
+    private Instant fromInstantOrDuration(@Nullable String value) throws InvalidInstantOrDurationException {
+        if (value == null || value.isBlank()) {
+            return clock.instant();
+        }
+        try {
+            return Instant.parse(value);
+        } catch (DateTimeParseException ignored) {
+            try {
+                return clock.instant().plus(Duration.parse(value));
+            } catch (DateTimeParseException e) {
+                throw new InvalidInstantOrDurationException(value);
+            }
+        }
     }
 }

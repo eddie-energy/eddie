@@ -12,9 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,46 +33,7 @@ class ConnectionLimitServiceTest {
 
     @BeforeEach
     void setUp() {
-        var fixedClock = Clock.fixed(Instant.parse("2026-07-10T08:45:50Z"), ZoneOffset.UTC);
-        service = new ConnectionLimitService(connectionLimitRepository, authService, fixedClock);
-    }
-
-    @Test
-    void givenNoQueryParams_defaultsFromAndToToNow() throws Exception {
-        var now = Instant.parse("2026-07-10T08:45:50Z");
-        when(authService.getCurrentUserId()).thenReturn(USER_ID);
-        when(connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(eq(USER_ID),
-                                                                             isNull(),
-                                                                             isNull(),
-                                                                             eq(now),
-                                                                             eq(now),
-                                                                             isNull())).thenReturn(List.of());
-
-        service.getConnectionLimits(null, null, null, null, null);
-
-        verify(connectionLimitRepository).findEffectiveByUserIdAndFiltersFromTo(eq(USER_ID),
-                                                                                isNull(),
-                                                                                isNull(),
-                                                                                eq(now),
-                                                                                eq(now),
-                                                                                isNull());
-    }
-
-    @Test
-    void givenOffset_usesPageSizeOffsetPlusOne() throws Exception {
-        var from = Instant.parse("2026-07-10T10:00:00Z");
-        when(authService.getCurrentUserId()).thenReturn(USER_ID);
-        when(connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(any(), any(), any(), any(), any(), any()))
-                .thenReturn(List.of());
-
-        service.getConnectionLimits(null, null, from, null, 2);
-
-        verify(connectionLimitRepository).findEffectiveByUserIdAndFiltersFromTo(eq(USER_ID),
-                                                                                isNull(),
-                                                                                isNull(),
-                                                                                eq(from),
-                                                                                isNull(),
-                                                                                eq(3));
+        service = new ConnectionLimitService(connectionLimitRepository, authService);
     }
 
     @Test
@@ -84,12 +43,10 @@ class ConnectionLimitServiceTest {
         var result = service.getConnectionLimits(null,
                                                  null,
                                                  Instant.parse("2026-07-10T09:00:00Z"),
-                                                 Instant.parse("2026-07-10T08:00:00Z"),
-                                                 null);
+                                                 Instant.parse("2026-07-10T08:00:00Z"));
 
         assertTrue(result.isEmpty());
         verify(connectionLimitRepository, never()).findEffectiveByUserIdAndFiltersFromTo(any(),
-                                                                                         any(),
                                                                                          any(),
                                                                                          any(),
                                                                                          any(),
@@ -99,14 +56,14 @@ class ConnectionLimitServiceTest {
     @Test
     void givenOverlappingIntervals_returnsEffectiveTimelineWithNewestCreatedAt() throws Exception {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
-        when(connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(any(), any(), any(), any(), any(), any()))
+        when(connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(any(), any(), any(), any(), any()))
                 .thenReturn(List.of(limit("2026-07-10T10:00:00Z", "2026-07-10T10:10:00Z", "2.0", "8.0"),
                                     limit("2026-07-10T10:10:00Z", "2026-07-10T10:25:00Z", "3.0", "9.0"),
                                     limit("2026-07-10T10:25:00Z", "2026-07-10T10:30:00Z", "1.0", "7.0")));
 
         var result = service.getConnectionLimits(null, null,
                                                  Instant.parse("2026-07-10T10:00:00Z"),
-                                                 Instant.parse("2026-07-10T10:30:00Z"), null);
+                                                 Instant.parse("2026-07-10T10:30:00Z"));
 
         assertEquals(3, result.size());
         assertEquals(Instant.parse("2026-07-10T10:00:00Z"), result.get(0).intervalStart());
