@@ -33,6 +33,10 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.folder`                       | Folder that is used to store information that the adapter needs for operating. This folder stores the `id.dat` file that is generated when the region connector first connects to the PontonXP Messenger. This file is used by the messenger to authenticate the adapter, i.e. all subsequent instances of the same adapter (same adapter id) need this file if they want to connect to the messenger.                                                                              |
 | `region-connector.at.eda.ponton.messenger.username`                     | Username that can be used to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints. The given user must not be additionally secured by 2FA.                                                                                                                                                                                                                             |
 | `region-connector.at.eda.ponton.messenger.password`                     | Password for the above username. Needed to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints.                                                                                                                                                                                                                                                                       |
+| `region-connector.at.eda.ponton.messenger.inbound-connections`          | Expected number of inbound WebSocket connections to the PontonXP Messenger. Must be greater than `0`. Defaults to `1`.                                                                                                                                                                                                                                                                                                                                                              |
+| `region-connector.at.eda.ponton.messenger.outbound-connections`         | Expected number of outbound WebSocket connections to the PontonXP Messenger. Must be greater than `0`. Defaults to `1`.                                                                                                                                                                                                                                                                                                                                                             |
+| `region-connector.at.eda.ponton.messenger.connection-watchdog.interval` | How often the region connector checks the adapter's WebSocket connection state. Must be a positive Spring Boot duration. Defaults to `1m`.                                                                                                                                                                                                                                                                                                                                          |
+| `region-connector.at.eda.ponton.messenger.connection-watchdog.status-timeout` | Maximum time after the adapter starts or reconnects in which the PontonXP Messenger must report its connection status. If no status callback arrives within this period, or the reported inbound or outbound connection count is below the configured expectation, the watchdog reconnects the adapter. Must be a positive Spring Boot duration. Defaults to `2m`.                                                                                                              |
 | `region-connector.at.eda.consumption.records.remove.duplicates.enabled` | Enables the removal of duplicate consumption records that were already received once by EDDIE. If disabled duplicate consumption data for permission requests concerning the same metering point will be emitted to the outbound connector, this is also true if the permission request is already considered fulfilled, since MDA will send updates for the data. If enabled those updates will not be received. To enable set to `true`, disabled otherwise. Disabled by default. |
 | `region-connector.at.eda.ponton.messenger.enabled`                      | Default `true`. If set to true or missing the EDA Region Connector will try to connect to the configured Ponton X/P Messenger instance. If set to `false` it will use a drop-in replacement, which is a simple REST API to manually send Market Messages, should be used for testing and developement only, never in production!                                                                                                                                                    |
 
@@ -53,9 +57,19 @@ region-connector.at.eda.ponton.messenger.api.endpoint=pontonxp.messenger.com/api
 region-connector.at.eda.ponton.messenger.folder=/opt/pontonxp
 region-connector.at.eda.ponton.messenger.username=username
 region-connector.at.eda.ponton.messenger.password=password
+region-connector.at.eda.ponton.messenger.inbound-connections=1
+region-connector.at.eda.ponton.messenger.outbound-connections=1
+region-connector.at.eda.ponton.messenger.connection-watchdog.interval=1m
+region-connector.at.eda.ponton.messenger.connection-watchdog.status-timeout=2m
 region-connector.at.eda.consumption.records.remove.duplicates.enabled=false
 region-connector.at.eda.ponton.messenger.enabled=true
 ```
+
+The duration values use Spring Boot's duration format. For example, `30s`, `1m`, and `2m` mean 30 seconds, one minute,
+and two minutes respectively.
+
+The connection count and watchdog values configure the connection watchdog for the PontonXP Messenger WebSocket
+connection.
 
 ## Running the Region Connector via EDDIE
 
