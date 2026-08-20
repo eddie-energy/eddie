@@ -60,12 +60,13 @@ class ConnectionLimitControllerTest {
     ) throws Exception {
         var pid = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
         var mid = "003114735";
+        var did = "5dc71d7e-e8cd-4403-a3a8-d3c095c97a12";
         var start = Instant.parse("2026-07-10T08:45:00Z");
         var end = Instant.parse("2026-07-10T09:00:00Z");
         var min = new BigDecimal("3.0");
         var max = new BigDecimal("8.0");
 
-        var limits = List.of(new ConnectionLimitDto(pid, mid, start, end, min, max));
+        var limits = List.of(new ConnectionLimitDto(pid, mid, did, start, end, min, max));
         when(connectionLimitService.getConnectionLimits(any(), any(), any(), any())).thenReturn(limits);
 
         var request = get("/connection-limits").param("permissionId", pid.toString()).param("meterId", mid);

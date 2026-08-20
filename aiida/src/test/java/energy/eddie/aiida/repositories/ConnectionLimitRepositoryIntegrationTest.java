@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.junit.jupiter.Container;
@@ -87,8 +86,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                 null,
                 null,
                 Instant.parse("2026-07-10T10:00:00Z"),
-                null,
-                Pageable.unpaged()
+                Instant.parse("2026-07-10T12:00:00Z")
         );
 
         assertEquals(6, result.size());
@@ -104,8 +102,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                 null,
                 METER_1,
                 Instant.parse("2026-07-10T10:00:00Z"),
-                Instant.parse("2026-07-10T10:20:00Z"),
-                Pageable.unpaged()
+                Instant.parse("2026-07-10T10:20:00Z")
         );
 
         assertEquals(3, result.size());
@@ -121,8 +118,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                 PERMISSION_A1,
                 null,
                 Instant.parse("2026-07-10T10:00:00Z"),
-                Instant.parse("2026-07-10T10:20:00Z"),
-                Pageable.unpaged()
+                Instant.parse("2026-07-10T10:20:00Z")
         );
 
         assertEquals(3, result.size());
@@ -140,8 +136,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                 null,
                 null,
                 from,
-                to,
-                Pageable.unpaged()
+                to
         );
 
         assertEquals(4, result.size());
@@ -157,8 +152,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                 null,
                 "unknown-meter",
                 Instant.parse("2026-07-10T10:00:00Z"),
-                null,
-                Pageable.unpaged()
+                null
         );
 
         assertEquals(0, result.size());
@@ -171,59 +165,11 @@ class ConnectionLimitRepositoryIntegrationTest {
                 PERMISSION_A1,
                 METER_1,
                 Instant.parse("2026-07-10T10:00:00Z"),
-                Instant.parse("2026-07-10T10:05:00Z"),
-                Pageable.unpaged()
+                Instant.parse("2026-07-10T10:05:00Z")
         );
 
         // Should only hit the 10:00 to 10:15 and not 9:45 to 10:00 limit
         assertEquals(1, result.size());
-    }
-
-    @Test
-    void findEffectiveByUserIdAndFiltersFromTo_withOverlaps_returnsNewestCreatedAtTimeline() {
-        saveLimit(PERMISSION_A3,
-                  METER_1,
-                  "2026-07-10T10:00:00Z",
-                  "2026-07-10T10:15:00Z",
-                  "2.0",
-                  "8.0",
-                  "2026-07-10T10:00:00Z");
-        saveLimit(PERMISSION_A3,
-                  METER_1,
-                  "2026-07-10T10:10:00Z",
-                  "2026-07-10T10:25:00Z",
-                  "3.0",
-                  "9.0",
-                  "2026-07-10T10:05:00Z");
-        saveLimit(PERMISSION_A3,
-                  METER_1,
-                  "2026-07-10T10:25:00Z",
-                  "2026-07-10T10:30:00Z",
-                  "1.0",
-                  "7.0",
-                  "2026-07-10T10:01:00Z");
-
-        var result = connectionLimitRepository.findEffectiveByUserIdAndFiltersFromTo(USER_A,
-                                                                                      PERMISSION_A3,
-                                                                                      METER_1,
-                                                                                      Instant.parse("2026-07-10T10:00:00Z"),
-                                                                                      Instant.parse("2026-07-10T10:30:00Z"));
-
-        assertEquals(3, result.size());
-        assertEquals(Instant.parse("2026-07-10T10:00:00Z"), result.get(0).getIntervalStart());
-        assertEquals(Instant.parse("2026-07-10T10:10:00Z"), result.get(0).getIntervalEnd());
-        assertEquals(0, new BigDecimal("2.0").compareTo(result.get(0).getMinLimitKw()));
-        assertEquals(0, new BigDecimal("8.0").compareTo(result.get(0).getMaxLimitKw()));
-
-        assertEquals(Instant.parse("2026-07-10T10:10:00Z"), result.get(1).getIntervalStart());
-        assertEquals(Instant.parse("2026-07-10T10:25:00Z"), result.get(1).getIntervalEnd());
-        assertEquals(0, new BigDecimal("3.0").compareTo(result.get(1).getMinLimitKw()));
-        assertEquals(0, new BigDecimal("9.0").compareTo(result.get(1).getMaxLimitKw()));
-
-        assertEquals(Instant.parse("2026-07-10T10:25:00Z"), result.get(2).getIntervalStart());
-        assertEquals(Instant.parse("2026-07-10T10:30:00Z"), result.get(2).getIntervalEnd());
-        assertEquals(0, new BigDecimal("1.0").compareTo(result.get(2).getMinLimitKw()));
-        assertEquals(0, new BigDecimal("7.0").compareTo(result.get(2).getMaxLimitKw()));
     }
 
     private void savePermission(UUID permissionId, UUID userId) {
@@ -275,34 +221,21 @@ class ConnectionLimitRepositoryIntegrationTest {
                             "CONNECTION_AGREEMENT_POINT");
     }
 
-    private void saveLimit(UUID permissionId, String meterId, String intervalStart, String intervalEnd) {
-        saveLimit(permissionId,
-                  meterId,
-                  intervalStart,
-                  intervalEnd,
-                  "3.0",
-                  "8.0",
-                  "2026-07-10T00:00:00Z");
-    }
-
     private void saveLimit(
             UUID permissionId,
             String meterId,
             String intervalStart,
-            String intervalEnd,
-            String minLimitKw,
-            String maxLimitKw,
-            String createdAt
+            String intervalEnd
     ) {
         var limit = new ConnectionLimit(permissionId,
                                         meterId,
                                         Instant.parse(intervalStart),
                                         Instant.parse(intervalEnd),
-                                        new BigDecimal(minLimitKw),
-                                        new BigDecimal(maxLimitKw),
+                                        new BigDecimal("3.0"),
+                                        new BigDecimal("8.0"),
                                         "mrid-" + permissionId,
                                         1,
-                                        Instant.parse(createdAt));
+                                        Instant.parse("2026-07-10T00:00:00Z"));
         connectionLimitRepository.saveAndFlush(limit);
     }
 }
