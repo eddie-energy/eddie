@@ -7,9 +7,12 @@ import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.recmmoe.Series;
 import energy.eddie.cim.v1_12.recmmoe.SeriesPeriod;
+import energy.eddie.cim.v1_12.recmmoe.TimeSeriesSeries;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
@@ -23,6 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -32,17 +36,20 @@ public class ConnectionLimitPersistenceService {
 
     private final InboundAggregator inboundAggregator;
     private final ConnectionLimitRepository connectionLimitRepository;
+    private final PermissionRepository permissionRepository;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transactionTemplate;
 
     public ConnectionLimitPersistenceService(
             InboundAggregator inboundAggregator,
             ConnectionLimitRepository connectionLimitRepository,
+            PermissionRepository permissionRepository,
             ObjectMapper objectMapper,
             TransactionTemplate transactionTemplate
     ) {
         this.inboundAggregator = inboundAggregator;
         this.connectionLimitRepository = connectionLimitRepository;
+        this.permissionRepository = permissionRepository;
         this.objectMapper = objectMapper;
         this.transactionTemplate = transactionTemplate;
     }
@@ -52,7 +59,7 @@ public class ConnectionLimitPersistenceService {
         inboundAggregator.inboundRecordFlux()
                          .filter(inboundRecord -> inboundRecord.schema() == AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12)
                          .publishOn(Schedulers.boundedElastic())
-                         .doOnNext(this::persistConnectionLimits)
+                         .doOnNext(this::handleInboundRecord)
                          .onErrorContinue((error, value) -> LOGGER.error(
                                  "Failed to persist connection limits for record {}",
                                  value,
@@ -60,64 +67,52 @@ public class ConnectionLimitPersistenceService {
                          .subscribe();
     }
 
-    private void persistConnectionLimits(InboundRecord inboundRecord) {
-        var envelope = objectMapper.readValue(inboundRecord.payload(), RECMMOEEnvelope.class);
-        var meta = envelope.getMessageDocumentHeader().getMetaInformation();
-        var marketDocument = envelope.getMarketDocument();
-
-        var permissionId = UUID.fromString(meta.getRequestPermissionId());
-        var documentMeterId = meta.getAsset() == null ? null : meta.getAsset().getMeterId();
-        var inferredMeterId = documentMeterId == null || documentMeterId.isBlank() ? inboundRecord.dataSource()
-                                                                                                  .permission()
-                                                                                                  .meterId() : documentMeterId;
-        var mrid = marketDocument.getMRID();
-
-        if (mrid == null || mrid.isBlank()) {
-            LOGGER.warn("Rejected connection limit document for permission {}: mRID is missing", permissionId);
-            return;
-        }
-
-        var creationDateTime = envelope.getMessageDocumentHeader().getCreationDateTime();
-        if (creationDateTime == null) {
-            LOGGER.warn("Rejected connection limit document for permission {} and mRID {}: createdDateTime is missing",
-                        permissionId,
-                        mrid);
-            return;
-        }
-        var createdAt = creationDateTime.toInstant();
-
-        int revisionNumber;
+    private void handleInboundRecord(InboundRecord inboundRecord) {
         try {
-            revisionNumber = Integer.parseInt(marketDocument.getRevisionNumber());
-        } catch (NumberFormatException e) {
-            LOGGER.warn("Rejected connection limit document for permission {} and mRID {}: invalid revisionNumber '{}'",
-                        permissionId,
-                        mrid,
-                        marketDocument.getRevisionNumber());
-            return;
+            persistConnectionLimits(inboundRecord);
+        } catch (InvalidConnectionLimitDocumentException e) {
+            LOGGER.warn(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Failed to persist connection limit from inbound record {}: {}",
+                         inboundRecord,
+                         e.getMessage());
+        }
+    }
+
+    private void persistConnectionLimits(InboundRecord inboundRecord) throws InvalidConnectionLimitDocumentException, IllegalArgumentException {
+        var envelope = objectMapper.readValue(inboundRecord.payload(), RECMMOEEnvelope.class);
+
+        var document = parseEnvelope(envelope);
+        var permission = permissionRepository.findInboundByDataSourceId(inboundRecord.dataSource().id())
+                                             .orElseThrow(() -> new IllegalArgumentException(
+                                                     "Data source did not reference a valid permission."));
+
+        var permissionId = permission.id();
+        if (!Objects.equals(permissionId, document.permissionId())) {
+            throw new InvalidConnectionLimitDocumentException("document permission id did not match record",
+                                                              permissionId,
+                                                              document.mrid());
         }
 
-        if (revisionNumber < 1) {
-            LOGGER.warn(
-                    "Rejected connection limit document for permission {} and mRID {}: revisionNumber must be >= 1, was {}",
-                    permissionId,
-                    mrid,
-                    revisionNumber);
-            return;
+        var permissionMeterId = permission.meterId();
+        var documentMeterId = document.meterId();
+
+        if (documentMeterId != null && permissionMeterId != null && !documentMeterId.equals(permissionMeterId)) {
+            throw new InvalidConnectionLimitDocumentException("document meter id did not match permission meter id",
+                                                              permissionId,
+                                                              document.mrid());
         }
+
+        var meterId = Objects.requireNonNullElse(document.meterId(), permission.meterId());
 
         var incomingLimits = new ArrayList<ConnectionLimit>();
-        for (var timeSeriesSeries : marketDocument.getTimeSeriesSeries()) {
-            for (var series : timeSeriesSeries.getSeries()) {
-                for (var period : series.getPeriods()) {
-                    incomingLimits.addAll(toConnectionLimits(permissionId,
-                                                             inferredMeterId,
-                                                             mrid,
-                                                             revisionNumber,
-                                                             createdAt,
-                                                             period));
-                }
-            }
+        for (var period : document.periods()) {
+            incomingLimits.addAll(toConnectionLimits(document.permissionId(),
+                                                     meterId,
+                                                     document.mrid(),
+                                                     document.revisionNumber(),
+                                                     document.createdAt(),
+                                                     period));
         }
 
         persist(incomingLimits);
@@ -204,6 +199,66 @@ public class ConnectionLimitPersistenceService {
                         incoming.createdAt(),
                         existing.get());
             }
+        }
+    }
+
+    private ConnectionLimitDocument parseEnvelope(RECMMOEEnvelope envelope) throws InvalidConnectionLimitDocumentException {
+        var meta = envelope.getMessageDocumentHeader().getMetaInformation();
+        var marketDocument = envelope.getMarketDocument();
+
+        var permissionId = UUID.fromString(meta.getRequestPermissionId());
+        var meterId = meta.getAsset() == null ? null : meta.getAsset().getMeterId();
+        if (meterId != null && meterId.isBlank()) {
+            meterId = null;
+        }
+
+        var mrid = marketDocument.getMRID();
+        if (mrid == null || mrid.isBlank()) {
+            throw new InvalidConnectionLimitDocumentException("MRID is missing", permissionId);
+        }
+
+        var creationDateTime = envelope.getMessageDocumentHeader().getCreationDateTime();
+        if (creationDateTime == null) {
+            throw new InvalidConnectionLimitDocumentException("createdDateTime is missing", permissionId, mrid);
+        }
+        var createdAt = creationDateTime.toInstant();
+
+        int revisionNumber;
+        try {
+            revisionNumber = Integer.parseInt(marketDocument.getRevisionNumber());
+        } catch (NumberFormatException e) {
+            throw new InvalidConnectionLimitDocumentException("Invalid revisionNumber %s".formatted(marketDocument.getRevisionNumber()),
+                                                              permissionId,
+                                                              mrid);
+        }
+
+        if (revisionNumber < 1) {
+            throw new InvalidConnectionLimitDocumentException("revisionNumber must be >= 1, was %s".formatted(
+                    revisionNumber), permissionId, mrid);
+        }
+
+        var periods = new ArrayList<SeriesPeriod>();
+        for (TimeSeriesSeries timeSeriesSeries : marketDocument.getTimeSeriesSeries()) {
+            for (Series series : timeSeriesSeries.getSeries()) {
+                periods.addAll(series.getPeriods());
+            }
+        }
+
+        return new ConnectionLimitDocument(permissionId, meterId, mrid, revisionNumber, createdAt, periods);
+    }
+
+    private record ConnectionLimitDocument(UUID permissionId, @Nullable String meterId, String mrid, int revisionNumber,
+                                           Instant createdAt, List<SeriesPeriod> periods) {}
+
+    private static class InvalidConnectionLimitDocumentException extends Exception {
+        InvalidConnectionLimitDocumentException(String message, UUID permissionId) {
+            super("Rejected connection limit document for permission %s: %s".formatted(permissionId, message));
+        }
+
+        InvalidConnectionLimitDocumentException(String message, UUID permissionId, String mrid) {
+            super("Rejected connection limit document for permission %s and mRID %s: %s".formatted(permissionId,
+                                                                                                   mrid,
+                                                                                                   message));
         }
     }
 }

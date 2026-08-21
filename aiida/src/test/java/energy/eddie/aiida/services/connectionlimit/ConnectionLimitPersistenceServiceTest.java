@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class ConnectionLimitPersistenceServiceTest {
 
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("5ed36996-76ce-45f7-b462-3c06b17a0e71");
     private static final UUID PERMISSION_ID = UUID.fromString("00213495-bdbf-4497-8695-5d811e45aa64");
     private static final String METER_ID = "003114735";
 
@@ -47,6 +49,8 @@ class ConnectionLimitPersistenceServiceTest {
     private InboundAggregator inboundAggregator;
     @Mock
     private ConnectionLimitRepository connectionLimitRepository;
+    @Mock
+    private PermissionRepository permissionRepository;
     @Mock
     private TransactionTemplate transactionTemplate;
     @Mock
@@ -64,11 +68,14 @@ class ConnectionLimitPersistenceServiceTest {
     void setUp() {
         var service = new ConnectionLimitPersistenceService(inboundAggregator,
                                                             connectionLimitRepository,
+                                                            permissionRepository,
                                                             ObjectMapperCreatorUtil.mapper(),
                                                             transactionTemplate);
         publisher = TestPublisher.create();
         when(inboundAggregator.inboundRecordFlux()).thenReturn(publisher.flux());
-        lenient().when(inboundDataSource.permission()).thenReturn(permission);
+        lenient().when(permissionRepository.findInboundByDataSourceId(DATA_SOURCE_ID)).thenReturn(Optional.of(permission));
+        lenient().when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        lenient().when(permission.id()).thenReturn(PERMISSION_ID);
         lenient().when(permission.meterId()).thenReturn(METER_ID);
         service.subscribeToInboundRecords();
     }
