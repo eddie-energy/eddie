@@ -260,7 +260,7 @@ class AiidaUiTests {
         var dialog = page.getByRole(AriaRole.DIALOG);
         var id = dialog.locator(":text('Permission ID') + dd").textContent();
 
-        dialog.getByRole(AriaRole.LISTBOX).getByText("Select Data Source").click();
+        dialog.getByRole(AriaRole.LISTBOX).click();
         dialog.getByRole(AriaRole.OPTION).getByText(dataSource).first().click();
 
         dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
