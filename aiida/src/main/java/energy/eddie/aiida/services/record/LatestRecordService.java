@@ -102,8 +102,9 @@ public class LatestRecordService {
     }
 
     public LatestInboundPermissionRecordDto latestInboundPermissionRecord(UUID permissionId)
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException {
         var inboundRecord = inboundRecordService.latestRecord(permissionId);
 
         return new LatestInboundPermissionRecordDto(

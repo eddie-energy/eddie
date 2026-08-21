@@ -7,6 +7,7 @@
   "editButton": "Edit",
   "revokeButton": "Revoke",
   "continueButton": "Continue",
+  "saveButton": "Save",
   "closeButton": "Close",
   "scrollToTop": "Scroll back to top",
   "header": {
@@ -116,6 +117,33 @@
     "showMqttPassword": "Show MQTT Password",
     "hideMqttPassword": "Hide MQTT Password",
     "copyMqttPassword": "Copy MQTT Password",
+    "mqttProvisioning": {
+      "title": "Configure Provisioning",
+      "openButton": "Configure Provisioning",
+      "mode": "Provisioning Mode",
+      "modePlaceholder": "Select Provisioning Mode",
+      "modeRequired": "Please select a provisioning mode.",
+      "host": "MQTT Host",
+      "username": "MQTT Username",
+      "password": "MQTT Password",
+      "topic": "MQTT Topic",
+      "required": "Please fill out all MQTT connection fields.",
+      "credentialsTitle": "MQTT connection created",
+      "credentialsWarning": "Save these credentials now. The password cannot be displayed again.",
+      "copyHost": "Copy MQTT host",
+      "copyUsername": "Copy MQTT username",
+      "copyPassword": "Copy MQTT password",
+      "copyTopic": "Copy MQTT topic",
+      "copyAll": "Copy all credentials",
+      "credentialsSaved": "I have saved the credentials",
+      "types": {
+        "NONE": "Not configured",
+        "REST_API_TOKEN": "REST API Token",
+        "REST_BEARER": "REST Bearer",
+        "MQTT_SERVER": "MQTT Server",
+        "MQTT_CLIENT": "MQTT Client"
+      }
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"

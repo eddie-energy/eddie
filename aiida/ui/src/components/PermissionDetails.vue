@@ -7,6 +7,7 @@ import StatusTag from './StatusTag.vue'
 import cronstrue from 'cronstrue/i18n'
 import Button from '@/components/Button.vue'
 import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
+import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
@@ -27,6 +28,10 @@ const target = useTemplateRef('target')
 const { permission, status } = defineProps<{
   permission: AiidaPermission
   status?: PermissionTypes
+}>()
+const emit = defineEmits<{
+  configureInboundProvisioning: [permission: AiidaPermission]
+  resetInboundServerPassword: [permission: AiidaPermission]
 }>()
 
 const { updatePermission } = usePermissionDialog()
@@ -104,6 +109,10 @@ const handleInboundMessageFormatSelection = async (
   }
 }
 
+const openInboundProvisioningModal = () => {
+  emit('configureInboundProvisioning', permission)
+}
+
 const showInboundApiKey = () => {
   show.value = !show.value
 }
@@ -111,6 +120,21 @@ const showInboundApiKey = () => {
 const generateStringFromLength = (length: number, char: string) => {
   return Array.from({ length }, () => char).join('')
 }
+
+const isInboundMqttProvisioning = computed(
+  () =>
+    permission.dataNeed.type === 'inbound-aiida' &&
+    (permission.dataSource?.provisioningType === 'MQTT_SERVER' ||
+      permission.dataSource?.provisioningType === 'MQTT_CLIENT'),
+)
+
+const inboundMqttConnection = computed(
+  () => permission.dataSource?.mqttProvisioningConfig?.connection,
+)
+const inboundMqttServerUri = computed(
+  () => inboundMqttConnection.value?.externalHost ?? inboundMqttConnection.value?.internalHost,
+)
+const inboundMqttTopic = computed(() => permission.dataSource?.mqttProvisioningConfig?.topic)
 
 onClickOutside(target, () => (showToolTip.value = false))
 
@@ -190,6 +214,28 @@ const dataSourceDisplayName = computed(() => {
           </StatusTag>
         </dd>
       </div>
+      <template v-if="isInboundMqttProvisioning">
+        <div class="permission-field">
+          <dt>{{ t('permissions.mqttProvisioning.mode') }}</dt>
+          <dd>
+            {{ t(`permissions.mqttProvisioning.types.${permission.dataSource?.provisioningType}`) }}
+          </dd>
+        </div>
+      </template>
+      <template v-if="isInboundMqttProvisioning && inboundMqttConnection">
+        <div v-if="inboundMqttServerUri" class="permission-field">
+          <dt>{{ t('datasources.card.mqttServerUri') }}</dt>
+          <dd>{{ inboundMqttServerUri }}</dd>
+        </div>
+        <div class="permission-field">
+          <dt>{{ t('datasources.card.mqttUsername') }}</dt>
+          <dd>{{ inboundMqttConnection.username }}</dd>
+        </div>
+        <div v-if="inboundMqttTopic" class="permission-field">
+          <dt>{{ t('datasources.card.mqttTopic') }}</dt>
+          <dd>{{ inboundMqttTopic }}</dd>
+        </div>
+      </template>
     </div>
     <div class="column">
       <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
@@ -327,13 +373,31 @@ const dataSourceDisplayName = computed(() => {
         <dt>Last Data Package sent</dt>
         <dd>PLACEHOLDER</dd>
       </div>
-      <div v-if="status === 'Active'" class="actions-row">
-        <Button button-style="error" class="action-btn" @click="handleRevoke">
-          <RevokeIcon /> {{ t('revokeButton') }}
-        </Button>
-        <MessageDownloadButton :data="permission" class="action-btn">
-          <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
-        </MessageDownloadButton>
+      <div v-if="status === 'Active'" class="permission-actions">
+        <div
+          v-if="permission.dataNeed.type === 'inbound-aiida'"
+          class="actions-row actions-row--end"
+        >
+          <Button
+            v-if="permission.dataSource?.provisioningType === 'MQTT_SERVER'"
+            button-style="secondary"
+            class="action-btn"
+            @click="emit('resetInboundServerPassword', permission)"
+          >
+            {{ t('datasources.card.resetPasswordButton') }}
+          </Button>
+          <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
+            <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
+          </Button>
+        </div>
+        <div class="actions-row">
+          <Button button-style="error" class="action-btn" @click="handleRevoke">
+            <RevokeIcon /> {{ t('revokeButton') }}
+          </Button>
+          <MessageDownloadButton :data="permission" class="action-btn">
+            <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
+          </MessageDownloadButton>
+        </div>
       </div>
       <Button
         v-if="status === 'Pending'"
@@ -414,18 +478,34 @@ const dataSourceDisplayName = computed(() => {
   margin: auto 0 0 auto;
 }
 
+.permission-actions,
 .actions-row {
   display: flex;
   flex-direction: column;
-
   gap: var(--spacing-sm);
-  align-items: center;
+}
+
+.permission-actions {
   margin-top: auto;
+}
+
+.actions-row {
+  align-items: center;
   justify-content: space-between;
 }
+
+.actions-row--end {
+  align-items: flex-end;
+  justify-content: flex-end;
+}
+
 .actions-row .action-btn {
   width: 100%;
   justify-content: center;
+}
+
+.actions-row--end .action-btn {
+  width: fit-content;
 }
 
 .access-code-field {

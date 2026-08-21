@@ -20,6 +20,7 @@ import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
@@ -247,7 +248,8 @@ public class DataSourceService {
 
     @Transactional
     @SuppressWarnings("NullAway")
-    public InboundDataSource createInboundDataSource(Permission permission) throws SecretStoringException, SecretLoadingException {
+    public InboundDataSource createInboundDataSource(Permission permission)
+            throws SecretStoringException, SecretLoadingException, MissingMqttStreamingConfigException {
         var inboundDataSource = new InboundDataSource.Builder(permission).build();
         repository.save(inboundDataSource);
         storeInboundDataSourceSecrets(inboundDataSource, permission.mqttStreamingConfig());

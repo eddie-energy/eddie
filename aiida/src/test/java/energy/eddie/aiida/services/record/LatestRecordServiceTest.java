@@ -237,8 +237,9 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldReturnLatestRecord_whenFound()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException {
         var inboundRecord = mock(InboundRecordDto.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
         when(inboundRecord.dataSourceId()).thenReturn(DATA_SOURCE_ID);
@@ -261,8 +262,9 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagatePermissionNotFoundException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
 
@@ -275,8 +277,9 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagateInboundRecordNotFoundException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InboundRecordNotFoundException(UUID.randomUUID()));
 
@@ -289,8 +292,9 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagateInvalidInboundPermissionException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                   UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InvalidInboundPermissionException(PERMISSION_ID));
 

@@ -7,6 +7,7 @@
   "editButton": "Bearbeiten",
   "revokeButton": "Widerrufen",
   "continueButton": "Fortfahren",
+  "saveButton": "Speichern",
   "closeButton": "Schließen",
   "scrollToTop": "Nach oben scrollen",
   "header": {
@@ -116,6 +117,33 @@
     "showMqttPassword": "MQTT-Passwort anzeigen",
     "hideMqttPassword": "MQTT-Passwort ausblenden",
     "copyMqttPassword": "MQTT-Passwort kopieren",
+    "mqttProvisioning": {
+      "title": "Bereitstellung konfigurieren",
+      "openButton": "Bereitstellung konfigurieren",
+      "mode": "Bereitstellungsmodus",
+      "modePlaceholder": "Bereitstellungsmodus auswählen",
+      "modeRequired": "Bitte wählen Sie einen Bereitstellungsmodus aus.",
+      "host": "MQTT-Host",
+      "username": "MQTT-Benutzername",
+      "password": "MQTT-Passwort",
+      "topic": "MQTT-Topic",
+      "required": "Bitte füllen Sie alle MQTT-Verbindungsfelder aus.",
+      "credentialsTitle": "MQTT-Verbindung erstellt",
+      "credentialsWarning": "Speichern Sie diese Zugangsdaten jetzt. Das Passwort kann nicht erneut angezeigt werden.",
+      "copyHost": "MQTT-Host kopieren",
+      "copyUsername": "MQTT-Benutzernamen kopieren",
+      "copyPassword": "MQTT-Passwort kopieren",
+      "copyTopic": "MQTT-Topic kopieren",
+      "copyAll": "Alle Zugangsdaten kopieren",
+      "credentialsSaved": "Ich habe die Zugangsdaten gespeichert",
+      "types": {
+        "NONE": "Nicht konfiguriert",
+        "REST_API_TOKEN": "REST-API-Token",
+        "REST_BEARER": "REST Bearer",
+        "MQTT_SERVER": "MQTT-Server",
+        "MQTT_CLIENT": "MQTT-Client"
+      }
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"

@@ -93,8 +93,9 @@ public class LatestRecordController {
     @GetMapping(value = "permission/{id}/inbound/latest")
     public LatestInboundPermissionRecordDto latestInboundPermissionRecord(
             @PathVariable("id") UUID permissionId
-    ) throws PermissionNotFoundException, InvalidDataSourceTypeException, InboundRecordNotFoundException,
-             UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+    ) throws PermissionNotFoundException, InvalidDataSourceTypeException,
+             InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
+             InvalidInboundPermissionException {
         LOGGER.info("Fetching latest inbound permission record for permission with ID: {}", permissionId);
 
         return latestRecordService.latestInboundPermissionRecord(permissionId);

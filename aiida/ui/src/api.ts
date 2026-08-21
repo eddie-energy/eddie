@@ -11,6 +11,8 @@ import type {
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   InboundMessageFormat,
+  ProvisioningConnectionDto,
+  ProvisioningTypePatchDto,
 } from './types'
 
 const { danger, success } = useToast()
@@ -302,5 +304,29 @@ export async function getLatestInboundPermissionMessage(id: string) {
 export async function getTlsCertificateFile() {
   return fetch('/mqtt/download/tls-certificate', {
     method: 'GET',
+  })
+}
+
+export async function patchInboundProvisioning(
+  permissionId: string,
+  payload: ProvisioningTypePatchDto,
+): Promise<ProvisioningConnectionDto> {
+  return fetch(`/provisioning/permission/${permissionId}/patchInboundProvisioning`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getInboundProvisioningTypes(): Promise<{ provisioningTypes: string[] }> {
+  return fetch('/provisioning/types', {
+    method: 'GET',
+  })
+}
+
+export function regenerateInboundServerPassword(
+  permissionId: string,
+): Promise<ProvisioningConnectionDto> {
+  return fetch(`/provisioning/permission/${permissionId}/regenerate-server-provisioning-password`, {
+    method: 'POST',
   })
 }
