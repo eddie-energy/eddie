@@ -3,8 +3,10 @@
 
 package energy.eddie.aiida.services.record;
 
+import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
@@ -13,11 +15,15 @@ import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.AuthService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -28,7 +34,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
-import org.springframework.scheduling.support.CronExpression;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.util.List;
@@ -42,6 +49,7 @@ import static org.mockito.Mockito.*;
 class LatestRecordServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID PERMISSION_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String TOPIC = "test/topic";
     private static final String SERVER_URI = "mqtt://test.server.com";
     private static final String PAYLOAD = "test-payload-data";
@@ -55,6 +63,10 @@ class LatestRecordServiceTest {
     private InboundRecordService inboundRecordService;
     @Mock
     private PermissionRepository permissionRepository;
+    @Mock
+    private InboundAggregator inboundAggregator;
+    @Mock
+    private AuthService authService;
 
     @InjectMocks
     private LatestRecordService aiidaRecordService;
@@ -311,53 +323,110 @@ class LatestRecordServiceTest {
     }
 
     @Test
-    void nextExpectedTransmission_shouldReturnNextFireTime_whenSchedulePresent() throws PermissionNotFoundException {
-        var permission = mock(Permission.class);
-        var schedule = CronExpression.parse("0 * * * * *");
-        when(permission.effectiveTransmissionSchedule()).thenReturn(schedule);
-        when(permission.transmissionEnabled()).thenReturn(true);
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+    void lastMessageStream_shouldStreamEventsForBothInboundAndOutboundPermissions_belongingToCurrentUser()
+            throws InvalidUserException {
+        var inboundPermissionId = UUID.randomUUID();
 
-        var result = aiidaRecordService.nextExpectedTransmission(PERMISSION_ID);
+        var outboundPermission = mock(Permission.class);
+        var outboundAiidaLocalDataNeed = mock(OutboundAiidaLocalDataNeed.class);
+        when(outboundPermission.id()).thenReturn(PERMISSION_ID);
+        when(outboundPermission.dataNeed()).thenReturn(outboundAiidaLocalDataNeed);
 
-        assertNotNull(result.nextExpectedAt());
-        assertTrue(result.nextExpectedAt().isAfter(Instant.now()));
+        var inboundPermission = mock(Permission.class);
+        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
+        var inboundDataSource = mock(InboundDataSource.class);
+        when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(inboundPermission.id()).thenReturn(inboundPermissionId);
+        when(inboundPermission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
+
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+                .thenReturn(List.of(outboundPermission, inboundPermission));
+        when(permissionLatestRecordMap.lastMessageStream(PERMISSION_ID))
+                .thenReturn(Flux.just(TIMESTAMP));
+
+        var matchingRecord = mock(InboundRecord.class);
+        var matchingRecordDataSource = mock(InboundDataSource.class);
+        when(matchingRecordDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(matchingRecord.dataSource()).thenReturn(matchingRecordDataSource);
+        when(matchingRecord.timestamp()).thenReturn(TIMESTAMP.plusSeconds(10));
+        when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.just(matchingRecord));
+
+        var result = aiidaRecordService.lastMessageStream();
+
+        StepVerifier.create(result)
+                    .recordWith(java.util.ArrayList::new)
+                    .expectNextCount(2)
+                    .consumeRecordedWith(events -> assertTrue(events.stream().anyMatch(
+                            event -> event.permissionId().equals(PERMISSION_ID) && event.timestamp().equals(TIMESTAMP))
+                                                              && events.stream().anyMatch(
+                            event -> event.permissionId().equals(inboundPermissionId)
+                                     && event.timestamp().equals(TIMESTAMP.plusSeconds(10)))))
+                    .verifyComplete();
     }
 
     @Test
-    void nextExpectedTransmission_shouldReturnNullNextExpectedAt_whenNoScheduleConfigured()
-            throws PermissionNotFoundException {
+    void lastMessageStream_shouldFilterOutInboundRecordsFromDataSourcesNotBelongingToCurrentUser()
+            throws InvalidUserException {
+        var otherDataSourceId = UUID.randomUUID();
         var permission = mock(Permission.class);
-        when(permission.effectiveTransmissionSchedule()).thenReturn(null);
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        var dataSource = mock(InboundDataSource.class);
+        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(permission.id()).thenReturn(PERMISSION_ID);
+        when(permission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(permission.dataSource()).thenReturn(dataSource);
 
-        var result = aiidaRecordService.nextExpectedTransmission(PERMISSION_ID);
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+                .thenReturn(List.of(permission));
 
-        assertNull(result.nextExpectedAt());
+        var matchingRecord = mock(InboundRecord.class);
+        var matchingRecordDataSource = mock(InboundDataSource.class);
+        when(matchingRecordDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(matchingRecord.dataSource()).thenReturn(matchingRecordDataSource);
+        when(matchingRecord.timestamp()).thenReturn(TIMESTAMP);
+
+        var otherUsersRecord = mock(InboundRecord.class);
+        var otherUsersRecordDataSource = mock(InboundDataSource.class);
+        when(otherUsersRecordDataSource.id()).thenReturn(otherDataSourceId);
+        when(otherUsersRecord.dataSource()).thenReturn(otherUsersRecordDataSource);
+
+        when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.just(otherUsersRecord, matchingRecord));
+
+        var result = aiidaRecordService.lastMessageStream();
+
+        StepVerifier.create(result)
+                    .expectNextMatches(event -> event.permissionId().equals(PERMISSION_ID)
+                                                && event.timestamp().equals(TIMESTAMP))
+                    .verifyComplete();
+        verifyNoInteractions(permissionLatestRecordMap);
     }
 
     @Test
-    void nextExpectedTransmission_shouldReturnNullNextExpectedAt_whenTransmissionDisabled()
-            throws PermissionNotFoundException {
+    void lastMessageStream_shouldSkipInboundPermissionsWithNoDataSource() throws InvalidUserException {
         var permission = mock(Permission.class);
-        var schedule = CronExpression.parse("0 * * * * *");
-        when(permission.effectiveTransmissionSchedule()).thenReturn(schedule);
-        when(permission.transmissionEnabled()).thenReturn(false);
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(permission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(permission.dataSource()).thenReturn(null);
 
-        var result = aiidaRecordService.nextExpectedTransmission(PERMISSION_ID);
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+                .thenReturn(List.of(permission));
+        when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.empty());
 
-        assertNull(result.nextExpectedAt());
+        var result = aiidaRecordService.lastMessageStream();
+
+        StepVerifier.create(result).verifyComplete();
     }
 
     @Test
-    void nextExpectedTransmission_shouldThrow_whenPermissionNotFound() {
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
+    void lastMessageStream_shouldThrow_whenNoAuthenticatedUser() throws InvalidUserException {
+        when(authService.getCurrentUserId()).thenThrow(new InvalidUserException());
 
-        var exception = assertThrows(PermissionNotFoundException.class, () ->
-                aiidaRecordService.nextExpectedTransmission(PERMISSION_ID)
-        );
+        assertThrows(InvalidUserException.class, () -> aiidaRecordService.lastMessageStream());
 
-        assertTrue(exception.getMessage().contains(PERMISSION_ID.toString()));
+        verifyNoInteractions(permissionRepository);
     }
 }

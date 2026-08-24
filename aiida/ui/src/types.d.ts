@@ -113,8 +113,9 @@ export type LatestInboundPermissionRecord = {
   payload: string
 }
 
-export type NextExpectedTransmission = {
-  nextExpectedAt: string | null
+export type LastMessageEvent = {
+  permissionId: string
+  timestamp: string
 }
 
 export type AiidaDataSourceType = {

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
 import type {
@@ -11,11 +12,11 @@ import type {
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   InboundMessageFormat,
-  ProvisioningConnectionDto,
-  ProvisioningTypePatchDto,
+  LastMessageEvent,
   LatestInboundPermissionRecord,
   LatestOutboundPermissionRecord,
-  NextExpectedTransmission,
+  ProvisioningConnectionDto,
+  ProvisioningTypePatchDto,
 } from './types'
 
 const { danger, success } = useToast()
@@ -321,9 +322,21 @@ export async function getLatestInboundPermissionMessage(
   )
 }
 
-export async function getNextExpectedTransmission(id: string): Promise<NextExpectedTransmission> {
-  return fetch(`/messages/permission/${id}/next-expected`, {
-    method: 'GET',
+export function subscribeToLastMessageStream(
+  onMessage: (event: LastMessageEvent) => void,
+  signal: AbortSignal,
+): void {
+  void fetchEventSource(`${BASE_URL}/messages/last-message-stream`, {
+    signal,
+    headers: { accept: 'text/event-stream, application/json' },
+    fetch: async (input, init) => {
+      await keycloak.updateToken(5)
+      return globalThis.fetch(input, {
+        ...init,
+        headers: { ...init?.headers, Authorization: `Bearer ${keycloak.token}` },
+      })
+    },
+    onmessage: (event) => onMessage(JSON.parse(event.data) as LastMessageEvent),
   })
 }
 

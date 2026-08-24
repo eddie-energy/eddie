@@ -33,9 +33,10 @@ public abstract class Aggregator<T extends DataSourceRecord> implements AutoClos
         combinedRecordSink = Sinks.many().multicast().directAllOrNothing();
         combinedRecordSink.asFlux()
                           .ofType(recordType)
+                          .onBackpressureBuffer()
                           .publishOn(Schedulers.boundedElastic())
                           .doOnNext(this::saveRecordToDatabase)
-                          .doOnError(this::handleCombinedSinkError)
+                          .onErrorContinue((throwable, data) -> handleCombinedSinkError(throwable))
                           .subscribe();
 
         dataSourceAdapters = new ArrayList<>();

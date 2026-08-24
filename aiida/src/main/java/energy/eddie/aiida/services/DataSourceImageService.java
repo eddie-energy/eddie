@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
@@ -10,15 +11,18 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.image.Image;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.repositories.ImageRepository;
+import org.hibernate.Hibernate;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Service
 public class DataSourceImageService {
@@ -36,22 +40,29 @@ public class DataSourceImageService {
         this.dataSourceRepository = dataSourceRepository;
     }
 
-    public Image imageByDataSource(DataSource dataSource) throws ImageNotFoundException {
+    @Transactional(readOnly = true)
+    public Image imageByDataSourceId(UUID dataSourceId)
+            throws ImageNotFoundException, DataSourceNotFoundException {
+        var dataSource = dataSourceByIdOrThrow(dataSourceId);
         var image = dataSource.image();
 
         if (image == null) {
             throw new ImageNotFoundException(dataSource);
         }
 
+        Hibernate.initialize(image);
+
         return image;
     }
 
+    @Transactional(rollbackFor = {ImageReadException.class, ImageFormatException.class, DataSourceNotFoundException.class})
     public void updateImage(
-            DataSource dataSource,
+            UUID dataSourceId,
             MultipartFile file
-    ) throws ImageReadException, ImageFormatException {
-        LOGGER.info("Updating image for data source with ID: {}", dataSource.id());
+    ) throws ImageReadException, ImageFormatException, DataSourceNotFoundException {
+        LOGGER.info("Updating image for data source with ID: {}", dataSourceId);
 
+        var dataSource = dataSourceByIdOrThrow(dataSourceId);
         var newImage = imageFromMultipartFile(file);
         var image = dataSource.image();
 
@@ -63,12 +74,14 @@ public class DataSourceImageService {
 
         imageRepository.save(newImage);
         dataSourceRepository.save(dataSource);
-        LOGGER.info("Image updated successfully for data source with ID: {}", dataSource.id());
+        LOGGER.info("Image updated successfully for data source with ID: {}", dataSourceId);
     }
 
-    public void deleteImage(DataSource dataSource) throws ImageNotFoundException {
-        LOGGER.info("Deleting image for data source with ID: {}", dataSource.id());
+    @Transactional(rollbackFor = {DataSourceNotFoundException.class, ImageNotFoundException.class})
+    public void deleteImage(UUID dataSourceId) throws ImageNotFoundException, DataSourceNotFoundException {
+        LOGGER.info("Deleting image for data source with ID: {}", dataSourceId);
 
+        var dataSource = dataSourceByIdOrThrow(dataSourceId);
         var image = dataSource.image();
 
         if (image == null) {
@@ -78,7 +91,12 @@ public class DataSourceImageService {
         imageRepository.delete(image);
         dataSource.setImage(null);
         dataSourceRepository.save(dataSource);
-        LOGGER.info("Image deleted successfully for data source with ID: {}", dataSource);
+        LOGGER.info("Image deleted successfully for data source with ID: {}", dataSourceId);
+    }
+
+    private DataSource dataSourceByIdOrThrow(UUID dataSourceId) throws DataSourceNotFoundException {
+        return dataSourceRepository.findById(dataSourceId)
+                                   .orElseThrow(() -> new DataSourceNotFoundException(dataSourceId));
     }
 
 

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ref } from 'vue'
-import DATA_NEED_TYPE from '@/constants/data-need-type'
 import type { AiidaDataNeed } from '@/types'
 
-export const selectedPermissionCategory = ref<AiidaDataNeed['type']>(DATA_NEED_TYPE.OUTBOUND)
+export const selectedPermissionCategory = ref<AiidaDataNeed['type']>('outbound-aiida')

@@ -42,7 +42,7 @@ public class InboundDataSource extends MqttDataSource {
     @JsonProperty
     protected String accessCode;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "permission_id", table = TABLE_NAME)
     @JsonIgnore
     protected Permission permission;

@@ -2,7 +2,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import DATA_NEED_TYPE from '@/constants/data-need-type'
 import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
@@ -111,17 +110,17 @@ const handleCategoryChange = (category: AiidaDataNeed['type']) => {
     <UpdatePermissionModal @update="refetchPermissions" />
     <div class="category-tabs">
       <button
-        :class="{ 'active-category': selectedPermissionCategory === DATA_NEED_TYPE.OUTBOUND }"
+        :class="{ 'active-category': selectedPermissionCategory === 'outbound-aiida' }"
         type="button"
         class="text-normal"
-        @click="handleCategoryChange(DATA_NEED_TYPE.OUTBOUND)"
+        @click="handleCategoryChange('outbound-aiida')"
       >
         <PermissionsNavIcon class="rotate" /> {{ t('permissions.outboundTab') }}
       </button>
       <button
-        :class="{ 'active-category': selectedPermissionCategory === DATA_NEED_TYPE.INBOUND }"
+        :class="{ 'active-category': selectedPermissionCategory === 'inbound-aiida' }"
         type="button"
-        @click="handleCategoryChange(DATA_NEED_TYPE.INBOUND)"
+        @click="handleCategoryChange('inbound-aiida')"
         class="text-normal"
       >
         <PermissionsNavIcon /> {{ t('permissions.inboundTab') }}
@@ -159,7 +158,7 @@ const handleCategoryChange = (category: AiidaDataNeed['type']) => {
         <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
           {{
             t(
-              `permissions.emptyList${selectedTab}${selectedPermissionCategory === DATA_NEED_TYPE.INBOUND ? 'Inbound' : 'Outbound'}`,
+              `permissions.emptyList${selectedTab}${selectedPermissionCategory === 'inbound-aiida' ? 'Inbound' : 'Outbound'}`,
             )
           }}
         </p>
