@@ -15,6 +15,7 @@ import {
 } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
+import DATA_NEED_TYPE from '@/constants/data-need-type'
 import type { AiidaDataSource, AiidaPermission, AiidaSchema } from '@/types'
 import { useI18n } from 'vue-i18n'
 
@@ -120,7 +121,7 @@ const dataSourceOptions = computed(() => {
           type="text"
         />
       </form>
-      <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
+      <form v-if="permission?.dataNeed.type === DATA_NEED_TYPE.OUTBOUND" class="form">
         <label class="heading-3" id="updatePermLabel">
           {{ t('permissions.modal.datasourceInputLabel') }}
         </label>
@@ -134,7 +135,7 @@ const dataSourceOptions = computed(() => {
 
         <p
           class="text-normal"
-          v-if="!dataSourceOptions.length && permission?.dataNeed.type === 'outbound-aiida'"
+          v-if="!dataSourceOptions.length && permission?.dataNeed.type === DATA_NEED_TYPE.OUTBOUND"
         >
           {{ t('permissions.modal.datasourceEmpty') }}
         </p>
@@ -146,7 +147,7 @@ const dataSourceOptions = computed(() => {
         </Button>
         <Button
           @click="handleInput(true)"
-          :disabled="!selectedDataSource && permission?.dataNeed.type === 'outbound-aiida'"
+          :disabled="!selectedDataSource && permission?.dataNeed.type === DATA_NEED_TYPE.OUTBOUND"
         >
           {{ t('acceptButton') }}
         </Button>

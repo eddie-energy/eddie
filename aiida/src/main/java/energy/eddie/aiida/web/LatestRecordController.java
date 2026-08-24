@@ -6,6 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
+import energy.eddie.aiida.dtos.record.NextExpectedTransmissionDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
@@ -85,7 +86,7 @@ public class LatestRecordController {
     @GetMapping(value = "permission/{id}/outbound/latest")
     public LatestOutboundPermissionRecordDto latestOutboundPermissionRecord(@PathVariable("id") UUID permissionId)
             throws LatestPermissionRecordNotFoundException {
-        LOGGER.info("Fetching latest outbound permission record for permission with ID: {}", permissionId);
+        LOGGER.debug("Fetching latest outbound permission record for permission with ID: {}", permissionId);
 
         return latestRecordService.latestOutboundPermissionRecord(permissionId);
     }
@@ -96,8 +97,16 @@ public class LatestRecordController {
     ) throws PermissionNotFoundException, InvalidDataSourceTypeException,
              InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
              InvalidInboundPermissionException {
-        LOGGER.info("Fetching latest inbound permission record for permission with ID: {}", permissionId);
+        LOGGER.debug("Fetching latest inbound permission record for permission with ID: {}", permissionId);
 
         return latestRecordService.latestInboundPermissionRecord(permissionId);
+    }
+
+    @GetMapping(value = "permission/{id}/next-expected")
+    public NextExpectedTransmissionDto nextExpectedTransmission(@PathVariable("id") UUID permissionId)
+            throws PermissionNotFoundException {
+        LOGGER.debug("Fetching next expected transmission for permission with ID: {}", permissionId);
+
+        return latestRecordService.nextExpectedTransmission(permissionId);
     }
 }

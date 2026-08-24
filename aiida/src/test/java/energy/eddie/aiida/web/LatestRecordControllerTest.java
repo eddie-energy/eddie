@@ -3,11 +3,9 @@
 
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
-import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
-import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
-import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
+import energy.eddie.aiida.dtos.record.*;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -276,5 +274,47 @@ class LatestRecordControllerTest {
                .andExpect(status().isBadRequest());
 
         verify(service, never()).latestOutboundPermissionRecord(any());
+    }
+
+    @Test
+    @WithMockUser
+    void nextExpectedTransmission_shouldReturnNextExpectedAt() throws Exception {
+        var nextExpectedAt = TIMESTAMP.plusSeconds(60);
+        when(service.nextExpectedTransmission(PERMISSION_ID))
+                .thenReturn(new NextExpectedTransmissionDto(nextExpectedAt));
+
+        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/next-expected")
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.nextExpectedAt").value("2024-01-15T10:31:00Z"));
+
+        verify(service, times(1)).nextExpectedTransmission(PERMISSION_ID);
+    }
+
+    @Test
+    @WithMockUser
+    void nextExpectedTransmission_shouldReturnNullWhenNoScheduleConfigured() throws Exception {
+        when(service.nextExpectedTransmission(PERMISSION_ID))
+                .thenReturn(new NextExpectedTransmissionDto(null));
+
+        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/next-expected")
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.nextExpectedAt").doesNotExist());
+
+        verify(service, times(1)).nextExpectedTransmission(PERMISSION_ID);
+    }
+
+    @Test
+    @WithMockUser
+    void nextExpectedTransmission_shouldReturn404WhenPermissionNotFound() throws Exception {
+        when(service.nextExpectedTransmission(PERMISSION_ID))
+                .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
+
+        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/next-expected")
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isNotFound());
+
+        verify(service, times(1)).nextExpectedTransmission(PERMISSION_ID);
     }
 }

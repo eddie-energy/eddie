@@ -3,10 +3,7 @@
 
 package energy.eddie.aiida.services.record;
 
-import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
-import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
-import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
-import energy.eddie.aiida.dtos.record.LatestSchemaRecordDto;
+import energy.eddie.aiida.dtos.record.*;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
@@ -18,12 +15,15 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,16 +34,19 @@ public class LatestRecordService {
     private final AiidaRecordRepository aiidaRecordRepository;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private final InboundRecordService inboundRecordService;
+    private final PermissionRepository permissionRepository;
 
     @Autowired
     public LatestRecordService(
             AiidaRecordRepository aiidaRecordRepository,
             PermissionLatestRecordMap permissionLatestRecordMap,
-            InboundRecordService inboundRecordService
+            InboundRecordService inboundRecordService,
+            PermissionRepository permissionRepository
     ) {
         this.aiidaRecordRepository = aiidaRecordRepository;
         this.permissionLatestRecordMap = permissionLatestRecordMap;
         this.inboundRecordService = inboundRecordService;
+        this.permissionRepository = permissionRepository;
     }
 
     public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException {
@@ -113,6 +116,19 @@ public class LatestRecordService {
                 inboundRecord.messageFormat(),
                 inboundRecord.payload()
         );
+    }
+
+    public NextExpectedTransmissionDto nextExpectedTransmission(UUID permissionId)
+            throws PermissionNotFoundException {
+        var permission = permissionRepository.findById(permissionId)
+                                              .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        var schedule = permission.effectiveTransmissionSchedule();
+        if (schedule == null || !permission.transmissionEnabled()) {
+            return new NextExpectedTransmissionDto(null);
+        }
+
+        var nextExpectedAt = schedule.next(ZonedDateTime.now(ZoneId.systemDefault()));
+        return new NextExpectedTransmissionDto(nextExpectedAt != null ? nextExpectedAt.toInstant() : null);
     }
 
     private LatestDataSourceRecordDto recordToLatestDto(AiidaRecord aiidaRecord) {
