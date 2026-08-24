@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
@@ -13,12 +11,14 @@ import { checkClipboard } from './stores/clipboardValue'
 import ScrollToTopButton from './components/ScrollToTopButton.vue'
 import { useFavicon } from '@vueuse/core'
 import { getSvgUrlIfExists } from './utils/files'
+import { connect as connectLastMessageStream } from './stores/lastMessageStream'
 
 const icon = useFavicon()
 
 onMounted(async () => {
   window.addEventListener('focus', checkClipboard)
   icon.value = (await getSvgUrlIfExists('favicon.svg')) || '/favicon.svg'
+  connectLastMessageStream()
 })
 </script>
 

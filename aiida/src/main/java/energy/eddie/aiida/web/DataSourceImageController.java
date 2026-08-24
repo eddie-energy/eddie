@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
@@ -8,7 +8,6 @@ import energy.eddie.aiida.errors.image.ImageFormatException;
 import energy.eddie.aiida.errors.image.ImageNotFoundException;
 import energy.eddie.aiida.errors.image.ImageReadException;
 import energy.eddie.aiida.services.DataSourceImageService;
-import energy.eddie.aiida.services.DataSourceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -27,15 +26,10 @@ import java.util.UUID;
 @Tag(name = "Data Source Images")
 public class DataSourceImageController {
     private final DataSourceImageService dataSourceImageService;
-    private final DataSourceService dataSourceService;
 
     @Autowired
-    public DataSourceImageController(
-            DataSourceImageService dataSourceImageService,
-            DataSourceService dataSourceService
-    ) {
+    public DataSourceImageController(DataSourceImageService dataSourceImageService) {
         this.dataSourceImageService = dataSourceImageService;
-        this.dataSourceService = dataSourceService;
     }
 
     @Operation(summary = "Get data source image with data source ID")
@@ -46,8 +40,7 @@ public class DataSourceImageController {
     @GetMapping(path = "/{dataSourceId}")
     public ResponseEntity<byte[]> imageByDataSourceId(@PathVariable UUID dataSourceId) {
         try {
-            var dataSource = dataSourceService.dataSourceByIdOrThrow(dataSourceId);
-            var image = dataSourceImageService.imageByDataSource(dataSource);
+            var image = dataSourceImageService.imageByDataSourceId(dataSourceId);
 
             return ResponseEntity.status(HttpStatus.OK)
                                  .contentType(MediaType.parseMediaType(image.contentType()))
@@ -68,8 +61,7 @@ public class DataSourceImageController {
             @PathVariable UUID dataSourceId,
             @RequestBody MultipartFile file
     ) throws DataSourceNotFoundException, ImageReadException, ImageFormatException {
-        var dataSource = dataSourceService.dataSourceByIdOrThrow(dataSourceId);
-        dataSourceImageService.updateImage(dataSource, file);
+        dataSourceImageService.updateImage(dataSourceId, file);
     }
 
     @Operation(summary = "Delete data source image")
@@ -79,7 +71,6 @@ public class DataSourceImageController {
     })
     @DeleteMapping(path = "/{dataSourceId}")
     public void deleteImage(@PathVariable UUID dataSourceId) throws DataSourceNotFoundException, ImageNotFoundException {
-        var dataSource = dataSourceService.dataSourceByIdOrThrow(dataSourceId);
-        dataSourceImageService.deleteImage(dataSource);
+        dataSourceImageService.deleteImage(dataSourceId);
     }
 }

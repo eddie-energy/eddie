@@ -4,11 +4,12 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.record.*;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
-import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import energy.eddie.aiida.services.AuthService;
 import energy.eddie.aiida.services.record.LatestRecordService;
 import energy.eddie.api.agnostic.aiida.*;
 import org.junit.jupiter.api.Test;
@@ -17,27 +18,32 @@ import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
 import org.springframework.boot.security.oauth2.server.resource.autoconfigure.servlet.OAuth2ResourceServerAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import reactor.core.publisher.Flux;
 
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(
         controllers = LatestRecordController.class,
         excludeAutoConfiguration = {SecurityAutoConfiguration.class, OAuth2ClientAutoConfiguration.class, OAuth2ResourceServerAutoConfiguration.class}
 )
+@Import(EventStream.class)
 class LatestRecordControllerTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID PERMISSION_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String TOPIC = "test/topic";
     private static final String SERVER_URI = "mqtt://test.server.com";
     private static final String PAYLOAD = "test-payload-data";
@@ -73,6 +79,9 @@ class LatestRecordControllerTest {
 
     @MockitoBean
     private LatestRecordService service;
+
+    @MockitoBean
+    private AuthService authService;
 
     @Test
     @WithMockUser
@@ -278,43 +287,34 @@ class LatestRecordControllerTest {
 
     @Test
     @WithMockUser
-    void nextExpectedTransmission_shouldReturnNextExpectedAt() throws Exception {
-        var nextExpectedAt = TIMESTAMP.plusSeconds(60);
-        when(service.nextExpectedTransmission(PERMISSION_ID))
-                .thenReturn(new NextExpectedTransmissionDto(nextExpectedAt));
+    void lastMessageStream_shouldStreamEvents() throws Exception {
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(service.lastMessageStream()).thenReturn(Flux.just(new LastMessageEventDto(PERMISSION_ID, TIMESTAMP)));
 
-        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/next-expected")
-                                .accept(MediaType.APPLICATION_JSON))
+        var mvcResult = mockMvc.perform(
+                        get("/messages/last-message-stream")
+                                .accept(MediaType.TEXT_EVENT_STREAM))
+               .andExpect(request().asyncStarted())
+               .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.nextExpectedAt").value("2024-01-15T10:31:00Z"));
+               .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM))
+               .andExpect(content().string(containsString("\"permissionId\":\"" + PERMISSION_ID + "\"")))
+               .andExpect(content().string(containsString("\"timestamp\":\"" + TIMESTAMP + "\"")));
 
-        verify(service, times(1)).nextExpectedTransmission(PERMISSION_ID);
+        verify(service, times(1)).lastMessageStream();
     }
 
     @Test
     @WithMockUser
-    void nextExpectedTransmission_shouldReturnNullWhenNoScheduleConfigured() throws Exception {
-        when(service.nextExpectedTransmission(PERMISSION_ID))
-                .thenReturn(new NextExpectedTransmissionDto(null));
+    void lastMessageStream_shouldReturn401WhenNoAuthenticatedUser() throws Exception {
+        when(authService.getCurrentUserId()).thenThrow(new InvalidUserException());
 
-        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/next-expected")
-                                .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.nextExpectedAt").doesNotExist());
+        mockMvc.perform(get("/messages/last-message-stream")
+                                .accept(MediaType.TEXT_EVENT_STREAM, MediaType.APPLICATION_JSON))
+               .andExpect(status().isUnauthorized());
 
-        verify(service, times(1)).nextExpectedTransmission(PERMISSION_ID);
-    }
-
-    @Test
-    @WithMockUser
-    void nextExpectedTransmission_shouldReturn404WhenPermissionNotFound() throws Exception {
-        when(service.nextExpectedTransmission(PERMISSION_ID))
-                .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
-
-        mockMvc.perform(get("/messages/permission/5211ea05-d4ab-48ff-8613-8f4791a56606/next-expected")
-                                .accept(MediaType.APPLICATION_JSON))
-               .andExpect(status().isNotFound());
-
-        verify(service, times(1)).nextExpectedTransmission(PERMISSION_ID);
+        verify(service, never()).lastMessageStream();
     }
 }

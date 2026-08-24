@@ -11,7 +11,6 @@ import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
-import DATA_NEED_TYPE from '@/constants/data-need-type'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions, permissions } from '@/stores/permissions'
 import { computed, ref, useTemplateRef, watch } from 'vue'
@@ -143,8 +142,7 @@ onClickOutside(target, () => (showToolTip.value = false))
 const dataSourceDisplayName = computed(() => {
   if (!permission.dataSource) return undefined
   const inboundPermission = permissions.value.find(
-    (p) =>
-      p.dataNeed.type === DATA_NEED_TYPE.INBOUND && p.dataSource?.id === permission.dataSource?.id,
+    (p) => p.dataNeed.type === 'inbound-aiida' && p.dataSource?.id === permission.dataSource?.id,
   )
   return inboundPermission?.displayName ?? permission.dataSource.name
 })
@@ -246,7 +244,7 @@ const { lastMessageAt } = useLastMessageRefresh(
       </template>
     </div>
     <div class="column">
-      <template v-if="permission.dataNeed.type !== DATA_NEED_TYPE.INBOUND">
+      <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
         <div class="permission-field">
           <dt>{{ t('permissions.dropdown.asset') }}</dt>
           <dd>
@@ -280,7 +278,7 @@ const { lastMessageAt } = useLastMessageRefresh(
           <dd>{{ permission.mqttStreamingConfig.dataTopic }}</dd>
         </div>
       </template>
-      <template v-if="permission.dataNeed.type === DATA_NEED_TYPE.INBOUND">
+      <template v-if="permission.dataNeed.type === 'inbound-aiida'">
         <div class="permission-field permission-field--select">
           <dt>{{ t('permissions.dropdown.inboundMessageFormat') }}</dt>
           <dd>
@@ -295,7 +293,7 @@ const { lastMessageAt } = useLastMessageRefresh(
           </dd>
         </div>
       </template>
-      <template v-if="permission.dataNeed.type === DATA_NEED_TYPE.INBOUND && permission.dataSource">
+      <template v-if="permission.dataNeed.type === 'inbound-aiida' && permission.dataSource">
         <div
           class="permission-field access-code-field"
           v-if="permission.dataSource.accessCode"
@@ -382,7 +380,7 @@ const { lastMessageAt } = useLastMessageRefresh(
       <div v-if="status" class="permission-field">
         <dt>
           {{
-            permission.dataNeed.type === DATA_NEED_TYPE.INBOUND
+            permission.dataNeed.type === 'inbound-aiida'
               ? t('permissions.dropdown.lastMessageReceived')
               : t('permissions.dropdown.lastMessageSent')
           }}

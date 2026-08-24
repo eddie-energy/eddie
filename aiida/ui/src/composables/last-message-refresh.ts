@@ -2,45 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { AiidaPermission, LatestSchemaRecord } from '@/types'
-import {
-  getLatestInboundPermissionMessage,
-  getLatestOutboundPermissionMessage,
-  getNextExpectedTransmission,
-} from '@/api'
-import DATA_NEED_TYPE from '@/constants/data-need-type'
-import STATUS from '@/constants/permission-status'
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
-
-// Fallback if no effective transmission schedule is present
-const DEFAULT_REFRESH_DELAY_MS = 60_000
-// Buffer for clock lag
-const REFRESH_BUFFER_MS = 2_000
-const MIN_REFRESH_DELAY_MS = 2_000
+import { getLatestInboundPermissionMessage, getLatestOutboundPermissionMessage } from '@/api'
+import { lastMessageByPermissionId } from '@/stores/lastMessageStream'
+import { computed, ref, watch } from 'vue'
 
 /**
  * Keeps `lastMessageAt` up to date with the permission's latest inbound/outbound
- * message
- * Polling is based on the transmission schedule expecting a value at those intervals.
- * Polling stops when a terminal status is reached.
+ * message.
+ * An initial value is fetched via REST on permission switch.
+ * The shared last-message SSE stream (`@/stores/lastMessageStream`) tracks further messages.
+ * Only one SSE stream per user and not per permission, as HTTP/1.1 limits concurrent SSE streams to a maximum of 6.
  */
 export function useLastMessageRefresh(
   getPermission: () => AiidaPermission,
   isEnabled: () => boolean,
 ) {
-  const lastMessageAt = ref<Date | null>(null)
-  let refreshTimer: ReturnType<typeof setTimeout> | undefined
+  const initialLastMessageAt = ref<Date | null>(null)
 
-  const isTerminalStatus = computed(() => {
-    const status = STATUS[getPermission().status]
-    return !status?.isActive && !status?.isOpen
-  })
-
-  const fetchLastMessageTimestamp = async () => {
+  const fetchInitialLastMessageTimestamp = async () => {
     const permission = getPermission()
     try {
-      if (permission.dataNeed.type === DATA_NEED_TYPE.INBOUND) {
+      if (permission.dataNeed.type === 'inbound-aiida') {
         const record = await getLatestInboundPermissionMessage(permission.permissionId, true)
-        lastMessageAt.value = new Date(record.timestamp)
+        initialLastMessageAt.value = new Date(record.timestamp)
       } else {
         const record = await getLatestOutboundPermissionMessage(permission.permissionId, true)
         const latestSentAt = record.messages.reduce(
@@ -48,56 +32,29 @@ export function useLastMessageRefresh(
             Math.max(latest, new Date(message.sentAt).getTime()),
           0,
         )
-        lastMessageAt.value = latestSentAt > 0 ? new Date(latestSentAt) : null
+        initialLastMessageAt.value = latestSentAt > 0 ? new Date(latestSentAt) : null
       }
     } catch {
-      lastMessageAt.value = null
+      initialLastMessageAt.value = null
     }
-  }
-
-  const fetchNextExpectedTransmission = async (): Promise<Date | null> => {
-    try {
-      const { nextExpectedAt } = await getNextExpectedTransmission(getPermission().permissionId)
-      return nextExpectedAt ? new Date(nextExpectedAt) : null
-    } catch {
-      return null
-    }
-  }
-
-  const scheduleRefreshCycle = async () => {
-    if (!isEnabled()) {
-      return
-    }
-
-    if (isTerminalStatus.value) {
-      await fetchLastMessageTimestamp()
-      return
-    }
-
-    const [, nextExpectedAt] = await Promise.all([
-      fetchLastMessageTimestamp(),
-      fetchNextExpectedTransmission(),
-    ])
-
-    const delay = nextExpectedAt
-      ? Math.max(nextExpectedAt.getTime() - Date.now() + REFRESH_BUFFER_MS, MIN_REFRESH_DELAY_MS)
-      : DEFAULT_REFRESH_DELAY_MS
-
-    refreshTimer = setTimeout(scheduleRefreshCycle, delay)
   }
 
   watch(
     () => getPermission().permissionId,
-    () => {
-      clearTimeout(refreshTimer)
-      scheduleRefreshCycle()
+    async () => {
+      initialLastMessageAt.value = null
+      if (isEnabled()) {
+        await fetchInitialLastMessageTimestamp()
+      }
     },
     { immediate: true },
   )
 
-  onBeforeUnmount(() => {
-    clearTimeout(refreshTimer)
-  })
+  const lastMessageAt = computed(
+    () =>
+      lastMessageByPermissionId.value.get(getPermission().permissionId) ??
+      initialLastMessageAt.value,
+  )
 
   return { lastMessageAt }
 }

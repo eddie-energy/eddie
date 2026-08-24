@@ -11,7 +11,6 @@ import {
   getLatestInboundPermissionMessage,
   getLatestOutboundPermissionMessage,
 } from '@/api'
-import DATA_NEED_TYPE from '@/constants/data-need-type'
 
 const { data, buttonStyle = 'primary' } = defineProps<{
   data: AiidaDataSource | AiidaPermission
@@ -44,7 +43,7 @@ const handleClick = async () => {
       latestMessage = await getLatestDataSourceMessage(data.id)
     } else {
       latestMessage =
-        data.dataNeed.type === DATA_NEED_TYPE.INBOUND
+        data.dataNeed.type === 'inbound-aiida'
           ? await getLatestInboundPermissionMessage(data.permissionId)
           : await getLatestOutboundPermissionMessage(data.permissionId)
     }

@@ -9,7 +9,6 @@ import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
-import DATA_NEED_TYPE from '@/constants/data-need-type'
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { onMounted, ref } from 'vue'
@@ -36,18 +35,18 @@ onMounted(async () => {
         :data-text="t('header.permissions')"
         to="/"
         class="link-with-bold-hover nav-link"
-        :class="{ 'not-selected': selectedPermissionCategory !== DATA_NEED_TYPE.OUTBOUND }"
-        @click="selectedPermissionCategory = DATA_NEED_TYPE.OUTBOUND"
+        :class="{ 'not-selected': selectedPermissionCategory !== 'outbound-aiida' }"
+        @click="selectedPermissionCategory = 'outbound-aiida'"
       >
         <PermissionsNavIcon class="icon outbound" />
         {{ t('header.permissions') }}
       </RouterLink>
       <RouterLink
         :data-text="t('header.inbound')"
-        :class="{ 'not-selected': selectedPermissionCategory !== DATA_NEED_TYPE.INBOUND }"
+        :class="{ 'not-selected': selectedPermissionCategory !== 'inbound-aiida' }"
         class="link-with-bold-hover nav-link inbound-link"
-        :to="`/?category=${DATA_NEED_TYPE.INBOUND}`"
-        @click="selectedPermissionCategory = DATA_NEED_TYPE.INBOUND"
+        to="/?category=inbound-aiida"
+        @click="selectedPermissionCategory = 'inbound-aiida'"
       >
         <PermissionsNavIcon class="icon" />
         {{ t('header.inbound') }}
