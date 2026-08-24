@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue'
@@ -13,6 +11,7 @@ import {
   getLatestInboundPermissionMessage,
   getLatestOutboundPermissionMessage,
 } from '@/api'
+import DATA_NEED_TYPE from '@/constants/data-need-type'
 
 const { data, buttonStyle = 'primary' } = defineProps<{
   data: AiidaDataSource | AiidaPermission
@@ -45,7 +44,7 @@ const handleClick = async () => {
       latestMessage = await getLatestDataSourceMessage(data.id)
     } else {
       latestMessage =
-        data.dataNeed.type === 'inbound-aiida'
+        data.dataNeed.type === DATA_NEED_TYPE.INBOUND
           ? await getLatestInboundPermissionMessage(data.permissionId)
           : await getLatestOutboundPermissionMessage(data.permissionId)
     }

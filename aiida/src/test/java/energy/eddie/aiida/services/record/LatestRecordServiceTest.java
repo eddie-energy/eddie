@@ -14,8 +14,10 @@ import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -26,6 +28,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.support.CronExpression;
 
 import java.time.Instant;
 import java.util.List;
@@ -50,6 +53,8 @@ class LatestRecordServiceTest {
     private PermissionLatestRecordMap permissionLatestRecordMap;
     @Mock
     private InboundRecordService inboundRecordService;
+    @Mock
+    private PermissionRepository permissionRepository;
 
     @InjectMocks
     private LatestRecordService aiidaRecordService;
@@ -303,5 +308,56 @@ class LatestRecordServiceTest {
         );
 
         verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
+    }
+
+    @Test
+    void nextExpectedTransmission_shouldReturnNextFireTime_whenSchedulePresent() throws PermissionNotFoundException {
+        var permission = mock(Permission.class);
+        var schedule = CronExpression.parse("0 * * * * *");
+        when(permission.effectiveTransmissionSchedule()).thenReturn(schedule);
+        when(permission.transmissionEnabled()).thenReturn(true);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+
+        var result = aiidaRecordService.nextExpectedTransmission(PERMISSION_ID);
+
+        assertNotNull(result.nextExpectedAt());
+        assertTrue(result.nextExpectedAt().isAfter(Instant.now()));
+    }
+
+    @Test
+    void nextExpectedTransmission_shouldReturnNullNextExpectedAt_whenNoScheduleConfigured()
+            throws PermissionNotFoundException {
+        var permission = mock(Permission.class);
+        when(permission.effectiveTransmissionSchedule()).thenReturn(null);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+
+        var result = aiidaRecordService.nextExpectedTransmission(PERMISSION_ID);
+
+        assertNull(result.nextExpectedAt());
+    }
+
+    @Test
+    void nextExpectedTransmission_shouldReturnNullNextExpectedAt_whenTransmissionDisabled()
+            throws PermissionNotFoundException {
+        var permission = mock(Permission.class);
+        var schedule = CronExpression.parse("0 * * * * *");
+        when(permission.effectiveTransmissionSchedule()).thenReturn(schedule);
+        when(permission.transmissionEnabled()).thenReturn(false);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+
+        var result = aiidaRecordService.nextExpectedTransmission(PERMISSION_ID);
+
+        assertNull(result.nextExpectedAt());
+    }
+
+    @Test
+    void nextExpectedTransmission_shouldThrow_whenPermissionNotFound() {
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
+
+        var exception = assertThrows(PermissionNotFoundException.class, () ->
+                aiidaRecordService.nextExpectedTransmission(PERMISSION_ID)
+        );
+
+        assertTrue(exception.getMessage().contains(PERMISSION_ID.toString()));
     }
 }

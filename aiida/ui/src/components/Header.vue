@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
@@ -11,6 +9,7 @@ import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
+import DATA_NEED_TYPE from '@/constants/data-need-type'
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { onMounted, ref } from 'vue'
@@ -37,18 +36,18 @@ onMounted(async () => {
         :data-text="t('header.permissions')"
         to="/"
         class="link-with-bold-hover nav-link"
-        :class="{ 'not-selected': selectedPermissionCategory !== 'outbound-aiida' }"
-        @click="selectedPermissionCategory = 'outbound-aiida'"
+        :class="{ 'not-selected': selectedPermissionCategory !== DATA_NEED_TYPE.OUTBOUND }"
+        @click="selectedPermissionCategory = DATA_NEED_TYPE.OUTBOUND"
       >
         <PermissionsNavIcon class="icon outbound" />
         {{ t('header.permissions') }}
       </RouterLink>
       <RouterLink
         :data-text="t('header.inbound')"
-        to="/?category=inbound-aiida"
+        :class="{ 'not-selected': selectedPermissionCategory !== DATA_NEED_TYPE.INBOUND }"
         class="link-with-bold-hover nav-link inbound-link"
-        @click="selectedPermissionCategory = 'inbound-aiida'"
-        :class="{ 'not-selected': selectedPermissionCategory !== 'inbound-aiida' }"
+        :to="`/?category=${DATA_NEED_TYPE.INBOUND}`"
+        @click="selectedPermissionCategory = DATA_NEED_TYPE.INBOUND"
       >
         <PermissionsNavIcon class="icon" />
         {{ t('header.inbound') }}

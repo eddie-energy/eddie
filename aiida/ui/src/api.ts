@@ -13,6 +13,9 @@ import type {
   InboundMessageFormat,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
+  LatestInboundPermissionRecord,
+  LatestOutboundPermissionRecord,
+  NextExpectedTransmission,
 } from './types'
 
 const { danger, success } = useToast()
@@ -27,7 +30,11 @@ const FALLBACK_ERROR_MESSAGES = {
   500: 'Something went wrong. Please try again.',
 }
 
-async function fetch(path: string, init?: RequestInit): Promise<any> {
+async function fetch(
+  path: string,
+  init?: RequestInit,
+  options?: { silentStatuses?: number[] },
+): Promise<any> {
   try {
     await keycloak.updateToken(5)
   } catch (error) {
@@ -57,7 +64,10 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'errors.unexpectedError'
-    if (!(isImagesEndpoint && response.status == 404)) {
+    if (
+      !(isImagesEndpoint && response.status == 404) &&
+      !options?.silentStatuses?.includes(response.status)
+    ) {
       danger(message, response.status == 404 ? 5000 : 0, true)
     }
     throw new Error(message)
@@ -289,14 +299,30 @@ export async function getLatestDataSourceMessage(id: string) {
   })
 }
 
-export async function getLatestOutboundPermissionMessage(id: string) {
-  return fetch(`/messages/permission/${id}/outbound/latest`, {
-    method: 'GET',
-  })
+export async function getLatestOutboundPermissionMessage(
+  id: string,
+  silentNotFound = false,
+): Promise<LatestOutboundPermissionRecord> {
+  return fetch(
+    `/messages/permission/${id}/outbound/latest`,
+    { method: 'GET' },
+    silentNotFound ? { silentStatuses: [404] } : undefined,
+  )
 }
 
-export async function getLatestInboundPermissionMessage(id: string) {
-  return fetch(`/messages/permission/${id}/inbound/latest`, {
+export async function getLatestInboundPermissionMessage(
+  id: string,
+  silentNotFound = false,
+): Promise<LatestInboundPermissionRecord> {
+  return fetch(
+    `/messages/permission/${id}/inbound/latest`,
+    { method: 'GET' },
+    silentNotFound ? { silentStatuses: [404] } : undefined,
+  )
+}
+
+export async function getNextExpectedTransmission(id: string): Promise<NextExpectedTransmission> {
+  return fetch(`/messages/permission/${id}/next-expected`, {
     method: 'GET',
   })
 }

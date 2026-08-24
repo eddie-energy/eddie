@@ -10,6 +10,8 @@ import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
+import { useLastMessageRefresh } from '@/composables/last-message-refresh'
+import DATA_NEED_TYPE from '@/constants/data-need-type'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions, permissions } from '@/stores/permissions'
 import { computed, ref, useTemplateRef, watch } from 'vue'
@@ -141,10 +143,16 @@ onClickOutside(target, () => (showToolTip.value = false))
 const dataSourceDisplayName = computed(() => {
   if (!permission.dataSource) return undefined
   const inboundPermission = permissions.value.find(
-    (p) => p.dataNeed.type === 'inbound-aiida' && p.dataSource?.id === permission.dataSource?.id,
+    (p) =>
+      p.dataNeed.type === DATA_NEED_TYPE.INBOUND && p.dataSource?.id === permission.dataSource?.id,
   )
   return inboundPermission?.displayName ?? permission.dataSource.name
 })
+
+const { lastMessageAt } = useLastMessageRefresh(
+  () => permission,
+  () => !!status,
+)
 </script>
 
 <template>
@@ -238,7 +246,7 @@ const dataSourceDisplayName = computed(() => {
       </template>
     </div>
     <div class="column">
-      <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
+      <template v-if="permission.dataNeed.type !== DATA_NEED_TYPE.INBOUND">
         <div class="permission-field">
           <dt>{{ t('permissions.dropdown.asset') }}</dt>
           <dd>
@@ -272,7 +280,7 @@ const dataSourceDisplayName = computed(() => {
           <dd>{{ permission.mqttStreamingConfig.dataTopic }}</dd>
         </div>
       </template>
-      <template v-if="permission.dataNeed.type === 'inbound-aiida'">
+      <template v-if="permission.dataNeed.type === DATA_NEED_TYPE.INBOUND">
         <div class="permission-field permission-field--select">
           <dt>{{ t('permissions.dropdown.inboundMessageFormat') }}</dt>
           <dd>
@@ -287,7 +295,7 @@ const dataSourceDisplayName = computed(() => {
           </dd>
         </div>
       </template>
-      <template v-if="permission.dataNeed.type === 'inbound-aiida' && permission.dataSource">
+      <template v-if="permission.dataNeed.type === DATA_NEED_TYPE.INBOUND && permission.dataSource">
         <div
           class="permission-field access-code-field"
           v-if="permission.dataSource.accessCode"
@@ -296,6 +304,7 @@ const dataSourceDisplayName = computed(() => {
           <dt>
             API Key
             <button
+              type="button"
               @click="showToolTip = !showToolTip"
               :aria-label="t('permissions.toggleTooltip')"
               class="tool-tip-button"
@@ -313,6 +322,7 @@ const dataSourceDisplayName = computed(() => {
 
             <CopyButton :copy-text="permission.dataSource.accessCode" />
             <button
+              type="button"
               class="show-button"
               @click="showInboundApiKey"
               :aria-label="
@@ -369,9 +379,15 @@ const dataSourceDisplayName = computed(() => {
         <dt>{{ t('permissions.dropdown.permissionID') }}</dt>
         <dd>{{ permission.permissionId }}</dd>
       </div>
-      <div class="permission-field" v-if="permission.unimplemented">
-        <dt>Last Data Package sent</dt>
-        <dd>PLACEHOLDER</dd>
+      <div v-if="status" class="permission-field">
+        <dt>
+          {{
+            permission.dataNeed.type === DATA_NEED_TYPE.INBOUND
+              ? t('permissions.dropdown.lastMessageReceived')
+              : t('permissions.dropdown.lastMessageSent')
+          }}
+        </dt>
+        <dd>{{ lastMessageAt ? dateTimeFormat.format(lastMessageAt) : 'N/A' }}</dd>
       </div>
       <div v-if="status === 'Active'" class="permission-actions">
         <div
@@ -536,7 +552,7 @@ const dataSourceDisplayName = computed(() => {
 
 .tool-tip {
   position: absolute;
-  box-shadow: 0px 2px 5px 0px #00000040;
+  box-shadow: 0 2px 5px 0 #00000040;
   top: 100%;
   left: 0;
   width: 80%;

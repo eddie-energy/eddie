@@ -2,11 +2,12 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
+import DATA_NEED_TYPE from '@/constants/data-need-type'
 import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
 import { fetchInboundProvisioningTypes } from '@/stores/inboundProvisioningTypes.ts'
-import type { AiidaPermission, PermissionTypes } from '@/types'
+import type { AiidaDataNeed, AiidaPermission, PermissionTypes } from '@/types'
 import Button from '@/components/Button.vue'
 import CompleteIcon from '@/assets/icons/CompleteIcon.svg'
 import ActiveIcon from '@/assets/icons/ActiveIcon.svg'
@@ -100,7 +101,7 @@ const handleShowMore = () => {
   }
 }
 
-const handleCategoryChange = (category: string) => {
+const handleCategoryChange = (category: AiidaDataNeed['type']) => {
   selectedPermissionCategory.value = category
 }
 </script>
@@ -110,15 +111,17 @@ const handleCategoryChange = (category: string) => {
     <UpdatePermissionModal @update="refetchPermissions" />
     <div class="category-tabs">
       <button
-        @click="handleCategoryChange('outbound-aiida')"
+        :class="{ 'active-category': selectedPermissionCategory === DATA_NEED_TYPE.OUTBOUND }"
+        type="button"
         class="text-normal"
-        :class="{ 'active-category': selectedPermissionCategory === 'outbound-aiida' }"
+        @click="handleCategoryChange(DATA_NEED_TYPE.OUTBOUND)"
       >
         <PermissionsNavIcon class="rotate" /> {{ t('permissions.outboundTab') }}
       </button>
       <button
-        @click="handleCategoryChange('inbound-aiida')"
-        :class="{ 'active-category': selectedPermissionCategory === 'inbound-aiida' }"
+        :class="{ 'active-category': selectedPermissionCategory === DATA_NEED_TYPE.INBOUND }"
+        type="button"
+        @click="handleCategoryChange(DATA_NEED_TYPE.INBOUND)"
         class="text-normal"
       >
         <PermissionsNavIcon /> {{ t('permissions.inboundTab') }}
@@ -156,7 +159,7 @@ const handleCategoryChange = (category: string) => {
         <p v-if="!slicedPermissions.length" class="no-permissions heading-5">
           {{
             t(
-              `permissions.emptyList${selectedTab}${selectedPermissionCategory === 'inbound-aiida' ? 'Inbound' : 'Outbound'}`,
+              `permissions.emptyList${selectedTab}${selectedPermissionCategory === DATA_NEED_TYPE.INBOUND ? 'Inbound' : 'Outbound'}`,
             )
           }}
         </p>
