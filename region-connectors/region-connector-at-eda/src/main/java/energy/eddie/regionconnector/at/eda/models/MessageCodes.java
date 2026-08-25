@@ -71,8 +71,8 @@ public class MessageCodes {
      */
     public static class EcRequest {
         public static final String CODE = "ANFORDERUNG_ECON";
-        public static final String SCHEMA = "EC_REQ_ONL_02.10";
-        public static final String VERSION = "02.10";
+        public static final String SCHEMA = "EC_REQ_ONL_02.30";
+        public static final String VERSION = "02.30";
 
         private EcRequest() {}
     }
