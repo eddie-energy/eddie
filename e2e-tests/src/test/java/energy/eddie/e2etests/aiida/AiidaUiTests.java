@@ -217,7 +217,7 @@ class AiidaUiTests {
     private String aiidaCodeForDataNeed(String dataNeed) {
         var eddie = context.newPage();
         eddie.navigate(EDDIE_URL + "/demo");
-        eddie.getByLabel("Data need").selectOption(dataNeed);
+        eddie.getByLabel("Data need (required)").selectOption(dataNeed);
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).click();
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue")).click();
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect").setExact(true)).click();
@@ -227,7 +227,7 @@ class AiidaUiTests {
     private String aiidaCodeForDataNeedWithMeterId(String dataNeed, String meterId) {
         var eddie = context.newPage();
         eddie.navigate(EDDIE_URL + "/demo");
-        eddie.getByLabel("Data need").selectOption(dataNeed);
+        eddie.getByLabel("Data need (required)").selectOption(dataNeed);
         eddie.getByLabel("Meter ID").fill(meterId);
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).click();
         eddie.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue")).click();

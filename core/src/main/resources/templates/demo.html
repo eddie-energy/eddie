@@ -50,9 +50,24 @@
       <a href="https://architecture.eddie.energy/framework/1-running/eddie-button/eddie-button.html">Operation Manual</a>.
     </p>
     <form>
+
+      <label>
+        <span>Data Need Filter</span>
+        <input
+          aria-controls="data-need-select"
+          aria-label="Data need filter"
+          placeholder="Filter..."
+          type="search"
+        />
+      </label>
       <label>
         <span>Data need (required)</span>
-        <select autocomplete="off" multiple name="data-need-id"></select>
+        <select
+          autocomplete="off"
+          id="data-need-select"
+          multiple
+          name="data-need-id"
+        ></select>
         <small>
           Multiple data needs can be selected, but not all region connectors
           support multiple data needs.
@@ -133,6 +148,16 @@
       // Set initial input value for core url field
       document.querySelector("input[name='core-url']").value = coreUrl;
 
+      const filter = document.querySelector("input[type='search']");
+      filter.addEventListener("input", () => {
+        const query = filter.value.toLowerCase();
+        for (const option of select.options) {
+          option.hidden = !(option.textContent + option.value)
+            .toLowerCase()
+            .includes(query);
+        }
+      });
+
       // Update button on data need changes
       select.addEventListener("change", (event) => {
         const { name, options } = event.target;
@@ -144,7 +169,7 @@
       });
 
       // Update button on input changes
-      const inputs = document.querySelectorAll("input");
+      const inputs = document.querySelectorAll("form input[name]");
       for (const input of inputs) {
         input.addEventListener("input", (event) => {
           const { name, value, type, checked } = event.target;

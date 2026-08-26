@@ -17,7 +17,7 @@ public class E2eTestSetup {
 
     protected void navigateToRegionConnector(String dataNeed, String country, String permissionAdministrator) {
         if (dataNeed != null) {
-            page.getByLabel("Data need").selectOption(dataNeed);
+            page.getByLabel("Data need (required)").selectOption(dataNeed);
         }
 
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Connect with EDDIE")).first().click();
