@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,6 +27,14 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
               AND p.status IN (:statuses)
             """)
     List<Permission> findOutboundByDataSourceIdAndStatus(UUID dataSourceId, Set<PermissionStatus> statuses);
+
+    @Query("""
+            SELECT p
+            FROM Permission p
+            WHERE p.dataSource.id = :dataSourceId
+              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed.DISCRIMINATOR_VALUE
+            """)
+    Optional<Permission> findInboundByDataSourceId(UUID dataSourceId);
 
     @Query("""
             SELECT p
