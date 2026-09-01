@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMOTimeFrame;
 import energy.eddie.regionconnector.at.eda.requests.DsoIdAndMeteringPoint;
+import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTransmissionCycle;
@@ -28,6 +29,37 @@ import static org.junit.jupiter.api.Assertions.*;
 class CMRequest01p30Test {
 
     @Test
+    void cmRequest_usesPrefixedConversationId() {
+        // given
+        var start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
+        var configuration = new AtConfiguration("EP123456", null, null, "DEV");
+        var dateTime = ZonedDateTime.parse("2026-09-01T12:00:00Z");
+        var groupingId = new EdaGroupingIdFactory(configuration)
+                .create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, dateTime);
+        var request = new CCMORequest(
+                new DsoIdAndMeteringPoint("AT999999", "AT9999990699900000000000206868100"),
+                new CCMOTimeFrame(start, start.plusMonths(1)),
+                new CMRequestId(groupingId).toString(),
+                groupingId,
+                AllowedGranularity.P1D,
+                AllowedTransmissionCycle.D,
+                configuration,
+                dateTime,
+                new AccountingPointDataNeed()
+        );
+
+        // when
+        var cmRequest = new CMRequest01p30(request).cmRequest();
+
+        // then
+        assertAll(
+                () -> assertTrue(cmRequest.getProcessDirectory().getConversationId().startsWith("DEVEP123456T")),
+                () -> assertEquals(groupingId, cmRequest.getProcessDirectory().getConversationId()),
+                () -> assertEquals(groupingId, cmRequest.getProcessDirectory().getMessageId())
+        );
+    }
+
+    @Test
     void toCmRequestWithBlankConfig_throws() {
         // given
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(1);
@@ -35,7 +67,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("", null, null);
+        AtConfiguration atConfiguration = new AtConfiguration("", null, null, "");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var mesageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(mesageId).toString();
@@ -61,7 +93,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null, "");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
@@ -88,7 +120,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null);
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null, "");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();
@@ -121,7 +153,7 @@ class CMRequest01p30Test {
         CCMOTimeFrame timeFrame = new CCMOTimeFrame(start, end);
         DsoIdAndMeteringPoint dsoIdAndMeteringPoint = new DsoIdAndMeteringPoint("AT999999",
                                                                                 "AT9999990699900000000000206868100");
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", "ecid", "ecid");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", "ecid", "ecid", "");
         ZonedDateTime now = ZonedDateTime.now(AT_ZONE_ID);
         var messageId = new MessageId(atConfiguration.eligiblePartyId(), now).toString();
         var cmRequestId = new CMRequestId(messageId).toString();

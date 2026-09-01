@@ -15,6 +15,7 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
+import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -43,10 +44,11 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
     @Spy
-    private final AtConfiguration configuration = new AtConfiguration("epId", "ecid", "ecid");
+    private final AtConfiguration configuration = new AtConfiguration("epId", "ecid", "ecid", "");
     @SuppressWarnings("unused")
     @Spy
-    private final ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(configuration);
+    private final ValidatedEventFactory validatedEventFactory =
+            new ValidatedEventFactory(new EdaGroupingIdFactory(configuration));
     @SuppressWarnings("unused")
     @Mock
     private Outbox mockOutbox;

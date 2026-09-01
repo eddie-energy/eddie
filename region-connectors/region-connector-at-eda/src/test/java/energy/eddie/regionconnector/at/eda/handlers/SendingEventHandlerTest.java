@@ -57,7 +57,7 @@ class SendingEventHandlerTest {
                                                                                                     EnergyDirection.CONSUMPTION)
                                                                                             .setParticipationFactor(1)
                                                                                             .build();
-    private final AtConfiguration configuration = new AtConfiguration("AT00000", null, null);
+    private final AtConfiguration configuration = new AtConfiguration("AT00000", null, null, "");
     @Mock
     private EdaAdapter edaAdapter;
     @Mock

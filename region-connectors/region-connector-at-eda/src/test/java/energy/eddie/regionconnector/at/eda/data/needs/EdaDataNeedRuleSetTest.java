@@ -20,7 +20,7 @@ class EdaDataNeedRuleSetTest {
     @Test
     void testDataNeedRuleSet() {
         // Given
-        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", "ec", "ec-party-id"));
+        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", "ec", "ec-party-id", ""));
 
         // When
         var res = ruleSet.dataNeedRules();
@@ -39,7 +39,7 @@ class EdaDataNeedRuleSetTest {
     @Test
     void testDataNeedRuleSet_withoutEnergyCommunityId_doesNotContainEnergyCommunityDataNeedRule() {
         // Given
-        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", null, null));
+        var ruleSet = new EdaDataNeedRuleSet(new AtConfiguration("ep", null, null, ""));
 
         // When
         var res = ruleSet.dataNeedRules();
