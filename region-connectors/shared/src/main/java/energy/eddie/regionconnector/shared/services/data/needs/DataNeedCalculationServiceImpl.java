@@ -139,7 +139,7 @@ public class DataNeedCalculationServiceImpl implements DataNeedCalculationServic
 
         var permissionStartAndEndDate = strategy.permissionTimeframe(energyStartAndEndDate,
                                                                      dataNeed,
-                                                                     ZonedDateTime.now(ZoneOffset.UTC));
+                                                                     referenceDateTime);
         return switch (dataNeed) {
             case ValidatedHistoricalDataDataNeed vhdDataNeed when energyStartAndEndDate != null ->
                     onValidatedHistoricalDataNeed(vhdDataNeed, permissionStartAndEndDate, energyStartAndEndDate);
