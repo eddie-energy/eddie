@@ -24,6 +24,7 @@ import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableConsumptionRecordService;
 import energy.eddie.regionconnector.at.eda.services.IdentifiableMasterDataService;
 import energy.eddie.regionconnector.at.eda.tasks.IdentifyECMPListTask;
+import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledFuture;
 
 import static de.ponton.xp.adapter.api.domainvalues.OutboundStatusEnum.*;
 
@@ -57,6 +59,8 @@ public class PontonXPAdapter implements EdaAdapter {
     private final IdentifiableMasterDataService identifiableMasterDataService;
     private final IdentifyECMPListTask identifyECMPListTask;
     private final TaskScheduler scheduler;
+    @Nullable
+    private ScheduledFuture<?> connectionWatchdogTask;
     /**
      * Set of conversationIds for CPRequests that have been sent to Ponton. Used to distinguish between CPRequests and CMRequests in the OutboundMessageStatusUpdateHandler.
      */
@@ -90,6 +94,10 @@ public class PontonXPAdapter implements EdaAdapter {
         masterDataSink.tryEmitComplete();
         cmRevokeSink.tryEmitComplete();
         cpRequestResultSink.tryEmitComplete();
+        if (connectionWatchdogTask != null) {
+            connectionWatchdogTask.cancel(false);
+            connectionWatchdogTask = null;
+        }
         pontonMessengerConnection.close();
     }
 
@@ -168,6 +176,7 @@ public class PontonXPAdapter implements EdaAdapter {
     public void start() throws TransmissionException {
         try {
             pontonMessengerConnection.start();
+            scheduleConnectionWatchdog();
             LOGGER.info("Ponton XP adapter started.");
         } catch (de.ponton.xp.adapter.api.TransmissionException e) {
             throw new TransmissionException(e);
@@ -382,5 +391,23 @@ public class PontonXPAdapter implements EdaAdapter {
                 () -> pontonMessengerConnection.resendFailedMessage(date, messageId),
                 Instant.now().plusSeconds(30)
         );
+    }
+
+    private void scheduleConnectionWatchdog() {
+        if (connectionWatchdogTask != null && !connectionWatchdogTask.isCancelled() && !connectionWatchdogTask.isDone()) {
+            return;
+        }
+        connectionWatchdogTask = scheduler.scheduleAtFixedRate(
+                this::reconnectIfConnectionStale,
+                pontonMessengerConnection.connectionWatchdogInterval()
+        );
+    }
+
+    private void reconnectIfConnectionStale() {
+        try {
+            pontonMessengerConnection.reconnectIfConnectionStale();
+        } catch (Exception e) {
+            LOGGER.error("Error while checking or restarting Ponton XP adapter WebSocket connection", e);
+        }
     }
 }

@@ -35,6 +35,7 @@ import reactor.core.publisher.Sinks;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Map;
 
@@ -326,6 +327,16 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
     @Override
     public void start() throws TransmissionException {
         LOGGER.info("Starting WebPonton Connection");
+    }
+
+    @Override
+    public void reconnectIfConnectionStale() {
+        // No WebSocket connection exists in the development REST replacement.
+    }
+
+    @Override
+    public Duration connectionWatchdogInterval() {
+        return Duration.ofMinutes(1);
     }
 
     @Override

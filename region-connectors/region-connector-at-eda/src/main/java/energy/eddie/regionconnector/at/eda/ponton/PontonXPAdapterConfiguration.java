@@ -3,8 +3,14 @@
 
 package energy.eddie.regionconnector.at.eda.ponton;
 
+import jakarta.validation.constraints.Positive;
+import org.hibernate.validator.constraints.time.DurationMin;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.boot.context.properties.bind.Name;
+import org.springframework.validation.annotation.Validated;
+
+import java.time.Duration;
 
 /**
  * This record defines all information needed for a PontonXPAdapter to establish a connection to a Ponton XP Messenger.
@@ -19,7 +25,12 @@ import org.springframework.boot.context.properties.bind.Name;
  * @param username       Username for the Ponton XP Messenger to use REST API endpoints that require authentication.
  *                       Needs to be a user without 2FA activated.
  * @param password       Password for the given username.
+ * @param inboundConnections Expected amount of inbound WebSocket connections to the Ponton XP Messenger.
+ * @param outboundConnections Expected amount of outbound WebSocket connections to the Ponton XP Messenger.
+ * @param connectionWatchdogInterval How often the Ponton XP Messenger adapter WebSocket connection is checked.
+ * @param connectionStatusTimeout Maximum time after start or reconnect until a connection-status callback must be received.
  */
+@Validated
 @ConfigurationProperties("region-connector.at.eda.ponton.messenger")
 public record PontonXPAdapterConfiguration(
         @Name("adapter.id") String adapterId,
@@ -29,5 +40,14 @@ public record PontonXPAdapterConfiguration(
         @Name("api.endpoint") String apiEndpoint,
         @Name("folder") String workFolder,
         @Name("username") String username,
-        @Name("password") String password
-) {}
+        @Name("password") String password,
+        @Name("inbound-connections") @Positive @DefaultValue("1") int inboundConnections,
+        @Name("outbound-connections") @Positive @DefaultValue("1") int outboundConnections,
+        @Name("connection-watchdog.interval")
+        @DurationMin(nanos = 1)
+        @DefaultValue("1m") Duration connectionWatchdogInterval,
+        @Name("connection-watchdog.status-timeout")
+        @DurationMin(nanos = 1)
+        @DefaultValue("2m") Duration connectionStatusTimeout
+) {
+}

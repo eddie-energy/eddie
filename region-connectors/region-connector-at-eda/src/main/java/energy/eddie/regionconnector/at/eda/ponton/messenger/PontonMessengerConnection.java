@@ -10,6 +10,8 @@ import energy.eddie.regionconnector.at.eda.requests.CCMORequest;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 
+import java.time.Duration;
+
 public interface PontonMessengerConnection extends MessengerHealth, MessengerMonitor {
     static PontonMessengerConnectionBuilder newBuilder() {
         return new PontonMessengerConnectionBuilder();
@@ -18,6 +20,10 @@ public interface PontonMessengerConnection extends MessengerHealth, MessengerMon
     void close();
 
     void start() throws TransmissionException;
+
+    void reconnectIfConnectionStale() throws TransmissionException, ConnectionException;
+
+    Duration connectionWatchdogInterval();
 
     void sendCMRevoke(CCMORevoke ccmoRevoke) throws TransmissionException, ConnectionException;
 

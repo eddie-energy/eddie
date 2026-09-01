@@ -34,6 +34,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -47,11 +48,15 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -78,6 +83,8 @@ class PontonXPAdapterTest {
     @Mock
     @SuppressWarnings("unused")
     private TaskScheduler taskScheduler;
+    @Mock
+    private ScheduledFuture<Object> connectionWatchdogTask;
 
     @InjectMocks
     private PontonXPAdapter pontonXPAdapter;
@@ -561,6 +568,69 @@ class PontonXPAdapterTest {
         // Then
         verify(pontonMessengerConnection).start();
         pontonXPAdapter.close();
+    }
+
+    @Test
+    void start_schedulesConnectionWatchdog() throws TransmissionException {
+        // Given
+        doReturn(connectionWatchdogTask)
+                .when(taskScheduler)
+                .scheduleAtFixedRate(any(Runnable.class), eq(Duration.ofMinutes(1)));
+
+        // When
+        pontonXPAdapter.start();
+
+        // Then
+        verify(taskScheduler).scheduleAtFixedRate(any(Runnable.class), eq(Duration.ofMinutes(1)));
+        pontonXPAdapter.close();
+    }
+
+    @Test
+    void scheduledConnectionWatchdog_reconnectsWhenConnectionIsStale() throws TransmissionException {
+        // Given
+        var taskCaptor = ArgumentCaptor.forClass(Runnable.class);
+        doReturn(connectionWatchdogTask)
+                .when(taskScheduler)
+                .scheduleAtFixedRate(taskCaptor.capture(), eq(Duration.ofMinutes(1)));
+        pontonXPAdapter.start();
+
+        // When
+        taskCaptor.getValue().run();
+
+        // Then
+        assertEquals(1, pontonMessengerConnection.reconnectIfConnectionStaleCalls());
+        pontonXPAdapter.close();
+    }
+
+    @Test
+    void scheduledConnectionWatchdog_keepsRunningWhenReconnectFails() throws TransmissionException {
+        // Given
+        var taskCaptor = ArgumentCaptor.forClass(Runnable.class);
+        doReturn(connectionWatchdogTask)
+                .when(taskScheduler)
+                .scheduleAtFixedRate(taskCaptor.capture(), eq(Duration.ofMinutes(1)));
+        pontonXPAdapter.start();
+        pontonMessengerConnection.setThrowTransmissionException(true);
+
+        // When & Then
+        assertDoesNotThrow(() -> taskCaptor.getValue().run());
+        assertEquals(1, pontonMessengerConnection.reconnectIfConnectionStaleCalls());
+        pontonXPAdapter.close();
+    }
+
+    @Test
+    void close_cancelsConnectionWatchdog() throws TransmissionException {
+        // Given
+        doReturn(connectionWatchdogTask)
+                .when(taskScheduler)
+                .scheduleAtFixedRate(any(Runnable.class), eq(Duration.ofMinutes(1)));
+        pontonXPAdapter.start();
+
+        // When
+        pontonXPAdapter.close();
+
+        // Then
+        verify(connectionWatchdogTask).cancel(false);
     }
 
     public static EdaECMPList createECMPList() {

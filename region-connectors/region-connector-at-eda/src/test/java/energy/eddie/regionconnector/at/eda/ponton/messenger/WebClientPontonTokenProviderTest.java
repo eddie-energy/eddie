@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,7 +53,11 @@ class WebClientPontonTokenProviderTest {
                 "http://localhost:" + mockBackEnd.getPort(),
                 "folder",
                 "user",
-                "password"
+                "password",
+                1,
+                1,
+                Duration.ofMinutes(1),
+                Duration.ofMinutes(2)
         );
     }
 

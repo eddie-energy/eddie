@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -37,7 +38,11 @@ class WebClientMessengerHealthTest {
                 "http://localhost:" + mockBackEnd.getPort(),
                 "folder",
                 "username",
-                "password"
+                "password",
+                1,
+                1,
+                Duration.ofMinutes(1),
+                Duration.ofMinutes(2)
         );
     }
 

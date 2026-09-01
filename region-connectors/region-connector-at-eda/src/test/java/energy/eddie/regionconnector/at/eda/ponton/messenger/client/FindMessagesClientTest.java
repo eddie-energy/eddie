@@ -37,7 +37,11 @@ class FindMessagesClientTest {
             SERVER.url("/api").toString(),
             "/",
             "admin",
-            "admin"
+            "admin",
+            1,
+            1,
+            java.time.Duration.ofMinutes(1),
+            java.time.Duration.ofMinutes(2)
     );
     @Mock
     private PontonTokenProvider tokenProvider;
