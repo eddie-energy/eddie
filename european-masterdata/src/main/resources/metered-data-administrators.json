@@ -2006,5 +2006,13 @@
     "websiteUrl": "https://www.etaplus.energy/",
     "officialContact": "info@etaplus.energy",
     "permissionAdministrator": "ETA+"
+  },
+  {
+    "country": "it",
+    "company": "onenet",
+    "companyId": "",
+    "websiteUrl": "https://onenet-project.eu/",
+    "officialContact": "info@onenet-project.eu",
+    "permissionAdministrator": "onenet"
   }
 ]
