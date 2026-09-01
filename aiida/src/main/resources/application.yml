@@ -57,8 +57,8 @@ aiida:
     tls-certificate-path: ${MQTT_TLS_CERTIFICATE_PATH:}
   keycloak:
     url:
-      internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8888}
-      external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8888}
+      internal: ${KEYCLOAK_INTERNAL_HOST:http://localhost:8889}
+      external: ${KEYCLOAK_EXTERNAL_HOST:http://localhost:8889}
     realm: ${KEYCLOAK_REALM:AIIDA}
     client: ${KEYCLOAK_CLIENT:AIIDA}
     authorization-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}/protocol/openid-connect/auth
