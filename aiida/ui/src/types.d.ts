@@ -75,6 +75,8 @@ export type AiidaPermission = {
   expirationTime: string
   grantTime?: string
   meterId?: string
+  minLimitKw?: number
+  maxLimitKw?: number
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
   transmissionEnabled: boolean

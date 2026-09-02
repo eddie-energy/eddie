@@ -460,6 +460,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         permission.setConnectionId(details.connectionId());
         permission.setMeterId(details.meterId());
+        permission.setMinLimitKw(details.minLimitKw());
+        permission.setMaxLimitKw(details.maxLimitKw());
         permission.setStartTime(startInstant);
         permission.setExpirationTime(endInstant);
         permission.setStatus(FETCHED_DETAILS);

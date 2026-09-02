@@ -3,9 +3,13 @@
 
 package energy.eddie.aiida.repositories;
 
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import jakarta.annotation.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -13,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import static energy.eddie.aiida.models.permission.PermissionStatus.ACTIVE;
 
 public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     List<Permission> findByUserIdOrderByGrantTimeDesc(UUID userId);
@@ -65,4 +71,31 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
             String meterId,
             Set<PermissionStatus> statuses
     );
+
+    @Query("""
+            SELECT p.permissionId, p.meterId, p.minLimitKw, p.maxLimitKw
+            FROM Permission p
+            JOIN p.dataNeed dn
+            WHERE p.userId = :userId
+              AND (:permissionId IS NULL OR p.permissionId = :permissionId)
+              AND p.status IN (:statuses)
+              AND dn.type = :dataNeedType
+              AND :dataNeedSchema MEMBER OF dn.schemas
+              AND NOT (p.minLimitKw IS NULL AND p.maxLimitKw IS NULL)
+            """)
+    List<ConnectionLimitDefault> findLimitDefaultsByUserIdAndPermissionId(
+            UUID userId,
+            @Nullable UUID permissionId, Set<PermissionStatus> statuses, String dataNeedType, AiidaSchema dataNeedSchema
+    );
+
+    default List<ConnectionLimitDefault> findLimitDefaultsByUserIdAndPermissionId(
+            UUID userId,
+            @Nullable UUID permissionId
+    ) {
+        return findLimitDefaultsByUserIdAndPermissionId(userId,
+                                                        permissionId,
+                                                        ACTIVE,
+                                                        InboundAiidaDataNeed.DISCRIMINATOR_VALUE,
+                                                        AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
+    }
 }
