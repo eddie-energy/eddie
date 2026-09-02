@@ -8,6 +8,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 
@@ -20,6 +21,12 @@ public class CreatedEvent extends PersistablePermissionEvent {
     @Nullable
     @Column(name = "meter_id")
     private final String meterId;
+    @Nullable
+    @Column(name = "min_limit_kw")
+    private final BigDecimal minLimitKw;
+    @Nullable
+    @Column(name = "max_limit_kw")
+    private final BigDecimal maxLimitKw;
     @Column(name = "permission_start")
     private final LocalDate permissionStart;
     @Column(name = "permission_end")
@@ -30,6 +37,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.connectionId = null;
         this.dataNeedId = null;
         this.meterId = null;
+        this.minLimitKw = null;
+        this.maxLimitKw = null;
         this.permissionStart = null;
         this.permissionEnd = null;
     }
@@ -39,6 +48,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String connectionId,
             String dataNeedId,
             @Nullable String meterId,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw,
             LocalDate permissionStart,
             LocalDate permissionEnd,
             Clock clock
@@ -47,6 +58,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.meterId = meterId;
+        this.minLimitKw = minLimitKw;
+        this.maxLimitKw = maxLimitKw;
         this.permissionStart = permissionStart;
         this.permissionEnd = permissionEnd;
     }
@@ -56,6 +69,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
             String connectionId,
             String dataNeedId,
             @Nullable String meterId,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw,
             LocalDate permissionStart,
             LocalDate permissionEnd
     ) {
@@ -63,6 +78,8 @@ public class CreatedEvent extends PersistablePermissionEvent {
         this.connectionId = connectionId;
         this.dataNeedId = dataNeedId;
         this.meterId = meterId;
+        this.minLimitKw = minLimitKw;
+        this.maxLimitKw = maxLimitKw;
         this.permissionStart = permissionStart;
         this.permissionEnd = permissionEnd;
     }
@@ -78,6 +95,16 @@ public class CreatedEvent extends PersistablePermissionEvent {
     @Nullable
     public String meterId() {
         return meterId;
+    }
+
+    @Nullable
+    public BigDecimal minLimitKw() {
+        return minLimitKw;
+    }
+
+    @Nullable
+    public BigDecimal maxLimitKw() {
+        return maxLimitKw;
     }
 
     public LocalDate permissionStart() {

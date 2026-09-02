@@ -171,7 +171,9 @@ class AiidaPermissionServiceTest {
                 // When
                      () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation("testConnId",
                                                                                                             List.of(nonExisting),
-                                                                                                            meterId)));
+                                                                                                            meterId,
+                                                                                                            null,
+                                                                                                            null)));
     }
 
     @ParameterizedTest
@@ -184,10 +186,11 @@ class AiidaPermissionServiceTest {
 
         // When, Then
         assertThrows(UnsupportedDataNeedException.class,
-                     () -> service.createValidateAndSendPermissionRequests(
-                             new PermissionRequestForCreation(connectionId,
-                                                              List.of(dataNeedId),
-                                                              meterId)));
+                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                            List.of(dataNeedId),
+                                                                                                            meterId,
+                                                                                                            null,
+                                                                                                            null)));
     }
 
     @Test
@@ -206,10 +209,11 @@ class AiidaPermissionServiceTest {
         when(jwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("jwtToken");
 
         // When
-        var dto = service.createValidateAndSendPermissionRequests(
-                new PermissionRequestForCreation(connectionId,
-                                                 List.of(dataNeedId),
-                                                 meterId));
+        var dto = service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                   List.of(dataNeedId),
+                                                                                                   meterId,
+                                                                                                   null,
+                                                                                                   null));
 
         // Then
         assertAll(() -> assertDoesNotThrow(dto::permissionIds),
@@ -236,10 +240,11 @@ class AiidaPermissionServiceTest {
 
         // When
         assertThrows(DataNeedMalformedException.class,
-                     () -> service.createValidateAndSendPermissionRequests(
-                             new PermissionRequestForCreation(connectionId,
-                                                              List.of(dataNeedId),
-                                                              meterId)));
+                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                            List.of(dataNeedId),
+                                                                                                            meterId,
+                                                                                                            null,
+                                                                                                            null)));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));
         verify(mockOutbox).commit(argThat(event -> event.status() == MALFORMED));
     }
@@ -247,7 +252,7 @@ class AiidaPermissionServiceTest {
     @Test
     void givenValidInput_createValidateAndSendPermissionRequests_commitsThreeEvents() throws Exception {
         // Given
-        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId), meterId);
+        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId), meterId, null, null);
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(
@@ -269,7 +274,11 @@ class AiidaPermissionServiceTest {
     void givenMultipleDataNeeds_createValidateAndSendPermissionRequests_returnsAsExpected() throws Exception {
         // Given
         var dataNeedId2 = "testDataNeedId2";
-        var forCreation = new PermissionRequestForCreation(connectionId, List.of(dataNeedId, dataNeedId2), meterId);
+        var forCreation = new PermissionRequestForCreation(connectionId,
+                                                           List.of(dataNeedId, dataNeedId2),
+                                                           meterId,
+                                                           null,
+                                                           null);
         var start = LocalDate.now(ZoneOffset.UTC);
         var end = start.plusDays(24);
         when(calculationService.calculate(anyString())).thenReturn(

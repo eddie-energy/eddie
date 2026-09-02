@@ -178,6 +178,14 @@ const dataSourceDisplayName = computed(() => {
         <dt>{{ t('permissions.dropdown.meterId') }}</dt>
         <dd>{{ permission.meterId }}</dd>
       </div>
+      <div class="permission-field" v-if="permission.minLimitKw">
+        <dt>{{ t('permissions.dropdown.minLimitKw') }}</dt>
+        <dd>{{ permission.minLimitKw }} kW</dd>
+      </div>
+      <div class="permission-field" v-if="permission.maxLimitKw">
+        <dt>{{ t('permissions.dropdown.maxLimitKw') }}</dt>
+        <dd>{{ permission.maxLimitKw }} kW</dd>
+      </div>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.start') }}</dt>
         <dd>
@@ -296,6 +304,7 @@ const dataSourceDisplayName = computed(() => {
           <dt>
             API Key
             <button
+              type="button"
               @click="showToolTip = !showToolTip"
               :aria-label="t('permissions.toggleTooltip')"
               class="tool-tip-button"
@@ -313,6 +322,7 @@ const dataSourceDisplayName = computed(() => {
 
             <CopyButton :copy-text="permission.dataSource.accessCode" />
             <button
+              type="button"
               class="show-button"
               @click="showInboundApiKey"
               :aria-label="

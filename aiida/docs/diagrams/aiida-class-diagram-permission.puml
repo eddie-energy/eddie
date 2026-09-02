@@ -19,6 +19,8 @@ class Permission {
     - revokeTime: Instant
     - connectionId: String
     - meterId: String
+    - minLimitKw: BigDecimal
+    - maxLimitKw: BigDecimal
     - handshakeUrl: String
     - accessToken: String
     - dataNeed: AiidaLocalDataNeed
