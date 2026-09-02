@@ -3,8 +3,10 @@
 
 package energy.eddie.regionconnector.at.eda.handlers;
 
-import energy.eddie.api.agnostic.data.needs.EnergyDirection;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.CESUJoinRequestDataNeed;
+import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
+import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.EdaAdapter;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
@@ -22,12 +24,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 import static energy.eddie.cim.agnostic.PermissionProcessStatus.FAILED_TO_TERMINATE;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -41,34 +39,31 @@ class TerminationHandlerTest {
     private Outbox outbox;
     @Mock
     private EdaAdapter edaAdapter;
+    @Mock
+    private DataNeedsService dataNeedsService;
     @Captor
     private ArgumentCaptor<SimpleEvent> simpleEventCaptor;
 
     @Test
     void terminatePermission_edaThrows_emitsFailedToTerminate() throws TransmissionException {
         // given
-        var start = LocalDate.now(ZoneOffset.UTC);
-        var end = start.plusDays(10);
         doThrow(new TransmissionException(null)).when(edaAdapter).sendCMRevoke(any());
-        var permissionRequest = new EdaPermissionRequestBuilder().setConnectionId("connectionId")
-                                                                 .setPermissionId("pid")
-                                                                 .setDataNeedId("dnid")
-                                                                 .setCmRequestId("cmRequestId")
-                                                                 .setConversationId("conversationId")
-                                                                 .setMeteringPointId("mid")
-                                                                 .setDsoId("dsoId")
-                                                                 .setStart(start)
-                                                                 .setEnd(end)
-                                                                 .setGranularity(AllowedGranularity.PT15M)
-                                                                 .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                 .setMessage("")
-                                                                 .setConsentId("consentId")
-                                                                 .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
-                                                                 .setEnergyDirection(EnergyDirection.CONSUMPTION)
-                                                                 .setParticipationFactor(1)
-                                                                 .build();
-        when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null, null), edaAdapter);
+        var permissionRequest = new EdaPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataNeedId("dnid")
+                .setCmRequestId("cmRequestId")
+                .setConversationId("conversationId")
+                .setMeteringPointId("mid")
+                .setDsoId("dsoId")
+                .setGranularity(AllowedGranularity.PT15M)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setConsentId("consentId")
+                .build();
+        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
+        when(dataNeedsService.getById("dnid")).thenReturn(new ValidatedHistoricalDataDataNeed());
+        var config = new AtConfiguration("epid", null, null);
+        new TerminationHandler(outbox, eventBus, repository, config, edaAdapter, dataNeedsService);
+
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -79,45 +74,88 @@ class TerminationHandlerTest {
     }
 
     @Test
-    void terminatePermission_unknownPermissionRequest_emitsNothing() {
-        // given
-        when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null, null), edaAdapter);
-        // when
-        eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
-
-        // then
-        verify(outbox, never()).commit(any());
-    }
-
-    @Test
     void terminatePermission_revokeIsSent() throws TransmissionException {
         // given
-        var start = LocalDate.now(ZoneOffset.UTC);
-        var end = start.plusDays(10);
-        var permissionRequest = new EdaPermissionRequestBuilder().setConnectionId("connectionId")
-                                                                 .setPermissionId("pid")
-                                                                 .setDataNeedId("dnid")
-                                                                 .setCmRequestId("cmRequestId")
-                                                                 .setConversationId("conversationId")
-                                                                 .setMeteringPointId("mid")
-                                                                 .setDsoId("dsoId")
-                                                                 .setStart(start)
-                                                                 .setEnd(end)
-                                                                 .setGranularity(AllowedGranularity.PT15M)
-                                                                 .setStatus(PermissionProcessStatus.ACCEPTED)
-                                                                 .setMessage("")
-                                                                 .setConsentId("consentId")
-                                                                 .setCreated(ZonedDateTime.now(ZoneOffset.UTC))
-                                                                 .setEnergyDirection(EnergyDirection.CONSUMPTION)
-                                                                 .setParticipationFactor(1)
-                                                                 .build();
-        when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null, null), edaAdapter);
+        var permissionRequest = new EdaPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataNeedId("dnid")
+                .setCmRequestId("cmRequestId")
+                .setConversationId("conversationId")
+                .setMeteringPointId("mid")
+                .setDsoId("dsoId")
+                .setGranularity(AllowedGranularity.PT15M)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setConsentId("consentId")
+                .build();
+        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
+        when(dataNeedsService.getById("dnid")).thenReturn(new ValidatedHistoricalDataDataNeed());
+        var config = new AtConfiguration("epid", null, null);
+        new TerminationHandler(outbox, eventBus, repository, config, edaAdapter, dataNeedsService);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
         // then
-        verify(edaAdapter).sendCMRevoke(any());
+        verify(edaAdapter).sendCMRevoke(assertArg(revoke -> assertAll(
+                () -> assertEquals("epid", revoke.eligiblePartyId()),
+                () -> assertEquals("Terminated by the Eligible Party", revoke.reason())
+        )));
+    }
+
+
+    @Test
+    void terminatePermissionForCesu_revokeIsSent() throws TransmissionException {
+        // given
+        var permissionRequest = new EdaPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataNeedId("dnid")
+                .setCmRequestId("cmRequestId")
+                .setConversationId("conversationId")
+                .setMeteringPointId("mid")
+                .setDsoId("dsoId")
+                .setGranularity(AllowedGranularity.PT15M)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setConsentId("consentId")
+                .build();
+        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
+        when(dataNeedsService.getById("dnid")).thenReturn(new CESUJoinRequestDataNeed());
+        var config = new AtConfiguration("epid", "ec-id", "ec-id");
+        new TerminationHandler(outbox, eventBus, repository, config, edaAdapter, dataNeedsService);
+        // when
+        eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
+
+        // then
+        verify(edaAdapter).sendCMRevoke(assertArg(revoke -> assertAll(
+                () -> assertEquals("ec-id", revoke.eligiblePartyId()),
+                () -> assertEquals("Terminated by the Energy Community Operator", revoke.reason())
+        )));
+    }
+
+
+    @Test
+    void terminatePermissionForCesuWithoutConfiguredECId_emitsFailedToTerminated() {
+        // given
+        var permissionRequest = new EdaPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setDataNeedId("dnid")
+                .setCmRequestId("cmRequestId")
+                .setConversationId("conversationId")
+                .setMeteringPointId("mid")
+                .setDsoId("dsoId")
+                .setGranularity(AllowedGranularity.PT15M)
+                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setConsentId("consentId")
+                .build();
+        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
+        when(dataNeedsService.getById("dnid")).thenReturn(new CESUJoinRequestDataNeed());
+        var config = new AtConfiguration("epid", null, null);
+        new TerminationHandler(outbox, eventBus, repository, config, edaAdapter, dataNeedsService);
+        // when
+        eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
+
+        // then
+        verifyNoInteractions(edaAdapter);
+        verify(outbox).commit(simpleEventCaptor.capture());
+        var res = simpleEventCaptor.getValue();
+        assertEquals(FAILED_TO_TERMINATE, res.status());
     }
 }
