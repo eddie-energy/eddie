@@ -80,6 +80,43 @@ connection.
 If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.
 
+## Importing Permission Requests
+
+The region connector provides a REST API to import permission requests for consents that were already granted outside EDDIE.
+The imported permission request is immediately marked as `ACCEPTED`, so the normal permission request process (sending the request to the DSO and waiting for the consent) is skipped.
+Only permission requests for the data needs [`ValidatedHistoricalDataDataNeed`](../../2-integrating/data-needs.md#validatedhistoricaldatadataneed) and [`CESUJoinRequestDataNeed`](../../2-integrating/data-needs.md#cesujoinrequestdataneed) are supported.
+
+The endpoint can only be used by the eligible party; therefore, it is only available via the management port.
+
+| Field               | Description                                                                                                                                                                                                |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `connectionId`      | Connection id of the final customer's connection.                                                                                                                                                          |
+| `meteringPointId`   | Id of the metering point the permission request is for. Needs to be exactly 33 characters long.                                                                                                            |
+| `dataNeedId`        | Id of the data need the permission request is for.                                                                                                                                                         |
+| `dsoId`             | Company identification number of the DSO, needs to be exactly 6 characters long (e.g. `AT001000`).                                                                                                         |
+| `consentId`         | Id of the consent that was already granted by the final customer to the eligible party.                                                                                                                    |
+| `creationDateTime`  | Timestamp of the consent, needs to be in the past. It is used to calculate the permission timeframe of the data need.                                                                                      |
+| `meterReadingStart` | *Optional*. Start of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingEnd`, must not be after it, and must be within the permission timeframe of the data need.  |
+| `meterReadingEnd`   | *Optional*. End of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingStart`, must not be before it, and must be within the permission timeframe of the data need. |
+
+If the import was successful, the endpoint returns `201 Created` with the permission id of the imported permission request in the response body.
+The `Location` header contains the URL of the [connection status message](../../2-integrating/messages/cim/connection-status-messages.md) stream for the imported permission request, where updates for the permission request can be consumed.
+
+```http request
+### Import an existing permission request
+POST http://localhost:${eddie.management.server.port}/region-connectors/at-eda/${eddie.management.server.urlprefix}/permission-request/import
+Content-Type: application/json
+
+{
+  "connectionId": "1",
+  "meteringPointId": "AT0020000000000000000000021247179",
+  "dataNeedId": "3dd39c06-253e-4c95-a255-e3eefc69f613",
+  "dsoId": "AT002000",
+  "consentId": "AT002000202608281020381218219898190",
+  "creationDateTime": "2025-08-28T00:00:00Z"
+}
+```
+
 ## Configuring PontonXP Messenger with multiple eligible parties and adapters
 
 If you are in a situation, where you have multiple local partners (eligible parties) using the same PontonXP Messenger and want to route messages to specific adapters based on the eligible party id,
