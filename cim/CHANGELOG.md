@@ -130,3 +130,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.13.0 - 2026-09-22
 
 - Add the possibility to deserialize CIM messages based on a given message type, removing the necessity to use the concrete class.
+
+## 3.14.0 - 2026-09-24
+
+- Add permission command to update connection limit defaults for AIIDA permissions

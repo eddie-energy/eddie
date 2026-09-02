@@ -10,6 +10,7 @@
     <xs:element name="OpaqueEnvelope" type="ns1:opaqueEnvelope"/>
     <xs:element name="UpdateTransmissionSchedule" type="ns1:updateTransmissionSchedule"/>
     <xs:element name="SetTransmissionEnabled" type="ns1:setTransmissionEnabled"/>
+    <xs:element name="UpdateLimitDefaults" type="ns1:updateLimitDefaults"/>
     <xs:element name="Terminate" type="ns1:terminate"/>
 
     <!-- connection status message types -->
@@ -94,6 +95,15 @@
             <xs:element type="xs:boolean" name="enabled"/>
         </xs:all>
     </xs:complexType>
+    <xs:complexType name="updateLimitDefaults">
+        <xs:all>
+            <xs:element type="ns1:permissionCommandAction" name="action"/>
+            <xs:element type="xs:string" name="regionConnectorId"/>
+            <xs:element type="ns1:uuid" name="permissionId"/>
+            <xs:element type="xs:decimal" name="minLimitKw" minOccurs="0" nillable="true"/>
+            <xs:element type="xs:decimal" name="maxLimitKw" minOccurs="0" nillable="true"/>
+        </xs:all>
+    </xs:complexType>
     <xs:complexType name="terminate">
         <xs:all>
             <xs:element type="ns1:permissionCommandAction" name="action"/>
@@ -105,6 +115,7 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="UPDATE_TRANSMISSION_SCHEDULE"/>
             <xs:enumeration value="SET_TRANSMISSION_ENABLED"/>
+            <xs:enumeration value="UPDATE_LIMIT_DEFAULTS" />
             <xs:enumeration value="TERMINATE"/>
         </xs:restriction>
     </xs:simpleType>
