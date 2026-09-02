@@ -29,12 +29,14 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.adapter.version`              | Version number of the adapter                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.ponton.messenger.hostname`                     | URL or IP address of your PontonXP Messenger.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.ponton.messenger.port`                         | The port that is used for connecting to the messenger. If you did not change this in the `server.xml` file of the messenger it should be `2600`.                                                                                                                                                                                                                                                                                                                                    |
-| `region-connector.at.eda.ponton.messenger.api.endpoint`                 | Endpoint of the XP Messenger REST API. Default should be `<hostname>[:<api-port>]/api`                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                                                                                 
+| `region-connector.at.eda.ponton.messenger.api.endpoint`                 | Endpoint of the XP Messenger REST API. Default should be `<hostname>[:<api-port>]/api`                                                                                                                                                                                                                                                                                                                                                                                              |
 | `region-connector.at.eda.ponton.messenger.folder`                       | Folder that is used to store information that the adapter needs for operating. This folder stores the `id.dat` file that is generated when the region connector first connects to the PontonXP Messenger. This file is used by the messenger to authenticate the adapter, i.e. all subsequent instances of the same adapter (same adapter id) need this file if they want to connect to the messenger.                                                                              |
 | `region-connector.at.eda.ponton.messenger.username`                     | Username that can be used to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints. The given user must not be additionally secured by 2FA.                                                                                                                                                                                                                             |
 | `region-connector.at.eda.ponton.messenger.password`                     | Password for the above username. Needed to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints.                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.consumption.records.remove.duplicates.enabled` | Enables the removal of duplicate consumption records that were already received once by EDDIE. If disabled duplicate consumption data for permission requests concerning the same metering point will be emitted to the outbound connector, this is also true if the permission request is already considered fulfilled, since MDA will send updates for the data. If enabled those updates will not be received. To enable set to `true`, disabled otherwise. Disabled by default. |
 | `region-connector.at.eda.ponton.messenger.enabled`                      | Default `true`. If set to true or missing the EDA Region Connector will try to connect to the configured Ponton X/P Messenger instance. If set to `false` it will use a drop-in replacement, which is a simple REST API to manually send Market Messages, should be used for testing and developement only, never in production!                                                                                                                                                    |
+| `region-connector.at.eda.energy-community-id`                           | The energy community id that is used to identify the energy community when requesting to add members to the energy community. See the code snippet below for examples.                                                                                                                                                                                                                                                                                                              |
+| `region-connector.at.eda.energy-community-party-id`                     | The energy community party id that is used to identify the energy community in the Austrian energy market system. It is used as the sender in the Ponton X/P Messenger                                                                                                                                                                                                                                                                                                              |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:
@@ -55,12 +57,51 @@ region-connector.at.eda.ponton.messenger.username=username
 region-connector.at.eda.ponton.messenger.password=password
 region-connector.at.eda.consumption.records.remove.duplicates.enabled=false
 region-connector.at.eda.ponton.messenger.enabled=true
+region-connector.at.eda.energy-community-id=ATCC0000DYNAMCC000000000000000000
+region-connector.at.eda.energy-community-party-id=CC000000
 ```
 
 ## Running the Region Connector via EDDIE
 
 If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.
+
+## Importing Permission Requests
+
+The region connector provides a REST API to import permission requests for consents that were already granted outside EDDIE.
+The imported permission request is immediately marked as `ACCEPTED`, so the normal permission request process (sending the request to the DSO and waiting for the consent) is skipped.
+Only permission requests for the data needs [`ValidatedHistoricalDataDataNeed`](../../2-integrating/data-needs.md#validatedhistoricaldatadataneed) and [`CESUJoinRequestDataNeed`](../../2-integrating/data-needs.md#cesujoinrequestdataneed) are supported.
+
+The endpoint can only be used by the eligible party; therefore, it is only available via the management port.
+
+| Field               | Description                                                                                                                                                                                                |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `connectionId`      | Connection id of the final customer's connection.                                                                                                                                                          |
+| `meteringPointId`   | Id of the metering point the permission request is for. Needs to be exactly 33 characters long.                                                                                                            |
+| `dataNeedId`        | Id of the data need the permission request is for.                                                                                                                                                         |
+| `dsoId`             | Company identification number of the DSO, needs to be exactly 6 characters long (e.g. `AT001000`).                                                                                                         |
+| `consentId`         | Id of the consent that was already granted by the final customer to the eligible party.                                                                                                                    |
+| `creationDateTime`  | Timestamp of the consent, needs to be in the past. It is used to calculate the permission timeframe of the data need.                                                                                      |
+| `meterReadingStart` | *Optional*. Start of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingEnd`, must not be after it, and must be within the permission timeframe of the data need.  |
+| `meterReadingEnd`   | *Optional*. End of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingStart`, must not be before it, and must be within the permission timeframe of the data need. |
+
+If the import was successful, the endpoint returns `201 Created` with the permission id of the imported permission request in the response body.
+The `Location` header contains the URL of the [connection status message](../../2-integrating/messages/cim/connection-status-messages.md) stream for the imported permission request, where updates for the permission request can be consumed.
+
+```http request
+### Import an existing permission request
+POST http://localhost:${eddie.management.server.port}/region-connectors/at-eda/${eddie.management.server.urlprefix}/permission-request/import
+Content-Type: application/json
+
+{
+  "connectionId": "1",
+  "meteringPointId": "AT0020000000000000000000021247179",
+  "dataNeedId": "3dd39c06-253e-4c95-a255-e3eefc69f613",
+  "dsoId": "AT002000",
+  "consentId": "AT002000202608281020381218219898190",
+  "creationDateTime": "2025-08-28T00:00:00Z"
+}
+```
 
 ## Configuring PontonXP Messenger with multiple eligible parties and adapters
 
