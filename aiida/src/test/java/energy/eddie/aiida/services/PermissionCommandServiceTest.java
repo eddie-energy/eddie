@@ -20,6 +20,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -131,6 +132,19 @@ class PermissionCommandServiceTest {
         verify(permission, never()).setTransmissionSchedule(any());
         verify(permissionRepository, never()).save(any());
         verify(streamerManager, never()).updateSchedule(any());
+    }
+
+    @Test
+    void givenValidLimitDefaults_updateLimitDefaults_updatesPermission() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permission.dataNeed()).thenReturn(dataNeed);
+        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
+
+        verify(permission).setMinLimitKw(BigDecimal.ONE);
+        verify(permission).setMaxLimitKw(BigDecimal.TEN);
+        verify(permissionRepository).save(permission);
     }
 
     @Test

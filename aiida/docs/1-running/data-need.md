@@ -17,7 +17,7 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
 | `enabled`                   | boolean             | Enables or disables a data need.                                                                                                           |
 | `duration`                  | Object              | Describes the timeframe for this data need.                                                                                                |
 | `transmissionSchedule`      | String              | Cron expression that defines how often the data should be sent or received.                                                                |
-| `allowedPermissionCommands` | String[]            | Permission commands the EP may send to remotely control transmission. See [Permission Commands](#permission-commands). Default `[]`.       |
+| `allowedPermissionCommands` | String[]            | Permission commands the EP may send to update an existing permission. See [Permission Commands](#permission-commands). Default `[]`.       |
 | `acknowledgementRequired`   | boolean             | Whether an acknowledgement is required for the data transmission. See [Acknowledgement](#acknowledgement).                                 |
 | `schemas`                   | String[]            | [Schemas](./schemas/schemas.md) that define the structure and format of the data, e.g. standardized schemas such as CIM or custom schemas. |
 | `asset`                     | String              | The asset that the data need is associated with, linking the data to specific physical or logical assets.                                  |
@@ -115,7 +115,8 @@ The available commands are:
 
 - `SET_TRANSMISSION_ENABLED` - enables or disables transmission.
 - `UPDATE_TRANSMISSION_SCHEDULE` - adjusts the transmission schedule (capped at the data-need frequency).
+- `UPDATE_LIMIT_DEFAULTS` - adjusts the default upper and lower production or consumption limits for limit permissions.
 
 For example, `"allowedPermissionCommands": ["UPDATE_TRANSMISSION_SCHEDULE", "SET_TRANSMISSION_ENABLED"]` allows both commands.
-If the field is empty (the default `[]`), all transmission-controlling commands are rejected. The `TERMINATE`
-command is always accepted, regardless of this field.
+If the field is empty (the default `[]`), all transmission-controlling commands are rejected.
+The `TERMINATE` command is always accepted, regardless of this field.
