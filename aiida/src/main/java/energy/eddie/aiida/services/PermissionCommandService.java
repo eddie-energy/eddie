@@ -23,6 +23,7 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import reactor.core.scheduler.Schedulers;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 
@@ -95,6 +96,8 @@ public class PermissionCommandService {
                     setTransmissionEnabled(permission, setTransmissionEnabled.enabled());
             case PermissionCommand.UpdateTransmissionSchedule updateTransmissionSchedule ->
                     updateSchedule(permission, updateTransmissionSchedule.transmissionSchedule());
+            case PermissionCommand.UpdateLimitDefaults updateLimitDefaults ->
+                    updateLimitDefaults(permission, updateLimitDefaults.minLimitKw(), updateLimitDefaults.maxLimitKw());
         }
     }
 
@@ -145,6 +148,16 @@ public class PermissionCommandService {
         permissionRepository.save(permission);
         streamerManager.updateSchedule(permission);
         LOGGER.info("Updated transmission schedule to {} for permission {}", cron, permission.id());
+    }
+
+    private void updateLimitDefaults(Permission permission, BigDecimal minLimitKw, BigDecimal maxLimitKw) {
+        permission.setMinLimitKw(minLimitKw);
+        permission.setMaxLimitKw(maxLimitKw);
+        permissionRepository.save(permission);
+        LOGGER.info("Updated limit defaults to min {} and max {} for permission {}",
+                    minLimitKw,
+                    maxLimitKw,
+                    permission.id());
     }
 
     private void terminate(Permission permission) {
