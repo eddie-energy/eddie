@@ -42,6 +42,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -118,7 +119,9 @@ public class AiidaPermissionService {
             var permissionId = createValidateAndSendPermissionRequest(
                     forCreation.connectionId(),
                     dataNeedId,
-                    forCreation.meterId()
+                    forCreation.meterId(),
+                    forCreation.minLimitKw(),
+                    forCreation.maxLimitKw()
             );
             permissionIds.add(permissionId);
         }
@@ -237,7 +240,9 @@ public class AiidaPermissionService {
     private UUID createValidateAndSendPermissionRequest(
             String connectionId,
             String dataNeedId,
-            @Nullable String meterId
+            @Nullable String meterId,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedMalformedException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
@@ -253,6 +258,8 @@ public class AiidaPermissionService {
                                                     connectionId,
                                                     dataNeedId,
                                                     meterId,
+                                                    minLimitKw,
+                                                    maxLimitKw,
                                                     aiidaResult.energyTimeframe().start(),
                                                     aiidaResult.energyTimeframe().end());
                 outbox.commit(createdEvent);

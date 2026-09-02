@@ -3,8 +3,8 @@
 
 package energy.eddie.aiida.services.connectionlimit;
 
-import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ class ConnectionLimitServiceTest {
     @Mock
     private ConnectionLimitRepository connectionLimitRepository;
     @Mock
-    private ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
+    private PermissionRepository permissionRepository;
     @Mock
     private AuthService authService;
 
@@ -33,7 +33,7 @@ class ConnectionLimitServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new ConnectionLimitService(connectionLimitRepository, connectionLimitDefaultRepository, authService);
+        service = new ConnectionLimitService(connectionLimitRepository, permissionRepository, authService);
     }
 
     @Test

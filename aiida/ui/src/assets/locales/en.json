@@ -155,6 +155,8 @@
       "creationDate": "Creation Date",
       "eddieApplication": "EDDIE Application",
       "meterId": "Meter ID",
+      "minLimitKw": "Minimum load",
+      "maxLimitKw": "Maximum load",
       "start": "Start",
       "end": "End",
       "transmissionSchedule": "Transmission Schedule",

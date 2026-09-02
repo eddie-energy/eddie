@@ -104,6 +104,8 @@ class EddieConnectButton extends LitElement {
       type: String,
     },
     meterId: { attribute: "meter-id", type: String },
+    minLimitKw: { attribute: "min-limit-kw", type: Number },
+    maxLimitKw: { attribute: "max-limit-kw", type: Number },
     rememberPermissionAdministrator: {
       attribute: "remember-permission-administrator",
       type: Object,
@@ -389,6 +391,14 @@ class EddieConnectButton extends LitElement {
 
     if (this.meterId) {
       element.setAttribute("meter-id", this.meterId);
+    }
+
+    if (this.minLimitKw != null) {
+      element.setAttribute("min-limit-kw", this.minLimitKw);
+    }
+
+    if (this.maxLimitKw != null) {
+      element.setAttribute("max-limit-kw", this.maxLimitKw);
     }
 
     return html`
