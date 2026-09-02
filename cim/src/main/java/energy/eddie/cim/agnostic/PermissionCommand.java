@@ -5,7 +5,9 @@ package energy.eddie.cim.agnostic;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import jakarta.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -18,17 +20,16 @@ import java.util.UUID;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PermissionCommand.UpdateTransmissionSchedule.class, name = "UPDATE_TRANSMISSION_SCHEDULE"),
         @JsonSubTypes.Type(value = PermissionCommand.SetTransmissionEnabled.class, name = "SET_TRANSMISSION_ENABLED"),
+        @JsonSubTypes.Type(value = PermissionCommand.UpdateLimitDefaults.class, name = "UPDATE_LIMIT_DEFAULTS"),
         @JsonSubTypes.Type(value = PermissionCommand.Terminate.class, name = "TERMINATE")
 })
-public sealed interface PermissionCommand permits
-        PermissionCommand.UpdateTransmissionSchedule,
-        PermissionCommand.SetTransmissionEnabled,
-        PermissionCommand.Terminate {
+public sealed interface PermissionCommand permits PermissionCommand.SetTransmissionEnabled, PermissionCommand.Terminate, PermissionCommand.UpdateLimitDefaults, PermissionCommand.UpdateTransmissionSchedule {
 
     default Action action() {
         return switch (this) {
             case UpdateTransmissionSchedule ignored -> Action.UPDATE_TRANSMISSION_SCHEDULE;
             case SetTransmissionEnabled ignored -> Action.SET_TRANSMISSION_ENABLED;
+            case UpdateLimitDefaults ignored -> Action.UPDATE_LIMIT_DEFAULTS;
             case Terminate ignored -> Action.TERMINATE;
         };
     }
@@ -40,6 +41,7 @@ public sealed interface PermissionCommand permits
     enum Action {
         UPDATE_TRANSMISSION_SCHEDULE(true),
         SET_TRANSMISSION_ENABLED(true),
+        UPDATE_LIMIT_DEFAULTS(true),
         TERMINATE(false);
 
         private final boolean requiresExplicitGrant;
@@ -79,6 +81,21 @@ public sealed interface PermissionCommand permits
             String regionConnectorId,
             UUID permissionId,
             boolean enabled
+    ) implements PermissionCommand {
+    }
+
+    /**
+     * Adjusts the default energy consumption or production limits for a permission.
+     * Null values are interpreted as "no limit".
+     *
+     * @param minLimitKw Lower limit in kilowatt
+     * @param maxLimitKw Upper limit in kilowatt
+     */
+    record UpdateLimitDefaults(
+            String regionConnectorId,
+            UUID permissionId,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw
     ) implements PermissionCommand {
     }
 

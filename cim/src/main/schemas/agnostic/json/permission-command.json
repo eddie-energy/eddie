@@ -35,6 +35,47 @@
       ]
     },
     {
+      "description": "Adjusts the default energy consumption or production limits for a permission.",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "UPDATE_LIMIT_DEFAULTS"
+          ]
+        },
+        "regionConnectorId": {
+          "description": "ID of the region-connector",
+          "type": "string"
+        },
+        "permissionId": {
+          "description": "Unique ID of the permission this signal applies to",
+          "$ref": "shared.json#/$defs/uuid"
+        },
+        "minLimitKw": {
+          "description": "Lower limit in kilowatt, null for an open lower bound",
+          "type": [
+            "null",
+            "number"
+          ]
+        },
+        "maxLimitKw": {
+          "description": "Upper limit in kilowatt, null for an open upper bound",
+          "type": [
+            "null",
+            "number"
+          ]
+        }
+      },
+      "required": [
+        "action",
+        "regionConnectorId",
+        "permissionId",
+        "minLimitKw",
+        "maxLimitKw"
+      ]
+    },
+    {
       "description": "Enables or disables transmission for a permission.",
       "type": "object",
       "properties": {
