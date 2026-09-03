@@ -27,7 +27,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.Comparator.comparing;
 import static java.util.function.BinaryOperator.maxBy;
 
 @Component
@@ -179,19 +178,33 @@ public class OutboundAggregator extends Aggregator<AiidaRecord> {
 
     private AiidaRecord mergeRecords(AiidaRecord r1, AiidaRecord r2) {
         var latestRecord = r2.timestamp().isAfter(r1.timestamp()) ? r2 : r1;
-        Map<String, AiidaRecordValue> mergedValues = new HashMap<>();
+        Map<String, Map.Entry<Instant, AiidaRecordValue>> mergedValues = new HashMap<>();
 
-        Stream.concat(r1.aiidaRecordValues().stream(), r2.aiidaRecordValues().stream())
-              .forEach(val -> mergedValues.merge(
-                      val.rawTag(),
-                      val,
-                      maxBy(comparing(v -> v.aiidaRecord().timestamp()))
-              ));
+        Stream.concat(
+                      timestampToAiidaRecordValue(r1),
+                      timestampToAiidaRecordValue(r2))
+              .forEach(entry -> mergeAiidaRecordValuesByMostRecentAiidaRecordValue(mergedValues, entry))
+
+        ;
 
         return new AiidaRecord(
                 latestRecord.timestamp(),
                 latestRecord.dataSource(),
-                new ArrayList<>(mergedValues.values())
+                mergedValues.values().stream().map(Map.Entry::getValue).toList()
         );
+    }
+
+    private Stream<Map.Entry<Instant, AiidaRecordValue>> timestampToAiidaRecordValue(AiidaRecord aiidaRecord) {
+        return aiidaRecord.aiidaRecordValues().stream().map(value -> Map.entry(aiidaRecord.timestamp(), value));
+    }
+
+    private void mergeAiidaRecordValuesByMostRecentAiidaRecordValue(
+            Map<String, Map.Entry<Instant, AiidaRecordValue>> mergedValues,
+            Map.Entry<Instant, AiidaRecordValue> currentEntry
+    ) {
+        mergedValues.merge(
+                currentEntry.getValue().rawTag(),
+                currentEntry,
+                maxBy(Map.Entry.comparingByKey()));
     }
 }

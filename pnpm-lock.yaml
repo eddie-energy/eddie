@@ -111,6 +111,9 @@ importers:
       '@fontsource/poppins':
         specifier: ^5.2.7
         version: 5.2.7
+      '@microsoft/fetch-event-source':
+        specifier: ^2.0.1
+        version: 2.0.1
       '@vueuse/core':
         specifier: ^13.9.0
         version: 13.9.0(vue@3.5.29(typescript@5.8.3))

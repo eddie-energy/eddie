@@ -172,7 +172,9 @@
       "downloadLatestMessageButton": "Neueste Nachricht herunterladen",
       "inboundTooltip": "Es gibt zwei Möglichkeiten, diesen API-Schlüssel zu verwenden, um die neuesten eingehenden Daten abzurufen:",
       "permissionID": "Berechtigungs-ID",
-      "openDetails": "Berechtigungsdetails öffnen"
+      "openDetails": "Berechtigungsdetails öffnen",
+      "lastMessageReceived": "Letzte Nachricht empfangen",
+      "lastMessageSent": "Letzte Nachricht gesendet"
     },
     "modal": {
       "title": "Neue Berechtigung hinzufügen",

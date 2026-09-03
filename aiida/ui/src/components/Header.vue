@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup lang="ts">
@@ -45,10 +43,10 @@ onMounted(async () => {
       </RouterLink>
       <RouterLink
         :data-text="t('header.inbound')"
-        to="/?category=inbound-aiida"
-        class="link-with-bold-hover nav-link inbound-link"
-        @click="selectedPermissionCategory = 'inbound-aiida'"
         :class="{ 'not-selected': selectedPermissionCategory !== 'inbound-aiida' }"
+        class="link-with-bold-hover nav-link inbound-link"
+        to="/?category=inbound-aiida"
+        @click="selectedPermissionCategory = 'inbound-aiida'"
       >
         <PermissionsNavIcon class="icon" />
         {{ t('header.inbound') }}

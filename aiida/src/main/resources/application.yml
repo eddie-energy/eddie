@@ -4,6 +4,7 @@ spring:
     username: REPLACE_ME
     password: REPLACE_ME
   jpa:
+    open-in-view: false
     properties:
       hibernate:
         jdbc:

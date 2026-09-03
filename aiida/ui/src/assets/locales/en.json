@@ -172,7 +172,9 @@
       "downloadLatestMessageButton": "Download Latest Message",
       "inboundTooltip": "There are two ways to use this API Key to retrieve the latest inbound data:",
       "permissionID": "Permission ID",
-      "openDetails": "Open Permission Details"
+      "openDetails": "Open Permission Details",
+      "lastMessageReceived": "Last Message Received",
+      "lastMessageSent": "Last Message Sent"
     },
     "modal": {
       "title": "Add new Permission",

@@ -120,7 +120,7 @@ const dataSourceOptions = computed(() => {
           type="text"
         />
       </form>
-      <form class="form" v-if="permission?.dataNeed.type === 'outbound-aiida'">
+      <form v-if="permission?.dataNeed.type === 'outbound-aiida'" class="form">
         <label class="heading-3" id="updatePermLabel">
           {{ t('permissions.modal.datasourceInputLabel') }}
         </label>

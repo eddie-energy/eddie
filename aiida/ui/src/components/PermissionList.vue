@@ -6,7 +6,7 @@ import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
 import { fetchInboundProvisioningTypes } from '@/stores/inboundProvisioningTypes.ts'
-import type { AiidaPermission, PermissionTypes } from '@/types'
+import type { AiidaDataNeed, AiidaPermission, PermissionTypes } from '@/types'
 import Button from '@/components/Button.vue'
 import CompleteIcon from '@/assets/icons/CompleteIcon.svg'
 import ActiveIcon from '@/assets/icons/ActiveIcon.svg'
@@ -100,7 +100,7 @@ const handleShowMore = () => {
   }
 }
 
-const handleCategoryChange = (category: string) => {
+const handleCategoryChange = (category: AiidaDataNeed['type']) => {
   selectedPermissionCategory.value = category
 }
 </script>
@@ -110,15 +110,17 @@ const handleCategoryChange = (category: string) => {
     <UpdatePermissionModal @update="refetchPermissions" />
     <div class="category-tabs">
       <button
-        @click="handleCategoryChange('outbound-aiida')"
-        class="text-normal"
         :class="{ 'active-category': selectedPermissionCategory === 'outbound-aiida' }"
+        type="button"
+        class="text-normal"
+        @click="handleCategoryChange('outbound-aiida')"
       >
         <PermissionsNavIcon class="rotate" /> {{ t('permissions.outboundTab') }}
       </button>
       <button
-        @click="handleCategoryChange('inbound-aiida')"
         :class="{ 'active-category': selectedPermissionCategory === 'inbound-aiida' }"
+        type="button"
+        @click="handleCategoryChange('inbound-aiida')"
         class="text-normal"
       >
         <PermissionsNavIcon /> {{ t('permissions.inboundTab') }}
