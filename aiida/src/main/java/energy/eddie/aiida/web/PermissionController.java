@@ -70,7 +70,7 @@ public class PermissionController {
             @ApiResponse(responseCode = "400", description = "Request body cannot be read or is missing fields.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "409", description = "Permission(s) cannot be fulfilled, e.g. because the requested data is not available.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Permission>> setupNewPermissions(@Valid @RequestBody AiidaPermissionRequestsDto permissionRequests) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    public ResponseEntity<List<Permission>> setupNewPermissions(@Valid @RequestBody AiidaPermissionRequestsDto permissionRequests) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         LOGGER.debug("Got new permission request {}", permissionRequests);
 
         var permission = permissionService.setupNewPermissions(permissionRequests);

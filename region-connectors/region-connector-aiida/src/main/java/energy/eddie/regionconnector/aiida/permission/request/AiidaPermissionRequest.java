@@ -12,6 +12,7 @@ import energy.eddie.regionconnector.aiida.permission.request.api.AiidaPermission
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -37,6 +38,14 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @JsonProperty(value = "meter_id")
     @Nullable
     private String meterId;
+    @Column(name = "min_limit_kw")
+    @JsonProperty(value = "min_limit_kw")
+    @Nullable
+    private BigDecimal minLimitKw;
+    @Column(name = "max_limit_kw")
+    @JsonProperty(value = "max_limit_kw")
+    @Nullable
+    private BigDecimal maxLimitKw;
     @Column(name = "permission_start")
     @JsonProperty
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
@@ -80,6 +89,18 @@ public class AiidaPermissionRequest implements AiidaPermissionRequestInterface {
     @Nullable
     public String meterId() {
         return meterId;
+    }
+
+    @Override
+    @Nullable
+    public BigDecimal minLimitKw() {
+        return minLimitKw;
+    }
+
+    @Override
+    @Nullable
+    public BigDecimal maxLimitKw() {
+        return maxLimitKw;
     }
 
     @Override
