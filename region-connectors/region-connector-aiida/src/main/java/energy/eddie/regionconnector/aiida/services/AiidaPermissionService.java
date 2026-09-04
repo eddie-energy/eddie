@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.aiida.services;
 import energy.eddie.api.agnostic.ApplicationInformationAware;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.AiidaDataNeedResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -267,6 +268,12 @@ public class AiidaPermissionService {
                 if (isInvalidPermissionRequest(aiidaResult)) {
                     outbox.commit(new SimpleEvent(permissionId, MALFORMED));
                     throw new DataNeedMalformedException(dataNeedId, "Data need does not support all required schemas");
+                }
+
+                if ((minLimitKw != null || maxLimitKw != null) && !aiidaResult.dataNeed().supportsLimitDefaults()) {
+                    outbox.commit(new SimpleEvent(permissionId, MALFORMED));
+                    throw new DataNeedMalformedException(dataNeedId,
+                                                         "Default connection limits can only be set for inbound data needs with schema " + AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
                 }
 
                 outbox.commit(new SimpleEvent(permissionId, VALIDATED));
