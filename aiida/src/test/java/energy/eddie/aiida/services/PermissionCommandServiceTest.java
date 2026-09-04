@@ -139,12 +139,41 @@ class PermissionCommandServiceTest {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(dataNeed.supportsLimitDefaults()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
 
         verify(permission).setMinLimitKw(BigDecimal.ONE);
         verify(permission).setMaxLimitKw(BigDecimal.TEN);
         verify(permissionRepository).save(permission);
+    }
+
+    @Test
+    void givenNotEligibleForLimitDefaults_updateLimitDefaults_isIgnored() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permission.dataNeed()).thenReturn(dataNeed);
+        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(dataNeed.supportsLimitDefaults()).thenReturn(false);
+
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
+
+        verify(permission, never()).setMinLimitKw(any());
+        verify(permission, never()).setMaxLimitKw(any());
+        verify(permissionRepository, never()).save(any());
+    }
+
+    @Test
+    void givenMinNotLessThanMax_updateLimitDefaults_isIgnored() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permission.dataNeed()).thenReturn(dataNeed);
+        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(dataNeed.supportsLimitDefaults()).thenReturn(true);
+
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.TEN, BigDecimal.ONE));
+
+        verify(permission, never()).setMinLimitKw(any());
+        verify(permission, never()).setMaxLimitKw(any());
+        verify(permissionRepository, never()).save(any());
     }
 
     @Test

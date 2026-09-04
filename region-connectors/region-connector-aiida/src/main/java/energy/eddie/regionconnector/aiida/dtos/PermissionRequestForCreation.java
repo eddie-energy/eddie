@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.aiida.dtos;
 
 import jakarta.annotation.Nullable;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
@@ -23,5 +24,10 @@ public record PermissionRequestForCreation(@NotBlank(message = "must not be blan
 ) {
     public PermissionRequestForCreation {
         meterId = meterId != null && meterId.isBlank() ? null : meterId;
+    }
+
+    @AssertTrue(message = "minLimitKw must be less than maxLimitKw")
+    public boolean isLimitRangeValid() {
+        return minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
     }
 }

@@ -17,6 +17,7 @@ import energy.eddie.dataneeds.needs.AccountingPointDataNeed;
 import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
+import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
 import energy.eddie.regionconnector.aiida.dtos.PermissionRequestForCreation;
@@ -47,6 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 import reactor.core.publisher.Sinks;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -61,6 +63,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaPermissionServiceTest {
@@ -136,6 +139,51 @@ class AiidaPermissionServiceTest {
     @AfterEach
     void tearDown() {
         logCaptor.clearLogs();
+    }
+
+    @Test
+    void givenLimitDefaultsAndInboundMinMaxSchema_createValidateAndSendPermissionRequests_returnsAsExpected() throws Exception {
+        // Given
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
+        when(calculationService.calculate(anyString())).thenReturn(
+                new AiidaDataNeedResult(Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12),
+                                        Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12),
+                                        new Timeframe(start, end),
+                                        inboundDataNeedWithSchemas(Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12))));
+        when(jwtUtil.createJwt(eq("aiida"), anyString())).thenReturn("jwtToken");
+
+        // When
+        var dto = service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                   List.of(dataNeedId),
+                                                                                                   meterId,
+                                                                                                   BigDecimal.ONE,
+                                                                                                   BigDecimal.TEN));
+
+        // Then
+        assertEquals(1, dto.permissionIds().size());
+        verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.VALIDATED));
+    }
+
+    @Test
+    void givenLimitDefaultsButOutboundDataNeed_createValidateAndSendPermissionRequests_throws() {
+        // Given
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
+        when(calculationService.calculate(anyString())).thenReturn(
+                new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
+                                        Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
+                                        new Timeframe(start, end),
+                                        outboundDataNeedWithSchemas(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04))));
+
+        // When, Then
+        assertThrows(DataNeedMalformedException.class,
+                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                            List.of(dataNeedId),
+                                                                                                            meterId,
+                                                                                                            BigDecimal.ONE,
+                                                                                                            BigDecimal.TEN)));
+        verify(mockOutbox).commit(argThat(event -> event.status() == MALFORMED));
     }
 
     @Test
@@ -246,6 +294,27 @@ class AiidaPermissionServiceTest {
                                                                                                             null,
                                                                                                             null)));
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.CREATED));
+        verify(mockOutbox).commit(argThat(event -> event.status() == MALFORMED));
+    }
+
+    @Test
+    void givenLimitDefaultsButMissingMinMaxSchema_createValidateAndSendPermissionRequests_throws() {
+        // Given
+        var start = LocalDate.now(ZoneOffset.UTC);
+        var end = start.plusDays(24);
+        when(calculationService.calculate(anyString())).thenReturn(
+                new AiidaDataNeedResult(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
+                                        Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04),
+                                        new Timeframe(start, end),
+                                        inboundDataNeedWithSchemas(Set.of(AiidaSchema.SMART_METER_P1_CIM_V1_04))));
+
+        // When, Then
+        assertThrows(DataNeedMalformedException.class,
+                     () -> service.createValidateAndSendPermissionRequests(new PermissionRequestForCreation(connectionId,
+                                                                                                            List.of(dataNeedId),
+                                                                                                            meterId,
+                                                                                                            BigDecimal.ONE,
+                                                                                                            BigDecimal.TEN)));
         verify(mockOutbox).commit(argThat(event -> event.status() == MALFORMED));
     }
 
@@ -619,6 +688,20 @@ class AiidaPermissionServiceTest {
         assertEquals(permissionId, details.request().permissionId());
         assertEquals("dataNeedId", details.request().dataNeedId());
         assertEquals("MyName", details.dataNeed().name());
+    }
+
+    private InboundAiidaDataNeed inboundDataNeedWithSchemas(Set<AiidaSchema> schemas) {
+        var dataNeed = new InboundAiidaDataNeed();
+        setField(dataNeed, "type", InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        setField(dataNeed, "schemas", schemas);
+        return dataNeed;
+    }
+
+    private OutboundAiidaDataNeed outboundDataNeedWithSchemas(Set<AiidaSchema> schemas) {
+        var dataNeed = new OutboundAiidaDataNeed();
+        setField(dataNeed, "type", OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        setField(dataNeed, "schemas", schemas);
+        return dataNeed;
     }
 
     private void testAiidaIdReceivedEvent(AiidaIdReceivedEvent aiidaIdReceivedEvent, PermissionProcessStatus status) {
