@@ -15,6 +15,7 @@ import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,7 @@ import reactor.core.scheduler.Schedulers;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Objects;
 
 import static energy.eddie.aiida.models.permission.PermissionStatus.TERMINATED;
 import static java.util.Objects.requireNonNull;
@@ -150,7 +152,29 @@ public class PermissionCommandService {
         LOGGER.info("Updated transmission schedule to {} for permission {}", cron, permission.id());
     }
 
-    private void updateLimitDefaults(Permission permission, BigDecimal minLimitKw, BigDecimal maxLimitKw) {
+    private void updateLimitDefaults(
+            Permission permission,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw
+    ) {
+        var dataNeed = Objects.requireNonNull(permission.dataNeed());
+        if (!dataNeed.supportsLimitDefaults()) {
+            LOGGER.warn(
+                    "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: permission is not inbound or does not have the MIN_MAX_ENVELOPE_CIM_V1_12 schema",
+                    permission.id());
+            return;
+        }
+
+        var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
+        if (!isRangeValid) {
+            LOGGER.warn(
+                    "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: minLimitKw {} must be less than maxLimitKw {}",
+                    permission.id(),
+                    minLimitKw,
+                    maxLimitKw);
+            return;
+        }
+
         permission.setMinLimitKw(minLimitKw);
         permission.setMaxLimitKw(maxLimitKw);
         permissionRepository.save(permission);

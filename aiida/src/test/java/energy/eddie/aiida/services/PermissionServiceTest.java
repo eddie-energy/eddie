@@ -187,8 +187,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
-                                                         minLimitKw,
-                                                         maxLimitKw,
+                                                         null,
+                                                         null,
                                                          start,
                                                          end,
                                                          mockDataNeed);
@@ -223,8 +223,6 @@ class PermissionServiceTest {
         assertEquals(PermissionStatus.FETCHED_DETAILS, permissionWithDetails.status());
         assertEquals(connectionId, permissionWithDetails.connectionId());
         assertEquals(meterId, permissionWithDetails.meterId());
-        assertEquals(minLimitKw, permissionWithDetails.minLimitKw());
-        assertEquals(maxLimitKw, permissionWithDetails.maxLimitKw());
         assertEquals(expectedStart, permissionWithDetails.startTime());
         assertEquals(expectedEnd, permissionWithDetails.expirationTime());
 
@@ -366,8 +364,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
-                                                         minLimitKw,
-                                                         maxLimitKw,
+                                                         null,
+                                                         null,
                                                          start,
                                                          end,
                                                          mockDataNeed);
