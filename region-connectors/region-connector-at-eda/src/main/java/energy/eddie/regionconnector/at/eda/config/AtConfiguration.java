@@ -36,9 +36,12 @@ public record AtConfiguration(
 ) {
     public static final String CONVERSATION_ID_PREFIX_PATTERN = "[0-9A-Za-z]*";
 
-    @AssertTrue(message = "If the energy community ID has been set, the energy community party ID must also be set")
+    @AssertTrue(message = "If the energy community ID has been set, both energy community IDs must not be blank")
     public boolean isEnergyCommunityIdSetMustBeEnergyCommunityPartyIdAlsoSet() {
-        return energyCommunityId == null || (energyCommunityPartyId != null && !energyCommunityPartyId.isBlank());
+        return energyCommunityId == null
+                || (!energyCommunityId.isBlank()
+                    && energyCommunityPartyId != null
+                    && !energyCommunityPartyId.isBlank());
     }
 
     /**

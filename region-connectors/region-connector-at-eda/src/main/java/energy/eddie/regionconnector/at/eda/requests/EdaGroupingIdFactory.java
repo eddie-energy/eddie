@@ -7,27 +7,23 @@ import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
-import java.util.regex.Pattern;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static java.util.Objects.requireNonNull;
 
 /**
- * Creates EDA {@code GroupingId} values used as message and conversation IDs.
+ * Creates EDA {@code GroupingId} values. The EDA schemas use this shared type for both
+ * {@code MessageId} and {@code ConversationId}; newly initiated processes use the generated
+ * value for both fields.
  */
 @Component
 public final class EdaGroupingIdFactory {
     private static final String PREFIX_PROPERTY = "region-connector.at.eda.conversation-id.prefix";
-    private static final Pattern VALID_PREFIX = Pattern.compile(AtConfiguration.CONVERSATION_ID_PREFIX_PATTERN);
 
     private final AtConfiguration configuration;
 
     public EdaGroupingIdFactory(AtConfiguration configuration) {
         this.configuration = requireNonNull(configuration);
-        var prefix = requireNonNull(configuration.conversationIdPrefix(), PREFIX_PROPERTY + " must not be null");
-        if (!VALID_PREFIX.matcher(prefix).matches()) {
-            throw new IllegalArgumentException(PREFIX_PROPERTY + " must contain only ASCII letters and digits");
-        }
 
         var validationTime = ZonedDateTime.now(AT_ZONE_ID);
         validateConfiguredLength(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, validationTime);

@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EdaGroupingIdFactoryTest {
     private static final ZonedDateTime DATE_TIME = ZonedDateTime.parse("2026-09-01T12:00:00Z");
@@ -41,17 +40,5 @@ class EdaGroupingIdFactoryTest {
         var result = factory.create(AtConfiguration.PartyIdType.ENERGY_COMMUNITY, DATE_TIME);
 
         assertEquals("DEV1EC123456T1788264000000", result);
-    }
-
-    @Test
-    void constructor_withInvalidPrefix_throws() {
-        var configuration = new AtConfiguration("EP123456", null, null, "DEV-");
-
-        var exception = assertThrows(IllegalArgumentException.class, () -> new EdaGroupingIdFactory(configuration));
-
-        assertEquals(
-                "region-connector.at.eda.conversation-id.prefix must contain only ASCII letters and digits",
-                exception.getMessage()
-        );
     }
 }

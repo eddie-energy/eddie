@@ -107,6 +107,16 @@ class AtConfigurationTest {
     }
 
     @Test
+    void blankEnergyCommunityId_failsStartup() {
+        contextRunner
+                .withPropertyValues(
+                        PREFIX + "energy-community-id=",
+                        PREFIX + "energy-community-party-id=EC123456"
+                )
+                .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
     void blankEligiblePartyId_failsStartup() {
         contextRunner
                 .withPropertyValues(PREFIX + "eligibleparty.id=")
