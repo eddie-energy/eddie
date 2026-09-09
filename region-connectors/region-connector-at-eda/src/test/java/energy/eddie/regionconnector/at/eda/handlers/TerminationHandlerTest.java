@@ -11,6 +11,8 @@ import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestBuilder;
 import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
+import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBusImpl;
@@ -29,12 +31,15 @@ import java.util.Optional;
 
 import static energy.eddie.cim.agnostic.PermissionProcessStatus.FAILED_TO_TERMINATE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TerminationHandlerTest {
     private final EventBus eventBus = new EventBusImpl();
+    private final AtConfiguration configuration = new AtConfiguration("epid", null, null, "DEV");
+    private final EdaGroupingIdFactory groupingIdFactory = new EdaGroupingIdFactory(configuration);
     @Mock
     private AtPermissionRequestRepository repository;
     @Mock
@@ -68,7 +73,7 @@ class TerminationHandlerTest {
                                                                  .setParticipationFactor(1)
                                                                  .build();
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null, null), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, configuration, groupingIdFactory, edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -82,7 +87,7 @@ class TerminationHandlerTest {
     void terminatePermission_unknownPermissionRequest_emitsNothing() {
         // given
         when(repository.findByPermissionId("pid")).thenReturn(Optional.empty());
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null, null), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, configuration, groupingIdFactory, edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
@@ -113,11 +118,13 @@ class TerminationHandlerTest {
                                                                  .setParticipationFactor(1)
                                                                  .build();
         when(repository.findByPermissionId("pid")).thenReturn(Optional.of(permissionRequest));
-        new TerminationHandler(outbox, eventBus, repository, new AtConfiguration("epid", null, null), edaAdapter);
+        new TerminationHandler(outbox, eventBus, repository, configuration, groupingIdFactory, edaAdapter);
         // when
         eventBus.emit(new SimpleEvent("pid", PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
 
         // then
-        verify(edaAdapter).sendCMRevoke(any());
+        var revokeCaptor = ArgumentCaptor.forClass(CCMORevoke.class);
+        verify(edaAdapter).sendCMRevoke(revokeCaptor.capture());
+        assertTrue(revokeCaptor.getValue().messageId().startsWith("DEVepidT"));
     }
 }

@@ -21,6 +21,7 @@ import energy.eddie.regionconnector.at.eda.permission.request.events.EdaAnswerEv
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEvent;
 import energy.eddie.regionconnector.at.eda.permission.request.events.ValidatedEventFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.NotificationMessageType;
+import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
@@ -48,9 +49,9 @@ class CMRejectHandlerTest {
     private DataNeedCalculationService dataNeedCalculationService;
     @Spy
     @SuppressWarnings("unused") // injected
-    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(new AtConfiguration("test",
-                                                                                                        null,
-                                                                                                        null));
+    private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(
+            new EdaGroupingIdFactory(new AtConfiguration("test", null, null, ""))
+    );
     @Mock
     private Outbox outbox;
 

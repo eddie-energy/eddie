@@ -41,4 +41,31 @@ class MessageIdTest {
         var expected = "AT999999T" + now.toInstant().toEpochMilli();
         assertEquals(expected, result);
     }
+
+    @Test
+    void messageIdAtMaximumLength_isCreated() {
+        // given
+        var dateTime = ZonedDateTime.parse("2026-09-01T12:00:00Z");
+
+        // when
+        var result = new MessageId("1234567890123EP123456", dateTime).toString();
+
+        // then
+        assertEquals(MessageId.MAX_LENGTH, result.length());
+    }
+
+    @Test
+    void messageIdOverMaximumLength_throws() {
+        // given
+        var dateTime = ZonedDateTime.parse("2026-09-01T12:00:00Z");
+
+        // when
+        var exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> new MessageId("12345678901234EP123456", dateTime)
+        );
+
+        // then
+        assertEquals("EDA grouping ID length 36 exceeds the maximum of 35 characters", exception.getMessage());
+    }
 }
