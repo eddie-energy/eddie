@@ -99,7 +99,7 @@ public class Permission {
 
     @Nullable
     @PrimaryKeyJoinColumn
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonProperty
     private MqttStreamingConfig mqttStreamingConfig;
 

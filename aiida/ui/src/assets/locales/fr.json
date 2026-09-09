@@ -172,7 +172,9 @@
       "downloadLatestMessageButton": "Télécharger le dernier message",
       "inboundTooltip": "Il existe deux façons d’utiliser cette clé API pour récupérer les dernières données entrantes :",
       "permissionID": "ID d’autorisation",
-      "openDetails": "Ouvrir les détails de l’autorisation"
+      "openDetails": "Ouvrir les détails de l’autorisation",
+      "lastMessageReceived": "Dernier message reçu",
+      "lastMessageSent": "Dernier message envoyé"
     },
     "modal": {
       "title": "Ajouter une nouvelle autorisation",

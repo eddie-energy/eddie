@@ -3,8 +3,10 @@
 
 package energy.eddie.aiida.services.record;
 
+import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
@@ -13,9 +15,15 @@ import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.AuthService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -26,6 +34,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Pageable;
+import reactor.core.publisher.Flux;
+import reactor.test.StepVerifier;
 
 import java.time.Instant;
 import java.util.List;
@@ -39,6 +49,7 @@ import static org.mockito.Mockito.*;
 class LatestRecordServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID PERMISSION_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
+    private static final UUID USER_ID = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final String TOPIC = "test/topic";
     private static final String SERVER_URI = "mqtt://test.server.com";
     private static final String PAYLOAD = "test-payload-data";
@@ -50,6 +61,12 @@ class LatestRecordServiceTest {
     private PermissionLatestRecordMap permissionLatestRecordMap;
     @Mock
     private InboundRecordService inboundRecordService;
+    @Mock
+    private PermissionRepository permissionRepository;
+    @Mock
+    private InboundAggregator inboundAggregator;
+    @Mock
+    private AuthService authService;
 
     @InjectMocks
     private LatestRecordService aiidaRecordService;
@@ -303,5 +320,113 @@ class LatestRecordServiceTest {
         );
 
         verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
+    }
+
+    @Test
+    void lastMessageStream_shouldStreamEventsForBothInboundAndOutboundPermissions_belongingToCurrentUser()
+            throws InvalidUserException {
+        var inboundPermissionId = UUID.randomUUID();
+
+        var outboundPermission = mock(Permission.class);
+        var outboundAiidaLocalDataNeed = mock(OutboundAiidaLocalDataNeed.class);
+        when(outboundPermission.id()).thenReturn(PERMISSION_ID);
+        when(outboundPermission.dataNeed()).thenReturn(outboundAiidaLocalDataNeed);
+
+        var inboundPermission = mock(Permission.class);
+        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
+        var inboundDataSource = mock(InboundDataSource.class);
+        when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(inboundPermission.id()).thenReturn(inboundPermissionId);
+        when(inboundPermission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
+
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+                .thenReturn(List.of(outboundPermission, inboundPermission));
+        when(permissionLatestRecordMap.lastMessageStream(PERMISSION_ID))
+                .thenReturn(Flux.just(TIMESTAMP));
+
+        var matchingRecord = mock(InboundRecord.class);
+        var matchingRecordDataSource = mock(InboundDataSource.class);
+        when(matchingRecordDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(matchingRecord.dataSource()).thenReturn(matchingRecordDataSource);
+        when(matchingRecord.timestamp()).thenReturn(TIMESTAMP.plusSeconds(10));
+        when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.just(matchingRecord));
+
+        var result = aiidaRecordService.lastMessageStream();
+
+        StepVerifier.create(result)
+                    .recordWith(java.util.ArrayList::new)
+                    .expectNextCount(2)
+                    .consumeRecordedWith(events -> assertTrue(events.stream().anyMatch(
+                            event -> event.permissionId().equals(PERMISSION_ID) && event.timestamp().equals(TIMESTAMP))
+                                                              && events.stream().anyMatch(
+                            event -> event.permissionId().equals(inboundPermissionId)
+                                     && event.timestamp().equals(TIMESTAMP.plusSeconds(10)))))
+                    .verifyComplete();
+    }
+
+    @Test
+    void lastMessageStream_shouldFilterOutInboundRecordsFromDataSourcesNotBelongingToCurrentUser()
+            throws InvalidUserException {
+        var otherDataSourceId = UUID.randomUUID();
+        var permission = mock(Permission.class);
+        var dataSource = mock(InboundDataSource.class);
+        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(permission.id()).thenReturn(PERMISSION_ID);
+        when(permission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(permission.dataSource()).thenReturn(dataSource);
+
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+                .thenReturn(List.of(permission));
+
+        var matchingRecord = mock(InboundRecord.class);
+        var matchingRecordDataSource = mock(InboundDataSource.class);
+        when(matchingRecordDataSource.id()).thenReturn(DATA_SOURCE_ID);
+        when(matchingRecord.dataSource()).thenReturn(matchingRecordDataSource);
+        when(matchingRecord.timestamp()).thenReturn(TIMESTAMP);
+
+        var otherUsersRecord = mock(InboundRecord.class);
+        var otherUsersRecordDataSource = mock(InboundDataSource.class);
+        when(otherUsersRecordDataSource.id()).thenReturn(otherDataSourceId);
+        when(otherUsersRecord.dataSource()).thenReturn(otherUsersRecordDataSource);
+
+        when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.just(otherUsersRecord, matchingRecord));
+
+        var result = aiidaRecordService.lastMessageStream();
+
+        StepVerifier.create(result)
+                    .expectNextMatches(event -> event.permissionId().equals(PERMISSION_ID)
+                                                && event.timestamp().equals(TIMESTAMP))
+                    .verifyComplete();
+        verifyNoInteractions(permissionLatestRecordMap);
+    }
+
+    @Test
+    void lastMessageStream_shouldSkipInboundPermissionsWithNoDataSource() throws InvalidUserException {
+        var permission = mock(Permission.class);
+        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
+        when(permission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(permission.dataSource()).thenReturn(null);
+
+        when(authService.getCurrentUserId()).thenReturn(USER_ID);
+        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+                .thenReturn(List.of(permission));
+        when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.empty());
+
+        var result = aiidaRecordService.lastMessageStream();
+
+        StepVerifier.create(result).verifyComplete();
+    }
+
+    @Test
+    void lastMessageStream_shouldThrow_whenNoAuthenticatedUser() throws InvalidUserException {
+        when(authService.getCurrentUserId()).thenThrow(new InvalidUserException());
+
+        assertThrows(InvalidUserException.class, () -> aiidaRecordService.lastMessageStream());
+
+        verifyNoInteractions(permissionRepository);
     }
 }

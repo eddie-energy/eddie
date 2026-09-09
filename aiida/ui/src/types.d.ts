@@ -85,13 +85,37 @@ export type AiidaPermission = {
   unimplemented: {
     packageGraph: any
     targetIP: any
-    lastPackageSent: any
   }
 }
 
 export type AiidaPermissionStreamingConfig = {
   dataTopic: string
   serverUri: string
+}
+
+export type LatestSchemaRecord = {
+  schema: string
+  sentAt: string
+  message: string
+}
+
+export type LatestOutboundPermissionRecord = {
+  permissionId: string
+  topic: string
+  serverUri: string
+  messages: LatestSchemaRecord[]
+}
+
+export type LatestInboundPermissionRecord = {
+  timestamp: string
+  dataSourceId: string
+  messageFormat: InboundMessageFormat
+  payload: string
+}
+
+export type LastMessageEvent = {
+  permissionId: string
+  timestamp: string
 }
 
 export type AiidaDataSourceType = {

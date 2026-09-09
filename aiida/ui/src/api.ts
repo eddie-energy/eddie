@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+import { fetchEventSource } from '@microsoft/fetch-event-source'
 import useToast from './composables/useToast'
 import { keycloak } from './keycloak'
 import type {
@@ -11,6 +12,9 @@ import type {
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   InboundMessageFormat,
+  LastMessageEvent,
+  LatestInboundPermissionRecord,
+  LatestOutboundPermissionRecord,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
 } from './types'
@@ -27,7 +31,11 @@ const FALLBACK_ERROR_MESSAGES = {
   500: 'Something went wrong. Please try again.',
 }
 
-async function fetch(path: string, init?: RequestInit): Promise<any> {
+async function fetch(
+  path: string,
+  init?: RequestInit,
+  options?: { silentStatuses?: number[] },
+): Promise<any> {
   try {
     await keycloak.updateToken(5)
   } catch (error) {
@@ -57,7 +65,10 @@ async function fetch(path: string, init?: RequestInit): Promise<any> {
       (await parseErrorResponse(response)) ??
       FALLBACK_ERROR_MESSAGES[response.status as keyof typeof FALLBACK_ERROR_MESSAGES] ??
       'errors.unexpectedError'
-    if (!(isImagesEndpoint && response.status == 404)) {
+    if (
+      !(isImagesEndpoint && response.status == 404) &&
+      !options?.silentStatuses?.includes(response.status)
+    ) {
       danger(message, response.status == 404 ? 5000 : 0, true)
     }
     throw new Error(message)
@@ -289,15 +300,43 @@ export async function getLatestDataSourceMessage(id: string) {
   })
 }
 
-export async function getLatestOutboundPermissionMessage(id: string) {
-  return fetch(`/messages/permission/${id}/outbound/latest`, {
-    method: 'GET',
-  })
+export async function getLatestOutboundPermissionMessage(
+  id: string,
+  silentNotFound = false,
+): Promise<LatestOutboundPermissionRecord> {
+  return fetch(
+    `/messages/permission/${id}/outbound/latest`,
+    { method: 'GET' },
+    silentNotFound ? { silentStatuses: [404] } : undefined,
+  )
 }
 
-export async function getLatestInboundPermissionMessage(id: string) {
-  return fetch(`/messages/permission/${id}/inbound/latest`, {
-    method: 'GET',
+export async function getLatestInboundPermissionMessage(
+  id: string,
+  silentNotFound = false,
+): Promise<LatestInboundPermissionRecord> {
+  return fetch(
+    `/messages/permission/${id}/inbound/latest`,
+    { method: 'GET' },
+    silentNotFound ? { silentStatuses: [404] } : undefined,
+  )
+}
+
+export function subscribeToLastMessageStream(
+  onMessage: (event: LastMessageEvent) => void,
+  signal: AbortSignal,
+): void {
+  void fetchEventSource(`${BASE_URL}/messages/last-message-stream`, {
+    signal,
+    headers: { accept: 'text/event-stream, application/json' },
+    fetch: async (input, init) => {
+      await keycloak.updateToken(5)
+      return globalThis.fetch(input, {
+        ...init,
+        headers: { ...init?.headers, Authorization: `Bearer ${keycloak.token}` },
+      })
+    },
+    onmessage: (event) => onMessage(JSON.parse(event.data) as LastMessageEvent),
   })
 }
 

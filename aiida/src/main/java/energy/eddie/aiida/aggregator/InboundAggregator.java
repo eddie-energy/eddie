@@ -49,6 +49,8 @@ public class InboundAggregator extends Aggregator<InboundRecord> {
     }
 
     public Flux<InboundRecord> inboundRecordFlux() {
-        return combinedRecordSink.asFlux().ofType(InboundRecord.class);
+        return combinedRecordSink.asFlux()
+                                 .ofType(InboundRecord.class)
+                                 .onBackpressureBuffer();
     }
 }
