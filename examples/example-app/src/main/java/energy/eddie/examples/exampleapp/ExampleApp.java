@@ -5,8 +5,6 @@ package energy.eddie.examples.exampleapp;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import energy.eddie.api.agnostic.ConnectionStatusMessageMixin;
-import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.examples.exampleapp.kafka.KafkaListener;
 import gg.jte.ContentType;
 import gg.jte.TemplateEngine;
@@ -108,7 +106,6 @@ public class ExampleApp {
             bind(ObjectMapper.class)
                     .toInstance(JsonMapper.builder()
                                           .addModule(new JakartaXmlBindAnnotationModule())
-                                          .addMixIn(ConnectionStatusMessage.class, ConnectionStatusMessageMixin.class)
                                           .build());
             var jdbcUserName = Env.JDBC_USER.get();
             var jdbcPassword = Env.JDBC_PASSWORD.get();
