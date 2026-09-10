@@ -51,6 +51,7 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.List;
@@ -77,6 +78,8 @@ class PermissionServiceTest {
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
     private final String meterId = "003114735";
+    private final BigDecimal minLimitKw = BigDecimal.ONE;
+    private final BigDecimal maxLimitKw = BigDecimal.TEN;
     private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
     private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
@@ -184,6 +187,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         null,
+                                                         null,
                                                          start,
                                                          end,
                                                          mockDataNeed);
@@ -241,6 +246,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         minLimitKw,
+                                                         maxLimitKw,
                                                          start,
                                                          end,
                                                          mockDataNeed);
@@ -291,6 +298,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         minLimitKw,
+                                                         maxLimitKw,
                                                          start.minusDays(1),
                                                          end,
                                                          mockDataNeed);
@@ -355,6 +364,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         null,
+                                                         null,
                                                          start,
                                                          end,
                                                          mockDataNeed);

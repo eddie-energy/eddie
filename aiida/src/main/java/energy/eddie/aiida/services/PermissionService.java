@@ -155,11 +155,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @throws ActiveFcaPermissionAlreadyExistsException   There is already an active inbound or outbound permission for the meter ID provided in the permission request.
      * @throws PermissionStartInThePastException           The start date lies in the past.
      * @throws PermissionDataNeedTypeNotSupportedException The data need type of the permission is not supported by this AIIDA instance.
+     * @throws LimitDefaultsNotAllowedException            Default connection limits were set but the permission is not eligible for them or minLimitKw is not less than maxLimitKw.
      */
     @Transactional
     public List<Permission> setupNewPermissions(
             AiidaPermissionRequestsDto permissionRequests
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
@@ -409,7 +410,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AiidaPermissionRequestsDto permissionRequests,
             UUID permissionId,
             UUID currentUserId
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
@@ -453,13 +454,15 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private Permission updatePermissionWithDetails(
             Permission permission,
             PermissionDetailsDto details
-    ) throws ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    ) throws ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         var startInstant = ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var endInstant = ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
         var dataNeedId = details.dataNeed().dataNeedId();
 
         permission.setConnectionId(details.connectionId());
         permission.setMeterId(details.meterId());
+        permission.setMinLimitKw(details.minLimitKw());
+        permission.setMaxLimitKw(details.maxLimitKw());
         permission.setStartTime(startInstant);
         permission.setExpirationTime(endInstant);
         permission.setStatus(FETCHED_DETAILS);
@@ -474,6 +477,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         validatePermissionStartInTheFuture(permission);
         validateDataNeedType(permission);
+        validateLimitDefaults(permission);
         validateSingleActiveFcaPermissionPerMeterId(permission);
 
         LOGGER.debug("Updated permission {} with details fetched from EDDIE {}",
@@ -496,6 +500,21 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (dataNeedType == null || !isValidDataNeedType(dataNeedType)) {
             markPermissionAsUnfulfillable(permission);
             throw new PermissionDataNeedTypeNotSupportedException(permission.id(), dataNeedType);
+        }
+    }
+
+    private void validateLimitDefaults(Permission permission) throws LimitDefaultsNotAllowedException {
+        var minLimitKw = permission.minLimitKw();
+        var maxLimitKw = permission.maxLimitKw();
+        if (minLimitKw == null && maxLimitKw == null) {
+            return;
+        }
+
+        var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
+        var dataNeed = Objects.requireNonNull(permission.dataNeed());
+        if (!dataNeed.supportsLimitDefaults() || !isRangeValid) {
+            markPermissionAsUnfulfillable(permission);
+            throw new LimitDefaultsNotAllowedException(permission.id());
         }
     }
 

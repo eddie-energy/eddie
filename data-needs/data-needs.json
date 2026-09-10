@@ -86,7 +86,9 @@
       "end": "P10D"
     },
     "transmissionSchedule": "*/5 * * * * *",
-    "allowedPermissionCommands": [],
+    "allowedPermissionCommands": [
+      "UPDATE_LIMIT_DEFAULTS"
+    ],
     "acknowledgementRequired": true,
     "schemas": [
       "MIN-MAX-ENVELOPE-CIM-V1-12",
@@ -184,7 +186,9 @@
       "end": "P1M"
     },
     "transmissionSchedule": "*/5 * * * * *",
-    "allowedPermissionCommands": [],
+    "allowedPermissionCommands": [
+      "UPDATE_LIMIT_DEFAULTS"
+    ],
     "acknowledgementRequired": true,
     "schemas": [
       "MIN-MAX-ENVELOPE-CIM-V1-12"

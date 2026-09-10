@@ -184,6 +184,14 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dt>{{ t('permissions.dropdown.meterId') }}</dt>
         <dd>{{ permission.meterId }}</dd>
       </div>
+      <div class="permission-field" v-if="permission.minLimitKw">
+        <dt>{{ t('permissions.dropdown.minLimitKw') }}</dt>
+        <dd>{{ permission.minLimitKw }} kW</dd>
+      </div>
+      <div class="permission-field" v-if="permission.maxLimitKw">
+        <dt>{{ t('permissions.dropdown.maxLimitKw') }}</dt>
+        <dd>{{ permission.maxLimitKw }} kW</dd>
+      </div>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.start') }}</dt>
         <dd>

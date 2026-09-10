@@ -155,6 +155,8 @@
       "creationDate": "Date de création",
       "eddieApplication": "Application EDDIE",
       "meterId": "Point Référence Mesure",
+      "minLimitKw": "Charge minimale",
+      "maxLimitKw": "Charge maximale",
       "start": "Début",
       "end": "Fin",
       "transmissionSchedule": "Calendrier de transmission",

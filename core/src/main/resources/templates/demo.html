@@ -32,6 +32,13 @@
         gap: 1rem;
       }
 
+      fieldset {
+        display: grid;
+        justify-content: start;
+        gap: 0.5rem;
+        padding-bottom: 1rem;
+      }
+
       span + input,
       span + select {
         margin-top: 0.1rem;
@@ -50,7 +57,6 @@
       <a href="https://architecture.eddie.energy/framework/1-running/eddie-button/eddie-button.html">Operation Manual</a>.
     </p>
     <form>
-
       <label>
         <span>Data Need Filter</span>
         <input
@@ -78,34 +84,51 @@
         <input type="text" name="connection-id" value="1" />
         <small>For the eligible party to identify generated requests.</small>
       </label>
-      <label>
-        <span>Permission administrator</span>
-        <input type="text" name="permission-administrator" />
-      </label>
-      <label>
-        <span>Accounting point ID</span>
-        <input type="text" name="accounting-point-id" />
-      </label>
-      <label>
-        <span>Customer Identification</span>
-        <input type="text" name="customer-identification" />
-      </label>
-      <label>
-        <span>Meter ID</span>
-        <input type="text" name="meter-id" />
-      </label>
-      <label>
-        <input type="checkbox" name="remember-permission-administrator" />
-        <span>Remember permission administrator</span>
-      </label>
-      <label>
-        <span>Core URL</span>
-        <input type="text" name="core-url" th:value="${publicUrl}" />
-        <small>
-          Overrides the core URL in case your EDDIE instance is not on the same
-          host as the button.
-        </small>
-      </label>
+      <fieldset>
+        <legend>Regional</legend>
+        <label>
+          <span>Permission administrator</span>
+          <input name="permission-administrator" type="text" />
+        </label>
+        <label>
+          <span>Accounting point ID</span>
+          <input name="accounting-point-id" type="text" />
+        </label>
+        <label>
+          <span>Customer Identification</span>
+          <input name="customer-identification" type="text" />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>AIIDA</legend>
+        <label>
+          <span>Meter ID</span>
+          <input name="meter-id" type="text" />
+        </label>
+        <label>
+          <span>Default Min Limit (kW)</span>
+          <input name="min-limit-kw" type="number" />
+        </label>
+        <label>
+          <span>Default Max Limit (kW)</span>
+          <input name="max-limit-kw" type="number" />
+        </label>
+      </fieldset>
+      <fieldset>
+        <legend>Button options</legend>
+        <label>
+          <input type="checkbox" name="remember-permission-administrator" />
+          <span>Remember permission administrator</span>
+        </label>
+        <label>
+          <span>Core URL</span>
+          <input type="text" name="core-url" th:value="${publicUrl}" />
+          <small>
+            Overrides the core URL in case your EDDIE instance is not on the
+            same host as the button.
+          </small>
+        </label>
+      </fieldset>
     </form>
 
     <script type="module">

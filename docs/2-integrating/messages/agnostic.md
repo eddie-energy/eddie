@@ -91,18 +91,17 @@ The JSON schema and XSD files can be found [here](https://github.com/eddie-energ
 
 The `action` field is the discriminator and selects the command's payload. The available actions are:
 
-| Action                         | Extra field            | Description                                                                                        |
-|--------------------------------|------------------------|----------------------------------------------------------------------------------------------------|
-| `UPDATE_TRANSMISSION_SCHEDULE` | `transmissionSchedule` | Adjusts the transmission schedule (cron); effective schedule is capped at the data-need frequency. |
-| `SET_TRANSMISSION_ENABLED`     | `enabled`              | Enables or disables transmission for the permission.                                               |
-| `TERMINATE`                    | –                      | Terminates the permission; the region connector stops transmitting and cleans up resources.        |
+| Action                         | Extra field                | Description                                                                                        |
+|--------------------------------|----------------------------|----------------------------------------------------------------------------------------------------|
+| `UPDATE_TRANSMISSION_SCHEDULE` | `transmissionSchedule`     | Adjusts the transmission schedule (cron); effective schedule is capped at the data-need frequency. |
+| `SET_TRANSMISSION_ENABLED`     | `enabled`                  | Enables or disables transmission for the permission.                                               |
+| `UPDATE_LIMIT_DEFAULTS`        | `minLimitKw`, `maxLimitKw` | Adjusts the default upper and lower production or consumption limits for limit permissions.        |
+| `TERMINATE`                    | –                          | Terminates the permission; the region connector stops transmitting and cleans up resources.        |
 
-Whether a command is accepted depends on both the data need and the region connector's ability to
-handle it: `UPDATE_TRANSMISSION_SCHEDULE` and
-`SET_TRANSMISSION_ENABLED` are only honored if the data need lists them in `allowedPermissionCommands`,
-while `TERMINATE` is always accepted. See the AIIDA
-[data-need permission commands](https://architecture.eddie.energy/aiida/1-running/data-need.html#permission-commands)
-documentation for details.
+Whether a command is accepted depends on both data need and the region connector's ability to handle it. 
+Commands are only accepted if the data need lists them in `allowedPermissionCommands`.
+`TERMINATE` is always accepted.
+See the AIIDA [data-need permission commands](https://architecture.eddie.energy/aiida/1-running/data-need.html#permission-commands) documentation for details.
 
 ```mermaid
 classDiagram
@@ -120,12 +119,18 @@ classDiagram
     class SetTransmissionEnabled {
         +boolean enabled
     }
+    
+    class UpdateLimitDefaults {
+        +BigDecimal minLimitKw
+        +BigDecimal maxLimitKw
+    }
 
     class Terminate {
     }
 
     PermissionCommand <|-- UpdateTransmissionSchedule
     PermissionCommand <|-- SetTransmissionEnabled
+    PermissionCommand <|-- UpdateLimitDefaults
     PermissionCommand <|-- Terminate
 ```
 

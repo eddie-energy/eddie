@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.aiida.services;
 import energy.eddie.api.agnostic.ApplicationInformationAware;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.data.needs.AiidaDataNeedResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
@@ -42,6 +43,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Sinks;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -118,7 +120,9 @@ public class AiidaPermissionService {
             var permissionId = createValidateAndSendPermissionRequest(
                     forCreation.connectionId(),
                     dataNeedId,
-                    forCreation.meterId()
+                    forCreation.meterId(),
+                    forCreation.minLimitKw(),
+                    forCreation.maxLimitKw()
             );
             permissionIds.add(permissionId);
         }
@@ -237,7 +241,9 @@ public class AiidaPermissionService {
     private UUID createValidateAndSendPermissionRequest(
             String connectionId,
             String dataNeedId,
-            @Nullable String meterId
+            @Nullable String meterId,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException, DataNeedMalformedException {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
@@ -253,6 +259,8 @@ public class AiidaPermissionService {
                                                     connectionId,
                                                     dataNeedId,
                                                     meterId,
+                                                    minLimitKw,
+                                                    maxLimitKw,
                                                     aiidaResult.energyTimeframe().start(),
                                                     aiidaResult.energyTimeframe().end());
                 outbox.commit(createdEvent);
@@ -260,6 +268,12 @@ public class AiidaPermissionService {
                 if (isInvalidPermissionRequest(aiidaResult)) {
                     outbox.commit(new SimpleEvent(permissionId, MALFORMED));
                     throw new DataNeedMalformedException(dataNeedId, "Data need does not support all required schemas");
+                }
+
+                if ((minLimitKw != null || maxLimitKw != null) && !aiidaResult.dataNeed().supportsLimitDefaults()) {
+                    outbox.commit(new SimpleEvent(permissionId, MALFORMED));
+                    throw new DataNeedMalformedException(dataNeedId,
+                                                         "Default connection limits can only be set for inbound data needs with schema " + AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
                 }
 
                 outbox.commit(new SimpleEvent(permissionId, VALIDATED));

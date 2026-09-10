@@ -42,7 +42,7 @@ public interface AiidaPermissionRequestViewRepository extends
     }
 
     @Query(
-            value = "SELECT permission_id, status, connection_id, data_need_id, meter_id, permission_start, permission_end, created, message, aiida_id " +
+            value = "SELECT permission_id, status, connection_id, data_need_id, meter_id, min_limit_kw, max_limit_kw, permission_start, permission_end, created, message, aiida_id " +
                     "FROM aiida.aiida_permission_request_view WHERE status = 'SENT_TO_PERMISSION_ADMINISTRATOR' AND created <= NOW() - :hours * INTERVAL '1 hour'",
             nativeQuery = true
     )
@@ -50,7 +50,7 @@ public interface AiidaPermissionRequestViewRepository extends
     List<AiidaPermissionRequest> findStalePermissionRequests(@Param("hours") int duration);
 
     @Query(
-            value = "SELECT permission_id, status, connection_id, data_need_id, meter_id, permission_start, permission_end, created, message, aiida_id " +
+            value = "SELECT permission_id, status, connection_id, data_need_id, meter_id, min_limit_kw, max_limit_kw, permission_start, permission_end, created, message, aiida_id " +
                     "FROM aiida.aiida_permission_request_view WHERE status = 'ACCEPTED' AND permission_start <= NOW() AND permission_end >= NOW()",
             nativeQuery = true
     )

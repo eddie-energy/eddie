@@ -6,6 +6,7 @@ package energy.eddie.cim.serde;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
@@ -34,6 +35,26 @@ class PermissionCommandSerdeTest {
         assertEquals(PERMISSION_ID, updateTransmissionSchedule.permissionId());
         assertEquals("rc-1", updateTransmissionSchedule.regionConnectorId());
         assertEquals("0 */1 * * * *", updateTransmissionSchedule.transmissionSchedule());
+    }
+
+    @Test
+    void json_roundTripsUpdateLimitDefaults_preservingSubtype() throws Exception {
+        // Given
+        var serde = new JsonMessageSerde();
+        var command = new PermissionCommand.UpdateLimitDefaults("rc-1", PERMISSION_ID, BigDecimal.ONE, BigDecimal.TEN);
+
+        // When
+        var bytes = serde.serialize(command);
+        var json = new String(bytes, StandardCharsets.UTF_8);
+        var result = serde.deserialize(bytes, PermissionCommand.class);
+
+        // Then
+        assertTrue(json.contains("\"action\":\"UPDATE_LIMIT_DEFAULTS\""));
+        var updateTransmissionSchedule = assertInstanceOf(PermissionCommand.UpdateLimitDefaults.class, result);
+        assertEquals(PERMISSION_ID, updateTransmissionSchedule.permissionId());
+        assertEquals("rc-1", updateTransmissionSchedule.regionConnectorId());
+        assertEquals(BigDecimal.ONE, updateTransmissionSchedule.minLimitKw());
+        assertEquals(BigDecimal.TEN, updateTransmissionSchedule.maxLimitKw());
     }
 
     @Test

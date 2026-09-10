@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import jakarta.annotation.Nullable;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +23,12 @@ public class PermissionDetailsDto {
     @JsonProperty(value = "meter_id")
     @Nullable
     private String meterId;
+    @JsonProperty(value = "min_limit_kw")
+    @Nullable
+    private BigDecimal minLimitKw;
+    @JsonProperty(value = "max_limit_kw")
+    @Nullable
+    private BigDecimal maxLimitKw;
     @JsonProperty(value = "start")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate start;
@@ -35,6 +42,8 @@ public class PermissionDetailsDto {
             UUID permissionId,
             String connectionId,
             @Nullable String meterId,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw,
             LocalDate start,
             LocalDate end,
             AiidaDataNeed dataNeed
@@ -42,6 +51,8 @@ public class PermissionDetailsDto {
         this.permissionId = permissionId;
         this.connectionId = connectionId;
         this.meterId = meterId;
+        this.minLimitKw = minLimitKw;
+        this.maxLimitKw = maxLimitKw;
         this.start = start;
         this.end = end;
         this.dataNeed = dataNeed;
@@ -58,6 +69,16 @@ public class PermissionDetailsDto {
     @Nullable
     public String meterId() {
         return meterId;
+    }
+
+    @Nullable
+    public BigDecimal minLimitKw() {
+        return minLimitKw;
+    }
+
+    @Nullable
+    public BigDecimal maxLimitKw() {
+        return maxLimitKw;
     }
 
     public LocalDate start() {
@@ -77,6 +98,17 @@ public class PermissionDetailsDto {
         permissionId = UUID.fromString(permissionRequest.get("permission_id"));
         connectionId = permissionRequest.get("connection_id");
         meterId = permissionRequest.get("meter_id");
+
+        var minLimitKwString = permissionRequest.get("min_limit_kw");
+        if (minLimitKwString != null) {
+            minLimitKw = BigDecimal.valueOf(Double.parseDouble(minLimitKwString));
+        }
+
+        var maxLimitKwString = permissionRequest.get("max_limit_kw");
+        if (maxLimitKwString != null) {
+            maxLimitKw = BigDecimal.valueOf(Double.parseDouble(maxLimitKwString));
+        }
+
         start = LocalDate.parse(permissionRequest.get("start"));
         end = LocalDate.parse(permissionRequest.get("end"));
     }
