@@ -29,10 +29,12 @@ public record ConnectionLimitDto(
         @Schema(description = "End time of the interval (exclusive) in UTC format.", example = "2026-07-10T09:00:00Z")
         Instant intervalEnd,
         @JsonProperty
-        @Schema(description = "Minimum allowed connection limit in kW.", example = "3.0")
+        @Schema(description = "Minimum allowed connection limit in kW. Null if only a default maximum is found.", example = "3.0")
+        @Nullable
         BigDecimal minLimitKw,
         @JsonProperty
-        @Schema(description = "Maximum allowed connection limit in kW.", example = "8.0")
+        @Schema(description = "Maximum allowed connection limit in kW. Null if only a default minimum is found.", example = "8.0")
+        @Nullable
         BigDecimal maxLimitKw
 ) {
 }
