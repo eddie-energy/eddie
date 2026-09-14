@@ -85,7 +85,7 @@ public class DataReceivedHandler implements EventHandler<DataReceivedEvent> {
      * @return true, if end of timeframe is after end of permission, otherwise returns false
      */
     private static boolean isAfter(MeterReadingTimeframe timeframe, AtPermissionRequest pr) {
-        if (timeframe.end() == null) {
+        if (timeframe.end() == null || pr.end() == null) {
             return false;
         }
         return timeframe.end().isAfter(pr.end());
