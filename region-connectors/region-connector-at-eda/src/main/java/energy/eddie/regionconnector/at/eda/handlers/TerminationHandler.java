@@ -22,6 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
+
 @Component
 public class TerminationHandler implements EventHandler<PermissionEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TerminationHandler.class);
@@ -69,16 +74,18 @@ public class TerminationHandler implements EventHandler<PermissionEvent> {
     private CCMORevoke getCcmoRevoke(DataNeed dn, AtPermissionRequest permissionRequest) {
         String epId;
         String reason;
+        ZonedDateTime consentEnd = LocalDate.now(AT_ZONE_ID).atStartOfDay(AT_ZONE_ID);
         if (dn instanceof CESUJoinRequestDataNeed) {
             epId = atConfiguration.partyIdFor(PartyIdType.ENERGY_COMMUNITY);
             if (epId == null) {
                 throw new IllegalStateException("Energy Community Operator ID is not configured");
             }
             reason = "Terminated by the Energy Community Operator";
+            consentEnd = consentEnd.plusDays(1);
         } else {
             epId = atConfiguration.partyIdFor(PartyIdType.ELIGIBLE_PARTY);
             reason = "Terminated by the Eligible Party";
         }
-        return new CCMORevoke(permissionRequest, epId, reason);
+        return new CCMORevoke(permissionRequest, epId, reason, consentEnd);
     }
 }

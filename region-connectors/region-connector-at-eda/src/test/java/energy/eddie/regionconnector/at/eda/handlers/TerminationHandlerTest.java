@@ -24,7 +24,10 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
+
 import static energy.eddie.cim.agnostic.PermissionProcessStatus.FAILED_TO_TERMINATE;
+import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -97,7 +100,8 @@ class TerminationHandlerTest {
         // then
         verify(edaAdapter).sendCMRevoke(assertArg(revoke -> assertAll(
                 () -> assertEquals("epid", revoke.eligiblePartyId()),
-                () -> assertEquals("Terminated by the Eligible Party", revoke.reason())
+                () -> assertEquals("Terminated by the Eligible Party", revoke.reason()),
+                () -> assertEquals(LocalDate.now(AT_ZONE_ID).atStartOfDay(AT_ZONE_ID), revoke.consentEnd())
         )));
     }
 
@@ -126,7 +130,8 @@ class TerminationHandlerTest {
         // then
         verify(edaAdapter).sendCMRevoke(assertArg(revoke -> assertAll(
                 () -> assertEquals("ec-id", revoke.eligiblePartyId()),
-                () -> assertEquals("Terminated by the Energy Community Operator", revoke.reason())
+                () -> assertEquals("Terminated by the Energy Community Operator", revoke.reason()),
+                () -> assertEquals(LocalDate.now(AT_ZONE_ID).atStartOfDay(AT_ZONE_ID).plusDays(1), revoke.consentEnd())
         )));
     }
 

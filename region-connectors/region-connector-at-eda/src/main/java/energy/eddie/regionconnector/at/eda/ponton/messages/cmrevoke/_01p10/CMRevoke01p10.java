@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10;
@@ -16,7 +16,6 @@ import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
@@ -55,13 +54,7 @@ public record CMRevoke01p10(CCMORevoke ccmoRevoke) {
                                                ).toString()
                                 )
                                 .withConversationId(permissionRequest.conversationId())
-                                .withConsentEnd(
-                                        DateTimeConverter
-                                                .dateTimeToXml(
-                                                        LocalDate.now(EdaRegionConnectorMetadata.AT_ZONE_ID)
-                                                                 .atStartOfDay(EdaRegionConnectorMetadata.AT_ZONE_ID)
-                                                )
-                                )
+                                .withConsentEnd(DateTimeConverter.dateTimeToXml(ccmoRevoke.consentEnd()))
                                 // For the eligible party the reason will always be other, see: https://www.ebutilities.at/documents/2025/09/CMRevoke_01p10_Schemadoku.pdf
                                 .withReasonKey(0)
                                 .withReason(ccmoRevoke.reason())
