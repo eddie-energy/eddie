@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification._1p13.EdaCPNotification01p13InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12.CPRequestOutbound01p12MessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10.EdaECMPList01p10InboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p20.EdaECMPList01p20InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.EdaMasterData01p32InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.CPNotificationMessageType;
 import energy.eddie.regionconnector.at.eda.ponton.messenger.InboundMessageResult;
@@ -337,7 +338,8 @@ class WebPontonConnectionControllerTest {
                     List.of(new EdaCMNotification01p20InboundMessageFactory(jaxb2Marshaller)),
                     List.of(new EdaCMRevoke01p10InboundMessageFactory(jaxb2Marshaller)),
                     List.of(new EdaCPNotification01p13InboundMessageFactory(jaxb2Marshaller)),
-                    List.of(new EdaECMPList01p10InboundMessageFactory(jaxb2Marshaller))
+                    List.of(new EdaECMPList01p10InboundMessageFactory(jaxb2Marshaller),
+                            new EdaECMPList01p20InboundMessageFactory(jaxb2Marshaller))
             );
         }
 

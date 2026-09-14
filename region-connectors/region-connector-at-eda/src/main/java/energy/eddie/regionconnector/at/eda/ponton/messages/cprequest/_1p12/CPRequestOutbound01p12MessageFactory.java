@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12;
@@ -28,8 +28,8 @@ public class CPRequestOutbound01p12MessageFactory implements CPRequestOutboundMe
      */
     private static final LocalDate ACTIVE_FROM = LocalDate.of(2018, 10, 1);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet("CR_REQ_PT_03.00"))
-            .setVersion(new MessageTypeVersion("03.00"))
+            .setSchemaSet(new SchemaSet("CR_REQ_PT_04.30"))
+            .setVersion(new MessageTypeVersion("04.30"))
             .setName(new MessageTypeName(MessageCodes.CPRequest.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
