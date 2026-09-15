@@ -9,14 +9,18 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.services.cleanup.TimeBasedCleanupService;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.util.Objects;
 
 @Service
 public class FailedToSendCleanupService extends TimeBasedCleanupService {
-    public FailedToSendCleanupService(CleanupConfiguration cleanupConfiguration, FailedToSendRepository repository) {
+    public FailedToSendCleanupService(
+            CleanupConfiguration cleanupConfiguration,
+            FailedToSendRepository repository,
+            Clock clock
+    ) {
         super(CleanupEntity.FAILED_TO_SEND_ENTITY,
               Objects.requireNonNull(cleanupConfiguration.entities().get(CleanupEntity.FAILED_TO_SEND_ENTITY))
-                     .retention(),
-              repository::deleteOldestByCreatedAtBefore);
+                     .retention(), repository::deleteOldestByCreatedAtBefore, clock);
     }
 }
