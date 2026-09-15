@@ -13,6 +13,7 @@ import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -22,6 +23,7 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
@@ -56,6 +58,7 @@ import static java.util.Objects.requireNonNull;
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
+    private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final Clock clock;
     private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
@@ -69,6 +72,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Autowired
     public PermissionService(
             PermissionRepository permissionRepository,
+            ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             Clock clock,
             StreamerManager streamerManager,
             HandshakeService handshakeService,
@@ -80,6 +84,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
+        this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.clock = clock;
         this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
@@ -449,6 +454,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *
      * @see PermissionService#validatePermissionStartInTheFuture(Permission)
      * @see PermissionService#validateDataNeedType(Permission)
+     * @see PermissionService#validateLimitDefaults(Permission)
      * @see PermissionService#validateSingleActiveFcaPermissionPerMeterId(Permission)
      */
     private Permission updatePermissionWithDetails(
@@ -461,11 +467,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         permission.setConnectionId(details.connectionId());
         permission.setMeterId(details.meterId());
-        permission.setMinLimitKw(details.minLimitKw());
-        permission.setMaxLimitKw(details.maxLimitKw());
         permission.setStartTime(startInstant);
         permission.setExpirationTime(endInstant);
         permission.setStatus(FETCHED_DETAILS);
+        // Set limits are not persisted but passed to validation methods and returned to the controller
+        permission.setMinLimitKw(details.minLimitKw());
+        permission.setMaxLimitKw(details.maxLimitKw());
 
         var aiidaLocalDataNeed = aiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId);
         if (aiidaLocalDataNeed.isPresent()) {
@@ -480,10 +487,24 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         validateLimitDefaults(permission);
         validateSingleActiveFcaPermissionPerMeterId(permission);
 
+        persistLimitDefaults(permission);
+
         LOGGER.debug("Updated permission {} with details fetched from EDDIE {}",
                      permission.id(),
                      permission.eddieId());
         return permissionRepository.save(permission);
+    }
+
+    private void persistLimitDefaults(Permission permission) {
+        if (permission.minLimitKw() != null || permission.maxLimitKw() != null) {
+            var defaultLimit = new ConnectionLimitDefault(permission.id(),
+                                                          permission.meterId(),
+                                                          clock.instant(),
+                                                          null,
+                                                          permission.minLimitKw(),
+                                                          permission.maxLimitKw());
+            connectionLimitDefaultRepository.save(defaultLimit);
+        }
     }
 
     private void validatePermissionStartInTheFuture(Permission permission) throws PermissionStartInThePastException {
