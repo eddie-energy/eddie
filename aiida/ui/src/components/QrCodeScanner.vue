@@ -1,12 +1,10 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { QrcodeStream, type DetectedBarcode } from 'vue-qrcode-reader'
-import type { QrCode } from '@/types'
+import { type DetectedBarcode, QrcodeStream } from 'vue-qrcode-reader'
+import type { AiidaPermissionRequestsDTO } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const { open } = defineProps<{ open?: boolean }>()
@@ -17,7 +15,7 @@ const notValid = ref(false)
 const { t } = useI18n()
 
 const emit = defineEmits<{
-  (e: 'valid', permission: QrCode): void
+  (e: 'valid', permission: AiidaPermissionRequestsDTO): void
 }>()
 
 function parseAiidaCode(aiidaCode: string) {
