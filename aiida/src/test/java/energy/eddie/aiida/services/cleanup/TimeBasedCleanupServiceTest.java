@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.aiida.services.cleanup;
 
 import energy.eddie.aiida.config.cleanup.CleanupEntity;
@@ -7,7 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
@@ -15,6 +21,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TimeBasedCleanupServiceTest {
+    private static final Instant NOW = Instant.parse("2026-07-10T10:02:30Z");
+
     @Mock
     ExpiredEntityDeleter expiredEntityDeleter;
 
@@ -25,8 +33,21 @@ class TimeBasedCleanupServiceTest {
         service = new TimeBasedCleanupService(
                 CleanupEntity.AIIDA_RECORD,
                 Duration.ofDays(30),
-                expiredEntityDeleter
+                expiredEntityDeleter,
+                Clock.fixed(NOW, ZoneOffset.UTC)
         ) {};
+    }
+
+    @Test
+    void deleteExpiredEntities_deletesEntitiesOlderThanTheRetention() {
+        // given
+        when(expiredEntityDeleter.deleteOldestByTimestampBefore(any(), eq(1000))).thenReturn(0);
+
+        // when
+        service.deleteExpiredEntities();
+
+        // then
+        verify(expiredEntityDeleter).deleteOldestByTimestampBefore(eq(NOW.minus(Duration.ofDays(30))), eq(1000));
     }
 
     @Test
