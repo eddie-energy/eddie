@@ -16,7 +16,7 @@ import energy.eddie.cim.v1_04.StandardDirectionTypeList;
 import energy.eddie.cim.v1_04.StandardQualityTypeList;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
-import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41.EdaConsumptionRecord01p41;
+import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41.ConsumptionRecordMapper;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import org.junit.jupiter.api.Test;
@@ -255,7 +255,7 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
         var marshaller = JAXBContext.newInstance(ConsumptionRecord.class);
         var consumptionRecord = (ConsumptionRecord) marshaller.createUnmarshaller()
                                                               .unmarshal(new StringReader(payload));
-        var edaConsumptionRecord = new EdaConsumptionRecord01p41(consumptionRecord);
+        var edaConsumptionRecord = ConsumptionRecordMapper.INSTANCE.toEdaConsumptionRecord(consumptionRecord);
         var identifiable = new IdentifiableConsumptionRecord(
                 edaConsumptionRecord,
                 List.of(new SimplePermissionRequest("pid", "cid", "dnid")),
