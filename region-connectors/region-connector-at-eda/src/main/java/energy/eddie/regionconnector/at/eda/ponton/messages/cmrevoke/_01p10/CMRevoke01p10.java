@@ -12,13 +12,11 @@ import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.models.MessageCodes;
 import energy.eddie.regionconnector.at.eda.requests.CCMOAddress;
 import energy.eddie.regionconnector.at.eda.requests.CCMORevoke;
-import energy.eddie.regionconnector.at.eda.requests.MessageId;
 import energy.eddie.regionconnector.at.eda.xml.helper.DateTimeConverter;
 import energy.eddie.regionconnector.at.eda.xml.helper.Sector;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 
 public record CMRevoke01p10(CCMORevoke ccmoRevoke) {
     public static final String VERSION = "01.10";
@@ -49,11 +47,7 @@ public record CMRevoke01p10(CCMORevoke ccmoRevoke) {
                         new ProcessDirectory()
                                 .withMeteringPoint(permissionRequest.meteringPointId().orElse(null))
                                 .withConsentId(permissionRequest.consentId().orElse(null))
-                                .withMessageId(new MessageId(
-                                                       eligiblePartyId,
-                                                       ZonedDateTime.now(EdaRegionConnectorMetadata.AT_ZONE_ID)
-                                               ).toString()
-                                )
+                                .withMessageId(ccmoRevoke.messageId())
                                 .withConversationId(permissionRequest.conversationId())
                                 .withConsentEnd(
                                         DateTimeConverter

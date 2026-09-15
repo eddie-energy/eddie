@@ -7,7 +7,7 @@ import energy.eddie.api.agnostic.data.needs.CESUJoinRequestDataNeedResult;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationResult;
 import energy.eddie.api.agnostic.data.needs.EnergyDirection;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
-import energy.eddie.regionconnector.at.eda.requests.MessageId;
+import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
 import jakarta.annotation.Nullable;
@@ -20,10 +20,11 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 
 @Component
 public class ValidatedEventFactory {
-    private final AtConfiguration configuration;
+    private final EdaGroupingIdFactory groupingIdFactory;
 
-    public ValidatedEventFactory(AtConfiguration configuration) {this.configuration = configuration;}
-
+    public ValidatedEventFactory(EdaGroupingIdFactory groupingIdFactory) {
+        this.groupingIdFactory = groupingIdFactory;
+    }
 
     public ValidatedEvent createValidatedEvent(
             String permissionId,
@@ -48,7 +49,7 @@ public class ValidatedEventFactory {
         var type = dataNeedCalculation instanceof CESUJoinRequestDataNeedResult
                 ? AtConfiguration.PartyIdType.ENERGY_COMMUNITY
                 : AtConfiguration.PartyIdType.ELIGIBLE_PARTY;
-        var messageId = new MessageId(configuration.partyIdFor(type), created).toString();
+        var messageId = groupingIdFactory.create(type, created);
         var cmRequestId = new CMRequestId(messageId).toString();
 
         return new ValidatedEvent(

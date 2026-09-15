@@ -46,8 +46,12 @@ class CMRevoke01p10OutboundMessageFactoryTest {
                 PermissionProcessStatus.ACCEPTED,
                 Optional.of("TestConsentId")
         );
-        String eligiblePartyId = "TestEligiblePartyId";
-        CCMORevoke ccmoRevoke = new CCMORevoke(permissionRequest, eligiblePartyId, "TestReason");
+        CCMORevoke ccmoRevoke = new CCMORevoke(
+                permissionRequest,
+                "EP123456",
+                "messageId",
+                "TestReason"
+        );
 
         // when
         var message = new CMRevoke01p10OutboundMessageFactory(marshaller).createOutboundMessage(ccmoRevoke);

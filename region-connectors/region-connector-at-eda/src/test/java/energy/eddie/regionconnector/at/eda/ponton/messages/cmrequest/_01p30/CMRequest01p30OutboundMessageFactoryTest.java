@@ -19,6 +19,7 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTran
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
@@ -39,7 +40,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
         var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2026, 4, 12));
+        var active = factory.isActive(LocalDate.of(2026, Month.APRIL, 12));
 
         // then
         assertFalse(active);
@@ -51,7 +52,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
         var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2026, 4, 13));
+        var active = factory.isActive(LocalDate.of(2026, Month.APRIL, 13));
 
         // then
         assertTrue(active);
@@ -67,7 +68,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", null, null),
+                                          new AtConfiguration("ep-id", null, null, ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 
@@ -91,7 +92,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", "ecId", "ecId"),
+                                          new AtConfiguration("ep-id", "ecId", "ecId", ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new CESUJoinRequestDataNeed(1,
                                                                       Granularity.PT15M,
@@ -120,7 +121,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", "ecId", "ecId"),
+                                          new AtConfiguration("ep-id", "ecId", "ecId", ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 

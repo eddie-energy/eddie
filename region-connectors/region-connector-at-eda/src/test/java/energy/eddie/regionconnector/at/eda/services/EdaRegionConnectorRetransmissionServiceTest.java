@@ -12,8 +12,9 @@ import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
-import energy.eddie.regionconnector.at.eda.requests.MessageId;
+import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,6 +40,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -46,7 +49,8 @@ class EdaRegionConnectorRetransmissionServiceTest {
 
     public static final LocalDate TODAY = LocalDate.now(ZoneOffset.UTC);
     public static final String PERMISSION_ID = "id";
-    private final AtConfiguration atConfiguration = new AtConfiguration("ep", null, null);
+    private final AtConfiguration atConfiguration = new AtConfiguration("ep", null, null, "RETRY");
+    private final EdaGroupingIdFactory groupingIdFactory = new EdaGroupingIdFactory(atConfiguration);
     @Mock
     private AtPermissionRequestRepository atPermissionRequestRepository;
     @Mock
@@ -72,7 +76,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             LocalDate to,
             PermissionProcessStatus status,
             String ignoredMessage
-    ) {
+    ) throws TransmissionException {
         // Given
         // Define the specific date and time you want to use for the test
         ZonedDateTime fixedDateTime = ZonedDateTime.now(AT_ZONE_ID);
@@ -85,6 +89,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             when(edaAdapter.getCPRequestResultStream()).thenReturn(testPublisher.flux());
             setupFoundPermissionRequest(TODAY, AllowedGranularity.PT15M, status);
             var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                      groupingIdFactory,
                                                                       edaAdapter,
                                                                       atPermissionRequestRepository);
 
@@ -95,10 +100,11 @@ class EdaRegionConnectorRetransmissionServiceTest {
                     )
             );
 
-            testPublisher.emit(new CPRequestResult(
-                    new MessageId(atConfiguration.eligiblePartyId(), fixedDateTime).toString(),
-                    CPRequestResult.Result.ACCEPTED)
-            );
+            var requestCaptor = ArgumentCaptor.forClass(CPRequestCR.class);
+            verify(edaAdapter).sendCPRequest(requestCaptor.capture());
+            var sentMessageId = requestCaptor.getValue().messageId();
+            assertTrue(sentMessageId.startsWith("RETRYepT"));
+            testPublisher.emit(new CPRequestResult(sentMessageId, CPRequestResult.Result.ACCEPTED));
 
             // Then
             stepVerifier
@@ -134,6 +140,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             when(edaAdapter.getCPRequestResultStream()).thenReturn(testPublisher.flux());
             setupFoundPermissionRequest(TODAY, AllowedGranularity.PT15M, PermissionProcessStatus.FULFILLED);
             var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                      groupingIdFactory,
                                                                       edaAdapter,
                                                                       atPermissionRequestRepository);
 
@@ -145,7 +152,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             );
 
             testPublisher.emit(new CPRequestResult(
-                    new MessageId(atConfiguration.eligiblePartyId(), fixedDateTime).toString(),
+                    groupingIdFactory.create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, fixedDateTime),
                     cpResult)
             );
 
@@ -170,6 +177,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                     AllowedGranularity.PT15M,
                                     PermissionProcessStatus.ACCEPTED); // setup master data permission
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                  groupingIdFactory,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
 
@@ -202,6 +210,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
         setupFoundPermissionRequest(today, null, PermissionProcessStatus.ACCEPTED); // setup master data permission
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                  groupingIdFactory,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
 
@@ -234,6 +243,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
         when(atPermissionRequestRepository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.empty());
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                  groupingIdFactory,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
 
@@ -265,6 +275,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
         setupFoundPermissionRequest(today, AllowedGranularity.PT15M, status);
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                  groupingIdFactory,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
 
@@ -299,6 +310,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
         setupFoundPermissionRequest(TODAY, AllowedGranularity.PT15M, PermissionProcessStatus.ACCEPTED);
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                  groupingIdFactory,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
 
@@ -330,6 +342,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
         setupFoundPermissionRequest(today, AllowedGranularity.PT15M, PermissionProcessStatus.ACCEPTED);
         var service = new EdaRegionConnectorRetransmissionService(atConfiguration,
+                                                                  groupingIdFactory,
                                                                   edaAdapter,
                                                                   atPermissionRequestRepository);
         List<Mono<RetransmissionResult>> monos = new ArrayList<>();
