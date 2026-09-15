@@ -9,13 +9,19 @@ import energy.eddie.aiida.repositories.InboundRecordRepository;
 import energy.eddie.aiida.services.cleanup.TimeBasedCleanupService;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.util.Objects;
 
 @Service
 public class InboundRecordCleanupService extends TimeBasedCleanupService {
-    public InboundRecordCleanupService(CleanupConfiguration cleanupConfiguration, InboundRecordRepository repository) {
+    public InboundRecordCleanupService(
+            CleanupConfiguration cleanupConfiguration,
+            InboundRecordRepository repository,
+            Clock clock
+    ) {
         super(CleanupEntity.INBOUND_RECORD,
               Objects.requireNonNull(cleanupConfiguration.entities().get(CleanupEntity.INBOUND_RECORD)).retention(),
-              repository::deleteOldestByTimestampBefore);
+              repository::deleteOldestByTimestampBefore,
+              clock);
     }
 }
