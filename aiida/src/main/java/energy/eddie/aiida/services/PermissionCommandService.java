@@ -5,9 +5,11 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
@@ -42,6 +44,7 @@ public class PermissionCommandService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionCommandService.class);
 
     private final PermissionRepository permissionRepository;
+    private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final StreamerManager streamerManager;
     private final Clock clock;
     private final PermissionScheduler permissionScheduler;
@@ -51,6 +54,7 @@ public class PermissionCommandService {
     @Autowired
     public PermissionCommandService(
             PermissionRepository permissionRepository,
+            ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             StreamerManager streamerManager,
             Clock clock,
             PermissionScheduler permissionScheduler,
@@ -58,6 +62,7 @@ public class PermissionCommandService {
             @Lazy PermissionCommandService self
     ) {
         this.permissionRepository = permissionRepository;
+        this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.streamerManager = streamerManager;
         this.clock = clock;
         this.permissionScheduler = permissionScheduler;
@@ -175,9 +180,17 @@ public class PermissionCommandService {
             return;
         }
 
-        permission.setMinLimitKw(minLimitKw);
-        permission.setMaxLimitKw(maxLimitKw);
-        permissionRepository.save(permission);
+        var now = clock.instant();
+        connectionLimitDefaultRepository.closeOpenDefaults(permission.id(), now);
+        if (minLimitKw != null || maxLimitKw != null) {
+            var defaultLimit = new ConnectionLimitDefault(permission.id(),
+                                                          permission.meterId(),
+                                                          now,
+                                                          null,
+                                                          minLimitKw,
+                                                          maxLimitKw);
+            connectionLimitDefaultRepository.save(defaultLimit);
+        }
         LOGGER.info("Updated limit defaults to min {} and max {} for permission {}",
                     minLimitKw,
                     maxLimitKw,

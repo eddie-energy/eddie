@@ -10,6 +10,7 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.cim.agnostic.PermissionCommand;
@@ -45,6 +46,8 @@ class PermissionCommandServiceTest {
     @Mock
     private PermissionRepository permissionRepository;
     @Mock
+    private ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
+    @Mock
     private StreamerManager streamerManager;
     @Mock
     private PermissionScheduler permissionScheduler;
@@ -63,7 +66,7 @@ class PermissionCommandServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new PermissionCommandService(permissionRepository,
+        service = new PermissionCommandService(permissionRepository, connectionLimitDefaultRepository,
                                                streamerManager,
                                                clock,
                                                permissionScheduler,
@@ -135,17 +138,39 @@ class PermissionCommandServiceTest {
     }
 
     @Test
-    void givenValidLimitDefaults_updateLimitDefaults_updatesPermission() {
+    void givenValidLimitDefaults_updateLimitDefaults_savesOpenDefault() {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permission.id()).thenReturn(permissionId);
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
         when(dataNeed.supportsLimitDefaults()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
 
-        verify(permission).setMinLimitKw(BigDecimal.ONE);
-        verify(permission).setMaxLimitKw(BigDecimal.TEN);
-        verify(permissionRepository).save(permission);
+        verify(connectionLimitDefaultRepository).closeOpenDefaults(permissionId, clock.instant());
+        verify(connectionLimitDefaultRepository)
+                .save(argThat(defaultLimit ->
+                                      defaultLimit.permissionId().equals(permissionId) &&
+                                      defaultLimit.start().equals(clock.instant()) &&
+                                      defaultLimit.end() == null &&
+                                      defaultLimit.minLimitKw().compareTo(BigDecimal.ONE) == 0 &&
+                                      defaultLimit.maxLimitKw().compareTo(BigDecimal.TEN) == 0));
+        verify(permissionRepository, never()).save(any());
+    }
+
+    @Test
+    void givenNullLimitDefaults_updateLimitDefaults_closesOpenDefaultWithoutNewRow() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permission.id()).thenReturn(permissionId);
+        when(permission.dataNeed()).thenReturn(dataNeed);
+        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(dataNeed.supportsLimitDefaults()).thenReturn(true);
+
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, null, null));
+
+        verify(connectionLimitDefaultRepository).closeOpenDefaults(permissionId, clock.instant());
+        verify(connectionLimitDefaultRepository, never()).save(any());
+        verify(permissionRepository, never()).save(any());
     }
 
     @Test
@@ -157,8 +182,8 @@ class PermissionCommandServiceTest {
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
 
-        verify(permission, never()).setMinLimitKw(any());
-        verify(permission, never()).setMaxLimitKw(any());
+        verify(connectionLimitDefaultRepository, never()).closeOpenDefaults(any(), any());
+        verify(connectionLimitDefaultRepository, never()).save(any());
         verify(permissionRepository, never()).save(any());
     }
 
@@ -171,8 +196,8 @@ class PermissionCommandServiceTest {
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.TEN, BigDecimal.ONE));
 
-        verify(permission, never()).setMinLimitKw(any());
-        verify(permission, never()).setMaxLimitKw(any());
+        verify(connectionLimitDefaultRepository, never()).closeOpenDefaults(any(), any());
+        verify(connectionLimitDefaultRepository, never()).save(any());
         verify(permissionRepository, never()).save(any());
     }
 

@@ -132,4 +132,11 @@ class PermissionTest {
         // When, Then
         assertThrows(NullPointerException.class, () -> permission.initializeFromDataNeed(null));
     }
+
+    @Test
+    void givenNoDefaults_minAndMaxLimitKw_returnNull() {
+        // Then
+        assertNull(permission.minLimitKw());
+        assertNull(permission.maxLimitKw());
+    }
 }

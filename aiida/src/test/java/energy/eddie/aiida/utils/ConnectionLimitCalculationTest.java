@@ -6,6 +6,7 @@ package energy.eddie.aiida.utils;
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -213,7 +214,51 @@ class ConnectionLimitCalculationTest {
                                    defaults(defaultLimit(PERMISSION_1, null, 5, 50)),
                                    instant("10:00"),
                                    instant("12:00"),
-                                   expected(defaultDto(PERMISSION_1, "", "10:00-12:00", 5, 50))));
+                                   expected(defaultDto(PERMISSION_1, "", "10:00-12:00", 5, 50))),
+
+                         arguments("default only applies from its start",
+                                   limits(),
+                                   defaults(defaultLimit("11:00", null, 5, 50)),
+                                   instant("10:00"),
+                                   instant("12:00"),
+                                   expected(defaultDto("11:00-12:00", 5, 50))),
+
+                         arguments("default with an end only applies up to that end",
+                                   limits(),
+                                   defaults(defaultLimit("08:00", "11:00", 5, 50)),
+                                   instant("10:00"),
+                                   instant("12:00"),
+                                   expected(defaultDto("10:00-11:00", 5, 50))),
+
+                         arguments("default completely outside requested range produces nothing",
+                                   limits(),
+                                   defaults(defaultLimit("08:00", "09:00", 5, 50)),
+                                   instant("10:00"),
+                                   instant("12:00"),
+                                   expected()),
+
+                         arguments("two historical defaults split a gap by time",
+                                   limits(limit("09:00-10:00", MRID_1, "08:00", 10, 100),
+                                          limit("13:00-14:00", MRID_2, "09:00", 20, 80)),
+                                   defaults(defaultLimit(PERMISSION_1, METER_1, "08:00", "12:00", 2, 3),
+                                            defaultLimit(PERMISSION_1, METER_1, "12:00", null, 5, 50)),
+                                   instant("08:00"),
+                                   instant("15:00"),
+                                   expected(defaultDto(PERMISSION_1, METER_1, "08:00-09:00", 2, 3),
+                                            dto("09:00-10:00", MRID_1, 10, 100),
+                                            defaultDto(PERMISSION_1, METER_1, "10:00-12:00", 2, 3),
+                                            defaultDto(PERMISSION_1, METER_1, "12:00-13:00", 5, 50),
+                                            dto("13:00-14:00", MRID_2, 20, 80),
+                                            defaultDto(PERMISSION_1, METER_1, "14:00-15:00", 5, 50))),
+
+                         arguments("historical default for past and current default for future",
+                                   limits(),
+                                   defaults(defaultLimit(PERMISSION_1, METER_1, "08:00", "11:00", 2, 3),
+                                            defaultLimit(PERMISSION_1, METER_1, "11:00", null, 5, 50)),
+                                   instant("10:00"),
+                                   instant("13:00"),
+                                   expected(defaultDto(PERMISSION_1, METER_1, "10:00-11:00", 2, 3),
+                                            defaultDto(PERMISSION_1, METER_1, "11:00-13:00", 5, 50))));
     }
 
     private static List<ConnectionLimit> limits(ConnectionLimit... values) {
@@ -263,7 +308,32 @@ class ConnectionLimitCalculationTest {
     }
 
     private static ConnectionLimitDefault defaultLimit(UUID permissionId, String meterId, int min, int max) {
-        return new ConnectionLimitDefault(permissionId, meterId, BigDecimal.valueOf(min), BigDecimal.valueOf(max));
+        return new ConnectionLimitDefault(permissionId,
+                                          meterId,
+                                          instant("00:00"),
+                                          null,
+                                          BigDecimal.valueOf(min),
+                                          BigDecimal.valueOf(max));
+    }
+
+    private static ConnectionLimitDefault defaultLimit(String start, @Nullable String end, int min, int max) {
+        return defaultLimit(PERMISSION_1, METER_1, start, end, min, max);
+    }
+
+    private static ConnectionLimitDefault defaultLimit(
+            UUID permissionId,
+            @Nullable String meterId,
+            String start,
+            @Nullable String end,
+            int min,
+            int max
+    ) {
+        return new ConnectionLimitDefault(permissionId,
+                                          meterId,
+                                          instant(start),
+                                          end == null ? null : instant(end),
+                                          BigDecimal.valueOf(min),
+                                          BigDecimal.valueOf(max));
     }
 
     private static ConnectionLimitDto dto(String interval, int min, int max) {
