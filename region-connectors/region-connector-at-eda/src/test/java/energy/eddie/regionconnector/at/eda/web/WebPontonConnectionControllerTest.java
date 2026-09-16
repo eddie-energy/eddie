@@ -12,11 +12,14 @@ import energy.eddie.regionconnector.at.eda.ponton.messages.InboundMessageFactory
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import energy.eddie.regionconnector.at.eda.ponton.messages.OutboundMessageFactoryCollection;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmnotification._01p20.EdaCMNotification01p20InboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30.CMRequest01p30LegacyOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrequest._01p30.CMRequest01p30OutboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10.CMRevoke01p10LegacyOutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10.CMRevoke01p10OutboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10.EdaCMRevoke01p10InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.consumptionrecord._01p41.EdaConsumptionRecord01p41InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification._1p13.EdaCPNotification01p13InboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12.CPRequestOutbound01p12LegacyMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12.CPRequestOutbound01p12MessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10.EdaECMPList01p10InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p20.EdaECMPList01p20InboundMessageFactory;
@@ -346,9 +349,12 @@ class WebPontonConnectionControllerTest {
         @Bean
         OutboundMessageFactoryCollection outboundMessageFactoryCollection(Jaxb2Marshaller jaxb2Marshaller) {
             return new OutboundMessageFactoryCollection(
-                    List.of(new CMRequest01p30OutboundMessageFactory(jaxb2Marshaller)),
-                    List.of(new CMRevoke01p10OutboundMessageFactory(jaxb2Marshaller)),
-                    List.of(new CPRequestOutbound01p12MessageFactory(jaxb2Marshaller))
+                    List.of(new CMRequest01p30LegacyOutboundMessageFactory(jaxb2Marshaller),
+                            new CMRequest01p30OutboundMessageFactory(jaxb2Marshaller)),
+                    List.of(new CMRevoke01p10LegacyOutboundMessageFactory(jaxb2Marshaller),
+                            new CMRevoke01p10OutboundMessageFactory(jaxb2Marshaller)),
+                    List.of(new CPRequestOutbound01p12LegacyMessageFactory(jaxb2Marshaller),
+                            new CPRequestOutbound01p12MessageFactory(jaxb2Marshaller))
             );
         }
     }

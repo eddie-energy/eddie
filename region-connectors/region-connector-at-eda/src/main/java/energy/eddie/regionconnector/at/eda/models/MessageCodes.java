@@ -28,6 +28,8 @@ public class MessageCodes {
             public static final String DENIAL = "ABLEHNUNG_CCMS";
             public static final String SCHEMA = "CM_REV_SP_01.40";
             public static final String VERSION = "01.40";
+            public static final String SCHEMA_LEGACY = "CM_REV_SP_01.30";
+            public static final String VERSION_LEGACY = "01.30";
 
             private EligibleParty() {
             }
@@ -59,6 +61,8 @@ public class MessageCodes {
         public static final String CODE = "ANFORDERUNG_CCMO";
         public static final String SCHEMA = "CM_REQ_ONL_01.50";
         public static final String VERSION = "01.50";
+        public static final String SCHEMA_LEGACY = "CM_REQ_ONL_01.40";
+        public static final String VERSION_LEGACY = "01.40";
 
         private Request() {
         }
@@ -73,12 +77,18 @@ public class MessageCodes {
         public static final String CODE = "ANFORDERUNG_ECON";
         public static final String SCHEMA = "EC_REQ_ONL_03.00";
         public static final String VERSION = "03.00";
+        public static final String SCHEMA_LEGACY = "EC_REQ_ONL_02.30";
+        public static final String VERSION_LEGACY = "02.30";
 
         private EcRequest() {}
     }
 
     public static class CPRequest {
         public static final String CODE = "ANFORDERUNG_PT";
+        public static final String SCHEMA = "CR_REQ_PT_04.30";
+        public static final String VERSION = "04.30";
+        public static final String SCHEMA_LEGACY = "CR_REQ_PT_03.00";
+        public static final String VERSION_LEGACY = "03.00";
 
         private CPRequest() {
         }
