@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32;
@@ -7,6 +7,7 @@ import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MeteringPointData;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.ProcessDirectory;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.SupStatus;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MasterDataMapper;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,7 +17,7 @@ class EdaMasterData01p32Test {
     @Test
     void testMeteringPointData_withMeteringPointData_returnsNonNullObject() {
         // Given
-        var masterData = new EdaMasterData01p32(
+        var masterData = MasterDataMapper.INSTANCE.toEdaMasterData(
                 new MasterData()
                         .withProcessDirectory(
                                 new ProcessDirectory()
@@ -36,7 +37,7 @@ class EdaMasterData01p32Test {
     @Test
     void testMeteringPointData_withoutMeteringPointData_returnsNullObject() {
         // Given
-        var masterData = new EdaMasterData01p32(
+        var masterData = MasterDataMapper.INSTANCE.toEdaMasterData(
                 new MasterData()
                         .withProcessDirectory(
                                 new ProcessDirectory()

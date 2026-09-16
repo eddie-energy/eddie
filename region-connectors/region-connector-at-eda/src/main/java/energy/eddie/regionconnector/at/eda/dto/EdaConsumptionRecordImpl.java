@@ -1,0 +1,24 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
+package energy.eddie.regionconnector.at.eda.dto;
+
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
+
+public record EdaConsumptionRecordImpl(
+        String messageId,
+        String conversationId,
+        String meteringPoint,
+        LocalDate startDate,
+        LocalDate endDate,
+        String senderMessageAddress,
+        ZonedDateTime documentCreationDateTime,
+        String receiverMessageAddress,
+        List<Energy> energy,
+        String schemaVersion,
+        ZonedDateTime processDate,
+        Object originalConsumptionRecord
+) implements EdaConsumptionRecord {
+}
