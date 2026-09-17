@@ -346,7 +346,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public List<Permission> getAllPermissionsSortedByGrantTime() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        return permissionRepository.findByUserIdOrderByGrantTimeDesc(currentUserId);
+        return permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(currentUserId);
     }
 
     public List<Permission> getActiveInboundPermissions() throws InvalidUserException {
