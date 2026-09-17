@@ -8,7 +8,9 @@ import HeaderLogo from '@/assets/HeaderLogo.svg'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
 import DataSourceIcon from '@/assets/icons/DataSourceIcon.svg'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
+import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
 import { selectedPermissionCategory } from '@/stores/selectedPermissionCategory'
+import { monitorablePermissions } from '@/stores/permissions'
 import { useI18n } from 'vue-i18n'
 import LanguageSwitcher from './LanguageSwitcher.vue'
 import { onMounted, ref } from 'vue'
@@ -60,6 +62,15 @@ onMounted(async () => {
         {{ t('header.data-sources') }}
       </RouterLink>
       <RouterLink
+        v-if="monitorablePermissions.length > 0"
+        :data-text="t('header.connectionMonitor')"
+        to="/connection-monitor"
+        class="link-with-bold-hover nav-link"
+      >
+        <ConnectionMonitorIcon class="icon" />
+        {{ t('header.connectionMonitor') }}
+      </RouterLink>
+      <RouterLink
         to="/account"
         :data-text="t('header.account')"
         class="link-with-bold-hover nav-link"
@@ -90,7 +101,7 @@ onMounted(async () => {
   left: 0;
   display: grid;
   align-items: center;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   width: 100%;
   color: var(--light);
   background-color: var(--eddie-primary);

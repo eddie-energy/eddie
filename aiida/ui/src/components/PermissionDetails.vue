@@ -12,7 +12,7 @@ import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
 import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
-import { fetchPermissions, permissions } from '@/stores/permissions'
+import { fetchPermissions, isMonitorablePermission, permissions } from '@/stores/permissions'
 import { computed, ref, useTemplateRef, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
@@ -22,6 +22,8 @@ import CopyButton from './CopyButton.vue'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from './CustomSelect.vue'
+import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
+import { RouterLink } from 'vue-router'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -420,6 +422,14 @@ const { lastMessageAt } = useLastMessageRefresh(
             <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
           </MessageDownloadButton>
         </div>
+        <RouterLink
+          v-if="isMonitorablePermission(permission)"
+          :to="{ name: 'connection-monitor', query: { permission: permission.permissionId } }"
+          class="monitor-link"
+        >
+          <ConnectionMonitorIcon class="monitor-link-icon" />
+          {{ t('permissions.openConnectionMonitor') }}
+        </RouterLink>
       </div>
       <Button
         v-if="status === 'Pending'"
@@ -545,6 +555,28 @@ const { lastMessageAt } = useLastMessageRefresh(
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
+  }
+}
+
+.monitor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--eddie-primary);
+  border-radius: 2rem;
+  color: var(--eddie-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
+
+  &:hover {
+    color: var(--light);
+    background-color: var(--eddie-primary);
   }
 }
 

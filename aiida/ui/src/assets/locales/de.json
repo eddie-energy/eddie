@@ -14,7 +14,8 @@
     "permissions": "Berechtigungen",
     "data-sources": "Datenquellen",
     "account": "Konto",
-    "inbound": "Eingehend"
+    "inbound": "Eingehend",
+    "connectionMonitor": "Anschlussmonitor"
   },
   "datasources": {
     "title": "Datenquellen",
@@ -117,6 +118,7 @@
     "showMqttPassword": "MQTT-Passwort anzeigen",
     "hideMqttPassword": "MQTT-Passwort ausblenden",
     "copyMqttPassword": "MQTT-Passwort kopieren",
+    "openConnectionMonitor": "Im Anschlussmonitor öffnen",
     "mqttProvisioning": {
       "title": "Bereitstellung konfigurieren",
       "openButton": "Bereitstellung konfigurieren",
@@ -204,6 +206,28 @@
     "logout": "Abmelden",
     "mqttTlsCertificate": "MQTT TLS Zertifikat",
     "downloadCertificate": "Herunterladen"
+  },
+  "connectionMonitor": {
+    "title": "Anschlussmonitor",
+    "permissionLabel": "Berechtigung für Anschlussgrenzen",
+    "permissionPlaceholder": "Berechtigung auswählen",
+    "timeRangeLabel": "Zeitraum",
+    "ranges": {
+      "24h": "Letzte 24 Stunden",
+      "7d": "Letzte 7 Tage",
+      "custom": "Benutzerdefiniert"
+    },
+    "from": "Von",
+    "to": "Bis",
+    "apply": "Anwenden",
+    "maxLimit": "Obergrenze",
+    "minLimit": "Untergrenze",
+    "measuredPower": "Gemessene Leistung",
+    "kw": "kW",
+    "loading": "Wird geladen …",
+    "noData": "Keine Daten im gewählten Zeitraum verfügbar.",
+    "retentionNote": "Messwerte sind nur für die von dieser AIIDA-Instanz gespeicherten Rohdaten verfügbar.",
+    "noMonitorablePermissions": "Keine überwachbaren Berechtigungen für Anschlussgrenzen verfügbar."
   },
   "toasts": {
     "info": "Wussten Sie schon?",

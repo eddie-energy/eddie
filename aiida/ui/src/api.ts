@@ -11,10 +11,12 @@ import type {
   AiidaDataSourceType,
   AiidaPermission,
   AiidaPermissionRequestsDTO,
+  ConnectionLimit,
   InboundMessageFormat,
   LastMessageEvent,
   LatestInboundPermissionRecord,
   LatestOutboundPermissionRecord,
+  MeasurementPoint,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
 } from './types'
@@ -112,6 +114,24 @@ async function parseErrorResponse(response: Response): Promise<string> {
 
 export function getPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions')
+}
+
+export function getConnectionLimits(
+  permissionId: string,
+  from: string,
+  to: string,
+): Promise<ConnectionLimit[]> {
+  return fetch(`/connection-limits?${new URLSearchParams({ permissionId, from, to })}`)
+}
+
+export function getConnectionMeasurements(
+  permissionId: string,
+  from: string,
+  to: string,
+): Promise<MeasurementPoint[]> {
+  return fetch(
+    `/connection-limits/${encodeURIComponent(permissionId)}/measurements?${new URLSearchParams({ from, to })}`,
+  )
 }
 
 export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {

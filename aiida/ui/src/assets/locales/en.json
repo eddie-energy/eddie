@@ -14,7 +14,8 @@
     "permissions": "Permissions",
     "data-sources": "Data Sources",
     "account": "Account",
-    "inbound": "Inbound"
+    "inbound": "Inbound",
+    "connectionMonitor": "Connection Monitor"
   },
   "datasources": {
     "title": "Data Sources",
@@ -117,6 +118,7 @@
     "showMqttPassword": "Show MQTT Password",
     "hideMqttPassword": "Hide MQTT Password",
     "copyMqttPassword": "Copy MQTT Password",
+    "openConnectionMonitor": "Open Connection Monitor",
     "mqttProvisioning": {
       "title": "Configure Provisioning",
       "openButton": "Configure Provisioning",
@@ -204,6 +206,28 @@
     "logout": "Logout",
     "mqttTlsCertificate": "MQTT TLS Certificate",
     "downloadCertificate": "Download"
+  },
+  "connectionMonitor": {
+    "title": "Connection Monitor",
+    "permissionLabel": "Connection Limit Permission",
+    "permissionPlaceholder": "Select a permission",
+    "timeRangeLabel": "Time Range",
+    "ranges": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days",
+      "custom": "Custom"
+    },
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "maxLimit": "Max Limit",
+    "minLimit": "Min Limit",
+    "measuredPower": "Measured Power",
+    "kw": "kW",
+    "loading": "Loading…",
+    "noData": "No data available for the selected time range.",
+    "retentionNote": "Measurements are only available for raw records retained by this AIIDA instance.",
+    "noMonitorablePermissions": "No monitorable connection limit permissions available."
   },
   "toasts": {
     "info": "Did you know?",

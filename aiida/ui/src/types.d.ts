@@ -173,6 +173,22 @@ export type ProvisioningConnectionDto = {
   topic: string
 }
 
+export type ConnectionLimit = {
+  permissionId: string
+  meterId: string | null
+  documentId: string | null
+  intervalStart: string
+  intervalEnd: string
+  minLimitKw: number | null
+  maxLimitKw: number | null
+}
+
+export type MeasurementPoint = {
+  timestamp: string
+  minPowerKw: number
+  maxPowerKw: number
+}
+
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
 export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'

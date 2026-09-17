@@ -14,7 +14,8 @@
     "permissions": "Autorisations",
     "data-sources": "Sources de données",
     "account": "Compte",
-    "inbound": "Entrant"
+    "inbound": "Entrant",
+    "connectionMonitor": "Moniteur de connexion"
   },
   "datasources": {
     "title": "Sources de données",
@@ -117,6 +118,7 @@
     "showMqttPassword": "Afficher le mot de passe MQTT",
     "hideMqttPassword": "Masquer le mot de passe MQTT",
     "copyMqttPassword": "Copier le mot de passe MQTT",
+    "openConnectionMonitor": "Ouvrir le moniteur de connexion",
     "mqttProvisioning": {
       "title": "Provisionnement entrant",
       "openButton": "Configurer le provisionnement",
@@ -204,6 +206,28 @@
     "logout": "Se déconnecter",
     "mqttTlsCertificate": "Certificat TLS MQTT",
     "downloadCertificate": "Télécharger"
+  },
+  "connectionMonitor": {
+    "title": "Moniteur de connexion",
+    "permissionLabel": "Autorisation de limites de connexion",
+    "permissionPlaceholder": "Sélectionner une autorisation",
+    "timeRangeLabel": "Période",
+    "ranges": {
+      "24h": "Dernières 24 heures",
+      "7d": "Derniers 7 jours",
+      "custom": "Personnalisé"
+    },
+    "from": "De",
+    "to": "À",
+    "apply": "Appliquer",
+    "maxLimit": "Limite maximale",
+    "minLimit": "Limite minimale",
+    "measuredPower": "Puissance mesurée",
+    "kw": "kW",
+    "loading": "Chargement…",
+    "noData": "Aucune donnée disponible pour la période sélectionnée.",
+    "retentionNote": "Les mesures ne sont disponibles que pour les enregistrements bruts conservés par cette instance AIIDA.",
+    "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible."
   },
   "toasts": {
     "info": "Le saviez-vous ?",
