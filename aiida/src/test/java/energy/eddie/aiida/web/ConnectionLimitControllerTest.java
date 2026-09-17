@@ -4,8 +4,10 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.dtos.monitoring.MeasurementPointDto;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
+import energy.eddie.aiida.services.monitoring.MeasurementService;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -22,6 +24,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -32,8 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ConnectionLimitController.class)
 class ConnectionLimitControllerTest {
@@ -42,6 +44,9 @@ class ConnectionLimitControllerTest {
 
     @MockitoBean
     private ConnectionLimitService connectionLimitService;
+
+    @MockitoBean
+    private MeasurementService measurementService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -93,6 +98,52 @@ class ConnectionLimitControllerTest {
     @WithMockUser
     void givenInvalidInstantOrDuration_returnsBadRequest() throws Exception {
         mockMvc.perform(get("/connection-limits").param("from", "foo"))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void givenMonitorablePermission_returnsMeasurementPoints() throws Exception {
+        var pid = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
+        var timestamp = Instant.parse("2026-07-10T09:55:00Z");
+        var points = List.of(new MeasurementPointDto(timestamp, new BigDecimal("8.5"), new BigDecimal("8.5")));
+        when(measurementService.getMeasurements(any(), any(), any())).thenReturn(points);
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", pid)
+                                .param("from", "2026-07-09T10:00:00Z")
+                                .param("to", "2026-07-10T10:00:00Z"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(1))
+               .andExpect(jsonPath("$[0].timestamp").value("2026-07-10T09:55:00Z"))
+               .andExpect(jsonPath("$[0].minPowerKw").value(8.5))
+               .andExpect(jsonPath("$[0].maxPowerKw").value(8.5));
+
+        verify(measurementService).getMeasurements(pid,
+                                                   Instant.parse("2026-07-09T10:00:00Z"),
+                                                   Instant.parse("2026-07-10T10:00:00Z"));
+    }
+
+    @Test
+    @WithMockUser
+    void givenNoMeasurementTimeFrame_queriesTheLastDay() throws Exception {
+        var pid = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
+        when(measurementService.getMeasurements(any(), any(), any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", pid))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").isEmpty());
+
+        verify(measurementService).getMeasurements(pid,
+                                                   Instant.parse(NOW).minus(Duration.ofDays(1)),
+                                                   Instant.parse(NOW));
+    }
+
+    @Test
+    @WithMockUser
+    void givenInvalidMeasurementTimeFrame_returnsBadRequest() throws Exception {
+        var pid = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", pid).param("from", "foo"))
                .andExpect(status().isBadRequest());
     }
 

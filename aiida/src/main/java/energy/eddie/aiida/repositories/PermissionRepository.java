@@ -48,6 +48,35 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     List<Permission> findInboundByUserIdAndStatus(UUID userId, Set<PermissionStatus> statuses);
 
     @Query("""
+            SELECT p
+            FROM Permission p
+            WHERE p.userId = :userId
+              AND p.meterId = :meterId
+              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed.DISCRIMINATOR_VALUE
+              AND p.dataSource IS NOT NULL
+              AND p.status IN (energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED,
+                               energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START,
+                               energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA)
+            """)
+    List<Permission> findActiveOutboundByMeterId(UUID userId, String meterId);
+
+    @Query("""
+            SELECT p
+            FROM Permission p
+            JOIN p.dataNeed dn
+            JOIN dn.contexts c
+            WHERE p.userId = :userId
+              AND p.meterId = :meterId
+              AND dn.type = energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed.DISCRIMINATOR_VALUE
+              AND p.dataSource IS NOT NULL
+              AND c = :context
+              AND p.status IN (energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED,
+                               energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START,
+                               energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA)
+            """)
+    List<Permission> findActiveOutboundByMeterIdAndContext(UUID userId, String meterId, AiidaContext context);
+
+    @Query("""
             SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
             FROM Permission p
             JOIN p.dataNeed dn

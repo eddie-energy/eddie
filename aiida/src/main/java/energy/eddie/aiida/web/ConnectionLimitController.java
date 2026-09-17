@@ -4,9 +4,14 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.dtos.monitoring.MeasurementPointDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.permission.PermissionNotMonitorableException;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
+import energy.eddie.aiida.services.monitoring.MeasurementService;
 import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,10 +26,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -38,11 +40,19 @@ import java.util.UUID;
 @RequestMapping("/connection-limits")
 @Tag(name = "Connection Limit Controller")
 public class ConnectionLimitController {
+    private static final Duration DEFAULT_MEASUREMENT_RANGE = Duration.ofDays(1);
+
     private final ConnectionLimitService connectionLimitService;
+    private final MeasurementService measurementService;
     private final Clock clock;
 
-    public ConnectionLimitController(ConnectionLimitService connectionLimitService, Clock clock) {
+    public ConnectionLimitController(
+            ConnectionLimitService connectionLimitService,
+            MeasurementService measurementService,
+            Clock clock
+    ) {
         this.connectionLimitService = connectionLimitService;
+        this.measurementService = measurementService;
         this.clock = clock;
     }
 
@@ -91,9 +101,45 @@ public class ConnectionLimitController {
                                                                             fromInstantOrDuration(to)));
     }
 
+    @Operation(
+            summary = "Get measurements of a connection limit permission",
+            description = """
+                    Returns the measured signed power in kW of the meter the selected permission applies to, one point
+                    per AIIDA record ordered by timestamp. Imported power is positive, exported power is negative.
+                    If no time frame is provided, the measurements of the last day are returned.
+                    If no unique measuring outbound permission can be resolved, an empty list is returned.
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MeasurementPointDto.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content(schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized User", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Permission not found", content = @Content(schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "409", description = "Permission is not an active inbound permission receiving connection limits", content = @Content(schema = @Schema(implementation = EddieApiError.class)))
+    })
+    @GetMapping(path = "/{permissionId}/measurements", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<MeasurementPointDto>> getMeasurements(
+            @PathVariable UUID permissionId,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
+    ) throws InvalidUserException, InvalidInstantOrDurationException, UnauthorizedException,
+             PermissionNotFoundException, PermissionNotMonitorableException {
+        return ResponseEntity.ok(measurementService.getMeasurements(
+                permissionId,
+                fromInstantOrDuration(from, DEFAULT_MEASUREMENT_RANGE.negated()),
+                fromInstantOrDuration(to)));
+    }
+
     private Instant fromInstantOrDuration(@Nullable String value) throws InvalidInstantOrDurationException {
+        return fromInstantOrDuration(value, Duration.ZERO);
+    }
+
+    private Instant fromInstantOrDuration(
+            @Nullable String value,
+            Duration defaultOffset
+    ) throws InvalidInstantOrDurationException {
         if (value == null || value.isBlank()) {
-            return clock.instant();
+            return clock.instant().plus(defaultOffset);
         }
         try {
             return Instant.parse(value);
