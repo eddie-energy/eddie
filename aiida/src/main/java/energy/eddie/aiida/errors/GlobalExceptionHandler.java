@@ -152,6 +152,7 @@ public class GlobalExceptionHandler {
             ProvisioningTypeNotConfiguredException.class,
             LimitDefaultsNotAllowedException.class,
             PermissionDataNeedTypeNotSupportedException.class,
+            PermissionNotMonitorableException.class,
             PermissionStartInThePastException.class,
             PermissionStateTransitionException.class
     })
