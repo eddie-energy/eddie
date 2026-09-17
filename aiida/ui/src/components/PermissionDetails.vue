@@ -24,6 +24,8 @@ import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from './CustomSelect.vue'
+import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
+import { RouterLink } from 'vue-router'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -425,6 +427,14 @@ const { lastMessageAt } = useLastMessageRefresh(
             <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
           </MessageDownloadButton>
         </div>
+        <RouterLink
+          v-if="permission.supportsConnectionLimits"
+          :to="{ name: 'connection-monitor', query: { permission: permission.permissionId } }"
+          class="monitor-link"
+        >
+          <ConnectionMonitorIcon class="monitor-link-icon" />
+          {{ t('permissions.openConnectionMonitor') }}
+        </RouterLink>
       </div>
       <Button
         v-if="status === 'Pending'"
@@ -539,6 +549,92 @@ const { lastMessageAt } = useLastMessageRefresh(
 
 .actions-row--end .action-btn {
   width: fit-content;
+}
+
+.access-code-field {
+  position: relative;
+  word-break: keep-all;
+  button {
+    padding: unset;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  dd,
+  dt {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+  }
+}
+
+.monitor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--eddie-primary);
+  border-radius: 2rem;
+  color: var(--eddie-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
+
+  &:hover {
+    color: var(--light);
+    background-color: var(--eddie-primary);
+  }
+}
+
+.tool-tip-button {
+  transition: color 0.3s ease-in-out;
+  &:hover,
+  &.active {
+    color: var(--eddie-primary);
+  }
+}
+
+.tool-tip {
+  position: absolute;
+  box-shadow: 0 2px 5px 0 #00000040;
+  top: 100%;
+  left: 0;
+  width: 80%;
+  padding: var(--spacing-sm);
+  background-color: var(--light);
+  border: 1px solid var(--eddie-primary);
+  border-radius: var(--border-radius);
+  color: var(--eddie-grey-medium);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 10%;
+    margin-left: var(--spacing-xs);
+    border-width: var(--spacing-xs);
+    border-style: solid;
+    border-color: var(--eddie-primary) transparent transparent transparent;
+    transform: rotate(180deg);
+  }
+}
+
+.copy-link {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  align-items: center;
+  gap: var(--spacing-sm);
+  &:first-child {
+    margin: var(--spacing-sm) 0;
+  }
+  button {
+    justify-content: flex-start;
+  }
 }
 
 .v-enter-active,
