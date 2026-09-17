@@ -141,7 +141,7 @@ public class LatestRecordService {
      */
     public Flux<LastMessageEventDto> lastMessageStream() throws InvalidUserException {
         var userId = authService.getCurrentUserId();
-        var permissions = permissionRepository.findByUserIdOrderByGrantTimeDesc(userId);
+        var permissions = permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(userId);
         var dataSourceIdToPermissionIdMap = mapDataSourceIdToPermissionId(permissions);
 
         var inboundEvents = retrieveInboundEventsFlux(inboundAggregator.inboundRecordFlux(),

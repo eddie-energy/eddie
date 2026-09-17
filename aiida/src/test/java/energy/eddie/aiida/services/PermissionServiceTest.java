@@ -664,7 +664,7 @@ class PermissionServiceTest {
         // Given
         var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
         when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
-        when(mockPermissionRepository.findByUserIdOrderByGrantTimeDesc(uuid)).thenReturn(List.of(mockPermission));
+        when(mockPermissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(uuid)).thenReturn(List.of(mockPermission));
 
         // When
         var result = service.getAllPermissionsSortedByGrantTime();
