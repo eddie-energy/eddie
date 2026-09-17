@@ -341,7 +341,7 @@ class LatestRecordServiceTest {
         when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
-        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+        when(permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(USER_ID))
                 .thenReturn(List.of(outboundPermission, inboundPermission));
         when(permissionLatestRecordMap.lastMessageStream(PERMISSION_ID))
                 .thenReturn(Flux.just(TIMESTAMP));
@@ -379,7 +379,7 @@ class LatestRecordServiceTest {
         when(permission.dataSource()).thenReturn(dataSource);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
-        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+        when(permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(USER_ID))
                 .thenReturn(List.of(permission));
 
         var matchingRecord = mock(InboundRecord.class);
@@ -412,7 +412,7 @@ class LatestRecordServiceTest {
         when(permission.dataSource()).thenReturn(null);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
-        when(permissionRepository.findByUserIdOrderByGrantTimeDesc(USER_ID))
+        when(permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(USER_ID))
                 .thenReturn(List.of(permission));
         when(inboundAggregator.inboundRecordFlux()).thenReturn(Flux.empty());
 
