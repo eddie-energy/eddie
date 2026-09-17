@@ -96,6 +96,7 @@ services:
       - "8888:8080"
     profiles:
       - auth
+      - example
     environment:
       KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
@@ -105,7 +106,74 @@ services:
     volumes:
       - keycloak_data:/opt/keycloak/data
       - ./keycloak/EDDIE-realm.json:/opt/keycloak/data/import/EDDIE-realm.json
-      - ../keycloak-eddie-theme/theme/eddie-theme:/opt/keycloak/themes/eddie-theme
+      - ./keycloak/EXAMPLE_APP-realm.json:/opt/keycloak/data/import/EXAMPLE_APP-realm.json
+      - ../keycloak-eddie-theme/themes/eddie-theme:/opt/keycloak/themes/eddie-theme
+
+  example-app-db:
+    image: timescale/timescaledb:latest-pg17
+    profiles:
+      - example
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: example-app
+    volumes:
+      - example_app_db_data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - "${POSTGRES_PORT:-5434}:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USERNAME:-admin} -d example-app" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  example-app:
+    # Pin the published image so updates to latest do not change this setup.
+    image: ghcr.io/eddie-energy/example-app@sha256:b85e9eea971d074b280f267db6c040ee52d0cb983f471c1fd3c1cc4e5b456862
+    # This release hardcodes remote Kafka defaults and does not read the
+    # KAFKA_SECURITY_PROTOCOL or KAFKA_MESSAGE_FORMAT environment variables.
+    command:
+      - --spring.kafka.security.protocol=PLAINTEXT
+      - --spring.kafka.consumer.ssl.trust-store-location=
+      - --example-app.kafka.message-format=json
+    profiles:
+      - example
+    environment:
+      POSTGRES_USER: ${POSTGRES_USERNAME:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin}
+      POSTGRES_DB: example-app
+      POSTGRES_URL: jdbc:postgresql://example-app-db:5432/example-app
+      BACKEND_BASE_URL: ${BACKEND_BASE_URL:-http://localhost:8082}
+      EXAMPLE_APP_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-*}
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+      KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-example-app}
+      KAFKA_CLIENT_ID: ${KAFKA_CLIENT_ID:-example-app}
+      KAFKA_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_MESSAGE_FORMAT: json
+      MQTT_SERVER_URI: tcp://eddie-emqx:1883
+      MQTT_CLIENT_ID: ${MQTT_CLIENT_ID:-example-app-client}
+      MQTT_USERNAME: ${REGION_CONNECTOR_AIIDA_MQTT_USERNAME}
+      MQTT_PASSWORD: ${REGION_CONNECTOR_AIIDA_MQTT_PASSWORD}
+      EDDIE_PUBLIC_URL: http://localhost:8080
+      EDDIE_HISTORIC_DATANEED_ID: 9bd0668f-cc19-40a8-99db-dc2cb2802b17
+      EDDIE_REALTIME_DATANEED_ID: 5dc71d7e-e8cd-4403-a3a8-d3c095c97a84
+      KEYCLOAK_URL: http://localhost:8888
+      KEYCLOAK_REALM: EXAMPLE_APP
+      KEYCLOAK_CLIENT: ${KEYCLOAK_CLIENT:-example-app-client}
+      KEYCLOAK_ISSUER_URI: http://localhost:8888/realms/EXAMPLE_APP
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/EXAMPLE_APP/protocol/openid-connect/certs
+    ports:
+      - "${BACKEND_PORT:-8082}:8080"
+    depends_on:
+      example-app-db:
+        condition: service_healthy
+      eddie:
+        condition: service_started
+      emqx:
+        condition: service_started
+      keycloak:
+        condition: service_started
 
   # Used to add security to the management port of EDDIE.
   caddy:
@@ -123,3 +191,4 @@ volumes:
   postgres_data:
   keycloak_data:
   emqx_data:
+  example_app_db_data:
