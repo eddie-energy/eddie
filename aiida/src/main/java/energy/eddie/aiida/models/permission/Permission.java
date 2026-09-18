@@ -18,11 +18,13 @@ import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import org.hibernate.annotations.Formula;
 import org.jspecify.annotations.NonNull;
 import org.springframework.scheduling.support.CronExpression;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -96,6 +98,18 @@ public class Permission {
     @Schema(description = "ID of a physical smart meter asset used to map flexible connection agreements and control data source selection.", example = "003114735")
     @JsonProperty
     private String meterId;
+
+    @Nullable
+    @Formula("(SELECT d.min_limit_kw FROM connection_limit_default d WHERE d.permission_id = permission_id AND d.replaced_at IS NULL ORDER BY d.start DESC, d.id DESC LIMIT 1)")
+    @JsonProperty
+    @Schema(description = "Optional current default minimum energy consumption or production limit in kilowatts for controllable units.", example = "1.0")
+    private BigDecimal minLimitKw;
+
+    @Nullable
+    @Formula("(SELECT d.max_limit_kw FROM connection_limit_default d WHERE d.permission_id = permission_id AND d.replaced_at IS NULL ORDER BY d.start DESC, d.id DESC LIMIT 1)")
+    @Schema(description = "Optional current default maximum energy consumption or production limit in kilowatts for controllable units.", example = "10.0")
+    @JsonProperty
+    private BigDecimal maxLimitKw;
 
     @Nullable
     @PrimaryKeyJoinColumn
@@ -231,6 +245,22 @@ public class Permission {
     }
 
     /**
+     * Optional current default minimum energy consumption or production limit in kilowatts for controllable units.
+     * Resolved from the current connection limit default with the newest start time in the database.
+     */
+    public @Nullable BigDecimal minLimitKw() {
+        return minLimitKw;
+    }
+
+    /**
+     * Optional current default maximum energy consumption or production limit in kilowatts for controllable units.
+     * Resolved from the current connection limit default with the newest start time in the database.
+     */
+    public @Nullable BigDecimal maxLimitKw() {
+        return maxLimitKw;
+    }
+
+    /**
      * Returns the service name for which this permission is for.
      */
     public @Nullable String serviceName() {
@@ -330,6 +360,14 @@ public class Permission {
 
     public void setMeterId(@Nullable String meterId) {
         this.meterId = meterId;
+    }
+
+    public void setMinLimitKw(@Nullable BigDecimal minLimitKw) {
+        this.minLimitKw = minLimitKw;
+    }
+
+    public void setMaxLimitKw(@Nullable BigDecimal maxLimitKw) {
+        this.maxLimitKw = maxLimitKw;
     }
 
     public void setDisplayName(String displayName) {

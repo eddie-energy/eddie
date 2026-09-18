@@ -58,6 +58,8 @@ class AiidaPermissionRequestViewRepositoryTest {
                                                                                   "cid",
                                                                                   "dnid",
                                                                                   "mid",
+                                                                                  null,
+                                                                                  null,
                                                                                   now.toLocalDate(),
                                                                                   now.plusDays(10).toLocalDate(),
                                                                                   clock));
@@ -67,6 +69,8 @@ class AiidaPermissionRequestViewRepositoryTest {
                                                                                   "cid",
                                                                                   "dnid",
                                                                                   "mid",
+                                                                                  null,
+                                                                                  null,
                                                                                   now.toLocalDate(),
                                                                                   now.plusDays(20).toLocalDate()));
         permissionEventRepository.saveAndFlush((PermissionEvent) new SimpleEvent("otherPid",

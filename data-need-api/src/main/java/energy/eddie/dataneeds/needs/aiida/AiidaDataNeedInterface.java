@@ -9,6 +9,7 @@ import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import org.springframework.scheduling.support.CronExpression;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -62,4 +63,12 @@ public interface AiidaDataNeedInterface {
      * Returns the type of the Data Need
      */
     String type();
+
+    /**
+     * Returns true if the data need accepts connection limits
+     */
+    default boolean supportsLimitDefaults() {
+        return InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(type())
+               && Objects.requireNonNullElse(schemas(), Set.of()).contains(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
+    }
 }

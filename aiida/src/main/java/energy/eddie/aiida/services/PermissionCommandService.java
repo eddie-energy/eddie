@@ -5,9 +5,11 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
@@ -15,6 +17,7 @@ import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +26,10 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 import reactor.core.scheduler.Schedulers;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Objects;
 
 import static energy.eddie.aiida.models.permission.PermissionStatus.TERMINATED;
 import static java.util.Objects.requireNonNull;
@@ -39,6 +44,7 @@ public class PermissionCommandService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionCommandService.class);
 
     private final PermissionRepository permissionRepository;
+    private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final StreamerManager streamerManager;
     private final Clock clock;
     private final PermissionScheduler permissionScheduler;
@@ -48,6 +54,7 @@ public class PermissionCommandService {
     @Autowired
     public PermissionCommandService(
             PermissionRepository permissionRepository,
+            ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             StreamerManager streamerManager,
             Clock clock,
             PermissionScheduler permissionScheduler,
@@ -55,6 +62,7 @@ public class PermissionCommandService {
             @Lazy PermissionCommandService self
     ) {
         this.permissionRepository = permissionRepository;
+        this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.streamerManager = streamerManager;
         this.clock = clock;
         this.permissionScheduler = permissionScheduler;
@@ -95,6 +103,8 @@ public class PermissionCommandService {
                     setTransmissionEnabled(permission, setTransmissionEnabled.enabled());
             case PermissionCommand.UpdateTransmissionSchedule updateTransmissionSchedule ->
                     updateSchedule(permission, updateTransmissionSchedule.transmissionSchedule());
+            case PermissionCommand.UpdateLimitDefaults updateLimitDefaults ->
+                    updateLimitDefaults(permission, updateLimitDefaults.minLimitKw(), updateLimitDefaults.maxLimitKw());
         }
     }
 
@@ -145,6 +155,46 @@ public class PermissionCommandService {
         permissionRepository.save(permission);
         streamerManager.updateSchedule(permission);
         LOGGER.info("Updated transmission schedule to {} for permission {}", cron, permission.id());
+    }
+
+    private void updateLimitDefaults(
+            Permission permission,
+            @Nullable BigDecimal minLimitKw,
+            @Nullable BigDecimal maxLimitKw
+    ) {
+        var dataNeed = Objects.requireNonNull(permission.dataNeed());
+        if (!dataNeed.supportsLimitDefaults()) {
+            LOGGER.warn(
+                    "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: permission is not inbound or does not have the MIN_MAX_ENVELOPE_CIM_V1_12 schema",
+                    permission.id());
+            return;
+        }
+
+        var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
+        if (!isRangeValid) {
+            LOGGER.warn(
+                    "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: minLimitKw {} must be less than maxLimitKw {}",
+                    permission.id(),
+                    minLimitKw,
+                    maxLimitKw);
+            return;
+        }
+
+        var now = clock.instant();
+        connectionLimitDefaultRepository.closeOpenDefaults(permission.id(), now);
+        if (minLimitKw != null || maxLimitKw != null) {
+            var defaultLimit = new ConnectionLimitDefault(permission.id(),
+                                                          permission.meterId(),
+                                                          now,
+                                                          null,
+                                                          minLimitKw,
+                                                          maxLimitKw);
+            connectionLimitDefaultRepository.save(defaultLimit);
+        }
+        LOGGER.info("Updated limit defaults to min {} and max {} for permission {}",
+                    minLimitKw,
+                    maxLimitKw,
+                    permission.id());
     }
 
     private void terminate(Permission permission) {

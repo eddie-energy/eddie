@@ -26,8 +26,9 @@ import java.util.*;
  *   <li>Emit effective time segments.</li>
  * </ol>
  * <p>
- * If no limit is active for a segment, the scope default is used when available.
- * If neither limits nor a default exist for a scope, no segment is emitted.
+ * If no limit is active for a segment, the scope defaults are used when available.
+ * Defaults are time-bounded and only apply between their own start and end.
+ * If neither limits nor any default coverage exists for a scope, no segment is emitted.
  * <p>
  * If multiple active limits share the same newest creation timestamp, the most recently inserted is used.
  */
@@ -56,10 +57,10 @@ public final class ConnectionLimitCalculation {
             scopedLimits.computeIfAbsent(scope, ignored -> new ArrayList<>()).add(limit);
         }
 
-        var scopedDefaults = new HashMap<Scope, ConnectionLimitDefault>();
+        var scopedDefaults = new HashMap<Scope, List<ConnectionLimitDefault>>();
         for (ConnectionLimitDefault limitDefault : defaults) {
-            var scope = new Scope(limitDefault.permissionId(), Objects.requireNonNullElse(limitDefault.meterId(), ""));
-            scopedDefaults.put(scope, limitDefault);
+            var scope = new Scope(limitDefault.permissionId(), limitDefault.meterId());
+            scopedDefaults.computeIfAbsent(scope, ignored -> new ArrayList<>()).add(limitDefault);
         }
 
         var scopes = new LinkedHashSet<Scope>();
@@ -81,10 +82,10 @@ public final class ConnectionLimitCalculation {
     private List<ConnectionLimitDto> calculateScoped(
             Scope scope,
             @Nullable List<ConnectionLimit> limits,
-            @Nullable ConnectionLimitDefault defaultLimit
+            @Nullable List<ConnectionLimitDefault> defaultLimits
     ) {
         if (limits == null || limits.isEmpty()) {
-            return defaultLimit == null ? List.of() : List.of(defaultDto(scope, from, to, defaultLimit));
+            return defaultLimits == null ? List.of() : defaultDtos(scope, from, to, defaultLimits);
         }
 
         var result = new ArrayList<ConnectionLimitDto>();
@@ -95,8 +96,31 @@ public final class ConnectionLimitCalculation {
 
             if (segment.limit() != null) {
                 result.add(limitDto(scope, segment.from(), segment.to(), segment.limit()));
-            } else if (defaultLimit != null) {
-                result.add(defaultDto(scope, segment.from(), segment.to(), defaultLimit));
+            } else if (defaultLimits != null) {
+                result.addAll(defaultDtos(scope, segment.from(), segment.to(), defaultLimits));
+            }
+        }
+
+        return result;
+    }
+
+    private List<ConnectionLimitDto> defaultDtos(
+            Scope scope,
+            Instant from,
+            Instant to,
+            List<ConnectionLimitDefault> defaultLimits
+    ) {
+        var result = new ArrayList<ConnectionLimitDto>();
+
+        for (var defaultLimit : defaultLimits) {
+            var defaultStart = defaultLimit.start().isAfter(from) ? defaultLimit.start() : from;
+            var defaultEnd = defaultLimit.end();
+            if (defaultEnd == null || !defaultEnd.isBefore(to)) {
+                defaultEnd = to;
+            }
+
+            if (defaultEnd.isAfter(defaultStart)) {
+                result.add(defaultDto(scope, defaultStart, defaultEnd, defaultLimit));
             }
         }
 

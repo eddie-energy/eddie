@@ -50,7 +50,10 @@ public class ConnectionLimitService {
                                                                             from,
                                                                             to);
 
-        var defaults = connectionLimitDefaultRepository.findByUserIdAndPermissionId(currentUserId, permissionId);
+        var defaults = connectionLimitDefaultRepository.findByUserIdAndPermissionId(currentUserId,
+                                                                                    permissionId,
+                                                                                    from,
+                                                                                    to);
 
         return new ConnectionLimitCalculation(limits, defaults, from, to).effectiveLimits();
     }

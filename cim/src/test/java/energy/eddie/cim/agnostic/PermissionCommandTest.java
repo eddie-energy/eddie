@@ -5,6 +5,7 @@ package energy.eddie.cim.agnostic;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -28,6 +29,13 @@ class PermissionCommandTest {
         var command = new PermissionCommand.SetTransmissionEnabled("rc-1", PERMISSION_ID, true);
 
         assertEquals(PermissionCommand.Action.SET_TRANSMISSION_ENABLED, command.action());
+    }
+
+    @Test
+    void action_updateLimitDefaults_returnsUpdateLimitDefaults() {
+        var command = new PermissionCommand.UpdateLimitDefaults("rc-1", PERMISSION_ID, BigDecimal.ONE, BigDecimal.TEN);
+
+        assertEquals(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS, command.action());
     }
 
     @Test
