@@ -4,6 +4,7 @@
 package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.record.FailedToSendEntity;
+import jakarta.annotation.Nullable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,13 @@ import java.util.UUID;
 
 public interface FailedToSendRepository extends JpaRepository<FailedToSendEntity, Long> {
     List<FailedToSendEntity> findAllByPermissionId(UUID permissionId);
+
+    @Nullable
+    FailedToSendEntity findTopByPermissionIdOrderByIdDesc(UUID permissionId);
+
+    List<FailedToSendEntity> findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(
+            UUID permissionId, long afterId, long ceilingId
+    );
 
     void deleteAllByPermissionId(UUID permissionId);
 

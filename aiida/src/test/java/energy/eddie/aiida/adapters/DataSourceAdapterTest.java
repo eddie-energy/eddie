@@ -111,7 +111,7 @@ class DataSourceAdapterTest {
     void givenSmartGateways_returnsAdapter() {
         // Given
         var dataSource = mock(SmartGatewaysDataSource.class);
-        when(dataSource.topic()).thenReturn("");
+        when(dataSource.topic()).thenReturn("aiida/d450/dsmr/reading/+");
 
         // When
         var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);

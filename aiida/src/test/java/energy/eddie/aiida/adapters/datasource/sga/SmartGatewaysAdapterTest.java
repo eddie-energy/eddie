@@ -21,13 +21,16 @@ import reactor.test.StepVerifier;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.List;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class SmartGatewaysAdapterTest {
+    private static final String TOPIC_PREFIX = "aiida/abcd";
     private static final SmartGatewaysDataSource DATA_SOURCE = mock(SmartGatewaysDataSource.class);
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
 
@@ -38,7 +41,7 @@ class SmartGatewaysAdapterTest {
         StepVerifier.setDefaultTimeout(Duration.ofSeconds(1));
 
         when(DATA_SOURCE.internalHost()).thenReturn("tcp://localhost:1883");
-        when(DATA_SOURCE.topic()).thenReturn("aiida/test");
+        when(DATA_SOURCE.topic()).thenReturn(TOPIC_PREFIX + "/dsmr/reading/+");
         when(DATA_SOURCE.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(MQTT_CONFIGURATION.password()).thenReturn("password");
 
@@ -47,6 +50,7 @@ class SmartGatewaysAdapterTest {
 
     @AfterEach
     void tearDown() {
+        adapter.close();
         LogCaptor.forClass(SmartGatewaysAdapter.class).clearLogs();
     }
 
@@ -138,7 +142,7 @@ class SmartGatewaysAdapterTest {
                                                               .stream()
                                                               .anyMatch(v ->
                                                                                 v.dataTag() == POSITIVE_ACTIVE_ENERGY
-                                                                                && v.value().equals("45"))
+                                                                                && v.value().equals("90"))
                                                    && aiidaRecord.aiidaRecordValues()
                                                                  .stream()
                                                                  .anyMatch(v ->
@@ -151,8 +155,72 @@ class SmartGatewaysAdapterTest {
         }
     }
 
+    @Test
+    void givenDifferentDevicePrefixes_onlyConfiguredDeviceEmitsRecord() {
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any())).thenReturn(mockClient);
+
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
+                        .expectSubscription()
+                        .then(() -> {
+                            for (SmartGatewaysTopic topic : SmartGatewaysTopic.values()) {
+                                if (topic.isExpected()) {
+                                    var message = new MqttMessage("999".getBytes(StandardCharsets.UTF_8));
+                                    adapter.messageArrived("aiida/other/" + topic.topic(), message);
+                                    adapter.messageArrived("aiida/" + topic.topic(), message);
+                                }
+                            }
+                        })
+                        .expectNoEvent(Duration.ofMillis(50))
+                        .then(() -> {
+                            for (SmartGatewaysTopic topic : SmartGatewaysTopic.values()) {
+                                if (topic.isExpected()) {
+                                    send(topic.topic(), "1");
+                                }
+                            }
+                        })
+                        .expectNextMatches(record -> record.aiidaRecordValues().stream()
+                                                           .anyMatch(value -> value.dataTag() == POSITIVE_ACTIVE_ENERGY
+                                                                              && value.value().equals("2")))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .verify();
+        }
+    }
+
+    @Test
+    void givenIncompleteBatch_timeoutEmitsAvailablePowerWithoutInventingEnergyTotal() {
+        try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
+            var mockClient = mock(MqttAsyncClient.class);
+            mockMqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any())).thenReturn(mockClient);
+
+            StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
+                        .then(() -> {
+                            send(SmartGatewaysTopic.ELECTRICITY_DELIVERED_1.topic(), "100.125");
+                            send(SmartGatewaysTopic.ELECTRICITY_CURRENTLY_DELIVERED.topic(), "0.531");
+                        })
+                        .expectNextMatches(record -> record.aiidaRecordValues().size() == 1
+                                                     && record.aiidaRecordValues().getFirst().dataTag()
+                                                        == POSITIVE_ACTIVE_INSTANTANEOUS_POWER
+                                                     && record.aiidaRecordValues().getFirst().value().equals("0.531"))
+                        .then(adapter::close)
+                        .expectComplete()
+                        .verify(Duration.ofSeconds(20));
+        }
+    }
+
+    @Test
+    void invalidSubscriptionIsRejected() {
+        for (String topic : List.of("/dsmr/reading/+", "aiida/abcd/#")) {
+            when(DATA_SOURCE.topic()).thenReturn(topic);
+            assertThatThrownBy(() -> new SmartGatewaysAdapter(DATA_SOURCE, MQTT_CONFIGURATION))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
     private void send(String topicSuffix, String value) {
-        String topic = "aiida/" + topicSuffix;
+        String topic = TOPIC_PREFIX + "/" + topicSuffix;
         MqttMessage message = new MqttMessage(value.getBytes(StandardCharsets.UTF_8));
         adapter.messageArrived(topic, message);
     }
