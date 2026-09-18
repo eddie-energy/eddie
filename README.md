@@ -4,18 +4,22 @@
 
 [EDDIE](https://eddie.energy/) is an open-source European energy-data initiative built through cooperation between research organisations, universities, energy-sector specialists, technology companies and individual contributors.
 
-**EDDIE makes it possible for energy-data-driven services to connect to cross-border data-exchange environments across the EU—and beyond—in a matter of minutes.** Final customers benefit from a standardised and trusted workflow that enables them to participate in flexibility services, energy sharing, energy-efficiency schemes and many other data-driven applications.
+**EDDIE makes it possible for energy-data-driven services to connect to cross-border data-exchange environments across the EU—and beyond—in a matter of minutes.**
+Final customers benefit from a standardised and trusted workflow that enables them to participate in flexibility services, energy sharing, energy-efficiency schemes and many other data-driven applications.
 
 > [!IMPORTANT]
-> **Open source:** The EDDIE Framework and AIIDA open-source core components are released under the [Apache License 2.0](https://github.com/eddie-energy/eddie/blob/main/LICENSE), supporting open use, modification and redistribution under its terms. Third-party assets, demonstrators, branding and domains may be subject to separate terms.
+> **Open source:** The EDDIE Framework and AIIDA open-source core components are released under the [Apache License 2.0](https://github.com/eddie-energy/eddie/blob/main/LICENSE), supporting open use, modification and redistribution under its terms.
+> Third-party assets, demonstrators, branding and domains may be subject to separate terms.
 
-EDDIE’s overarching technical and interoperability architecture was developed by <a href="https://entarc.eu/" target="_blank" rel="noopener noreferrer">EntArc.eu</a> and <a href="https://www.digital4grids.com/" target="_blank" rel="noopener noreferrer">Digital4Grids</a>. Component design and implementation have been collaborative efforts across the consortium. During the Horizon Europe project, <a href="https://fh-ooe.at/" target="_blank" rel="noopener noreferrer">FH Upper Austria</a> provided the principal software-engineering capacity, complemented by implementation, data-modelling, standardisation, research and validation work from other consortium partners and community contributors.
+EDDIE’s overarching technical and interoperability architecture was developed by <a href="https://entarc.eu/" target="_blank" rel="noopener noreferrer">EntArc.eu</a> and <a href="https://www.digital4grids.com/" target="_blank" rel="noopener noreferrer">Digital4Grids</a>.
+Component design and implementation have been collaborative efforts across the consortium.
+During the Horizon Europe project, <a href="https://fh-ooe.at/" target="_blank" rel="noopener noreferrer">FH Upper Austria</a> provided the principal software-engineering capacity, complemented by implementation, data-modelling, standardisation, research and validation work from other consortium partners and community contributors.
 
 ## Start with the EDDIE tutorial
 
 Follow the official quickstart to launch the EDDIE Framework, explore the demonstration environment and understand the basic operator workflow.
 
-### [Open the EDDIE tutorial →](https://architecture.eddie.energy/framework/1-running/OPERATION.html#quickstart)
+### [➡ ️Open the EDDIE tutorial](https://architecture.eddie.energy/framework/1-running/OPERATION.html#quickstart)
 
 > [!NOTE]
 > For feedback and questions, [create an issue](https://github.com/eddie-energy/eddie/issues/new/choose) or contact [georg.hartner@eddie.energy](mailto:georg.hartner@eddie.energy) and [florian.weingartshofer@fh-hagenberg.at](mailto:florian.weingartshofer@fh-hagenberg.at).
@@ -41,7 +45,7 @@ The Clean Energy Package establishes customer rights to access energy data and s
 
 To address these issues, EDDIE introduces a decentralized, distributed, open-source Data Space, in alignment with the efforts of the EU Smart Grids Task Force on Implementing Acts on Interoperability and other European initiatives. The European Distributed Data Infrastructure for Energy (EDDIE) significantly reduces data integration costs, allowing energy service companies to operate and compete seamlessly in a unified European market. Additionally, an Administrative Interface for In-house Data Access (AIIDA) ensures secure and reliable access to valuable real-time data based on customer consent.
 
-Having been created under the umbrella of Horizon Europe Project EDDIE ( https://eddie.energy ), both the EDDIE Framework and AIIDA are being extended to support further functional building blocks as required by the **Common European Energy Data Space (CEEDS)**.
+Having been created under the umbrella of Horizon Europe Project EDDIE (https://eddie.energy), both the EDDIE Framework and AIIDA are being extended to support further functional building blocks as required by the **Common European Energy Data Space (CEEDS)**.
 
 ### Scope
 
