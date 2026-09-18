@@ -42,10 +42,14 @@ val cpCommonTypesVersions = mapOf("01p20" to "2482726eb973718551dcb006b3a65405")
 val cpNotificationVersions = mapOf("01p13" to "fcbbc0f86b0b3da5a7f7c154176b132c")
 val cpRequestVersions = mapOf("01p12" to "eb503977846a069ec0b68f5f3104e2fa")
 val masterDataVersions = mapOf(
-    "01p32" to "98dda83247de9459de3a7a588992056c", // current
-    "01p33" to "100f8e7b4c8c836ed2d852a9d035e460" // current
+    "01p32" to "98dda83247de9459de3a7a588992056c",
+    "01p33" to "100f8e7b4c8c836ed2d852a9d035e460",
+    "01p35" to "57df3442758ac299832f2add6e752d25"
 )
-val ecmplistVersions = mapOf("01p10" to "03bf15c7579623f9b2d5ecc0f5f30f10")
+val ecmplistVersions = mapOf(
+    "01p10" to "03bf15c7579623f9b2d5ecc0f5f30f10",
+    "01p20" to "c5414db9330ea33da2706cd2663beb6b" // current, active from 2026-10-05
+)
 
 val edaVersionMatrix: Map<String, Map<String, String>> = mapOf(
     "https://www.ebutilities.at/schemata/customerconsent/cmnotification/%s/CMNotification_%s.xsd" to cmNotificationVersions,

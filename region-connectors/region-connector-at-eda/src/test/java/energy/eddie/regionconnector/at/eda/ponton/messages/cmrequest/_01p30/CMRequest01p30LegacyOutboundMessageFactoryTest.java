@@ -19,61 +19,72 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedTran
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
-class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
+class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMessageFactoryTest {
 
 
     @Override
     protected CMRequestOutboundMessageFactory factory() {
-        return new CMRequest01p30OutboundMessageFactory(marshaller);
+        return new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
     }
 
     @Test
     void isActive_on_12_04_2026_returnsFalse() {
         // given
-        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2026, Month.APRIL, 12));
+        var active = factory.isActive(LocalDate.of(2026, 4, 12));
 
         // then
         assertFalse(active);
     }
 
     @Test
-    void isActive_on_04_10_2026_returnsFalse() {
+    void isActive_on_13_04_2026_returnsTrue() {
         // given
-        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2026, Month.OCTOBER, 4));
-
-        // then
-        assertFalse(active);
-    }
-
-    @Test
-    void isActive_on_05_10_2026_returnsTrue() {
-        // given
-        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
-
-        // when
-        var active = factory.isActive(LocalDate.of(2026, Month.OCTOBER, 5));
+        var active = factory.isActive(LocalDate.of(2026, 4, 13));
 
         // then
         assertTrue(active);
     }
 
     @Test
-    void isMessageType_01p50() {
+    void isActive_on_04_10_2026_returnsTrue() {
+        // given
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2026, 10, 4));
+
+        // then
+        assertTrue(active);
+    }
+
+    @Test
+    void isActive_on_05_10_2026_returnsFalse() {
+        // given
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2026, 10, 5));
+
+        // then
+        assertFalse(active);
+    }
+
+    @Test
+    void isMessageType_legacy() {
         // Given
-        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
         var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
                                           new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
                                           "cmReqId",
@@ -89,15 +100,15 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
 
         // Then
         assertAll(
-                () -> assertEquals("CM_REQ_ONL_01.50", res.getMessageType().getSchemaSet().getValue()),
-                () -> assertEquals("01.50", res.getMessageType().getVersion().getValue())
+                () -> assertEquals(MessageCodes.Request.SCHEMA_LEGACY, res.getMessageType().getSchemaSet().getValue()),
+                () -> assertEquals(MessageCodes.Request.VERSION_LEGACY, res.getMessageType().getVersion().getValue())
         );
     }
 
     @Test
-    void forECRequest_returnsECRequestType() {
+    void forECRequest_returnsLEGACYECRequestType() {
         // Given
-        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
         var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
                                           new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
                                           "cmReqId",
@@ -117,16 +128,16 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
         // Then
         assertThat(res.getOutboundMetaData())
                 .satisfies(metaData -> {
-                    assertEquals(MessageCodes.EcRequest.SCHEMA, metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.EcRequest.SCHEMA_LEGACY, metaData.getMessageType().getSchemaSet().getValue());
                     assertEquals(MessageCodes.EcRequest.CODE, metaData.getMessageType().getName().getValue());
-                    assertEquals(MessageCodes.EcRequest.VERSION, metaData.getMessageType().getVersion().getValue());
+                    assertEquals(MessageCodes.EcRequest.VERSION_LEGACY, metaData.getMessageType().getVersion().getValue());
                 });
     }
 
     @Test
-    void forCCMORequest_returnsCCMORequestType() {
+    void forCCMORequest_returnsLEGACYCCMORequestType() {
         // Given
-        var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
+        var factory = new CMRequest01p30LegacyOutboundMessageFactory(marshaller);
         var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
                                           new CCMOTimeFrame(LocalDate.now(ZoneOffset.UTC), null),
                                           "cmReqId",
@@ -143,9 +154,9 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
         // Then
         assertThat(res.getOutboundMetaData())
                 .satisfies(metaData -> {
-                    assertEquals(MessageCodes.Request.SCHEMA, metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.Request.SCHEMA_LEGACY, metaData.getMessageType().getSchemaSet().getValue());
                     assertEquals(MessageCodes.Request.CODE, metaData.getMessageType().getName().getValue());
-                    assertEquals(MessageCodes.Request.VERSION, metaData.getMessageType().getVersion().getValue());
+                    assertEquals(MessageCodes.Request.VERSION_LEGACY, metaData.getMessageType().getVersion().getValue());
                 });
     }
 }

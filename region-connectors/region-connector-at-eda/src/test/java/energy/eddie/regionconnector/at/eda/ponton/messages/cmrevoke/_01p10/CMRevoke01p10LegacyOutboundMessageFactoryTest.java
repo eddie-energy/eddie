@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(SpringExtension.class)
 @Import(MarshallerConfig.class)
-class CMRevoke01p10OutboundMessageFactoryTest {
+class CMRevoke01p10LegacyOutboundMessageFactoryTest {
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     protected Jaxb2Marshaller marshaller;
@@ -46,25 +46,21 @@ class CMRevoke01p10OutboundMessageFactoryTest {
                 PermissionProcessStatus.ACCEPTED,
                 Optional.of("TestConsentId")
         );
-        CCMORevoke ccmoRevoke = new CCMORevoke(
-                permissionRequest,
-                "EP123456",
-                "messageId",
-                "TestReason"
-        );
+        String eligiblePartyId = "TestEligiblePartyId";
+        CCMORevoke ccmoRevoke = new CCMORevoke(permissionRequest, eligiblePartyId, "TestReason", "");
 
         // when
-        var message = new CMRevoke01p10OutboundMessageFactory(marshaller).createOutboundMessage(ccmoRevoke);
+        var message = new CMRevoke01p10LegacyOutboundMessageFactory(marshaller).createOutboundMessage(ccmoRevoke);
 
         // then
         assertNotNull(message);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"2026-10-05", "2026-10-06", "2027-04-09", "2028-04-10"})
-    void isActive_afterStartDate_ReturnsTrue(LocalDate date) {
+    @ValueSource(strings = {"2026-04-13", "2026-04-14", "2026-10-04"})
+    void isActive_betweenStartAndOverrideDate_ReturnsTrue(LocalDate date) {
         // given
-        var factory = new CMRevoke01p10OutboundMessageFactory(marshaller);
+        var factory = new CMRevoke01p10LegacyOutboundMessageFactory(marshaller);
 
         // when
         var active = factory.isActive(date);
@@ -74,10 +70,10 @@ class CMRevoke01p10OutboundMessageFactoryTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"2026-04-12", "2026-10-04"})
-    void isActive_whenInactive_ReturnsFalse(LocalDate date) {
+    @ValueSource(strings = {"2026-04-12", "2026-10-05", "2027-04-09"})
+    void isActive_outsideActivePeriod_ReturnsFalse(LocalDate date) {
         // given
-        var factory = new CMRevoke01p10OutboundMessageFactory(marshaller);
+        var factory = new CMRevoke01p10LegacyOutboundMessageFactory(marshaller);
 
         // when
         var active = factory.isActive(date);
