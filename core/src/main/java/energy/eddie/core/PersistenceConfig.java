@@ -24,7 +24,6 @@ public class PersistenceConfig {
      *
      * @param objectMapper Spring configured ObjectMapper
      * @return a customized hibernate config
-     * @see MapperConfig#jsonCustomizer()
      */
     @Bean
     public HibernatePropertiesCustomizer hibernatePropertiesCustomizer(ObjectMapper objectMapper) {
