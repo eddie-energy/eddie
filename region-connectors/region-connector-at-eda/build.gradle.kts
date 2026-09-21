@@ -6,7 +6,6 @@ import de.undercouch.gradle.tasks.download.VerifyAction
 import energy.eddie.configureJavaCompileWithErrorProne
 import org.springframework.boot.gradle.tasks.bundling.BootJar
 import java.net.URI
-import java.util.zip.ZipFile
 
 plugins {
     id("energy.eddie.java-conventions")
@@ -115,12 +114,12 @@ dependencies {
     testRuntimeOnly(libs.postgresql)
 }
 
-tasks.getByName<Test>("test") {
+tasks.named<Test>("test") {
     useJUnitPlatform()
 }
 
 // Directory for generated java files
-val generatedXJCJavaDir = "${project.layout.buildDirectory.asFile.get().absolutePath}/generated/sources/xjc/main/java"
+val generatedXJCJavaDir = layout.buildDirectory.dir("generated/sources/xjc/main/java")
 
 // Add generated sources to the main source set
 sourceSets {
@@ -156,15 +155,21 @@ val downloadEDASchemas = tasks.register<Download>("downloadEDASchemas") {
 val validatedEDASchemas = tasks.register("verifyEDASchemas") {
     description = "Verifies the EDA Schemas"
     group = "download"
+
     dependsOn(downloadEDASchemas)
+
     inputs.dir(edaSchemaDir)
+
+    // Store build script state outside action since configuration cache cannot serialize it
+    val schemaLayout = layout
+    val schemaSources = sources
+    val schemaPath = edaSchemaPath
+
     doLast {
-        if (!downloadEDASchemas.get().didWork)
-            return@doLast
-        val verify = VerifyAction(layout)
-        sources.forEach { (url, checksum) ->
-            val file = file(url.toURL().file)
-            verify.src(layout.buildDirectory.file("$edaSchemaPath${file.name}"))
+        val verify = VerifyAction(schemaLayout)
+        schemaSources.forEach { (url, checksum) ->
+            val fileName = url.toURL().file.substringAfterLast('/')
+            verify.src(schemaLayout.buildDirectory.file("$schemaPath$fileName"))
             verify.checksum(checksum)
             verify.execute()
         }
@@ -178,16 +183,13 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
     classpath(jaxb)
     mainClass.set("com.sun.tools.xjc.XJCFacade")
 
-    // make sure the directory exists
-    file(generatedXJCJavaDir).mkdirs()
-
     // Disable maxOccurs <= 5000, see https://coderanch.com/t/671552/languages/xsd-parsing-ant-xjc-goal
     systemProperty("jdk.xml.maxOccurLimit", "100000")
 
     // explicitly set the encoding because of rare issues discovered on Windows 10
     args(
         "-d",
-        generatedXJCJavaDir,
+        generatedXJCJavaDir.get().asFile,
         edaSchemaDir.get(),
         "-mark-generated",
         "-npa",
@@ -206,28 +208,39 @@ val generateEDASchemaClasses = tasks.register<JavaExec>("generateEDASchemaClasse
 val pontonUri: URI =
     URI.create("https://www.ponton.de/downloads/xp/${pontonVersion}/PontonXP-Messenger-${pontonVersion}-Linux.zip")
 val pontonDestinationFile = layout.projectDirectory.file("libs/PontonXP-Messenger-${pontonVersion}-Linux.zip")
-if (!pontonLib.asFile.exists()) {
-    download.run {
-        src(pontonUri)
-        dest(pontonDestinationFile)
-        overwrite(false)
-        onlyIfModified(true)
-    }
-    ZipFile(pontonDestinationFile.asFile).use { zip ->
-        val entry = zip.getEntry("lib/adapterapi2.jar")
-        logger.lifecycle("Extracting $entry")
-        zip.getInputStream(entry).use { input ->
-            val destFile = pontonLib.asFile
-            destFile.parentFile.mkdirs()
-            destFile.outputStream().use { output ->
-                input.copyTo(output)
-            }
+
+val downloadPonton = tasks.register<Download>("downloadPonton") {
+    description = "Downloads the Ponton XP Messenger"
+    group = "download"
+
+    src(pontonUri)
+    dest(pontonDestinationFile)
+    overwrite(false)
+    onlyIfModified(true)
+
+    outputs.file(pontonDestinationFile)
+}
+
+val extractPonton = tasks.register<Copy>("extractPonton") {
+    description = "Extracts the downloaded Ponton XP Messenger"
+    group = "download"
+
+    dependsOn(downloadPonton)
+
+    from(zipTree(pontonDestinationFile)) {
+        include("lib/adapterapi2.jar")
+        eachFile {
+            relativePath = RelativePath(false, name)
         }
     }
+    into(pontonLib.asFile.parentFile)
+
+    includeEmptyDirs = false
+    outputs.file(pontonLib)
 }
 
 tasks.named("compileJava") {
-    // generate the classes before compiling
+    dependsOn(extractPonton)
     dependsOn(generateEDASchemaClasses)
 }
 
@@ -265,10 +278,10 @@ sonarqube {
 }
 
 // disable bootJar task as it needs a main class and region connectors do not have one
-tasks.getByName<BootJar>("bootJar") {
+tasks.named<BootJar>("bootJar") {
     enabled = false
 }
 
-tasks.getByName<Jar>("jar") {
+tasks.named<Jar>("jar") {
     enabled = true
 }
