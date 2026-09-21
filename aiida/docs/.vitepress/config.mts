@@ -170,33 +170,46 @@ export default withMermaid(
           ],
         },
         {
+          text: "Integrating",
+          items: [
+            {
+              text: "Acknowledgements",
+              link: "/2-integrating/acknowledgements.md",
+            },
+            {
+              text: "Provisioning",
+              link: "/2-integrating/inbound-provisioning.md",
+            },
+          ]
+        },
+        {
           text: "Extending",
           items: [
             {
               text: "Adding a data source",
-              link: "/2-extending/data-source/data-source.md",
+              link: "/3-extending/data-source/data-source.md",
               collapsed: true,
               items: [
                 {
                   text: "Documentation",
-                  link: "/2-extending/data-source/documentation.md",
+                  link: "/3-extending/data-source/documentation.md",
                 },
               ],
             },
             {
               text: "Adding a schema",
-              link: "/2-extending/schema/schema.md",
+              link: "/3-extending/schema/schema.md",
               collapsed: true,
               items: [
                 {
                   text: "Documentation",
-                  link: "/2-extending/schema/documentation",
+                  link: "/3-extending/schema/documentation",
                 },
               ],
             },
             {
               text: "Edit documentation",
-              link: "/2-extending/documentation",
+              link: "/3-extending/documentation",
             },
           ],
         },
