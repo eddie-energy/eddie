@@ -143,6 +143,7 @@ export default withMermaid(
               ],
             },
             { text: "Admin Console", link: "/1-running/admin-console" },
+            { text: "Management APIs", link: "/1-running/management" },
             { text: "Example App", link: "/1-running/example-app" },
           ],
         },
