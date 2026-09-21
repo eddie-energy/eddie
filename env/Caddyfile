@@ -1,10 +1,14 @@
-:8080 {
-# Adds HTTP Basic Auth, login is "username" and "hiccup" as password
-    basicauth {
-        username $2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4IjWJPDhjvG
+:9000 {
+    handle_path /eddie/* {
+        reverse_proxy host.docker.internal:8080
     }
 
-    reverse_proxy eddie:9090 {
-        header_up Host {upstream_hostport}
+    handle_path /eddie/management/* {
+    	reverse_proxy host.docker.internal:9090
+    }
+
+    basicauth /eddie/management/* {
+        # encrypted value for 'password'
+        admin $2a$10$qYTmwhGa3dd7Sl1CdXKKHOfmf0lNXL3L2k4CVhhm3CfY131hrcEyS
     }
 }

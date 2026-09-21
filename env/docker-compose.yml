@@ -119,12 +119,14 @@ services:
   caddy:
     image: caddy:alpine
     ports:
-      - "9000:8080"
+      - "9000:9000"
     profiles:
       - auth
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   caddy_data:
