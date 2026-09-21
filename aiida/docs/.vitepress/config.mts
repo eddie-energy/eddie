@@ -177,6 +177,10 @@ export default withMermaid(
               link: "/2-integrating/acknowledgements.md",
             },
             {
+              text: "Forwarding",
+              link: "/2-integrating/inbound-forwarding.md",
+            },
+            {
               text: "Provisioning",
               link: "/2-integrating/inbound-provisioning.md",
             },
