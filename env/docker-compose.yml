@@ -67,6 +67,14 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    profiles:
+      - amqp
+
   emqx:
     image: emqx/emqx:5.8
     container_name: eddie-emqx
