@@ -900,6 +900,51 @@ class XmlMessageSerdeTest {
         assertEquals(2, res.size());
     }
 
+    @Test
+    void testDeserialize_withMessageType_deserializesCimType() throws SerdeInitializationException, SerializationException, DeserializationException {
+        // Given
+        var serde = new XmlMessageSerde();
+        var document = new PermissionEnvelope();
+        var serialized = serde.serialize(document);
+
+        // When
+        var res = serde.deserialize(serialized, CimMessageTypes.PERMISSION_V0_82);
+
+        // Then
+        assertInstanceOf(PermissionEnvelope.class, res);
+    }
+
+    @Test
+    void testDeserialize_withCustomMessageType_deserializesNonCimType() throws SerdeInitializationException, DeserializationException {
+        // Given
+        var serde = new XmlMessageSerde();
+        var message = "<HashMap><key>value</key></HashMap>".getBytes(StandardCharsets.UTF_8);
+        MessageType customType = () -> HashMap.class;
+
+        // When
+        var res = serde.deserialize(message, customType);
+
+        // Then
+        assertEquals(Map.of("key", "value"), res);
+    }
+
+    @SuppressWarnings({"resource", "DataFlowIssue"})
+    @Test
+    void testDeserializeList_withMessageType_deserializesCimTypes() throws SerdeInitializationException, IOException, DeserializationException {
+        // Given
+        var input = XmlMessageSerdeTest.class
+                .getResourceAsStream("/cim/v0_82/permissionMarketDocumentList.xml")
+                .readAllBytes();
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.deserializeList(input, CimMessageTypes.PERMISSION_V0_82);
+
+        // Then
+        assertEquals(2, res.size());
+        assertInstanceOf(PermissionEnvelope.class, res.getFirst());
+    }
+
     private static int countExplicitNamespaces(byte[] xml) {
         var xpath = new JAXPXPathEngine();
         // language=XPATH

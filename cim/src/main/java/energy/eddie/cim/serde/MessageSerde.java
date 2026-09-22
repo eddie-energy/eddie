@@ -29,5 +29,42 @@ public interface MessageSerde {
      */
     <T> T deserialize(byte[] message, Class<T> messageType) throws DeserializationException;
 
+    /**
+     * Deserializes a message based on a {@link MessageType}.
+     *
+     * @param message     the message that should be deserialized.
+     * @param messageType the type of the destination message.
+     * @param <T>         the destination type.
+     * @return the deserialized object.
+     * @throws DeserializationException if the deserialization fails.
+     */
+    @SuppressWarnings("unchecked")
+    default <T> T deserialize(byte[] message, MessageType messageType) throws DeserializationException {
+        return (T) deserialize(message, (Class<Object>) messageType.messageClass());
+    }
+
+    /**
+     * Deserializes a message to a list of elements based on the given elementType.
+     *
+     * @param message     the message that should be deserialized.
+     * @param elementType the type of the elements of the destination list.
+     * @param <T>         the element type.
+     * @return the deserialized list.
+     * @throws DeserializationException if the deserialization fails.
+     */
     <T> List<T> deserializeList(byte[] message, Class<T> elementType) throws DeserializationException;
+
+    /**
+     * Deserializes a message to a list of elements based on a {@link MessageType}.
+     *
+     * @param message     the message that should be deserialized.
+     * @param elementType the type of the elements of the destination list.
+     * @param <T>         the element type.
+     * @return the deserialized list.
+     * @throws DeserializationException if the deserialization fails.
+     */
+    @SuppressWarnings("unchecked")
+    default <T> List<T> deserializeList(byte[] message, MessageType elementType) throws DeserializationException {
+        return deserializeList(message, (Class<T>) elementType.messageClass());
+    }
 }

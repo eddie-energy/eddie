@@ -7,6 +7,7 @@ import energy.eddie.cim.agnostic.ConnectionStatusMessage;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
+import energy.eddie.cim.v0_91_08.RTREnvelope;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.node.NullNode;
 
@@ -16,8 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JsonMessageSerdeTest {
     @Test
@@ -110,6 +110,36 @@ class JsonMessageSerdeTest {
 
         // When
         var res = serde.deserializeList(input, PermissionEnvelope.class);
+
+        // Then
+        assertEquals(2, res.size());
+    }
+
+    @Test
+    void testDeserialize_withMessageType_deserializesCimType() throws SerializationException, DeserializationException {
+        // Given
+        var serde = new JsonMessageSerde();
+        var document = new RTREnvelope();
+        var serialized = serde.serialize(document);
+
+        // When
+        var res = serde.deserialize(serialized, CimMessageTypes.REDISTRIBUTION_TRANSACTION_REQUEST_V0_91_08);
+
+        // Then
+        assertInstanceOf(RTREnvelope.class, res);
+    }
+
+    @SuppressWarnings({"resource", "DataFlowIssue"})
+    @Test
+    void testDeserializeList_withMessageType_deserializesCimTypes() throws IOException, DeserializationException {
+        // Given
+        var input = JsonMessageSerde.class
+                .getResourceAsStream("/cim/v0_82/permissionMarketDocumentList.json")
+                .readAllBytes();
+        var serde = new JsonMessageSerde();
+
+        // When
+        var res = serde.deserializeList(input, CimMessageTypes.PERMISSION_V0_82);
 
         // Then
         assertEquals(2, res.size());

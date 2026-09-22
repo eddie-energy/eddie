@@ -3,16 +3,6 @@
 
 package energy.eddie.cim.serde;
 
-import energy.eddie.cim.v0_82.ap.AccountingPointEnvelope;
-import energy.eddie.cim.v0_82.pmd.PermissionEnvelope;
-import energy.eddie.cim.v0_82.vhd.ValidatedHistoricalDataEnvelope;
-import energy.eddie.cim.v0_91_08.RTREnvelope;
-import energy.eddie.cim.v1_04.rtd.RTDEnvelope;
-import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
-import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
-import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
-import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
@@ -27,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A {@link MessageSerde} implementation that produces CIM compliant XML.
@@ -34,23 +25,9 @@ import java.util.*;
  * Uses the JAXB for CIM documents and {@link ObjectMapper} as fallback.
  */
 public class XmlMessageSerde implements MessageSerde {
-    private static final Set<Class<?>> CIM_CLASSES = Set.of(
-            // CIM v0.82
-            PermissionEnvelope.class,
-            ValidatedHistoricalDataEnvelope.class,
-            AccountingPointEnvelope.class,
-            // CIM v0.91.08
-            RTREnvelope.class,
-            // CIM v1.04
-            VHDEnvelope.class,
-            RTDEnvelope.class,
-            // CIM v1.12
-            energy.eddie.cim.v1_12.rtd.RTDEnvelope.class,
-            AcknowledgementEnvelope.class,
-            ESRDMDEnvelope.class,
-            RECMMOEEnvelope.class,
-            RequestPermissionEnvelope.class
-    );
+    private static final Set<Class<?>> CIM_CLASSES = Arrays.stream(CimMessageTypes.values())
+                                                           .map(MessageType::messageClass)
+                                                           .collect(Collectors.toUnmodifiableSet());
     private final Map<Class<?>, Marshaller> marshallers = new HashMap<>();
     private final Map<Class<?>, Unmarshaller> unmarshallers = new HashMap<>();
     private final ObjectMapper objectMapper;
