@@ -67,6 +67,14 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    profiles:
+      - amqp
+
   emqx:
     image: emqx/emqx:5.8
     container_name: eddie-emqx
@@ -111,12 +119,14 @@ services:
   caddy:
     image: caddy:alpine
     ports:
-      - "9000:8080"
+      - "9000:9000"
     profiles:
       - auth
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   caddy_data:
