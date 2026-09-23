@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-const permissionSatus: {
+const permissionStatus: {
   [key: string]: {
     title: string
     description: string
+    isFetching?: boolean
     isActive?: boolean
     isRevocable?: boolean
     isError?: boolean
@@ -61,7 +62,7 @@ const permissionSatus: {
     title: 'Created',
     description:
       'The permission has been created, but the details have not yet been fetched from the EDDIE framework.',
-    isOpen: true,
+    isFetching: true,
   },
   FETCHED_DETAILS: {
     title: 'Fetched details',
@@ -81,4 +82,4 @@ const permissionSatus: {
     isActive: true,
   },
 }
-export default permissionSatus
+export default permissionStatus

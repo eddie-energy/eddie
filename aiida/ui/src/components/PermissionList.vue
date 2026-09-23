@@ -69,7 +69,7 @@ watch([selectedTab, permissions, selectedPermissionCategory], () => {
     activePermissions.value = activePermissionCategory.value.filter((p) => STATUS[p.status].isOpen)
   } else {
     activePermissions.value = activePermissionCategory.value.filter(
-      (p) => !STATUS[p.status].isOpen && !STATUS[p.status].isActive,
+      (p) => !STATUS[p.status].isOpen && !STATUS[p.status].isActive && !STATUS[p.status].isFetching,
     )
   }
 })
