@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -6,7 +6,6 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.models.modbus.*;
 import jakarta.annotation.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.DeserializationFeature;
@@ -47,13 +46,6 @@ public class ModbusDeviceService {
                            "Oesterreichs Energie Adapter",
                            String.valueOf(modbusModels.get(1).id()))
         );
-    }
-
-    @Autowired
-    ModbusDeviceService(List<ModbusVendor> vendors, List<ModbusModel> modbusModels, List<Device> devices) {
-        this.vendors = vendors;
-        this.modbusModels = modbusModels;
-        this.devices = devices;
     }
 
     public static ModbusDevice loadConfig(@Nullable UUID deviceId) {
