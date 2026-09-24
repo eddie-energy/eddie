@@ -15,6 +15,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
     connectionId: { attribute: "connection-id" },
     dataNeedId: { attribute: "data-need-id" },
     meterId: { attribute: "meter-id" },
+    minLimitKw: { attribute: "min-limit-kw" },
+    maxLimitKw: { attribute: "max-limit-kw" },
     _isConnected: { type: Boolean },
     _aiidaCode: { type: String },
     _isSubmitDisabled: { type: Boolean },
@@ -32,6 +34,8 @@ class PermissionRequestForm extends PermissionRequestFormBase {
       connectionId: this.connectionId,
       dataNeedIds: this.dataNeedId.split(","),
       meterId: this.meterId ?? null,
+      minLimitKw: this.minLimitKw ?? null,
+      maxLimitKw: this.maxLimitKw ?? null,
     };
 
     this._isSubmitDisabled = true;

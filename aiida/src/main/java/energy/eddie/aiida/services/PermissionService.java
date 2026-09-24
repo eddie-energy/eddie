@@ -13,6 +13,7 @@ import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -22,6 +23,7 @@ import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
@@ -56,6 +58,7 @@ import static java.util.Objects.requireNonNull;
 public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
+    private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final Clock clock;
     private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
@@ -69,6 +72,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Autowired
     public PermissionService(
             PermissionRepository permissionRepository,
+            ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             Clock clock,
             StreamerManager streamerManager,
             HandshakeService handshakeService,
@@ -80,6 +84,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
+        this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.clock = clock;
         this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
@@ -155,11 +160,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @throws ActiveFcaPermissionAlreadyExistsException   There is already an active inbound or outbound permission for the meter ID provided in the permission request.
      * @throws PermissionStartInThePastException           The start date lies in the past.
      * @throws PermissionDataNeedTypeNotSupportedException The data need type of the permission is not supported by this AIIDA instance.
+     * @throws LimitDefaultsNotAllowedException            Default connection limits were set but the permission is not eligible for them or minLimitKw is not less than maxLimitKw.
      */
     @Transactional
     public List<Permission> setupNewPermissions(
             AiidaPermissionRequestsDto permissionRequests
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         var currentUserId = authService.getCurrentUserId();
 
         var permissions = new ArrayList<Permission>();
@@ -340,7 +346,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public List<Permission> getAllPermissionsSortedByGrantTime() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
 
-        return permissionRepository.findByUserIdOrderByGrantTimeDesc(currentUserId);
+        return permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(currentUserId);
     }
 
     public List<Permission> getActiveInboundPermissions() throws InvalidUserException {
@@ -409,7 +415,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AiidaPermissionRequestsDto permissionRequests,
             UUID permissionId,
             UUID currentUserId
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
@@ -448,12 +454,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      *
      * @see PermissionService#validatePermissionStartInTheFuture(Permission)
      * @see PermissionService#validateDataNeedType(Permission)
+     * @see PermissionService#validateLimitDefaults(Permission)
      * @see PermissionService#validateSingleActiveFcaPermissionPerMeterId(Permission)
      */
     private Permission updatePermissionWithDetails(
             Permission permission,
             PermissionDetailsDto details
-    ) throws ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+    ) throws ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
         var startInstant = ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var endInstant = ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
         var dataNeedId = details.dataNeed().dataNeedId();
@@ -463,6 +470,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStartTime(startInstant);
         permission.setExpirationTime(endInstant);
         permission.setStatus(FETCHED_DETAILS);
+        // Set limits are not persisted but passed to validation methods and returned to the controller
+        permission.setMinLimitKw(details.minLimitKw());
+        permission.setMaxLimitKw(details.maxLimitKw());
 
         var aiidaLocalDataNeed = aiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId);
         if (aiidaLocalDataNeed.isPresent()) {
@@ -474,12 +484,27 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         validatePermissionStartInTheFuture(permission);
         validateDataNeedType(permission);
+        validateLimitDefaults(permission);
         validateSingleActiveFcaPermissionPerMeterId(permission);
+
+        persistLimitDefaults(permission);
 
         LOGGER.debug("Updated permission {} with details fetched from EDDIE {}",
                      permission.id(),
                      permission.eddieId());
         return permissionRepository.save(permission);
+    }
+
+    private void persistLimitDefaults(Permission permission) {
+        if (permission.minLimitKw() != null || permission.maxLimitKw() != null) {
+            var defaultLimit = new ConnectionLimitDefault(permission.id(),
+                                                          permission.meterId(),
+                                                          clock.instant(),
+                                                          null,
+                                                          permission.minLimitKw(),
+                                                          permission.maxLimitKw());
+            connectionLimitDefaultRepository.save(defaultLimit);
+        }
     }
 
     private void validatePermissionStartInTheFuture(Permission permission) throws PermissionStartInThePastException {
@@ -496,6 +521,21 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         if (dataNeedType == null || !isValidDataNeedType(dataNeedType)) {
             markPermissionAsUnfulfillable(permission);
             throw new PermissionDataNeedTypeNotSupportedException(permission.id(), dataNeedType);
+        }
+    }
+
+    private void validateLimitDefaults(Permission permission) throws LimitDefaultsNotAllowedException {
+        var minLimitKw = permission.minLimitKw();
+        var maxLimitKw = permission.maxLimitKw();
+        if (minLimitKw == null && maxLimitKw == null) {
+            return;
+        }
+
+        var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
+        var dataNeed = Objects.requireNonNull(permission.dataNeed());
+        if (!dataNeed.supportsLimitDefaults() || !isRangeValid) {
+            markPermissionAsUnfulfillable(permission);
+            throw new LimitDefaultsNotAllowedException(permission.id());
         }
     }
 

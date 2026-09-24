@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 
 public interface PermissionRepository extends JpaRepository<Permission, UUID> {
-    List<Permission> findByUserIdOrderByGrantTimeDesc(UUID userId);
+    List<Permission> findByUserIdOrderByGrantTimeDescRevokeTimeDesc(UUID userId);
 
     List<Permission> findByStatusIn(Set<PermissionStatus> statuses);
 
@@ -65,4 +65,5 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
             String meterId,
             Set<PermissionStatus> statuses
     );
+
 }

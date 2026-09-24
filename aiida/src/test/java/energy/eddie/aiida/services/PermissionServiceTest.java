@@ -11,6 +11,7 @@ import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -20,6 +21,7 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -30,6 +32,7 @@ import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,6 +54,7 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.List;
@@ -77,6 +81,8 @@ class PermissionServiceTest {
     private final String serviceName = "Hello Service";
     private final String connectionId = "NewAiidaRandomConnectionId";
     private final String meterId = "003114735";
+    private final BigDecimal minLimitKw = BigDecimal.ONE;
+    private final BigDecimal maxLimitKw = BigDecimal.TEN;
     private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
     private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
@@ -89,6 +95,8 @@ class PermissionServiceTest {
                                            handshakeUrl);
     @Mock
     private PermissionRepository mockPermissionRepository;
+    @Mock
+    private ConnectionLimitDefaultRepository mockConnectionLimitDefaultRepository;
     @Mock
     private AiidaEventPublisher mockAiidaEventPublisher;
     @Mock
@@ -121,6 +129,8 @@ class PermissionServiceTest {
     private SecretsService mockSecretsService;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
+    @Captor
+    private ArgumentCaptor<ConnectionLimitDefault> connectionLimitDefaultCaptor;
     private PermissionService service;
 
     @BeforeEach
@@ -129,7 +139,7 @@ class PermissionServiceTest {
         lenient().when(mockDataSource.userId()).thenReturn(userId);
         lenient().when(mockPermission.userId()).thenReturn(userId);
 
-        service = new PermissionService(mockPermissionRepository,
+        service = new PermissionService(mockPermissionRepository, mockConnectionLimitDefaultRepository,
                                         clock,
                                         streamerManager,
                                         mockHandshakeService,
@@ -184,6 +194,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         null,
+                                                         null,
                                                          start,
                                                          end,
                                                          mockDataNeed);
@@ -234,6 +246,78 @@ class PermissionServiceTest {
     }
 
     @Test
+    void givenLimitDefaultsAndEligibleDataNeed_setupNewPermissions_persistsLimitDefaults() throws Exception {
+        // Given
+        var permissionRequest = new AiidaPermissionRequestsDto(eddieId,
+                                                               List.of(permissionId1),
+                                                               serviceName,
+                                                               handshakeUrl);
+        var permissionDetails = new PermissionDetailsDto(permissionId1,
+                                                         connectionId,
+                                                         meterId,
+                                                         minLimitKw,
+                                                         maxLimitKw,
+                                                         start,
+                                                         end,
+                                                         mockDataNeed);
+        when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockAiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId)).thenReturn(Optional.of(
+                mockInboundAiidaLocalDataNeed));
+        when(mockInboundAiidaLocalDataNeed.name()).thenReturn("My Name");
+        when(mockInboundAiidaLocalDataNeed.type()).thenReturn(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        when(mockInboundAiidaLocalDataNeed.supportsLimitDefaults()).thenReturn(true);
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+
+        // When
+        service.setupNewPermissions(permissionRequest);
+
+        // Then
+        // The default is persisted through the default repository, not through the permission.
+        verify(mockConnectionLimitDefaultRepository).save(connectionLimitDefaultCaptor.capture());
+        var defaultLimit = connectionLimitDefaultCaptor.getValue();
+        assertEquals(permissionId1, defaultLimit.permissionId());
+        assertEquals(meterId, defaultLimit.meterId());
+        assertEquals(clock.instant(), defaultLimit.start());
+        assertNull(defaultLimit.end());
+        assertThat(defaultLimit.minLimitKw()).isEqualByComparingTo(minLimitKw);
+        assertThat(defaultLimit.maxLimitKw()).isEqualByComparingTo(maxLimitKw);
+    }
+
+    @Test
+    void givenLimitDefaultsButIneligibleDataNeed_setupNewPermissions_marksUnfulfillableAndThrows() throws Exception {
+        // Given
+        var permissionDetails = new PermissionDetailsDto(permissionId1,
+                                                         connectionId,
+                                                         meterId,
+                                                         minLimitKw,
+                                                         maxLimitKw,
+                                                         start,
+                                                         end,
+                                                         mockDataNeed);
+        when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
+        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
+        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
+        when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
+        when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
+        when(mockDataNeed.name()).thenReturn("My Name");
+        when(mockDataNeed.purpose()).thenReturn("Some purpose");
+        when(mockDataNeed.policyLink()).thenReturn("https://example.org");
+        when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
+        when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+
+        // When, Then
+        assertThrows(LimitDefaultsNotAllowedException.class, () -> service.setupNewPermissions(permissionRequests));
+        verify(mockHandshakeService).sendUnfulfillableOrRejected(argThat(permission -> permission.status() == PermissionStatus.UNFULFILLABLE),
+                                                                 eq(PermissionStatus.UNFULFILLABLE));
+        verify(mockConnectionLimitDefaultRepository, never()).save(any());
+    }
+
+    @Test
     void givenInvalidDataNeedType_setsStatusToUnfulfillable_andCallsHandshakeService() throws InvalidUserException {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
@@ -241,6 +325,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         minLimitKw,
+                                                         maxLimitKw,
                                                          start,
                                                          end,
                                                          mockDataNeed);
@@ -291,6 +377,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         minLimitKw,
+                                                         maxLimitKw,
                                                          start.minusDays(1),
                                                          end,
                                                          mockDataNeed);
@@ -355,6 +443,8 @@ class PermissionServiceTest {
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
+                                                         null,
+                                                         null,
                                                          start,
                                                          end,
                                                          mockDataNeed);
@@ -574,7 +664,7 @@ class PermissionServiceTest {
         // Given
         var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
         when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
-        when(mockPermissionRepository.findByUserIdOrderByGrantTimeDesc(uuid)).thenReturn(List.of(mockPermission));
+        when(mockPermissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(uuid)).thenReturn(List.of(mockPermission));
 
         // When
         var result = service.getAllPermissionsSortedByGrantTime();
@@ -811,6 +901,7 @@ class PermissionServiceTest {
                                                               new ConcurrentHashMap<>(),
                                                               streamerManager);
             service = new PermissionService(mockPermissionRepository,
+                                            mockConnectionLimitDefaultRepository,
                                             mockClock,
                                             streamerManager,
                                             mockHandshakeService,

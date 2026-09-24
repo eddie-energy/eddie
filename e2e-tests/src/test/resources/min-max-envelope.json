@@ -1,0 +1,80 @@
+{
+  "MessageDocumentHeader": {
+    "creationDateTime": "{createdAt}",
+    "MetaInformation": {
+      "connectionId": "1",
+      "requestPermissionId": "{permissionId}",
+      "dataNeedId": "{dataNeedId}",
+      "documentType": "min-max-envelope",
+      "finalCustomerId": "fc-id",
+      "regionConnector": "aiida",
+      "regionCountry": "AT",
+      "Asset": {
+        "type": "CONNECTION-AGREEMENT-POINT",
+        "operatorId": "AT003000",
+        "meterId": "{meterId}"
+      }
+    }
+  },
+  "MarketDocument": {
+    "mRID": "{documentId}",
+    "description": "Test Min-Max Envelope",
+    "revisionNumber": "1",
+    "lastModifiedDateTime": "{createdAt}",
+    "comment": "This is a test min-max envelope.",
+    "sender_MarketParticipant.mRID": {
+      "value": "AT003000",
+      "codingScheme": "NAT"
+    },
+    "sender_MarketParticipant.name": "Netz Oberösterreich GmbH",
+    "sender_MarketParticipant.marketRole.type": "A56",
+    "receiver_MarketParticipant.mRID": {
+      "value": "fc-id",
+      "codingScheme": "NAT"
+    },
+    "receiver_MarketParticipant.name": "Max Mustermann",
+    "receiver_MarketParticipant.marketRole.type": "A13",
+    "process.processType": "A14",
+    "period.timeInterval": {
+      "start": "{intervalStart}",
+      "end": "{intervalEnd}"
+    },
+    "TimeSeries_Series": [
+      {
+        "mRID": "series-1",
+        "businessType": "C76",
+        "curveType": "A01",
+        "resourceTimeSeries.value1ScheduleType": "loadReduction",
+        "flowDirection.direction": "A02",
+        "registeredResource.mRID": {
+          "value": "003114735",
+          "codingScheme": "NAT"
+        },
+        "registeredResource.name": "Test Connection Point",
+        "registeredResource.description": "This is a test connection point for the min-max envelope.",
+        "Series": [
+          {
+            "Period": [
+              {
+                "resolution": "P1D",
+                "timeInterval": {
+                  "start": "{intervalStart}",
+                  "end": "{intervalEnd}"
+                },
+                "Point": [
+                  {
+                    "position": 1,
+                    "min_Quantity.quantity": {minLimitKw},
+                    "min_Quantity.quality": "1",
+                    "max_Quantity.quantity": {maxLimitKw},
+                    "max_Quantity.quality": "3"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

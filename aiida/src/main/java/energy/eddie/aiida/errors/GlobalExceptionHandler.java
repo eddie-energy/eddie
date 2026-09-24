@@ -148,6 +148,7 @@ public class GlobalExceptionHandler {
             InboundDataSourceInUseException.class,
             ProvisioningConfigurationException.class,
             ProvisioningTypeNotConfiguredException.class,
+            LimitDefaultsNotAllowedException.class,
             PermissionDataNeedTypeNotSupportedException.class,
             PermissionStartInThePastException.class,
             PermissionStateTransitionException.class

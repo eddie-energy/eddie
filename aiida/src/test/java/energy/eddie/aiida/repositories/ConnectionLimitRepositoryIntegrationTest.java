@@ -19,12 +19,12 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -57,6 +57,8 @@ class ConnectionLimitRepositoryIntegrationTest {
 
     @Autowired
     private ConnectionLimitRepository connectionLimitRepository;
+    @Autowired
+    private PermissionRepository permissionRepository;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -170,6 +172,72 @@ class ConnectionLimitRepositoryIntegrationTest {
 
         // Should only hit the 10:00 to 10:15 and not 9:45 to 10:00 limit
         assertEquals(1, result.size());
+    }
+
+    @Test
+    void permission_minAndMaxLimitKw_resolveNewestOpenDefaultFromDatabase() {
+        saveDefault(PERMISSION_A1, "2026-07-10T10:00:00Z", BigDecimal.ONE, BigDecimal.TEN, null);
+        saveDefault(PERMISSION_A1, "2026-07-11T10:00:00Z", BigDecimal.valueOf(2), BigDecimal.valueOf(20), null);
+        saveDefault(PERMISSION_A1,
+                    "2026-07-12T10:00:00Z",
+                    BigDecimal.valueOf(9),
+                    BigDecimal.valueOf(90),
+                    "2026-07-13T10:00:00Z");
+
+        var permission = permissionRepository.findById(PERMISSION_A1).orElseThrow();
+
+        assertEquals(0, BigDecimal.valueOf(2).compareTo(permission.minLimitKw()));
+        assertEquals(0, BigDecimal.valueOf(20).compareTo(permission.maxLimitKw()));
+    }
+
+    @Test
+    void permission_minAndMaxLimitKw_correlateToOwningPermission() {
+        saveDefault(PERMISSION_A1, "2026-07-10T10:00:00Z", BigDecimal.ONE, BigDecimal.TEN, null);
+        saveDefault(PERMISSION_A2, "2026-07-11T10:00:00Z", BigDecimal.valueOf(99), BigDecimal.valueOf(99), null);
+
+        var permissionA1 = permissionRepository.findById(PERMISSION_A1).orElseThrow();
+        var permissionA2 = permissionRepository.findById(PERMISSION_A2).orElseThrow();
+
+        assertEquals(0, BigDecimal.ONE.compareTo(permissionA1.minLimitKw()));
+        assertEquals(0, BigDecimal.TEN.compareTo(permissionA1.maxLimitKw()));
+        assertEquals(0, BigDecimal.valueOf(99).compareTo(permissionA2.minLimitKw()));
+        assertEquals(0, BigDecimal.valueOf(99).compareTo(permissionA2.maxLimitKw()));
+    }
+
+    @Test
+    void permission_withoutOpenDefault_minAndMaxLimitKw_returnNull() {
+        saveDefault(PERMISSION_A1, "2026-07-10T10:00:00Z", BigDecimal.ONE, BigDecimal.TEN, "2026-07-11T10:00:00Z");
+
+        var permission = permissionRepository.findById(PERMISSION_A1).orElseThrow();
+
+        assertNull(permission.minLimitKw());
+        assertNull(permission.maxLimitKw());
+    }
+
+    private void saveDefault(
+            UUID permissionId,
+            String start,
+            BigDecimal minLimitKw,
+            BigDecimal maxLimitKw,
+            String end
+    ) {
+        jdbcTemplate.update("""
+                                    INSERT INTO connection_limit_default (
+                                        permission_id,
+                                        meter_id,
+                                        start,
+                                        replaced_at,
+                                        min_limit_kw,
+                                        max_limit_kw
+                                    )
+                                    VALUES (?, ?, ?, ?, ?, ?)
+                                    """,
+                            permissionId,
+                            "",
+                            Timestamp.from(Instant.parse(start)),
+                            end == null ? null : Timestamp.from(Instant.parse(end)),
+                            minLimitKw,
+                            maxLimitKw);
     }
 
     private void savePermission(UUID permissionId, UUID userId) {
