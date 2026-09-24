@@ -123,6 +123,10 @@ For more information, see [Common Information Model Client Libraries](https://ar
 
 ## 3.12.0 - 2026-07-21
 
-- Add possiblity to deserialize a collection of CIM and agnostic documents
+- Add the possibility to deserialize a collection of CIM and agnostic documents
   - The XML SerDE can now deserialize a collection of CIM and agnostic documents from an arbitrary XML root element
   - The JSON SerDE can now deserialize a collection of CIM and agnostic documents from a JSON array
+
+## 3.13.0 - 2026-09-22
+
+- Add the possibility to deserialize CIM messages based on a given message type, removing the necessity to use the concrete class.
