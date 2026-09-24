@@ -134,3 +134,7 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.14.0 - 2026-09-24
 
 - Add permission command to update connection limit defaults for AIIDA permissions
+
+## 3.14.1 - 2026-09-25
+
+- Fix missing validation for real time data market document v1.04

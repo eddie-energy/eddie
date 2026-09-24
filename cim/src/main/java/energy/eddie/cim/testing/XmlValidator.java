@@ -90,4 +90,10 @@ public class XmlValidator {
                 "/cim/xsd/v1_12/rpmd/RequestPermissionDocument_annotated_v1.12.xsd");
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
+
+    public static boolean validateV104RealTimeDataMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
 }

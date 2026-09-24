@@ -22,7 +22,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.14.0"
+version = "3.14.1"
 
 repositories {
     mavenCentral()
