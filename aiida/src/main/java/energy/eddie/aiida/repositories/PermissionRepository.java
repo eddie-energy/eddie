@@ -19,6 +19,8 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
 
     List<Permission> findByStatusIn(Set<PermissionStatus> statuses);
 
+    Optional<Permission> findByPermissionIdAndUserId(UUID permissionId, UUID userId);
+
     @Query("""
             SELECT p
             FROM Permission p
