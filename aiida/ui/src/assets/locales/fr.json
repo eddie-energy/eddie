@@ -176,7 +176,11 @@
       "permissionID": "ID d’autorisation",
       "openDetails": "Ouvrir les détails de l’autorisation",
       "lastMessageReceived": "Dernier message reçu",
-      "lastMessageSent": "Dernier message envoyé"
+      "lastMessageSent": "Dernier message envoyé",
+      "monitoringDataSource": "Source de données surveillée",
+      "monitoringDataSourcePlaceholder": "Sélectionner une source de données",
+      "monitoringDataSourceNone": "Aucune source de données",
+      "monitoringDataSourceHint": "La source de données sélectionnée est surveillée pour les dépassements de ces limites."
     },
     "modal": {
       "title": "Ajouter une nouvelle autorisation",
@@ -213,6 +217,7 @@
     "acceptPermission": "Demande d’autorisation acceptée.",
     "updateInboundMessageFormat": "Format des messages entrants mis à jour.",
     "updateDisplayName": "Nom d’affichage mis à jour.",
+    "updateConnectionLimitMonitoring": "Source de données surveillée mise à jour.",
     "revokePermission": "L’autorisation pour ce service a été révoquée.",
     "rejectPermission": "Demande d’autorisation refusée.",
     "createDatasource": "Source de données créée.",

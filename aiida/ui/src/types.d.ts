@@ -83,6 +83,8 @@ export type AiidaPermission = {
   effectiveTransmissionSchedule?: string
   inboundMessageFormat?: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
+  monitoringDataSourceId?: string
+  supportsConnectionLimits: boolean
   userId: string
   unimplemented: {
     packageGraph: any

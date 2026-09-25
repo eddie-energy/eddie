@@ -176,7 +176,11 @@
       "permissionID": "Berechtigungs-ID",
       "openDetails": "Berechtigungsdetails öffnen",
       "lastMessageReceived": "Letzte Nachricht empfangen",
-      "lastMessageSent": "Letzte Nachricht gesendet"
+      "lastMessageSent": "Letzte Nachricht gesendet",
+      "monitoringDataSource": "Überwachte Datenquelle",
+      "monitoringDataSourcePlaceholder": "Datenquelle auswählen",
+      "monitoringDataSourceNone": "Keine Datenquelle",
+      "monitoringDataSourceHint": "Die ausgewählte Datenquelle wird auf Überschreitungen dieser Grenzwerte überwacht."
     },
     "modal": {
       "title": "Neue Berechtigung hinzufügen",
@@ -213,6 +217,7 @@
     "acceptPermission": "Berechtigungsanfrage akzeptiert.",
     "updateInboundMessageFormat": "Format eingehender Nachrichten aktualisiert.",
     "updateDisplayName": "Anzeigename aktualisiert.",
+    "updateConnectionLimitMonitoring": "Überwachte Datenquelle aktualisiert.",
     "revokePermission": "Die Berechtigung für diesen Dienst wurde widerrufen.",
     "rejectPermission": "Berechtigungsanfrage abgelehnt.",
     "createDatasource": "Datenquelle erstellt.",
