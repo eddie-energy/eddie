@@ -11,7 +11,7 @@ import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
-import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.EdaMasterData01p32;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MasterDataMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,7 +117,7 @@ class EdaRawDataProviderTest {
                     .then(() -> {
                         masterDataTestPublisher.next(
                                 new IdentifiableMasterData(
-                                        new EdaMasterData01p32(new MasterData()),
+                                        MasterDataMapper.INSTANCE.toEdaMasterData(new MasterData()),
                                         permissionRequest
                                 )
                         );
