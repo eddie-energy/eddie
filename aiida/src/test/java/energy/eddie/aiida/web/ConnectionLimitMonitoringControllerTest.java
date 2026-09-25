@@ -21,7 +21,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +28,8 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,47 +46,6 @@ class ConnectionLimitMonitoringControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Test
-    @WithMockUser
-    void givenAssignment_returnsMonitoring() throws Exception {
-        when(connectionLimitMonitoringService.getConnectionLimitMonitoring(PERMISSION_ID))
-                .thenReturn(Optional.of(new ConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID)));
-
-        mockMvc.perform(get("/connection-limit-monitoring/{permissionId}", PERMISSION_ID))
-               .andExpect(status().isOk())
-               .andExpect(jsonPath("$.permissionId").value(PERMISSION_ID.toString()))
-               .andExpect(jsonPath("$.dataSourceId").value(DATA_SOURCE_ID.toString()));
-    }
-
-    @Test
-    @WithMockUser
-    void givenNoAssignment_returnsNoContent() throws Exception {
-        when(connectionLimitMonitoringService.getConnectionLimitMonitoring(any())).thenReturn(Optional.empty());
-
-        mockMvc.perform(get("/connection-limit-monitoring/{permissionId}", PERMISSION_ID))
-               .andExpect(status().isNoContent());
-    }
-
-    @Test
-    @WithMockUser
-    void givenMissingPermission_returnsNotFound() throws Exception {
-        when(connectionLimitMonitoringService.getConnectionLimitMonitoring(any()))
-                .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
-
-        mockMvc.perform(get("/connection-limit-monitoring/{permissionId}", PERMISSION_ID))
-               .andExpect(status().isNotFound());
-    }
-
-    @Test
-    @WithMockUser
-    void givenNotAllowed_returnsBadRequest() throws Exception {
-        when(connectionLimitMonitoringService.getConnectionLimitMonitoring(any()))
-                .thenThrow(new ConnectionLimitMonitoringNotAllowedException(PERMISSION_ID));
-
-        mockMvc.perform(get("/connection-limit-monitoring/{permissionId}", PERMISSION_ID))
-               .andExpect(status().isBadRequest());
-    }
 
     @Test
     @WithMockUser

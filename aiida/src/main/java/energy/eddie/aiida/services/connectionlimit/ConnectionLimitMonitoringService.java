@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -43,15 +42,6 @@ public class ConnectionLimitMonitoringService {
         this.permissionRepository = permissionRepository;
         this.dataSourceRepository = dataSourceRepository;
         this.authService = authService;
-    }
-
-    /**
-     * Returns the data source currently monitored for the given permission, or empty if none is assigned.
-     */
-    public Optional<ConnectionLimitMonitoring> getConnectionLimitMonitoring(UUID permissionId) throws PermissionNotFoundException, InvalidUserException, ConnectionLimitMonitoringNotAllowedException {
-        requireMonitorablePermission(permissionId);
-
-        return connectionLimitMonitoringRepository.findById(permissionId);
     }
 
     /**

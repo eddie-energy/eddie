@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitMonitoring;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
@@ -111,6 +112,11 @@ public class Permission {
     @Schema(description = "Optional current default maximum energy consumption or production limit in kilowatts for controllable units.", example = "10.0")
     @JsonProperty
     private BigDecimal maxLimitKw;
+
+    @Nullable
+    @PrimaryKeyJoinColumn
+    @OneToOne(fetch = FetchType.EAGER)
+    private ConnectionLimitMonitoring connectionLimitMonitoring;
 
     @Nullable
     @PrimaryKeyJoinColumn
@@ -259,6 +265,14 @@ public class Permission {
      */
     public @Nullable BigDecimal maxLimitKw() {
         return maxLimitKw;
+    }
+
+    /**
+     * Returns the data source monitored for connection limit violations, or null if none is assigned.
+     */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public @Nullable UUID monitoringDataSourceId() {
+        return connectionLimitMonitoring == null ? null : connectionLimitMonitoring.dataSourceId();
     }
 
     /**
@@ -445,6 +459,8 @@ public class Permission {
      * True if the permission allows the eligible party to send connection limits,
      * indicating that the permission supports connection limit features.
      */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(description = "Whether the permission supports connection limit features such as monitoring.", example = "true")
     public boolean supportsConnectionLimits() {
         return dataNeed instanceof InboundAiidaLocalDataNeed && dataNeed.schemas()
                                                                         .contains(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);

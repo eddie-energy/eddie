@@ -38,35 +38,6 @@ public class ConnectionLimitMonitoringController {
     }
 
     @Operation(
-            summary = "Get connection limit monitoring",
-            description = """
-                    Returns the data source that is monitored for connection limit violations of the permission.
-                    Returns 204 if the permission supports monitoring but no data source is assigned.
-                    """
-    )
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200",
-                         description = "Successful operation",
-                         content = @Content(schema = @Schema(implementation = ConnectionLimitMonitoring.class))),
-            @ApiResponse(responseCode = "204", description = "No data source assigned", content = @Content),
-            @ApiResponse(responseCode = "400", description = "Permission does not support connection limit monitoring",
-                         content = @Content(schema = @Schema(implementation = EddieApiError.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized User", content = @Content),
-            @ApiResponse(responseCode = "404", description = "Permission not found",
-                         content = @Content(schema = @Schema(implementation = EddieApiError.class)))
-    })
-    @GetMapping(path = "/{permissionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ConnectionLimitMonitoring> getConnectionLimitMonitoring(
-            @Parameter(description = "Permission ID to query the monitoring assignment for.",
-                       example = "9921f327-f341-4bea-bf08-3cf2acc65bf3")
-            @PathVariable UUID permissionId
-    ) throws PermissionNotFoundException, InvalidUserException, ConnectionLimitMonitoringNotAllowedException {
-        return connectionLimitMonitoringService.getConnectionLimitMonitoring(permissionId)
-                                               .map(ResponseEntity::ok)
-                                               .orElseGet(() -> ResponseEntity.noContent().build());
-    }
-
-    @Operation(
             summary = "Assign connection limit monitoring",
             description = "Assigns an outbound data source to be monitored for connection limit violations of the permission."
     )
