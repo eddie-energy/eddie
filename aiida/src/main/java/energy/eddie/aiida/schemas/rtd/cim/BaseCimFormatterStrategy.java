@@ -34,7 +34,6 @@ public abstract class BaseCimFormatterStrategy<T, S, V, W> implements CimFormatt
     protected static final String DOCUMENT_TYPE = "near-real-time-market-document";
     protected static final String REGION_CONNECTOR = "aiida";
     protected static final ZoneId UTC = ZoneId.of("UTC");
-    protected static final String VERSION = "1.0";
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseCimFormatterStrategy.class.getName());
 
     public abstract List<AiidaRecordValue> timeSeriesToAiidaRecordValues(S timeSeries) throws CimSchemaFormatterException;

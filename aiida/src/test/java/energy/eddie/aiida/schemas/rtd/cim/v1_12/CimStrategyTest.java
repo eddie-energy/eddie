@@ -10,6 +10,10 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
+import energy.eddie.cim.serde.SerdeInitializationException;
+import energy.eddie.cim.serde.SerializationException;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v1_12.rtd.Quantity;
 import energy.eddie.cim.v1_12.rtd.QuantityTypeKind;
 import energy.eddie.cim.v1_12.rtd.TimeSeries;
@@ -25,6 +29,7 @@ import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +43,7 @@ class CimStrategyTest {
     private final CimStrategy strategy = new CimStrategy();
 
     @Test
-    void toRealTimeDataEnvelope_mapsMetadataAndSupportedQuantities() throws CimSchemaFormatterException {
+    void toRealTimeDataEnvelope_mapsMetadataAndSupportedQuantities() throws CimSchemaFormatterException, SerdeInitializationException, SerializationException {
         // Given
         var dataSource = dataSource("AT");
         var permission = permission(dataSource);
@@ -84,7 +89,7 @@ class CimStrategyTest {
         assertThat(envelope.getMarketDocument().getTimeSeries()).hasSize(1);
 
         var timeSeries = envelope.getMarketDocument().getTimeSeries().getFirst();
-        assertThat(timeSeries.getVersion()).isEqualTo("1.0");
+        assertThat(timeSeries.getVersion()).isEqualTo("1");
         assertThat(timeSeries.getDateAndOrTimeDateTime()).isEqualTo(TIMESTAMP.atZone(ZoneId.of("UTC")));
         assertThat(timeSeries.getRegisteredResourceMRID().getValue()).isEqualTo(obisCodeDeviceId);
         assertThat(timeSeries.getRegisteredResourceMRID().getCodingScheme()).isEqualTo("NAT");
@@ -94,6 +99,10 @@ class CimStrategyTest {
                 QuantityTypeKind.TOTAL_ACTIVE_ENERGY_CONSUMED_KWH,
                 QuantityTypeKind.FREQUENCY_HZ
         );
+        var serde = new XmlMessageSerde();
+        var xml = serde.serialize(envelope);
+        var res = XmlValidator.validateV112NearRealTimeDataMarketDocument(xml);
+        assertTrue(res);
     }
 
     @Test
@@ -120,7 +129,7 @@ class CimStrategyTest {
 
         // Then
         var timeSeries = envelope.getMarketDocument().getTimeSeries().getFirst();
-        assertThat(timeSeries.getVersion()).isEqualTo("1.0");
+        assertThat(timeSeries.getVersion()).isEqualTo("1");
         assertThat(timeSeries.getDateAndOrTimeDateTime()).isEqualTo(TIMESTAMP.atZone(ZoneId.of("UTC")));
         assertThat(timeSeries.getRegisteredResourceMRID().getValue()).isEqualTo(DATA_SOURCE_ID.toString());
     }

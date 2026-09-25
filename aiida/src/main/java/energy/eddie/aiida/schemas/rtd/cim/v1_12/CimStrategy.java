@@ -214,7 +214,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
                 .withRegisteredResourceMRID(new ResourceIDString()
                                                     .withCodingScheme(codingSchemeValue)
                                                     .withValue(registeredResourceMRID))
-                .withVersion(VERSION);
+                .withVersion("1");
     }
 
     private String getRegisteredResourceMRIDValue(AiidaRecord aiidaRecord) {
@@ -232,13 +232,13 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     private Quantity toQuantity(AiidaRecordValue aiidaRecordValue) {
         try {
             return new Quantity()
-                    .withQuality(StandardQualityTypeList.AS_PROVIDED.toString())
+                    .withQuality(StandardQualityTypeList.AS_PROVIDED.value())
                     .withQuantity(toBigDecimalOrThrow(aiidaRecordValue))
                     .withType(aiidaRecordValueToQuantityTypeKind(aiidaRecordValue));
         } catch (CimSchemaFormatterException e) {
             LOGGER.error("Error converting AiidaRecordValue to Quantity.", e);
             return new Quantity()
-                    .withQuality(StandardQualityTypeList.INCOMPLETE.toString());
+                    .withQuality(StandardQualityTypeList.INCOMPLETE.value());
         }
     }
 
