@@ -143,7 +143,9 @@ openApiGenerate {
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
             "openApiNullable" to "false",
-            "useOptional" to "true"
+            "useOptional" to "true",
+            "useJackson3" to "true",
+            "useSpringBoot4" to "true",
         )
     )
     typeMappings.set(

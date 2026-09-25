@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.client;
@@ -257,7 +257,7 @@ public class CdsServerClient {
                 .flatMap(token -> adminClient.carbonDataSpec(carbonDataSpecEndpoint, token));
     }
 
-    private Mono<ClientEndpoint200ResponseClientsInner> findClientByScope(String scope) {
+    private Mono<ClientEndpoint200ResponseAllOfClientsInner> findClientByScope(String scope) {
         return clients()
                 .flatMap(clients -> findClientByScope(clients, scope))
                 .onErrorResume(NoCustomerDataClientFoundException.class, ex -> {
@@ -266,13 +266,13 @@ public class CdsServerClient {
                 });
     }
 
-    private Mono<List<ClientEndpoint200ResponseClientsInner>> clients() {
+    private Mono<List<ClientEndpoint200ResponseAllOfClientsInner>> clients() {
         return withRefreshToken(oAuthMetadata())
                 .flatMap(response -> adminClient.clients(response.getT1().getCdsClientsApi(), response.getT2()));
     }
 
-    private Mono<ClientEndpoint200ResponseClientsInner> findClientByScope(
-            List<ClientEndpoint200ResponseClientsInner> response,
+    private Mono<ClientEndpoint200ResponseAllOfClientsInner> findClientByScope(
+            List<ClientEndpoint200ResponseAllOfClientsInner> response,
             String scope
     ) {
         for (var result : response) {

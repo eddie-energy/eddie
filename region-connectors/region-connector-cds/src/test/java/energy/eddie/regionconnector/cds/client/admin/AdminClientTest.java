@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.client.admin;
 
 import energy.eddie.regionconnector.cds.client.JsonResponses;
 import energy.eddie.regionconnector.cds.dtos.CdsServerRedirectUriUpdate;
-import energy.eddie.regionconnector.cds.openapi.model.ListingCredentials200ResponseCredentialsInner;
+import energy.eddie.regionconnector.cds.openapi.model.ListingCredentials200ResponseAllOfCredentialsInner;
 import energy.eddie.regionconnector.cds.services.oauth.token.CredentialsWithoutRefreshToken;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -159,8 +159,8 @@ class AdminClientTest {
         StepVerifier.create(res)
                     .assertNext(creds -> assertThat(creds.getCredentials())
                             .singleElement()
-                            .extracting(ListingCredentials200ResponseCredentialsInner::getClientId,
-                                        ListingCredentials200ResponseCredentialsInner::getClientSecret)
+                            .extracting(ListingCredentials200ResponseAllOfCredentialsInner::getClientId,
+                                        ListingCredentials200ResponseAllOfCredentialsInner::getClientSecret)
                             .isEqualTo(List.of("client-id", "secret")))
                     .verifyComplete();
     }
