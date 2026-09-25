@@ -26,9 +26,7 @@ tasks.test {
     testLogging {
         events("passed", "skipped", "failed")
     }
-    onlyIf {
-        project.hasProperty("run-e2e-tests")
-    }
+    enabled = providers.gradleProperty("run-e2e-tests").isPresent
 }
 
 tasks.register<JavaExec>("install-playwright-deps") {
