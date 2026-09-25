@@ -1,0 +1,12 @@
+### POST request to import an existing permission request
+POST http://localhost:9090/region-connectors/at-eda/management/permission-request/import
+Content-Type: application/json
+
+{
+  "connectionId": "1",
+  "meteringPointId": "AT0000000000000000000000000000000",
+  "dataNeedId": "3dd39c06-253e-4c95-a255-e3eefc69f613",
+  "dsoId": "AT000000",
+  "consentId": "AT000000000000000000000000000000000",
+  "creationDateTime": "2025-08-28T00:00:00Z"
+}
