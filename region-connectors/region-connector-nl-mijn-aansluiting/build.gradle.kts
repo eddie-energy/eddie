@@ -108,7 +108,7 @@ sourceSets {
 }
 
 val eancodeboekUrl = "https://gateway.edsn.nl/eancodeboek/v3/api-docs"
-val eancodeboekChecksum = "6558eedb0738711ab83db41920e98496"
+val eancodeboekChecksum = "03101c7b2da243503a254b73aa5c9d1d"
 
 val openApiDownloadTask = tasks.register<Download>("eancodeboekOpenApiDownload") {
     group = "download"
@@ -143,7 +143,9 @@ openApiGenerate {
             "useJakartaEe" to "true",
             "dateLibrary" to "java8",
             "openApiNullable" to "false",
-            "useOptional" to "true"
+            "useOptional" to "true",
+            "useJackson3" to "true",
+            "useSpringBoot4" to "true",
         )
     )
     typeMappings.set(

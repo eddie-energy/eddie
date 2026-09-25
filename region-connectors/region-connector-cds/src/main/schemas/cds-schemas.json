@@ -2149,6 +2149,15 @@
             ],
             "oneOf": [
               {
+                "const": "kwh_net"
+              },
+              {
+                "const": "kwh_fwd"
+              },
+              {
+                "const": "kwh_rev"
+              },
+              {
                 "const": "usage_kwh",
                 "description": "General Electric Usage in kWh object"
               },

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.cds.client.admin;
@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 public class AdminClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminClient.class);
     private final WebClient webClient;
-    private final AsyncLoadingCache<Tuple2<URI, CredentialsWithoutRefreshToken>, List<ClientEndpoint200ResponseClientsInner>> clientsCache =
+    private final AsyncLoadingCache<Tuple2<URI, CredentialsWithoutRefreshToken>, List<ClientEndpoint200ResponseAllOfClientsInner>> clientsCache =
             Caffeine.newBuilder()
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .maximumSize(100)
@@ -55,7 +55,7 @@ public class AdminClient {
         this.webClient = webClientBuilder.build();
     }
 
-    public Mono<List<ClientEndpoint200ResponseClientsInner>> clients(
+    public Mono<List<ClientEndpoint200ResponseAllOfClientsInner>> clients(
             URI clientEndpoint,
             CredentialsWithoutRefreshToken token
     ) {
@@ -138,7 +138,7 @@ public class AdminClient {
                         .toFuture();
     }
 
-    private CompletableFuture<List<ClientEndpoint200ResponseClientsInner>> clientLoader(
+    private CompletableFuture<List<ClientEndpoint200ResponseAllOfClientsInner>> clientLoader(
             Tuple2<URI, CredentialsWithoutRefreshToken> tuple,
             Executor executor
     ) {
