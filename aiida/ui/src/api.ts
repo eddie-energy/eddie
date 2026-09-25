@@ -230,6 +230,22 @@ export async function updateDisplayName(permissionId: string, displayName: strin
   success('toasts.updateDisplayName')
 }
 
+export async function updateConnectionLimitMonitoring(permissionId: string, dataSourceId: string) {
+  const result = await fetch(`/connection-limit-monitoring/${permissionId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ dataSourceId }),
+  })
+  success('toasts.updateConnectionLimitMonitoring')
+  return result
+}
+
+export async function deleteConnectionLimitMonitoring(permissionId: string): Promise<void> {
+  await fetch(`/connection-limit-monitoring/${permissionId}`, {
+    method: 'DELETE',
+  })
+  success('toasts.updateConnectionLimitMonitoring')
+}
+
 export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Promise<{
   dataSourceId: string
   plaintextPassword: string
