@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.cprequest._1p12;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.ponton.messages.MarshallerConfig;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
-import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,8 +15,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,14 +22,14 @@ import static org.junit.jupiter.api.Assertions.*;
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {MarshallerConfig.class})
 @Import(MarshallerConfig.class)
-class CPRequestOutbound01p12MessageFactoryTest {
+class CPRequestOutbound01p12LegacyMessageFactoryTest {
     @Autowired
     private Jaxb2Marshaller marshaller;
 
     @Test
     void createOutboundMessage() {
         // given
-        var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
+        var factory = new CPRequestOutbound01p12LegacyMessageFactory(marshaller);
         AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null, "");
         var request = new CPRequestCR(
                 "dsoid",
@@ -51,66 +48,50 @@ class CPRequestOutbound01p12MessageFactoryTest {
     }
 
     @Test
-    void cpRequest_usesPrefixedConversationId() {
-        // given
-        var configuration = new AtConfiguration("EP123456", null, null, "DEV");
-        var dateTime = ZonedDateTime.parse("2026-09-01T12:00:00Z");
-        var groupingId = new EdaGroupingIdFactory(configuration)
-                .create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, dateTime);
-        var request = new CPRequestCR(
-                "dsoid",
-                "meteringpoint",
-                groupingId,
-                LocalDate.now(AT_ZONE_ID).minusWeeks(1),
-                LocalDate.now(AT_ZONE_ID),
-                null,
-                configuration
-        );
-
-        // when
-        var cpRequest = new CPRequest01p12(request).cpRequest();
-
-        // then
-        assertAll(
-                () -> assertTrue(cpRequest.getProcessDirectory().getConversationId().startsWith("DEVEP123456T")),
-                () -> assertEquals(groupingId, cpRequest.getProcessDirectory().getConversationId()),
-                () -> assertEquals(groupingId, cpRequest.getProcessDirectory().getMessageId())
-        );
-    }
-
-    @Test
     void isActive_on_30_09_2018_returnsFalse() {
         // given
-        var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
+        var factory = new CPRequestOutbound01p12LegacyMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2018, Month.OCTOBER, 1).minusDays(1));
+        var active = factory.isActive(LocalDate.of(2018, 10, 1).minusDays(1));
 
         // then
         assertFalse(active);
     }
 
     @Test
-    void isActive_on_04_10_2026_returnsFalse() {
+    void isActive_on_01_10_2018_returnsTrue() {
         // given
-        var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
+        var factory = new CPRequestOutbound01p12LegacyMessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2026, Month.OCTOBER, 4));
-
-        // then
-        assertFalse(active);
-    }
-
-    @Test
-    void isActive_on_05_10_2026_returnsTrue() {
-        // given
-        var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
-
-        // when
-        var active = factory.isActive(LocalDate.of(2026, Month.OCTOBER, 5));
+        var active = factory.isActive(LocalDate.of(2018, 10, 1));
 
         // then
         assertTrue(active);
+    }
+
+    @Test
+    void isActive_on_04_10_2026_returnsTrue() {
+        // given
+        var factory = new CPRequestOutbound01p12LegacyMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2026, 10, 4));
+
+        // then
+        assertTrue(active);
+    }
+
+    @Test
+    void isActive_on_05_10_2026_returnsFalse() {
+        // given
+        var factory = new CPRequestOutbound01p12LegacyMessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2026, 10, 5));
+
+        // then
+        assertFalse(active);
     }
 }

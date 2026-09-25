@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10;
@@ -13,10 +13,9 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.InputStream;
 import java.time.LocalDate;
 
-import static energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10.CMRevoke01p10OutboundMessageFactory.ACTIVE_FROM;
-
 @Component
 public class EdaCMRevoke01p10InboundMessageFactory implements EdaCMRevokeInboundMessageFactory {
+    private static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 4, 13);
     private final Jaxb2Marshaller marshaller;
 
     public EdaCMRevoke01p10InboundMessageFactory(Jaxb2Marshaller marshaller) {
