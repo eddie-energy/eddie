@@ -98,6 +98,19 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
+    void getAllPermissions_includesConnectionLimitFields() throws Exception {
+        when(mockPermission.monitoringDataSourceId()).thenReturn(dataSourceId);
+        when(mockPermission.supportsConnectionLimits()).thenReturn(true);
+        when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(mockPermission));
+
+        mockMvc.perform(get("/permissions"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].monitoringDataSourceId").value(dataSourceId.toString()))
+               .andExpect(jsonPath("$[0].supportsConnectionLimits").value(true));
+    }
+
+    @Test
+    @WithMockUser
     void getAllPermissionsByGrantDate_returnsCorrectOrder() throws Exception {
         var permissions = sampleDataForGetAllPermissionsTest();
         when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(permissions);

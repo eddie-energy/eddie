@@ -24,7 +24,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -53,24 +54,21 @@ class ConnectionLimitMonitoringServiceTest {
     }
 
     @Test
-    void givenExistingAssignment_returnsAssignedDataSource() throws Exception {
+    void givenValidRequest_assignsDataSource() throws Exception {
         mockOwnedMonitorablePermission();
-        when(connectionLimitMonitoringRepository.findById(PERMISSION_ID))
-                .thenReturn(Optional.of(new ConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID)));
+        var dataSource = mock(DataSource.class);
+        when(dataSource.type()).thenReturn(DataSourceType.SIMULATION);
+        when(dataSourceRepository.findByIdAndUserId(DATA_SOURCE_ID, USER_ID)).thenReturn(Optional.of(dataSource));
 
-        var result = service.getConnectionLimitMonitoring(PERMISSION_ID);
+        var result = service.updateConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID);
 
-        assertTrue(result.isPresent());
-        assertEquals(PERMISSION_ID, result.get().permissionId());
-        assertEquals(DATA_SOURCE_ID, result.get().dataSourceId());
-    }
+        assertEquals(PERMISSION_ID, result.permissionId());
+        assertEquals(DATA_SOURCE_ID, result.dataSourceId());
 
-    @Test
-    void givenNoAssignment_returnsEmpty() throws Exception {
-        mockOwnedMonitorablePermission();
-        when(connectionLimitMonitoringRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
-
-        assertTrue(service.getConnectionLimitMonitoring(PERMISSION_ID).isEmpty());
+        var captor = ArgumentCaptor.forClass(ConnectionLimitMonitoring.class);
+        verify(connectionLimitMonitoringRepository).save(captor.capture());
+        assertEquals(PERMISSION_ID, captor.getValue().permissionId());
+        assertEquals(DATA_SOURCE_ID, captor.getValue().dataSourceId());
     }
 
     @Test
@@ -78,7 +76,8 @@ class ConnectionLimitMonitoringServiceTest {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
         when(permissionRepository.findByPermissionIdAndUserId(PERMISSION_ID, USER_ID)).thenReturn(Optional.empty());
 
-        assertThrows(PermissionNotFoundException.class, () -> service.getConnectionLimitMonitoring(PERMISSION_ID));
+        assertThrows(PermissionNotFoundException.class,
+                     () -> service.updateConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID));
     }
 
     @Test
@@ -90,25 +89,7 @@ class ConnectionLimitMonitoringServiceTest {
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
 
         assertThrows(ConnectionLimitMonitoringNotAllowedException.class,
-                     () -> service.getConnectionLimitMonitoring(PERMISSION_ID));
-    }
-
-    @Test
-    void givenValidRequest_assignsDataSource() throws Exception {
-        mockOwnedMonitorablePermission();
-
-        var dataSource = mock(DataSource.class);
-        when(dataSource.type()).thenReturn(DataSourceType.SIMULATION);
-        when(dataSourceRepository.findByIdAndUserId(DATA_SOURCE_ID, USER_ID)).thenReturn(Optional.of(dataSource));
-
-        var result = service.updateConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID);
-
-        assertEquals(DATA_SOURCE_ID, result.dataSourceId());
-
-        var captor = ArgumentCaptor.forClass(ConnectionLimitMonitoring.class);
-        verify(connectionLimitMonitoringRepository).save(captor.capture());
-        assertEquals(PERMISSION_ID, captor.getValue().permissionId());
-        assertEquals(DATA_SOURCE_ID, captor.getValue().dataSourceId());
+                     () -> service.updateConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID));
     }
 
     @Test
