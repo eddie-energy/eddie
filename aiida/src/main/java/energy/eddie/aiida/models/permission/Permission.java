@@ -11,6 +11,7 @@ import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
 import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
@@ -438,5 +439,14 @@ public class Permission {
             return transmissionSchedule;
         }
         return dataNeed != null ? dataNeed.transmissionSchedule() : null;
+    }
+
+    /**
+     * True if the permission allows the eligible party to send connection limits,
+     * indicating that the permission supports connection limit features.
+     */
+    public boolean supportsConnectionLimits() {
+        return dataNeed instanceof InboundAiidaLocalDataNeed && dataNeed.schemas()
+                                                                        .contains(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
     }
 }

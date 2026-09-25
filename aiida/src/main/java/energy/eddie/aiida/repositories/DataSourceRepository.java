@@ -9,9 +9,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface DataSourceRepository extends JpaRepository<DataSource, UUID> {
+
+    Optional<DataSource> findByIdAndUserId(UUID id, UUID userId);
 
     @Query("select d from DataSource d where d.userId = :userId and not d.type = DataSourceType.INBOUND")
     List<DataSource> findOutboundByUserId(UUID userId);
