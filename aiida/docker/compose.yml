@@ -42,6 +42,9 @@ services:
     volumes:
       - ./svgs:/container-assets/svgs
       - aiida_security:/opt/security
+    networks:
+      - default
+      - eddie-local
 
   emqx:
     image: emqx/emqx:5.8.6
@@ -89,7 +92,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.1
     ports:
-      - "8888:8080"
+      - "8889:8080"
     environment:
       KC_HOSTNAME: ${KEYCLOAK_EXTERNAL_HOST}
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME}
@@ -114,3 +117,8 @@ volumes:
   emqx_data:
   keycloak_data:
   aiida_security:
+
+networks:
+  eddie-local:
+    external: true
+    name: eddie-test_default

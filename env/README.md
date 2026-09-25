@@ -17,3 +17,20 @@ In order to start the application in docker containers you will need to perform 
 
 If `.env` is configured correctly, the application should start, and you should be able to use all configured region
 connectors.
+
+## Run with the example app
+
+From this directory (`eddie/env`), start EDDIE and the example app together:
+
+```shell
+docker compose --profile example up -d
+```
+
+The `example` profile starts the normal EDDIE services (EDDIE, PostgreSQL, Kafka, and EMQX)
+plus Keycloak, the example app, and a dedicated TimescaleDB database for the example app.
+It uses the configuration in this repository and does not require the example-app checkout.
+
+Open the example app at <http://localhost:8082>.
+
+To also run AIIDA, start EDDIE first, then run `docker compose up -d` from `../aiida/docker`.
+AIIDA joins the same external network and its Keycloak uses port `8889`.
