@@ -69,6 +69,7 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 | SPRING_MAIL_PORT                                    | The port of the SMTP server (default: 25)                                                                           |
 | SPRING_MAIL_USERNAME                                | The username for SMTP authentication and the sender address of notification emails                                  |
 | SPRING_MAIL_PASSWORD                                | The password for SMTP authentication                                                                                |
+| AIIDA_NOTIFICATION_INTERVAL_MS                      | The interval in milliseconds at which assigned data sources are checked for connection limit violations (default: 10000) |
 
 ### Email Notifications
 
@@ -76,6 +77,9 @@ AIIDA can send email notifications to users when the measured data of an assigne
 and a recovery email when the data is back within the limits.
 Notifications are only sent when a mail server is configured (`SPRING_MAIL_HOST`).
 To receive notifications the user has to set a contact email address in their account settings.
+
+The latest measured value of each assigned data source is checked periodically (`AIIDA_NOTIFICATION_INTERVAL_MS`),
+so a notification can be delayed by up to that interval.
 
 The development setup in `aiida/docker` includes a [Mailpit](https://github.com/axllent/mailpit) service to capture outgoing emails.
 Start it with `docker compose --profile mail up` and open `http://localhost:8025` to inspect them.
