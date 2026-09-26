@@ -207,7 +207,11 @@
     "settings": "Paramètres",
     "logout": "Se déconnecter",
     "mqttTlsCertificate": "Certificat TLS MQTT",
-    "downloadCertificate": "Télécharger"
+    "downloadCertificate": "Télécharger",
+    "contactEmail": "E-mail de notification",
+    "contactEmailPlaceholder": "vous@exemple.com",
+    "contactEmailHint": "Utilisé uniquement pour vous informer des dépassements des limites de raccordement.",
+    "save": "Enregistrer"
   },
   "toasts": {
     "info": "Le saviez-vous ?",
@@ -218,6 +222,7 @@
     "updateInboundMessageFormat": "Format des messages entrants mis à jour.",
     "updateDisplayName": "Nom d’affichage mis à jour.",
     "updateConnectionLimitMonitoring": "Source de données surveillée mise à jour.",
+    "updateUserSettings": "E-mail de notification mis à jour.",
     "revokePermission": "L’autorisation pour ce service a été révoquée.",
     "rejectPermission": "Demande d’autorisation refusée.",
     "createDatasource": "Source de données créée.",

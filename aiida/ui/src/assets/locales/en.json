@@ -207,7 +207,11 @@
     "settings": "Settings",
     "logout": "Logout",
     "mqttTlsCertificate": "MQTT TLS Certificate",
-    "downloadCertificate": "Download"
+    "downloadCertificate": "Download",
+    "contactEmail": "Notification email",
+    "contactEmailPlaceholder": "you@example.com",
+    "contactEmailHint": "Used only to notify you about connection limit violations.",
+    "save": "Save"
   },
   "toasts": {
     "info": "Did you know?",
@@ -218,6 +222,7 @@
     "updateInboundMessageFormat": "Inbound message format updated.",
     "updateDisplayName": "Display name updated.",
     "updateConnectionLimitMonitoring": "Monitored data source updated.",
+    "updateUserSettings": "Notification email updated.",
     "revokePermission": "The permission for this service was revoked.",
     "rejectPermission": "Permission request rejected",
     "createDatasource": "Data source created.",

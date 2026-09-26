@@ -207,7 +207,11 @@
     "settings": "Einstellungen",
     "logout": "Abmelden",
     "mqttTlsCertificate": "MQTT TLS Zertifikat",
-    "downloadCertificate": "Herunterladen"
+    "downloadCertificate": "Herunterladen",
+    "contactEmail": "Benachrichtigungs-E-Mail",
+    "contactEmailPlaceholder": "du@beispiel.com",
+    "contactEmailHint": "Wird nur verwendet, um dich über Überschreitungen der Anschlussgrenzen zu informieren.",
+    "save": "Speichern"
   },
   "toasts": {
     "info": "Wussten Sie schon?",
@@ -218,6 +222,7 @@
     "updateInboundMessageFormat": "Format eingehender Nachrichten aktualisiert.",
     "updateDisplayName": "Anzeigename aktualisiert.",
     "updateConnectionLimitMonitoring": "Überwachte Datenquelle aktualisiert.",
+    "updateUserSettings": "Benachrichtigungs-E-Mail aktualisiert.",
     "revokePermission": "Die Berechtigung für diesen Dienst wurde widerrufen.",
     "rejectPermission": "Berechtigungsanfrage abgelehnt.",
     "createDatasource": "Datenquelle erstellt.",
