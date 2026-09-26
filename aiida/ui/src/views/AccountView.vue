@@ -1,12 +1,15 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import { keycloak } from '@/keycloak'
 import { onMounted, ref } from 'vue'
-import { getApplicationInformation, getTlsCertificateFile } from '@/api'
+import {
+  getApplicationInformation,
+  getTlsCertificateFile,
+  getUserSettings,
+  updateUserSettings,
+} from '@/api'
 import Button from '@/components/Button.vue'
 import AccountIcon from '@/assets/icons/AccountIcon.svg'
 import { useI18n } from 'vue-i18n'
@@ -18,6 +21,7 @@ const username = ref('')
 const aiidaId = ref('')
 const userAvatar = ref('')
 const certLink = ref('')
+const contactEmail = ref('')
 
 keycloak.loadUserProfile().then((user) => {
   firstName.value = user.firstName ?? ''
@@ -34,7 +38,15 @@ onMounted(async () => {
   if (cert) {
     certLink.value = URL.createObjectURL(cert)
   }
+
+  const settings = await getUserSettings()
+  contactEmail.value = settings.contactEmail ?? ''
 })
+
+const saveContactEmail = async () => {
+  const settings = await updateUserSettings(contactEmail.value.trim() || null)
+  contactEmail.value = settings.contactEmail ?? ''
+}
 </script>
 
 <template>
@@ -64,7 +76,20 @@ onMounted(async () => {
             }}</Button>
           </dd>
         </div>
+        <div class="info-field info-field--email">
+          <dt>{{ t('account.contactEmail') }}</dt>
+          <dd class="email-input">
+            <input
+              v-model="contactEmail"
+              type="email"
+              :placeholder="t('account.contactEmailPlaceholder')"
+              @keyup.enter="saveContactEmail"
+            />
+            <Button size="small" @click="saveContactEmail">{{ t('account.save') }}</Button>
+          </dd>
+        </div>
       </dl>
+      <p class="email-hint">{{ t('account.contactEmailHint') }}</p>
       <div class="user-buttons">
         <Button
           button-style="secondary"
@@ -135,6 +160,31 @@ onMounted(async () => {
     font-weight: 600;
   }
 }
+
+.info-field--email dd.email-input {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  width: 100%;
+}
+
+.email-input input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--eddie-grey-medium);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius);
+  background-color: var(--light);
+  color: var(--dark);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.email-hint {
+  font-size: 0.8rem;
+  color: var(--eddie-grey-medium);
+}
+
 .user-buttons {
   margin-top: auto;
 }

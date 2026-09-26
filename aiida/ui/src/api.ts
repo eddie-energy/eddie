@@ -17,6 +17,7 @@ import type {
   LatestOutboundPermissionRecord,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
+  UserSettings,
 } from './types'
 
 const { danger, success } = useToast()
@@ -157,6 +158,19 @@ export function getModbusDevices(
 
 export function getApplicationInformation(): Promise<AiidaApplicationInformation> {
   return fetch('/application-information')
+}
+
+export function getUserSettings(): Promise<UserSettings> {
+  return fetch('/user-settings')
+}
+
+export async function updateUserSettings(contactEmail: string | null): Promise<UserSettings> {
+  const result: UserSettings = await fetch('/user-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ contactEmail }),
+  })
+  success('toasts.updateUserSettings')
+  return result
 }
 
 export function addPermissions(
