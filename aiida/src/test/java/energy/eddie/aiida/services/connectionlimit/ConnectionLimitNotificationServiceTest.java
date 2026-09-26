@@ -1,0 +1,231 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
+package energy.eddie.aiida.services.connectionlimit;
+
+import energy.eddie.aiida.aggregator.OutboundAggregator;
+import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitMonitoring;
+import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.repositories.ConnectionLimitMonitoringRepository;
+import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.UserSettingsService;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class ConnectionLimitNotificationServiceTest {
+    private static final UUID USER_ID = UUID.fromString("092bf5cb-8571-4313-9429-8caf5e679f6e");
+    private static final UUID PERMISSION_ID = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
+    private static final UUID DATA_SOURCE_ID = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
+    private static final Instant TIMESTAMP = Instant.parse("2026-07-10T10:00:00Z");
+    private static final String RECIPIENT = "user@example.com";
+
+    @Mock
+    private OutboundAggregator outboundAggregator;
+    @Mock
+    private ConnectionLimitMonitoringRepository connectionLimitMonitoringRepository;
+    @Mock
+    private PermissionRepository permissionRepository;
+    @Mock
+    private ConnectionLimitService connectionLimitService;
+    @Mock
+    private UserSettingsService userSettingsService;
+    @Mock
+    private ObjectProvider<JavaMailSender> mailSenderProvider;
+    @Mock
+    private JavaMailSender mailSender;
+    @Mock
+    private DataSource dataSource;
+    @Mock
+    private Permission permission;
+
+    private ConnectionLimitNotificationService service;
+
+    @BeforeEach
+    void setUp() {
+        service = new ConnectionLimitNotificationService(outboundAggregator,
+                                                         connectionLimitMonitoringRepository,
+                                                         permissionRepository,
+                                                         connectionLimitService,
+                                                         userSettingsService,
+                                                         mailSenderProvider,
+                                                         "aiida@example.com");
+    }
+
+    @Test
+    void givenNoAssignment_doesNotNotify() {
+        when(connectionLimitMonitoringRepository.findByDataSourceId(DATA_SOURCE_ID)).thenReturn(List.of());
+
+        service.handleRecord(record(imported("9.0")));
+
+        verifyNoInteractions(mailSender);
+    }
+
+    @Test
+    void givenNoPowerValue_doesNotNotify() {
+        givenAssignment();
+
+        service.handleRecord(record(new AiidaRecordValue("1-0:1.8.0",
+                                                         ObisCode.POSITIVE_ACTIVE_ENERGY,
+                                                         "1",
+                                                         UnitOfMeasurement.KILO_WATT_HOUR,
+                                                         "1",
+                                                         UnitOfMeasurement.KILO_WATT_HOUR)));
+
+        verifyNoInteractions(mailSender);
+    }
+
+    @Test
+    void givenViolation_notifiesUser() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+
+        service.handleRecord(record(imported("9.0")));
+
+        var message = sentMessage();
+        assertEquals(RECIPIENT, message.getTo()[0]);
+        assertEquals("Connection limits exceeded", message.getSubject());
+        assertTrue(message.getText().contains("Measured power: 9 kW"));
+    }
+
+    @Test
+    void givenViolationThenBackWithinLimits_notifiesRecovery() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+
+        service.handleRecord(record(imported("9.0")));
+        service.handleRecord(record(imported("5.0")));
+
+        var captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender, times(2)).send(captor.capture());
+        assertEquals("Connection limits exceeded", captor.getAllValues().get(0).getSubject());
+        assertEquals("Connection limits restored", captor.getAllValues().get(1).getSubject());
+    }
+
+    @Test
+    void givenRepeatedViolation_notifiesOnlyOnce() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+
+        service.handleRecord(record(imported("9.0")));
+        service.handleRecord(record(imported("10.0")));
+
+        verify(mailSender).send(any(SimpleMailMessage.class));
+    }
+
+    @Test
+    void givenLowerThanMinLimit_notifiesUser() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(-5), null);
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+
+        service.handleRecord(record(exported("7.0")));
+
+        assertTrue(sentMessage().getText().contains("Measured power: -7 kW"));
+    }
+
+    @Test
+    void givenNoContactEmail_doesNotNotify() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.empty());
+
+        service.handleRecord(record(imported("9.0")));
+
+        verifyNoInteractions(mailSender);
+        verifyNoInteractions(mailSenderProvider);
+    }
+
+    @Test
+    void givenNoMailSender_doesNotNotify() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
+        when(mailSenderProvider.getIfAvailable()).thenReturn(null);
+
+        service.handleRecord(record(imported("9.0")));
+
+        verifyNoInteractions(mailSender);
+    }
+
+    private void givenAssignment() {
+        when(connectionLimitMonitoringRepository.findByDataSourceId(DATA_SOURCE_ID)).thenReturn(assignment());
+    }
+
+    private void givenEffectiveLimit(BigDecimal min, BigDecimal max) {
+        when(permission.id()).thenReturn(PERMISSION_ID);
+        when(permission.userId()).thenReturn(USER_ID);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        when(connectionLimitService.getConnectionLimits(any(), any(), any(), any(), any())).thenReturn(List.of(
+                new ConnectionLimitDto(PERMISSION_ID,
+                                       "",
+                                       null,
+                                       TIMESTAMP,
+                                       TIMESTAMP.plusMillis(1),
+                                       min,
+                                       max)));
+    }
+
+    private List<ConnectionLimitMonitoring> assignment() {
+        return List.of(new ConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID));
+    }
+
+    private AiidaRecord record(AiidaRecordValue... values) {
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        return new AiidaRecord(TIMESTAMP, dataSource, List.of(values));
+    }
+
+    private AiidaRecordValue imported(String value) {
+        return value(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER, value);
+    }
+
+    private AiidaRecordValue exported(String value) {
+        return value(ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER, value);
+    }
+
+    private AiidaRecordValue value(ObisCode dataTag, String value) {
+        return new AiidaRecordValue(dataTag.toString(),
+                                    dataTag,
+                                    value,
+                                    UnitOfMeasurement.KILO_WATT,
+                                    value,
+                                    UnitOfMeasurement.KILO_WATT);
+    }
+
+    private SimpleMailMessage sentMessage() {
+        var captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
+        verify(mailSender).send(captor.capture());
+        return captor.getValue();
+    }
+}

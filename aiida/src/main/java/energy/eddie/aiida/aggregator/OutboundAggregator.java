@@ -66,6 +66,15 @@ public class OutboundAggregator extends Aggregator<AiidaRecord> {
     }
 
     /**
+     * Returns a Flux of all {@link AiidaRecord}s received from outbound data sources.
+     */
+    public Flux<AiidaRecord> aiidaRecordFlux() {
+        return combinedRecordSink.asFlux()
+                                 .ofType(AiidaRecord.class)
+                                 .onBackpressureBuffer();
+    }
+
+    /**
      * Returns a Flux of {@link AiidaRecord}s that either contains all records or only contains records with a {@link AiidaRecordValue#dataTag()}
      * that is in the set {@code allowedCodes}.
      * All values must have a timestamp before {@code permissionExpirationTime}.
