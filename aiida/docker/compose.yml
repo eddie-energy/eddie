@@ -86,6 +86,15 @@ services:
       - .env-fr-teleinfo2mqtt
     restart: always
 
+  mailpit:
+    image: axllent/mailpit:latest
+    profiles:
+      - mail
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: always
+
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.1
     ports:

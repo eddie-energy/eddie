@@ -65,6 +65,23 @@ It is recommended to configure AIIDA using the .env file provided in the `aiida/
 | KEYCLOAK_INTERNAL_HOST                              | The hostname for docker internal communication                                                                      |
 | KEYCLOAK_REALM                                      | The Keycloak realm used for AIIDA                                                                                   |
 | KEYCLOAK_CLIENT ID                                  | The Keycloak client ID used for AIIDA                                                                               |
+| SPRING_MAIL_HOST                                    | The hostname of the SMTP server used to email notifications (notifications are disabled if unset)                   |
+| SPRING_MAIL_PORT                                    | The port of the SMTP server (default: 25)                                                                           |
+| SPRING_MAIL_USERNAME                                | The username for SMTP authentication and the sender address of notification emails                                  |
+| SPRING_MAIL_PASSWORD                                | The password for SMTP authentication                                                                                |
+
+### Email Notifications
+
+AIIDA can send email notifications to users when the measured data of an assigned data source violates the connection limits of a permission,
+and a recovery email when the data is back within the limits.
+Notifications are only sent when a mail server is configured (`SPRING_MAIL_HOST`).
+To receive notifications the user has to set a contact email address in their account settings.
+
+The development setup in `aiida/docker` includes a [Mailpit](https://github.com/axllent/mailpit) service to capture outgoing emails.
+Start it with `docker compose --profile mail up` and open `http://localhost:8025` to inspect them.
+Uncomment the `SPRING_MAIL_*` variables in `aiida/docker/.env` to route notifications to Mailpit.
+
+Additional `spring.mail.properties.*` settings (like TLS or authentication options) can be supplied through the corresponding environment variables (see [Spring documentation](https://docs.spring.io/spring-boot/reference/io/email.html)).
 
 ### Reverse Proxy Deployment
 
