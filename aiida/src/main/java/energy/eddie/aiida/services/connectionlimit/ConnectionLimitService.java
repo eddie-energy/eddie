@@ -38,22 +38,22 @@ public class ConnectionLimitService {
             Instant from,
             Instant to
     ) throws InvalidUserException {
-        var currentUserId = authService.getCurrentUserId();
+        return getConnectionLimits(authService.getCurrentUserId(), permissionId, meterId, from, to);
+    }
 
+    public List<ConnectionLimitDto> getConnectionLimits(
+            UUID userId,
+            @Nullable UUID permissionId,
+            @Nullable String meterId,
+            Instant from,
+            Instant to
+    ) {
         if (from.isAfter(to)) {
             return List.of();
         }
 
-        var limits = connectionLimitRepository.findByUserIdAndFiltersFromTo(currentUserId,
-                                                                            permissionId,
-                                                                            meterId,
-                                                                            from,
-                                                                            to);
-
-        var defaults = connectionLimitDefaultRepository.findByUserIdAndPermissionId(currentUserId,
-                                                                                    permissionId,
-                                                                                    from,
-                                                                                    to);
+        var limits = connectionLimitRepository.findByUserIdAndFiltersFromTo(userId, permissionId, meterId, from, to);
+        var defaults = connectionLimitDefaultRepository.findByUserIdAndPermissionId(userId, permissionId, from, to);
 
         return new ConnectionLimitCalculation(limits, defaults, from, to).effectiveLimits();
     }
