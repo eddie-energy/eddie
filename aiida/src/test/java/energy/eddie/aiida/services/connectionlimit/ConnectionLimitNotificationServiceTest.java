@@ -3,13 +3,12 @@
 
 package energy.eddie.aiida.services.connectionlimit;
 
-import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitMonitoring;
-import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.ConnectionLimitMonitoringRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.UserSettingsService;
@@ -33,7 +32,6 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,9 +43,9 @@ class ConnectionLimitNotificationServiceTest {
     private static final String RECIPIENT = "user@example.com";
 
     @Mock
-    private OutboundAggregator outboundAggregator;
-    @Mock
     private ConnectionLimitMonitoringRepository connectionLimitMonitoringRepository;
+    @Mock
+    private AiidaRecordRepository aiidaRecordRepository;
     @Mock
     private PermissionRepository permissionRepository;
     @Mock
@@ -59,16 +57,14 @@ class ConnectionLimitNotificationServiceTest {
     @Mock
     private JavaMailSender mailSender;
     @Mock
-    private DataSource dataSource;
-    @Mock
     private Permission permission;
 
     private ConnectionLimitNotificationService service;
 
     @BeforeEach
     void setUp() {
-        service = new ConnectionLimitNotificationService(outboundAggregator,
-                                                         connectionLimitMonitoringRepository,
+        service = new ConnectionLimitNotificationService(connectionLimitMonitoringRepository,
+                                                         aiidaRecordRepository,
                                                          permissionRepository,
                                                          connectionLimitService,
                                                          userSettingsService,
@@ -78,35 +74,32 @@ class ConnectionLimitNotificationServiceTest {
 
     @Test
     void givenNoAssignment_doesNotNotify() {
-        when(connectionLimitMonitoringRepository.findByDataSourceId(DATA_SOURCE_ID)).thenReturn(List.of());
+        when(connectionLimitMonitoringRepository.findAll()).thenReturn(List.of());
 
-        service.handleRecord(record(imported("9.0")));
+        service.checkViolations();
 
         verifyNoInteractions(mailSender);
     }
 
     @Test
-    void givenNoPowerValue_doesNotNotify() {
+    void givenFirstSweep_baselinesToLatestRecordAndSkipsHistory() {
         givenAssignment();
+        givenLatestRecordId(10);
+        givenNewRecords(10);
 
-        service.handleRecord(record(new AiidaRecordValue("1-0:1.8.0",
-                                                         ObisCode.POSITIVE_ACTIVE_ENERGY,
-                                                         "1",
-                                                         UnitOfMeasurement.KILO_WATT_HOUR,
-                                                         "1",
-                                                         UnitOfMeasurement.KILO_WATT_HOUR)));
+        service.checkViolations();
 
+        verify(aiidaRecordRepository).findByDataSourceIdAndIdGreaterThanOrderByIdAsc(DATA_SOURCE_ID, 10L);
         verifyNoInteractions(mailSender);
     }
 
     @Test
     void givenViolation_notifiesUser() {
-        givenAssignment();
-        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
-        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
-        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.0")));
 
-        service.handleRecord(record(imported("9.0")));
+        service.checkViolations();
 
         var message = sentMessage();
         assertEquals(RECIPIENT, message.getTo()[0]);
@@ -116,13 +109,11 @@ class ConnectionLimitNotificationServiceTest {
 
     @Test
     void givenViolationThenBackWithinLimits_notifiesRecovery() {
-        givenAssignment();
-        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
-        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
-        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.0")), record(7, imported("5.0")));
 
-        service.handleRecord(record(imported("9.0")));
-        service.handleRecord(record(imported("5.0")));
+        service.checkViolations();
 
         var captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender, times(2)).send(captor.capture());
@@ -131,26 +122,40 @@ class ConnectionLimitNotificationServiceTest {
     }
 
     @Test
-    void givenRepeatedViolation_notifiesOnlyOnce() {
-        givenAssignment();
-        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
-        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
-        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+    void givenRecordsAlreadyChecked_doesNotCheckThemAgain() {
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.0")));
+        givenNewRecords(6);
 
-        service.handleRecord(record(imported("9.0")));
-        service.handleRecord(record(imported("10.0")));
+        service.checkViolations();
+        service.checkViolations();
 
         verify(mailSender).send(any(SimpleMailMessage.class));
+        verify(aiidaRecordRepository).findByDataSourceIdAndIdGreaterThanOrderByIdAsc(DATA_SOURCE_ID, 6L);
+    }
+
+    @Test
+    void givenNoPowerValue_doesNotNotify() {
+        givenAssignment();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, energyOnly()));
+
+        service.checkViolations();
+
+        verifyNoInteractions(mailSender);
     }
 
     @Test
     void givenLowerThanMinLimit_notifiesUser() {
         givenAssignment();
         givenEffectiveLimit(BigDecimal.valueOf(-5), null);
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, exported("7.0")));
         when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
         when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
 
-        service.handleRecord(record(exported("7.0")));
+        service.checkViolations();
 
         assertTrue(sentMessage().getText().contains("Measured power: -7 kW"));
     }
@@ -159,9 +164,11 @@ class ConnectionLimitNotificationServiceTest {
     void givenNoContactEmail_doesNotNotify() {
         givenAssignment();
         givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.0")));
         when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.empty());
 
-        service.handleRecord(record(imported("9.0")));
+        service.checkViolations();
 
         verifyNoInteractions(mailSender);
         verifyNoInteractions(mailSenderProvider);
@@ -171,16 +178,38 @@ class ConnectionLimitNotificationServiceTest {
     void givenNoMailSender_doesNotNotify() {
         givenAssignment();
         givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.0")));
         when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
         when(mailSenderProvider.getIfAvailable()).thenReturn(null);
 
-        service.handleRecord(record(imported("9.0")));
+        service.checkViolations();
 
         verifyNoInteractions(mailSender);
     }
 
+    private void givenViolationContext() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        when(userSettingsService.findContactEmail(USER_ID)).thenReturn(Optional.of(RECIPIENT));
+        when(mailSenderProvider.getIfAvailable()).thenReturn(mailSender);
+    }
+
     private void givenAssignment() {
-        when(connectionLimitMonitoringRepository.findByDataSourceId(DATA_SOURCE_ID)).thenReturn(assignment());
+        when(connectionLimitMonitoringRepository.findAll()).thenReturn(List.of(new ConnectionLimitMonitoring(
+                PERMISSION_ID,
+                DATA_SOURCE_ID)));
+    }
+
+    private void givenLatestRecordId(long id) {
+        var latest = mock(AiidaRecord.class);
+        when(latest.id()).thenReturn(id);
+        when(aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(latest));
+    }
+
+    private void givenNewRecords(long afterId, AiidaRecord... records) {
+        when(aiidaRecordRepository.findByDataSourceIdAndIdGreaterThanOrderByIdAsc(DATA_SOURCE_ID, afterId)).thenReturn(
+                List.of(records));
     }
 
     private void givenEffectiveLimit(BigDecimal min, BigDecimal max) {
@@ -197,13 +226,12 @@ class ConnectionLimitNotificationServiceTest {
                                        max)));
     }
 
-    private List<ConnectionLimitMonitoring> assignment() {
-        return List.of(new ConnectionLimitMonitoring(PERMISSION_ID, DATA_SOURCE_ID));
-    }
-
-    private AiidaRecord record(AiidaRecordValue... values) {
-        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
-        return new AiidaRecord(TIMESTAMP, dataSource, List.of(values));
+    private AiidaRecord record(long id, AiidaRecordValue... values) {
+        var record = mock(AiidaRecord.class);
+        when(record.id()).thenReturn(id);
+        when(record.aiidaRecordValues()).thenReturn(List.of(values));
+        lenient().when(record.timestamp()).thenReturn(TIMESTAMP);
+        return record;
     }
 
     private AiidaRecordValue imported(String value) {
@@ -212,6 +240,10 @@ class ConnectionLimitNotificationServiceTest {
 
     private AiidaRecordValue exported(String value) {
         return value(ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER, value);
+    }
+
+    private AiidaRecordValue energyOnly() {
+        return value(ObisCode.POSITIVE_ACTIVE_ENERGY, "1");
     }
 
     private AiidaRecordValue value(ObisCode dataTag, String value) {

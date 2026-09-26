@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.repositories;
@@ -18,6 +18,9 @@ import java.util.UUID;
 
 public interface AiidaRecordRepository extends JpaRepository<AiidaRecord, Long> {
     Optional<AiidaRecord> findFirstByDataSourceIdOrderByIdDesc(UUID dataSourceId);
+
+    List<AiidaRecord> findByDataSourceIdAndIdGreaterThanOrderByIdAsc(UUID dataSourceId, long id);
+
     List<AiidaRecord> findByDataSourceIdOrderByTimestampDesc(UUID dataSourceId, Pageable pageable);
 
     @Transactional

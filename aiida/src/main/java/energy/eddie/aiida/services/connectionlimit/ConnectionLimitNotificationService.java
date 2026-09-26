@@ -3,24 +3,24 @@
 
 package energy.eddie.aiida.services.connectionlimit;
 
-import energy.eddie.aiida.aggregator.OutboundAggregator;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitMonitoring;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
+import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.ConnectionLimitMonitoringRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.UserSettingsService;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -29,39 +29,42 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
- * Watches the measured data of assigned data sources and notifies users by email when the effective connection limits
- * of a permission are violated, and again when the data is back within the limits.
+ * Periodically checks the latest measured data of assigned data sources and notifies users by email when the effective
+ * connection limits of a permission are violated, and again when the data is back within the limits.
  * <p>
+ * The check interval can be configured with {@code aiida.notification.interval-ms} (default: 10 seconds).
  * Notifications are only sent when a mail server is configured ({@code spring.mail.host}) and the user has set a
- * contact email. Both conditions are evaluated per notification and can change at any time.
+ * contact email. Both conditions are evaluated per check and can change at any time.
  */
 @Service
 public class ConnectionLimitNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionLimitNotificationService.class);
     private static final String DEFAULT_SENDER = "no-reply@aiida";
 
-    private final OutboundAggregator outboundAggregator;
     private final ConnectionLimitMonitoringRepository connectionLimitMonitoringRepository;
+    private final AiidaRecordRepository aiidaRecordRepository;
     private final PermissionRepository permissionRepository;
     private final ConnectionLimitService connectionLimitService;
     private final UserSettingsService userSettingsService;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
     private final String sender;
     private final Map<UUID, Boolean> violatedPermissions = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastCheckedRecordId = new ConcurrentHashMap<>();
 
     public ConnectionLimitNotificationService(
-            OutboundAggregator outboundAggregator,
             ConnectionLimitMonitoringRepository connectionLimitMonitoringRepository,
+            AiidaRecordRepository aiidaRecordRepository,
             PermissionRepository permissionRepository,
             ConnectionLimitService connectionLimitService,
             UserSettingsService userSettingsService,
             ObjectProvider<JavaMailSender> mailSenderProvider,
             @Value("${spring.mail.username:}") String sender
     ) {
-        this.outboundAggregator = outboundAggregator;
         this.connectionLimitMonitoringRepository = connectionLimitMonitoringRepository;
+        this.aiidaRecordRepository = aiidaRecordRepository;
         this.permissionRepository = permissionRepository;
         this.connectionLimitService = connectionLimitService;
         this.userSettingsService = userSettingsService;
@@ -69,32 +72,48 @@ public class ConnectionLimitNotificationService {
         this.sender = sender.isBlank() ? DEFAULT_SENDER : sender;
     }
 
-    @PostConstruct
-    void subscribeToOutboundRecords() {
-        outboundAggregator.aiidaRecordFlux()
-                          .publishOn(Schedulers.boundedElastic())
-                          .doOnNext(this::handleRecord)
-                          .onErrorContinue((error, value) -> LOGGER.error(
-                                  "Failed to evaluate connection limits for record {}",
-                                  value,
-                                  error))
-                          .subscribe();
+    @Scheduled(fixedDelayString = "${aiida.notification.interval-ms:10000}")
+    void checkViolations() {
+        var permissionIdsByDataSource = permissionIdsByDataSource(connectionLimitMonitoringRepository.findAll());
+        for (var dataSource : permissionIdsByDataSource.entrySet()) {
+            try {
+                check(dataSource.getKey(), dataSource.getValue());
+            } catch (Exception e) {
+                LOGGER.error("Failed to check connection limits for data source {}", dataSource.getKey(), e);
+            }
+        }
     }
 
-    void handleRecord(AiidaRecord record) {
-        var assignments = connectionLimitMonitoringRepository.findByDataSourceId(record.dataSource().id());
-        if (assignments.isEmpty()) {
-            return;
-        }
+    private Map<UUID, List<UUID>> permissionIdsByDataSource(List<ConnectionLimitMonitoring> assignments) {
+        return assignments.stream()
+                          .collect(Collectors.groupingBy(
+                                  ConnectionLimitMonitoring::dataSourceId,
+                                  Collectors.mapping(ConnectionLimitMonitoring::permissionId, Collectors.toList())));
+    }
 
-        var netPower = netPower(record);
-        if (netPower == null) {
-            return;
-        }
+    private void check(UUID dataSourceId, List<UUID> permissionIds) {
+        var lastCheckedId = lastCheckedRecordId.computeIfAbsent(dataSourceId, this::latestRecordId);
+        var records = aiidaRecordRepository.findByDataSourceIdAndIdGreaterThanOrderByIdAsc(dataSourceId, lastCheckedId);
+        for (var aiidaRecord : records) {
+            var netPower = netPower(aiidaRecord);
+            if (netPower != null) {
+                for (var permissionId : permissionIds) {
+                    evaluate(permissionId, netPower, aiidaRecord.timestamp());
+                }
+            }
 
-        for (var assignment : assignments) {
-            evaluate(assignment.permissionId(), netPower, record.timestamp());
+            lastCheckedRecordId.put(dataSourceId, aiidaRecord.id());
         }
+    }
+
+    /**
+     * Returns the id of the latest record of the data source, used to initialize the watermark so that pre-existing
+     * history is not replayed when a data source is first seen.
+     */
+    private long latestRecordId(UUID dataSourceId) {
+        return aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
+                                    .map(AiidaRecord::id)
+                                    .orElse(0L);
     }
 
     private void evaluate(UUID permissionId, BigDecimal netPower, Instant timestamp) {
@@ -121,8 +140,8 @@ public class ConnectionLimitNotificationService {
      * Returns the measured net power of a record, which is the imported minus the exported instantaneous power, or
      * null if the record contains neither.
      */
-    private @Nullable BigDecimal netPower(AiidaRecord record) {
-        var values = record.aiidaRecordValues();
+    private @Nullable BigDecimal netPower(AiidaRecord aiidaRecord) {
+        var values = aiidaRecord.aiidaRecordValues();
         var imported = powerValue(values, ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER);
         var exported = powerValue(values, ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER);
         if (imported == null && exported == null) {
@@ -134,11 +153,20 @@ public class ConnectionLimitNotificationService {
     }
 
     private @Nullable BigDecimal powerValue(List<AiidaRecordValue> values, ObisCode dataTag) {
-        return values.stream()
-                     .filter(value -> value.dataTag() == dataTag)
-                     .findFirst()
-                     .map(value -> new BigDecimal(value.value()))
-                     .orElse(null);
+        var value = values.stream()
+                          .filter(recordValue -> recordValue.dataTag() == dataTag)
+                          .findFirst()
+                          .orElse(null);
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            return new BigDecimal(value.value());
+        } catch (NumberFormatException e) {
+            LOGGER.warn("Could not parse power value '{}' for data tag {}", value.value(), dataTag);
+            return null;
+        }
     }
 
     private @Nullable EffectiveLimit effectiveLimit(Permission permission, Instant timestamp) {
@@ -156,7 +184,7 @@ public class ConnectionLimitNotificationService {
                                                                 timestamp.plusMillis(1));
 
         return limits.stream()
-                     .filter(limit -> meterId.equals(limit.meterId()))
+                     .filter(limit -> Objects.equals(meterId, limit.meterId()))
                      .findFirst()
                      .map(limit -> new EffectiveLimit(limit.minLimitKw(), limit.maxLimitKw()))
                      .orElse(null);
