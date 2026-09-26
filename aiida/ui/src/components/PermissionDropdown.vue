@@ -18,6 +18,7 @@ const { permission, status } = defineProps<{
 const emit = defineEmits<{
   configureInboundProvisioning: [permission: AiidaPermission]
   resetInboundServerPassword: [permission: AiidaPermission]
+  resetInboundRestApiKey: [permission: AiidaPermission]
 }>()
 const { t } = useI18n()
 
@@ -74,6 +75,7 @@ const isEditingDisplayName = ref(false)
         class="permission-details"
         @configure-inbound-provisioning="emit('configureInboundProvisioning', $event)"
         @reset-inbound-server-password="emit('resetInboundServerPassword', $event)"
+        @reset-inbound-rest-api-key="emit('resetInboundRestApiKey', $event)"
       />
     </Transition>
   </li>

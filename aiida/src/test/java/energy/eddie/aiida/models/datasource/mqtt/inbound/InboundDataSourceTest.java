@@ -182,6 +182,15 @@ class InboundDataSourceTest {
     }
 
     @Test
+    void serializationDoesNotExposeApiKeyAlias() {
+        var json = ObjectMapperCreatorUtil.mapper().writeValueAsString(dataSource);
+
+        assertThat(json)
+                .doesNotContain("accessCode")
+                .doesNotContain(ACCESS_CODE);
+    }
+
+    @Test
     void mqttServer_serializationExposesConnectionDetailsWithoutPassword() {
         var mqttConfiguration = mock(MqttConfiguration.class);
         var passwordEncoder = mock(BCryptPasswordEncoder.class);
