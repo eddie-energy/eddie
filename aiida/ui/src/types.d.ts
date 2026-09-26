@@ -130,6 +130,11 @@ export type AiidaApplicationInformation = {
   aiidaId: string
 }
 
+export type UserSettings = {
+  userId: string
+  contactEmail: string | null
+}
+
 export type AiidaPermissionRequestsDTO = {
   eddieId: string
   permissionIds: string[]

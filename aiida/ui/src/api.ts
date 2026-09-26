@@ -17,6 +17,7 @@ import type {
   LatestOutboundPermissionRecord,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
+  UserSettings,
 } from './types'
 
 const { danger, success } = useToast()
@@ -159,6 +160,19 @@ export function getApplicationInformation(): Promise<AiidaApplicationInformation
   return fetch('/application-information')
 }
 
+export function getUserSettings(): Promise<UserSettings> {
+  return fetch('/user-settings')
+}
+
+export async function updateUserSettings(contactEmail: string | null): Promise<UserSettings> {
+  const result: UserSettings = await fetch('/user-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ contactEmail }),
+  })
+  success('toasts.updateUserSettings')
+  return result
+}
+
 export function addPermissions(
   permissionRequests: AiidaPermissionRequestsDTO,
 ): Promise<AiidaPermission[]> {
@@ -231,12 +245,11 @@ export async function updateDisplayName(permissionId: string, displayName: strin
 }
 
 export async function updateConnectionLimitMonitoring(permissionId: string, dataSourceId: string) {
-  const result = await fetch(`/connection-limit-monitoring/${permissionId}`, {
+  await fetch(`/connection-limit-monitoring/${permissionId}`, {
     method: 'PUT',
     body: JSON.stringify({ dataSourceId }),
   })
   success('toasts.updateConnectionLimitMonitoring')
-  return result
 }
 
 export async function deleteConnectionLimitMonitoring(permissionId: string): Promise<void> {
