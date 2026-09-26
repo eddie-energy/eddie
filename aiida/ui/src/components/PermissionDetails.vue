@@ -11,21 +11,16 @@ import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
-import { BASE_URL, revokePermission, updateInboundMessageFormat } from '@/api'
+import { revokePermission, updateInboundMessageFormat } from '@/api'
 import { fetchPermissions, permissions } from '@/stores/permissions'
-import { computed, ref, useTemplateRef, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
-import CrossedOutEyeIcon from '@/assets/icons/CrossedOutEyeIcon.svg'
-import ToolTipIcon from '@/assets/icons/ToolTipIcon.svg'
-import { onClickOutside } from '@vueuse/core'
-import CopyButton from './CopyButton.vue'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from './CustomSelect.vue'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
-const target = useTemplateRef('target')
 const { permission, status } = defineProps<{
   permission: AiidaPermission
   status?: PermissionTypes
@@ -33,12 +28,11 @@ const { permission, status } = defineProps<{
 const emit = defineEmits<{
   configureInboundProvisioning: [permission: AiidaPermission]
   resetInboundServerPassword: [permission: AiidaPermission]
+  resetInboundRestApiKey: [permission: AiidaPermission]
 }>()
 
 const { updatePermission } = usePermissionDialog()
 
-const show = ref(false)
-const showToolTip = ref(false)
 const selectedInboundMessageFormat = ref(permission.inboundMessageFormat)
 
 const inboundMessageFormatOptions: { label: string; value: InboundMessageFormat }[] = [
@@ -114,19 +108,18 @@ const openInboundProvisioningModal = () => {
   emit('configureInboundProvisioning', permission)
 }
 
-const showInboundApiKey = () => {
-  show.value = !show.value
-}
-
-const generateStringFromLength = (length: number, char: string) => {
-  return Array.from({ length }, () => char).join('')
-}
-
 const isInboundMqttProvisioning = computed(
   () =>
     permission.dataNeed.type === 'inbound-aiida' &&
     (permission.dataSource?.provisioningType === 'MQTT_SERVER' ||
       permission.dataSource?.provisioningType === 'MQTT_CLIENT'),
+)
+
+const isInboundRestProvisioning = computed(
+  () =>
+    permission.dataNeed.type === 'inbound-aiida' &&
+    (permission.dataSource?.provisioningType === 'REST_BEARER' ||
+      permission.dataSource?.provisioningType === 'REST_API_TOKEN'),
 )
 
 const inboundMqttConnection = computed(
@@ -137,7 +130,18 @@ const inboundMqttServerUri = computed(
 )
 const inboundMqttTopic = computed(() => permission.dataSource?.mqttProvisioningConfig?.topic)
 
-onClickOutside(target, () => (showToolTip.value = false))
+const resetInboundRestApiKey = async () => {
+  if (
+    await confirm(
+      t('permissions.restApiKey.resetTitle'),
+      t('permissions.restApiKey.resetDescription'),
+      t('permissions.restApiKey.resetButton'),
+      t('cancelButton'),
+    )
+  ) {
+    emit('resetInboundRestApiKey', permission)
+  }
+}
 
 const dataSourceDisplayName = computed(() => {
   if (!permission.dataSource) return undefined
@@ -301,66 +305,6 @@ const { lastMessageAt } = useLastMessageRefresh(
           </dd>
         </div>
       </template>
-      <template v-if="permission.dataNeed.type === 'inbound-aiida' && permission.dataSource">
-        <div
-          class="permission-field access-code-field"
-          v-if="permission.dataSource.accessCode"
-          ref="target"
-        >
-          <dt>
-            API Key
-            <button
-              type="button"
-              @click="showToolTip = !showToolTip"
-              :aria-label="t('permissions.toggleTooltip')"
-              class="tool-tip-button"
-              :class="{ active: showToolTip }"
-            >
-              <ToolTipIcon />
-            </button>
-          </dt>
-          <dd>
-            {{
-              show
-                ? permission.dataSource.accessCode
-                : generateStringFromLength(permission.dataSource.accessCode.length, '●')
-            }}
-
-            <CopyButton :copy-text="permission.dataSource.accessCode" />
-            <button
-              type="button"
-              class="show-button"
-              @click="showInboundApiKey"
-              :aria-label="
-                show ? t('permissions.showMqttPassword') : t('permissions.hideMqttPassword')
-              "
-            >
-              <Transition mode="out-in">
-                <component :is="show ? EyeIcon : CrossedOutEyeIcon" />
-              </Transition>
-            </button>
-          </dd>
-          <Transition>
-            <div v-if="showToolTip" class="tool-tip">
-              <p>{{ t('permissions.dropdown.inboundTooltip') }}</p>
-              <ul>
-                <li class="copy-link">
-                  X-API-Key Header
-                  <CopyButton
-                    :copy-text="`curl ${BASE_URL}/inbound/latest/${permission.permissionId} \\  --header 'X-API-Key: ${permission.dataSource.accessCode}'`"
-                  />
-                </li>
-                <li class="copy-link">
-                  apiKey Query Parameter
-                  <CopyButton
-                    :copy-text="`curl ${BASE_URL}/inbound/latest/${permission.permissionId}?apiKey=${permission.dataSource.accessCode}`"
-                  />
-                </li>
-              </ul>
-            </div>
-          </Transition>
-        </div>
-      </template>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.schemas') }}</dt>
         <div class="column schema">
@@ -407,6 +351,14 @@ const { lastMessageAt } = useLastMessageRefresh(
             @click="emit('resetInboundServerPassword', permission)"
           >
             {{ t('datasources.card.resetPasswordButton') }}
+          </Button>
+          <Button
+            v-if="isInboundRestProvisioning"
+            button-style="secondary"
+            class="action-btn"
+            @click="resetInboundRestApiKey"
+          >
+            {{ t('permissions.restApiKey.resetButton') }}
           </Button>
           <Button button-style="primary" class="action-btn" @click="openInboundProvisioningModal">
             <PenIcon /> {{ t('permissions.mqttProvisioning.openButton') }}
@@ -528,70 +480,6 @@ const { lastMessageAt } = useLastMessageRefresh(
 
 .actions-row--end .action-btn {
   width: fit-content;
-}
-
-.access-code-field {
-  position: relative;
-  word-break: keep-all;
-  button {
-    padding: unset;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  dd,
-  dt {
-    display: flex;
-    gap: var(--spacing-sm);
-    align-items: center;
-  }
-}
-
-.tool-tip-button {
-  transition: color 0.3s ease-in-out;
-  &:hover,
-  &.active {
-    color: var(--eddie-primary);
-  }
-}
-
-.tool-tip {
-  position: absolute;
-  box-shadow: 0 2px 5px 0 #00000040;
-  top: 100%;
-  left: 0;
-  width: 80%;
-  padding: var(--spacing-sm);
-  background-color: var(--light);
-  border: 1px solid var(--eddie-primary);
-  border-radius: var(--border-radius);
-  color: var(--eddie-grey-medium);
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 10%;
-    margin-left: var(--spacing-xs);
-    border-width: var(--spacing-xs);
-    border-style: solid;
-    border-color: var(--eddie-primary) transparent transparent transparent;
-    transform: rotate(180deg);
-  }
-}
-
-.copy-link {
-  display: grid;
-  grid-template-columns: 50% 50%;
-  align-items: center;
-  gap: var(--spacing-sm);
-  &:first-child {
-    margin: var(--spacing-sm) 0;
-  }
-  button {
-    justify-content: flex-start;
-  }
 }
 
 .v-enter-active,

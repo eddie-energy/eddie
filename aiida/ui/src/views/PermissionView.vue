@@ -7,11 +7,12 @@ import Button from '@/components/Button.vue'
 import PlusIcon from '@/assets/icons/PlusIcon.svg'
 import AddPermissionModal from '@/components/Modals/AddPermissionModal.vue'
 import MqttPasswordModal from '@/components/Modals/MqttPasswordModal.vue'
+import RestApiKeyModal from '@/components/Modals/RestApiKeyModal.vue'
 import UpdateMqttProvisioningConnectionModal from '@/components/Modals/UpdateMqttProvisioningConnectionModal.vue'
 import type { AiidaPermission } from '@/types'
 import { ref, useTemplateRef } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { regenerateInboundServerPassword } from '@/api'
+import { regenerateInboundRestApiKey, regenerateInboundServerPassword } from '@/api'
 import useToast from '@/composables/useToast'
 
 const permissionModalRef = ref<HTMLDialogElement>()
@@ -21,6 +22,8 @@ const inboundProvisioningModal = useTemplateRef<
 const inboundServerPasswordModal = useTemplateRef<InstanceType<typeof MqttPasswordModal>>(
   'inboundServerPasswordModal',
 )
+const inboundRestApiKeyModal =
+  useTemplateRef<InstanceType<typeof RestApiKeyModal>>('inboundRestApiKeyModal')
 const { t } = useI18n()
 const { success } = useToast()
 const showAddPermissionModal = () => {
@@ -36,6 +39,11 @@ const resetInboundServerPassword = async (permission: AiidaPermission) => {
   success('datasources.modal.mqttResetSuccess')
   inboundServerPasswordModal.value?.showModal(password)
 }
+
+const resetInboundRestApiKey = async (permission: AiidaPermission) => {
+  const { apiKey } = await regenerateInboundRestApiKey(permission.permissionId)
+  inboundRestApiKeyModal.value?.showModal(apiKey, permission)
+}
 </script>
 
 <template>
@@ -49,10 +57,12 @@ const resetInboundServerPassword = async (permission: AiidaPermission) => {
     <PermissionList
       @configure-inbound-provisioning="configureInboundProvisioning"
       @reset-inbound-server-password="resetInboundServerPassword"
+      @reset-inbound-rest-api-key="resetInboundRestApiKey"
     />
     <AddPermissionModal ref="permissionModalRef" />
     <UpdateMqttProvisioningConnectionModal ref="inboundProvisioningModal" />
     <MqttPasswordModal ref="inboundServerPasswordModal" />
+    <RestApiKeyModal ref="inboundRestApiKeyModal" />
   </main>
 </template>
 

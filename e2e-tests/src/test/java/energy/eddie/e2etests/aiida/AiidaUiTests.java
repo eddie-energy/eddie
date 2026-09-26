@@ -15,6 +15,8 @@ import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.e2etests.PlaywrightOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -31,6 +33,8 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import static energy.eddie.e2etests.PlaywrightOptions.*;
 import static java.util.Objects.requireNonNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @UsePlaywright(PlaywrightOptions.class)
@@ -170,6 +174,117 @@ class AiidaUiTests {
         // Revoke inbound
         revokeInboundPermission(inboundPermissionDisplayName);
         expectAlert("The permission for this service was revoked.");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"REST_BEARER", "REST_API_TOKEN"})
+    void rotatedRestApiKeyShownInUiIsTheCredentialUsedByApi(
+            String provisioningType,
+            APIRequestContext request
+    ) throws IOException {
+        var dataNeed = "FUTURE_MIN_MAX_ENVELOPE_INBOUND";
+        var dataNeedId = "f7698978-b9fe-40c8-aebe-c997f7f58f2f";
+        var displayName = "E2E REST API Key Permission";
+        var permissionId = acceptInboundPermissionRequest(aiidaCodeForDataNeed(dataNeed), displayName);
+        selectPermission(displayName, PermissionTab.INBOUND, PermissionStatus.ACTIVE);
+        var authorization = "Bearer " + fetchAccessToken();
+
+        var configureResponse = context.request().patch(
+                AIIDA_URL + "/provisioning/permission/" + permissionId + "/patchInboundProvisioning",
+                RequestOptions.create()
+                              .setHeader("Authorization", authorization)
+                              .setHeader("content-type", "application/json")
+                              .setData(Map.of("type", provisioningType))
+        );
+        assertThat(configureResponse).isOK();
+
+        var firstRotationResponse = context.request().post(
+                AIIDA_URL + "/provisioning/permission/" + permissionId + "/regenerate-rest-api-key",
+                RequestOptions.create().setHeader("Authorization", authorization)
+        );
+        assertThat(firstRotationResponse).isOK();
+        var previousApiKey = mapper.readTree(firstRotationResponse.text()).path("apiKey").asString();
+
+        var permissionsResponse = context.request().get(
+                AIIDA_URL + "/permissions",
+                RequestOptions.create().setHeader("Authorization", authorization)
+        );
+        assertThat(permissionsResponse).isOK();
+        assertFalse(permissionsResponse.text().contains("\"accessCode\""));
+        assertFalse(permissionsResponse.text().contains("api_key_"));
+
+        page.reload();
+        var permission = selectPermission(displayName, PermissionTab.INBOUND, PermissionStatus.ACTIVE);
+        permission.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Rotate API key")).click();
+
+        var rotationResponse = page.waitForResponse(
+                response -> response.url().endsWith("/regenerate-rest-api-key"),
+                () -> page.getByRole(AriaRole.DIALOG)
+                          .getByRole(AriaRole.BUTTON,
+                                     new Locator.GetByRoleOptions().setName("Rotate API key").setExact(true))
+                          .click()
+        );
+        var currentApiKey = mapper.readTree(rotationResponse.text()).path("apiKey").asString();
+
+        assertFalse(currentApiKey.isBlank());
+        assertNotEquals(previousApiKey, currentApiKey);
+        assertEquals(currentApiKey, page.getByLabel("API key", new Page.GetByLabelOptions().setExact(true)).inputValue());
+        var endpoint = AIIDA_URL + "/inbound/latest/" + permissionId;
+        var expectedRequest = provisioningType.equals("REST_API_TOKEN")
+                ? "curl '" + endpoint + "?apiKey=" + currentApiKey + "'"
+                : "curl '" + endpoint + "' --header 'X-API-Key: " + currentApiKey + "'";
+        assertThat(page.getByRole(AriaRole.TEXTBOX,
+                                  new Page.GetByRoleOptions().setName("Request example").setExact(true)))
+                .hasValue(expectedRequest);
+
+        var now = Instant.now();
+        var inboundResponse = request.post(
+                REST_URL + "/cim_1_12/min-max-envelope-md",
+                RequestOptions.create()
+                              .setHeader("content-type", "application/json")
+                              .setData(minMaxEnvelope(permissionId,
+                                                      dataNeedId,
+                                                      "e2e-rest-api-key-meter",
+                                                      UUID.randomUUID().toString(),
+                                                      now,
+                                                      now,
+                                                      now.plusSeconds(3600),
+                                                      1,
+                                                      10))
+        );
+        assertThat(inboundResponse).isOK();
+
+        var previousKeyRequest = RequestOptions.create();
+        var previousKeyUrl = endpoint;
+        if (provisioningType.equals("REST_API_TOKEN")) {
+            previousKeyUrl += "?apiKey=" + previousApiKey;
+        } else {
+            previousKeyRequest.setHeader("X-API-Key", previousApiKey);
+        }
+        var previousKeyResponse = context.request().get(previousKeyUrl, previousKeyRequest);
+        assertEquals(401, previousKeyResponse.status());
+
+        var currentKeyStatus = 404;
+        for (var attempt = 0; attempt < 20 && currentKeyStatus == 404; attempt++) {
+            var currentKeyRequest = RequestOptions.create();
+            var currentKeyUrl = endpoint;
+            if (provisioningType.equals("REST_API_TOKEN")) {
+                currentKeyUrl += "?apiKey=" + currentApiKey;
+            } else {
+                currentKeyRequest.setHeader("X-API-Key", currentApiKey);
+            }
+            var currentKeyResponse = context.request().get(currentKeyUrl, currentKeyRequest);
+            currentKeyStatus = currentKeyResponse.status();
+            if (currentKeyStatus == 404) {
+                page.waitForTimeout(500);
+            }
+        }
+        assertEquals(200, currentKeyStatus);
+
+        page.getByRole(AriaRole.DIALOG)
+            .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("I have saved the API key"))
+            .click();
+        revokePermission(permission);
     }
 
     @Test

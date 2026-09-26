@@ -74,13 +74,15 @@ class InboundRecordServiceTest {
         PERMISSION.updateInboundMessageFormat(InboundMessageFormat.CIM_1_12);
     }
 
-    @Test
-    void testLatestRecord_returnsMappedRecord() throws UnauthorizedException, PermissionNotFoundException,
-                                                       InvalidDataSourceTypeException, InboundRecordNotFoundException,
-                                                       UnsupportedInboundRecordTransformationException,
-                                                       InvalidInboundPermissionException,
-                                                       ProvisioningTypeNotConfiguredException,
-                                                       SecretLoadingException {
+    @ParameterizedTest
+    @EnumSource(value = InboundProvisioningType.class, names = {"REST_BEARER", "REST_API_TOKEN"})
+    void testLatestRecord_returnsMappedRecordForRestProvisioning(InboundProvisioningType provisioningType)
+            throws UnauthorizedException, PermissionNotFoundException,
+                   InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException,
+                   InvalidInboundPermissionException,
+                   ProvisioningTypeNotConfiguredException,
+                   SecretLoadingException {
         // Given
         var inboundRecord = inboundRecord();
         mockPermissionRepository();
@@ -88,11 +90,12 @@ class InboundRecordServiceTest {
         when(inboundPayloadTransformationService.transform(inboundRecord, InboundMessageFormat.CIM_1_12))
                 .thenReturn("mapped-payload");
         mockDataSource();
+        when(dataSource.inboundProvisioningType()).thenReturn(provisioningType);
 
         // When
         var latestRecord = inboundRecordService.latestRecord(PERMISSION_ID,
                                                              ACCESS_CODE,
-                                                             InboundProvisioningType.REST_API_TOKEN);
+                                                             provisioningType);
 
         // Then
         assertEquals(DATA_SOURCE_ID, latestRecord.dataSourceId());
