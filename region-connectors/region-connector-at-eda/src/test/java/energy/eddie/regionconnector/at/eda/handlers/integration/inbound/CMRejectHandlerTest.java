@@ -50,7 +50,7 @@ class CMRejectHandlerTest {
     @Spy
     @SuppressWarnings("unused") // injected
     private ValidatedEventFactory validatedEventFactory = new ValidatedEventFactory(
-            new EdaGroupingIdFactory(new AtConfiguration("test", null, null, ""))
+            new EdaGroupingIdFactory(new AtConfiguration("test", null, ""))
     );
     @Mock
     private Outbox outbox;
@@ -81,7 +81,8 @@ class CMRejectHandlerTest {
         assertAll(
                 () -> assertEquals(permissionRequest.getPermissionStart(), validatedEventCaptor.getValue().start()),
                 () -> assertEquals(permissionRequest.getPermissionEnd(), validatedEventCaptor.getValue().end()),
-                () -> assertEquals(permissionRequest.getGranularity(), validatedEventCaptor.getValue().granularity().name())
+                () -> assertEquals(permissionRequest.getGranularity(),
+                                   validatedEventCaptor.getValue().granularity().name())
         );
     }
 

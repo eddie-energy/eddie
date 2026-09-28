@@ -38,7 +38,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class TerminationHandlerTest {
     private final EventBus eventBus = new EventBusImpl();
-    private final AtConfiguration configuration = new AtConfiguration("epid", null, null, "DEV");
+    private final AtConfiguration configuration = new AtConfiguration("epid", null, "DEV");
     private final EdaGroupingIdFactory groupingIdFactory = new EdaGroupingIdFactory(configuration);
     @Mock
     private AtPermissionRequestRepository repository;

@@ -59,7 +59,6 @@ public class TerminationHandler implements EventHandler<PermissionEvent> {
         AtPermissionRequest permissionRequest = request.get();
         try {
             var messageId = groupingIdFactory.create(
-                    AtConfiguration.PartyIdType.ELIGIBLE_PARTY,
                     ZonedDateTime.now(EdaRegionConnectorMetadata.AT_ZONE_ID)
             );
             var revoke = new CCMORevoke(

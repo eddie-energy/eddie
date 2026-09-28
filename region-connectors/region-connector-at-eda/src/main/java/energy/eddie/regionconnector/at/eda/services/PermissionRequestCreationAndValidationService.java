@@ -119,7 +119,7 @@ public class PermissionRequestCreationAndValidationService {
                     permissionId, result
             );
             case AccountingPointDataNeedResult ignored -> validatedEventFactory.createValidatedEvent(
-                    permissionId, LocalDate.now(AT_ZONE_ID), null, null, calculation
+                    permissionId, LocalDate.now(AT_ZONE_ID), null, null
             );
             case CESUJoinRequestDataNeedResult(
                     var permissionTimeframe,
@@ -133,7 +133,6 @@ public class PermissionRequestCreationAndValidationService {
                     permissionTimeframe.start(),
                     null,
                     AllowedGranularity.valueOf(supportedGranularities.getFirst()),
-                    calculation,
                     energyDirection.orElseGet(permissionRequest::energyDirection),
                     participationFactor.orElseGet(permissionRequest::participationFactor)
             );
@@ -151,8 +150,7 @@ public class PermissionRequestCreationAndValidationService {
                 permissionId,
                 calculation.energyTimeframe().start(),
                 calculation.energyTimeframe().end(),
-                AllowedGranularity.valueOf(granularity),
-                calculation
+                AllowedGranularity.valueOf(granularity)
         );
     }
 }

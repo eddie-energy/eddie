@@ -68,7 +68,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", null, null, ""),
+                                          new AtConfiguration("ep-id", null, ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 
@@ -92,7 +92,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", "ecId", "ecId", ""),
+                                          new AtConfiguration("ep-id", "ecId", ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new CESUJoinRequestDataNeed(1,
                                                                       Granularity.PT15M,
@@ -121,7 +121,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", "ecId", "ecId", ""),
+                                          new AtConfiguration("ep-id", "ecId", ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 

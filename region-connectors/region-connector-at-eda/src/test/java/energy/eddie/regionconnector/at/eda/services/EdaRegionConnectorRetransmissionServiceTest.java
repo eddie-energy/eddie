@@ -49,7 +49,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
 
     public static final LocalDate TODAY = LocalDate.now(ZoneOffset.UTC);
     public static final String PERMISSION_ID = "id";
-    private final AtConfiguration atConfiguration = new AtConfiguration("ep", null, null, "RETRY");
+    private final AtConfiguration atConfiguration = new AtConfiguration("ep", null, "RETRY");
     private final EdaGroupingIdFactory groupingIdFactory = new EdaGroupingIdFactory(atConfiguration);
     @Mock
     private AtPermissionRequestRepository atPermissionRequestRepository;
@@ -152,7 +152,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
             );
 
             testPublisher.emit(new CPRequestResult(
-                    groupingIdFactory.create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, fixedDateTime),
+                    groupingIdFactory.create(fixedDateTime),
                     cpResult)
             );
 

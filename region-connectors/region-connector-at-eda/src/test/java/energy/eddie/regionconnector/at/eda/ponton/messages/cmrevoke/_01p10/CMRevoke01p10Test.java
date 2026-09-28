@@ -37,11 +37,8 @@ class CMRevoke01p10Test {
                 PermissionProcessStatus.ACCEPTED,
                 Optional.of("TestConsentId")
         );
-        var configuration = new AtConfiguration("EP123456", null, null, "TEST");
-        var messageId = new EdaGroupingIdFactory(configuration).create(
-                AtConfiguration.PartyIdType.ELIGIBLE_PARTY,
-                ZonedDateTime.parse("2026-09-01T12:00:00Z")
-        );
+        var configuration = new AtConfiguration("EP123456", null, "TEST");
+        var messageId = new EdaGroupingIdFactory(configuration).create(ZonedDateTime.parse("2026-09-01T12:00:00Z"));
         CCMORevoke ccmoRevoke = new CCMORevoke(
                 permissionRequest,
                 configuration.eligiblePartyId(),
