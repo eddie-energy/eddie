@@ -1,23 +1,21 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p33;
 
-import at.ebutilities.schemata.customerprocesses.masterdata._01p33.MasterData;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p33.MeteringPointData;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p33.ProcessDirectory;
-import at.ebutilities.schemata.customerprocesses.masterdata._01p33.SupStatus;
+import at.ebutilities.schemata.customerprocesses.masterdata._01p33.*;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MasterDataMapper;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.NullMeteringPointData;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EdaMasterData01p33Test {
     @Test
     void testMeteringPointData_withMeteringPointData_returnsNonNullObject() {
         // Given
-        var masterData = new EdaMasterData01p33(
+        var masterData = MasterDataMapper.INSTANCE.toEdaMasterData(
                 new MasterData()
                         .withProcessDirectory(
                                 new ProcessDirectory()
@@ -38,7 +36,7 @@ class EdaMasterData01p33Test {
     @Test
     void testMeteringPointData_withoutMeteringPointData_returnsNullObject() {
         // Given
-        var masterData = new EdaMasterData01p33(
+        var masterData = MasterDataMapper.INSTANCE.toEdaMasterData(
                 new MasterData()
                         .withProcessDirectory(
                                 new ProcessDirectory()
@@ -50,5 +48,29 @@ class EdaMasterData01p33Test {
 
         // Then
         assertEquals(new NullMeteringPointData(), res);
+    }
+
+    @Test
+    void testContractPartner_withoutDateOfBirth_returnsNullDateOfBirth() {
+        // Given
+        var masterData = MasterDataMapper.INSTANCE.toEdaMasterData(
+                new MasterData()
+                        .withProcessDirectory(
+                                new ProcessDirectory()
+                                        .withContractPartner(new ContractPartner())
+                        )
+        );
+
+        // When
+        var res = masterData.contractPartner();
+
+        // Then
+        assertThat(res)
+                .isPresent()
+                .get()
+                .satisfies(r -> {
+                    assertNull(r.dateOfBirth());
+                    assertNull(r.dateOfDeath());
+                });
     }
 }

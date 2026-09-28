@@ -66,6 +66,7 @@ mvel2 = "2.5.2.Final"
 opentelemetry-instrumentation-bom = "2.27.0"
 
 undercouch-download = "5.6.0"
+mapstruct = "1.6.3"
 
 [libraries]
 # Static analysis
@@ -172,6 +173,8 @@ hibernate-validator = { module = "org.hibernate.validator:hibernate-validator", 
 hibernate-orm-core = { module = "org.hibernate.orm:hibernate-core", version.ref = "hibernate-orm" }
 
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
 
 # extra test dependencies
 okhttp3-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver" }

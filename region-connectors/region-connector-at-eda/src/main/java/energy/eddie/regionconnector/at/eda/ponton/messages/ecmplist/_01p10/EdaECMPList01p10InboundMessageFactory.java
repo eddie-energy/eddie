@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10;
 
 import at.ebutilities.schemata.customerprocesses.ecmplist._01p10.ECMPList;
+import energy.eddie.regionconnector.at.eda.dto.energycommunity.EdaECMPList;
 import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist.EdaECMPListInboundMessageFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
@@ -33,8 +34,8 @@ public class EdaECMPList01p10InboundMessageFactory implements EdaECMPListInbound
     }
 
     @Override
-    public ECMPList01p10 parseInputStream(InputStream inputStream) {
+    public EdaECMPList parseInputStream(InputStream inputStream) {
         var notification = (ECMPList) marshaller.unmarshal(new StreamSource(inputStream));
-        return new ECMPList01p10(notification);
+        return ECMPListMapper.INSTANCE.toEdaECMPList(notification);
     }
 }

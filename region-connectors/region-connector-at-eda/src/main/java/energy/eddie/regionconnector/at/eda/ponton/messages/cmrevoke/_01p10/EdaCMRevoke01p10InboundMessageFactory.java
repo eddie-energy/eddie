@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cmrevoke._01p10;
@@ -31,6 +31,6 @@ public class EdaCMRevoke01p10InboundMessageFactory implements EdaCMRevokeInbound
     @Override
     public EdaCMRevoke parseInputStream(InputStream inputStream) {
         var cmRevoke = (CMRevoke) marshaller.unmarshal(new StreamSource(inputStream));
-        return new EdaCMRevoke01p10(cmRevoke);
+        return CMRevokeMapper.INSTANCE.toEdaCMRevoke(cmRevoke);
     }
 }

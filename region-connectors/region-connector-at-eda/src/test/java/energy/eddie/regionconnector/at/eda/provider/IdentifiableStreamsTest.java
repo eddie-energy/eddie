@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.provider;
@@ -8,7 +8,7 @@ import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
 import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
-import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32.EdaMasterData01p32;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MasterDataMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -69,7 +69,7 @@ class IdentifiableStreamsTest {
         when(edaAdapter.getMasterDataStream()).thenReturn(testPublisher.flux());
         when(edaAdapter.getConsumptionRecordStream()).thenReturn(Flux.empty());
         var streams = new IdentifiableStreams(provider, edaAdapter);
-        var masterData = new IdentifiableMasterData(new EdaMasterData01p32(null),
+        var masterData = new IdentifiableMasterData(MasterDataMapper.INSTANCE.toEdaMasterData((at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData) null),
                                                     new SimplePermissionRequest("pid", "cid", "dnid"));
 
         // When

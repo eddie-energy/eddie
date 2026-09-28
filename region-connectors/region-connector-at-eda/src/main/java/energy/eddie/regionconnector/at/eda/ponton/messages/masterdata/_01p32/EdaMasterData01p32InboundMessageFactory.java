@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32;
@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p32;
 import at.ebutilities.schemata.customerprocesses.masterdata._01p32.MasterData;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.MasterDataMapper;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,6 @@ public class EdaMasterData01p32InboundMessageFactory implements EdaMasterDataInb
     @Override
     public EdaMasterData parseInputStream(InputStream inputStream) {
         var masterData = (MasterData) marshaller.unmarshal(new StreamSource(inputStream));
-        return new EdaMasterData01p32(masterData);
+        return MasterDataMapper.INSTANCE.toEdaMasterData(masterData);
     }
 }

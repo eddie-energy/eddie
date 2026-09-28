@@ -12,7 +12,7 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestBuilder;
 import energy.eddie.regionconnector.at.eda.permission.request.events.UpdateEndDateEvent;
-import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10.ECMPList01p10;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10.ECMPListMapper;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
@@ -65,7 +65,7 @@ class ECMPListHandlerTest {
                                                   .setParticipationFactor(1)
                                                   .build();
         var ecmpList = createECMPList();
-        var id = new IdentifiableECMPList(new ECMPList01p10(ecmpList), pr);
+        var id = new IdentifiableECMPList(ECMPListMapper.INSTANCE.toEdaECMPList(ecmpList), pr);
         when(streams.ecmpListStream()).thenReturn(Flux.just(id));
 
         // When
@@ -100,7 +100,7 @@ class ECMPListHandlerTest {
                                                   .setParticipationFactor(1)
                                                   .build();
         var ecmpList = createECMPList();
-        var id = new IdentifiableECMPList(new ECMPList01p10(ecmpList), pr);
+        var id = new IdentifiableECMPList(ECMPListMapper.INSTANCE.toEdaECMPList(ecmpList), pr);
         when(streams.ecmpListStream()).thenReturn(Flux.just(id));
 
         // When

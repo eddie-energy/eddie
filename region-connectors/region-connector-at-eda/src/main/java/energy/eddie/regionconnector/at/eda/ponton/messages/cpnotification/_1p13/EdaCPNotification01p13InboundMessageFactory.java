@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.ponton.messages.cpnotification._1p13;
@@ -25,7 +25,7 @@ public class EdaCPNotification01p13InboundMessageFactory implements EdaCPNotific
     @Override
     public EdaCPNotification parseInputStream(InputStream inputStream) {
         var notification = (CPNotification) marshaller.unmarshal(new StreamSource(inputStream));
-        return new EdaCPNotification01p13(notification);
+        return CPNotificationMapper.INSTANCE.toEdaCPNotification(notification);
     }
 
     @Override
