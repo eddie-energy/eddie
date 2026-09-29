@@ -91,12 +91,24 @@ class CPRequestOutbound01p12MessageFactoryTest {
     }
 
     @Test
-    void isActive_on_01_10_2018_returnsTrue() {
+    void isActive_on_04_10_2026_returnsFalse() {
         // given
         var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
 
         // when
-        var active = factory.isActive(LocalDate.of(2018, Month.OCTOBER, 1));
+        var active = factory.isActive(LocalDate.of(2026, Month.OCTOBER, 4));
+
+        // then
+        assertFalse(active);
+    }
+
+    @Test
+    void isActive_on_05_10_2026_returnsTrue() {
+        // given
+        var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
+
+        // when
+        var active = factory.isActive(LocalDate.of(2026, Month.OCTOBER, 5));
 
         // then
         assertTrue(active);

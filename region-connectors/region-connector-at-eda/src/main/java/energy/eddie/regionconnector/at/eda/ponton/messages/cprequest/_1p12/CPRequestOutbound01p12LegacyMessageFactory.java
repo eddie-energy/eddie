@@ -20,23 +20,19 @@ import java.time.LocalDate;
 
 @Component
 @SuppressWarnings("DuplicatedCode")
-public class CPRequestOutbound01p12MessageFactory implements CPRequestOutboundMessageFactory {
+public class CPRequestOutbound01p12LegacyMessageFactory implements CPRequestOutboundMessageFactory {
 
-    /**
-     * The active from date of the message. The message is active from this date.
-     * <p>From <a href="https://www.ebutilities.at/schemas/68">ebutilities</a>
-     */
-    public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 10, 5);
+    public static final LocalDate ACTIVE_FROM = LocalDate.of(2018, 10, 1);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet(MessageCodes.CPRequest.SCHEMA))
-            .setVersion(new MessageTypeVersion(MessageCodes.CPRequest.VERSION))
+            .setSchemaSet(new SchemaSet(MessageCodes.CPRequest.SCHEMA_LEGACY))
+            .setVersion(new MessageTypeVersion(MessageCodes.CPRequest.VERSION_LEGACY))
             .setName(new MessageTypeName(MessageCodes.CPRequest.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
 
     private final Jaxb2Marshaller marshaller;
 
-    public CPRequestOutbound01p12MessageFactory(Jaxb2Marshaller marshaller) {
+    public CPRequestOutbound01p12LegacyMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
     }
 
@@ -65,6 +61,6 @@ public class CPRequestOutbound01p12MessageFactory implements CPRequestOutboundMe
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !ACTIVE_FROM.isAfter(date);
+        return !date.isBefore(ACTIVE_FROM) && date.isBefore(CPRequestOutbound01p12MessageFactory.ACTIVE_FROM);
     }
 }

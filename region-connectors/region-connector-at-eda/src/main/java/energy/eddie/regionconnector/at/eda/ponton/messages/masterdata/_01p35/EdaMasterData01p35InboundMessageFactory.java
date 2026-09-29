@@ -1,0 +1,39 @@
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
+package energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p35;
+
+import at.ebutilities.schemata.customerprocesses.masterdata._01p35.MasterData;
+import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata.EdaMasterDataInboundMessageFactory;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.stereotype.Component;
+
+import javax.xml.transform.stream.StreamSource;
+import java.io.InputStream;
+import java.time.LocalDate;
+
+@Component
+public class EdaMasterData01p35InboundMessageFactory implements EdaMasterDataInboundMessageFactory {
+    /**
+     * The active from date of the message. The message is active from this date.
+     * <p>From <a href="https://www.ebutilities.at/schemas/358">ebutilities</a>
+     */
+    private static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 10, 5);
+    private final Jaxb2Marshaller marshaller;
+
+    public EdaMasterData01p35InboundMessageFactory(Jaxb2Marshaller marshaller) {
+        this.marshaller = marshaller;
+    }
+
+    @Override
+    public boolean isActive(LocalDate date) {
+        return !ACTIVE_FROM.isAfter(date);
+    }
+
+    @Override
+    public EdaMasterData parseInputStream(InputStream inputStream) {
+        var masterData = (MasterData) marshaller.unmarshal(new StreamSource(inputStream));
+        return new EdaMasterData01p35(masterData);
+    }
+}

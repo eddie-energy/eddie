@@ -17,11 +17,12 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 
 @Component
-public class CMRevoke01p10OutboundMessageFactory implements CMRevokeOutboundMessageFactory {
-    public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 10, 5);
+@SuppressWarnings("DuplicatedCode")
+public class CMRevoke01p10LegacyOutboundMessageFactory implements CMRevokeOutboundMessageFactory {
+    public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 4, 13);
     private final Jaxb2Marshaller marshaller;
 
-    public CMRevoke01p10OutboundMessageFactory(Jaxb2Marshaller marshaller) {
+    public CMRevoke01p10LegacyOutboundMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
     }
 
@@ -49,13 +50,13 @@ public class CMRevoke01p10OutboundMessageFactory implements CMRevokeOutboundMess
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !date.isBefore(ACTIVE_FROM);
+        return !date.isBefore(ACTIVE_FROM) && date.isBefore(CMRevoke01p10OutboundMessageFactory.ACTIVE_FROM);
     }
 
     private static MessageType createMessageType() {
         return new MessageType.MessageTypeBuilder()
-                .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA))
-                .setVersion(new MessageTypeVersion(MessageCodes.Revoke.EligibleParty.VERSION))
+                .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA_LEGACY))
+                .setVersion(new MessageTypeVersion(MessageCodes.Revoke.EligibleParty.VERSION_LEGACY))
                 .setName(new MessageTypeName(MessageCodes.Revoke.EligibleParty.REVOKE))
                 .setMimeType(new MimeType("text/xml"))
                 .build();

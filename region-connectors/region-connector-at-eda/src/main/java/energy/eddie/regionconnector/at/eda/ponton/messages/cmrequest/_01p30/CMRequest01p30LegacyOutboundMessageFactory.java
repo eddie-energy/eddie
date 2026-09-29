@@ -20,29 +20,24 @@ import java.time.LocalDate;
 
 @Component
 @SuppressWarnings("DuplicatedCode")
-public class CMRequest01p30OutboundMessageFactory implements CMRequestOutboundMessageFactory {
-    /**
-     * The active from date of the message. The message is active from this date.
-     *
-     * @see <a href="https://www.ebutilities.at/schemas/298">ebutilities</a>
-     */
-    public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 10, 5);
+public class CMRequest01p30LegacyOutboundMessageFactory implements CMRequestOutboundMessageFactory {
+    public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 4, 13);
     private static final MessageType CCMO_MESSAGE_TYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA))
-            .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION))
+            .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA_LEGACY))
+            .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION_LEGACY))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
     private static final MessageType EC_MESSAGE_TYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet(MessageCodes.EcRequest.SCHEMA))
-            .setVersion(new MessageTypeVersion(MessageCodes.EcRequest.VERSION))
+            .setSchemaSet(new SchemaSet(MessageCodes.EcRequest.SCHEMA_LEGACY))
+            .setVersion(new MessageTypeVersion(MessageCodes.EcRequest.VERSION_LEGACY))
             .setName(new MessageTypeName(MessageCodes.EcRequest.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();
 
     private final Jaxb2Marshaller marshaller;
 
-    public CMRequest01p30OutboundMessageFactory(Jaxb2Marshaller marshaller) {
+    public CMRequest01p30LegacyOutboundMessageFactory(Jaxb2Marshaller marshaller) {
         this.marshaller = marshaller;
     }
 
@@ -71,6 +66,6 @@ public class CMRequest01p30OutboundMessageFactory implements CMRequestOutboundMe
 
     @Override
     public boolean isActive(LocalDate date) {
-        return !date.isBefore(ACTIVE_FROM);
+        return !date.isBefore(ACTIVE_FROM) && date.isBefore(CMRequest01p30OutboundMessageFactory.ACTIVE_FROM);
     }
 }

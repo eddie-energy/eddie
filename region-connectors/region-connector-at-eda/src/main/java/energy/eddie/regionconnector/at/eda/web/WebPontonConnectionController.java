@@ -285,7 +285,7 @@ public class WebPontonConnectionController implements PontonMessengerConnection 
                     content = {
                             @Content(
                                     mediaType = MediaType.APPLICATION_XML_VALUE,
-                                    schema = @Schema(implementation = at.ebutilities.schemata.customerprocesses.ecmplist._01p10.ECMPList.class)
+                                    schema = @Schema(implementation = at.ebutilities.schemata.customerprocesses.ecmplist._01p20.ECMPList.class)
                             ),
                     }
             )

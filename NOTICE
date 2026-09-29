@@ -47,3 +47,6 @@ ENTSO-E is the copyright owner of the following files:
 - cim/src/main/schemas/cim/xsd/v1_04/urn-entsoe-eu-local-extension-types.xsd
 - cim/src/main/schemas/cim/xsd/v1_04/urn-entsoe-eu-wgedi-codelists.xsd
 - cim/src/main/schemas/cim/xsd/v1_04/urn-entsoe-eu-wgedi-components.xsd
+
+ebUtilities is the copyright owner of XML examples for EDA schemas:
+- region-connectors/region-connector-at-eda/src/test/resources/xsd

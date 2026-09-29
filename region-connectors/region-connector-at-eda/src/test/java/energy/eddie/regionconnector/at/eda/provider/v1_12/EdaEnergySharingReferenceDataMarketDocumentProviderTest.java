@@ -5,7 +5,7 @@ package energy.eddie.regionconnector.at.eda.provider.v1_12;
 
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableECMPList;
-import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p10.EdaECMPList01p10InboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.ecmplist._01p20.EdaECMPList01p20InboundMessageFactory;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,8 +27,8 @@ class EdaEnergySharingReferenceDataMarketDocumentProviderTest {
         // Given
         var marshaller = new Jaxb2Marshaller();
         marshaller.setPackagesToScan("at.ebutilities.schemata");
-        var factory = new EdaECMPList01p10InboundMessageFactory(marshaller);
-        var ecmpList = factory.parseInputStream(getClass().getResourceAsStream("/xsd/ecmplist/_01p10/ecmplist.xml"));
+        var factory = new EdaECMPList01p20InboundMessageFactory(marshaller);
+        var ecmpList = factory.parseInputStream(getClass().getResourceAsStream("/xsd/ecmplist/_01p20/ecmplist.xml"));
         var pr = new SimplePermissionRequest("pid", "cid", "dnid");
         var id = new IdentifiableECMPList(ecmpList, pr);
         when(streams.ecmpListStream()).thenReturn(Flux.just(id));
