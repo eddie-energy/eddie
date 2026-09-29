@@ -15,30 +15,19 @@ class EdaGroupingIdFactoryTest {
 
     @Test
     void create_withPrefix_prependsPrefix() {
-        var factory = new EdaGroupingIdFactory(new AtConfiguration("EP123456", null, null, "DEV1"));
+        var factory = new EdaGroupingIdFactory(new AtConfiguration("EP123456", null, "DEV1"));
 
-        var result = factory.create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, DATE_TIME);
+        var result = factory.create(DATE_TIME);
 
         assertEquals("DEV1EP123456T1788264000000", result);
     }
 
     @Test
     void create_withoutPrefix_usesPartyId() {
-        var factory = new EdaGroupingIdFactory(new AtConfiguration("EP123456", null, null, ""));
+        var factory = new EdaGroupingIdFactory(new AtConfiguration("EP123456", null, ""));
 
-        var result = factory.create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, DATE_TIME);
+        var result = factory.create(DATE_TIME);
 
         assertEquals("EP123456T1788264000000", result);
-    }
-
-    @Test
-    void create_forEnergyCommunity_usesEnergyCommunityPartyId() {
-        var factory = new EdaGroupingIdFactory(
-                new AtConfiguration("EP123456", "community", "EC123456", "DEV1")
-        );
-
-        var result = factory.create(AtConfiguration.PartyIdType.ENERGY_COMMUNITY, DATE_TIME);
-
-        assertEquals("DEV1EC123456T1788264000000", result);
     }
 }

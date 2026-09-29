@@ -114,9 +114,7 @@ public record CCMORequest(
      * @see CCMORequest#requestDataType()
      */
     public String senderId() {
-        return requestDataType().equals(RequestDataType.ENERGY_COMMUNITY_REGISTRATION)
-                ? configuration.partyIdFor(AtConfiguration.PartyIdType.ENERGY_COMMUNITY)
-                : configuration.partyIdFor(AtConfiguration.PartyIdType.ELIGIBLE_PARTY);
+        return configuration.eligiblePartyId();
     }
 
     /**

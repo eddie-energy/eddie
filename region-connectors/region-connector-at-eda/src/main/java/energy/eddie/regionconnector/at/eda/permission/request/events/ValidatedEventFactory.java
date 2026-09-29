@@ -3,10 +3,7 @@
 
 package energy.eddie.regionconnector.at.eda.permission.request.events;
 
-import energy.eddie.api.agnostic.data.needs.CESUJoinRequestDataNeedResult;
-import energy.eddie.api.agnostic.data.needs.DataNeedCalculationResult;
 import energy.eddie.api.agnostic.data.needs.EnergyDirection;
-import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
 import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
 import energy.eddie.regionconnector.at.eda.utils.CMRequestId;
@@ -30,10 +27,9 @@ public class ValidatedEventFactory {
             String permissionId,
             LocalDate start,
             @Nullable LocalDate end,
-            @Nullable AllowedGranularity granularity,
-            DataNeedCalculationResult dataNeedCalculation
+            @Nullable AllowedGranularity granularity
     ) {
-        return createValidatedEvent(permissionId, start, end, granularity, dataNeedCalculation, null, null);
+        return createValidatedEvent(permissionId, start, end, granularity, null, null);
     }
 
     public ValidatedEvent createValidatedEvent(
@@ -41,15 +37,11 @@ public class ValidatedEventFactory {
             LocalDate start,
             @Nullable LocalDate end,
             @Nullable AllowedGranularity granularity,
-            DataNeedCalculationResult dataNeedCalculation,
             @Nullable EnergyDirection energyDirection,
             @Nullable Integer participationFactor
     ) {
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
-        var type = dataNeedCalculation instanceof CESUJoinRequestDataNeedResult
-                ? AtConfiguration.PartyIdType.ENERGY_COMMUNITY
-                : AtConfiguration.PartyIdType.ELIGIBLE_PARTY;
-        var messageId = groupingIdFactory.create(type, created);
+        var messageId = groupingIdFactory.create(created);
         var cmRequestId = new CMRequestId(messageId).toString();
 
         return new ValidatedEvent(

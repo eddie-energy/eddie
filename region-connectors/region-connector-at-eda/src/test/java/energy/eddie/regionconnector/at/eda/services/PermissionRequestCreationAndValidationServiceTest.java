@@ -44,7 +44,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PermissionRequestCreationAndValidationServiceTest {
     @Spy
-    private final AtConfiguration configuration = new AtConfiguration("epId", "ecid", "ecid", "");
+    private final AtConfiguration configuration = new AtConfiguration("epId", "ecid", "");
     @SuppressWarnings("unused")
     @Spy
     private final ValidatedEventFactory validatedEventFactory =

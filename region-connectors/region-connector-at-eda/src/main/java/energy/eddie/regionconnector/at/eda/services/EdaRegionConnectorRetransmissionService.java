@@ -103,12 +103,12 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
         }
 
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
-        var messageId = groupingIdFactory.create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, created);
+        var messageId = groupingIdFactory.create(created);
 
         while (retransmissionResults.containsKey(messageId)) {
             // MessageId is only accurate to milliseconds, ensure uniqueness
             created = created.plus(1, ChronoUnit.MILLIS);
-            messageId = groupingIdFactory.create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, created);
+            messageId = groupingIdFactory.create(created);
         }
 
         CPRequestCR cpRequestCR = new CPRequestCR(

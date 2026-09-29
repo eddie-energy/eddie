@@ -32,7 +32,7 @@ public class EdaDataNeedRuleSet implements DataNeedRuleSet {
         dataNeedRules.add(new AccountingPointDataNeedRule());
         dataNeedRules.add(new ValidatedHistoricalDataDataNeedRule(EnergyType.ELECTRICITY, SUPPORTED_GRANULARITIES));
         dataNeedRules.add(new AllowMultipleDataNeedsRule());
-        if (config.energyCommunityId() != null) {
+        if (config.supportsEnergyCommunity()) {
             LOGGER.debug(
                     "Energy Community ID present, enabling the CESU Join Request data need for the AT EDA Region Connector");
             dataNeedRules.add(new DataNeedRule.CESUJoinRequestDataNeedRule(SUPPORTED_GRANULARITIES));

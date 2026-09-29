@@ -33,7 +33,7 @@ class CPRequestOutbound01p12MessageFactoryTest {
     void createOutboundMessage() {
         // given
         var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
-        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, null, "");
+        AtConfiguration atConfiguration = new AtConfiguration("RC100007", null, "");
         var request = new CPRequestCR(
                 "dsoid",
                 "meteringpoint",
@@ -53,10 +53,10 @@ class CPRequestOutbound01p12MessageFactoryTest {
     @Test
     void cpRequest_usesPrefixedConversationId() {
         // given
-        var configuration = new AtConfiguration("EP123456", null, null, "DEV");
+        var configuration = new AtConfiguration("EP123456", null, "DEV");
         var dateTime = ZonedDateTime.parse("2026-09-01T12:00:00Z");
         var groupingId = new EdaGroupingIdFactory(configuration)
-                .create(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, dateTime);
+                .create(dateTime);
         var request = new CPRequestCR(
                 "dsoid",
                 "meteringpoint",

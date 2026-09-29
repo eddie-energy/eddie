@@ -69,54 +69,6 @@ class AtConfigurationTest {
     }
 
     @Test
-    void conversationIdPrefixProducingOverlongEnergyCommunityGroupingId_failsStartup() {
-        contextRunner
-                .withPropertyValues(
-                        PREFIX + "eligibleparty.id=EP",
-                        PREFIX + "energy-community-id=community",
-                        PREFIX + "energy-community-party-id=EC123456",
-                        PREFIX + "conversation-id.prefix=12345678901234"
-                )
-                .run(context -> {
-                    assertThat(context).hasFailed();
-                    assertThat(context.getStartupFailure())
-                            .rootCause()
-                            .hasMessageStartingWith(
-                                    "region-connector.at.eda.conversation-id.prefix is too long " +
-                                    "for the configured energy community party ID:"
-                            )
-                            .hasMessageContaining("exceeds the maximum of 35 characters");
-                });
-    }
-
-    @Test
-    void energyCommunityIdWithoutPartyId_failsStartup() {
-        contextRunner
-                .withPropertyValues(PREFIX + "energy-community-id=community")
-                .run(context -> assertThat(context).hasFailed());
-    }
-
-    @Test
-    void energyCommunityIdWithBlankPartyId_failsStartup() {
-        contextRunner
-                .withPropertyValues(
-                        PREFIX + "energy-community-id=community",
-                        PREFIX + "energy-community-party-id="
-                )
-                .run(context -> assertThat(context).hasFailed());
-    }
-
-    @Test
-    void blankEnergyCommunityId_failsStartup() {
-        contextRunner
-                .withPropertyValues(
-                        PREFIX + "energy-community-id=",
-                        PREFIX + "energy-community-party-id=EC123456"
-                )
-                .run(context -> assertThat(context).hasFailed());
-    }
-
-    @Test
     void blankEligiblePartyId_failsStartup() {
         contextRunner
                 .withPropertyValues(PREFIX + "eligibleparty.id=")

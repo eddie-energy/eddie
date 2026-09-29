@@ -27,20 +27,20 @@ public final class EdaGroupingIdFactory {
 
         var validationTime = ZonedDateTime.now(AT_ZONE_ID);
         validateConfiguredLength(AtConfiguration.PartyIdType.ELIGIBLE_PARTY, validationTime);
-        if (configuration.energyCommunityId() != null) {
+        if (configuration.supportsEnergyCommunity()) {
             validateConfiguredLength(AtConfiguration.PartyIdType.ENERGY_COMMUNITY, validationTime);
         }
     }
 
-    public String create(AtConfiguration.PartyIdType type, ZonedDateTime dateTime) {
-        var partyId = requireNonNull(configuration.partyIdFor(type));
+    public String create(ZonedDateTime dateTime) {
+        var partyId = configuration.eligiblePartyId();
         var address = configuration.conversationIdPrefix() + partyId;
         return new MessageId(address, dateTime).toString();
     }
 
     private void validateConfiguredLength(AtConfiguration.PartyIdType type, ZonedDateTime validationTime) {
         try {
-            create(type, validationTime);
+            create(validationTime);
         } catch (IllegalArgumentException exception) {
             throw new IllegalArgumentException(
                     "%s is too long for the configured %s ID: %s"

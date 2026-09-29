@@ -73,7 +73,6 @@ public class CMRejectHandler {
                                 permissionRequest.start(),
                                 permissionRequest.end(),
                                 permissionRequest.granularity(),
-                                calc,
                                 permissionRequest.energyDirection().orElse(null),
                                 permissionRequest.participationFactor().orElse(null)
                         ));
@@ -115,7 +114,6 @@ public class CMRejectHandler {
                 permissionRequest.start(),
                 permissionRequest.end(),
                 AllowedGranularity.P1D,
-                calc,
                 permissionRequest.energyDirection().orElse(null),
                 permissionRequest.participationFactor().orElse(null)
         ));
