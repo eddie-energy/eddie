@@ -13,6 +13,7 @@ import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
@@ -22,8 +23,12 @@ import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.provisioning.ProvisioningMqttPublisher;
 import energy.eddie.aiida.repositories.InboundDataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
@@ -66,6 +71,10 @@ class ProvisioningServiceTest {
     private MqttConfiguration mqttConfiguration;
     @Mock
     private BCryptPasswordEncoder passwordEncoder;
+    @Mock
+    private AuthService authService;
+    @Mock
+    private SecretsService secretsService;
 
     @InjectMocks
     private ProvisioningService service;
@@ -234,6 +243,51 @@ class ProvisioningServiceTest {
         );
 
         verify(dataSource, never()).resetServerModePassword(any(), anyString());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = InboundProvisioningType.class, names = {"REST_BEARER", "REST_API_TOKEN"})
+    void resetRestApiKey_withRestProvisioning_storesAndReturnsGeneratedKey(InboundProvisioningType provisioningType)
+            throws Exception {
+        var permission = mock(Permission.class);
+        var dataSource = mock(InboundDataSource.class);
+        var generatedApiKey = ArgumentCaptor.forClass(String.class);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        when(permission.dataSource()).thenReturn(dataSource);
+        when(dataSource.inboundProvisioningType()).thenReturn(provisioningType);
+        when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+
+        var result = service.resetRestApiKey(PERMISSION_ID);
+
+        verify(authService).checkAuthorizationForPermission(permission);
+        verify(secretsService).storeSecret(eq(DATA_SOURCE_ID), eq(SecretType.API_KEY), generatedApiKey.capture());
+        assertThat(result.apiKey()).hasSize(10).isEqualTo(generatedApiKey.getValue());
+    }
+
+    @Test
+    void resetRestApiKey_withoutRestProvisioning_rejectsRotation() throws Exception {
+        var permission = mock(Permission.class);
+        var dataSource = mock(InboundDataSource.class);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        when(permission.dataSource()).thenReturn(dataSource);
+        when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.MQTT_SERVER);
+
+        assertThrows(ProvisioningTypeNotConfiguredException.class, () -> service.resetRestApiKey(PERMISSION_ID));
+
+        verify(authService).checkAuthorizationForPermission(permission);
+        verifyNoInteractions(secretsService);
+    }
+
+    @Test
+    void resetRestApiKey_withoutPermissionOwnership_rejectsRotation() throws Exception {
+        var permission = mock(Permission.class);
+        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        doThrow(new UnauthorizedException("not the owner"))
+                .when(authService).checkAuthorizationForPermission(permission);
+
+        assertThrows(UnauthorizedException.class, () -> service.resetRestApiKey(PERMISSION_ID));
+
+        verifyNoInteractions(secretsService);
     }
 
     @Test

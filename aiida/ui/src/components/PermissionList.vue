@@ -21,6 +21,7 @@ const { t } = useI18n()
 const emit = defineEmits<{
   configureInboundProvisioning: [permission: AiidaPermission]
   resetInboundServerPassword: [permission: AiidaPermission]
+  resetInboundRestApiKey: [permission: AiidaPermission]
 }>()
 const selectedTab = ref<PermissionTypes>('Active')
 const showMore = ref(false)
@@ -146,6 +147,7 @@ const handleCategoryChange = (category: AiidaDataNeed['type']) => {
           :status="selectedTab"
           @configure-inbound-provisioning="emit('configureInboundProvisioning', $event)"
           @reset-inbound-server-password="emit('resetInboundServerPassword', $event)"
+          @reset-inbound-rest-api-key="emit('resetInboundRestApiKey', $event)"
         />
         <Button
           v-if="activePermissions.length > initialPermissionsCount"

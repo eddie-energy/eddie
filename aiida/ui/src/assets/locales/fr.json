@@ -144,6 +144,18 @@
         "MQTT_CLIENT": "Client MQTT"
       }
     },
+    "restApiKey": {
+      "resetTitle": "Renouveler la clé API REST",
+      "resetDescription": "Renouveler cette clé API ? La clé actuelle cessera immédiatement de fonctionner.",
+      "resetButton": "Renouveler la clé API",
+      "credentialsTitle": "Nouvelle clé API REST",
+      "credentialsWarning": "Enregistrez cette clé API maintenant. Elle ne pourra plus être affichée.",
+      "apiKeyLabel": "Clé API",
+      "requestLabel": "Exemple de requête",
+      "copyApiKey": "Copier la clé API",
+      "copyRequest": "Copier l’exemple de requête",
+      "credentialsSaved": "J’ai enregistré la clé API"
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"

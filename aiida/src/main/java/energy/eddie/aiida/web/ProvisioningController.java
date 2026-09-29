@@ -5,6 +5,10 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
+import energy.eddie.aiida.dtos.provisioning.RestApiKeyDto;
+import energy.eddie.aiida.errors.SecretStoringException;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
@@ -81,6 +85,30 @@ public class ProvisioningController {
              ProvisioningConfigurationException {
         var connectionDetails = provisioningService.resetServerModePassword(permissionId);
         return ResponseEntity.ok(connectionDetails);
+    }
+
+    @Operation(summary = "Reset the API key for inbound REST provisioning.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "API key reset successfully",
+                    content = @Content(schema = @Schema(implementation = RestApiKeyDto.class))),
+            @ApiResponse(responseCode = "400", description = "Permission does not use an inbound data source",
+                    content = @Content),
+            @ApiResponse(responseCode = "401", description = "Current user does not own the permission",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Permission not found", content = @Content),
+            @ApiResponse(responseCode = "409", description = "REST provisioning is not active",
+                    content = @Content)
+    })
+    @PostMapping(value = "/permission/{id}/regenerate-rest-api-key")
+    public ResponseEntity<RestApiKeyDto> resetRestApiKey(
+            @PathVariable("id") UUID permissionId
+    ) throws PermissionNotFoundException,
+             InvalidDataSourceTypeException,
+             ProvisioningTypeNotConfiguredException,
+             InvalidUserException,
+             UnauthorizedException,
+             SecretStoringException {
+        return ResponseEntity.ok(provisioningService.resetRestApiKey(permissionId));
     }
 
     @Operation(summary = "Get all provisioning types", description = "Retrieve all provisioning types.",

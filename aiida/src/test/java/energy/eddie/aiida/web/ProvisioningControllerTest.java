@@ -6,6 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.provisioning.MqttClientProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
+import energy.eddie.aiida.dtos.provisioning.RestApiKeyDto;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -187,6 +188,18 @@ class ProvisioningControllerTest {
                .andExpect(jsonPath("topic").value("aiida/inbound/test"));
 
         verify(provisioningService).resetServerModePassword(PERMISSION_ID);
+    }
+
+    @Test
+    void resetRestApiKey_returnsGeneratedApiKey() throws Exception {
+        when(provisioningService.resetRestApiKey(PERMISSION_ID))
+                .thenReturn(new RestApiKeyDto("new-api-key"));
+
+        mockMvc.perform(post("/provisioning/permission/" + PERMISSION_ID + "/regenerate-rest-api-key"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("apiKey").value("new-api-key"));
+
+        verify(provisioningService).resetRestApiKey(PERMISSION_ID);
     }
 
     private static boolean hasMqttClientPatchValues(ProvisioningTypePatchDto dto) {

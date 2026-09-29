@@ -369,3 +369,9 @@ export function regenerateInboundServerPassword(
     method: 'POST',
   })
 }
+
+export function regenerateInboundRestApiKey(permissionId: string): Promise<{ apiKey: string }> {
+  return fetch(`/provisioning/permission/${permissionId}/regenerate-rest-api-key`, {
+    method: 'POST',
+  })
+}

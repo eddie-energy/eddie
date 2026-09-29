@@ -144,6 +144,18 @@
         "MQTT_CLIENT": "MQTT-Client"
       }
     },
+    "restApiKey": {
+      "resetTitle": "REST-API-Schlüssel erneuern",
+      "resetDescription": "Möchten Sie diesen API-Schlüssel erneuern? Der aktuelle Schlüssel funktioniert danach sofort nicht mehr.",
+      "resetButton": "API-Schlüssel erneuern",
+      "credentialsTitle": "Neuer REST-API-Schlüssel",
+      "credentialsWarning": "Speichern Sie diesen API-Schlüssel jetzt. Er kann nicht erneut angezeigt werden.",
+      "apiKeyLabel": "API-Schlüssel",
+      "requestLabel": "Beispielanfrage",
+      "copyApiKey": "API-Schlüssel kopieren",
+      "copyRequest": "Beispielanfrage kopieren",
+      "credentialsSaved": "Ich habe den API-Schlüssel gespeichert"
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"

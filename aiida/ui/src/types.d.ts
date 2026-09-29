@@ -43,7 +43,6 @@ export type AiidaDataSource = {
   meterId?: string
   operatorId?: string
   //DatasourceType = INBOUND
-  accessCode?: string
   schemas?: string[]
   provisioningType?: InboundProvisioningType
   mqttProvisioningConfig?: InboundProvisioningMqttConfig

@@ -9,6 +9,10 @@ import energy.eddie.aiida.dtos.provisioning.MqttClientProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.MqttProvisioningConnectionDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypeSelectionPatchDto;
+import energy.eddie.aiida.dtos.provisioning.RestApiKeyDto;
+import energy.eddie.aiida.errors.SecretStoringException;
+import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
@@ -20,6 +24,8 @@ import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.provisioning.ProvisioningMqttPublisher;
 import energy.eddie.aiida.repositories.InboundDataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -52,6 +58,8 @@ public class ProvisioningService {
     private final PermissionRepository permissionRepository;
     private final MqttConfiguration mqttConfiguration;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final AuthService authService;
+    private final SecretsService secretsService;
 
     private final Map<UUID, ProvisioningMqttPublisher> mqttPublishers =
             new ConcurrentHashMap<>();
@@ -64,13 +72,17 @@ public class ProvisioningService {
             PermissionRepository permissionRepository,
             MqttConfiguration mqttConfiguration,
             BCryptPasswordEncoder passwordEncoder,
-            InboundDataSourceRepository inboundDataSourceRepository
+            InboundDataSourceRepository inboundDataSourceRepository,
+            AuthService authService,
+            SecretsService secretsService
     ) {
         this.inboundAggregator = inboundAggregator;
         this.permissionRepository = permissionRepository;
         this.mqttConfiguration = mqttConfiguration;
         this.passwordEncoder = passwordEncoder;
         this.inboundDataSourceRepository = inboundDataSourceRepository;
+        this.authService = authService;
+        this.secretsService = secretsService;
     }
 
     /**
@@ -117,6 +129,42 @@ public class ProvisioningService {
 
         LOGGER.info("Reset MQTT server provisioning password for inbound data source {}", dataSource.id());
         return connectionDetails;
+    }
+
+    /**
+     * Replaces the API key used to retrieve records from an inbound REST data source. The plaintext key is only
+     * returned by this call; subsequent permission responses expose neither it nor its keystore alias.
+     *
+     * @param permissionId ID of the permission whose REST API key should be rotated.
+     * @return The newly generated plaintext API key.
+     */
+    @Transactional(rollbackOn = SecretStoringException.class)
+    public RestApiKeyDto resetRestApiKey(UUID permissionId)
+            throws PermissionNotFoundException,
+                   InvalidDataSourceTypeException,
+                   ProvisioningTypeNotConfiguredException,
+                   InvalidUserException,
+                   UnauthorizedException,
+                   SecretStoringException {
+        var permission = permissionRepository.findById(permissionId)
+                                             .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        authService.checkAuthorizationForPermission(permission);
+
+        if (!(permission.dataSource() instanceof InboundDataSource dataSource)) {
+            throw new InvalidDataSourceTypeException();
+        }
+
+        var provisioningType = dataSource.inboundProvisioningType();
+        if (provisioningType != InboundProvisioningType.REST_BEARER &&
+            provisioningType != InboundProvisioningType.REST_API_TOKEN) {
+            throw new ProvisioningTypeNotConfiguredException(permissionId, provisioningType);
+        }
+
+        var apiKey = SecretGenerator.generate();
+        secretsService.storeSecret(dataSource.id(), SecretType.API_KEY, apiKey);
+
+        LOGGER.info("Reset REST API key for inbound data source {}", dataSource.id());
+        return new RestApiKeyDto(apiKey);
     }
 
     /**

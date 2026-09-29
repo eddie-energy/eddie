@@ -16,6 +16,7 @@ import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.AiidaLocalDataNeedRepository;
 import energy.eddie.aiida.repositories.InboundDataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -474,6 +475,16 @@ class ProvisioningServiceIntegrationTest {
         @Bean
         BCryptPasswordEncoder passwordEncoder() {
             return mock(BCryptPasswordEncoder.class);
+        }
+
+        @Bean
+        AuthService authService() {
+            return mock(AuthService.class);
+        }
+
+        @Bean
+        SecretsService secretsService() {
+            return mock(SecretsService.class);
         }
     }
 }

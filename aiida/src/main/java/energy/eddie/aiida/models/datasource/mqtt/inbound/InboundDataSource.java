@@ -38,8 +38,7 @@ public class InboundDataSource extends MqttDataSource {
     protected static final String TABLE_NAME = "data_source_mqtt_inbound";
 
     @Column(name = "access_code", table = TABLE_NAME)
-    @Schema(description = "The access code to retrieve the inbound data.")
-    @JsonProperty
+    @JsonIgnore
     protected String accessCode;
 
     @OneToOne(fetch = FetchType.EAGER, optional = false)

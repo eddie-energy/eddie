@@ -144,6 +144,18 @@
         "MQTT_CLIENT": "MQTT Client"
       }
     },
+    "restApiKey": {
+      "resetTitle": "Rotate REST API key",
+      "resetDescription": "Rotate this API key? The current key will stop working immediately.",
+      "resetButton": "Rotate API key",
+      "credentialsTitle": "New REST API key",
+      "credentialsWarning": "Save this API key now. It cannot be displayed again.",
+      "apiKeyLabel": "API key",
+      "requestLabel": "Request example",
+      "copyApiKey": "Copy API key",
+      "copyRequest": "Copy request example",
+      "credentialsSaved": "I have saved the API key"
+    },
     "inboundMessageFormats": {
       "CIM_1_12": "CIM 1.12",
       "OPENADR_3_1": "OpenADR 3.1"
