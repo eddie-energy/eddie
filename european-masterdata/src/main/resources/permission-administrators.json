@@ -1110,5 +1110,13 @@
     "companyId": "ETA+",
     "jumpOffUrl": "https://www.etaplus.energy/",
     "regionConnector": "de-eta"
+  },
+  {
+    "country": "it",
+    "company": "onenet",
+    "name": "onenet",
+    "companyId": "onenet",
+    "jumpOffUrl": "https://onenet-project.eu/",
+    "regionConnector": "onenet"
   }
 ]
