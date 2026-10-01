@@ -91,7 +91,7 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", null, null, ""),
+                                          new AtConfiguration("ep-id", null, ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 
@@ -115,7 +115,7 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", "ecId", "ecId", ""),
+                                          new AtConfiguration("ep-id", "ecId", ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new CESUJoinRequestDataNeed(1,
                                                                       Granularity.PT15M,
@@ -128,9 +128,11 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
         // Then
         assertThat(res.getOutboundMetaData())
                 .satisfies(metaData -> {
-                    assertEquals(MessageCodes.EcRequest.SCHEMA_LEGACY, metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.EcRequest.SCHEMA_LEGACY,
+                                 metaData.getMessageType().getSchemaSet().getValue());
                     assertEquals(MessageCodes.EcRequest.CODE, metaData.getMessageType().getName().getValue());
-                    assertEquals(MessageCodes.EcRequest.VERSION_LEGACY, metaData.getMessageType().getVersion().getValue());
+                    assertEquals(MessageCodes.EcRequest.VERSION_LEGACY,
+                                 metaData.getMessageType().getVersion().getValue());
                 });
     }
 
@@ -144,7 +146,7 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
                                           "messageId",
                                           AllowedGranularity.PT15M,
                                           AllowedTransmissionCycle.D,
-                                          new AtConfiguration("ep-id", "ecId", "ecId", ""),
+                                          new AtConfiguration("ep-id", "ecId", ""),
                                           ZonedDateTime.now(ZoneOffset.UTC),
                                           new AccountingPointDataNeed());
 
@@ -154,9 +156,11 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
         // Then
         assertThat(res.getOutboundMetaData())
                 .satisfies(metaData -> {
-                    assertEquals(MessageCodes.Request.SCHEMA_LEGACY, metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.Request.SCHEMA_LEGACY,
+                                 metaData.getMessageType().getSchemaSet().getValue());
                     assertEquals(MessageCodes.Request.CODE, metaData.getMessageType().getName().getValue());
-                    assertEquals(MessageCodes.Request.VERSION_LEGACY, metaData.getMessageType().getVersion().getValue());
+                    assertEquals(MessageCodes.Request.VERSION_LEGACY,
+                                 metaData.getMessageType().getVersion().getValue());
                 });
     }
 }
