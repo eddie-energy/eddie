@@ -50,7 +50,8 @@ class CMRevoke01p10OutboundMessageFactoryTest {
                 permissionRequest,
                 "EP123456",
                 "messageId",
-                "TestReason"
+                "TestReason",
+                "convID"
         );
 
         // when

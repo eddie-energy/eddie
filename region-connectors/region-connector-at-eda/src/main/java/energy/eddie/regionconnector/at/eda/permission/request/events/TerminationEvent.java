@@ -9,19 +9,19 @@ import jakarta.persistence.Entity;
 @Entity
 @SuppressWarnings("NullAway") // Needed for JPA
 public class TerminationEvent extends PersistablePermissionEvent {
-    private final String message;
+    private final String conversationId;
 
-    public TerminationEvent(String permissionId, String message) {
-        super(permissionId, PermissionProcessStatus.TERMINATED);
-        this.message = message;
+    public TerminationEvent(String permissionId, String conversationId) {
+        super(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION);
+        this.conversationId = conversationId;
     }
 
     protected TerminationEvent() {
         super();
-        this.message = null;
+        this.conversationId = null;
     }
 
-    public String message() {
-        return message;
+    public String conversationId() {
+        return conversationId;
     }
 }

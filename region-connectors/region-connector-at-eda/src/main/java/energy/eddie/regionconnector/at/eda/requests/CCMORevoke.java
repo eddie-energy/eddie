@@ -9,14 +9,24 @@ import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-public record CCMORevoke(AtPermissionRequest permissionRequest, String eligiblePartyId,String messageId,
-        String reason
-,
+public record CCMORevoke(AtPermissionRequest permissionRequest,
+                         String eligiblePartyId,
+                         String messageId,
+                         String conversationId,
+                         String reason,
                          ZonedDateTime consentEnd) {
-    public CCMORevoke(AtPermissionRequest permissionRequest, String eligiblePartyId, String reason) {
+    public CCMORevoke(
+            AtPermissionRequest permissionRequest,
+            String eligiblePartyId,
+            String messageId,
+            String conversationId,
+            String reason
+    ) {
         this(
                 permissionRequest,
                 eligiblePartyId,
+                messageId,
+                conversationId,
                 reason,
                 LocalDate.now(EdaRegionConnectorMetadata.AT_ZONE_ID).atStartOfDay(EdaRegionConnectorMetadata.AT_ZONE_ID)
         );

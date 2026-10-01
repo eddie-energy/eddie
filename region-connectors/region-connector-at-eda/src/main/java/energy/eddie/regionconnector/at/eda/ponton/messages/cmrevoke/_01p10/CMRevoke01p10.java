@@ -47,7 +47,7 @@ public record CMRevoke01p10(CCMORevoke ccmoRevoke) {
                                 .withMeteringPoint(permissionRequest.meteringPointId().orElse(null))
                                 .withConsentId(permissionRequest.consentId().orElse(null))
                                 .withMessageId(ccmoRevoke.messageId())
-                                .withConversationId(permissionRequest.conversationId())
+                                .withConversationId(ccmoRevoke.conversationId())
                                 .withConsentEnd(DateTimeConverter.dateTimeToXml(ccmoRevoke.consentEnd()))
                                 // For the eligible party the reason will always be other, see: https://www.ebutilities.at/documents/2025/09/CMRevoke_01p10_Schemadoku.pdf
                                 .withReasonKey(0)

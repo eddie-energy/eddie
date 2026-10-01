@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.at.eda;
 
 import energy.eddie.regionconnector.at.api.AtPermissionRequestRepository;
 import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestBuilder;
+import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,7 +62,7 @@ class EdaRegionConnectorTest {
         regionConnector.terminatePermission("permissionId");
 
         // then
-        verify(outbox, times(2)).commit(any());
+        verify(outbox).commit(isA(SimpleEvent.class));
     }
 
     @Test

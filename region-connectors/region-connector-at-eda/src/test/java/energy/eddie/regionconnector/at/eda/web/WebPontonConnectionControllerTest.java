@@ -278,6 +278,7 @@ class WebPontonConnectionControllerTest {
                 ),
                 "EP100",
                 "messageId",
+                "convId",
                 "Reason"
         );
 
