@@ -35,7 +35,7 @@ public class PermissionRequestController {
     public ResponseEntity<CreatedPermissionRequest> createPermissionRequest(
             @RequestBody @Valid PermissionRequestForCreation permissionRequestForCreation
     ) throws DataNeedNotFoundException, UnsupportedDataNeedException {
-        LOGGER.info("Creating new permission request");
+        LOGGER.debug("Creating new permission request");
         var createdRequest = creationService.createAndValidatePermissionRequest(permissionRequestForCreation);
         var location = connectionStatusMessagesStreamFor(createdRequest.permissionIds().toArray());
         if (createdRequest.permissionIds().isEmpty()) {

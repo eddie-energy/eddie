@@ -32,6 +32,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -544,6 +545,31 @@ class DataNeedCalculationServiceImplTest {
                 () -> assertThat(result.participationFactor()).isPresent().hasValue(100),
                 () -> assertThat(result.energyDirection()).isPresent().hasValue(EnergyDirection.CONSUMPTION)
         );
+    }
+
+    @Test
+    void givenReferenceDate_whenCalculate_thenPermissionTimeframeRespectsReferenceDate() {
+        // Given
+        when(dataNeedsService.findById("dnid"))
+                .thenReturn(Optional.of(new CESUJoinRequestDataNeed(
+                        100,
+                        Granularity.PT15M,
+                        Granularity.P1D,
+                        EnergyDirection.CONSUMPTION
+                )));
+        var calculationService = new DataNeedCalculationServiceImpl(
+                dataNeedsService,
+                metadata,
+                () -> List.of(new CESUJoinRequestDataNeedRule(List.of(Granularity.PT15M)))
+        );
+        var start = ZonedDateTime.parse("2023-01-01T00:00:00Z");
+
+        // When
+        var res = calculationService.calculate("dnid", start);
+
+        // Then
+        var result = assertInstanceOf(CESUJoinRequestDataNeedResult.class, res);
+        assertEquals(start.toLocalDate(), result.permissionTimeframe().start());
     }
 
     private static Stream<Arguments> regionConnectorFilterConfigurations() {
