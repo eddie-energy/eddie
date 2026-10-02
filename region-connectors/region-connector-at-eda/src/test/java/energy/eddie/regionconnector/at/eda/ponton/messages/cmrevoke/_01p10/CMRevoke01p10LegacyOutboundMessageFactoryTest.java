@@ -47,7 +47,7 @@ class CMRevoke01p10LegacyOutboundMessageFactoryTest {
                 Optional.of("TestConsentId")
         );
         String eligiblePartyId = "TestEligiblePartyId";
-        CCMORevoke ccmoRevoke = new CCMORevoke(permissionRequest, eligiblePartyId, "TestReason", "");
+        CCMORevoke ccmoRevoke = new CCMORevoke(permissionRequest, eligiblePartyId, "TestReason", "", "convID");
 
         // when
         var message = new CMRevoke01p10LegacyOutboundMessageFactory(marshaller).createOutboundMessage(ccmoRevoke);
