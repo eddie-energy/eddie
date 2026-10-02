@@ -1110,5 +1110,13 @@
     "companyId": "ETA+",
     "jumpOffUrl": "https://www.etaplus.energy/",
     "regionConnector": "de-eta"
+  },
+  {
+    "country": "ee",
+    "company": "Elering",
+    "name": "Elering Estfeed Datahub",
+    "companyId": "Elering",
+    "jumpOffUrl": "https://estfeed.elering.ee",
+    "regionConnector": "ee-elering"
   }
 ]
