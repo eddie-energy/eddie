@@ -24,8 +24,8 @@ public class CPRequestOutbound01p12LegacyMessageFactory implements CPRequestOutb
 
     public static final LocalDate ACTIVE_FROM = LocalDate.of(2018, 10, 1);
     private static final MessageType MESSAGETYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet(MessageCodes.CPRequest.SCHEMA_LEGACY))
-            .setVersion(new MessageTypeVersion(MessageCodes.CPRequest.VERSION_LEGACY))
+            .setSchemaSet(new SchemaSet(MessageCodes.CPRequest.SCHEMA))
+            .setVersion(new MessageTypeVersion(MessageCodes.CPRequest.VERSION))
             .setName(new MessageTypeName(MessageCodes.CPRequest.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();

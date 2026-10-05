@@ -55,8 +55,8 @@ public class CMRevoke01p10LegacyOutboundMessageFactory implements CMRevokeOutbou
 
     private static MessageType createMessageType() {
         return new MessageType.MessageTypeBuilder()
-                .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA_LEGACY))
-                .setVersion(new MessageTypeVersion(MessageCodes.Revoke.EligibleParty.VERSION_LEGACY))
+                .setSchemaSet(new SchemaSet(MessageCodes.Revoke.EligibleParty.SCHEMA))
+                .setVersion(new MessageTypeVersion(MessageCodes.Revoke.EligibleParty.VERSION))
                 .setName(new MessageTypeName(MessageCodes.Revoke.EligibleParty.REVOKE))
                 .setMimeType(new MimeType("text/xml"))
                 .build();

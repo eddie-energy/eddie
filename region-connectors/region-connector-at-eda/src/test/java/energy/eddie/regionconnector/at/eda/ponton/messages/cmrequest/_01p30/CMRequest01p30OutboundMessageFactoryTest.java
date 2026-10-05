@@ -71,7 +71,7 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
     }
 
     @Test
-    void isMessageType_01p50() {
+    void isMessageType_01p40() {
         // Given
         var factory = new CMRequest01p30OutboundMessageFactory(marshaller);
         var ccmoRequest = new CCMORequest(new DsoIdAndMeteringPoint("dso", null),
@@ -89,8 +89,8 @@ class CMRequest01p30OutboundMessageFactoryTest extends CMRequestOutboundMessageF
 
         // Then
         assertAll(
-                () -> assertEquals("CM_REQ_ONL_01.50", res.getMessageType().getSchemaSet().getValue()),
-                () -> assertEquals("01.50", res.getMessageType().getVersion().getValue())
+                () -> assertEquals("CM_REQ_ONL_01.40", res.getMessageType().getSchemaSet().getValue()),
+                () -> assertEquals("01.40", res.getMessageType().getVersion().getValue())
         );
     }
 
