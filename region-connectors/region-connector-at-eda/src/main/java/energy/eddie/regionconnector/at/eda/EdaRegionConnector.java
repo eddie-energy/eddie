@@ -54,6 +54,5 @@ public class EdaRegionConnector implements RegionConnector, AutoCloseable {
             return;
         }
         outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.TERMINATED));
-        outbox.commit(new SimpleEvent(permissionId, PermissionProcessStatus.REQUIRES_EXTERNAL_TERMINATION));
     }
 }

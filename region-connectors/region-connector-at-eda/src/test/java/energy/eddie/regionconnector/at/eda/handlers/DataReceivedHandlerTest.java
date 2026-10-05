@@ -82,6 +82,22 @@ class DataReceivedHandlerTest {
     }
 
     @Test
+    void service_doesNotCallFulfill_whenNoEndIsGiven() {
+        // Given
+        LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC);
+        AtPermissionRequest permissionRequest = createPermissionRequest(permissionRequestEnd);
+        when(repository.getByPermissionId("pid")).thenReturn(permissionRequest);
+        when(timeframeRepository.findAllByPermissionId("pid"))
+                .thenReturn(List.of(new MeterReadingTimeframe(1L, "pid", permissionRequestEnd, null)));
+
+        // When
+        eventBus.emit(new DataReceivedEvent("pid", PermissionProcessStatus.ACCEPTED, permissionRequestEnd, null));
+
+        // Then
+        verify(fulfillmentService, never()).tryFulfillPermissionRequest(any());
+    }
+
+    @Test
     void service_doesNotCallFulfill_whenMeteringDataEndIsBeforePermissionRequestEnd() {
         // Given
         LocalDate permissionRequestEnd = LocalDate.now(ZoneOffset.UTC);
