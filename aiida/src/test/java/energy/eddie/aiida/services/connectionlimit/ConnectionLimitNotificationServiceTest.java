@@ -4,10 +4,12 @@
 package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.UserSettingsService;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -24,7 +26,10 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,10 +44,13 @@ class ConnectionLimitNotificationServiceTest {
     private static final UUID PERMISSION_ID = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
     private static final Instant TIMESTAMP = Instant.parse("2026-07-10T10:00:00Z");
+    private static final Instant CLOCK_INSTANT = Instant.parse("2026-07-10T11:00:00Z");
     private static final String RECIPIENT = "user@example.com";
 
     @Mock
     private AiidaRecordRepository aiidaRecordRepository;
+    @Mock
+    private ConnectionLimitViolationRepository connectionLimitViolationRepository;
     @Mock
     private PermissionRepository permissionRepository;
     @Mock
@@ -56,15 +64,29 @@ class ConnectionLimitNotificationServiceTest {
     @Mock
     private Permission permission;
 
+    private final List<ConnectionLimitViolation> storedViolations = new ArrayList<>();
     private ConnectionLimitNotificationService service;
 
     @BeforeEach
     void setUp() {
+        lenient().when(connectionLimitViolationRepository.save(any(ConnectionLimitViolation.class)))
+                 .thenAnswer(invocation -> {
+                     var violation = invocation.<ConnectionLimitViolation>getArgument(0);
+                     if (!storedViolations.contains(violation)) {
+                         storedViolations.add(violation);
+                     }
+                     return violation;
+                 });
+        lenient().when(connectionLimitViolationRepository.findByEndedAtIsNull())
+                 .thenAnswer(invocation -> storedViolations.stream().filter(v -> v.endedAt() == null).toList());
+
         service = new ConnectionLimitNotificationService(aiidaRecordRepository,
+                                                         connectionLimitViolationRepository,
                                                          permissionRepository,
                                                          connectionLimitService,
                                                          userSettingsService,
                                                          mailSenderProvider,
+                                                         Clock.fixed(CLOCK_INSTANT, ZoneOffset.UTC),
                                                          "aiida@example.com");
     }
 
@@ -128,6 +150,10 @@ class ConnectionLimitNotificationServiceTest {
         var captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender, times(3)).send(captor.capture());
         verify(connectionLimitService, times(1)).getConnectionLimits(any(), any(), any(), any(), any());
+        assertEquals(2, storedViolations.size());
+        assertEquals(TIMESTAMP, storedViolations.get(0).startedAt());
+        assertEquals(TIMESTAMP, storedViolations.get(0).endedAt());
+        assertEquals(null, storedViolations.get(1).endedAt());
         assertEquals(List.of("Connection limits exceeded",
                              "Connection limits restored",
                              "Connection limits exceeded"),
@@ -147,6 +173,54 @@ class ConnectionLimitNotificationServiceTest {
         service.checkViolations();
 
         verify(mailSender, times(2)).send(any(SimpleMailMessage.class));
+        assertEquals(2, storedViolations.size());
+        assertEquals(CLOCK_INSTANT, storedViolations.getFirst().endedAt());
+    }
+
+    @Test
+    void givenViolationOngoingBeforeRestart_doesNotNotifyAgain() {
+        givenAssignment();
+        givenEffectiveLimit(BigDecimal.valueOf(3), BigDecimal.valueOf(8));
+        storedViolations.add(new ConnectionLimitViolation(PERMISSION_ID,
+                                                          DATA_SOURCE_ID,
+                                                          TIMESTAMP.minusSeconds(60),
+                                                          null,
+                                                          BigDecimal.valueOf(3),
+                                                          BigDecimal.valueOf(8),
+                                                          BigDecimal.valueOf(9)));
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.5")));
+
+        service.checkViolations();
+
+        verifyNoInteractions(mailSender);
+        assertEquals(0, BigDecimal.valueOf(9.5).compareTo(storedViolations.getFirst().peakPowerKw()));
+    }
+
+    @Test
+    void givenWorseValues_storesPeakAndNotifiesOnce() {
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, imported("9.0")), record(7, imported("10.0")), record(8, imported("9.5")));
+
+        service.checkViolations();
+
+        verify(mailSender).send(any(SimpleMailMessage.class));
+        assertEquals(1, storedViolations.size());
+        assertEquals(0, BigDecimal.valueOf(9).compareTo(storedViolations.getFirst().startPowerKw()));
+        assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().peakPowerKw()));
+        assertEquals(null, storedViolations.getFirst().endedAt());
+    }
+
+    @Test
+    void givenPowerInWatt_convertsToKilowatt() {
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, value(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "9000", UnitOfMeasurement.WATT)));
+
+        service.checkViolations();
+
+        assertTrue(sentMessage().getText().contains("Measured power: 9 kW"));
     }
 
     @Test
@@ -288,12 +362,11 @@ class ConnectionLimitNotificationServiceTest {
     }
 
     private AiidaRecordValue value(ObisCode dataTag, String value) {
-        return new AiidaRecordValue(dataTag.toString(),
-                                    dataTag,
-                                    value,
-                                    UnitOfMeasurement.KILO_WATT,
-                                    value,
-                                    UnitOfMeasurement.KILO_WATT);
+        return value(dataTag, value, UnitOfMeasurement.KILO_WATT);
+    }
+
+    private AiidaRecordValue value(ObisCode dataTag, String value, UnitOfMeasurement unit) {
+        return new AiidaRecordValue(dataTag.toString(), dataTag, value, unit, value, unit);
     }
 
     private SimpleMailMessage sentMessage() {

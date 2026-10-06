@@ -40,7 +40,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
@@ -85,6 +85,8 @@ class ConnectionLimitNotificationServiceIntegrationTest {
     @Autowired
     private PermissionRepository permissionRepository;
     @Autowired
+    private ConnectionLimitViolationRepository connectionLimitViolationRepository;
+    @Autowired
     private UserSettingsRepository userSettingsRepository;
     @Autowired
     private AiidaRecordRepository aiidaRecordRepository;
@@ -114,8 +116,21 @@ class ConnectionLimitNotificationServiceIntegrationTest {
         assertEquals(EMAIL, violation.getTo()[0]);
         assertEquals("Connection limits exceeded", violation.getSubject());
 
+        var openViolations = connectionLimitViolationRepository.findByEndedAtIsNull();
+        assertEquals(1, openViolations.size());
+        assertEquals(dataSourceId, openViolations.getFirst().dataSourceId());
+        assertEquals(0, BigDecimal.valueOf(8).compareTo(openViolations.getFirst().maxLimitKw()));
+
         insertRecord("5.0");
         service.checkViolations();
+
+        assertTrue(connectionLimitViolationRepository.findByEndedAtIsNull().isEmpty());
+        var now = Instant.now();
+        var violations = connectionLimitViolationRepository.findOverlapping(PERMISSION_ID,
+                                                                           now.minusSeconds(60),
+                                                                           now.plusSeconds(60));
+        assertEquals(1, violations.size());
+        assertNotNull(violations.getFirst().endedAt());
 
         var captor = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(mailSender, times(2)).send(captor.capture());

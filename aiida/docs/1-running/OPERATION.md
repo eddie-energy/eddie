@@ -78,6 +78,9 @@ and a recovery email when the data is back within the limits.
 Notifications are only sent when a mail server is configured (`SPRING_MAIL_HOST`).
 To receive notifications the user has to set a contact email address in their account settings.
 
+Each violation is also stored with its start, end, the violated limit and the measured power, and can be queried with `GET /connection-limits/{permissionId}/violations`.
+Violations of a permission end when the measured power is back within the limits or the permission is no longer monitored.
+
 The latest measured value of each assigned data source is checked periodically (`AIIDA_NOTIFICATION_INTERVAL_MS`),
 so a notification can be delayed by up to that interval.
 

@@ -4,10 +4,12 @@
 package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
+import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.UserSettingsService;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -23,6 +25,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,27 +44,33 @@ public class ConnectionLimitNotificationService {
     private static final String DEFAULT_SENDER = "no-reply@aiida";
 
     private final AiidaRecordRepository aiidaRecordRepository;
+    private final ConnectionLimitViolationRepository connectionLimitViolationRepository;
     private final PermissionRepository permissionRepository;
     private final ConnectionLimitService connectionLimitService;
     private final UserSettingsService userSettingsService;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
+    private final Clock clock;
     private final String sender;
-    private final Set<UUID> violatedPermissions = new HashSet<>();
+    private final Map<UUID, ConnectionLimitViolation> openViolations = new HashMap<>();
     private final Map<UUID, Long> lastCheckedRecordId = new HashMap<>();
 
     public ConnectionLimitNotificationService(
             AiidaRecordRepository aiidaRecordRepository,
+            ConnectionLimitViolationRepository connectionLimitViolationRepository,
             PermissionRepository permissionRepository,
             ConnectionLimitService connectionLimitService,
             UserSettingsService userSettingsService,
             ObjectProvider<JavaMailSender> mailSenderProvider,
+            Clock clock,
             @Value("${spring.mail.username:}") String sender
     ) {
         this.aiidaRecordRepository = aiidaRecordRepository;
+        this.connectionLimitViolationRepository = connectionLimitViolationRepository;
         this.permissionRepository = permissionRepository;
         this.connectionLimitService = connectionLimitService;
         this.userSettingsService = userSettingsService;
         this.mailSenderProvider = mailSenderProvider;
+        this.clock = clock;
         this.sender = sender.isBlank() ? DEFAULT_SENDER : sender;
     }
 
@@ -72,6 +81,7 @@ public class ConnectionLimitNotificationService {
                                                           .collect(Collectors.groupingBy(
                                                                   permission -> Objects.requireNonNull(permission.monitoringDataSourceId())));
         forgetUnassigned(permissionsByDataSource);
+        loadOpenViolations(permissionsByDataSource);
 
         for (var dataSource : permissionsByDataSource.entrySet()) {
             try {
@@ -83,17 +93,31 @@ public class ConnectionLimitNotificationService {
     }
 
     /**
-     * Drops state of data sources and permissions that are no longer monitored, so that a later assignment starts from a
+     * Drops the record watermark of data sources that are no longer monitored, so that a later assignment starts from a
      * clean state.
      */
     private void forgetUnassigned(Map<UUID, List<Permission>> permissionsByDataSource) {
         lastCheckedRecordId.keySet().retainAll(permissionsByDataSource.keySet());
+    }
+
+    /**
+     * Loads the ongoing violations and ends those of permissions that are no longer monitored.
+     */
+    private void loadOpenViolations(Map<UUID, List<Permission>> permissionsByDataSource) {
         var monitoredPermissionIds = permissionsByDataSource.values()
                                                             .stream()
                                                             .flatMap(List::stream)
                                                             .map(Permission::id)
                                                             .collect(Collectors.toSet());
-        violatedPermissions.retainAll(monitoredPermissionIds);
+        openViolations.clear();
+        for (var violation : connectionLimitViolationRepository.findByEndedAtIsNull()) {
+            if (monitoredPermissionIds.contains(violation.permissionId())) {
+                openViolations.put(violation.permissionId(), violation);
+            } else {
+                violation.end(clock.instant());
+                connectionLimitViolationRepository.save(violation);
+            }
+        }
     }
 
     private void check(UUID dataSourceId, List<Permission> permissions) {
@@ -115,7 +139,7 @@ public class ConnectionLimitNotificationService {
                 for (var permission : permissions) {
                     var limits = limitsByPermission.computeIfAbsent(permission.id(),
                                                                     id -> limits(permission, from, to));
-                    evaluate(permission, limits, netPower, aiidaRecord.timestamp());
+                    evaluate(permission, dataSourceId, limits, netPower, aiidaRecord.timestamp());
                 }
             }
 
@@ -134,20 +158,33 @@ public class ConnectionLimitNotificationService {
     }
 
     private void evaluate(
-            Permission permission,
+            Permission permission, UUID dataSourceId,
             List<ConnectionLimitDto> limits,
             BigDecimal netPower,
             Instant timestamp
     ) {
         var effectiveLimit = effectiveLimit(limits, timestamp);
-        var violated = effectiveLimit != null && isViolated(netPower, effectiveLimit);
-        var wasViolated = violatedPermissions.contains(permission.id());
+        var violatedLimit = effectiveLimit != null && isViolated(netPower, effectiveLimit) ? effectiveLimit : null;
+        var openViolation = openViolations.get(permission.id());
 
-        if (violated && !wasViolated) {
-            violatedPermissions.add(permission.id());
-            notify(permission, netPower, effectiveLimit, timestamp, true);
-        } else if (!violated && wasViolated) {
-            violatedPermissions.remove(permission.id());
+        if (violatedLimit != null) {
+            if (openViolation == null) {
+                var violation = new ConnectionLimitViolation(permission.id(),
+                                                             dataSourceId,
+                                                             timestamp,
+                                                             violatedLimit.documentId(),
+                                                             violatedLimit.minKw(),
+                                                             violatedLimit.maxKw(),
+                                                             netPower);
+                openViolations.put(permission.id(), connectionLimitViolationRepository.save(violation));
+                notify(permission, netPower, violatedLimit, timestamp, true);
+            } else if (openViolation.registerPower(netPower)) {
+                connectionLimitViolationRepository.save(openViolation);
+            }
+        } else if (openViolation != null) {
+            openViolation.end(timestamp);
+            connectionLimitViolationRepository.save(openViolation);
+            openViolations.remove(permission.id());
             notify(permission, netPower, effectiveLimit, timestamp, false);
         }
     }
@@ -178,7 +215,17 @@ public class ConnectionLimitNotificationService {
         }
 
         try {
-            return new BigDecimal(value.value());
+            var power = new BigDecimal(value.value());
+            return switch (value.unitOfMeasurement()) {
+                case KILO_WATT -> power;
+                case WATT -> power.movePointLeft(3);
+                default -> {
+                    LOGGER.warn("Ignoring power value of data tag {}: unit {} is not a power unit",
+                                dataTag,
+                                value.unitOfMeasurement());
+                    yield null;
+                }
+            };
         } catch (NumberFormatException e) {
             LOGGER.warn("Could not parse power value '{}' for data tag {}", value.value(), dataTag);
             return null;
@@ -202,7 +249,7 @@ public class ConnectionLimitNotificationService {
         return limits.stream()
                      .filter(limit -> !timestamp.isBefore(limit.intervalStart()) && timestamp.isBefore(limit.intervalEnd()))
                      .findFirst()
-                     .map(limit -> new EffectiveLimit(limit.minLimitKw(), limit.maxLimitKw()))
+                     .map(limit -> new EffectiveLimit(limit.documentId(), limit.minLimitKw(), limit.maxLimitKw()))
                      .orElse(null);
     }
 
@@ -294,5 +341,9 @@ public class ConnectionLimitNotificationService {
         return value.stripTrailingZeros().toPlainString();
     }
 
-    private record EffectiveLimit(@Nullable BigDecimal minKw, @Nullable BigDecimal maxKw) {}
+    private record EffectiveLimit(
+            @Nullable String documentId,
+            @Nullable BigDecimal minKw,
+            @Nullable BigDecimal maxKw
+    ) {}
 }
