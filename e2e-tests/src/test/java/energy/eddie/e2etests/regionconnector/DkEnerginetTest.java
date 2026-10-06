@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.e2etests.regionconnector;
@@ -8,6 +8,7 @@ import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
 import energy.eddie.e2etests.E2eTestSetup;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -36,6 +37,7 @@ class DkEnerginetTest extends E2eTestSetup {
     @Test
     @EnabledIfEnvironmentVariable(named = "DK_ENERGINET_REFRESH_TOKEN", matches = ".*", disabledReason = "No refresh token set to test permission request.")
     @EnabledIfEnvironmentVariable(named = "DK_ENERGINET_METERING_POINT", matches = ".*", disabledReason = "No metering point set to test permission request.")
+    @Disabled("Disabled until a new access token has been granted")
     void givenValidInput_showsAcceptedInfo() {
         this.navigateToRegionConnector(null, "Denmark", null);
 
