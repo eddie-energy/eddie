@@ -396,8 +396,8 @@ class AiidaUiTests {
                                                                                   meterId,
                                                                                   UUID.randomUUID().toString(),
                                                                                   Instant.now(),
-                                                                                  documentIntervalStart.plusSeconds(30),
-                                                                                  documentIntervalEnd.plusSeconds(30),
+                                                                                  documentIntervalStart,
+                                                                                  documentIntervalEnd,
                                                                                   -10,
                                                                                   10)));
         assertThat(recoveryResponse).isOK();
