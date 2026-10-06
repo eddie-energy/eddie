@@ -23,8 +23,8 @@ import java.time.LocalDate;
 public class CMRequest01p30LegacyOutboundMessageFactory implements CMRequestOutboundMessageFactory {
     public static final LocalDate ACTIVE_FROM = LocalDate.of(2026, 4, 13);
     private static final MessageType CCMO_MESSAGE_TYPE = new MessageType.MessageTypeBuilder()
-            .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA_LEGACY))
-            .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION_LEGACY))
+            .setSchemaSet(new SchemaSet(MessageCodes.Request.SCHEMA))
+            .setVersion(new MessageTypeVersion(MessageCodes.Request.VERSION))
             .setName(new MessageTypeName(MessageCodes.Request.CODE))
             .setMimeType(new MimeType("text/xml"))
             .build();

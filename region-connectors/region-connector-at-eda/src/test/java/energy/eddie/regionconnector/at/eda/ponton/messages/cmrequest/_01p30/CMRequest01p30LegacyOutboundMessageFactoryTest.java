@@ -100,8 +100,8 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
 
         // Then
         assertAll(
-                () -> assertEquals(MessageCodes.Request.SCHEMA_LEGACY, res.getMessageType().getSchemaSet().getValue()),
-                () -> assertEquals(MessageCodes.Request.VERSION_LEGACY, res.getMessageType().getVersion().getValue())
+                () -> assertEquals(MessageCodes.Request.SCHEMA, res.getMessageType().getSchemaSet().getValue()),
+                () -> assertEquals(MessageCodes.Request.VERSION, res.getMessageType().getVersion().getValue())
         );
     }
 
@@ -156,11 +156,9 @@ class CMRequest01p30LegacyOutboundMessageFactoryTest extends CMRequestOutboundMe
         // Then
         assertThat(res.getOutboundMetaData())
                 .satisfies(metaData -> {
-                    assertEquals(MessageCodes.Request.SCHEMA_LEGACY,
-                                 metaData.getMessageType().getSchemaSet().getValue());
+                    assertEquals(MessageCodes.Request.SCHEMA, metaData.getMessageType().getSchemaSet().getValue());
                     assertEquals(MessageCodes.Request.CODE, metaData.getMessageType().getName().getValue());
-                    assertEquals(MessageCodes.Request.VERSION_LEGACY,
-                                 metaData.getMessageType().getVersion().getValue());
+                    assertEquals(MessageCodes.Request.VERSION, metaData.getMessageType().getVersion().getValue());
                 });
     }
 }
