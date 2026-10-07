@@ -9,7 +9,9 @@ import energy.eddie.api.agnostic.process.model.validation.AttributeError;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisSubscribedServicesApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.SubscribedService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
@@ -26,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,22 +42,27 @@ public class PermissionRequestService {
     private final EnedisConfiguration configuration;
     private final Outbox outbox;
     private final DataNeedCalculationService calculationService;
+    private final EnedisSubscribedServicesApi enedisApiClient;
 
     public PermissionRequestService(
             FrPermissionRequestRepository repository,
             EnedisConfiguration configuration,
             Outbox outbox,
-            DataNeedCalculationService calculationService
+            DataNeedCalculationService calculationService,
+            EnedisSubscribedServicesApi enedisApiClient
     ) {
         this.repository = repository;
         this.configuration = configuration;
         this.outbox = outbox;
         this.calculationService = calculationService;
+        this.enedisApiClient = enedisApiClient;
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
-        LOGGER.info("Got request to create a new permission, request was: {}", permissionRequestForCreation);
         var permissionId = UUID.randomUUID().toString();
+        LOGGER.info("Got request to create a new permission, request was: {} with permission ID {}",
+                    permissionRequestForCreation,
+                    permissionId);
 
         var dataNeedId = permissionRequestForCreation.dataNeedId();
         var result = calculationService.calculate(dataNeedId);
@@ -94,17 +102,33 @@ public class PermissionRequestService {
 
     public void authorizePermissionRequest(
             String permissionId,
-            String[] usagePointIds
+            long authorizationId
     ) throws PermissionNotFoundException {
+        LOGGER.info("Got request to authorize a permission with permission ID {}", permissionId);
         var permissionRequest = repository
                 .findByPermissionId(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
 
-        var usagePointId = usagePointIds[0];
+        var usagePointIds = enedisApiClient.getSubscribedServices(authorizationId)
+                                           .map(response -> response.services() == null
+                                                   ? List.<String>of()
+                                                   : response.services()
+                                                             .stream()
+                                                             .map(SubscribedService::pointId)
+                                                             .filter(Objects::nonNull)
+                                                             .toList())
+                                           .block();
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        if (usagePointIds == null || usagePointIds.isEmpty()) {
+            LOGGER.warn("No usage point id found for authorization id '{}'", authorizationId);
+            outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));
+            return;
+        }
+
+        var usagePointId = usagePointIds.getFirst();
         outbox.commit(new FrAcceptedEvent(permissionId, usagePointId));
 
-        for (int i = 1; i < usagePointIds.length; i++) {
+        for (int i = 1; i < usagePointIds.size(); i++) {
             var newPermissionId = UUID.randomUUID().toString();
             outbox.commit(new FrCreatedEvent(
                     newPermissionId,
@@ -118,7 +142,7 @@ public class PermissionRequestService {
                     permissionRequest.granularity()
             ));
             outbox.commit(new FrSimpleEvent(newPermissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-            outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds[i]));
+            outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds.get(i)));
         }
     }
 

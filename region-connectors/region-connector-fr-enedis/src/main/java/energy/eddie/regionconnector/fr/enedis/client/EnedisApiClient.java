@@ -7,11 +7,12 @@ import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisHealth;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisMeterReadingApi;
-import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
-import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
+import energy.eddie.regionconnector.fr.enedis.api.EnedisSubscribedServicesApi;
+import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralData;
+import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralDatas;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscription;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.boot.health.contributor.Health;
@@ -30,7 +31,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Component
-public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingPointDataApi, EnedisHealth {
+public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingPointDataApi, EnedisHealth, EnedisSubscribedServicesApi {
 
     public static final String USAGE_POINT_ID_PARAM = "pointId";
     public static final String METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE = "mesure_synchrone_auto/v2/courbe_de_charge_consommation";
@@ -43,9 +44,11 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     public static final String CONTACT_API = "ContactAPI";
     public static final String IDENTITY_API = "IdentityAPI";
     public static final String ADDRESS_API = "AddressAPI";
+    public static final String SUBSCRIBED_SERVICES_API = "SubscribedServicesAPI";
     public static final String SITUATION_CONTRACTUELLE_ENDPOINT = "situation_contrat_auto/v1/";
     public static final String GENERAL_DATA_ENDPOINT = "donnees_generales_auto/v1/";
     private static final Logger LOGGER = LoggerFactory.getLogger(EnedisApiClient.class);
+    public static final String SUBSCRIBED_SERVICES_V_1 = "/subscribed_services/v1/";
     private final EnedisTokenProvider tokenProvider;
     private final Map<String, Health> healthChecks = new HashMap<>();
     private final WebClient webClient;
@@ -60,6 +63,20 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
         healthChecks.put(CONTACT_API, Health.unknown().build());
         healthChecks.put(IDENTITY_API, Health.unknown().build());
         healthChecks.put(ADDRESS_API, Health.unknown().build());
+    }
+
+    @Override
+    public Mono<ServiceSubscriptionsResponse> getSubscribedServices(long authorizationId) {
+        return token()
+                .flatMap(token -> webClient
+                        .post()
+                        .uri(uriBuilder -> uriBuilder.path(SUBSCRIBED_SERVICES_V_1).build())
+                        .headers(headers -> headers.setBearerAuth(token))
+                        .headers(headers -> headers.setAccept(List.of(MediaType.APPLICATION_JSON)))
+                        .bodyValue(new ServiceSubscription(authorizationId))
+                        .retrieve()
+                        .bodyToMono(ServiceSubscriptionsResponse.class))
+                .doOnError(throwable -> healthChecks.put(SUBSCRIBED_SERVICES_API, Health.down().build()));
     }
 
     @Override

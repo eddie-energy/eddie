@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.web;
@@ -9,7 +9,6 @@ import jakarta.annotation.Nullable;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -26,15 +25,12 @@ public class AuthorizationCallbackController {
     @SuppressWarnings("NullAway") // NullAway doesnt understand the isBlank checks
     public String authorizationCallback(
             @RequestParam(value = "state", required = false) @Nullable String permissionId,
-            @RequestParam(value = "usage_point_id", required = false) @Nullable String usagePointId,
+            @RequestParam(value = "autorisation_id", required = false) @Nullable Long authorizationId,
             Model model
     ) {
-        if (Strings.isNotBlank(usagePointId) && Strings.isNotBlank(permissionId)) {
-            var usagePointIds = StringUtils.delimitedListToStringArray(usagePointId, ";");
-            model.addAttribute("usagePointIds", String.join(", ", usagePointIds));
-
+        if (authorizationId != null && Strings.isNotBlank(permissionId)) {
             try {
-                permissionRequestService.authorizePermissionRequest(permissionId, usagePointIds);
+                permissionRequestService.authorizePermissionRequest(permissionId, authorizationId);
                 permissionRequestService.findDataNeedIdForPermission(permissionId)
                                         .ifPresent(id -> model.addAttribute("dataNeedId", id));
 

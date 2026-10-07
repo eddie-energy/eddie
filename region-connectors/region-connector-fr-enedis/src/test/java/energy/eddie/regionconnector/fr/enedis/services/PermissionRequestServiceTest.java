@@ -15,10 +15,10 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
-import energy.eddie.regionconnector.fr.enedis.permission.events.FrAcceptedEvent;
-import energy.eddie.regionconnector.fr.enedis.permission.events.FrCreatedEvent;
-import energy.eddie.regionconnector.fr.enedis.permission.events.FrMalformedEvent;
-import energy.eddie.regionconnector.fr.enedis.permission.events.FrValidatedEvent;
+import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.SubscribedService;
+import energy.eddie.regionconnector.fr.enedis.permission.events.*;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequestBuilder;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
@@ -38,6 +38,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -69,6 +70,8 @@ class PermissionRequestServiceTest {
     private Outbox outbox;
     @MockitoBean
     private DataNeedCalculationService calculationService;
+    @MockitoBean
+    private EnedisApiClient enedisApiClient;
     @MockitoBean
     @SuppressWarnings("unused")
     private DataNeedsService dataNeedsService;
@@ -181,13 +184,40 @@ class PermissionRequestServiceTest {
                 .create();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(1L, List.of(serviceWithPointId("upid")))));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", new String[]{"upid"});
+        permissionRequestService.authorizePermissionRequest("pid", 999999999);
 
         // Then
+        verify(enedisApiClient).getSubscribedServices(999999999L);
         verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
         verify(outbox).commit(isA(FrAcceptedEvent.class));
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_withNoServices_emitsNoEvents() throws PermissionNotFoundException {
+        // Given
+        EnedisPermissionRequest permissionRequest = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .setStart(LocalDate.now(ZoneOffset.UTC).minusDays(3))
+                .setEnd(LocalDate.now(ZoneOffset.UTC))
+                .setGranularity(Granularity.P1D)
+                .create();
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequest));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(0L, List.of())));
+
+        // When
+        permissionRequestService.authorizePermissionRequest("pid", 999999999);
+
+        // Then
+        verify(enedisApiClient).getSubscribedServices(999999999L);
+        verify(outbox, times(2)).commit(isA(FrSimpleEvent.class));
     }
 
     @Test
@@ -209,9 +239,14 @@ class PermissionRequestServiceTest {
                 .create();
         when(repository.findByPermissionId("pid"))
                 .thenReturn(Optional.of(permissionRequest));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(3L,
+                                                                       List.of(serviceWithPointId("upid"),
+                                                                               serviceWithPointId("upid2"),
+                                                                               serviceWithPointId("upid3")))));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", new String[]{"upid", "upid2", "upid3"});
+        permissionRequestService.authorizePermissionRequest("pid", 999999999);
 
         // Then
         verify(outbox, times(10)).commit(eventCaptor.capture());
@@ -261,7 +296,15 @@ class PermissionRequestServiceTest {
     void testAuthorizePermissionRequest_withNonExistingPermissionRequest_throws() {
         // Given, When, Then
         assertThrows(PermissionNotFoundException.class,
-                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", new String[]{"upid"}));
+                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", 999999999));
+    }
+
+    private static SubscribedService serviceWithPointId(String pointId) {
+        return new SubscribedService(
+                null, null, null, null, null, null, null, null,
+                pointId,
+                null, null, null, null, null, null, null, null,
+                null);
     }
 
     @TestConfiguration
