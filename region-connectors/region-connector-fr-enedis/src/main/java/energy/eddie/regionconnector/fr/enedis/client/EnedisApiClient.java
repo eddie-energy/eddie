@@ -32,21 +32,20 @@ import java.util.function.Function;
 @Component
 public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingPointDataApi, EnedisHealth {
 
-    public static final String USAGE_POINT_ID_PARAM = "usage_point_id";
-    public static final String METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE = "metering_data_clc/v5/consumption_load_curve";
-    public static final String METERING_DATA_DC_V_5_DAILY_CONSUMPTION = "metering_data_dc/v5/daily_consumption";
-    public static final String METERING_DATA_PLC_V_5_PRODUCTION_LOAD_CURVE = "metering_data_plc/v5/production_load_curve";
-    public static final String METERING_DATA_DP_V_5_DAILY_PRODUCTION = "metering_data_dp/v5/daily_production";
+    public static final String USAGE_POINT_ID_PARAM = "pointId";
+    public static final String METERING_DATA_CLC_V_5_CONSUMPTION_LOAD_CURVE = "mesure_synchrone_auto/v2/courbe_de_charge_consommation";
+    public static final String METERING_DATA_DC_V_5_DAILY_CONSUMPTION = "mesure_synchrone_auto/v2/consommation_quotidienne";
+    public static final String METERING_DATA_PLC_V_5_PRODUCTION_LOAD_CURVE = "mesure_synchrone_auto/v2/courbe_de_charge_production";
+    public static final String METERING_DATA_DP_V_5_DAILY_PRODUCTION = "mesure_synchrone_auto/v2/production_quotidienne";
     public static final String AUTHENTICATION_API = "AuthenticationAPI";
     public static final String METERING_POINT_API = "MeteringPointAPI";
     public static final String CONTRACT_API = "ContractAPI";
     public static final String CONTACT_API = "ContactAPI";
     public static final String IDENTITY_API = "IdentityAPI";
     public static final String ADDRESS_API = "AddressAPI";
-    private static final String CONTRACT_ENDPOINT = "customers_upc/v5/usage_points/contracts";
-    private static final String CONTACT_ENDPOINT = "customers_cd/v5/contact_data";
-    private static final String IDENTITY_ENDPOINT = "customers_i/v5/identity";
-    private static final String ADDRESS_ENDPOINT = "customers_upa/v5/usage_points/addresses";
+    public static final String SITUATION_CONTRACTUELLE_ENDPOINT = "situation_contrat_auto/v1/";
+    public static final String GENERAL_DATA_ENDPOINT = "donnees_generales_auto/v1/";
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisApiClient.class);
     private final EnedisTokenProvider tokenProvider;
     private final Map<String, Health> healthChecks = new HashMap<>();
     private final WebClient webClient;
@@ -86,7 +85,7 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     @Override
     public Mono<CustomerContract> getContract(String usagePointId) {
         return getFromUri(
-                uriBuilder -> uriBuilder.path(CONTRACT_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
+                uriBuilder -> uriBuilder.pathSegment(SITUATION_CONTRACTUELLE_ENDPOINT, usagePointId).build(),
                 CONTRACT_API,
                 CustomerContract.class
         );
@@ -95,7 +94,7 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     @Override
     public Mono<CustomerAddress> getAddress(String usagePointId) {
         return getFromUri(
-                uriBuilder -> uriBuilder.path(ADDRESS_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
+                uriBuilder -> uriBuilder.pathSegment(GENERAL_DATA_ENDPOINT, usagePointId).build(),
                 ADDRESS_API,
                 CustomerAddress.class
         );
@@ -135,8 +134,8 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
                 uriBuilder -> uriBuilder
                         .path(granularityToPath(granularity, type))
                         .queryParam(USAGE_POINT_ID_PARAM, usagePointId)
-                        .queryParam("start", start.format(DateTimeFormatter.ISO_DATE))
-                        .queryParam("end", end.format(DateTimeFormatter.ISO_DATE))
+                        .queryParam("dateDebut", start.format(DateTimeFormatter.ISO_DATE))
+                        .queryParam("dateFin", end.format(DateTimeFormatter.ISO_DATE))
                         .build(),
                 METERING_POINT_API,
                 MeterReading.class
