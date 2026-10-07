@@ -47,6 +47,7 @@ public class OAuth2SecurityConfiguration {
                                 "/inbound/**",
                                 "/",
                                 "/data-sources",
+                                "/connection-monitor",
                                 "/account",
                                 "/svgs/**",
                                 "/swagger-ui/**",

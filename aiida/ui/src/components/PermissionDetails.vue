@@ -18,12 +18,13 @@ import {
   updateInboundMessageFormat,
 } from '@/api'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
-import { fetchPermissions, permissions } from '@/stores/permissions'
+import { fetchPermissions, isMonitorablePermission, permissions } from '@/stores/permissions'
 import { computed, onMounted, ref, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from './CustomSelect.vue'
+import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -393,6 +394,15 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dd>{{ lastMessageAt ? dateTimeFormat.format(lastMessageAt) : 'N/A' }}</dd>
       </div>
       <div v-if="status === 'Active'" class="permission-actions">
+        <div class="actions-row actions-row--end" v-if="isMonitorablePermission(permission)">
+          <Button
+            :isLink="true"
+            :href="`/connection-monitor?permission=${permission.permissionId}`"
+          >
+            <ConnectionMonitorIcon />
+            {{ t('permissions.openConnectionMonitor') }}
+          </Button>
+        </div>
         <div
           v-if="permission.dataNeed.type === 'inbound-aiida'"
           class="actions-row actions-row--end"
@@ -520,6 +530,27 @@ const { lastMessageAt } = useLastMessageRefresh(
 
 .permission-actions {
   margin-top: auto;
+}
+
+.monitor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--eddie-primary);
+  border-radius: 2rem;
+  color: var(--eddie-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
+
+  &:hover {
+    color: var(--light);
+    background-color: var(--eddie-primary);
+  }
 }
 
 .actions-row {
