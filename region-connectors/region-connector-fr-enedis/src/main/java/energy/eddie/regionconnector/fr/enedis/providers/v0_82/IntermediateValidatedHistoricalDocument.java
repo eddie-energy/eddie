@@ -1,29 +1,26 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
+import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.utils.Pair;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.vhd.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
-import energy.eddie.regionconnector.fr.enedis.client.EnedisApiVersion;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.dto.readings.IntervalReading;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.EnedisDateTime;
-import energy.eddie.regionconnector.fr.enedis.providers.agnostic.EnedisResolution;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v0_82.vhd.VhdEnvelope;
+import jakarta.annotation.Nullable;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
@@ -62,8 +59,8 @@ public final class IntermediateValidatedHistoricalDocument {
 
     public ValidatedHistoricalDataEnvelope eddieValidatedHistoricalDataMarketDocument() {
         var timeframe = new EsmpTimeInterval(
-                meterReading().start().atStartOfDay(ZONE_ID_FR),
-                meterReading().end().atStartOfDay(ZONE_ID_FR)
+                meterReading().period().start().atStartOfDay(ZONE_ID_FR),
+                meterReading().period().end().atStartOfDay(ZONE_ID_FR)
         );
         vhd
                 .withCreatedDateTime(EsmpDateTime.now().toString())
@@ -83,7 +80,7 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     private MeterReading meterReading() {
-        return this.identifiableMeterReading.meterReading();
+        return this.identifiableMeterReading.payload();
     }
 
     private ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList timeSeriesList() {
@@ -112,57 +109,54 @@ public final class IntermediateValidatedHistoricalDocument {
             timeSeries.add(ts);
         }
         return new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
-                .withTimeSeries(List.of(reading));
+                .withTimeSeries(timeSeries);
     }
 
-    private BusinessTypeList businessType() {
-        return switch (identifiableMeterReading.meterReadingType()) {
+    private BusinessTypeList businessType(MeterReading.Reading reading) {
+        return switch (reading.direction()) {
             case CONSUMPTION -> BusinessTypeList.CONSUMPTION;
             case PRODUCTION -> BusinessTypeList.PRODUCTION;
         };
     }
 
-    private EnergyProductTypeList energyProductTypeList() {
-        return switch (meterReading().readingType().measurementKind()) {
-            case "power" -> EnergyProductTypeList.ACTIVE_POWER;
-            case "energy" -> EnergyProductTypeList.ACTIVE_ENERGY;
-            default -> throw new IllegalStateException("Unknown measurement kind '%s'".formatted(
-                    meterReading().readingType().measurementKind())
-            );
+    @Nullable
+    private EnergyProductTypeList energyProductTypeList(MeterReading.Reading reading) {
+        return switch (reading.unit()) {
+            case "W", "VA" -> EnergyProductTypeList.ACTIVE_POWER;
+            case "Wh" -> EnergyProductTypeList.ACTIVE_ENERGY;
+            default -> null;
         };
     }
 
-    private DirectionTypeList direction() {
-        return switch (identifiableMeterReading.meterReadingType()) {
+    private DirectionTypeList direction(MeterReading.Reading reading) {
+        return switch (reading.direction()) {
             case CONSUMPTION -> DirectionTypeList.DOWN;
             case PRODUCTION -> DirectionTypeList.UP;
         };
     }
 
-    private AggregateKind aggregateKind() {
-        String aggregate = meterReading().readingType().aggregate();
-        return AggregateKind.valueOf(aggregate.toUpperCase(Locale.ROOT));
-    }
-
-    private TimeSeriesComplexType.SeriesPeriodList seriesPeriods(boolean convertToKiloWatt) {
-        var pointsWithResolutions = batchIntoChunks(convertToKiloWatt);
+    private TimeSeriesComplexType.SeriesPeriodList seriesPeriods(
+            MeterReading.Reading reading,
+            boolean convertToKiloWatt
+    ) {
+        var pointsWithResolutions = batchIntoChunks(reading, convertToKiloWatt);
 
         List<SeriesPeriodComplexType> seriesPeriods = new ArrayList<>();
         for (PointsWithResolution pointsWithResolution : pointsWithResolutions) {
-            EnedisResolution duration = EnedisResolution.valueOf(pointsWithResolution.resolution());
-            ZonedDateTime start = new EnedisDateTime(pointsWithResolution.start()).toZonedDateTime();
+            var resolution = pointsWithResolution.resolution();
+            var start = pointsWithResolution.start();
             // We need to subtract the resolution from the start date for load curves (date represents the end of the measurement)
-            if (start != null && duration.granularity().minutes() <= 60) {
-                start = start.minusMinutes(duration.granularity().minutes());
+            if (resolution.toMinutes() <= 60) {
+                start = start.minusMinutes(resolution.toMinutes());
             }
-            ZonedDateTime end = new EnedisDateTime(pointsWithResolution.end()).toZonedDateTime();
+            var end = pointsWithResolution.end();
             // for daily resolution, we need to adjust the end date (date represents the whole day)
-            if (end != null && duration == EnedisResolution.P1D) {
-                end = end.plusMinutes(duration.granularity().minutes());
+            if (resolution.equals(Granularity.P1D.duration())) {
+                end = end.plusMinutes(resolution.toMinutes());
             }
             var interval = new EsmpTimeInterval(start, end);
             var seriesPeriod = new SeriesPeriodComplexType()
-                    .withResolution(duration.granularity().name())
+                    .withResolution(resolution.toString())
                     .withTimeInterval(new ESMPDateTimeIntervalComplexType()
                                               .withStart(interval.start())
                                               .withEnd(interval.end())
@@ -178,24 +172,25 @@ public final class IntermediateValidatedHistoricalDocument {
                 .withSeriesPeriods(seriesPeriods);
     }
 
-    private List<PointsWithResolution> batchIntoChunks(boolean convertToKiloWatt) {
-        if (meterReading().intervalReadings().isEmpty()) {
+    private List<PointsWithResolution> batchIntoChunks(MeterReading.Reading reading, boolean convertToKiloWatt) {
+        var points = reading.points();
+        if (points.isEmpty()) {
             return List.of();
         }
-        var cur = meterReading().intervalReadings().getFirst();
-        var prevResolution = cur.intervalLength().orElse("P1D");
+        var prevResolution = resolutionOf(points.getFirst());
         var position = 1;
-        var currentChunk = new ArrayList<>(List.of(new Pair<>(position++, cur)));
+        var currentChunk = new ArrayList<>(List.of(new Pair<>(position++, points.getFirst())));
         var chunks = new ArrayList<PointsWithResolution>();
-        for (int i = 1; i < meterReading().intervalReadings().size(); i++) {
-            cur = meterReading().intervalReadings().get(i);
+        for (int i = 1; i < points.size(); i++) {
+            var cur = points.get(i);
+            var curResolution = resolutionOf(cur);
             // Different interval length
             // Start new chunk
-            if (!cur.intervalLength().map(prevResolution::equals).orElse(true)) {
+            if (!curResolution.equals(prevResolution)) {
                 addChunk(convertToKiloWatt, chunks, currentChunk, prevResolution);
                 currentChunk = new ArrayList<>();
                 position = 1;
-                prevResolution = cur.intervalLength().orElse("P1D");
+                prevResolution = curResolution;
             }
             currentChunk.add(new Pair<>(position++, cur));
         }
@@ -203,27 +198,34 @@ public final class IntermediateValidatedHistoricalDocument {
         return chunks;
     }
 
+    private Duration resolutionOf(MeterReading.Point point) {
+        return point.granularity()
+                    .orElseGet(() -> meterReading()
+                            .granularity()
+                            .orElse(Duration.ofDays(1)));
+    }
+
     private void addChunk(
             boolean convertToKiloWatt,
             List<PointsWithResolution> chunks,
-            List<Pair<Integer, IntervalReading>> currentChunk,
-            String prevResolution
+            List<Pair<Integer, MeterReading.Point>> currentChunk,
+            Duration prevResolution
     ) {
         chunks.add(new PointsWithResolution(currentChunk.stream()
-                                                        .map(p -> map(p, convertToKiloWatt))
+                                                        .map(p -> toPoint(p, convertToKiloWatt))
                                                         .toList(),
                                             prevResolution,
-                                            currentChunk.getFirst().value().date(),
-                                            currentChunk.getLast().value().date()));
+                                            currentChunk.getFirst().value().timestamp(),
+                                            currentChunk.getLast().value().timestamp()));
     }
 
-    private PointComplexType map(Pair<Integer, IntervalReading> intervalReading, boolean convertToKiloWatt) {
-        var quantity = Double.parseDouble(intervalReading.value().value());
+    private PointComplexType toPoint(Pair<Integer, MeterReading.Point> point, boolean convertToKiloWatt) {
+        var quantity = point.value().value();
         if (convertToKiloWatt) {
             quantity = quantity / 1000.0;
         }
         return new PointComplexType()
-                .withPosition(Integer.toString(intervalReading.key()))
+                .withPosition(Integer.toString(point.key()))
                 .withEnergyQuantityQuantity(BigDecimal.valueOf(quantity))
                 .withEnergyQuantityQuality(QualityTypeList.AS_PROVIDED);
     }
