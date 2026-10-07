@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.fr.enedis.web;
 
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
+import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
@@ -20,10 +21,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +48,8 @@ class AuthorizationCallbackControllerTest {
     @Test
     void authorizationCallback_withParams_returnsAttributes() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), anyLong());
+        when(permissionRequestService.authorizePermissionRequest(anyString(),
+                                                                 anyLong())).thenReturn(Authorization.ACCEPTED);
 
         // When
         mockMvc.perform(
@@ -64,7 +65,8 @@ class AuthorizationCallbackControllerTest {
     @Test
     void authorizationCallback_noAuthorizationId_returnsDenied() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), anyLong());
+        when(permissionRequestService.authorizePermissionRequest(anyString(),
+                                                                 isNull())).thenReturn(Authorization.REJECTED);
 
         // When
         mockMvc.perform(
@@ -79,7 +81,6 @@ class AuthorizationCallbackControllerTest {
     @Test
     void authorizationCallback_noState_returnsDenied() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), anyLong());
 
         // When
         mockMvc.perform(
@@ -88,7 +89,7 @@ class AuthorizationCallbackControllerTest {
                )
                // Then
                .andExpect(status().isOk())
-               .andExpect(model().attribute("status", "DENIED"));
+               .andExpect(model().attribute("status", "ERROR"));
     }
 
     @Test

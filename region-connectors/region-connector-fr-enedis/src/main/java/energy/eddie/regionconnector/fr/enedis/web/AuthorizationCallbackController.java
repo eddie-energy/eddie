@@ -16,6 +16,7 @@ import java.util.UUID;
 @Controller
 public class AuthorizationCallbackController {
     public static final String ATTRIBUTE_NAME = "status";
+    private static final String ERROR = "ERROR";
     private final PermissionRequestService permissionRequestService;
 
     public AuthorizationCallbackController(PermissionRequestService permissionRequestService) {
@@ -29,19 +30,24 @@ public class AuthorizationCallbackController {
             @RequestParam(value = "autorisation_id", required = false) @Nullable Long authorizationId,
             Model model
     ) {
-        if (authorizationId != null && permissionId != null) {
+        if (permissionId != null) {
             try {
                 var pid = permissionId.toString();
-                permissionRequestService.authorizePermissionRequest(pid, authorizationId);
+                var res = permissionRequestService.authorizePermissionRequest(pid, authorizationId);
                 permissionRequestService.findDataNeedIdForPermission(pid)
                                         .ifPresent(id -> model.addAttribute("dataNeedId", id));
 
-                model.addAttribute(ATTRIBUTE_NAME, "OK");
+                var status = switch (res) {
+                    case REJECTED -> "DENIED";
+                    case ACCEPTED -> "OK";
+                    case INVALID -> ERROR;
+                };
+                model.addAttribute(ATTRIBUTE_NAME, status);
             } catch (PermissionNotFoundException e) {
-                model.addAttribute(ATTRIBUTE_NAME, "ERROR");
+                model.addAttribute(ATTRIBUTE_NAME, ERROR);
             }
         } else {
-            model.addAttribute(ATTRIBUTE_NAME, "DENIED");
+            model.addAttribute(ATTRIBUTE_NAME, ERROR);
         }
 
         return "authorization-callback";

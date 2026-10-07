@@ -11,6 +11,7 @@ import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisSubscribedServicesApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.SubscribedService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
@@ -20,6 +21,7 @@ import energy.eddie.regionconnector.fr.enedis.utils.EnedisDuration;
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import org.apache.http.client.utils.URIBuilder;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -100,14 +102,20 @@ public class PermissionRequestService {
         return new CreatedPermissionRequest(permissionId, redirectUri);
     }
 
-    public void authorizePermissionRequest(
+    public Authorization authorizePermissionRequest(
             String permissionId,
-            long authorizationId
+            @Nullable Long authorizationId
     ) throws PermissionNotFoundException {
         LOGGER.info("Got request to authorize a permission with permission ID {}", permissionId);
         var permissionRequest = repository
                 .findByPermissionId(permissionId)
                 .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
+        if (authorizationId == null) {
+            outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.REJECTED));
+            LOGGER.info("Permission request {} was rejected, since no authorization id was provided", permissionId);
+            return Authorization.REJECTED;
+        }
 
         var usagePointIds = enedisApiClient.getSubscribedServices(authorizationId)
                                            .map(response -> response.services() == null
@@ -119,11 +127,10 @@ public class PermissionRequestService {
                                                              .toList())
                                            .onErrorReturn(List.of())
                                            .block();
-        outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
         if (usagePointIds == null || usagePointIds.isEmpty()) {
             LOGGER.warn("No usage point id found for authorization id '{}'", authorizationId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));
-            return;
+            return Authorization.INVALID;
         }
 
         var usagePointId = usagePointIds.getFirst();
@@ -145,6 +152,7 @@ public class PermissionRequestService {
             outbox.commit(new FrSimpleEvent(newPermissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
             outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds.get(i)));
         }
+        return Authorization.ACCEPTED;
     }
 
     public Optional<String> findDataNeedIdForPermission(String permissionId) {

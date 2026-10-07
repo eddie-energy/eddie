@@ -16,6 +16,7 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
+import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.SubscribedService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
@@ -188,12 +189,13 @@ class PermissionRequestServiceTest {
                 .thenReturn(Mono.just(new ServiceSubscriptionsResponse(1L, List.of(serviceWithPointId("upid")))));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", 999999999);
+        var res = permissionRequestService.authorizePermissionRequest("pid", 999999999L);
 
         // Then
         verify(enedisApiClient).getSubscribedServices(999999999L);
         verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
         verify(outbox).commit(isA(FrAcceptedEvent.class));
+        assertEquals(Authorization.ACCEPTED, res);
     }
 
     @Test
@@ -213,11 +215,12 @@ class PermissionRequestServiceTest {
                 .thenReturn(Mono.just(new ServiceSubscriptionsResponse(0L, List.of())));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", 999999999);
+        var res = permissionRequestService.authorizePermissionRequest("pid", 999999999L);
 
         // Then
         verify(enedisApiClient).getSubscribedServices(999999999L);
         verify(outbox, times(2)).commit(isA(FrSimpleEvent.class));
+        assertEquals(Authorization.INVALID, res);
     }
 
     @Test
@@ -246,9 +249,10 @@ class PermissionRequestServiceTest {
                                                                                serviceWithPointId("upid3")))));
 
         // When
-        permissionRequestService.authorizePermissionRequest("pid", 999999999);
+        var res = permissionRequestService.authorizePermissionRequest("pid", 999999999L);
 
         // Then
+        assertEquals(Authorization.ACCEPTED, res);
         verify(outbox, times(10)).commit(eventCaptor.capture());
         verify(outbox,
                times(3)).commit(argThat(event -> event.status() == PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
@@ -296,7 +300,7 @@ class PermissionRequestServiceTest {
     void testAuthorizePermissionRequest_withNonExistingPermissionRequest_throws() {
         // Given, When, Then
         assertThrows(PermissionNotFoundException.class,
-                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", 999999999));
+                     () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", 999999999L));
     }
 
     private static SubscribedService serviceWithPointId(String pointId) {
