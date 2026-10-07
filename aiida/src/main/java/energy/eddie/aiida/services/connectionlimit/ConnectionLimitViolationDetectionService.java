@@ -6,6 +6,7 @@ package energy.eddie.aiida.services.connectionlimit;
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
@@ -37,6 +38,8 @@ import java.util.stream.Collectors;
  * ({@code aiida.connection-limit.violation-detection.recovery-hold-ms}, default: 1 minute),
  * so that a value oscillating around a limit is a single violation and does not flood the user with notifications.
  * The violation ends at the first record that was back within the limits.
+ * Only permissions that are active are monitored, the violations of other permissions end.
+ * A record without an effective limit counts as within the limits, as no limits means no violation.
  * The hold is measured in record timestamps, so a violation stays open until a record confirms the recovery.
  */
 @Service
@@ -75,7 +78,8 @@ public class ConnectionLimitViolationDetectionService {
 
     @Scheduled(fixedDelayString = "${aiida.connection-limit.violation-detection.interval-ms:10000}")
     void checkViolations() {
-        var permissionsByDataSource = permissionRepository.findByMonitoringDataSourceIdIsNotNull()
+        var permissionsByDataSource = permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(
+                                                                  PermissionStatus.ACTIVE)
                                                           .stream()
                                                           .collect(Collectors.groupingBy(permission -> Objects.requireNonNull(
                                                                   permission.monitoringDataSourceId())));

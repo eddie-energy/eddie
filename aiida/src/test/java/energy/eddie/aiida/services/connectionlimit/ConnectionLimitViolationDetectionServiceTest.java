@@ -6,6 +6,7 @@ package energy.eddie.aiida.services.connectionlimit;
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
@@ -85,7 +86,8 @@ class ConnectionLimitViolationDetectionServiceTest {
 
     @Test
     void givenNoAssignment_doesNotNotify() {
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNull()).thenReturn(List.of());
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+                .thenReturn(List.of());
 
         service.checkViolations();
 
@@ -164,14 +166,36 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenNewRecords(5, record(6, imported("9.0")));
 
         service.checkViolations();
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNull()).thenReturn(List.of());
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+                .thenReturn(List.of());
         service.checkViolations();
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNull()).thenReturn(List.of(permission));
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+                .thenReturn(List.of(permission));
         service.checkViolations();
 
         verify(notificationService, times(2)).notifyViolationStarted(eq(permission), any());
         assertEquals(2, storedViolations.size());
         assertEquals(CLOCK_INSTANT, storedViolations.getFirst().endedAt());
+    }
+
+    @Test
+    void givenPermissionNoLongerActive_endsViolationWithoutNotification() {
+        storedViolations.add(new ConnectionLimitViolation(PERMISSION_ID,
+                                                          DATA_SOURCE_ID,
+                                                          TIMESTAMP.minusSeconds(60),
+                                                          null,
+                                                          BigDecimal.valueOf(3),
+                                                          BigDecimal.valueOf(8),
+                                                          BigDecimal.valueOf(9)));
+        // Only active permissions are returned, so the permission was revoked or terminated
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+                .thenReturn(List.of());
+
+        service.checkViolations();
+
+        assertEquals(CLOCK_INSTANT, storedViolations.getFirst().endedAt());
+        verifyNoInteractions(notificationService);
+        verifyNoInteractions(aiidaRecordRepository);
     }
 
     @Test
@@ -343,7 +367,8 @@ class ConnectionLimitViolationDetectionServiceTest {
     private void givenAssignment() {
         when(permission.id()).thenReturn(PERMISSION_ID);
         when(permission.monitoringDataSourceId()).thenReturn(DATA_SOURCE_ID);
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNull()).thenReturn(List.of(permission));
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+                .thenReturn(List.of(permission));
     }
 
     private void givenLatestRecordId(long id) {

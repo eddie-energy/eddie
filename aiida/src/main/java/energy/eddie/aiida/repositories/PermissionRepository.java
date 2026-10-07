@@ -17,7 +17,7 @@ import java.util.UUID;
 public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     List<Permission> findByUserIdOrderByGrantTimeDescRevokeTimeDesc(UUID userId);
 
-    List<Permission> findByMonitoringDataSourceIdIsNotNull();
+    List<Permission> findByMonitoringDataSourceIdIsNotNullAndStatusIn(Set<PermissionStatus> statuses);
 
     List<Permission> findByStatusIn(Set<PermissionStatus> statuses);
 
