@@ -54,7 +54,6 @@ public class ConnectionLimitViolationDetectionService {
     private final ConnectionLimitNotificationService connectionLimitNotificationService;
     private final Clock clock;
     private final long recoveryHoldMs;
-    private final Map<UUID, ConnectionLimitViolation> openViolations = new HashMap<>();
     private final Map<UUID, PendingRecovery> pendingRecoveries = new HashMap<>();
     private final Map<UUID, Long> lastCheckedRecordId = new HashMap<>();
 
@@ -84,11 +83,11 @@ public class ConnectionLimitViolationDetectionService {
                                                           .collect(Collectors.groupingBy(permission -> Objects.requireNonNull(
                                                                   permission.monitoringDataSourceId())));
         forgetUnassigned(permissionsByDataSource);
-        loadOpenViolations(permissionsByDataSource);
+        var openViolations = loadOpenViolations(permissionsByDataSource);
 
         for (var dataSource : permissionsByDataSource.entrySet()) {
             try {
-                check(dataSource.getKey(), dataSource.getValue());
+                check(dataSource.getKey(), dataSource.getValue(), openViolations);
             } catch (Exception e) {
                 LOGGER.error("Failed to check connection limits for data source {}", dataSource.getKey(), e);
             }
@@ -105,14 +104,16 @@ public class ConnectionLimitViolationDetectionService {
 
     /**
      * Loads the ongoing violations and ends those of permissions that are no longer monitored.
+     *
+     * @return the ongoing violations by permission ID.
      */
-    private void loadOpenViolations(Map<UUID, List<Permission>> permissionsByDataSource) {
+    private Map<UUID, ConnectionLimitViolation> loadOpenViolations(Map<UUID, List<Permission>> permissionsByDataSource) {
         var monitoredPermissionIds = permissionsByDataSource.values()
                                                             .stream()
                                                             .flatMap(List::stream)
                                                             .map(Permission::id)
                                                             .collect(Collectors.toSet());
-        openViolations.clear();
+        var openViolations = new HashMap<UUID, ConnectionLimitViolation>();
         for (var violation : connectionLimitViolationRepository.findByEndedAtIsNull()) {
             if (monitoredPermissionIds.contains(violation.permissionId())) {
                 openViolations.put(violation.permissionId(), violation);
@@ -122,9 +123,14 @@ public class ConnectionLimitViolationDetectionService {
             }
         }
         pendingRecoveries.keySet().retainAll(openViolations.keySet());
+        return openViolations;
     }
 
-    private void check(UUID dataSourceId, List<Permission> permissions) {
+    private void check(
+            UUID dataSourceId,
+            List<Permission> permissions,
+            Map<UUID, ConnectionLimitViolation> openViolations
+    ) {
         var lastCheckedId = lastCheckedRecordId.computeIfAbsent(dataSourceId, this::latestRecordId);
         var records = aiidaRecordRepository.findByDataSourceIdAndIdGreaterThanOrderByIdAsc(dataSourceId, lastCheckedId);
         if (records.isEmpty()) {
@@ -143,7 +149,7 @@ public class ConnectionLimitViolationDetectionService {
                 for (var permission : permissions) {
                     var limits = limitsByPermission.computeIfAbsent(permission.id(),
                                                                     id -> limits(permission, from, to));
-                    evaluate(permission, dataSourceId, limits, netPower, aiidaRecord.timestamp());
+                    evaluate(permission, dataSourceId, limits, netPower, aiidaRecord.timestamp(), openViolations);
                 }
             }
 
@@ -163,8 +169,7 @@ public class ConnectionLimitViolationDetectionService {
             Permission permission,
             UUID dataSourceId,
             List<ConnectionLimitDto> limits,
-            BigDecimal netPower,
-            Instant timestamp
+            BigDecimal netPower, Instant timestamp, Map<UUID, ConnectionLimitViolation> openViolations
     ) {
         var effectiveLimit = effectiveLimit(limits, timestamp);
         var violatedLimit = effectiveLimit != null && isViolated(netPower, effectiveLimit) ? effectiveLimit : null;
