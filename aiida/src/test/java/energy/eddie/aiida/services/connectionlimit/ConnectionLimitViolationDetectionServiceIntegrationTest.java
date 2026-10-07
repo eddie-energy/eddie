@@ -50,7 +50,8 @@ import static org.mockito.Mockito.*;
         // The classpath also contains the data-needs migrations, so pin the aiida schema explicitly.
         "spring.flyway.locations=classpath:db/aiida/migration",
         // Effectively disable the scheduled sweep, the test triggers it explicitly.
-        "aiida.connection-limit.violation-detection.interval-ms=3600000"
+        "aiida.connection-limit.violation-detection.interval-ms=3600000",
+        "aiida.connection-limit.violation-detection.recovery-hold-ms=0"
 })
 @MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 class ConnectionLimitViolationDetectionServiceIntegrationTest {

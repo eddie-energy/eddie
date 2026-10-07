@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -69,12 +70,17 @@ class ConnectionLimitViolationDetectionServiceTest {
         lenient().when(connectionLimitViolationRepository.findByEndedAtIsNull())
                  .thenAnswer(invocation -> storedViolations.stream().filter(v -> v.endedAt() == null).toList());
 
-        service = new ConnectionLimitViolationDetectionService(aiidaRecordRepository,
-                                                               connectionLimitViolationRepository,
-                                                               permissionRepository,
-                                                               connectionLimitService,
-                                                               notificationService,
-                                                               Clock.fixed(CLOCK_INSTANT, ZoneOffset.UTC));
+        service = serviceWithRecoveryHold(Duration.ZERO);
+    }
+
+    private ConnectionLimitViolationDetectionService serviceWithRecoveryHold(Duration recoveryHold) {
+        return new ConnectionLimitViolationDetectionService(aiidaRecordRepository,
+                                                            connectionLimitViolationRepository,
+                                                            permissionRepository,
+                                                            connectionLimitService,
+                                                            notificationService,
+                                                            Clock.fixed(CLOCK_INSTANT, ZoneOffset.UTC),
+                                                            recoveryHold.toMillis());
     }
 
     @Test
@@ -217,6 +223,82 @@ class ConnectionLimitViolationDetectionServiceTest {
     }
 
     @Test
+    void givenPowerOscillatingWithinHold_keepsOneViolation() {
+        service = serviceWithRecoveryHold(Duration.ofMinutes(1));
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5,
+                        record(6, TIMESTAMP, imported("9.0")),
+                        record(7, TIMESTAMP.plusSeconds(10), imported("5.0")),
+                        record(8, TIMESTAMP.plusSeconds(20), imported("9.5")),
+                        record(9, TIMESTAMP.plusSeconds(30), imported("5.0")),
+                        record(10, TIMESTAMP.plusSeconds(40), imported("10.0")));
+
+        service.checkViolations();
+
+        assertEquals(1, storedViolations.size());
+        assertEquals(null, storedViolations.getFirst().endedAt());
+        assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().peakPowerKw()));
+        verify(notificationService).notifyViolationStarted(eq(permission), any());
+        verifyNoMoreInteractions(notificationService);
+    }
+
+    @Test
+    void givenPowerWithinLimitsLongerThanHold_endsViolationAtFirstRecoveredRecord() {
+        service = serviceWithRecoveryHold(Duration.ofMinutes(1));
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5,
+                        record(6, TIMESTAMP, imported("9.0")),
+                        record(7, TIMESTAMP.plusSeconds(10), imported("5.0")),
+                        record(8, TIMESTAMP.plusSeconds(40), imported("4.0")),
+                        record(9, TIMESTAMP.plusSeconds(70), imported("4.5")));
+
+        service.checkViolations();
+
+        var violation = storedViolations.getFirst();
+        assertEquals(TIMESTAMP.plusSeconds(10), violation.endedAt());
+        verify(notificationService).notifyViolationEnded(eq(permission),
+                                                         eq(violation),
+                                                         argThat(power -> power.compareTo(BigDecimal.valueOf(5)) == 0));
+    }
+
+    @Test
+    void givenRecoveryPendingAcrossSweeps_endsViolationOnceHoldPassed() {
+        service = serviceWithRecoveryHold(Duration.ofMinutes(1));
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5,
+                        record(6, TIMESTAMP, imported("9.0")),
+                        record(7, TIMESTAMP.plusSeconds(10), imported("5.0")));
+        givenNewRecords(7, record(8, TIMESTAMP.plusSeconds(30), imported("5.0")));
+        givenNewRecords(8, record(9, TIMESTAMP.plusSeconds(70), imported("5.0")));
+
+        service.checkViolations();
+        service.checkViolations();
+        verify(notificationService, never()).notifyViolationEnded(any(), any(), any());
+        service.checkViolations();
+
+        assertEquals(TIMESTAMP.plusSeconds(10), storedViolations.getFirst().endedAt());
+        verify(notificationService).notifyViolationEnded(eq(permission), any(), any());
+    }
+
+    @Test
+    void givenNoFurtherRecordAfterRecovery_keepsViolationOpen() {
+        service = serviceWithRecoveryHold(Duration.ofMinutes(1));
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5, record(6, TIMESTAMP, imported("9.0")), record(7, TIMESTAMP.plusSeconds(10), imported("5.0")));
+        givenNewRecords(7);
+
+        service.checkViolations();
+        service.checkViolations();
+
+        assertEquals(null, storedViolations.getFirst().endedAt());
+        verify(notificationService, never()).notifyViolationEnded(any(), any(), any());
+    }
+
+    @Test
     void givenRecordsAlreadyChecked_doesNotCheckThemAgain() {
         givenViolationContext();
         givenLatestRecordId(5);
@@ -284,18 +366,21 @@ class ConnectionLimitViolationDetectionServiceTest {
                                                         any())).thenReturn(List.of(new ConnectionLimitDto(PERMISSION_ID,
                                                                                                           "",
                                                                                                           null,
-                                                                                                          TIMESTAMP,
-                                                                                                          TIMESTAMP.plusMillis(
-                                                                                                                  1),
+                                                                                                          TIMESTAMP.minusSeconds(3600),
+                                                                                                          TIMESTAMP.plusSeconds(3600),
                                                                                                           min,
                                                                                                           max)));
     }
 
     private AiidaRecord record(long id, AiidaRecordValue... values) {
+        return record(id, TIMESTAMP, values);
+    }
+
+    private AiidaRecord record(long id, Instant timestamp, AiidaRecordValue... values) {
         var record = mock(AiidaRecord.class);
         when(record.id()).thenReturn(id);
         when(record.aiidaRecordValues()).thenReturn(List.of(values));
-        lenient().when(record.timestamp()).thenReturn(TIMESTAMP);
+        lenient().when(record.timestamp()).thenReturn(timestamp);
         return record;
     }
 

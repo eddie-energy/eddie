@@ -15,6 +15,7 @@ import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,12 @@ import java.util.stream.Collectors;
  * <p>
  * The check interval can be configured with {@code aiida.connection-limit.violation-detection.interval-ms} (default: 10 seconds).
  * Detection can be disabled with {@code aiida.connection-limit.violation-detection.enabled=false}.
+ * <p>
+ * A violation only ends once the measured power stayed within the limits for the recovery hold
+ * ({@code aiida.connection-limit.violation-detection.recovery-hold-ms}, default: 1 minute),
+ * so that a value oscillating around a limit is a single violation and does not flood the user with notifications.
+ * The violation ends at the first record that was back within the limits.
+ * The hold is measured in record timestamps, so a violation stays open until a record confirms the recovery.
  */
 @Service
 @ConditionalOnProperty(prefix = "aiida.connection-limit.violation-detection", name = "enabled", matchIfMissing = true)
@@ -43,7 +50,9 @@ public class ConnectionLimitViolationDetectionService {
     private final ConnectionLimitService connectionLimitService;
     private final ConnectionLimitNotificationService connectionLimitNotificationService;
     private final Clock clock;
+    private final long recoveryHoldMs;
     private final Map<UUID, ConnectionLimitViolation> openViolations = new HashMap<>();
+    private final Map<UUID, PendingRecovery> pendingRecoveries = new HashMap<>();
     private final Map<UUID, Long> lastCheckedRecordId = new HashMap<>();
 
     public ConnectionLimitViolationDetectionService(
@@ -52,7 +61,8 @@ public class ConnectionLimitViolationDetectionService {
             PermissionRepository permissionRepository,
             ConnectionLimitService connectionLimitService,
             ConnectionLimitNotificationService connectionLimitNotificationService,
-            Clock clock
+            Clock clock,
+            @Value("${aiida.connection-limit.violation-detection.recovery-hold-ms:60000}") long recoveryHoldMs
     ) {
         this.aiidaRecordRepository = aiidaRecordRepository;
         this.connectionLimitViolationRepository = connectionLimitViolationRepository;
@@ -60,6 +70,7 @@ public class ConnectionLimitViolationDetectionService {
         this.connectionLimitService = connectionLimitService;
         this.connectionLimitNotificationService = connectionLimitNotificationService;
         this.clock = clock;
+        this.recoveryHoldMs = recoveryHoldMs;
     }
 
     @Scheduled(fixedDelayString = "${aiida.connection-limit.violation-detection.interval-ms:10000}")
@@ -106,6 +117,7 @@ public class ConnectionLimitViolationDetectionService {
                 connectionLimitViolationRepository.save(violation);
             }
         }
+        pendingRecoveries.keySet().retainAll(openViolations.keySet());
     }
 
     private void check(UUID dataSourceId, List<Permission> permissions) {
@@ -155,6 +167,7 @@ public class ConnectionLimitViolationDetectionService {
         var openViolation = openViolations.get(permission.id());
 
         if (violatedLimit != null) {
+            pendingRecoveries.remove(permission.id());
             if (openViolation == null) {
                 var violation = new ConnectionLimitViolation(permission.id(),
                                                              dataSourceId,
@@ -170,10 +183,15 @@ public class ConnectionLimitViolationDetectionService {
                 connectionLimitViolationRepository.save(openViolation);
             }
         } else if (openViolation != null) {
-            openViolation.end(timestamp);
-            connectionLimitViolationRepository.save(openViolation);
-            openViolations.remove(permission.id());
-            connectionLimitNotificationService.notifyViolationEnded(permission, openViolation, netPower);
+            var recovery = pendingRecoveries.computeIfAbsent(permission.id(),
+                                                             id -> new PendingRecovery(timestamp, netPower));
+            if (!timestamp.isBefore(recovery.since().plusMillis(recoveryHoldMs))) {
+                openViolation.end(recovery.since());
+                connectionLimitViolationRepository.save(openViolation);
+                openViolations.remove(permission.id());
+                pendingRecoveries.remove(permission.id());
+                connectionLimitNotificationService.notifyViolationEnded(permission, openViolation, recovery.powerKw());
+            }
         }
     }
 
@@ -242,6 +260,11 @@ public class ConnectionLimitViolationDetectionService {
         return (limit.maxKw() != null && netPower.compareTo(limit.maxKw()) > 0) || (limit.minKw() != null && netPower.compareTo(
                 limit.minKw()) < 0);
     }
+
+    /**
+     * The first record that was back within the limits of an open violation.
+     */
+    private record PendingRecovery(Instant since, BigDecimal powerKw) {}
 
     private record EffectiveLimit(@Nullable String documentId, @Nullable BigDecimal minKw,
                                   @Nullable BigDecimal maxKw) {}
