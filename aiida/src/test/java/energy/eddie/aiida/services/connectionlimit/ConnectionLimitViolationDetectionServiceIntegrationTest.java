@@ -50,11 +50,10 @@ import static org.mockito.Mockito.*;
         // The classpath also contains the data-needs migrations, so pin the aiida schema explicitly.
         "spring.flyway.locations=classpath:db/aiida/migration",
         // Effectively disable the scheduled sweep, the test triggers it explicitly.
-        "aiida.notification.interval-ms=3600000"
+        "aiida.connection-limit.violation-detection.interval-ms=3600000"
 })
-@MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class,
-        CorsConfigurationSource.class})
-class ConnectionLimitNotificationServiceIntegrationTest {
+@MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
+class ConnectionLimitViolationDetectionServiceIntegrationTest {
     private static final String TIMESCALEDB_IMAGE = "timescale/timescaledb:latest-pg17";
     private static final String TIMESCALEDB_INIT_FILE = "timescaledb/create-aiida-db-and-emqx-user.sql";
     private static final String TIMESCALEDB_INIT_PATH = "/docker-entrypoint-initdb.d/create-aiida-db-and-emqx-user.sql";
@@ -75,7 +74,7 @@ class ConnectionLimitNotificationServiceIntegrationTest {
                                              TIMESCALEDB_INIT_PATH);
 
     @Autowired
-    private ConnectionLimitNotificationService service;
+    private ConnectionLimitViolationDetectionService service;
     @Autowired
     private JdbcTemplate jdbcTemplate;
     @Autowired

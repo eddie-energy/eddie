@@ -3,312 +3,114 @@
 
 package energy.eddie.aiida.services.connectionlimit;
 
-import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.aiida.models.record.AiidaRecordValue;
-import energy.eddie.aiida.repositories.AiidaRecordRepository;
-import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.UserSettingsService;
-import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
- * Periodically checks the latest measured data of assigned data sources and notifies users by email when the effective
- * connection limits of a permission are violated, and again when the data is back within the limits.
+ * Notifies users by email when a connection limit violation starts and when it ends.
  * <p>
- * The check interval can be configured with {@code aiida.notification.interval-ms} (default: 10 seconds).
- * Notifications are only sent when a mail server is configured ({@code spring.mail.host}) and the user has set a
- * contact email. Both conditions are evaluated per check and can change at any time.
+ * Notifications are only sent when a mail server is configured ({@code spring.mail.host}) and the user has set a contact email.
+ * Both conditions are evaluated per notification and can change at any time.
+ * Failures are logged and never propagated, as they must not affect the detection of violations.
  */
 @Service
 public class ConnectionLimitNotificationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionLimitNotificationService.class);
     private static final String DEFAULT_SENDER = "no-reply@aiida";
 
-    private final AiidaRecordRepository aiidaRecordRepository;
-    private final ConnectionLimitViolationRepository connectionLimitViolationRepository;
-    private final PermissionRepository permissionRepository;
-    private final ConnectionLimitService connectionLimitService;
     private final UserSettingsService userSettingsService;
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
-    private final Clock clock;
     private final String sender;
-    private final Map<UUID, ConnectionLimitViolation> openViolations = new HashMap<>();
-    private final Map<UUID, Long> lastCheckedRecordId = new HashMap<>();
 
     public ConnectionLimitNotificationService(
-            AiidaRecordRepository aiidaRecordRepository,
-            ConnectionLimitViolationRepository connectionLimitViolationRepository,
-            PermissionRepository permissionRepository,
-            ConnectionLimitService connectionLimitService,
             UserSettingsService userSettingsService,
             ObjectProvider<JavaMailSender> mailSenderProvider,
-            Clock clock,
             @Value("${spring.mail.username:}") String sender
     ) {
-        this.aiidaRecordRepository = aiidaRecordRepository;
-        this.connectionLimitViolationRepository = connectionLimitViolationRepository;
-        this.permissionRepository = permissionRepository;
-        this.connectionLimitService = connectionLimitService;
         this.userSettingsService = userSettingsService;
         this.mailSenderProvider = mailSenderProvider;
-        this.clock = clock;
         this.sender = sender.isBlank() ? DEFAULT_SENDER : sender;
     }
 
-    @Scheduled(fixedDelayString = "${aiida.notification.interval-ms:10000}")
-    void checkViolations() {
-        var permissionsByDataSource = permissionRepository.findByMonitoringDataSourceIdIsNotNull()
-                                                          .stream()
-                                                          .collect(Collectors.groupingBy(
-                                                                  permission -> Objects.requireNonNull(permission.monitoringDataSourceId())));
-        forgetUnassigned(permissionsByDataSource);
-        loadOpenViolations(permissionsByDataSource);
-
-        for (var dataSource : permissionsByDataSource.entrySet()) {
-            try {
-                check(dataSource.getKey(), dataSource.getValue());
-            } catch (Exception e) {
-                LOGGER.error("Failed to check connection limits for data source {}", dataSource.getKey(), e);
-            }
-        }
+    public void notifyViolationStarted(Permission permission, ConnectionLimitViolation violation) {
+        notify(permission, violation, violation.startPowerKw(), violation.startedAt(), true);
     }
 
     /**
-     * Drops the record watermark of data sources that are no longer monitored, so that a later assignment starts from a
-     * clean state.
+     * Notifies the user that the violation ended.
+     *
+     * @param recoveredPowerKw the measured power that is back within the limits.
      */
-    private void forgetUnassigned(Map<UUID, List<Permission>> permissionsByDataSource) {
-        lastCheckedRecordId.keySet().retainAll(permissionsByDataSource.keySet());
-    }
-
-    /**
-     * Loads the ongoing violations and ends those of permissions that are no longer monitored.
-     */
-    private void loadOpenViolations(Map<UUID, List<Permission>> permissionsByDataSource) {
-        var monitoredPermissionIds = permissionsByDataSource.values()
-                                                            .stream()
-                                                            .flatMap(List::stream)
-                                                            .map(Permission::id)
-                                                            .collect(Collectors.toSet());
-        openViolations.clear();
-        for (var violation : connectionLimitViolationRepository.findByEndedAtIsNull()) {
-            if (monitoredPermissionIds.contains(violation.permissionId())) {
-                openViolations.put(violation.permissionId(), violation);
-            } else {
-                violation.end(clock.instant());
-                connectionLimitViolationRepository.save(violation);
-            }
-        }
-    }
-
-    private void check(UUID dataSourceId, List<Permission> permissions) {
-        var lastCheckedId = lastCheckedRecordId.computeIfAbsent(dataSourceId, this::latestRecordId);
-        var records = aiidaRecordRepository.findByDataSourceIdAndIdGreaterThanOrderByIdAsc(dataSourceId, lastCheckedId);
-        if (records.isEmpty()) {
-            return;
-        }
-
-        // Limits rarely change, so they are queried once per permission for all new records instead of once per record.
-        // Records are ordered by id, which is chronological.
-        var from = records.getFirst().timestamp();
-        var to = records.getLast().timestamp().plusMillis(1);
-        var limitsByPermission = new HashMap<UUID, List<ConnectionLimitDto>>();
-
-        for (var aiidaRecord : records) {
-            var netPower = netPower(aiidaRecord);
-            if (netPower != null) {
-                for (var permission : permissions) {
-                    var limits = limitsByPermission.computeIfAbsent(permission.id(),
-                                                                    id -> limits(permission, from, to));
-                    evaluate(permission, dataSourceId, limits, netPower, aiidaRecord.timestamp());
-                }
-            }
-
-            lastCheckedRecordId.put(dataSourceId, aiidaRecord.id());
-        }
-    }
-
-    /**
-     * Returns the id of the latest record of the data source, used to initialize the watermark so that pre-existing
-     * history is not replayed when a data source is first seen.
-     */
-    private long latestRecordId(UUID dataSourceId) {
-        return aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
-                                    .map(AiidaRecord::id)
-                                    .orElse(0L);
-    }
-
-    private void evaluate(
-            Permission permission, UUID dataSourceId,
-            List<ConnectionLimitDto> limits,
-            BigDecimal netPower,
-            Instant timestamp
+    public void notifyViolationEnded(
+            Permission permission,
+            ConnectionLimitViolation violation,
+            BigDecimal recoveredPowerKw
     ) {
-        var effectiveLimit = effectiveLimit(limits, timestamp);
-        var violatedLimit = effectiveLimit != null && isViolated(netPower, effectiveLimit) ? effectiveLimit : null;
-        var openViolation = openViolations.get(permission.id());
-
-        if (violatedLimit != null) {
-            if (openViolation == null) {
-                var violation = new ConnectionLimitViolation(permission.id(),
-                                                             dataSourceId,
-                                                             timestamp,
-                                                             violatedLimit.documentId(),
-                                                             violatedLimit.minKw(),
-                                                             violatedLimit.maxKw(),
-                                                             netPower);
-                openViolations.put(permission.id(), connectionLimitViolationRepository.save(violation));
-                notify(permission, netPower, violatedLimit, timestamp, true);
-            } else if (openViolation.registerPower(netPower)) {
-                connectionLimitViolationRepository.save(openViolation);
-            }
-        } else if (openViolation != null) {
-            openViolation.end(timestamp);
-            connectionLimitViolationRepository.save(openViolation);
-            openViolations.remove(permission.id());
-            notify(permission, netPower, effectiveLimit, timestamp, false);
-        }
-    }
-
-    /**
-     * Returns the measured net power of a record, which is the imported minus the exported instantaneous power, or
-     * null if the record contains neither.
-     */
-    private @Nullable BigDecimal netPower(AiidaRecord aiidaRecord) {
-        var values = aiidaRecord.aiidaRecordValues();
-        var imported = powerValue(values, ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER);
-        var exported = powerValue(values, ObisCode.NEGATIVE_ACTIVE_INSTANTANEOUS_POWER);
-        if (imported == null && exported == null) {
-            return null;
-        }
-
-        return Objects.requireNonNullElse(imported, BigDecimal.ZERO)
-                      .subtract(Objects.requireNonNullElse(exported, BigDecimal.ZERO));
-    }
-
-    private @Nullable BigDecimal powerValue(List<AiidaRecordValue> values, ObisCode dataTag) {
-        var value = values.stream()
-                          .filter(recordValue -> recordValue.dataTag() == dataTag)
-                          .findFirst()
-                          .orElse(null);
-        if (value == null) {
-            return null;
-        }
-
-        try {
-            var power = new BigDecimal(value.value());
-            return switch (value.unitOfMeasurement()) {
-                case KILO_WATT -> power;
-                case WATT -> power.movePointLeft(3);
-                default -> {
-                    LOGGER.warn("Ignoring power value of data tag {}: unit {} is not a power unit",
-                                dataTag,
-                                value.unitOfMeasurement());
-                    yield null;
-                }
-            };
-        } catch (NumberFormatException e) {
-            LOGGER.warn("Could not parse power value '{}' for data tag {}", value.value(), dataTag);
-            return null;
-        }
-    }
-
-    private List<ConnectionLimitDto> limits(Permission permission, Instant from, Instant to) {
-        var userId = permission.userId();
-        if (userId == null) {
-            return List.of();
-        }
-
-        var meterId = permission.meterId() == null ? "" : permission.meterId();
-        return connectionLimitService.getConnectionLimits(userId, permission.id(), meterId, from, to)
-                                     .stream()
-                                     .filter(limit -> Objects.equals(meterId, limit.meterId()))
-                                     .toList();
-    }
-
-    private @Nullable EffectiveLimit effectiveLimit(List<ConnectionLimitDto> limits, Instant timestamp) {
-        return limits.stream()
-                     .filter(limit -> !timestamp.isBefore(limit.intervalStart()) && timestamp.isBefore(limit.intervalEnd()))
-                     .findFirst()
-                     .map(limit -> new EffectiveLimit(limit.documentId(), limit.minLimitKw(), limit.maxLimitKw()))
-                     .orElse(null);
-    }
-
-    private boolean isViolated(BigDecimal netPower, EffectiveLimit limit) {
-        return (limit.maxKw() != null && netPower.compareTo(limit.maxKw()) > 0)
-               || (limit.minKw() != null && netPower.compareTo(limit.minKw()) < 0);
+        notify(permission, violation, recoveredPowerKw, violation.endedAt(), false);
     }
 
     private void notify(
             Permission permission,
-            BigDecimal netPower,
-            @Nullable EffectiveLimit limit,
-            Instant timestamp,
-            boolean violation
+            ConnectionLimitViolation violation,
+            BigDecimal powerKw,
+            @Nullable Instant timestamp,
+            boolean started
     ) {
-        var userId = permission.userId();
-        if (userId == null) {
-            return;
-        }
-
-        var recipient = userSettingsService.findContactEmail(userId).orElse(null);
-        if (recipient == null) {
-            LOGGER.debug("No contact email configured for user {}; skipping notification for permission {}",
-                         userId,
-                         permission.id());
-            return;
-        }
-
-        var mailSender = mailSenderProvider.getIfAvailable();
-        if (mailSender == null) {
-            LOGGER.debug("No mail server configured; skipping notification for permission {}", permission.id());
-            return;
-        }
-
-        var message = new SimpleMailMessage();
-        message.setFrom(sender);
-        message.setTo(recipient);
-        message.setSubject(violation ? "Connection limits exceeded" : "Connection limits restored");
-        message.setText(buildMessage(permission, netPower, limit, timestamp, violation));
-
-        var type = violation ? "violation" : "recovery";
+        var type = started ? "violation" : "recovery";
         try {
+            var userId = permission.userId();
+            if (userId == null) {
+                return;
+            }
+
+            var recipient = userSettingsService.findContactEmail(userId).orElse(null);
+            if (recipient == null) {
+                LOGGER.debug("No contact email configured for user {}; skipping {} notification for permission {}",
+                             userId,
+                             type,
+                             permission.id());
+                return;
+            }
+
+            var mailSender = mailSenderProvider.getIfAvailable();
+            if (mailSender == null) {
+                LOGGER.debug("No mail server configured; skipping {} notification for permission {}",
+                             type,
+                             permission.id());
+                return;
+            }
+
+            var message = new SimpleMailMessage();
+            message.setFrom(sender);
+            message.setTo(recipient);
+            message.setSubject(started ? "Connection limits exceeded" : "Connection limits restored");
+            message.setText(buildMessage(permission, violation, powerKw, timestamp, started));
+
             mailSender.send(message);
             LOGGER.info("Sent {} notification for permission {} to user {}", type, permission.id(), userId);
-        } catch (MailException e) {
-            // Not retried, as a failing mail server must not block checking further records
-            LOGGER.warn("Failed to send {} notification for permission {} to user {}", type, permission.id(), userId, e);
+        } catch (Exception e) {
+            LOGGER.warn("Failed to send {} notification for permission {}", type, permission.id(), e);
         }
     }
 
     private String buildMessage(
-            Permission permission,
-            BigDecimal netPower,
-            @Nullable EffectiveLimit limit,
-            Instant timestamp,
-            boolean violation
+            Permission permission, ConnectionLimitViolation violation,
+            BigDecimal netPower, @Nullable Instant timestamp, boolean started
     ) {
         var name = permission.displayName() != null ? permission.displayName() : permission.serviceName();
-        var introduction = violation
+        var introduction = started
                 ? "The measured power for \"%s\" exceeded the connection limits.".formatted(name)
                 : "The measured power for \"%s\" is back within the connection limits.".formatted(name);
 
@@ -318,16 +120,13 @@ public class ConnectionLimitNotificationService {
                 Time: %s
                 Measured power: %s kW
                 Allowed limits: %s
-                """.formatted(introduction, timestamp, format(netPower), formatLimits(limit));
+                """.formatted(introduction,
+                              timestamp,
+                              format(netPower),
+                              formatLimits(violation.minLimitKw(), violation.maxLimitKw()));
     }
 
-    private String formatLimits(@Nullable EffectiveLimit limit) {
-        if (limit == null) {
-            return "none";
-        }
-
-        var min = limit.minKw();
-        var max = limit.maxKw();
+    private String formatLimits(@Nullable BigDecimal min, @Nullable BigDecimal max) {
         if (min == null) {
             return max == null ? "none" : "max %s kW".formatted(format(max));
         }
@@ -340,10 +139,4 @@ public class ConnectionLimitNotificationService {
     private String format(BigDecimal value) {
         return value.stripTrailingZeros().toPlainString();
     }
-
-    private record EffectiveLimit(
-            @Nullable String documentId,
-            @Nullable BigDecimal minKw,
-            @Nullable BigDecimal maxKw
-    ) {}
 }
