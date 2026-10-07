@@ -110,7 +110,7 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenViolation_storesViolationAndNotifies() {
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.0")));
+        givenNewRecords(5, aiidaRecord(6, imported("9.0")));
 
         service.checkViolations();
 
@@ -128,7 +128,7 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenViolationThenBackWithinLimits_endsViolationAndNotifies() {
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.0")), record(7, imported("5.0")));
+        givenNewRecords(5, aiidaRecord(6, imported("9.0")), aiidaRecord(7, imported("5.0")));
 
         service.checkViolations();
 
@@ -146,7 +146,10 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenRepeatedViolations_storesEachViolationAndNotifies() {
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.0")), record(7, imported("5.0")), record(8, imported("2.0")));
+        givenNewRecords(5,
+                        aiidaRecord(6, imported("9.0")),
+                        aiidaRecord(7, imported("5.0")),
+                        aiidaRecord(8, imported("2.0")));
 
         service.checkViolations();
 
@@ -163,7 +166,7 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenAssignmentRemovedWhileViolated_notifiesAgainAfterReassignment() {
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.0")));
+        givenNewRecords(5, aiidaRecord(6, imported("9.0")));
 
         service.checkViolations();
         when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
@@ -210,7 +213,7 @@ class ConnectionLimitViolationDetectionServiceTest {
                                                           BigDecimal.valueOf(8),
                                                           BigDecimal.valueOf(9)));
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.5")));
+        givenNewRecords(5, aiidaRecord(6, imported("9.5")));
 
         service.checkViolations();
 
@@ -222,7 +225,10 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenWorseValues_storesPeakAndNotifiesOnce() {
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.0")), record(7, imported("10.0")), record(8, imported("9.5")));
+        givenNewRecords(5,
+                        aiidaRecord(6, imported("9.0")),
+                        aiidaRecord(7, imported("10.0")),
+                        aiidaRecord(8, imported("9.5")));
 
         service.checkViolations();
 
@@ -231,7 +237,7 @@ class ConnectionLimitViolationDetectionServiceTest {
         assertEquals(1, storedViolations.size());
         assertEquals(0, BigDecimal.valueOf(9).compareTo(storedViolations.getFirst().startPowerKw()));
         assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().peakPowerKw()));
-        assertEquals(null, storedViolations.getFirst().endedAt());
+        assertNull(storedViolations.getFirst().endedAt());
     }
 
     @Test
@@ -239,7 +245,10 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenViolationContext();
         givenLatestRecordId(5);
         givenNewRecords(5,
-                        record(6, value(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER, "9000", UnitOfMeasurement.WATT)));
+                        aiidaRecord(6,
+                                    value(ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER,
+                                          "9000",
+                                          UnitOfMeasurement.WATT)));
 
         service.checkViolations();
 
@@ -252,16 +261,16 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenViolationContext();
         givenLatestRecordId(5);
         givenNewRecords(5,
-                        record(6, TIMESTAMP, imported("9.0")),
-                        record(7, TIMESTAMP.plusSeconds(10), imported("5.0")),
-                        record(8, TIMESTAMP.plusSeconds(20), imported("9.5")),
-                        record(9, TIMESTAMP.plusSeconds(30), imported("5.0")),
-                        record(10, TIMESTAMP.plusSeconds(40), imported("10.0")));
+                        aiidaRecord(6, TIMESTAMP, imported("9.0")),
+                        aiidaRecord(7, TIMESTAMP.plusSeconds(10), imported("5.0")),
+                        aiidaRecord(8, TIMESTAMP.plusSeconds(20), imported("9.5")),
+                        aiidaRecord(9, TIMESTAMP.plusSeconds(30), imported("5.0")),
+                        aiidaRecord(10, TIMESTAMP.plusSeconds(40), imported("10.0")));
 
         service.checkViolations();
 
         assertEquals(1, storedViolations.size());
-        assertEquals(null, storedViolations.getFirst().endedAt());
+        assertNull(storedViolations.getFirst().endedAt());
         assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().peakPowerKw()));
         verify(notificationService).notifyViolationStarted(eq(permission), any());
         verifyNoMoreInteractions(notificationService);
@@ -273,10 +282,10 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenViolationContext();
         givenLatestRecordId(5);
         givenNewRecords(5,
-                        record(6, TIMESTAMP, imported("9.0")),
-                        record(7, TIMESTAMP.plusSeconds(10), imported("5.0")),
-                        record(8, TIMESTAMP.plusSeconds(40), imported("4.0")),
-                        record(9, TIMESTAMP.plusSeconds(70), imported("4.5")));
+                        aiidaRecord(6, TIMESTAMP, imported("9.0")),
+                        aiidaRecord(7, TIMESTAMP.plusSeconds(10), imported("5.0")),
+                        aiidaRecord(8, TIMESTAMP.plusSeconds(40), imported("4.0")),
+                        aiidaRecord(9, TIMESTAMP.plusSeconds(70), imported("4.5")));
 
         service.checkViolations();
 
@@ -293,10 +302,10 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenViolationContext();
         givenLatestRecordId(5);
         givenNewRecords(5,
-                        record(6, TIMESTAMP, imported("9.0")),
-                        record(7, TIMESTAMP.plusSeconds(10), imported("5.0")));
-        givenNewRecords(7, record(8, TIMESTAMP.plusSeconds(30), imported("5.0")));
-        givenNewRecords(8, record(9, TIMESTAMP.plusSeconds(70), imported("5.0")));
+                        aiidaRecord(6, TIMESTAMP, imported("9.0")),
+                        aiidaRecord(7, TIMESTAMP.plusSeconds(10), imported("5.0")));
+        givenNewRecords(7, aiidaRecord(8, TIMESTAMP.plusSeconds(30), imported("5.0")));
+        givenNewRecords(8, aiidaRecord(9, TIMESTAMP.plusSeconds(70), imported("5.0")));
 
         service.checkViolations();
         service.checkViolations();
@@ -312,13 +321,15 @@ class ConnectionLimitViolationDetectionServiceTest {
         service = serviceWithRecoveryHold(Duration.ofMinutes(1));
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, TIMESTAMP, imported("9.0")), record(7, TIMESTAMP.plusSeconds(10), imported("5.0")));
+        givenNewRecords(5,
+                        aiidaRecord(6, TIMESTAMP, imported("9.0")),
+                        aiidaRecord(7, TIMESTAMP.plusSeconds(10), imported("5.0")));
         givenNewRecords(7);
 
         service.checkViolations();
         service.checkViolations();
 
-        assertEquals(null, storedViolations.getFirst().endedAt());
+        assertNull(storedViolations.getFirst().endedAt());
         verify(notificationService, never()).notifyViolationEnded(any(), any(), any());
     }
 
@@ -326,7 +337,7 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenRecordsAlreadyChecked_doesNotCheckThemAgain() {
         givenViolationContext();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, imported("9.0")));
+        givenNewRecords(5, aiidaRecord(6, imported("9.0")));
         givenNewRecords(6);
 
         service.checkViolations();
@@ -340,7 +351,7 @@ class ConnectionLimitViolationDetectionServiceTest {
     void givenNoPowerValue_doesNotNotify() {
         givenAssignment();
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, energyOnly()));
+        givenNewRecords(5, aiidaRecord(6, energyOnly()));
 
         service.checkViolations();
 
@@ -352,7 +363,7 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenAssignment();
         givenEffectiveLimit(BigDecimal.valueOf(-5), null);
         givenLatestRecordId(5);
-        givenNewRecords(5, record(6, exported("7.0")));
+        givenNewRecords(5, aiidaRecord(6, exported("7.0")));
 
         service.checkViolations();
 
@@ -374,39 +385,38 @@ class ConnectionLimitViolationDetectionServiceTest {
     private void givenLatestRecordId(long id) {
         var latest = mock(AiidaRecord.class);
         when(latest.id()).thenReturn(id);
-        when(aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID)).thenReturn(Optional.of(latest));
+        when(aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(DATA_SOURCE_ID))
+                .thenReturn(Optional.of(latest));
     }
 
     private void givenNewRecords(long afterId, AiidaRecord... records) {
-        when(aiidaRecordRepository.findByDataSourceIdAndIdGreaterThanOrderByIdAsc(DATA_SOURCE_ID, afterId)).thenReturn(
-                List.of(records));
+        when(aiidaRecordRepository.findByDataSourceIdAndIdGreaterThanOrderByIdAsc(DATA_SOURCE_ID, afterId))
+                .thenReturn(List.of(records));
     }
 
     private void givenEffectiveLimit(BigDecimal min, BigDecimal max) {
         when(permission.userId()).thenReturn(USER_ID);
-        when(connectionLimitService.getConnectionLimits(any(),
-                                                        any(),
-                                                        any(),
-                                                        any(),
-                                                        any())).thenReturn(List.of(new ConnectionLimitDto(PERMISSION_ID,
-                                                                                                          "",
-                                                                                                          null,
-                                                                                                          TIMESTAMP.minusSeconds(3600),
-                                                                                                          TIMESTAMP.plusSeconds(3600),
-                                                                                                          min,
-                                                                                                          max)));
+        var limit = new ConnectionLimitDto(PERMISSION_ID,
+                                           "",
+                                           null,
+                                           TIMESTAMP.minusSeconds(3600),
+                                           TIMESTAMP.plusSeconds(3600),
+                                           min,
+                                           max);
+        when(connectionLimitService.getConnectionLimits(any(), any(), any(), any(), any()))
+                .thenReturn(List.of(limit));
     }
 
-    private AiidaRecord record(long id, AiidaRecordValue... values) {
-        return record(id, TIMESTAMP, values);
+    private AiidaRecord aiidaRecord(long id, AiidaRecordValue... values) {
+        return aiidaRecord(id, TIMESTAMP, values);
     }
 
-    private AiidaRecord record(long id, Instant timestamp, AiidaRecordValue... values) {
-        var record = mock(AiidaRecord.class);
-        when(record.id()).thenReturn(id);
-        when(record.aiidaRecordValues()).thenReturn(List.of(values));
-        lenient().when(record.timestamp()).thenReturn(timestamp);
-        return record;
+    private AiidaRecord aiidaRecord(long id, Instant timestamp, AiidaRecordValue... values) {
+        var aiidaRecord = mock(AiidaRecord.class);
+        when(aiidaRecord.id()).thenReturn(id);
+        when(aiidaRecord.aiidaRecordValues()).thenReturn(List.of(values));
+        lenient().when(aiidaRecord.timestamp()).thenReturn(timestamp);
+        return aiidaRecord;
     }
 
     private AiidaRecordValue imported(String value) {

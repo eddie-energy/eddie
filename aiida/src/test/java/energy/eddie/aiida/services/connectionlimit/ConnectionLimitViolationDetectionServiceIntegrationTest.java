@@ -38,6 +38,7 @@ import org.testcontainers.utility.MountableFile;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -113,7 +114,7 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
         service.checkViolations();
 
         var violation = sentMessage();
-        assertEquals(EMAIL, violation.getTo()[0]);
+        assertEquals(EMAIL, Objects.requireNonNull(violation.getTo())[0]);
         assertEquals("Connection limits exceeded", violation.getSubject());
 
         var openViolations = connectionLimitViolationRepository.findByEndedAtIsNull();
@@ -215,9 +216,9 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
                                         importedPower,
                                         UnitOfMeasurement.KILO_WATT));
 
-        var record = new AiidaRecord(Instant.now(), dataSource, values);
-        values.forEach(value -> value.setAiidaRecord(record));
-        aiidaRecordRepository.saveAndFlush(record);
+        var inboundRecord = new AiidaRecord(Instant.now(), dataSource, values);
+        values.forEach(value -> value.setAiidaRecord(inboundRecord));
+        aiidaRecordRepository.saveAndFlush(inboundRecord);
     }
 
     private SimpleMailMessage sentMessage() {
