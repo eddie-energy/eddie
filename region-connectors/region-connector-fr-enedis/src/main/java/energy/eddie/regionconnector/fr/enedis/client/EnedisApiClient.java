@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.client;
@@ -17,10 +17,13 @@ import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscripti
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriBuilder;
 import reactor.core.publisher.Mono;
 
@@ -43,14 +46,12 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     public static final String AUTHENTICATION_API = "AuthenticationAPI";
     public static final String METERING_POINT_API = "MeteringPointAPI";
     public static final String CONTRACT_API = "ContractAPI";
-    public static final String CONTACT_API = "ContactAPI";
-    public static final String IDENTITY_API = "IdentityAPI";
     public static final String ADDRESS_API = "AddressAPI";
     public static final String SUBSCRIBED_SERVICES_API = "SubscribedServicesAPI";
     public static final String SITUATION_CONTRACTUELLE_ENDPOINT = "situation_contrat_auto/v1/";
     public static final String GENERAL_DATA_ENDPOINT = "donnees_generales_auto/v1/";
-    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisApiClient.class);
     public static final String SUBSCRIBED_SERVICES_V_1 = "/subscribed_services/v1/";
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisApiClient.class);
     private final EnedisTokenProvider tokenProvider;
     private final Map<String, Health> healthChecks = new HashMap<>();
     private final WebClient webClient;
@@ -101,39 +102,25 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
     }
 
     @Override
-    public Mono<CustomerContract> getContract(String usagePointId) {
+    public Mono<List<ContractualSituation>> getContract(String usagePointId) {
         return getFromUri(
-                uriBuilder -> uriBuilder.pathSegment(SITUATION_CONTRACTUELLE_ENDPOINT, usagePointId).build(),
+                uriBuilder -> uriBuilder.path(SITUATION_CONTRACTUELLE_ENDPOINT).path(usagePointId).build(),
                 CONTRACT_API,
-                CustomerContract.class
-        );
+                ContractualSituations.class
+        ).map(ContractualSituations::situations);
     }
 
     @Override
-    public Mono<CustomerAddress> getAddress(String usagePointId) {
+    public Mono<UsagePointGeneralData> getAddress(String usagePointId) {
         return getFromUri(
-                uriBuilder -> uriBuilder.pathSegment(GENERAL_DATA_ENDPOINT, usagePointId).build(),
+                uriBuilder -> uriBuilder.path(GENERAL_DATA_ENDPOINT).path(usagePointId).build(),
                 ADDRESS_API,
-                CustomerAddress.class
-        );
-    }
-
-    @Override
-    public Mono<CustomerIdentity> getIdentity(String usagePointId) {
-        return getFromUri(
-                uriBuilder -> uriBuilder.path(IDENTITY_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
-                IDENTITY_API,
-                CustomerIdentity.class
-        );
-    }
-
-    @Override
-    public Mono<CustomerContact> getContact(String usagePointId) {
-        return getFromUri(
-                uriBuilder -> uriBuilder.path(CONTACT_ENDPOINT).queryParam(USAGE_POINT_ID_PARAM, usagePointId).build(),
-                CONTACT_API,
-                CustomerContact.class
-        );
+                UsagePointGeneralDatas.class
+        )
+                .mapNotNull(UsagePointGeneralDatas::generalData)
+                .mapNotNull(generalData -> generalData.isEmpty() ? null : generalData.getFirst())
+                // never complete empty: the zip in the service would otherwise never emit an event
+                .defaultIfEmpty(new UsagePointGeneralData(null));
     }
 
     @Override
@@ -172,7 +159,12 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
                         .retrieve()
                         .bodyToMono(responseType)
                         .doOnSuccess(o -> healthChecks.put(healthCheckKey, Health.up().build()))
-                        .doOnError(throwable -> healthChecks.put(healthCheckKey, Health.down().build()))
+                        .doOnError(throwable -> {
+                            if (throwable instanceof WebClientResponseException err) {
+                                LOGGER.warn("Received error response from ENEDIS: {}", err.getResponseBodyAsString());
+                            }
+                            healthChecks.put(healthCheckKey, Health.down().build());
+                        })
                 );
     }
 

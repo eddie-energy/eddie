@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
@@ -8,16 +8,13 @@ import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
-import energy.eddie.regionconnector.fr.enedis.dto.address.Address;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.LegalEntity;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.NaturalPerson;
+import energy.eddie.regionconnector.fr.enedis.dto.address.InstallationAddress;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.ContractualSituation;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
 import energy.eddie.regionconnector.shared.cim.v0_82.ap.APEnvelope;
 import jakarta.annotation.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -51,72 +48,91 @@ public final class IntermediateAccountingPointDataMarketDocument {
                           .withCodingScheme(CodingSchemeTypeList.fromValue(
                                   cimConfig.eligiblePartyNationalCodingScheme().value()
                           ))
-                          .withValue(identifiableAccountingPointData.address().customerId())
+                          .withValue(receiverMarketParticipantValue())
           )
           .withAccountingPointList(
                   new AccountingPointMarketDocumentComplexType.AccountingPointList()
-                          .withAccountingPoints(accountingPoint())
+                          .withAccountingPoints(accountingPoints())
           );
         FrEnedisPermissionRequest permissionRequest = identifiableAccountingPointData.permissionRequest();
         return new APEnvelope(ap, permissionRequest).wrap();
     }
 
-
-    private List<AccountingPointComplexType> accountingPoint() {
-        var points = new ArrayList<AccountingPointComplexType>();
-        for (var contract : identifiableAccountingPointData.contract().usagePointContracts()) {
-            points.add(new AccountingPointComplexType()
-                               .withCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
-                               .withMRID(measurementPointIDStringComplexType(contract))
-                               .withContractPartyList(contractPartyList())
-                               .withAddressList(addressList())
-                               .withTariffClassDSO(distributionTariff(contract))
-                               .withDirection(direction()));
+    /**
+     * The situation contractuelle response has no customer id, so the SIREN of an organization
+     * customer identifies the receiver; natural person customers leave it empty.
+     */
+    private @Nullable String receiverMarketParticipantValue() {
+        for (ContractualSituation situation : identifiableAccountingPointData.situations()) {
+            if (situation.organization() != null) {
+                return situation.organization().sirenNumber();
+            }
         }
-        return points;
+        return null;
     }
 
-    private static MeasurementPointIDStringComplexType measurementPointIDStringComplexType(UsagePointContract contract) {
+    private List<AccountingPointComplexType> accountingPoints() {
+        return identifiableAccountingPointData.situations()
+                                              .stream()
+                                              .map(situation ->
+                                                           new AccountingPointComplexType()
+                                                                   .withCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
+                                                                   .withMRID(measurementPointIDStringComplexType(
+                                                                           situation))
+                                                                   .withContractPartyList(contractPartyList(situation))
+                                                                   .withAddressList(addressList())
+                                                                   .withTariffClassDSO(situation.distributionTariff())
+                                                                   .withDirection(direction(situation))
+                                              )
+                                              .toList();
+    }
+
+    private static MeasurementPointIDStringComplexType measurementPointIDStringComplexType(ContractualSituation situation) {
         return new MeasurementPointIDStringComplexType()
                 .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                .withValue(contract.usagePoint().id());
+                .withValue(situation.usagePointId());
     }
 
-    private AccountingPointComplexType.ContractPartyList contractPartyList() {
-        var identity = identifiableAccountingPointData.identity().identity();
-        var contact = identifiableAccountingPointData.contact().contact();
-        Address address = identifiableAccountingPointData.address().usagePoints().getFirst().address();
+    private AccountingPointComplexType.ContractPartyList contractPartyList(ContractualSituation situation) {
+        var person = situation.person();
+        var organization = situation.organization();
+        var contactData = situation.contactData();
+        var installationAddress = installationAddress();
         var contractParty = new ContractPartyComplexType()
                 .withContractPartyRole(ContractPartyRoleType.CONTRACTPARTNER)
-                .withSalutation(identity.naturalPerson().map(NaturalPerson::title).orElse(null))
-                .withFirstName(identity.naturalPerson().map(NaturalPerson::firstName).orElse(null))
-                .withSurName(identity.naturalPerson().map(NaturalPerson::lastName).orElse(null))
-                .withCompanyName(identity.legalEntity().map(LegalEntity::name).orElse(null))
-                .withVATnumber(identity.legalEntity().map(LegalEntity::siretNumber).orElse(null))
-                .withEmail(contact.email())
-                .withIdentification(address != null ? address.inseeCode() : null);
+                .withSalutation(person != null ? person.title() : null)
+                .withFirstName(person != null ? person.firstName() : null)
+                .withSurName(person != null ? person.lastName() : null)
+                .withCompanyName(organization != null ? organization.name() : null)
+                .withVATnumber(organization != null ? organization.siretNumber() : null)
+                .withEmail(contactData != null ? contactData.email() : null)
+                .withIdentification(installationAddress != null ? installationAddress.inseeCode() : null);
 
         return new AccountingPointComplexType.ContractPartyList().withContractParties(contractParty);
     }
 
+    private @Nullable InstallationAddress installationAddress() {
+        var generalData = identifiableAccountingPointData.generalData();
+        if (generalData == null || generalData.address() == null) {
+            return null;
+        }
+        return generalData.address().address();
+    }
+
     private AccountingPointComplexType.AddressList addressList() {
-        var address = identifiableAccountingPointData.address().usagePoints().getFirst().address();
+        var installationAddress = installationAddress();
         return new AccountingPointComplexType.AddressList().withAddresses(
                 new AddressComplexType()
                         .withAddressRole(AddressRoleType.DELIVERY)
-                        .withPostalCode(address.postalCode())
-                        .withCityName(address.city())
-                        .withStreetName(address.street())
-                        .withAddressSuffix(address.locality())
+                        .withPostalCode(installationAddress != null ? installationAddress.postalCodeCity() : null)
+                        .withStreetName(installationAddress != null ? installationAddress.numberStreetName() : null)
+                        .withAddressSuffix(installationAddress != null ? installationAddress.locality() : null)
         );
     }
 
-    private static String distributionTariff(UsagePointContract contract) {
-        return contract.contract().distributionTariff();
-    }
-
-    private @Nullable DirectionTypeList direction() {
-        var usagePointType = UsagePointType.fromCustomerContract(identifiableAccountingPointData.contract());
+    private @Nullable DirectionTypeList direction(ContractualSituation situation) {
+        var segments = situation.segments() == null ? List.<String>of() : situation.segments();
+        var usagePointType = UsagePointType.fromSegments(segments);
         return usagePointType.map(pointType -> switch (pointType) {
             case CONSUMPTION -> DirectionTypeList.DOWN;
             case PRODUCTION -> DirectionTypeList.UP;
