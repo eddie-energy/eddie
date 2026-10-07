@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -124,10 +125,14 @@ class PollingServiceTest {
                 .thenReturn(Mono.just(
                                     new MeterReading(
                                             "usagePointId",
-                                            LocalDate.now(ZoneOffset.UTC),
-                                            LocalDate.now(ZoneOffset.UTC),
-                                            "BRUT",
-                                            null,
+                                            MeterReading.ReadingType.CORRECTED,
+                                            new MeterReading.Period(
+                                                    LocalDate.now(ZoneOffset.UTC),
+                                                    LocalDate.now(ZoneOffset.UTC)),
+                                            Optional.empty(),
+                                            MeterReading.CalculationMode.MEASURED,
+                                            Optional.empty(),
+                                            List.of(),
                                             List.of()
                                     )
                             )
