@@ -63,6 +63,7 @@ class EnedisApiClientHealthTest {
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.CONTACT_API).getStatus());
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.IDENTITY_API).getStatus());
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.ADDRESS_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.SUBSCRIBED_SERVICES_API).getStatus());
     }
 
     @Test

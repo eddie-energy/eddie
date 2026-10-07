@@ -11,6 +11,8 @@ import energy.eddie.regionconnector.fr.enedis.api.EnedisSubscribedServicesApi;
 import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralData;
 import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralDatas;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.ContractualSituation;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.ContractualSituations;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscription;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
@@ -60,8 +62,7 @@ public class EnedisApiClient implements EnedisMeterReadingApi, EnedisAccountingP
         healthChecks.put(AUTHENTICATION_API, Health.unknown().build());
         healthChecks.put(METERING_POINT_API, Health.unknown().build());
         healthChecks.put(CONTRACT_API, Health.unknown().build());
-        healthChecks.put(CONTACT_API, Health.unknown().build());
-        healthChecks.put(IDENTITY_API, Health.unknown().build());
+        healthChecks.put(SUBSCRIBED_SERVICES_API, Health.unknown().build());
         healthChecks.put(ADDRESS_API, Health.unknown().build());
     }
 

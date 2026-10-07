@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.health;
@@ -25,18 +25,14 @@ public class HealthConfiguration {
         return new EnedisApiHealthIndicator(enedisHealth, EnedisApiClient.CONTRACT_API);
     }
 
-    @Bean(name = "enedisContactApiHealthIndicator")
-    public EnedisApiHealthIndicator enedisContactApiHealthIndicator(EnedisHealth enedisHealth) {
-        return new EnedisApiHealthIndicator(enedisHealth, EnedisApiClient.CONTACT_API);
-    }
-
-    @Bean(name = "enedisIdentityApiHealthIndicator")
-    public EnedisApiHealthIndicator enedisIdentityApiHealthIndicator(EnedisHealth enedisHealth) {
-        return new EnedisApiHealthIndicator(enedisHealth, EnedisApiClient.IDENTITY_API);
-    }
-
     @Bean(name = "enedisAddressApiHealthIndicator")
     public EnedisApiHealthIndicator enedisAddressApiHealthIndicator(EnedisHealth enedisHealth) {
         return new EnedisApiHealthIndicator(enedisHealth, EnedisApiClient.ADDRESS_API);
+    }
+
+
+    @Bean(name = "enedisSubscribedServicesApiHealthIndicator")
+    public EnedisApiHealthIndicator enedisSubscriptionsApiHealthIndicator(EnedisHealth enedisHealth) {
+        return new EnedisApiHealthIndicator(enedisHealth, EnedisApiClient.SUBSCRIBED_SERVICES_API);
     }
 }
