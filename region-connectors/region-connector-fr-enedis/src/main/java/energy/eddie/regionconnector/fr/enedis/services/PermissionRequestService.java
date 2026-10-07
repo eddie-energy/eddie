@@ -145,7 +145,7 @@ public class PermissionRequestService {
             return new URIBuilder()
                     .setScheme("https")
                     .setHost("mon-compte-particulier.enedis.fr")
-                    .setPath("/dataconnect/v1/oauth2/authorize")
+                    .setPath("/dataconnect/v2/oauth2/authorize")
                     .addParameter("client_id", configuration.clientId())
                     .addParameter("response_type", "code")
                     .addParameter("state", permissionId)
