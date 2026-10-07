@@ -137,7 +137,12 @@
        */
       function setAttribute(name, value) {
         const button = document.querySelector("eddie-connect-button");
-        if (value === undefined || value === null || value === "" || value === false) {
+        if (
+          value === undefined ||
+          value === null ||
+          value === "" ||
+          value === false
+        ) {
           button.removeAttribute(name);
         } else {
           button.setAttribute(name, value);
@@ -152,12 +157,6 @@
       const dataNeeds = await fetch(`${coreUrl}/data-needs/api`).then(
         (response) => response.json()
       );
-
-      // Create initial button with first data need
-      const button = document.createElement("eddie-connect-button");
-      button.setAttribute("connection-id", "1");
-      button.setAttribute("data-need-id", dataNeeds[0].id);
-      document.body.prepend(button);
 
       // Populate the select element with data needs
       const select = document.querySelector("select[name='data-need-id']");
@@ -191,12 +190,26 @@
         setAttribute(name, ids);
       });
 
-      // Update button on input changes
       const inputs = document.querySelectorAll("form input[name]");
+
+      // Create initial button from field values
+      const button = document.createElement("eddie-connect-button");
+      for (const { name, value, type, checked } of inputs) {
+        if (type === "checkbox") {
+          checked && button.setAttribute(name, checked);
+        } else if (value || value === 0) {
+          button.setAttribute(name, value);
+        }
+      }
+
+      button.setAttribute("data-need-id", dataNeeds[0].id);
+      select.options[0].selected = "selected";
+      document.body.prepend(button);
+
+      // Update button on input changes
       for (const input of inputs) {
         input.addEventListener("input", (event) => {
           const { name, value, type, checked } = event.target;
-          console.log(name, value, checked);
           if (type === "checkbox") {
             setAttribute(name, checked);
           } else {
