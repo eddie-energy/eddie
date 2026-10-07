@@ -87,29 +87,30 @@ public final class IntermediateValidatedHistoricalDocument {
     }
 
     private ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList timeSeriesList() {
-        TimeSeriesComplexType reading = new TimeSeriesComplexType()
-                .withMRID(UUID.randomUUID().toString())
-                .withBusinessType(businessType())
-                .withProduct(energyProductTypeList())
-                .withVersion(EnedisApiVersion.V5.name())
-                .withFlowDirectionDirection(direction())
-                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation(aggregateKind())
-                .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
-                .withMarketEvaluationPointMRID(
-                        new MeasurementPointIDStringComplexType()
-                                .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
-                                .withValue(meterReading().usagePointId())
-                )
-                .withReasonList(REASON_LIST);
-
-        reading = switch (meterReading().readingType().unit()) {
-            case "W", "VA" -> reading.withEnergyMeasurementUnitName(UnitOfMeasureTypeList.WATT)
-                                     .withSeriesPeriodList(seriesPeriods(false));
-            case "Wh" -> reading.withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
-                                .withSeriesPeriodList(seriesPeriods(true));
-            default -> reading.withSeriesPeriodList(seriesPeriods(false));
-        };
-
+        var timeSeries = new ArrayList<TimeSeriesComplexType>();
+        for (var reading : meterReading().readings()) {
+            var ts = new TimeSeriesComplexType()
+                    .withMRID(UUID.randomUUID().toString())
+                    .withBusinessType(businessType(reading))
+                    .withProduct(energyProductTypeList(reading))
+                    .withVersion("1")
+                    .withFlowDirectionDirection(direction(reading))
+                    .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind.ELECTRICITYPRIMARYMETERED)
+                    .withMarketEvaluationPointMRID(
+                            new MeasurementPointIDStringComplexType()
+                                    .withCodingScheme(CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME)
+                                    .withValue(meterReading().usagePointId())
+                    )
+                    .withReasonList(REASON_LIST);
+            switch (reading.unit()) {
+                case "W", "VA" -> ts.withEnergyMeasurementUnitName(UnitOfMeasureTypeList.WATT)
+                                    .withSeriesPeriodList(seriesPeriods(reading, false));
+                case "Wh" -> ts.withEnergyMeasurementUnitName(UnitOfMeasureTypeList.KILOWATT_HOUR)
+                               .withSeriesPeriodList(seriesPeriods(reading, true));
+                default -> ts.withSeriesPeriodList(seriesPeriods(reading, false));
+            }
+            timeSeries.add(ts);
+        }
         return new ValidatedHistoricalDataMarketDocumentComplexType.TimeSeriesList()
                 .withTimeSeries(List.of(reading));
     }
