@@ -117,6 +117,7 @@ public class PermissionRequestService {
                                                              .map(SubscribedService::pointId)
                                                              .filter(Objects::nonNull)
                                                              .toList())
+                                           .onErrorReturn(List.of())
                                            .block();
         outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
         if (usagePointIds == null || usagePointIds.isEmpty()) {
