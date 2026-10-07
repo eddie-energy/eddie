@@ -4,8 +4,8 @@
     <option name="links">
       <list>
         <IssueNavigationLink>
-          <option name="issueRegexp" value="GH-(\d+)" />
-          <option name="linkRegexp" value="https://github.com/eddie-energy/eddie/issues/$1" />
+          <option name="issueRegexp" value="(GH-|#)(\d+)" />
+          <option name="linkRegexp" value="https://github.com/eddie-energy/eddie/issues/$2" />
         </IssueNavigationLink>
       </list>
     </option>
