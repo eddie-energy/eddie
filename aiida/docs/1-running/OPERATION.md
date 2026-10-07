@@ -92,14 +92,19 @@ The latest measured value of each assigned data source is checked periodically (
 so a notification can be delayed by up to that interval.
 The detection can be disabled with `AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_ENABLED=false`.
 
+Only data recorded while AIIDA is running is checked.
+After a restart, the detection continues with the newest record of each data source, so a violation that started and ended while AIIDA was not running is neither stored nor reported.
+A violation that was ongoing when AIIDA stopped stays open, and ends at the first record that is back within the limits.
+
 The development setup in `aiida/docker` includes a [Mailpit](https://github.com/axllent/mailpit) service to capture outgoing emails.
 Start it with `docker compose --profile mail up` and open `http://localhost:8025` to inspect them.
 Uncomment the `SPRING_MAIL_*` variables in `aiida/docker/.env` to route notifications to Mailpit.
 
 Additional `spring.mail.properties.*` settings (like TLS, authentication, or timeouts) can be supplied through the corresponding environment variables (see [Spring documentation](https://docs.spring.io/spring-boot/reference/io/email.html)).
-Spring Mail does not set connection timeouts by default.
-It is recommended to configure `spring.mail.properties.mail.smtp.connectiontimeout`, `spring.mail.properties.mail.smtp.timeout` and `spring.mail.properties.mail.smtp.writetimeout`, as an unresponsive mail server otherwise delays all notification checks.
-Failed notifications are logged and are not retried.
+AIIDA sets connection, read and write timeouts of 5 seconds, so that an unresponsive mail server does not delay the violation detection.
+They can be changed with `SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT`, `SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT` and `SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT` (in milliseconds).
+Failed notifications, for example due to an invalid contact email or an unreachable mail server, are logged and are not retried.
+The mail server is not part of the health endpoint, as notifications are optional.
 
 ### Reverse Proxy Deployment
 
