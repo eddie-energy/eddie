@@ -1,6 +1,19 @@
 --  SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 --  SPDX-License-Identifier: Apache-2.0
 
+ALTER TABLE permission
+    ADD COLUMN monitoring_data_source_id uuid REFERENCES data_source (id) ON DELETE SET NULL;
+
+CREATE INDEX idx_permission_monitoring_data_source
+    ON permission (monitoring_data_source_id);
+
+CREATE TABLE user_settings
+(
+    user_id       uuid NOT NULL,
+    contact_email TEXT,
+    PRIMARY KEY (user_id)
+);
+
 CREATE TABLE connection_limit_violation
 (
     id             bigserial PRIMARY KEY,
