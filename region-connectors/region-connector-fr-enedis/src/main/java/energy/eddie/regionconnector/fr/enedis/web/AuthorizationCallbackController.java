@@ -6,11 +6,12 @@ package energy.eddie.regionconnector.fr.enedis.web;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.annotation.Nullable;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.UUID;
 
 @Controller
 public class AuthorizationCallbackController {
@@ -24,14 +25,15 @@ public class AuthorizationCallbackController {
     @GetMapping(value = "/authorization-callback")
     @SuppressWarnings("NullAway") // NullAway doesnt understand the isBlank checks
     public String authorizationCallback(
-            @RequestParam(value = "state", required = false) @Nullable String permissionId,
+            @RequestParam(value = "state", required = false) @Nullable UUID permissionId,
             @RequestParam(value = "autorisation_id", required = false) @Nullable Long authorizationId,
             Model model
     ) {
-        if (authorizationId != null && Strings.isNotBlank(permissionId)) {
+        if (authorizationId != null && permissionId != null) {
             try {
-                permissionRequestService.authorizePermissionRequest(permissionId, authorizationId);
-                permissionRequestService.findDataNeedIdForPermission(permissionId)
+                var pid = permissionId.toString();
+                permissionRequestService.authorizePermissionRequest(pid, authorizationId);
+                permissionRequestService.findDataNeedIdForPermission(pid)
                                         .ifPresent(id -> model.addAttribute("dataNeedId", id));
 
                 model.addAttribute(ATTRIBUTE_NAME, "OK");

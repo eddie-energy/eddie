@@ -18,6 +18,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -51,7 +53,7 @@ class AuthorizationCallbackControllerTest {
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
+                                             .param("state", UUID.randomUUID().toString())
                                              .param("autorisation_id", "88482")
                )
                // Then
@@ -67,7 +69,7 @@ class AuthorizationCallbackControllerTest {
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
+                                             .param("state", UUID.randomUUID().toString())
                )
                // Then
                .andExpect(status().isOk())
@@ -98,7 +100,7 @@ class AuthorizationCallbackControllerTest {
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
+                                             .param("state", UUID.randomUUID().toString())
                                              .param("autorisation_id", "invalid")
                )
                // Then
