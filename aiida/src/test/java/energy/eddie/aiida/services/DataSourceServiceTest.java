@@ -41,6 +41,7 @@ import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 import java.util.Optional;
@@ -84,6 +85,8 @@ class DataSourceServiceTest {
     private AiidaEventPublisher aiidaEventPublisher;
     @Mock
     private SecretsService secretsService;
+    @Mock
+    private InboundProcessingResultHandler processingResultHandler;
 
     @InjectMocks
     private DataSourceService dataSourceService;
@@ -93,6 +96,7 @@ class DataSourceServiceTest {
         var appInfo = mock(ApplicationInformation.class);
         lenient().when(applicationInformationService.applicationInformation()).thenReturn(appInfo);
         lenient().when(appInfo.aiidaId()).thenReturn(AIIDA_ID);
+        lenient().when(processingResultHandler.flux()).thenReturn(Flux.never());
     }
 
     @Test

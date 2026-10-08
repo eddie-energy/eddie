@@ -63,6 +63,7 @@ public class DataSourceService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
     private final SecretsService secretsService;
+    private final InboundProcessingResultHandler processingResultHandler;
 
     @Autowired
     public DataSourceService(
@@ -76,7 +77,8 @@ public class DataSourceService {
             BCryptPasswordEncoder bCryptPasswordEncoder,
             SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
             AiidaEventPublisher aiidaEventPublisher,
-            SecretsService secretsService
+            SecretsService secretsService,
+            InboundProcessingResultHandler processingResultHandler
     ) {
         this.applicationInformationService = applicationInformationService;
         this.repository = repository;
@@ -89,6 +91,7 @@ public class DataSourceService {
         this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
         this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
+        this.processingResultHandler = processingResultHandler;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -103,7 +106,12 @@ public class DataSourceService {
     public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
         var aiidaId = applicationInformationService.applicationInformation().aiidaId();
 
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration, aiidaId, secretsService);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource,
+                                                         objectMapper,
+                                                         mqttConfiguration,
+                                                         aiidaId,
+                                                         secretsService,
+                                                         processingResultHandler);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {
