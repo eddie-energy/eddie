@@ -4,8 +4,11 @@
 package energy.eddie.aiida.adapters.datasource.inbound.ack;
 
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
+import energy.eddie.cim.v1_12.StandardReasonCodeTypeList;
 import energy.eddie.cim.v1_12.ack.Asset;
 import energy.eddie.cim.v1_12.ack.MetaInformation;
+import energy.eddie.cim.v1_12.ack.Reason;
 import jakarta.annotation.Nullable;
 
 import java.time.ZoneId;
@@ -37,6 +40,21 @@ public abstract class BaseAckFormatterStrategy implements AckFormatterStrategy {
                 .withRequestPermissionId(permission.id().toString())
                 .withRegionConnector(REGION_CONNECTOR)
                 .withRegionCountry(dataSource.countryCode());
+    }
+
+    protected Reason toReason(InboundProcessingResult processingResult) {
+        var reason = new Reason().withCode(switch (processingResult.status()) {
+            case ACCEPTED -> StandardReasonCodeTypeList.MESSAGE_FULLY_ACCEPTED.value();
+            case PARTIALLY_ACCEPTED -> StandardReasonCodeTypeList.MESSAGE_PARTIALLY_ACCEPTED.value();
+            case REJECTED -> StandardReasonCodeTypeList.MESSAGE_FULLY_REJECTED.value();
+        });
+
+        var text = processingResult.reason();
+        if (text != null && !text.isBlank()) {
+            reason.withText(text.substring(0, Math.min(text.length(), 512)));
+        }
+
+        return reason;
     }
 
     private Asset toAsset(InboundDataSource dataSource) {
