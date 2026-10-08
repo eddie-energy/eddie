@@ -9,6 +9,7 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -46,6 +47,7 @@ class InboundAdapterTest {
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private static final SecretsService SECRETS_SERVICE = mock(SecretsService.class);
     private InboundAdapter adapter;
+    private InboundProcessingResultHandler processingResultHandler;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -70,7 +72,13 @@ class InboundAdapterTest {
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
         var mapper = builder.build();
-        adapter = new InboundAdapter(dataSource, mapper, MQTT_CONFIGURATION, AIIDA_ID, SECRETS_SERVICE);
+        processingResultHandler = new InboundProcessingResultHandler();
+        adapter = new InboundAdapter(dataSource,
+                                     mapper,
+                                     MQTT_CONFIGURATION,
+                                     AIIDA_ID,
+                                     SECRETS_SERVICE,
+                                     processingResultHandler);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 

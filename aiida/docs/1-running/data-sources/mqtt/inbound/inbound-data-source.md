@@ -89,7 +89,9 @@ This is done by the flag `acknowledgementRequired` in the data need of the inbou
 
 The EP can subscribe to the respective topic in a desired outbound connector (e.g, in Kafka: `fw.eddie.cim_1_12.acknowledgement-md`).
 
-The received market document MRID is identical to the one sent by the EP, allowing the EP to correlate the acknowledgement with the transmitted data.
+The `received_MarketDocument.mRID` is identical to the mRID sent by the EP, allowing the EP to correlate the acknowledgement with the transmitted data.
+The reason code and text describe the final processing result. See [Acknowledgements](../../../acknowledgements.md)
+for the complete contract.
 
 ## Revocation
 

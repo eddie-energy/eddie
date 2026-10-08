@@ -8,7 +8,9 @@ import energy.eddie.aiida.adapters.datasource.inbound.ack.InboundAcknowledgement
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
@@ -16,6 +18,7 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.Disposable;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
@@ -25,6 +28,7 @@ import java.util.UUID;
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
     private final InboundAcknowledgementPublisher acknowledgementPublisher;
+    private final Disposable processingResultSubscription;
     private final SecretsService secretsService;
 
     /**
@@ -36,13 +40,15 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
      * @param mqttConfiguration The MQTT configuration to use for connecting to the broker.
      * @param aiidaId           The ID of the AiiDA instance, used for formatting the acknowledgements.
      * @param secretsService    The secrets service to load the plaintext password.
+     * @param processingResultHandler Completed processing results used to publish acknowledgements.
      */
     public InboundAdapter(
             InboundDataSource dataSource,
             ObjectMapper mapper,
             MqttConfiguration mqttConfiguration,
             UUID aiidaId,
-            SecretsService secretsService
+            SecretsService secretsService,
+            InboundProcessingResultHandler processingResultHandler
     ) {
         super(dataSource, LOGGER, mqttConfiguration);
         this.secretsService = secretsService;
@@ -52,6 +58,13 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 mapper,
                 dataSource.acknowledgementTopic()
         );
+        processingResultSubscription = processingResultHandler.flux()
+                                                              .filter(processed -> dataSource.id().equals(
+                                                                      processed.inboundRecord().dataSource().id()))
+                                                              .subscribe(processed -> acknowledgementPublisher
+                                                                      .publishAcknowledgement(
+                                                                              processed.inboundRecord(),
+                                                                              processed.processingResult()));
     }
 
     /**
@@ -78,12 +91,22 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
 
-        recordSink.tryEmitNext(inboundRecord);
-        acknowledgementPublisher.publishAcknowledgement(inboundRecord);
+        var emissionResult = recordSink.tryEmitNext(inboundRecord);
+        if (emissionResult.isFailure()) {
+            acknowledgementPublisher.publishAcknowledgement(inboundRecord, InboundProcessingResult.rejected(
+                    "AIIDA could not enqueue the document for processing"
+            ));
+            return;
+        }
+
+        if (inboundRecord.schema() != AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12) {
+            acknowledgementPublisher.publishAcknowledgement(inboundRecord, InboundProcessingResult.accepted());
+        }
     }
 
     @Override
     public void close() {
+        processingResultSubscription.dispose();
         acknowledgementPublisher.setMqttClient(null);
         super.close();
     }
