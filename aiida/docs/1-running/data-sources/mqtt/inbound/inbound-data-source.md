@@ -48,6 +48,8 @@ The available modes and the record format are described in [Inbound Provisioning
 
 For an inbound permission, AIIDA can send an acknowledgement to the EP after it receives data.
 The EP reads the acknowledgement in an outbound connector.
+The `received_MarketDocument.mRID` is identical to the mRID sent by the EP, allowing the EP to correlate the acknowledgement with the transmitted data.
+The reason code and text describe the final processing result.
 See [Acknowledgements](../../../../2-integrating/acknowledgements.md).
 
 ## Revocation

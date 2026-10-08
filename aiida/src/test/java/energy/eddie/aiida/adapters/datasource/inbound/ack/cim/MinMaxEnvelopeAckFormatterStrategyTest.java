@@ -7,10 +7,12 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
+import energy.eddie.cim.v1_12.StandardReasonCodeTypeList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,8 +31,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -115,5 +116,50 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
                                     .build();
             assertFalse(myDiff.hasDifferences(), myDiff.fullDescription());
         }
+    }
+
+    @Test
+    void convert_invalidDocument_createsRejectionAcknowledgement() throws Exception {
+        when(inboundRecord.payload()).thenReturn("{");
+
+        var envelope = strategy.convert(
+                objectMapper,
+                inboundRecord,
+                InboundProcessingResult.rejected("The connection limit document is malformed")
+        );
+
+        var reason = envelope.getMarketDocument().getReasons().getFirst();
+        var xml = new XmlMessageSerde().serialize(envelope);
+        assertAll(
+                () -> assertEquals(StandardReasonCodeTypeList.MESSAGE_FULLY_REJECTED.value(), reason.getCode()),
+                () -> assertEquals("The connection limit document is malformed", reason.getText()),
+                () -> assertTrue(XmlValidator.validateV112AcknowledgementMarketDocument(xml))
+        );
+    }
+
+    @Test
+    void convert_processingFailure_preservesMarketDocumentTrace() {
+        var jsonStream = classLoader.getResourceAsStream("cim/v1_12/min-max-envelope.json");
+        assertNotNull(jsonStream);
+        var payload = assertDoesNotThrow(() -> new String(jsonStream.readAllBytes(), StandardCharsets.UTF_8));
+        when(inboundRecord.payload()).thenReturn(payload);
+
+        var envelope = strategy.convert(
+                objectMapper,
+                inboundRecord,
+                InboundProcessingResult.rejected("Document meter id meter-2 does not match permission meter id meter-1")
+        );
+
+        var marketDocument = envelope.getMarketDocument();
+        var reason = marketDocument.getReasons().getFirst();
+        assertAll(
+                () -> assertEquals("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12",
+                                   marketDocument.getReceivedMarketDocumentMRID()),
+                () -> assertEquals("1", marketDocument.getReceivedMarketDocumentRevisionNumber()),
+                () -> assertNotNull(marketDocument.getReceivedMarketDocumentCreatedDateTime()),
+                () -> assertEquals(StandardReasonCodeTypeList.MESSAGE_FULLY_REJECTED.value(), reason.getCode()),
+                () -> assertEquals("Document meter id meter-2 does not match permission meter id meter-1",
+                                   reason.getText())
+        );
     }
 }

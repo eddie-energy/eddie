@@ -27,6 +27,7 @@ import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.DataSourceRecord;
+import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,7 @@ class DataSourceAdapterTest {
     private ObjectMapper mapper;
     private MqttConfiguration mqttConfiguration;
     private SecretsService secretsService;
+    private InboundProcessingResultHandler processingResultHandler;
 
     @BeforeEach
     void setUp() {
@@ -67,6 +69,8 @@ class DataSourceAdapterTest {
                 ""
         );
         secretsService = mock(SecretsService.class);
+        processingResultHandler = mock(InboundProcessingResultHandler.class);
+        lenient().when(processingResultHandler.flux()).thenReturn(Flux.never());
     }
 
     @Test
@@ -75,7 +79,12 @@ class DataSourceAdapterTest {
         var dataSource = mock(OesterreichsEnergieDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(OesterreichsEnergieAdapter.class, adapter);
@@ -89,7 +98,12 @@ class DataSourceAdapterTest {
         when(dataSource.topic()).thenReturn("");
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(MicroTeleinfoV3Adapter.class, adapter);
@@ -101,7 +115,12 @@ class DataSourceAdapterTest {
         var dataSource = mock(SinapsiAlfaDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(SinapsiAlfaAdapter.class, adapter);
@@ -114,7 +133,12 @@ class DataSourceAdapterTest {
         when(dataSource.topic()).thenReturn("");
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(SmartGatewaysAdapter.class, adapter);
@@ -126,7 +150,12 @@ class DataSourceAdapterTest {
         var dataSource = mock(ShellyDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(ShellyAdapter.class, adapter);
@@ -138,7 +167,12 @@ class DataSourceAdapterTest {
         var dataSource = mock(InboundDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(InboundAdapter.class, adapter);
@@ -150,7 +184,12 @@ class DataSourceAdapterTest {
         var dataSource = mock(SimulationDataSource.class);
 
         // When
-        var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+        var adapter = DataSourceAdapter.create(dataSource,
+                                               mapper,
+                                               mqttConfiguration,
+                                               AIIDA_ID,
+                                               secretsService,
+                                               processingResultHandler);
 
         // Then
         assertInstanceOf(SimulationAdapter.class, adapter);
@@ -167,7 +206,12 @@ class DataSourceAdapterTest {
 
             var dataSource = mock(ModbusDataSource.class);
 
-            var adapter = DataSourceAdapter.create(dataSource, mapper, mqttConfiguration, AIIDA_ID, secretsService);
+            var adapter = DataSourceAdapter.create(dataSource,
+                                                   mapper,
+                                                   mqttConfiguration,
+                                                   AIIDA_ID,
+                                                   secretsService,
+                                                   processingResultHandler);
 
             assertInstanceOf(ModbusTcpDataSourceAdapter.class, adapter);
         }

@@ -5,6 +5,7 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
@@ -83,6 +84,30 @@ class InboundAcknowledgementPublisherTest {
         assertEquals("perm-id", deserializedAck.getMessageDocumentHeader()
                                                .getMetaInformation()
                                                .getRequestPermissionId());
+    }
+
+    @Test
+    void publishAcknowledgement_passesProcessingResultToFormatter() throws Exception {
+        var publisher = new InboundAcknowledgementPublisher(
+                AIIDA_ID,
+                objectMapper,
+                ACK_TOPIC_PREFIX,
+                ackFormatterStrategyRegistry
+        );
+        var inboundRecord = mock(InboundRecord.class);
+        var processingResult = InboundProcessingResult.rejected("Invalid revision");
+        var ackEnvelope = new AcknowledgementEnvelope().withMessageDocumentHeader(new MessageDocumentHeader());
+
+        when(inboundRecord.schema()).thenReturn(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
+        when(ackFormatterStrategyRegistry.strategyFor(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12, AIIDA_ID))
+                .thenReturn(ackFormatterStrategy);
+        when(ackFormatterStrategy.convert(objectMapper, inboundRecord, processingResult)).thenReturn(ackEnvelope);
+        publisher.setMqttClient(mqttClient);
+
+        publisher.publishAcknowledgement(inboundRecord, processingResult);
+
+        verify(ackFormatterStrategy).convert(objectMapper, inboundRecord, processingResult);
+        verify(mqttClient).publish(anyString(), any(), anyInt(), anyBoolean());
     }
 
     @Test

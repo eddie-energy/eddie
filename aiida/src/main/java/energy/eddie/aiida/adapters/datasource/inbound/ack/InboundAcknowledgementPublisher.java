@@ -4,6 +4,7 @@
 package energy.eddie.aiida.adapters.datasource.inbound.ack;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
@@ -55,6 +56,20 @@ public class InboundAcknowledgementPublisher {
     }
 
     public void publishAcknowledgement(InboundRecord inboundRecord) {
+        publishAcknowledgementInternal(inboundRecord, null);
+    }
+
+    public void publishAcknowledgement(
+            InboundRecord inboundRecord,
+            InboundProcessingResult processingResult
+    ) {
+        publishAcknowledgementInternal(inboundRecord, processingResult);
+    }
+
+    private void publishAcknowledgementInternal(
+            InboundRecord inboundRecord,
+            @Nullable InboundProcessingResult processingResult
+    ) {
         if (mqttClient == null || acknowledgementTopic == null) {
             LOGGER.debug("Skipping acknowledgement publishing because mqttClient or ackTopic is null");
             return;
@@ -65,11 +80,13 @@ public class InboundAcknowledgementPublisher {
             LOGGER.debug("Publishing acknowledgement for record {} to topic {}", inboundRecord.id(), topic);
 
             var strategy = ackFormatterStrategyRegistry.strategyFor(inboundRecord.schema(), aiidaId);
-            var acknowledgementEnvelope = strategy.convert(objectMapper, inboundRecord);
+            var acknowledgementEnvelope = processingResult == null
+                    ? strategy.convert(objectMapper, inboundRecord)
+                    : strategy.convert(objectMapper, inboundRecord, processingResult);
             var payload = objectMapper.writeValueAsBytes(acknowledgementEnvelope);
 
             mqttClient.publish(topic, payload, 0, false);
-        } catch (CimSchemaFormatterException | MqttException e) {
+        } catch (CimSchemaFormatterException | MqttException | RuntimeException e) {
             LOGGER.error("Failed to publish acknowledgement for record {}", inboundRecord.id(), e);
         }
     }
