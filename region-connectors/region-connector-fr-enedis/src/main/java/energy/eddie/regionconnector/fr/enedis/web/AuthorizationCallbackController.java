@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.web;
@@ -6,16 +6,17 @@ package energy.eddie.regionconnector.fr.enedis.web;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.annotation.Nullable;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.UUID;
 
 @Controller
 public class AuthorizationCallbackController {
     public static final String ATTRIBUTE_NAME = "status";
+    private static final String ERROR = "ERROR";
     private final PermissionRequestService permissionRequestService;
 
     public AuthorizationCallbackController(PermissionRequestService permissionRequestService) {
@@ -25,25 +26,28 @@ public class AuthorizationCallbackController {
     @GetMapping(value = "/authorization-callback")
     @SuppressWarnings("NullAway") // NullAway doesnt understand the isBlank checks
     public String authorizationCallback(
-            @RequestParam(value = "state", required = false) @Nullable String permissionId,
-            @RequestParam(value = "usage_point_id", required = false) @Nullable String usagePointId,
+            @RequestParam(value = "state", required = false) @Nullable UUID permissionId,
+            @RequestParam(value = "autorisation_id", required = false) @Nullable Long authorizationId,
             Model model
     ) {
-        if (Strings.isNotBlank(usagePointId) && Strings.isNotBlank(permissionId)) {
-            var usagePointIds = StringUtils.delimitedListToStringArray(usagePointId, ";");
-            model.addAttribute("usagePointIds", String.join(", ", usagePointIds));
-
+        if (permissionId != null) {
             try {
-                permissionRequestService.authorizePermissionRequest(permissionId, usagePointIds);
-                permissionRequestService.findDataNeedIdForPermission(permissionId)
+                var pid = permissionId.toString();
+                var res = permissionRequestService.authorizePermissionRequest(pid, authorizationId);
+                permissionRequestService.findDataNeedIdForPermission(pid)
                                         .ifPresent(id -> model.addAttribute("dataNeedId", id));
 
-                model.addAttribute(ATTRIBUTE_NAME, "OK");
+                var status = switch (res) {
+                    case REJECTED -> "DENIED";
+                    case ACCEPTED -> "OK";
+                    case INVALID -> ERROR;
+                };
+                model.addAttribute(ATTRIBUTE_NAME, status);
             } catch (PermissionNotFoundException e) {
-                model.addAttribute(ATTRIBUTE_NAME, "ERROR");
+                model.addAttribute(ATTRIBUTE_NAME, ERROR);
             }
         } else {
-            model.addAttribute(ATTRIBUTE_NAME, "DENIED");
+            model.addAttribute(ATTRIBUTE_NAME, ERROR);
         }
 
         return "authorization-callback";

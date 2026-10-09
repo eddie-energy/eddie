@@ -6,7 +6,6 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
-import energy.eddie.cim.v0_82.vhd.AggregateKind;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
@@ -69,8 +68,6 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), vhd.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), vhd.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_ENERGY, timeSeries.getProduct()),
-                () -> assertEquals(AggregateKind.SUM,
-                                   timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                 () -> assertEquals("24115050XXXXXX", timeSeries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(1, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
                 () -> assertEquals(7,
@@ -80,7 +77,7 @@ class IntermediateValidatedHistoricalDocumentTest {
                                              .getPointList()
                                              .getPoints()
                                              .size()),
-                () -> assertEquals(Granularity.P1D.name(), seriesPeriod.getResolution()),
+                () -> assertEquals(Granularity.P1D.duration().toString(), seriesPeriod.getResolution()),
                 () -> assertEquals(esmpTimeInterval.start(), seriesPeriod.getTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), seriesPeriod.getTimeInterval().getEnd()),
                 () -> assertEquals("1", seriesPeriod.getPointList().getPoints().getFirst().getPosition()),
@@ -143,8 +140,6 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_POWER, timeSeries.getProduct()),
-                () -> assertEquals(AggregateKind.AVERAGE,
-                                   timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                 () -> assertEquals("24115050XXXXXX", timeSeries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(1, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
                 () -> assertEquals(47,
@@ -203,8 +198,6 @@ class IntermediateValidatedHistoricalDocumentTest {
                 () -> assertEquals(esmpTimeInterval.start(), marketDocument.getPeriodTimeInterval().getStart()),
                 () -> assertEquals(esmpTimeInterval.end(), marketDocument.getPeriodTimeInterval().getEnd()),
                 () -> assertEquals(ACTIVE_POWER, timeSeries.getProduct()),
-                () -> assertEquals(AggregateKind.AVERAGE,
-                                   timeSeries.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregation()),
                 () -> assertEquals("24115050XXXXXX", timeSeries.getMarketEvaluationPointMRID().getValue()),
                 () -> assertEquals(4, timeSeries.getSeriesPeriodList().getSeriesPeriods().size()),
                 // PT30M interval

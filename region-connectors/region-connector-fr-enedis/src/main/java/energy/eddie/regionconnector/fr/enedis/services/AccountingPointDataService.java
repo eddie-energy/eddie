@@ -8,10 +8,8 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
-import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
-import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
+import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralData;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.ContractualSituation;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
@@ -25,6 +23,8 @@ import reactor.util.retry.Retry;
 import reactor.util.retry.RetryBackoffSpec;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 
 @Service
 public class AccountingPointDataService {
@@ -50,21 +50,18 @@ public class AccountingPointDataService {
               .addArgument(request::permissionId)
               .log("Fetching accounting point data for permissionId '{}'");
 
-        Mono<CustomerContract> contractMono = enedisApi.getContract(usagePointId).retryWhen(RETRY_BACKOFF_SPEC);
-        Mono<CustomerAddress> addressMono = enedisApi.getAddress(usagePointId).retryWhen(RETRY_BACKOFF_SPEC);
-        Mono<CustomerIdentity> identityMono = enedisApi.getIdentity(usagePointId).retryWhen(RETRY_BACKOFF_SPEC);
-        Mono<CustomerContact> contactMono = enedisApi.getContact(usagePointId).retryWhen(RETRY_BACKOFF_SPEC);
+        Mono<List<ContractualSituation>> situationMono = enedisApi.getContract(usagePointId)
+                                                                  .retryWhen(RETRY_BACKOFF_SPEC);
+        Mono<UsagePointGeneralData> addressMono = enedisApi.getAddress(usagePointId).retryWhen(RETRY_BACKOFF_SPEC);
 
-        Mono.zip(contractMono, addressMono, identityMono, contactMono)
+        Mono.zip(situationMono, addressMono)
             .subscribe(
                     tuple -> handleAccountingPointData(
                             (FrEnedisPermissionRequest) request,
                             new IdentifiableAccountingPointData(
                                     (FrEnedisPermissionRequest) request,
                                     tuple.getT1(),
-                                    tuple.getT2(),
-                                    tuple.getT3(),
-                                    tuple.getT4()
+                                    tuple.getT2()
                             )
                     ),
                     e -> handleError(request.permissionId(), e)
@@ -114,15 +111,22 @@ public class AccountingPointDataService {
         }
     }
 
-    private void handleMeteringPointSegment(String permissionId, CustomerContract contract) {
+    private void handleMeteringPointSegment(String permissionId, List<ContractualSituation> situations) {
         LOGGER.info("Received contract data for permissionId '{}'", permissionId);
-        if (contract.usagePointContracts().isEmpty()) {
+        // a usage point can carry several situations (consumption and production), so the segments
+        // of all of them decide the direction
+        var segments = situations.stream()
+                                 .map(ContractualSituation::segments)
+                                 .filter(Objects::nonNull)
+                                 .flatMap(List::stream)
+                                 .toList();
+        if (segments.isEmpty()) {
             LOGGER.warn("No usage point contracts found for permissionId '{}'", permissionId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));
             return;
         }
 
-        var usagePointType = UsagePointType.fromCustomerContract(contract);
+        var usagePointType = UsagePointType.fromSegments(segments);
         if (usagePointType.isEmpty()) {
             LOGGER.warn("MeteringPoint of permission request '{}' is neither consumption nor production", permissionId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));

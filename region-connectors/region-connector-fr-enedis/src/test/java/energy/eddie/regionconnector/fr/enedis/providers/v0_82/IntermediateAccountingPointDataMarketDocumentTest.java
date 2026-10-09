@@ -8,51 +8,48 @@ import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
-import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
-import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.LegalEntity;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.NaturalPerson;
+import energy.eddie.regionconnector.fr.enedis.dto.address.AddressData;
+import energy.eddie.regionconnector.fr.enedis.dto.address.InstallationAddress;
+import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralData;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.*;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class IntermediateAccountingPointDataMarketDocumentTest {
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            TestResourceProvider.IDENTITY,
-            TestResourceProvider.IDENTITY_LEGAL_ONLY,
-            TestResourceProvider.IDENTITY_NATURAL_ONLY
-    })
+    @Test
     @SuppressWarnings("java:S5961")
         // suppress too many assertions warning
-    void accountingPointEnvelope(String identityResource) throws IOException {
-        // Given
-        var contract = TestResourceProvider.readFromFile(TestResourceProvider.CONTRACT, CustomerContract.class);
-        var address = TestResourceProvider.readFromFile(TestResourceProvider.ADDRESS, CustomerAddress.class);
-        var identity = TestResourceProvider.readFromFile(identityResource, CustomerIdentity.class);
-        var contact = TestResourceProvider.readFromFile(TestResourceProvider.CONTACT, CustomerContact.class);
+    void accountingPointEnvelope_withNaturalPerson() {
+        // Given: the shape Enedis actually returns (contact_data and person are element-root siblings)
+        var situation = new ContractualSituation(
+                "3127069600", "2021-10-23T00:00:00+0200", "Contrat Protocole501", "ELECTRICITE DE FRANCE",
+                null, null, "Tarif BT<=36kVA", null, null, null, null, "6", List.of("C5"),
+                new Customer(new CustomerAddress(new Address("M VIGNAL ANDRE", null, null, "rue DU CENTRE", null,
+                                                             "34210 AIGUES VIVES", null))),
+                new ContactData(null, "0000000000", null),
+                new Person("M", "VIGNAL", "ANDRE"),
+                null);
+        var generalData = new UsagePointGeneralData(
+                new AddressData(new InstallationAddress(
+                        "Esc A, étage 2, apt 12", "Bâtiment A", "12 rue de la Paix", "Les Prés",
+                        "75000", "75112")));
         var permissionRequest = permissionRequest();
         var identifiableAccountingPointData = new IdentifiableAccountingPointData(
                 permissionRequest,
-                contract,
-                address,
-                identity,
-                contact
+                List.of(situation),
+                generalData
         );
         var intermediateAccountingPointDataMarketDocument = new IntermediateAccountingPointDataMarketDocument(
                 identifiableAccountingPointData,
@@ -90,43 +87,127 @@ class IntermediateAccountingPointDataMarketDocumentTest {
                                    md.getSenderMarketParticipantMRID().getValue()),
                 () -> assertEquals(energy.eddie.cim.v0_82.ap.CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                    md.getReceiverMarketParticipantMRID().getCodingScheme()),
-                () -> assertEquals(contract.customerId(),
-                                   md.getReceiverMarketParticipantMRID().getValue()),
+                () -> assertNull(md.getReceiverMarketParticipantMRID().getValue()),
 //endregion
 //region Accounting Point
                 () -> assertEquals(1, md.getAccountingPointList().getAccountingPoints().size()),
                 () -> assertEquals(CommodityKind.ELECTRICITYPRIMARYMETERED, ap.getCommodity()),
                 () -> assertEquals(DirectionTypeList.DOWN, ap.getDirection()),
-                () -> assertEquals(contract.usagePointContracts().getFirst().contract().distributionTariff(),
-                                   ap.getTariffClassDSO()),
+                () -> assertEquals("Tarif BT<=36kVA", ap.getTariffClassDSO()),
                 () -> assertEquals(energy.eddie.cim.v0_82.ap.CodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME,
                                    ap.getMRID().getCodingScheme()),
-                () -> assertEquals(contract.usagePointContracts().getFirst().usagePoint().id(), ap.getMRID().getValue()),
+                () -> assertEquals("3127069600", ap.getMRID().getValue()),
 //endregion
 //region Contract Party
                 () -> assertEquals(1, ap.getContractPartyList().getContractParties().size()),
                 () -> assertEquals(ContractPartyRoleType.CONTRACTPARTNER, cp.getContractPartyRole()),
-                () -> assertEquals(identity.identity().naturalPerson().map(NaturalPerson::title).orElse(null),
-                                   cp.getSalutation()),
-                () -> assertEquals(identity.identity().naturalPerson().map(NaturalPerson::lastName).orElse(null),
-                                   cp.getSurName()),
-                () -> assertEquals(identity.identity().naturalPerson().map(NaturalPerson::firstName).orElse(null),
-                                   cp.getFirstName()),
-                () -> assertEquals(identity.identity().legalEntity().map(LegalEntity::name).orElse(null),
-                                   cp.getCompanyName()),
-                () -> assertEquals(address.usagePoints().getFirst().address().inseeCode(), cp.getIdentification()),
-                () -> assertEquals(contact.contact().email(), cp.getEmail()),
-                () -> assertEquals(identity.identity().legalEntity().map(LegalEntity::siretNumber).orElse(null),
-                                   cp.getVATnumber()),
+                () -> assertEquals("M", cp.getSalutation()),
+                () -> assertEquals("VIGNAL", cp.getSurName()),
+                () -> assertEquals("ANDRE", cp.getFirstName()),
+                () -> assertNull(cp.getCompanyName()),
+                () -> assertEquals("75112", cp.getIdentification()),
+                () -> assertNull(cp.getEmail()),
+                () -> assertNull(cp.getVATnumber()),
 //endregion
 //region Address
                 () -> assertEquals(1, ap.getAddressList().getAddresses().size()),
                 () -> assertEquals(AddressRoleType.DELIVERY, add.getAddressRole()),
-                () -> assertEquals(address.usagePoints().getFirst().address().postalCode(), add.getPostalCode()),
-                () -> assertEquals(address.usagePoints().getFirst().address().city(), add.getCityName()),
-                () -> assertEquals(address.usagePoints().getFirst().address().street(), add.getStreetName()),
-                () -> assertEquals(address.usagePoints().getFirst().address().locality(), add.getAddressSuffix())
+                () -> assertEquals("75000", add.getPostalCode()),
+                () -> assertNull(add.getCityName()),
+                () -> assertEquals("12 rue de la Paix", add.getStreetName()),
+                () -> assertEquals("Les Prés", add.getAddressSuffix())
 //endregion
+        );
+    }
+
+    @Test
+    @SuppressWarnings("java:S5961")
+    void accountingPointEnvelope_withMultipleSituations_emitsOnePointPerSituation() {
+        // Given
+        var consumption = new ContractualSituation(
+                "3127069600", null, null, null,
+                null, null, "Tarif BT<=36kVA", null, null, null, null, "6", List.of("C5"),
+                null, null, null, null);
+        var production = new ContractualSituation(
+                "3127069601", null, null, null,
+                null, null, "Tarif BT<=36kVA", null, null, null, null, "6", List.of("P4"),
+                null, null, null, null);
+        var generalData = new UsagePointGeneralData(
+                new AddressData(new InstallationAddress(null,
+                                                        null,
+                                                        "1 rue de l'homologation",
+                                                        null,
+                                                        "60000",
+                                                        "60600")));
+        var intermediateAccountingPointDataMarketDocument = new IntermediateAccountingPointDataMarketDocument(
+                new IdentifiableAccountingPointData(
+                        permissionRequest(),
+                        List.of(consumption, production),
+                        generalData
+                ),
+                new PlainCommonInformationModelConfiguration(
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId"
+                )
+        );
+
+        // When
+        var res = intermediateAccountingPointDataMarketDocument.accountingPointEnvelope();
+
+        // Then
+        var points = res.getAccountingPointMarketDocument().getAccountingPointList().getAccountingPoints();
+        assertAll(
+                () -> assertEquals(2, points.size()),
+                () -> assertEquals("3127069600", points.getFirst().getMRID().getValue()),
+                () -> assertEquals(DirectionTypeList.DOWN, points.getFirst().getDirection()),
+                () -> assertEquals("3127069601", points.get(1).getMRID().getValue()),
+                () -> assertEquals(DirectionTypeList.UP, points.get(1).getDirection())
+        );
+    }
+
+    @Test
+    @SuppressWarnings("java:S5961")
+    void accountingPointEnvelope_withOrganization() {
+        // Given
+        var situation = new ContractualSituation(
+                "3127069600", null, null, null,
+                null, null, "Tarif BT<=36kVA", null, null, null, null, null, List.of("P4"),
+                null,
+                new ContactData("contact@example.com", null, null),
+                null,
+                new Organization("SNCF Immo", null, null, "12345678900000", "123456789"));
+        var generalData = new UsagePointGeneralData(
+                new AddressData(new InstallationAddress(
+                        null, null, "1 rue de l'homologation", "Les Prés",
+                        "60000", "60600")));
+        var intermediateAccountingPointDataMarketDocument = new IntermediateAccountingPointDataMarketDocument(
+                new IdentifiableAccountingPointData(
+                        permissionRequest(),
+                        List.of(situation),
+                        generalData
+                ),
+                new PlainCommonInformationModelConfiguration(
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId"
+                )
+        );
+
+        // When
+        var res = intermediateAccountingPointDataMarketDocument.accountingPointEnvelope();
+
+        // Then
+        var md = res.getAccountingPointMarketDocument();
+        var ap = md.getAccountingPointList().getAccountingPoints().getFirst();
+        var cp = ap.getContractPartyList().getContractParties().getFirst();
+        assertAll(
+                () -> assertEquals(DirectionTypeList.UP, ap.getDirection()),
+                () -> assertEquals("SNCF Immo", cp.getCompanyName()),
+                () -> assertEquals("12345678900000", cp.getVATnumber()),
+                () -> assertEquals("contact@example.com", cp.getEmail()),
+                () -> assertEquals("123456789", md.getReceiverMarketParticipantMRID().getValue()),
+                () -> assertNull(cp.getSalutation()),
+                () -> assertNull(cp.getSurName()),
+                () -> assertNull(cp.getFirstName())
         );
     }
 

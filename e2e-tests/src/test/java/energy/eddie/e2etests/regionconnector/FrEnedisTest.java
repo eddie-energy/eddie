@@ -11,11 +11,10 @@ import tools.jackson.databind.ObjectMapper;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 class FrEnedisTest extends E2eTestSetup {
-    public static final String SANDBOX_METERING_POINT_WITH_ACCEPTED_PERMISSION = "22516914714270";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void buttonClickOpensNewPage_statusIsFulfilled() {
+    void buttonClickOpensNewPage_statusIsRejected() {
         this.navigateToRegionConnector(null, "France", null);
 
         RequestDetails requestDetails = new RequestDetails();
@@ -33,13 +32,12 @@ class FrEnedisTest extends E2eTestSetup {
 
         var redirectUrl = requestDetails.url() +
                           "/authorization-callback" +
-                          "?state=" + requestDetails.permissionId() +
-                          "&usage_point_id=" + SANDBOX_METERING_POINT_WITH_ACCEPTED_PERMISSION;
+                          "?state=" + requestDetails.permissionId();
         page.navigate(redirectUrl);
         page.close();
         page = buttonPage;
 
-        var locator = page.getByText("Permission granted");
+        var locator = page.getByText("Permission request rejected");
         locator.waitFor(new Locator.WaitForOptions().setTimeout(120_000));  // 2 min
 
         assertThat(locator).isVisible();

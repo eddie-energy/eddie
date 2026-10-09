@@ -7,14 +7,10 @@ import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisAccountingPointDataApi;
 import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
-import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
-import energy.eddie.regionconnector.fr.enedis.dto.contact.Contact;
-import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.Contract;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.Identity;
+import energy.eddie.regionconnector.fr.enedis.dto.address.AddressData;
+import energy.eddie.regionconnector.fr.enedis.dto.address.InstallationAddress;
+import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralData;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.ContractualSituation;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrSimpleEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.events.FrUsagePointTypeEvent;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
@@ -67,10 +63,12 @@ class AccountingPointDataServiceTest {
 
     @ParameterizedTest
     @MethodSource("validSegments")
-    void fetchMeteringPointSegment_whenValidSegment_emitsUsagePointTypeEvent(String segment, UsagePointType expected) {
+    void fetchMeteringPointSegment_whenValidSegment_emitsUsagePointTypeEvent(
+            List<String> segments,
+            UsagePointType expected
+    ) {
         // Given
-        var customerContract = customerContract(segment);
-        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(List.of(situation(segments))));
 
         // When
         accountingPointDataService.fetchMeteringPointSegment(permissionId, usagePointId);
@@ -83,12 +81,29 @@ class AccountingPointDataServiceTest {
         );
     }
 
+    @Test
+    void fetchMeteringPointSegment_withMultipleSituations_unionsSegments() {
+        // Given
+        when(enedisApi.getContract(usagePointId))
+                .thenReturn(Mono.just(List.of(situation(List.of("C5")), situation(List.of("P4")))));
+
+        // When
+        accountingPointDataService.fetchMeteringPointSegment(permissionId, usagePointId);
+
+        // Then
+        verify(outbox).commit(usagePointTypeEventCaptor.capture());
+        assertAll(
+                () -> assertEquals(permissionId, usagePointTypeEventCaptor.getValue().permissionId()),
+                () -> assertEquals(UsagePointType.CONSUMPTION_AND_PRODUCTION,
+                                   usagePointTypeEventCaptor.getValue().usagePointType())
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("invalidSegments")
-    void fetchMeteringPointSegment_whenSegmentInvalid_emitsInvalidEvent(@Nullable String segment) {
+    void fetchMeteringPointSegment_whenSegmentInvalid_emitsInvalidEvent(@Nullable List<String> segments) {
         // Given
-        var customerContract = customerContract(segment);
-        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(List.of(situation(segments))));
 
         // When
         accountingPointDataService.fetchMeteringPointSegment(permissionId, usagePointId);
@@ -102,10 +117,9 @@ class AccountingPointDataServiceTest {
     }
 
     @Test
-    void fetchMeteringPointSegment_whenCustomerContractContainsNoContracts_emitsInvalidEvent() {
+    void fetchMeteringPointSegment_whenNoSituation_emitsInvalidEvent() {
         // Given
-        var customerContract = new CustomerContract("customerId", List.of());
-        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(List.of()));
 
         // When
         accountingPointDataService.fetchMeteringPointSegment(permissionId, usagePointId);
@@ -131,7 +145,7 @@ class AccountingPointDataServiceTest {
                                                                          null,
                                                                          null,
                                                                          null)))
-                .thenReturn(Mono.just(customerContract("C5")));
+                .thenReturn(Mono.just(List.of(situation(List.of("C5")))));
         VirtualTimeScheduler.getOrSet(); // yes, this is necessary
 
         // When
@@ -173,22 +187,17 @@ class AccountingPointDataServiceTest {
     void fetchAccountingPointData_emitsAccountingPointDataAndFulfilledEvent() {
         // Given
         var permissionRequest = permissionRequest();
-        var customerContract = new CustomerContract("customerId", List.of());
-        var customerAddress = new CustomerAddress("customerId", List.of());
-        var customerIdentity = new CustomerIdentity("customerId", new Identity(Optional.empty(), Optional.empty()));
-        var customerContact = new CustomerContact("customerId", new Contact("email", "phone"));
-        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
-        when(enedisApi.getAddress(usagePointId)).thenReturn(Mono.just(customerAddress));
-        when(enedisApi.getIdentity(usagePointId)).thenReturn(Mono.just(customerIdentity));
-        when(enedisApi.getContact(usagePointId)).thenReturn(Mono.just(customerContact));
+        var situation = situation(List.of("C5"));
+        var generalData = new UsagePointGeneralData(
+                new AddressData(new InstallationAddress(null, null, null, null, null, "75112")));
+        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(List.of(situation)));
+        when(enedisApi.getAddress(usagePointId)).thenReturn(Mono.just(generalData));
         StepVerifier.Step<IdentifiableAccountingPointData> stepVerifier = StepVerifier
                 .create(streams.getAccountingPointData())
                 .assertNext(data -> assertAll(
                         () -> assertEquals(permissionRequest, data.permissionRequest()),
-                        () -> assertEquals(customerContract, data.contract()),
-                        () -> assertEquals(customerAddress, data.address()),
-                        () -> assertEquals(customerIdentity, data.identity()),
-                        () -> assertEquals(customerContact, data.contact())
+                        () -> assertEquals(List.of(situation), data.situations()),
+                        () -> assertEquals(generalData, data.generalData())
                 ))
                 .then(streams::close);
 
@@ -208,11 +217,8 @@ class AccountingPointDataServiceTest {
     void fetchAccountingPointData_emitsUnfulfillable() {
         // Given
         var permissionRequest = permissionRequest();
-        var customerContract = new CustomerContract("customerId", List.of());
-        var customerAddress = new CustomerAddress("customerId", List.of());
-        var customerIdentity = new CustomerIdentity("customerId", new Identity(Optional.empty(), Optional.empty()));
-        var customerContact = new CustomerContact("customerId", new Contact("email", "phone"));
-        when(enedisApi.getContract(usagePointId)).thenReturn(Mono.just(customerContract));
+        var generalData = new UsagePointGeneralData(
+                new AddressData(new InstallationAddress(null, null, null, null, null, "75112")));
         when(enedisApi.getContract(usagePointId)).thenReturn(Mono.error(
                 WebClientResponseException.create(
                         HttpStatus.FORBIDDEN.value(),
@@ -222,10 +228,7 @@ class AccountingPointDataServiceTest {
                         null
                 )
         ));
-        when(enedisApi.getAddress(usagePointId)).thenReturn(Mono.just(customerAddress));
-        when(enedisApi.getIdentity(usagePointId)).thenReturn(Mono.just(customerIdentity));
-        when(enedisApi.getContact(usagePointId)).thenReturn(Mono.just(customerContact));
-
+        when(enedisApi.getAddress(usagePointId)).thenReturn(Mono.just(generalData));
 
         // When
         accountingPointDataService.fetchAccountingPointData(permissionRequest, usagePointId);
@@ -241,27 +244,25 @@ class AccountingPointDataServiceTest {
 
     private static Stream<Arguments> validSegments() {
         return Stream.of(
-                Arguments.of("C5", UsagePointType.CONSUMPTION),
-                Arguments.of("P4", UsagePointType.PRODUCTION),
-                Arguments.of("C4/P5", UsagePointType.CONSUMPTION_AND_PRODUCTION)
+                Arguments.of(List.of("C5"), UsagePointType.CONSUMPTION),
+                Arguments.of(List.of("P4"), UsagePointType.PRODUCTION),
+                Arguments.of(List.of("C4", "P5"), UsagePointType.CONSUMPTION_AND_PRODUCTION)
         );
     }
 
     private static Stream<Arguments> invalidSegments() {
         return Stream.of(
-                Arguments.of(""),
-                Arguments.of((String) null),
-                Arguments.of("XXX")
+                Arguments.of(List.of("XXX")),
+                Arguments.of(List.of()),
+                Arguments.of((Object) null)
         );
     }
 
-    private static CustomerContract customerContract(@Nullable String segment) {
-        return new CustomerContract(
-                "customerId",
-                List.of(new UsagePointContract(null, new Contract(
-                        segment,
-                        null, null, null, null, null, null, null
-                )))
+    private static ContractualSituation situation(@Nullable List<String> segments) {
+        return new ContractualSituation(
+                "usagePointId", null, null, null, null,
+                null, null, null, null, null, null, null,
+                segments, null, null, null, null
         );
     }
 

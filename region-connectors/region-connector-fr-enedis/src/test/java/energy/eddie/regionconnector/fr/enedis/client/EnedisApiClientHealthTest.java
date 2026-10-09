@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.client;
@@ -60,9 +60,8 @@ class EnedisApiClientHealthTest {
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.AUTHENTICATION_API).getStatus());
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.METERING_POINT_API).getStatus());
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.CONTRACT_API).getStatus());
-        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.CONTACT_API).getStatus());
-        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.IDENTITY_API).getStatus());
         assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.ADDRESS_API).getStatus());
+        assertEquals(Status.UNKNOWN, enedisApi.health().get(EnedisApiClient.SUBSCRIBED_SERVICES_API).getStatus());
     }
 
     @Test
@@ -89,7 +88,7 @@ class EnedisApiClientHealthTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {EnedisApiClient.CONTRACT_API, EnedisApiClient.CONTACT_API, EnedisApiClient.IDENTITY_API, EnedisApiClient.ADDRESS_API, EnedisApiClient.METERING_POINT_API})
+    @ValueSource(strings = {EnedisApiClient.CONTRACT_API, EnedisApiClient.ADDRESS_API, EnedisApiClient.METERING_POINT_API})
     void health_returnsAPI_down_whenDataFetchingFails(String api) {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
@@ -101,8 +100,6 @@ class EnedisApiClientHealthTest {
         // When
         var apiResult = switch (api) {
             case EnedisApiClient.CONTRACT_API -> enedisApi.getContract("usagePointId");
-            case EnedisApiClient.CONTACT_API -> enedisApi.getContact("usagePointId");
-            case EnedisApiClient.IDENTITY_API -> enedisApi.getIdentity("usagePointId");
             case EnedisApiClient.ADDRESS_API -> enedisApi.getAddress("usagePointId");
             case EnedisApiClient.METERING_POINT_API -> enedisApi.getConsumptionMeterReading("usagePointId",
                                                                                             LocalDate.now(ZoneOffset.UTC),

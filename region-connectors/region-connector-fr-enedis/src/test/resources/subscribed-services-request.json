@@ -1,0 +1,25 @@
+{
+  "pointId": [
+    "12345678901234"
+  ],
+  "siren": [
+    "123456789"
+  ],
+  "dateDebut": "2026-01-01",
+  "dateFin": "2026-12-31",
+  "etatCode": [
+    "ACTIF",
+    "DEMANDE"
+  ],
+  "serviceType": "ACCES",
+  "mesureTypeCode": [
+    "CDC",
+    "IDX"
+  ],
+  "soutirage": true,
+  "injection": false,
+  "page": 0,
+  "comptage": false,
+  "autorisationId": 9999999999,
+  "autorisation": true
+}

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.web;
 
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
+import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionEventRepository;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
 import energy.eddie.regionconnector.fr.enedis.services.PermissionRequestService;
@@ -18,10 +19,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
+import java.util.UUID;
+
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -46,29 +48,30 @@ class AuthorizationCallbackControllerTest {
     @Test
     void authorizationCallback_withParams_returnsAttributes() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
+        when(permissionRequestService.authorizePermissionRequest(anyString(),
+                                                                 anyLong())).thenReturn(Authorization.ACCEPTED);
 
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
-                                             .param("usage_point_id", "upid1;upid2;upid3")
+                                             .param("state", UUID.randomUUID().toString())
+                                             .param("autorisation_id", "88482")
                )
                // Then
                .andExpect(status().isOk())
-               .andExpect(model().attribute("status", "OK"))
-               .andExpect(model().attribute("usagePointIds", "upid1, upid2, upid3"));
+               .andExpect(model().attribute("status", "OK"));
     }
 
     @Test
-    void authorizationCallback_noUsagePointId_returnsDenied() throws Exception {
+    void authorizationCallback_noAuthorizationId_returnsDenied() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
+        when(permissionRequestService.authorizePermissionRequest(anyString(),
+                                                                 isNull())).thenReturn(Authorization.REJECTED);
 
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
+                                             .param("state", UUID.randomUUID().toString())
                )
                // Then
                .andExpect(status().isOk())
@@ -78,32 +81,30 @@ class AuthorizationCallbackControllerTest {
     @Test
     void authorizationCallback_noState_returnsDenied() throws Exception {
         // Given
-        doNothing().when(permissionRequestService).authorizePermissionRequest(anyString(), any());
 
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("usage_point_id", "upid1;upid2;upid3")
+                                             .param("autorisation_id", "88482")
                )
                // Then
                .andExpect(status().isOk())
-               .andExpect(model().attribute("status", "DENIED"));
+               .andExpect(model().attribute("status", "ERROR"));
     }
 
     @Test
     void authorizationCallback_withInvalidPermission_returnsError() throws Exception {
         // Given
         doThrow(new PermissionNotFoundException("")).when(permissionRequestService)
-                                                    .authorizePermissionRequest(anyString(), any());
+                                                    .authorizePermissionRequest(anyString(), anyLong());
 
         // When
         mockMvc.perform(
                        MockMvcRequestBuilders.get("/authorization-callback")
-                                             .param("state", "state")
-                                             .param("usage_point_id", "invalid")
+                                             .param("state", UUID.randomUUID().toString())
+                                             .param("autorisation_id", "invalid")
                )
                // Then
-               .andExpect(status().isOk())
-               .andExpect(model().attribute("status", "ERROR"));
+               .andExpect(status().isBadRequest());
     }
 }
