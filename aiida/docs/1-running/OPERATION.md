@@ -115,7 +115,7 @@ The **Record API** provides access to the latest record (message) that AIIDA has
   Returns the most recent message associated with a specific permission.  
   For **outbound permissions**, this includes the fields `topic`, `serverUri`, `timestamp`, `schema`, and `payload`.  
   For **inbound permissions**, see the
-  [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) section for details.
+  [Inbound Provisioning](../2-integrating/inbound-provisioning.md) page for details.
 
 - **Data Source Record:**  
   Returns the most recent message received from a specific data source, converted into the [Raw Message](schemas/raw/raw.md) format.
@@ -132,7 +132,7 @@ Via the [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md) 
 For that purpose, the user must accept an inbound permission, which automatically creates an inbound data source.
 
 The latest retrieved inbound data can be accessed via the Inbound API.
-See [Inbound Data Source](data-sources/mqtt/inbound/inbound-data-source.md#accessing-inbound-data) for more information.
+See [Inbound Provisioning](../2-integrating/inbound-provisioning.md) for more information.
 
 ## Helm Chart
 

@@ -104,8 +104,8 @@ The acknowledgement is available in the outbound connector being used.
 
 For more details, see:
 
+- [Subscribing to Acknowledgements](../2-integrating/acknowledgements.md)
 - [Acknowledgement Market Document](https://architecture.eddie.energy/framework/2-integrating/messages/cim/acknowledgement-market-documents.html#acknowledgement-market-document)
-- [EP Subscribing to Acknowledgement](https://architecture.eddie.energy/aiida/1-running/data-sources/mqtt/inbound/inbound-data-source.html#ep-subscribing-to-acknowledgement)
 
 ## Permission Commands
 

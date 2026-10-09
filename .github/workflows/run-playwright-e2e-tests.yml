@@ -10,7 +10,9 @@ on:
       - synchronize
     paths:
       - ".github/workflows/run-playwright-e2e-tests.yml"
-      - "aiida/**"
+      - "aiida/docker/**"
+      - "aiida/src/**"
+      - "aiida/ui/**"
       - "buildSrc/**"
       - "core/**"
       - "e2e-tests/**"
@@ -22,7 +24,9 @@ on:
       - main
     paths:
       - ".github/workflows/run-playwright-e2e-tests.yml"
-      - "aiida/**"
+      - "aiida/docker/**"
+      - "aiida/src/**"
+      - "aiida/ui/**"
       - "buildSrc/**"
       - "core/**"
       - "e2e-tests/**"

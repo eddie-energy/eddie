@@ -12,8 +12,10 @@ hero:
   actions:
     - text: Run AIIDA
       link: 1-running/OPERATION.md
+    - text: Integrate AIIDA
+      link: 2-integrating/acknowledgements.md
     - text: Extend and Contribute
-      link: 2-extending/data-source/data-source.md
+      link: 3-extending/data-source/data-source.md
       theme: alt
 
 features:
