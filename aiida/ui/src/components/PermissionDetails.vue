@@ -12,12 +12,14 @@ import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
 import { revokePermission, updateInboundMessageFormat } from '@/api'
-import { fetchPermissions, permissions } from '@/stores/permissions'
+import { fetchPermissions, isMonitorablePermission, permissions } from '@/stores/permissions'
 import { computed, ref, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from './CustomSelect.vue'
+import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
+import { RouterLink } from 'vue-router'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -372,6 +374,14 @@ const { lastMessageAt } = useLastMessageRefresh(
             <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
           </MessageDownloadButton>
         </div>
+        <RouterLink
+          v-if="isMonitorablePermission(permission)"
+          :to="{ name: 'connection-monitor', query: { permission: permission.permissionId } }"
+          class="monitor-link"
+        >
+          <ConnectionMonitorIcon />
+          {{ t('permissions.openConnectionMonitor') }}
+        </RouterLink>
       </div>
       <Button
         v-if="status === 'Pending'"
@@ -461,6 +471,27 @@ const { lastMessageAt } = useLastMessageRefresh(
 
 .permission-actions {
   margin-top: auto;
+}
+
+.monitor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--eddie-primary);
+  border-radius: 2rem;
+  color: var(--eddie-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
+
+  &:hover {
+    color: var(--light);
+    background-color: var(--eddie-primary);
+  }
 }
 
 .actions-row {
