@@ -7,6 +7,7 @@ import api.ValidationErrors;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
+import energy.eddie.aiida.errors.connectionlimit.ConnectionLimitMonitoringNotAllowedException;
 import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
@@ -103,6 +104,7 @@ public class GlobalExceptionHandler {
             MissingInboundMessageFormatException.class,
             ModbusDeviceConfigException.class,
             PermissionAlreadyExistsException.class,
+            ConnectionLimitMonitoringNotAllowedException.class,
             ConstraintViolationException.class
     })
     public ResponseEntity<Map<String, List<EddieApiError>>> handleBadRequestExceptions(Exception exception) {

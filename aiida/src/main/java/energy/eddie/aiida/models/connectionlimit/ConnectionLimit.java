@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
@@ -53,6 +54,9 @@ public class ConnectionLimit {
     protected ConnectionLimit() {
     }
 
+    /**
+     * Timestamps are truncated to microseconds to match database
+     */
     public ConnectionLimit(
             UUID permissionId,
             @Nullable String meterId,
@@ -66,13 +70,13 @@ public class ConnectionLimit {
     ) {
         this.permissionId = permissionId;
         this.meterId = meterId == null ? "" : meterId;
-        this.intervalStart = intervalStart;
-        this.intervalEnd = intervalEnd;
+        this.intervalStart = intervalStart.truncatedTo(ChronoUnit.MICROS);
+        this.intervalEnd = intervalEnd.truncatedTo(ChronoUnit.MICROS);
         this.minLimitKw = minLimitKw;
         this.maxLimitKw = maxLimitKw;
         this.mrid = mrid;
         this.revisionNumber = revisionNumber;
-        this.createdAt = createdAt;
+        this.createdAt = createdAt.truncatedTo(ChronoUnit.MICROS);
     }
 
     public UUID permissionId() {

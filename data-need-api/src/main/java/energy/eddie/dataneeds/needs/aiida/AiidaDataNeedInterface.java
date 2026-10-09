@@ -67,7 +67,7 @@ public interface AiidaDataNeedInterface {
     /**
      * Returns true if the data need accepts connection limits
      */
-    default boolean supportsLimitDefaults() {
+    default boolean supportsConnectionLimits() {
         return InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(type())
                && Objects.requireNonNullElse(schemas(), Set.of()).contains(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);
     }

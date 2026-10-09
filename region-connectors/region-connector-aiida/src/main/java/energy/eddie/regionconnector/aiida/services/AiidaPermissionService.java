@@ -270,7 +270,7 @@ public class AiidaPermissionService {
                     throw new DataNeedMalformedException(dataNeedId, "Data need does not support all required schemas");
                 }
 
-                if ((minLimitKw != null || maxLimitKw != null) && !aiidaResult.dataNeed().supportsLimitDefaults()) {
+                if ((minLimitKw != null || maxLimitKw != null) && !aiidaResult.dataNeed().supportsConnectionLimits()) {
                     outbox.commit(new SimpleEvent(permissionId, MALFORMED));
                     throw new DataNeedMalformedException(dataNeedId,
                                                          "Default connection limits can only be set for inbound data needs with schema " + AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12);

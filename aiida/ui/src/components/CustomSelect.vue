@@ -1,11 +1,9 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import ChevronDownIcon from '@/assets/icons/ChevronDownIcon.svg'
-import { computed, ref, useTemplateRef } from 'vue'
+import { computed, ref, useId, useTemplateRef } from 'vue'
 
 const { options, placeholder } = defineProps<{
   options: { label?: string; value: string }[] | string[]
@@ -14,6 +12,7 @@ const { options, placeholder } = defineProps<{
 const model = defineModel()
 const show = ref(false)
 const parentDiv = useTemplateRef('parent')
+const anchor = '--select-' + useId()
 
 const labelValueOptions = computed(() => {
   if (typeof options[0] === 'string') {
@@ -79,7 +78,7 @@ const handleBlur = (e: FocusEvent) => {
 
 <style scoped>
 .select {
-  position: relative;
+  anchor-name: v-bind(anchor);
   border: 1px solid var(--eddie-grey-medium);
   padding: var(--spacing-sm) var(--spacing-md);
   color: var(--dark);
@@ -114,13 +113,13 @@ const handleBlur = (e: FocusEvent) => {
     color: var(--eddie-grey-medium);
   }
 }
+
 .options {
-  position: absolute;
-  top: 100%;
-  left: -1px;
-  right: -1px;
+  position: fixed;
+  position-anchor: v-bind(anchor);
+  position-area: block-end span-inline-end;
+  width: anchor-size(width);
   z-index: 100;
-  box-sizing: unset;
   background-color: var(--light);
   border: 1px solid var(--eddie-grey-medium);
   border-top: unset;

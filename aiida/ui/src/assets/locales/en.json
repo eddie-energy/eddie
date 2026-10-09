@@ -188,7 +188,11 @@
       "permissionID": "Permission ID",
       "openDetails": "Open Permission Details",
       "lastMessageReceived": "Last Message Received",
-      "lastMessageSent": "Last Message Sent"
+      "lastMessageSent": "Last Message Sent",
+      "monitoringDataSource": "Monitored data source",
+      "monitoringDataSourcePlaceholder": "Select a data source",
+      "monitoringDataSourceNone": "No data source",
+      "monitoringDataSourceHint": "The selected data source is monitored for violations of these limits."
     },
     "modal": {
       "title": "Add new Permission",
@@ -215,7 +219,11 @@
     "settings": "Settings",
     "logout": "Logout",
     "mqttTlsCertificate": "MQTT TLS Certificate",
-    "downloadCertificate": "Download"
+    "downloadCertificate": "Download",
+    "contactEmail": "Notification email",
+    "contactEmailPlaceholder": "you{'@'}example.com",
+    "contactEmailHint": "Used only to notify you about connection limit violations.",
+    "save": "Save"
   },
   "toasts": {
     "info": "Did you know?",
@@ -225,6 +233,8 @@
     "acceptPermission": "Permission request accepted.",
     "updateInboundMessageFormat": "Inbound message format updated.",
     "updateDisplayName": "Display name updated.",
+    "updateConnectionLimitMonitoring": "Monitored data source updated.",
+    "updateUserSettings": "Notification email updated.",
     "revokePermission": "The permission for this service was revoked.",
     "rejectPermission": "Permission request rejected",
     "createDatasource": "Data source created.",

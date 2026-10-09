@@ -32,10 +32,7 @@ import java.util.UUID;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static energy.eddie.e2etests.PlaywrightOptions.*;
 import static java.util.Objects.requireNonNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @UsePlaywright(PlaywrightOptions.class)
 class AiidaUiTests {
@@ -367,7 +364,47 @@ class AiidaUiTests {
         assertTrue(containsConnectionLimit(effectiveLimitsJson, null, updatedDefaultMin, updatedDefaultMax));
         assertTrue(containsConnectionLimit(effectiveLimitsJson, documentId, documentMin, documentMax));
 
-        revokePermission(permission);
+        var email = "e2e-limit@example.org";
+        var dataSource = "E2E Limit Data Source";
+
+        // Clear mailbox
+        assertThat(context.request().delete(MAILPIT_URL + "/api/v1/messages")).isOK();
+        createSimulationDataSource(dataSource, meterId, 5);
+
+        // Set contact email
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Account")).click();
+        page.getByPlaceholder("you@example.com").fill(email);
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Save")).click();
+
+        permission = selectPermission(displayName, PermissionTab.INBOUND, PermissionStatus.ACTIVE);
+        var monitoringSelect = permission.getByRole(AriaRole.LISTBOX)
+                                         .filter(new Locator.FilterOptions().setHasText("No data source"));
+        monitoringSelect.click();
+        permission.getByRole(AriaRole.OPTION).getByText(dataSource).click();
+        assertThat(permission.getByRole(AriaRole.LISTBOX)
+                             .filter(new Locator.FilterOptions().setHasText(dataSource))).isVisible();
+
+        var violationMessage = expectMail(email, "Connection limits exceeded");
+        assertTrue(violationMessage.contains("3"), violationMessage);
+
+        // Resolve the violation by providing a new limit
+        var recoveryResponse = request.post(REST_URL + "/cim_1_12/min-max-envelope-md",
+                                            RequestOptions.create()
+                                                          .setHeader("content-type", "application/json")
+                                                          .setData(minMaxEnvelope(permissionId,
+                                                                                  dataNeedId,
+                                                                                  meterId,
+                                                                                  UUID.randomUUID().toString(),
+                                                                                  Instant.now(),
+                                                                                  documentIntervalStart,
+                                                                                  documentIntervalEnd,
+                                                                                  -10,
+                                                                                  10)));
+        assertThat(recoveryResponse).isOK();
+        expectMail(email, "Connection limits restored");
+
+        revokeInboundPermission(displayName);
+        deleteDataSource(dataSource);
     }
 
     @Test
@@ -516,6 +553,10 @@ class AiidaUiTests {
     }
 
     private void createSimulationDataSource(String name, String meterId) {
+        createSimulationDataSource(name, meterId, 120);
+    }
+
+    private void createSimulationDataSource(String name, String meterId, int pollingInterval) {
         page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
         page.getByRole(AriaRole.BUTTON).getByText("Add Data Source").click();
         page.getByLabel("Name").fill(name);
@@ -525,10 +566,29 @@ class AiidaUiTests {
         page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
         page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
         page.getByRole(AriaRole.OPTION).getByText("Austria").click();
-        page.getByLabel("Polling Interval").fill("120");
+        page.getByLabel("Polling Interval").fill(Integer.toString(pollingInterval));
         page.getByLabel("Physical Meter ID").fill(meterId);
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Meter")).click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add").setExact(true)).click();
+    }
+
+    private String expectMail(String recipient, String subject) {
+        for (var attempt = 0; attempt < 30; attempt++) {
+            var response = context.request().get(MAILPIT_URL + "/api/v1/messages");
+            assertThat(response).isOK();
+
+            for (var message : mapper.readTree(response.text()).path("messages")) {
+                var matchesRecipient = message.path("To").toString().contains(recipient);
+                var matchesSubject = message.path("Subject").asString().contains(subject);
+                if (matchesRecipient && matchesSubject) {
+                    var details = context.request().get(MAILPIT_URL + "/api/v1/message/" + message.path("ID").asString());
+                    assertThat(details).isOK();
+                    return mapper.readTree(details.text()).path("Text").asString();
+                }
+            }
+            page.waitForTimeout(1000);
+        }
+        throw new AssertionError("Found no mail to %s with subject '%s'".formatted(recipient, subject));
     }
 
     private void revokeInboundPermission(String name) {
