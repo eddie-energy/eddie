@@ -115,14 +115,18 @@ The exact switching times between T1 and T2 depend on the country and the config
 
 Within the received data, the currently active tariff is indicated by the field `electricityTariff`.
 E.g. if `electricityTariff` is `0001`, then Tariff 1 is currently active. `0002` indicates that Tariff 2 is active.
-This is needed to correctly interpret the delivered and returned energy values.
+The tariff indicator identifies which cumulative register is currently increasing. It does not select
+which register contributes to total energy: AIIDA adds Tariff 1 and Tariff 2 for both imported energy
+(`1-0:1.8.0`) and exported energy (`1-0:2.8.0`), independently of the active tariff.
+If either register is missing from a batch, AIIDA omits that total rather than treating the missing
+register as zero. Available instantaneous power readings can still be emitted.
 
 ### MQTT Topic Structure 
 
 The SGA sends data every few seconds. Each data field is sent to its own internal MQTT topic. Therefore,
 each data field is mapped to a specific MQTT topic. The base topic is `aiida/xxxx/dsmr/reading`, followed by an identifier
 for each field.`xxxx` is a 4 character long random generated sequence when creating the SGA data-source. 
-**_One data point which includes 24 values (all data fields) are sent to 24 individual topics._**
+The adapter recognises 25 reading topics. Devices may publish additional topics, which are ignored.
 
 The topics have the following structure (few examples):
 
@@ -133,9 +137,10 @@ phaseVoltageL1 : aiida/xxxx/dsmr/reading/phase_voltage_l1
 ```
 
 Therefore, our internal Smart Gateways Adapter subscribes to the wildcard topic `aiida/xxxx/dsmr/reading/+`, in order to
-get the values for each data field. It buffers the values until all 24 values are received. If the buffer is complete, 
+get the values for each data field. The full device prefix (`aiida/xxxx`) must be preserved when matching
+incoming topics. It buffers the values until all 25 supported values are received. If the buffer is complete,
 a new `AiidaRecord` is created in AIIDA. If the buffer is not complete after 15 seconds, 
-the buffer is still processed with the containing values.
+the buffer is still processed with the available values. Empty records are not emitted.
 
 ## Sources
 

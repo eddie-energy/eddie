@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SmartGatewaysAdapter.class);
     private static final Duration TIMEOUT = Duration.ofSeconds(15);
+    private static final String SUBSCRIPTION_SUFFIX = "/dsmr/reading/+";
     final Map<SmartGatewaysTopic, String> batchBuffer = new EnumMap<>(SmartGatewaysTopic.class);
     private final String topicPrefix;
     private final List<SmartGatewaysTopic> expectedTopics;
@@ -32,9 +33,7 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
     private ScheduledFuture<?> timeoutFuture = null;
 
     /**
-     * Creates the datasource for the Smart Gateways Adapter. It connects to the specified MQTT broker and expects that the
-     * adapter publishes its JSON messages on the specified topic. Any OBIS code without a time field will be assigned a
-     * Unix timestamp of 0.
+     * Collects scalar meter readings published on the device-specific MQTT topics into an AIIDA record.
      *
      * @param dataSource The entity of the data source.
      */
@@ -87,8 +86,11 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
 
     private void addAiidaRecordValue(
             List<AiidaRecordValue> aiidaRecordValues,
-            SmartGatewaysAdapterMessageField recordValue
+            @Nullable SmartGatewaysAdapterMessageField recordValue
     ) {
+        if (recordValue == null) {
+            return;
+        }
         aiidaRecordValues.add(new AiidaRecordValue(recordValue.rawTag(),
                                                    recordValue.obisCode(),
                                                    String.valueOf(recordValue.value()),
@@ -111,11 +113,17 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
         addAiidaRecordValue(aiidaRecordValues, powerCurrentlyDelivered);
         addAiidaRecordValue(aiidaRecordValues, powerCurrentlyReturned);
 
-        emitAiidaRecord(aiidaRecordValues);
+        if (!aiidaRecordValues.isEmpty()) {
+            emitAiidaRecord(aiidaRecordValues);
+        }
         batchBuffer.clear();
     }
 
     private String topicPrefixOf(String mqttSubscribeTopic) {
-        return Arrays.stream(mqttSubscribeTopic.split("/")).findFirst().orElse("");
+        if (!mqttSubscribeTopic.endsWith(SUBSCRIPTION_SUFFIX)
+            || mqttSubscribeTopic.length() == SUBSCRIPTION_SUFFIX.length()) {
+            throw new IllegalArgumentException("Invalid Smart Gateways subscription topic: " + mqttSubscribeTopic);
+        }
+        return mqttSubscribeTopic.substring(0, mqttSubscribeTopic.length() - SUBSCRIPTION_SUFFIX.length());
     }
 }
