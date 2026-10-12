@@ -75,7 +75,7 @@ commit_preprocessors = [
     #{ pattern = '.*', replace_command = 'typos --write-changes -' },
     #{ pattern = "(NOISSUE|GH-\\d+|#\\+\\d+) (([\\w ]+):(.+)|(.*))(\\n.*)?", replace = "unknown(${3}): ${4}${5} ${1}" },
     # Replace issue numbers with link templates to be updated in `changelog.postprocessors`.
-    { pattern = '(GH-|#)([0-9]+)', replace = "([#${2}](<REPO>/issues/${3}))" },
+    { pattern = '(GH-|#)([0-9]+)', replace = "([#${2}](<REPO>/issues/${2}))" },
     { pattern = '# +', replace = '\# ' }
 ]
 # Prevent commits that are breaking from being excluded by commit parsers.
