@@ -10,11 +10,7 @@ import { connect as reconnectLastMessageStream } from '@/stores/lastMessageStrea
 export const permissions = ref<AiidaPermission[]>([])
 
 export function isMonitorablePermission(permission: AiidaPermission): boolean {
-  return (
-    STATUS[permission.status]?.isActive === true &&
-    permission.dataNeed?.type === 'inbound-aiida' &&
-    permission.dataNeed.schemas.includes('MIN-MAX-ENVELOPE-CIM-V1-12')
-  )
+  return STATUS[permission.status]?.isActive === true && permission.supportsConnectionLimits
 }
 
 export function isFcaPermission(permission: AiidaPermission): boolean {

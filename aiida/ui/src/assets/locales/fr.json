@@ -237,7 +237,18 @@
     "minLimit": "Limite minimale",
     "loading": "Chargement…",
     "noData": "Aucune limite de connexion disponible pour la période sélectionnée.",
-    "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible."
+    "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible.",
+    "violations": {
+      "title": "Dépassements des limites",
+      "none": "Aucun dépassement des limites pour la période sélectionnée.",
+      "notMonitored": "Aucune source de données n'est surveillée pour cette autorisation, les dépassements ne sont donc pas détectés. Sélectionnez une source de données surveillée dans les détails de l'autorisation.",
+      "ongoing": "En cours",
+      "start": "Début",
+      "end": "Fin",
+      "limits": "Limites dépassées",
+      "startPower": "Puissance au début",
+      "peakPower": "Puissance maximale"
+    }
   },
   "toasts": {
     "info": "Le saviez-vous ?",

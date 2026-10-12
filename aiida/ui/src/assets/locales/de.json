@@ -237,7 +237,18 @@
     "minLimit": "Untergrenze",
     "loading": "Wird geladen …",
     "noData": "Keine Anschlussgrenzen im gewählten Zeitraum verfügbar.",
-    "noMonitorablePermissions": "Keine überwachbaren Berechtigungen für Anschlussgrenzen verfügbar."
+    "noMonitorablePermissions": "Keine überwachbaren Berechtigungen für Anschlussgrenzen verfügbar.",
+    "violations": {
+      "title": "Grenzwertverletzungen",
+      "none": "Keine Grenzwertverletzungen im gewählten Zeitraum.",
+      "notMonitored": "Für diese Berechtigung wird keine Datenquelle überwacht, daher werden keine Verletzungen erkannt. Wählen Sie in den Berechtigungsdetails eine überwachte Datenquelle aus.",
+      "ongoing": "Andauernd",
+      "start": "Beginn",
+      "end": "Ende",
+      "limits": "Verletzte Grenzen",
+      "startPower": "Leistung bei Beginn",
+      "peakPower": "Spitzenleistung"
+    }
   },
   "toasts": {
     "info": "Wussten Sie schon?",

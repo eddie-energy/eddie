@@ -189,6 +189,17 @@ export type ConnectionLimit = {
   maxLimitKw: number | null
 }
 
+export type ConnectionLimitViolation = {
+  dataSourceId: string
+  startedAt: string
+  endedAt?: string | null
+  documentId?: string | null
+  minLimitKw?: number | null
+  maxLimitKw?: number | null
+  startPowerKw: number
+  peakPowerKw: number
+}
+
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
 export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'
