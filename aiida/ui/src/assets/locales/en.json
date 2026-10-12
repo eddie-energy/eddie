@@ -233,7 +233,21 @@
     "minLimit": "Min Limit",
     "loading": "Loading…",
     "noData": "No connection limits available for the selected time range.",
-    "noMonitorablePermissions": "No monitorable connection limit permissions available."
+    "noMonitorablePermissions": "No monitorable connection limit permissions available.",
+    "violations": {
+      "title": "Limit Violations",
+      "aboveMaximum": "Above Maximum Limit",
+      "belowMinimum": "Below Minimum Limit",
+      "none": "No limit violations in the selected time range.",
+      "notMonitored": "No data source is monitored for this permission, so violations are not detected. Select a monitored data source in the permission details.",
+      "ongoing": "Ongoing",
+      "start": "Start",
+      "end": "End",
+      "limits": "Violated Limits",
+      "startPower": "Power at Start",
+      "lowestPower": "Lowest Power",
+      "highestPower": "Highest Power"
+    }
   },
   "toasts": {
     "info": "Did you know?",
