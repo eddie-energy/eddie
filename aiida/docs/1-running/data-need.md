@@ -18,7 +18,7 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
 | `duration`                  | Object              | Describes the timeframe for this data need.                                                                                                |
 | `transmissionSchedule`      | String              | Cron expression that defines how often the data should be sent or received.                                                                |
 | `allowedPermissionCommands` | String[]            | Permission commands the EP may send to update an existing permission. See [Permission Commands](#permission-commands). Default `[]`.       |
-| `acknowledgementRequired`   | boolean             | Whether an acknowledgement is required for the data transmission. See [Acknowledgement](#acknowledgement).                                 |
+| `acknowledgementRequired`   | boolean             | Whether an acknowledgement is required for the data transmission. See [Acknowledgements](./acknowledgements.md).                           |
 | `schemas`                   | String[]            | [Schemas](./schemas/schemas.md) that define the structure and format of the data, e.g. standardized schemas such as CIM or custom schemas. |
 | `asset`                     | String              | The asset that the data need is associated with, linking the data to specific physical or logical assets.                                  |
 | `dataTags`                  | String[] (optional) | Data tags further specify the type of data expected. If omitted, it is assumed that all available data is included.                        |
@@ -97,15 +97,9 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
 
 ## Acknowledgement
 
-If the `acknowledgementRequired` field is set to `true`, the receiving party (either AIIDA or the EP) is expected to send an acknowledgement message back to the sender after successfully receiving and processing the data.
-This acknowledgement message serves as a confirmation that the data has been received and processed correctly, and can be used to ensure reliable communication between AIIDA and EPs.
-
-The acknowledgement is available in the outbound connector being used.
-
-For more details, see:
-
-- [Acknowledgement Market Document](https://architecture.eddie.energy/framework/2-integrating/messages/cim/acknowledgement-market-documents.html#acknowledgement-market-document)
-- [EP Subscribing to Acknowledgement](https://architecture.eddie.energy/aiida/1-running/data-sources/mqtt/inbound/inbound-data-source.html#ep-subscribing-to-acknowledgement)
+If `acknowledgementRequired` is `true`, the receiver sends an acknowledgement after processing the inbound message.
+The acknowledgement reports whether processing succeeded, partially succeeded, or failed. See
+[Acknowledgements](./acknowledgements.md) for the status codes, correlation fields, and failure reasons.
 
 ## Permission Commands
 

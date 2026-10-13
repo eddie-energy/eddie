@@ -139,6 +139,10 @@ export default withMermaid(
               link: "/1-running/data-need.md",
             },
             {
+              text: "Acknowledgements",
+              link: "/1-running/acknowledgements.md",
+            },
+            {
               text: "Permissions",
               link: "/1-running/permission.md",
             },
