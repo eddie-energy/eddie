@@ -164,7 +164,7 @@ public class FluviusApiClient implements FluviusApi {
                 1,
                 uriHelper.successUri(permissionId),
                 uriHelper.rejectUri(permissionId),
-                true,
+                false,
                 null
         );
         return webClient.post()
