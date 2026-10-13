@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.be.fluvius.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import java.net.URI;
 
 @ConfigurationProperties("region-connector.be.fluvius")
 public class FluviusConfiguration {
@@ -18,6 +19,9 @@ public class FluviusConfiguration {
             String contractNumber,
             boolean mockMandates
     ) {
+        if (mockMandates && URI.create(baseUrl).getPath().startsWith("/esco-live")) {
+            throw new IllegalArgumentException("Fluvius mock mandates are only available on the sandbox API");
+        }
         this.baseUrl = baseUrl;
         this.subscriptionKey = subscriptionKey;
         this.contractNumber = contractNumber;
