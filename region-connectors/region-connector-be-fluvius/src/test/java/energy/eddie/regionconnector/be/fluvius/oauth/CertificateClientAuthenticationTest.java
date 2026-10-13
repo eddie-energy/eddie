@@ -42,8 +42,9 @@ class CertificateClientAuthenticationTest {
 
     @Test
     void requiresKeystore() {
+        var bundle = SslBundle.of(null);
         var error = assertThrows(IllegalArgumentException.class,
-                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, SslBundle.of(null)));
+                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
         assertTrue(error.getMessage().contains("requires a keystore"));
     }
 
@@ -51,8 +52,9 @@ class CertificateClientAuthenticationTest {
     void requiresAnUnambiguousPrivateKey() throws Exception {
         fixture.keyStore().setKeyEntry("second", fixture.privateKey(), CertificateTestFixture.PASSWORD.toCharArray(),
                                       new Certificate[]{fixture.certificate()});
+        var bundle = fixture.bundle(SslBundleKey.NONE);
         assertThrows(IllegalArgumentException.class,
-                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle(SslBundleKey.NONE)));
+                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
         assertNotNull(new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle()).create());
     }
 
@@ -60,21 +62,23 @@ class CertificateClientAuthenticationTest {
     void rejectsKeystoreWithoutPrivateKey() throws Exception {
         fixture.keyStore().deleteEntry(CertificateTestFixture.ALIAS);
         fixture.keyStore().setCertificateEntry("certificate-only", fixture.certificate());
+        var bundle = fixture.bundle(SslBundleKey.NONE);
         assertThrows(IllegalArgumentException.class,
-                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle(SslBundleKey.NONE)));
+                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
     }
 
     @Test
     void rejectsMissingAlias() {
+        var bundle = fixture.bundle(SslBundleKey.of(null, "missing"));
         assertThrows(IllegalArgumentException.class,
-                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle(SslBundleKey.of(null, "missing"))));
+                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
     }
 
     @Test
     void rejectsIncorrectKeyPassword() {
+        var bundle = fixture.bundle(SslBundleKey.of("incorrect", CertificateTestFixture.ALIAS));
         var error = assertThrows(IllegalArgumentException.class,
-                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT,
-                                                                          fixture.bundle(SslBundleKey.of("incorrect", CertificateTestFixture.ALIAS))));
+                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
         assertNotNull(error.getCause());
     }
 
@@ -98,8 +102,9 @@ class CertificateClientAuthenticationTest {
         var key = KeyPairGenerator.getInstance("EC").generateKeyPair().getPrivate();
         fixture.keyStore().setKeyEntry(CertificateTestFixture.ALIAS, key, CertificateTestFixture.PASSWORD.toCharArray(),
                                       new Certificate[]{fixture.certificate()});
+        var bundle = fixture.bundle();
         assertThrows(IllegalArgumentException.class,
-                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle()));
+                     () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
     }
 
     @Test
@@ -107,8 +112,9 @@ class CertificateClientAuthenticationTest {
         var key = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPrivate();
         fixture.keyStore().setKeyEntry(CertificateTestFixture.ALIAS, key, CertificateTestFixture.PASSWORD.toCharArray(),
                                       new Certificate[]{fixture.certificate()});
+        var bundle = fixture.bundle();
         var error = assertThrows(IllegalArgumentException.class,
-                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle()));
+                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
         assertTrue(error.getMessage().contains("does not match"));
     }
 
@@ -118,8 +124,9 @@ class CertificateClientAuthenticationTest {
         doThrow(new CertificateExpiredException("expired")).when(expiredCertificate).checkValidity();
         fixture.keyStore().setKeyEntry(CertificateTestFixture.ALIAS, fixture.privateKey(), CertificateTestFixture.PASSWORD.toCharArray(),
                                       new Certificate[]{expiredCertificate});
+        var bundle = fixture.bundle();
         var error = assertThrows(IllegalArgumentException.class,
-                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, fixture.bundle()));
+                                 () -> new CertificateClientAuthentication("client", TOKEN_ENDPOINT, bundle));
         assertInstanceOf(CertificateExpiredException.class, error.getCause());
     }
 }
