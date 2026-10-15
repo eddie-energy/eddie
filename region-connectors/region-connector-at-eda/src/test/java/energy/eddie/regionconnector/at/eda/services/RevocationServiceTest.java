@@ -18,6 +18,8 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGran
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -97,13 +99,37 @@ class RevocationServiceTest {
     }
 
     @Test
-    void revokeWithWrongPermissionState_doesNotRevokePermissionRequest() {
+    void revokeWithConsentId_fulfilledPermissionRequest_doesNotRevoke() {
+        // Given
+        var edaAdapter = mock(EdaAdapter.class);
+        var permissionRequest = new EdaPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStatus(PermissionProcessStatus.FULFILLED)
+                .build();
+        TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
+        when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());
+        var repository = mock(AtPermissionRequestRepository.class);
+        when(repository.findByConsentId("consentId")).thenReturn(Optional.of(projection(permissionRequest)));
+        EdaCMRevoke cmRevoke = new SimpleEdaCMRevoke().setConsentId("consentId");
+        new RevocationService(edaAdapter, repository, outbox);
+
+        // When
+        revocationStream.emit(cmRevoke);
+
+        // Then
+        verifyNoInteractions(outbox);
+        verify(repository, never()).findAcceptedAndFulfilledByMeteringPointIdAndDate(any(), any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class, names = {"CREATED", "FULFILLED"})
+    void revokeWithWrongPermissionState_doesNotRevokePermissionRequest(PermissionProcessStatus status) {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         LocalDate now = LocalDate.now(AT_ZONE_ID);
         var permissionRequest = new EdaPermissionRequestBuilder()
                 .setPermissionId("pid")
-                .setStatus(PermissionProcessStatus.CREATED)
+                .setStatus(status)
                 .build();
         TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());

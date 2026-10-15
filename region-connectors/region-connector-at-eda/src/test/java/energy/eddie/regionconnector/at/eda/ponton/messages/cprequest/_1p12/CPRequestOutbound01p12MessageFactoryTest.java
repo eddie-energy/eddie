@@ -30,6 +30,37 @@ class CPRequestOutbound01p12MessageFactoryTest {
     private Jaxb2Marshaller marshaller;
 
     @Test
+    void outboundMetaData_processVersion0430KeepsTransportVersion0300() {
+        var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
+        var request = new CPRequestCR("AT009000", "point", "retransmission-conversation",
+                LocalDate.of(2026, Month.OCTOBER, 24), LocalDate.of(2026, Month.OCTOBER, 26), null,
+                new AtConfiguration("EP123456", null, ""));
+
+        var type = factory.outboundMetaData(request).getMessageType();
+
+        assertAll(() -> assertEquals("CR_REQ_PT_03.00", type.getSchemaSet().getValue()),
+                  () -> assertEquals("ANFORDERUNG_PT", type.getName().getValue()),
+                  () -> assertEquals("03.00", type.getVersion().getValue()));
+    }
+
+    @Test
+    void cpRequest_autumnClockChange_preservesLocalDayBoundariesAndConversation() {
+        var request = new CPRequestCR("AT009000", "point", "retransmission-conversation",
+                LocalDate.of(2026, Month.OCTOBER, 25), LocalDate.of(2026, Month.OCTOBER, 26), null,
+                new AtConfiguration("EP123456", null, ""));
+
+        var directory = new CPRequest01p12(request).cpRequest().getProcessDirectory();
+        var extension = directory.getExtension();
+        var from = extension.getDateTimeFrom().toGregorianCalendar().toZonedDateTime();
+        var to = extension.getDateTimeTo().toGregorianCalendar().toZonedDateTime();
+
+        assertAll(() -> assertEquals("retransmission-conversation", directory.getConversationId()),
+                  () -> assertEquals(25, java.time.Duration.between(from, to).toHours()),
+                  () -> assertEquals(request.start(), from.toLocalDate()),
+                  () -> assertEquals(request.end(), to.toLocalDate()));
+    }
+
+    @Test
     void createOutboundMessage() {
         // given
         var factory = new CPRequestOutbound01p12MessageFactory(marshaller);
