@@ -14,11 +14,11 @@ import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Component
+@Service
 public class RevocationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(RevocationService.class);
     private final AtPermissionRequestRepository repository;
@@ -54,7 +54,8 @@ public class RevocationService {
     }
 
     private void revoke(AtPermissionRequest permissionRequest) {
-        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED) {
+        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED
+            && permissionRequest.status() != PermissionProcessStatus.FULFILLED) {
             return;
         }
         outbox.commit(new SimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.REVOKED));

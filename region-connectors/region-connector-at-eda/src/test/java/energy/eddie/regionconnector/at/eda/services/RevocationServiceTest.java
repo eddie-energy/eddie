@@ -18,6 +18,8 @@ import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGran
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -43,13 +45,14 @@ class RevocationServiceTest {
     @Captor
     private ArgumentCaptor<SimpleEvent> captor;
 
-    @Test
-    void revokeWithConsentId_revokesPermissionRequest() {
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class, names = {"ACCEPTED", "FULFILLED"})
+    void revokeWithConsentId_revokesPermissionRequest(PermissionProcessStatus status) {
         // Given
         var edaAdapter = mock(EdaAdapter.class);
         var permissionRequest = new EdaPermissionRequestBuilder()
                 .setPermissionId("pid")
-                .setStatus(PermissionProcessStatus.ACCEPTED)
+                .setStatus(status)
                 .build();
         TestPublisher<EdaCMRevoke> revocationStream = TestPublisher.create();
         when(edaAdapter.getCMRevokeStream()).thenReturn(revocationStream.flux());

@@ -22,7 +22,7 @@ The region connector needs a set of configuration values to be able to function 
 depends on the way you deploy the region connector.
 
 | Configuration values                                                          | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `region-connector.at.eda.eligibleparty.id `                                   | The company identification number you get from registering as a service provider with ebUtillitis. This can either be the normal Eligible Party ID or for energy communities the energy community partner ID.                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.conversation-id.prefix`                              | Optional prefix for generated EDA grouping IDs used as both message and conversation IDs, for example to route multiple EDDIE adapters using the same eligible party. The prefix may contain only `0-9`, `A-Z`, and `a-z`. The connector fails to start if the prefix contains other characters or if a complete generated ID would exceed the EDA limit of 35 characters.                                                                                                          |
 | `region-connector.at.eda.energy-community-id`                                 | The ID of the energy community in this format `ATCC0000DYNAMXX000000000000000000`. This property is optional, if omitted the EDDIE instance will not support energy community specific processes, such as the [CESUJoinRegquest](../../2-integrating/data-needs.md#CESUJoinRequestDataNeed).                                                                                                                                                                                        |
@@ -31,7 +31,7 @@ depends on the way you deploy the region connector.
 | `region-connector.at.eda.ponton.messenger.adapter.version`                    | Version number of the adapter                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.ponton.messenger.hostname`                           | URL or IP address of your PontonXP Messenger.                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | `region-connector.at.eda.ponton.messenger.port`                               | The port that is used for connecting to the messenger. If you did not change this in the `server.xml` file of the messenger it should be `2600`.                                                                                                                                                                                                                                                                                                                                    |
-| `region-connector.at.eda.ponton.messenger.api.endpoint`                       | Endpoint of the XP Messenger REST API. Default should be `<hostname>[:<api-port>]/api`                                                                                                                                                                                                                                                                                                                                                                                              |                                                                                                                                                                 
+| `region-connector.at.eda.ponton.messenger.api.endpoint`                       | Endpoint of the XP Messenger REST API. Default should be `<hostname>[:<api-port>]/api`                                                                                                                                                                                                                                                                                                                                                                                              |
 | `region-connector.at.eda.ponton.messenger.folder`                             | Folder that is used to store information that the adapter needs for operating. This folder stores the `id.dat` file that is generated when the region connector first connects to the PontonXP Messenger. This file is used by the messenger to authenticate the adapter, i.e. all subsequent instances of the same adapter (same adapter id) need this file if they want to connect to the messenger.                                                                              |
 | `region-connector.at.eda.ponton.messenger.username`                           | Username that can be used to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints. The given user must not be additionally secured by 2FA.                                                                                                                                                                                                                             |
 | `region-connector.at.eda.ponton.messenger.password`                           | Password for the above username. Needed to retrieve a JWT Token from the PontonXP Messengers authentication endpoint. This is needed in order to use some of the authentication protected REST API endpoints.                                                                                                                                                                                                                                                                       |
@@ -80,6 +80,90 @@ connection.
 If you are using EDDIE, the region connector should appear in the list of available
 region connectors if it has been configured correctly.
 
+## Consents for multiple metering points
+
+An EDA acceptance can grant access to several metering points for one request.
+The connector maintains one permission request per granted metering point and consent ID.
+These permissions retain the original connection ID, data need ID, DSO, conversation, permission timeframe,
+granularity, energy direction and participation factor.
+Additional permissions do not send another consent request to the customer.
+
+The connector matches an existing consent before creating a permission.
+Repeated, reordered and partial acceptance messages therefore reuse the existing assignments, including after a restart.
+Concurrent acceptance messages are serialized using a database lock on the request's oldest event.
+The complete event sequence is committed in one transaction and published only after that transaction commits.
+The outbox retains its existing in-process publication mechanism; it does not guarantee publication after a process
+failure between the database commit and event delivery.
+
+When the initial request specifies a metering point, its permission is assigned to that point even if another point
+appears first in the acceptance message.
+An acceptance received before the receipt acknowledgement records `SENT_TO_PERMISSION_ADMINISTRATOR` before `ACCEPTED`.
+A later acknowledgement cannot move an accepted permission back to its previous state.
+Additional consents can be processed while a sibling permission is accepted or fulfilled.
+An existing revoked, terminated or timed-out permission is never reactivated by a repeated acceptance.
+
+An exact conversation match takes precedence over the CM request ID.
+Acceptance matching uses the consent request conversation recorded by validation, even if a subsequent termination
+has replaced the permission's current conversation ID.
+The CM request ID is only used as a fallback if it identifies one request context.
+The connector rejects conflicting consent-to-point assignments and ambiguous request contexts.
+Incomplete acceptance entries are ignored without creating permission events; valid entries in the same message
+can still be processed.
+Warnings and errors identify messages that require investigation and manual replay after reconciliation.
+
+### Existing inconsistent permission events
+
+Versions affected by the multiple-point acceptance defect could append AcceptedEvents for several points to the
+original permission, leaving additional permissions in `SENT_TO_PERMISSION_ADMINISTRATOR`.
+The corrected handler detects these mixed streams and refuses to extend them automatically.
+Installing this fix does not rewrite existing permission events or request a new customer consent.
+
+The following read-only query identifies mixed acceptance streams:
+
+```sql
+SELECT permission_id,
+       count(DISTINCT metering_point_id) AS metering_points,
+       count(DISTINCT cm_consent_id) AS consents
+FROM at_eda.permission_event
+WHERE dtype = 'AcceptedEvent'
+GROUP BY permission_id
+HAVING count(DISTINCT metering_point_id) > 1
+    OR count(DISTINCT cm_consent_id) > 1;
+```
+
+Reconciliation must be prepared and reviewed separately from deployment.
+Use the original AcceptedEvents and, where necessary, the received EDA messages as evidence, rather than the current
+permission projection alone. Record source event IDs, checksums, original and target permission IDs, consent IDs,
+metering points, connection IDs, data need IDs and effective permission periods in an audit manifest.
+Reuse existing child permissions where their origin is unambiguous. Preserve original evidence and later revocations
+or terminations. Recalculate fulfillment from data for the individual point instead of copying a shared fulfilled state.
+The reconciliation must be idempotent and must not publish consent requests, revocations or retransmission requests.
+Never mark all pending permissions accepted solely because they share a conversation or data need.
+
+## Retransmission of missing data
+
+Submit a [Redistribution Transaction Request](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md)
+for the permission of the individual metering point.
+The permission must be `ACCEPTED` or `FULFILLED`, with both a metering point and a consent ID.
+Revoked or externally terminated permissions cannot be used for retransmission; a consent revocation also applies
+to a fulfilled permission.
+The requested interval must be non-empty, ordered and within the permission timeframe.
+An open-ended permission has no upper permission-date limit.
+The connector represents the requested interval using local midnight boundaries in `Europe/Vienna`, with an exclusive end.
+
+CR_REQ_PT process version `04.30` continues to use transport schemaset `CR_REQ_PT_03.00`, message type
+`ANFORDERUNG_PT` and transport version `03.00`. The XML payload uses CPRequest schema version `01.12`.
+Do not replace the transport version with the process version.
+See the [ebUtilities process specification](https://www.ebutilities.at/prozesse/717).
+
+Each retransmission starts a new conversation. Requested CR_MSG data uses that request's conversation ID,
+which can differ from the original consent conversation.
+Incoming consumption records are associated with permissions by metering point and covered date.
+Audits must include retransmission conversations when checking received data.
+An `ANTWORT_PT` response with code `70` confirms acceptance of the request, not completeness of the returned data.
+Code `94` reports that no data is available for the requested period.
+Verify the actual returned intervals and their downstream delivery before considering a gap recovered.
+
 ## Importing Permission Requests
 
 The region connector provides a REST API to import permission requests for consents that were already granted outside EDDIE.
@@ -89,15 +173,15 @@ Only permission requests for the data needs [`ValidatedHistoricalDataDataNeed`](
 The endpoint can only be used by the eligible party; therefore, it is only available via the management port.
 
 | Field               | Description                                                                                                                                                                                                |
-|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `connectionId`      | Connection id of the final customer's connection.                                                                                                                                                          |
 | `meteringPointId`   | Id of the metering point the permission request is for. Needs to be exactly 33 characters long.                                                                                                            |
 | `dataNeedId`        | Id of the data need the permission request is for.                                                                                                                                                         |
 | `dsoId`             | Company identification number of the DSO, needs to be exactly 6 characters long (e.g. `AT001000`).                                                                                                         |
 | `consentId`         | Id of the consent that was already granted by the final customer to the eligible party.                                                                                                                    |
 | `creationDateTime`  | Timestamp of the consent, needs to be in the past. It is used to calculate the permission timeframe of the data need.                                                                                      |
-| `meterReadingStart` | *Optional*. Start of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingEnd`, must not be after it, and must be within the permission timeframe of the data need.  |
-| `meterReadingEnd`   | *Optional*. End of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingStart`, must not be before it, and must be within the permission timeframe of the data need. |
+| `meterReadingStart` | _Optional_. Start of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingEnd`, must not be after it, and must be within the permission timeframe of the data need.  |
+| `meterReadingEnd`   | _Optional_. End of the timeframe the meter reading was taken. Can only be supplied together with `meterReadingStart`, must not be before it, and must be within the permission timeframe of the data need. |
 
 If the import was successful, the endpoint returns `201 Created` with the permission id of the imported permission request in the response body.
 The `Location` header contains the URL of the [connection status message](../../2-integrating/messages/cim/connection-status-messages.md) stream for the imported permission request, where updates for the permission request can be consumed.
@@ -130,7 +214,7 @@ The Agreements are always created based on a template that configures how commun
 
 These templates can be customized using the Apache Velocity template engine.
 
-To customize the agreement template that is used for the austrian market, create a file called  `EDA_private.vm` in
+To customize the agreement template that is used for the austrian market, create a file called `EDA_private.vm` in
 `config/agreementTemplates/` of the messenger installation.
 
 The following is an example of a template that can be used to set the
@@ -150,7 +234,7 @@ The following is an example of a template that can be used to set the
     </Rules>
     <Rules SenderRefId="${agreement.communicationPartner.id}" ReceiverRefId="${agreement.ownPartner.id}">
     </Rules>
-</PrivateCollaborationAgreement>       
+</PrivateCollaborationAgreement>
 ```
 
 This will ensure that messages that are send to the `ELIGIBLE_PARTY_ID_1` will be sent to the

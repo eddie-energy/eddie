@@ -51,4 +51,25 @@ tasks.test {
     useJUnitPlatform()
 }
 
+tasks.jacocoTestReport {
+    finalizedBy(tasks.jacocoTestCoverageVerification)
+}
+
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = "CLASS"
+            includes = listOf("energy.eddie.regionconnector.shared.event.sourcing.Outbox")
+            limit {
+                counter = "LINE"
+                minimum = "0.80".toBigDecimal()
+            }
+            limit {
+                counter = "BRANCH"
+                minimum = "0.80".toBigDecimal()
+            }
+        }
+    }
+}
+
 configureJavaCompileWithErrorProne("energy.eddie.regionconnector.shared")
