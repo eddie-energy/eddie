@@ -54,8 +54,7 @@ public class RevocationService {
     }
 
     private void revoke(AtPermissionRequest permissionRequest) {
-        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED
-            && permissionRequest.status() != PermissionProcessStatus.FULFILLED) {
+        if (permissionRequest.status() != PermissionProcessStatus.ACCEPTED) {
             return;
         }
         outbox.commit(new SimpleEvent(permissionRequest.permissionId(), PermissionProcessStatus.REVOKED));

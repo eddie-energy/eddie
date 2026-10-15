@@ -145,8 +145,9 @@ Never mark all pending permissions accepted solely because they share a conversa
 Submit a [Redistribution Transaction Request](../../2-integrating/messages/cim/redistribution-transaction-request-documents.md)
 for the permission of the individual metering point.
 The permission must be `ACCEPTED` or `FULFILLED`, with both a metering point and a consent ID.
-Revoked or externally terminated permissions cannot be used for retransmission; a consent revocation also applies
-to a fulfilled permission.
+Revoked or externally terminated permissions cannot be used for retransmission.
+Consent revocation transitions an `ACCEPTED` permission to `REVOKED`, following the
+[permission process model](../../2-integrating/permission-requests.md#permission-process-model).
 The requested interval must be non-empty, ordered and within the permission timeframe.
 An open-ended permission has no upper permission-date limit.
 The connector represents the requested interval using local midnight boundaries in `Europe/Vienna`, with an exclusive end.

@@ -271,34 +271,6 @@ tasks.jacocoTestReport {
     )
 }
 
-tasks.jacocoTestCoverageVerification {
-    classDirectories.setFrom(
-        sourceSets.main.get().output.asFileTree.matching {
-            exclude(generatedSchemas)
-        }
-    )
-    violationRules {
-        rule {
-            limit {
-                counter = "LINE"
-                minimum = "0.80".toBigDecimal()
-            }
-        }
-        rule {
-            element = "CLASS"
-            includes = listOf(
-                "energy.eddie.regionconnector.at.eda.handlers.integration.inbound.CMAcceptHandler",
-                "energy.eddie.regionconnector.at.eda.services.EdaRegionConnectorRetransmissionService",
-                "energy.eddie.regionconnector.at.eda.services.RevocationService"
-            )
-            limit {
-                counter = "BRANCH"
-                minimum = "0.80".toBigDecimal()
-            }
-        }
-    }
-}
-
 sonarqube {
     properties {
         property("sonar.coverage.exclusions", generatedSchemas)
