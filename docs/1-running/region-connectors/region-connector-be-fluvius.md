@@ -13,24 +13,24 @@ This README will guide you through the process of configuring a region connector
 The region connector needs a set of configuration values to be able to function correctly, how you provide these values
 depends on the way you deploy the region connector.
 
-| Configuration values                                 | Description                                                                                                                                                      |
-|------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `region-connector.be.fluvius.oauth.token-url`        | The URL to obtain an API token, again provided by fluvius during the onboarding.                                                                                 |
-| `region-connector.be.fluvius.oauth.client-id`        | Client ID to obtain an API token, provided by Fluvius.                                                                                                           |
-| `region-connector.be.fluvius.oauth.client-secret`    | Client secret for sandbox authentication. Required only with `client-secret` authentication.                                                                                                       |
-| `region-connector.be.fluvius.oauth.authentication-method` | `client-secret` (default) for sandbox, or `certificate` for live OAuth authentication. |
-| `region-connector.be.fluvius.oauth.ssl-bundle` | Spring SSL bundle containing the registered certificate and private key. Default: `fluvius`. |
-| `region-connector.be.fluvius.oauth.tenant-id`        | The tenant ID identifies the microsoftonline OAuth server.                                                                                                       |
-| `region-connector.be.fluvius.oauth.scope`            | Scope of the requested API token, provided by Fluvius.                                                                                                           |
-| `region-connector.be.fluvius.base-url`               | The base-url of the API, the urls are provided during the onboarding process by Fluvius.                                                                         |
-| `region-connector.be.fluvius.subscription-key`       | The subscription key to access the API, provided by Fluvius.                                                                                                     |
-| `region-connector.be.fluvius.contract-number`        | Contract number to create permission requests via Fluvius' API, provided by Fluvius.                                                                             |
-| `region-connector.be.fluvius.mock-mandates`          | Is either `true` or `false`. Set to `true` if the sandbox environment provided by Fluvius is used. Can be used to test the region connector against the sandbox. |
-| `region-connector.be.fluvius.redirect-uri`           | The redirect uri that's used for success and error redirects by fluvius.                                                                                         |
-| `region-connector.be.fluvius.retry`                  | Configures when a failed to send permission request should be retried. Uses Spring Cron syntax. Default is `0 0 * * * *`.                                        |
-| `region-connector.be.fluvius.check-acceptance`       | Configures when the region connector should check for acceptance of permission requests. Uses Spring Cron syntax. Default is `0 0 * * * *`.                      |
-| `spring.ssl.bundle.pem.fluvius.keystore.certificate` | Certificate registered with Fluvius for live OAuth authentication. Optional for sandbox.                                                                                      |
-| `spring.ssl.bundle.pem.fluvius.keystore.private-key` | Private key matching the registered certificate. Required for live OAuth authentication.                                                                                     |
+| Configuration values                                      | Description                                                                                                                                                      |
+|-----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `region-connector.be.fluvius.oauth.token-url`             | The URL to obtain an API token, again provided by fluvius during the onboarding.                                                                                 |
+| `region-connector.be.fluvius.oauth.client-id`             | Client ID to obtain an API token, provided by Fluvius.                                                                                                           |
+| `region-connector.be.fluvius.oauth.client-secret`         | Client secret for sandbox authentication. Required only with `client-secret` authentication.                                                                     |
+| `region-connector.be.fluvius.oauth.authentication-method` | `client-secret` (default) for sandbox, or `certificate` for live OAuth authentication.                                                                           |
+| `region-connector.be.fluvius.oauth.ssl-bundle`            | Spring SSL bundle containing the registered certificate and private key. Default: `fluvius`.                                                                     |
+| `region-connector.be.fluvius.oauth.tenant-id`             | The tenant ID identifies the microsoftonline OAuth server.                                                                                                       |
+| `region-connector.be.fluvius.oauth.scope`                 | Scope of the requested API token, provided by Fluvius.                                                                                                           |
+| `region-connector.be.fluvius.base-url`                    | The base-url of the API, the urls are provided during the onboarding process by Fluvius.                                                                         |
+| `region-connector.be.fluvius.subscription-key`            | The subscription key to access the API, provided by Fluvius.                                                                                                     |
+| `region-connector.be.fluvius.contract-number`             | Contract number to create permission requests via Fluvius' API, provided by Fluvius.                                                                             |
+| `region-connector.be.fluvius.mock-mandates`               | Is either `true` or `false`. Set to `true` if the sandbox environment provided by Fluvius is used. Can be used to test the region connector against the sandbox. |
+| `region-connector.be.fluvius.redirect-uri`                | The redirect uri that's used for success and error redirects by fluvius.                                                                                         |
+| `region-connector.be.fluvius.retry`                       | Configures when a failed to send permission request should be retried. Uses Spring Cron syntax. Default is `0 0 * * * *`.                                        |
+| `region-connector.be.fluvius.check-acceptance`            | Configures when the region connector should check for acceptance of permission requests. Uses Spring Cron syntax. Default is `0 0 * * * *`.                      |
+| `spring.ssl.bundle.pem.fluvius.keystore.certificate`      | Certificate registered with Fluvius for live OAuth authentication. Optional for sandbox.                                                                         |
+| `spring.ssl.bundle.pem.fluvius.keystore.private-key`      | Private key matching the registered certificate. Required for live OAuth authentication.                                                                         |
 
 The region connector can be configured using Spring properties or environment variables.
 When using environment variables, the configuration values need to be converted in the following way:

@@ -67,6 +67,7 @@ public class OAuthTokenService {
         } catch (GeneralSecurityException | JOSEException exception) {
             throw new OAuthException("Cannot sign Fluvius OAuth client assertion", exception);
         }
+        // Nimbus PrivateKeyJWT only adds assertion fields. Microsoft also requires client_id in the form body.
         var request = new TokenRequest(tokenEndpoint, authentication, clientGrant, scope, null,
                                        Map.of("client_id", List.of(config.clientId())));
         var response = TokenResponse.parse(request.toHTTPRequest().send());
