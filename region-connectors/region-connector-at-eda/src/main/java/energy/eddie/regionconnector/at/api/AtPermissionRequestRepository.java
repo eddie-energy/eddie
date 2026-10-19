@@ -18,6 +18,13 @@ import java.util.Set;
 public interface AtPermissionRequestRepository extends PermissionRequestRepository<AtPermissionRequest> {
 
     /**
+     * Finds the consent request context recorded by validation, retaining the current permission status and consent.
+     * Unlike the current conversation, the consent request conversation is not replaced by a termination conversation.
+     */
+    List<AtPermissionRequestProjection> findByOriginalConversationIdOrCMRequestId(
+            String conversationId, @Nullable String cmRequestId);
+
+    /**
      * Finds permission requests by either conversation id or CMRequest id. Might return multiple as receiving
      * permission for multiple metering points create new permission request that share the conversation and CMRequest
      * id.

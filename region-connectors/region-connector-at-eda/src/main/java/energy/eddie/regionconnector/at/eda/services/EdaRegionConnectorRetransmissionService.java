@@ -92,14 +92,20 @@ public class EdaRegionConnectorRetransmissionService implements RegionConnectorR
             ));
         }
 
-        if (retransmissionRequest.from().isBefore(request.start()) ||
-            retransmissionRequest.to().isAfter(request.end())
+        if (!retransmissionRequest.from().isBefore(retransmissionRequest.to())
+            || retransmissionRequest.from().isBefore(request.start())
+            || (request.end() != null && retransmissionRequest.to().isAfter(request.end()))
         ) {
             LOGGER.warn("Retransmission request not within permission time frame");
             return Mono.just(new NoPermissionForTimeFrame(
                     retransmissionRequest.permissionId(),
                     now
             ));
+        }
+
+        if (request.meteringPointId().filter(id -> !id.isBlank()).isEmpty()
+            || request.consentId().filter(id -> !id.isBlank()).isEmpty()) {
+            return Mono.just(new NoActivePermission(retransmissionRequest.permissionId(), now));
         }
 
         ZonedDateTime created = ZonedDateTime.now(AT_ZONE_ID);
