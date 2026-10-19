@@ -3,7 +3,11 @@
 
 package energy.eddie.aiida.adapters.datasource.sga;
 
-import java.util.Objects;
+import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
+import jakarta.annotation.Nullable;
+
+import java.math.BigDecimal;
 
 public record SmartGatewaysAdapterMessage(
         SmartGatewaysAdapterMessageField electricityEquipmentId,
@@ -32,19 +36,38 @@ public record SmartGatewaysAdapterMessage(
         SmartGatewaysAdapterMessageField phasePowerCurrentL2,
         SmartGatewaysAdapterMessageField phasePowerCurrentL3
 ) {
-    private static final String DSMR_TARIFF_LOW = "0001";
-
+    @Nullable
     SmartGatewaysAdapterMessageField electricityDelivered() {
-        return Objects.equals(this.electricityTariff().value(), DSMR_TARIFF_LOW) ?
-                this.electricityDeliveredTariff1() :
-                this.electricityDeliveredTariff2();
+        return totalEnergy("electricityDelivered",
+                           electricityDeliveredTariff1,
+                           electricityDeliveredTariff2,
+                           ObisCode.POSITIVE_ACTIVE_ENERGY);
     }
 
+    @Nullable
     SmartGatewaysAdapterMessageField electricityReturned() {
-        return Objects.equals(this.electricityTariff().value(), DSMR_TARIFF_LOW) ?
-                this.electricityReturnedTariff1() :
-                this.electricityReturnedTariff2();
+        return totalEnergy("electricityReturned",
+                           electricityReturnedTariff1,
+                           electricityReturnedTariff2,
+                           ObisCode.NEGATIVE_ACTIVE_ENERGY);
+    }
+
+    @Nullable
+    private static SmartGatewaysAdapterMessageField totalEnergy(
+            String rawTag,
+            @Nullable SmartGatewaysAdapterMessageField tariff1,
+            @Nullable SmartGatewaysAdapterMessageField tariff2,
+            ObisCode obisCode
+    ) {
+        // A missing cumulative register is unknown, not zero.
+        if (tariff1 == null || tariff2 == null) {
+            return null;
+        }
+        var total = new BigDecimal(tariff1.value()).add(new BigDecimal(tariff2.value()));
+        return new SmartGatewaysAdapterMessageField(rawTag,
+                                                   total.toPlainString(),
+                                                   UnitOfMeasurement.KILO_WATT_HOUR,
+                                                   obisCode);
     }
 }
-
 

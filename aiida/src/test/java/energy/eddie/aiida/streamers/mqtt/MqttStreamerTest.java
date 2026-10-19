@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Sinks;
 import reactor.test.StepVerifier;
 import reactor.test.publisher.TestPublisher;
@@ -385,7 +386,9 @@ class MqttStreamerTest {
         var topic = "bar";
         var json = "json".getBytes(StandardCharsets.UTF_8);
         var failedToSendEntity = new FailedToSendEntity(PERMISSION_ID, topic, json);
-        when(mockRepository.findAllByPermissionId(PERMISSION_ID))
+        ReflectionTestUtils.setField(failedToSendEntity, "id", 1L);
+        when(mockRepository.findTopByPermissionIdOrderByIdDesc(PERMISSION_ID)).thenReturn(failedToSendEntity);
+        when(mockRepository.findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 0, 1))
                 .thenReturn(List.of(failedToSendEntity));
         streamer.connect();
 
@@ -395,6 +398,84 @@ class MqttStreamerTest {
         // Then
         verify(mockRepository).deleteAllById(any());
         verify(mockClient, times(1)).publish(anyString(), any(), anyInt(), anyBoolean());
+    }
+
+    @Test
+    void retryPages_preserveSnapshotAndDeleteOnlyProcessedRows() throws MqttException {
+        var first = queuedMessage(1);
+        var second = queuedMessage(2);
+        var third = queuedMessage(3);
+        when(mockRepository.findTopByPermissionIdOrderByIdDesc(PERMISSION_ID)).thenReturn(third);
+        when(mockRepository.findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 0, 3))
+                .thenReturn(List.of(first, second));
+        when(mockRepository.findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 2, 3))
+                .thenReturn(List.of(third));
+
+        streamer.connect();
+        streamer.connectComplete(false, "tcp://localhost:1883");
+
+        var order = inOrder(mockRepository);
+        order.verify(mockRepository).findTopByPermissionIdOrderByIdDesc(PERMISSION_ID);
+        order.verify(mockRepository).findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 0, 3);
+        order.verify(mockRepository).deleteAllById(List.of(1L, 2L));
+        order.verify(mockRepository).findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 2, 3);
+        order.verify(mockRepository).deleteAllById(List.of(3L));
+        order.verify(mockRepository).findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 3, 3);
+        verify(mockClient, times(3)).publish(anyString(), any(), eq(1), eq(false));
+        verify(mockRepository, never()).findAllByPermissionId(any());
+    }
+
+    @Test
+    void retryFailure_persistsReplacementWithoutExtendingSnapshot() throws MqttException {
+        var row = queuedMessage(5);
+        when(mockRepository.findTopByPermissionIdOrderByIdDesc(PERMISSION_ID)).thenReturn(row);
+        when(mockRepository.findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 0, 5))
+                .thenReturn(List.of(row));
+        when(mockClient.publish(anyString(), any(), eq(1), eq(false))).thenThrow(new MqttException(32104));
+
+        streamer.connect();
+        streamer.connectComplete(false, "tcp://localhost:1883");
+
+        var order = inOrder(mockRepository);
+        order.verify(mockRepository).findTopByPermissionIdOrderByIdDesc(PERMISSION_ID);
+        order.verify(mockRepository).findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 0, 5);
+        order.verify(mockRepository).save(any(FailedToSendEntity.class));
+        order.verify(mockRepository).deleteAllById(List.of(5L));
+        order.verify(mockRepository).findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 5, 5);
+        verify(mockClient, times(1)).publish(anyString(), any(), eq(1), eq(false));
+    }
+
+    @Test
+    void retryDisabled_doesNotReadOrDeleteBacklog() {
+        streamer.setTransmissionEnabled(false);
+        streamer.connect();
+        streamer.connectComplete(false, "tcp://localhost:1883");
+        verifyNoInteractions(mockRepository);
+    }
+
+    @Test
+    void retryDisabledMidPage_leavesUnprocessedRows() throws MqttException {
+        var first = queuedMessage(1);
+        var second = queuedMessage(2);
+        when(mockRepository.findTopByPermissionIdOrderByIdDesc(PERMISSION_ID)).thenReturn(second);
+        when(mockRepository.findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(PERMISSION_ID, 0, 2))
+                .thenReturn(List.of(first, second));
+        when(mockClient.publish(anyString(), any(), eq(1), eq(false))).thenAnswer(invocation -> {
+            streamer.setTransmissionEnabled(false);
+            return mockPublishToken;
+        });
+
+        streamer.connect();
+        streamer.connectComplete(false, "tcp://localhost:1883");
+
+        verify(mockRepository).deleteAllById(List.of(1L));
+        verify(mockClient, times(1)).publish(anyString(), any(), eq(1), eq(false));
+    }
+
+    private FailedToSendEntity queuedMessage(long id) {
+        var entity = new FailedToSendEntity(PERMISSION_ID, "retry-topic", "json".getBytes(StandardCharsets.UTF_8));
+        ReflectionTestUtils.setField(entity, "id", id);
+        return entity;
     }
 
     private void mockDataNeedWithSchemas() {

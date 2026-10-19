@@ -32,6 +32,7 @@ import tools.jackson.databind.ObjectMapper;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -46,7 +47,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private final SecretsService secretsService;
-    private boolean isBeingTerminated = false;
+    private volatile boolean isBeingTerminated = false;
     private volatile boolean transmissionEnabled;
     @Nullable
     private Disposable subscription;
@@ -345,19 +346,42 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
     }
 
     private void retryFailedToSendMessages() {
-        List<FailedToSendEntity> failedToSend = failedToSendRepository.findAllByPermissionId(streamingConfig.permissionId());
-        List<Long> ids = failedToSend.stream().map(entity -> {
-            publishMessage(entity.topic(), entity.json());
-            return entity.id();
-        }).toList();
+        if (!transmissionEnabled || isBeingTerminated) {
+            return;
+        }
+        var newest = failedToSendRepository.findTopByPermissionIdOrderByIdDesc(streamingConfig.permissionId());
+        if (newest == null) {
+            return;
+        }
 
-        // if sending failed again, they are inserted into the DB by publishMessage() so we can delete all we just fetched
-        failedToSendRepository.deleteAllById(ids);
-
-        LOGGER.atDebug()
-              .addArgument(streamingConfig.permissionId())
-              .addArgument(failedToSend.size())
-              .log("MqttStreamer for permission {} fetched and enqueued {} messages for sending that previously failed to send");
+        // Fix the upper bound before retrying: failed publishes are reinserted with new IDs and must
+        // not be retried indefinitely during the same connection. Keep only one small page in memory.
+        long ceilingId = newest.id();
+        long afterId = 0;
+        long retried = 0;
+        while (transmissionEnabled && !isBeingTerminated) {
+            var page = failedToSendRepository.findTop100ByPermissionIdAndIdGreaterThanAndIdLessThanEqualOrderByIdAsc(
+                    streamingConfig.permissionId(), afterId, ceilingId);
+            if (page.isEmpty()) {
+                break;
+            }
+            List<Long> processedIds = new ArrayList<>(page.size());
+            for (var entity : page) {
+                if (!transmissionEnabled || isBeingTerminated) {
+                    break;
+                }
+                publishMessage(entity.topic(), entity.json());
+                processedIds.add(entity.id());
+            }
+            // publishMessage persists another copy if sending fails; unprocessed rows remain intact.
+            if (!processedIds.isEmpty()) {
+                failedToSendRepository.deleteAllById(processedIds);
+                retried += processedIds.size();
+            }
+            afterId = page.getLast().id();
+        }
+        LOGGER.debug("MqttStreamer for permission {} retried {} queued messages in bounded batches",
+                     streamingConfig.permissionId(), retried);
     }
 
     private String loadPassword(MqttStreamingConfig mqttStreamingConfig) {
