@@ -55,12 +55,14 @@ public class FluviusBeanConfig {
             WebClient.Builder builder,
             WebClientSsl webClientSsl,
             SslBundles sslBundles,
-            FluviusConfiguration config
+            FluviusConfiguration config,
+            FluviusOAuthConfiguration oauthConfig
     ) {
-        return builder
-                .baseUrl(config.baseUrl())
-                .apply(webClientSsl.fromBundle(sslBundles.getBundle("fluvius")))
-                .build();
+        builder.baseUrl(config.baseUrl());
+        if (sslBundles.getBundleNames().contains(oauthConfig.sslBundle())) {
+            builder.apply(webClientSsl.fromBundle(sslBundles.getBundle(oauthConfig.sslBundle())));
+        }
+        return builder.build();
     }
 
     @Bean
