@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis;
@@ -16,13 +16,8 @@ public class TestResourceProvider {
     public static final String CONSUMPTION_LOAD_CURVE_1_DAY = "consumption_load_curve_2024-02-26_to_2024-02-27.json";
     public static final String CONSUMPTION_LOAD_CURVE_WITH_CHANGING_RESOLUTION_1_DAY = "consumption_load_curve_with_changing_resolution_2024-02-26_to_2024-02-27.json";
     public static final String DAILY_CONSUMPTION_1_WEEK = "daily_consumption_2024-02-01_2024-02-08.json";
-    public static final String CONTRACT = "contract-consumption.json";
-    public static final String CONTACT = "contact.json";
-    public static final String IDENTITY = "identity.json";
-    public static final String IDENTITY_LEGAL_ONLY = "identity-legal-only.json";
-    public static final String IDENTITY_NATURAL_ONLY = "identity-natural-only.json";
-
-    public static final String ADDRESS = "address.json";
+    public static final String SITUATION_CONTRACTUELLE = "situation-contractuelle.json";
+    public static final String GENERAL_DATA = "donnees-generales.json";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 

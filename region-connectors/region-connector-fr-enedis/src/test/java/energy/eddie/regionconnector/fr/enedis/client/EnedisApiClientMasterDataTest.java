@@ -1,22 +1,24 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.client;
 
 import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
+import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -35,133 +37,118 @@ class EnedisApiClientMasterDataTest {
     }
 
     @Test
-    void getContract() throws IOException {
+    void getContract_callsSituationContractuelleEndpoint() throws IOException, InterruptedException {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
         EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
-        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.CONTRACT));
-        String usagePointId = "24115050XXXXXX";
+        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.SITUATION_CONTRACTUELLE));
 
         // When & Then
-        enedisApi.getContract(usagePointId)
+        enedisApi.getContract("3127069600")
                  .as(StepVerifier::create)
-                 .assertNext(customer -> assertAll(
-                         () -> assertEquals("XXXX", customer.customerId()),
-                         () -> assertEquals(1, customer.usagePointContracts().size()),
-                         () -> assertEquals("24115050XXXXXX",
-                                            customer.usagePointContracts().getFirst().usagePoint().id()),
-                         () -> assertEquals("com", customer.usagePointContracts().getFirst().usagePoint().status()),
-                         () -> assertEquals("AMM", customer.usagePointContracts().getFirst().usagePoint().meterType()),
-                         () -> assertEquals("C5", customer.usagePointContracts().getFirst().contract().segment()),
-                         () -> assertEquals("6 kVA",
-                                            customer.usagePointContracts().getFirst().contract().subscribedPower()),
-                         () -> assertEquals("2017-07-15+02:00",
-                                            customer.usagePointContracts().getFirst().contract().lastActivationDate()),
-                         () -> assertEquals("BTINFMU4",
-                                            customer.usagePointContracts().getFirst().contract().distributionTariff()),
-                         () -> assertEquals("HC (22H50-6H50)",
-                                            customer.usagePointContracts().getFirst().contract().offPeakHours()),
-                         () -> assertEquals("Contrat GRD-F",
-                                            customer.usagePointContracts().getFirst().contract().contractType()),
-                         () -> assertEquals("SERVC",
-                                            customer.usagePointContracts().getFirst().contract().contractStatus()),
-                         () -> assertEquals("2024-05-11+02:00",
-                                            customer.usagePointContracts()
-                                                    .getFirst()
-                                                    .contract()
-                                                    .lastDistributionTariffChangeDate())
-                 ))
+                 .assertNext(situations -> {
+                     assertEquals(1, situations.size());
+                     var situation = situations.getFirst();
+                     assertEquals("3127069600", situation.usagePointId());
+                     assertEquals(List.of("C5"), situation.segments());
+                 })
+                 .expectComplete()
+                 .verify(Duration.ofSeconds(5));
+
+        RecordedRequest request = mockBackEnd.takeRequest();
+        assertEquals("/situation_contrat_auto/v1/3127069600", request.getPath());
+    }
+
+    @Test
+    void getContract_withObjectPayload_stillReturnsSingleSituation() {
+        // Given: tolerate a payload that is not wrapped in an array
+        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
+        doReturn(Mono.just("token")).when(tokenProvider).getToken();
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
+
+        mockBackEnd.enqueue(new MockResponse()
+                                    .setBody("""
+                                                     {"usage_point_id": "3127069600", "segment": "C5"}
+                                                     """)
+                                    .addHeader("Content-Type", "application/json"));
+
+        // When & Then
+        enedisApi.getContract("3127069600")
+                 .as(StepVerifier::create)
+                 .assertNext(situations -> {
+                     assertEquals(1, situations.size());
+                     assertEquals("3127069600", situations.getFirst().usagePointId());
+                 })
+                 .expectComplete()
+                 .verify(Duration.ofSeconds(5));
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Test
+    void getAddress_callsDonneesGeneralesEndpoint() throws IOException, InterruptedException {
+        // Given
+        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
+        doReturn(Mono.just("token")).when(tokenProvider).getToken();
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
+
+        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.GENERAL_DATA));
+
+        // When & Then
+        enedisApi.getAddress("24115050XXXXXX")
+                 .as(StepVerifier::create)
+                 .assertNext(data -> {
+                     assertEquals("75112", data.address().address().inseeCode());
+                     assertEquals("75000 Paris", data.address().address().postalCodeCity());
+                 })
+                 .expectComplete()
+                 .verify(Duration.ofSeconds(5));
+
+        RecordedRequest request = mockBackEnd.takeRequest();
+        assertEquals("/donnees_generales_auto/v1/24115050XXXXXX", request.getPath());
+    }
+
+    @SuppressWarnings("DataFlowIssue")
+    @Test
+    void getAddress_withArrayPayload_stillReturnsAddress() {
+        // Given: tolerate an array payload, since the sibling API returns one despite its docs
+        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
+        doReturn(Mono.just("token")).when(tokenProvider).getToken();
+        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
+
+        mockBackEnd.enqueue(new MockResponse()
+                                    .setBody("""
+                                                     [{"address": {"address": {"insee_code": "75112", "postal_code_city": "75000"}}}]
+                                                     """)
+                                    .addHeader("Content-Type", "application/json"));
+
+        // When & Then
+        enedisApi.getAddress("3127069600")
+                 .as(StepVerifier::create)
+                 .assertNext(data -> {
+                     assertEquals("75112", data.address().address().inseeCode());
+                     assertEquals("75000", data.address().address().postalCodeCity());
+                 })
                  .expectComplete()
                  .verify(Duration.ofSeconds(5));
     }
 
     @Test
-    void getContact() throws IOException {
+    void getAddress_withEmptyPayload_emitsEmptyAddressRatherThanCompletingEmpty() {
         // Given
         EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
         doReturn(Mono.just("token")).when(tokenProvider).getToken();
         EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
 
-        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.CONTACT));
-        String usagePointId = "24115050XXXXXX";
+        mockBackEnd.enqueue(new MockResponse()
+                                    .setBody("[]")
+                                    .addHeader("Content-Type", "application/json"));
 
-        // When & Then
-        enedisApi.getContact(usagePointId)
+        // When & Then: an empty Mono here would make the zip in AccountingPointDataService never emit
+        enedisApi.getAddress("3127069600")
                  .as(StepVerifier::create)
-                 .assertNext(customer -> assertAll(
-                         () -> assertEquals("XXXX", customer.customerId()),
-                         () -> assertEquals("mailtest@gmail.com", customer.contact().email()),
-                         () -> assertEquals("0512345678", customer.contact().phone())
-                 ))
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {TestResourceProvider.IDENTITY, TestResourceProvider.IDENTITY_LEGAL_ONLY,
-            TestResourceProvider.IDENTITY_NATURAL_ONLY})
-    void getIdentity(String file) throws IOException {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(file));
-        String usagePointId = "24115050XXXXXX";
-
-        // When & Then
-        enedisApi.getIdentity(usagePointId)
-                 .as(StepVerifier::create)
-                 .assertNext(customer -> assertAll(
-                         () -> assertEquals("XXXX", customer.customerId()),
-                         () -> customer.identity().legalEntity().ifPresent(legalEntity -> assertAll(
-                                 () -> assertEquals("SNCF Immo", legalEntity.name()),
-                                 () -> assertNull(legalEntity.siretNumber()),
-                                 () -> assertNull(legalEntity.business()),
-                                 () -> assertNull(legalEntity.industry()),
-                                 () -> assertNull(legalEntity.tradingName())
-                         )),
-                         () -> customer.identity().naturalPerson().ifPresent(naturalPerson -> assertAll(
-                                 () -> assertEquals("Jon", naturalPerson.firstName()),
-                                 () -> assertEquals("Doe", naturalPerson.lastName()),
-                                 () -> assertEquals("M", naturalPerson.title())
-                         ))
-                 ))
-                 .expectComplete()
-                 .verify(Duration.ofSeconds(5));
-    }
-
-    @Test
-    void getAddress() throws IOException {
-        // Given
-        EnedisTokenProvider tokenProvider = mock(EnedisTokenProvider.class);
-        doReturn(Mono.just("token")).when(tokenProvider).getToken();
-        EnedisApiClient enedisApi = new EnedisApiClient(tokenProvider, webClient);
-
-        mockBackEnd.enqueue(TestResourceProvider.readMockResponseFromFile(TestResourceProvider.ADDRESS));
-        String usagePointId = "24115050XXXXXX";
-
-        // When & Then
-        enedisApi.getAddress(usagePointId)
-                 .as(StepVerifier::create)
-                 .assertNext(customer -> assertAll(
-                         () -> assertEquals("XXXX", customer.customerId()),
-                         () -> assertEquals(1, customer.usagePoints().size()),
-                         () -> assertEquals("24115050XXXXXX", customer.usagePoints().getFirst().id()),
-                         () -> assertEquals("no com", customer.usagePoints().getFirst().status()),
-                         () -> assertEquals("PMEI", customer.usagePoints().getFirst().meterType()),
-                         () -> assertEquals("1 rue de l'homologation",
-                                            customer.usagePoints().getFirst().address().street()),
-                         () -> assertEquals("60000",
-                                            customer.usagePoints().getFirst().address().postalCode()),
-                         () -> assertEquals("BEAUVAIS",
-                                            customer.usagePoints().getFirst().address().city()),
-                         () -> assertEquals("France",
-                                            customer.usagePoints().getFirst().address().country()),
-                         () -> assertNull(customer.usagePoints().getFirst().address().geoPoints())
-                 ))
+                 .assertNext(data -> assertNull(data.address()))
                  .expectComplete()
                  .verify(Duration.ofSeconds(5));
     }

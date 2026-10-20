@@ -1,0 +1,31 @@
+[
+  {
+    "usage_point_id": "3127069600",
+    "contract_start": "2021-10-23T00:00:00+0200",
+    "contract_type": "Contrat Protocole501",
+    "contractor": "ELECTRICITE DE FRANCE",
+    "distribution_tariff": "Tarif BT<=36kVA Courte Utilisation heures pleines heures creuses associées à deux saisons",
+    "subscribed_power": {
+      "unit": "kVA",
+      "value": "6"
+    },
+    "segment": "C5",
+    "customer": {
+      "customer": {
+        "adress": {
+          "line1": "M VIGNAL ANDRE",
+          "line4": "rue DU CENTRE",
+          "line6": "34210 AIGUES VIVES"
+        }
+      }
+    },
+    "contact_data": {
+      "landline": "0000000000"
+    },
+    "person": {
+      "title": "M",
+      "lastname": "VIGNAL",
+      "firstname": "ANDRE"
+    }
+  }
+]
