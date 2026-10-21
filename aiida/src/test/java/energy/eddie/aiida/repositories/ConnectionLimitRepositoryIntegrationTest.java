@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.TestPropertySource;
@@ -61,6 +62,8 @@ class ConnectionLimitRepositoryIntegrationTest {
     private PermissionRepository permissionRepository;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private TestEntityManager entityManager;
 
     @BeforeEach
     void setUp() {
@@ -172,6 +175,19 @@ class ConnectionLimitRepositoryIntegrationTest {
 
         // Should only hit the 10:00 to 10:15 and not 9:45 to 10:00 limit
         assertEquals(1, result.size());
+    }
+
+    @Test
+    void save_withNanosecondPrecisionAndExistingKey_overwritesLimit() {
+        var start = Instant.parse("2026-08-01T10:00:00.123456789Z");
+        var end = start.plusSeconds(900);
+
+        connectionLimitRepository.saveAndFlush(limit(PERMISSION_A3, start, end, "first-mrid", "3.0"));
+        entityManager.clear();
+        connectionLimitRepository.saveAndFlush(limit(PERMISSION_A3, start, end, "second-mrid", "-10.0"));
+
+        assertTrue(connectionLimitRepository.findMaxRevisionNumberByMrid("second-mrid").isPresent());
+        assertTrue(connectionLimitRepository.findMaxRevisionNumberByMrid("first-mrid").isEmpty());
     }
 
     @Test
@@ -287,6 +303,18 @@ class ConnectionLimitRepositoryIntegrationTest {
                             "*/5 * * * * *",
                             false,
                             "CONNECTION_AGREEMENT_POINT");
+    }
+
+    private ConnectionLimit limit(UUID permissionId, Instant start, Instant end, String mrid, String minLimitKw) {
+        return new ConnectionLimit(permissionId,
+                                   METER_1,
+                                   start,
+                                   end,
+                                   new BigDecimal(minLimitKw),
+                                   new BigDecimal("8.0"),
+                                   mrid,
+                                   1,
+                                   Instant.parse("2026-07-10T00:00:00Z"));
     }
 
     private void saveLimit(

@@ -12,6 +12,9 @@ services:
   keycloak:
     container_name: aiida-keycloak
 
+  mailpit:
+    container_name: aiida-mailpit
+
 networks:
   default:
     external: true

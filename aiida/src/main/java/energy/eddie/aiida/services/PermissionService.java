@@ -533,7 +533,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
         var dataNeed = Objects.requireNonNull(permission.dataNeed());
-        if (!dataNeed.supportsLimitDefaults() || !isRangeValid) {
+        if (!dataNeed.supportsConnectionLimits() || !isRangeValid) {
             markPermissionAsUnfulfillable(permission);
             throw new LimitDefaultsNotAllowedException(permission.id());
         }

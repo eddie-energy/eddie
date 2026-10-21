@@ -21,6 +21,13 @@ spring:
         jwt:
           issuer-uri: ${aiida.keycloak.url.external}/realms/${aiida.keycloak.realm}
           jwk-set-uri: ${aiida.keycloak.url.internal}/realms/${aiida.keycloak.realm}/protocol/openid-connect/certs
+  mail:
+    properties:
+      mail:
+        smtp:
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 springdoc:
   swagger-ui:
@@ -29,6 +36,9 @@ springdoc:
       use-pkce-with-authorization-code-grant: true
 
 management:
+  health:
+    mail:
+      enabled: false
   endpoints:
     web:
       exposure:

@@ -11,9 +11,15 @@ import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
-import { revokePermission, updateInboundMessageFormat } from '@/api'
+import {
+  deleteConnectionLimitMonitoring,
+  revokePermission,
+  updateConnectionLimitMonitoring,
+  updateInboundMessageFormat,
+} from '@/api'
+import { dataSources, fetchDataSources } from '@/stores/dataSources'
 import { fetchPermissions, permissions } from '@/stores/permissions'
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
@@ -151,6 +157,37 @@ const dataSourceDisplayName = computed(() => {
   return inboundPermission?.displayName ?? permission.dataSource.name
 })
 
+const NO_MONITORING_DATA_SOURCE = 'NONE'
+const monitoringDataSourceId = ref<string>(
+  permission.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE,
+)
+
+const monitoringDataSourceOptions = computed(() => [
+  { label: t('permissions.dropdown.monitoringDataSourceNone'), value: NO_MONITORING_DATA_SOURCE },
+  ...dataSources.value.map(({ id, name }) => ({ label: name, value: id })),
+])
+
+const handleMonitoringDataSourceSelection = async (
+  value: string | number | boolean | undefined,
+) => {
+  try {
+    if (value === NO_MONITORING_DATA_SOURCE) {
+      await deleteConnectionLimitMonitoring(permission.permissionId)
+    } else {
+      await updateConnectionLimitMonitoring(permission.permissionId, String(value))
+    }
+    await fetchPermissions()
+  } catch {
+    monitoringDataSourceId.value = permission.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE
+  }
+}
+
+onMounted(async () => {
+  if (permission.supportsConnectionLimits && !dataSources.value.length) {
+    await fetchDataSources()
+  }
+})
+
 const { lastMessageAt } = useLastMessageRefresh(
   () => permission,
   () => !!status,
@@ -196,6 +233,22 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dt>{{ t('permissions.dropdown.maxLimitKw') }}</dt>
         <dd>{{ permission.maxLimitKw }} kW</dd>
       </div>
+      <template v-if="permission.supportsConnectionLimits">
+        <div class="permission-field permission-field--select">
+          <dt>{{ t('permissions.dropdown.monitoringDataSource') }}</dt>
+          <dd>
+            <CustomSelect
+              v-model="monitoringDataSourceId"
+              :options="monitoringDataSourceOptions"
+              :placeholder="t('permissions.dropdown.monitoringDataSourcePlaceholder')"
+              @update:model-value="handleMonitoringDataSourceSelection"
+            />
+          </dd>
+        </div>
+        <p class="monitoring-hint">
+          {{ t('permissions.dropdown.monitoringDataSourceHint') }}
+        </p>
+      </template>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.start') }}</dt>
         <dd>
@@ -438,6 +491,12 @@ const { lastMessageAt } = useLastMessageRefresh(
 
 .schema {
   gap: var(--spacing-sm);
+}
+
+.monitoring-hint {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--eddie-grey-medium);
 }
 
 .graph {
