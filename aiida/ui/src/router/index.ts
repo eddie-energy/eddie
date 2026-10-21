@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import { createRouter, createWebHistory } from 'vue-router'
@@ -21,6 +21,11 @@ const router = createRouter({
       path: '/account',
       name: 'account',
       component: () => import('../views/AccountView.vue'),
+    },
+    {
+      path: '/connection-monitor',
+      name: 'connection-monitor',
+      component: () => import('../views/ConnectionMonitorView.vue'),
     },
   ],
 })
