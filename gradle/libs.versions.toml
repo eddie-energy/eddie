@@ -25,7 +25,8 @@ jakarta-persistence-api = "3.2.0"
 sonar = "7.2.0.6526"
 commons-codec = "1.15"
 jackson = "3.0.3"
-jackson2-short = "2.20"
+jackson2 = "2.22.4"
+jackson2-annotations = "2.22"
 h2database = "2.3.232"
 postgresql = "42.7.3"
 javalin = "6.7.0"
@@ -33,8 +34,8 @@ jdbi3 = "3.37.1"
 reactor = "3.7.0"
 slf4j = "2.0.7"
 guice = "7.0.0"
-jte = "3.1.15"
 kafka-streams = "3.9.0"
+jte = "3.2.3"
 rabbitmq-amqp-client = "0.3.0"
 hibernate-validator = "8.0.1.Final"
 hibernate-orm = "7.2.0.Final"
@@ -83,8 +84,9 @@ junit-mockito = { module = "org.mockito:mockito-junit-jupiter", version.ref = "m
 
 # Jackson
 jackson-bom = { module = "tools.jackson:jackson-bom", version.ref = "jackson" }
+jackson2-bom = { module = "com.fasterxml.jackson:jackson-bom", version.ref = "jackson2" }
 jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson2-short" }
+jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson2-annotations" }
 jackson-jakarta-xmlbind-annotations = { module = "tools.jackson.module:jackson-module-jakarta-xmlbind-annotations", version.ref = "jackson" }
 jackson-dataformat-xml = { module = "tools.jackson.dataformat:jackson-dataformat-xml", version.ref = "jackson" }
 jackson-dataformat-yaml = { module = "tools.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
@@ -129,7 +131,7 @@ slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 # used by example-app
 jte = { module = "gg.jte:jte", version.ref = "jte" }
-javalin-rendering = { module = "io.javalin:javalin-rendering", version.ref = "javalin" }
+javalin-rendering-jte = { module = "io.javalin:javalin-rendering-jte", version.ref = "javalin" }
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
