@@ -44,7 +44,6 @@ hakky-logcaptor = "2.9.2"
 paho-mqtt-client = "1.2.5"
 nimbus = "11.10.1"
 bouncycastle = "1.78"
-keycloak = "25.0.3"
 caffeine = "3.2.0"
 jspecify = "1.0.0"
 
@@ -163,7 +162,6 @@ spring-retry = { module = "org.springframework.retry:spring-retry", version.ref 
 spring-openapi-webmvc-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "openapi-webmvc-ui" }
 spring-oxm = { module = "org.springframework:spring-oxm", version.ref = "spring-oxm" }
 spring-security-test = { module = "org.springframework.security:spring-security-test", version.ref = "spring-security-test" }
-spring-boot-starter-keycloak = { module = "org.keycloak:keycloak-spring-boot-starter", version.ref = "keycloak" }
 spring-boot-starter-security-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server" }
 spring-boot-starter-security-oauth2-resource-server-test = { module = "org.springframework.boot:spring-boot-starter-security-oauth2-resource-server-test" }
 spring-context = { module = "org.springframework:spring-context", version.ref = "spring-context" }

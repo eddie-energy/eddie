@@ -37,7 +37,6 @@ dependencies {
     implementation(libs.spring.boot.autoconfigurer)
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)
-    implementation(libs.spring.boot.starter.keycloak)
     implementation(libs.spring.boot.starter.thymeleaf)
     implementation(libs.spring.boot.starter.security.oauth2.client)
     implementation(libs.spring.boot.starter.security.oauth2.resource.server)
