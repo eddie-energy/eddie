@@ -31,8 +31,10 @@ dependencies {
 
     implementation(libs.guice)
     implementation(libs.javalin)
-    implementation(libs.javalin.rendering)
+    implementation(libs.javalin.rendering.jte)
     implementation(platform(libs.jackson.bom))
+    // Flyway brings Jackson 2 transitively, so a specific version is pinned here
+    implementation(platform(libs.jackson2.bom))
     implementation(libs.jackson.databind)
     implementation(libs.jackson.jakarta.xmlbind.annotations)
     implementation(libs.jdbi3.core)
@@ -74,6 +76,12 @@ tasks.register("run-example-app", JavaExec::class) {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+configurations.configureEach {
+    resolutionStrategy {
+        force("org.lz4:lz4-java:1.8.1")
+    }
 }
 
 configureJavaCompileWithErrorProne("energy.eddie.examples")
