@@ -6,7 +6,6 @@ package energy.eddie.aiida.services.secrets;
 import energy.eddie.aiida.errors.SecretDeletionException;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
-import org.keycloak.crypto.Algorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,7 @@ import java.util.UUID;
 public class KeyStoreSecretsService implements SecretsService {
     private static final Logger LOGGER = LoggerFactory.getLogger(KeyStoreSecretsService.class);
     private static final String KEYSTORE_TYPE = "PKCS12";
-    private static final String SECRET_ALGORITHM = Algorithm.AES;
+    private static final String SECRET_ALGORITHM = "AES";
 
     @Value("${aiida.keystore.password}")
     private char[] keyStorePassword;
