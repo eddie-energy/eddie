@@ -2,7 +2,10 @@
 
 FROM eclipse-temurin:21-jre-alpine
 RUN mkdir -p /opt/security
-COPY ./build/libs/aiida-1.0.0.jar /opt/aiida.jar
+RUN chown nobody:nobody /opt/security
+COPY --chown=nobody:nobody ./build/libs/aiida-1.0.0.jar /opt/aiida.jar
 WORKDIR /opt
+USER nobody
+HEALTHCHECK CMD wget --no-verbose http://localhost:8080/actuator/health/ping || exit 1
 CMD ["java", "-jar", "aiida.jar"]
 EXPOSE 8080
