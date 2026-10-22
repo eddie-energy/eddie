@@ -82,6 +82,7 @@ jobs:
           echo -n "$E2E_FLUVIUS_KEY" | base64 -di > ${{ env.FLUVIUS_KEY_FILE }}
           mkdir -p ${{ env.PONTON_FOLDER }}
           echo -n "$PONTON_ID_DAT" | base64 -di > ${{ env.PONTON_ID_DAT_FILE }}
+          chmod -R a+rwX ${{ env.PONTON_FOLDER }}
 
       - name: Gradle clean build directories
         run: ./gradlew clean
