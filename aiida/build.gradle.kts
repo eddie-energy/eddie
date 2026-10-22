@@ -121,7 +121,7 @@ tasks.withType<ProcessResources>().configureEach {
 
 jib {
     from {
-        image = "eclipse-temurin:21"
+        image = "eclipse-temurin:21-jre-alpine"
         platforms {
             platform {
                 architecture = "amd64"
