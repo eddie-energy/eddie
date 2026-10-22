@@ -30,6 +30,12 @@ dependencies {
     implementation(project(":api"))
 
     implementation(libs.guice)
+    constraints {
+        // Guice 7.0.0 pulls in a Guava version affected by CVE-2023-2976 and CVE-2020-8908.
+        implementation(libs.guava)
+        // Kafka 3.9.2 pulls in a vulnerable lz4-java version.
+        implementation(libs.lz4.java)
+    }
     implementation(libs.javalin)
     implementation(libs.javalin.rendering.jte)
     implementation(platform(libs.jackson.bom))

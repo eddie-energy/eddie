@@ -34,6 +34,7 @@ jdbi3 = "3.37.1"
 reactor = "3.8.7"
 slf4j = "2.0.7"
 guice = "7.0.0"
+guava = "33.7.2-jre"
 jte = "3.2.3"
 kafka-streams = "3.9.2"
 lz4 = "1.12.1"
@@ -137,6 +138,7 @@ javalin-rendering-jte = { module = "io.javalin:javalin-rendering-jte", version.r
 javalin = { module = "io.javalin:javalin", version.ref = "javalin" }
 jdbi3-core = { module = "org.jdbi:jdbi3-core", version.ref = "jdbi3" }
 guice = { module = "com.google.inject:guice", version.ref = "guice" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 # dependencies required by region-connector-fr
 jackson-databind-nullable = { module = "org.openapitools:jackson-databind-nullable", version.ref = "jackson-databind-nullable-version" }
 apache-http-client = { module = "org.apache.httpcomponents.client5:httpclient5", version.ref = "apache-httpcomponents-client-version" }
