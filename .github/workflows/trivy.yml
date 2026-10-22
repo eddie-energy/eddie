@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+# SPDX-License-Identifier: Apache-2.0
+
+name: Trivy vulnerability scan
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    paths-ignore:
+      - "docs/**"
+      - ".idea/**"
+      - ".sonarlint/**"
+      - ".run/**"
+      - "**.md"
+      - "LICENSE"
+      - "NOTICE"
+  push:
+    branches:
+      - main
+  schedule:
+    # Weekly scan to catch vulnerabilities disclosed after a dependency was added.
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-scan:
+    name: Dependency scan
+    runs-on: [ Linux ]
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v6
+      - name: Scan dependencies for vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-results.sarif
+          limit-severities-for-sarif: true
+          version: v0.76.0
+      - name: Upload results to GitHub Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4
+        with:
+          sarif_file: trivy-results.sarif
+          category: trivy-fs
