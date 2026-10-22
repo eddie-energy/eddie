@@ -26,6 +26,11 @@ dependencies {
     implementation(project(":common-types"))
 }
 
+// Security patches not yet included in the Spring Boot 4.1.1 BOM.
+project.extensions.extraProperties["tomcat.version"] = "11.0.27"
+project.extensions.extraProperties["jackson-bom.version"] = "3.1.8"
+project.extensions.extraProperties["jackson-2-bom.version"] = "2.22.4"
+
 plugins.withId("net.ltgt.errorprone") {
     dependencies {
         errorprone(libs.findLibrary("errorprone-core").get())
