@@ -17,11 +17,12 @@ With native MQTT support, they can be seamlessly integrated into AIIDA.
 
 ### Tested Devices
 
-| Device               | Category   | Phases                   | Data Signals                                                              | Image                                                                                 |
-|----------------------|------------|--------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| Shelly Pro 3 EM Gen2 | Shelly 3EM | Three-phase              | `triphase`: 1 x `EM`, 1 `EMData`<br>`monophase`: 3 x `EM1`, x 3 `EM1Data` | ![Shelly Pro 3EM](../../../../images/data-sources/mqtt/shelly/img-shelly-pro-3em.jpg) |
-| Shelly EM Gen3       | Shelly EM  | Single-phase             | 1 x `Switch`, 2 x `EM1`, 2 x `EM1Data`                                    | ![Shelly Pro EM-50](../../../../images/data-sources/mqtt/shelly/img-shelly-em.png)    |
-| Shelly 1 PM Gen4     | Shelly PM  | n channels (1 <= n <= 4) | 1 x `Switch`                                                              | ![Shelly 1 PM](../../../../images/data-sources/mqtt/shelly/img-shelly-1pm.png)        |
+| Device               | Category    | Phases                   | Data Signals                                                              | Image                                                                                 |
+|----------------------|-------------|--------------------------|---------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| Shelly Pro 3 EM Gen2 | Shelly 3EM  | Three-phase              | `triphase`: 1 x `EM`, 1 `EMData`<br>`monophase`: 3 x `EM1`, x 3 `EM1Data` | ![Shelly Pro 3EM](../../../../images/data-sources/mqtt/shelly/img-shelly-pro-3em.jpg) |
+| Shelly EM Gen3       | Shelly EM   | Single-phase             | 1 x `Switch`, 2 x `EM1`, 2 x `EM1Data`                                    | ![Shelly Pro EM-50](../../../../images/data-sources/mqtt/shelly/img-shelly-em.png)    |
+| Shelly 1 PM Gen4     | Shelly PM   | n channels (1 <= n <= 4) | 1 x `Switch`                                                              | ![Shelly 1 PM](../../../../images/data-sources/mqtt/shelly/img-shelly-1pm.png)        |
+| Shelly Plug M Gen3   | Shelly Plug | Single-phase             | 1 x `Switch`                                                              | N/A                                                                                   |
 
 ### Supported Data Signals
 
@@ -188,11 +189,11 @@ true OR false
 </details>
 
 <details>
-<summary>Switch</summary>
+<summary>Switch (Shelly 1 PM Gen4, Shelly Plug M Gen3)</summary>
 
 ```json
 {
-  "src": "shelly1pmg4-1234567890ab",
+  "src": "shellyplugmg3-1234567890ab",
   "dst": "aiida/12345678-1234-1234-1234-123456789abc/events",
   "method": "NotifyStatus",
   "params": {
