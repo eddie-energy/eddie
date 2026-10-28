@@ -1,0 +1,12 @@
+{
+  "address": {
+    "address": {
+      "staircase_floor_apartment": "Esc A, étage 2, apt 12",
+      "building": "Bâtiment A",
+      "number_street_name": "12 rue de la Paix",
+      "locality": "Les Prés",
+      "postal_code_city": "75000 Paris",
+      "insee_code": "75112"
+    }
+  }
+}

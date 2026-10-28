@@ -105,7 +105,6 @@ class IntermediateValidatedHistoricalDocumentTest {
                         </Point>
                       </Period>
                       <marketEvaluationPoint.mRID codingScheme="NFR">24115050XXXXXX</marketEvaluationPoint.mRID>
-                      <marketEvaluationPoint.meterReadings.readings.readingType.aggregate>26</marketEvaluationPoint.meterReadings.readings.readingType.aggregate>
                       <marketEvaluationPoint.meterReadings.readings.readingType.commodity>2</marketEvaluationPoint.meterReadings.readings.readingType.commodity>
                       <reason.code>999</reason.code>
                     </TimeSeries>

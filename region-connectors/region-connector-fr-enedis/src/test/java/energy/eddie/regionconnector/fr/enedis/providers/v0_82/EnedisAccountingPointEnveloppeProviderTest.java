@@ -6,30 +6,29 @@ package energy.eddie.regionconnector.fr.enedis.providers.v0_82;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
-import energy.eddie.regionconnector.fr.enedis.TestResourceProvider;
 import energy.eddie.regionconnector.fr.enedis.api.UsagePointType;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
-import energy.eddie.regionconnector.fr.enedis.dto.address.CustomerAddress;
-import energy.eddie.regionconnector.fr.enedis.dto.contact.CustomerContact;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.identity.CustomerIdentity;
+import energy.eddie.regionconnector.fr.enedis.dto.address.AddressData;
+import energy.eddie.regionconnector.fr.enedis.dto.address.InstallationAddress;
+import energy.eddie.regionconnector.fr.enedis.dto.address.UsagePointGeneralData;
+import energy.eddie.regionconnector.fr.enedis.dto.situation.ContractualSituation;
 import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisDataSourceInformation;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableAccountingPointData;
 import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import org.junit.jupiter.api.Test;
 import reactor.test.StepVerifier;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EnedisAccountingPointEnvelopeProviderTest {
     @Test
-    void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() throws Exception {
+    void testGetEddieValidatedHistoricalDataMarketDocumentStream_publishesDocuments() {
         // Given
         var identifiableAccountingPointData = identifiableAccountingPointData();
         EnedisConfiguration enedisConfiguration = new EnedisConfiguration(
@@ -58,11 +57,15 @@ class EnedisAccountingPointEnvelopeProviderTest {
                     .verifyComplete();
     }
 
-    private IdentifiableAccountingPointData identifiableAccountingPointData() throws IOException {
-        var contract = TestResourceProvider.readFromFile(TestResourceProvider.CONTRACT, CustomerContract.class);
-        var address = TestResourceProvider.readFromFile(TestResourceProvider.ADDRESS, CustomerAddress.class);
-        var identity = TestResourceProvider.readFromFile(TestResourceProvider.IDENTITY, CustomerIdentity.class);
-        var contact = TestResourceProvider.readFromFile(TestResourceProvider.CONTACT, CustomerContact.class);
+    private IdentifiableAccountingPointData identifiableAccountingPointData() {
+        var situation = new ContractualSituation(
+                "usagePointId", null, null, null, null,
+                null, null, null, null, null, null, null,
+                List.of("C5"), null, null, null, null
+        );
+        var generalData = new UsagePointGeneralData(
+                new AddressData(new InstallationAddress(null, null, null, null, null, "75112"))
+        );
         var permissionRequest = new SimpleFrEnedisPermissionRequest(
                 "usagePointId",
                 null,
@@ -79,10 +82,8 @@ class EnedisAccountingPointEnvelopeProviderTest {
         );
         return new IdentifiableAccountingPointData(
                 permissionRequest,
-                contract,
-                address,
-                identity,
-                contact
+                List.of(situation),
+                generalData
         );
     }
 }
