@@ -20,7 +20,7 @@
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "tinyduration": "^3.4.1",
-    "vue": "^3.5.29",
+    "vue": "^3.5.44",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
@@ -35,7 +35,7 @@
     "npm-run-all2": "^8.0.4",
     "prettier": "^3.8.1",
     "typescript": "~5.9.3",
-    "vite": "7.3.1",
+    "vite": "^7.3.7",
     "vite-plugin-vue-devtools": "^8.0.6",
     "vue-tsc": "^3.2.5"
   }

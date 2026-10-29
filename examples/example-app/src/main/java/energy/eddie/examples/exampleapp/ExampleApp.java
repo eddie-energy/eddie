@@ -67,21 +67,21 @@ public class ExampleApp {
                 config.router.contextPath = Env.PUBLIC_CONTEXT_PATH.get();
             }
             config.fileRenderer(jte);
-        });
-        app.before(ctx -> {
-            var path = ctx.path().substring(ctx.contextPath().length());
-            if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
-                var dest = ctx.contextPath() + "/login";
-                LOGGER.info("User isn't logged in, redirecting to {}", dest);
-                ctx.redirect(dest);
-            }
-        });
+            config.routes.before(ctx -> {
+                var path = ctx.path().substring(ctx.contextPath().length());
+                if (null == ctx.sessionAttribute("user") && !path.startsWith("/login")) {
+                    var dest = ctx.contextPath() + "/login";
+                    LOGGER.info("User isn't logged in, redirecting to {}", dest);
+                    ctx.redirect(dest);
+                }
+            });
 
-        app.get("/", ctx -> ctx.redirect("login"));
+            config.routes.get("/", ctx -> ctx.redirect("login"));
 
-        Stream.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class)
-              .map(injector::getInstance)
-              .forEach(handler -> handler.register(app));
+            Stream.of(LoginHandler.class, ShowConnectionListHandler.class, ShowConnectionHandler.class)
+                  .map(injector::getInstance)
+                  .forEach(handler -> handler.register(config.routes));
+        });
         app.start(8081);
     }
 

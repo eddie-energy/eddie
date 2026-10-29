@@ -4,7 +4,7 @@
 package energy.eddie.examples.exampleapp;
 
 import com.google.inject.Inject;
-import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,9 +20,9 @@ public class LoginHandler implements JavalinHandler {
     }
 
     @Override
-    public void register(Javalin app) {
-        app.get("/login", ctx -> ctx.render("login-user.jte"));
-        app.post("/login", ctx -> {
+    public void register(RoutesConfig routes) {
+        routes.get("/login", ctx -> ctx.render("login-user.jte"));
+        routes.post("/login", ctx -> {
             var email = ctx.formParam("input-user");
             logger.info("Login with user: {}", email);
             if (null == email || email.isEmpty()) {
