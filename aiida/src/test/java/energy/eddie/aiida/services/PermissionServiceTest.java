@@ -268,7 +268,7 @@ class PermissionServiceTest {
                 mockInboundAiidaLocalDataNeed));
         when(mockInboundAiidaLocalDataNeed.name()).thenReturn("My Name");
         when(mockInboundAiidaLocalDataNeed.type()).thenReturn(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
-        when(mockInboundAiidaLocalDataNeed.supportsLimitDefaults()).thenReturn(true);
+        when(mockInboundAiidaLocalDataNeed.supportsConnectionLimits()).thenReturn(true);
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When

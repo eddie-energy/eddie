@@ -112,6 +112,10 @@ public class Permission {
     private BigDecimal maxLimitKw;
 
     @Nullable
+    @Column(name = "monitoring_data_source_id")
+    private UUID monitoringDataSourceId;
+
+    @Nullable
     @PrimaryKeyJoinColumn
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonProperty
@@ -258,6 +262,21 @@ public class Permission {
      */
     public @Nullable BigDecimal maxLimitKw() {
         return maxLimitKw;
+    }
+
+    /**
+     * Returns the data source monitored for connection limit violations, or null if none is assigned.
+     */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public @Nullable UUID monitoringDataSourceId() {
+        return monitoringDataSourceId;
+    }
+
+    /**
+     * Assigns the data source to monitor for connection limit violations, or clears the assignment if null.
+     */
+    public void updateMonitoringDataSource(@Nullable UUID dataSourceId) {
+        monitoringDataSourceId = dataSourceId;
     }
 
     /**
@@ -438,5 +457,15 @@ public class Permission {
             return transmissionSchedule;
         }
         return dataNeed != null ? dataNeed.transmissionSchedule() : null;
+    }
+
+    /**
+     * True if the permission allows the eligible party to send connection limits,
+     * indicating that the permission supports connection limit features.
+     */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Schema(description = "Whether the permission supports connection limit features such as monitoring.", example = "true")
+    public boolean supportsConnectionLimits() {
+        return dataNeed instanceof InboundAiidaLocalDataNeed && dataNeed.supportsConnectionLimits();
     }
 }

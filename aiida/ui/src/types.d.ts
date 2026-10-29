@@ -82,6 +82,8 @@ export type AiidaPermission = {
   effectiveTransmissionSchedule?: string
   inboundMessageFormat?: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
+  monitoringDataSourceId?: string
+  supportsConnectionLimits: boolean
   userId: string
   unimplemented: {
     packageGraph: any
@@ -126,6 +128,11 @@ export type AiidaDataSourceType = {
 
 export type AiidaApplicationInformation = {
   aiidaId: string
+}
+
+export type UserSettings = {
+  userId: string
+  contactEmail: string | null
 }
 
 export type AiidaPermissionRequestsDTO = {

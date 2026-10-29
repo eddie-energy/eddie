@@ -39,32 +39,72 @@ A sample configuration for these services is also provided in AIIDA's [compose f
 It is recommended to configure AIIDA using the .env file provided in the `aiida/docker` folder in combination with the
 `compose.yml` file.
 
-| Parameter                                           | Description                                                                                                         |
-|-----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
-| AIIDA_EXTERNAL_HOST                                 | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                   |
-| AIIDA_CORS_ALLOWED_ORIGINS                          | The origins that are allowed to communicate with AIIDA (see [reverse proxy deployments](#reverse-proxy-deployment)) |
-| AIIDA_HANDSHAKE_LOCALHOST_REPLACEMENT               | Replaces "localhost" hostnames in HTTP requests (useful when testing a local EDDIE instance)                        |
-| AIIDA_CLEANUP_INTERVAL                              | Specifies in which fixed duration the cleanup task is scheduled (default: P1D)                                      |
-| AIIDA_CLEANUP_ENTITIES_AIIDARECORD_RETENTION        | Specifies the time-to-live for an AIIDA_RECORD (default: P1D)                                                       |
-| AIIDA_CLEANUP_ENTITIES_FAILEDTOSENDENTITY_RETENTION | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY (default: P1D)                                               |
-| AIIDA_CLEANUP_ENTITIES_INBOUNDRECORD_RETENTION      | Specifies the time-to-live for an INBOUND_RECORD (default: P1D)                                                     |
-| SPRING_DATASOURCE_HOST                              | The hostname of the TimescaleDB service                                                                             |
-| SPRING_DATASOURCE_PORT                              | The port of the TimescaleDB service                                                                                 |
-| SPRING_DATASOURCE_DATABASE                          | The database name for AIIDA in TimescaleDB                                                                          |
-| SPRING_DATASOURCE_USERNAME                          | The username for accessing the database                                                                             |
-| SPRING_DATASOURCE_PASSWORD                          | The password for accessing the database                                                                             |
-| MQTT_INTERNAL_HOST                                  | The hostname for docker internal communication                                                                      |
-| MQTT_EXTERNAL_HOST                                  | The hostname for external communication                                                                             |
-| MQTT_BCRYPT_SALT_ROUNDS                             | The bcrypt salt rounds for hashing passwords                                                                        |
-| MQTT_PASSWORD                                       | The password for the MQTT user `aiida`                                                                              |
-| MQTT_TLS_CERTIFICATE_PATH                           | Filepath of TLS certificate for MQTT broker (can be mounted to Docker container)                                    |
-| EMQX_DATABASE_PASSWORD                              | The password for the `emqx` user in TimescaleDB                                                                     |
-| KEYCLOAK_ADMIN_USERNAME                             | The admin username for Keycloak                                                                                     |
-| KEYCLOAK_ADMIN_PASSWORD                             | The admin password for Keycloak                                                                                     |
-| KEYCLOAK_EXTERNAL_HOST                              | The hostname for accessing Keycloak                                                                                 |
-| KEYCLOAK_INTERNAL_HOST                              | The hostname for docker internal communication                                                                      |
-| KEYCLOAK_REALM                                      | The Keycloak realm used for AIIDA                                                                                   |
-| KEYCLOAK_CLIENT ID                                  | The Keycloak client ID used for AIIDA                                                                               |
+| Parameter                                                   | Description                                                                                                                                                                   |
+|-------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| AIIDA_EXTERNAL_HOST                                         | Network-accessible host of the AIIDA instance (defaults to http://localhost:8080)                                                                                             |
+| AIIDA_CORS_ALLOWED_ORIGINS                                  | The origins that are allowed to communicate with AIIDA (see [reverse proxy deployments](#reverse-proxy-deployment))                                                           |
+| AIIDA_HANDSHAKE_LOCALHOST_REPLACEMENT                       | Replaces "localhost" hostnames in HTTP requests (useful when testing a local EDDIE instance)                                                                                  |
+| AIIDA_CLEANUP_INTERVAL                                      | Specifies in which fixed duration the cleanup task is scheduled (default: P1D)                                                                                                |
+| AIIDA_CLEANUP_ENTITIES_AIIDARECORD_RETENTION                | Specifies the time-to-live for an AIIDA_RECORD (default: P1D)                                                                                                                 |
+| AIIDA_CLEANUP_ENTITIES_FAILEDTOSENDENTITY_RETENTION         | Specifies the time-to-live for a FAILED_TO_SEND_ENTITY (default: P1D)                                                                                                         |
+| AIIDA_CLEANUP_ENTITIES_INBOUNDRECORD_RETENTION              | Specifies the time-to-live for an INBOUND_RECORD (default: P1D)                                                                                                               |
+| AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_ENABLED          | Whether monitored data sources are checked for connection limit violations (default: `true`). If `false`, no violations are stored and no notifications are sent              |
+| AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_INTERVAL_MS      | The interval in milliseconds at which monitored data sources are checked for connection limit violations (default: 10000)                                                     |
+| AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_RECOVERY_HOLD_MS | The time in milliseconds the measured power has to stay within the limits until a violation ends (default: 60000). `0` ends a violation at the first record within the limits |
+| SPRING_DATASOURCE_HOST                                      | The hostname of the TimescaleDB service                                                                                                                                       |
+| SPRING_DATASOURCE_PORT                                      | The port of the TimescaleDB service                                                                                                                                           |
+| SPRING_DATASOURCE_DATABASE                                  | The database name for AIIDA in TimescaleDB                                                                                                                                    |
+| SPRING_DATASOURCE_USERNAME                                  | The username for accessing the database                                                                                                                                       |
+| SPRING_DATASOURCE_PASSWORD                                  | The password for accessing the database                                                                                                                                       |
+| MQTT_INTERNAL_HOST                                          | The hostname for docker internal communication                                                                                                                                |
+| MQTT_EXTERNAL_HOST                                          | The hostname for external communication                                                                                                                                       |
+| MQTT_BCRYPT_SALT_ROUNDS                                     | The bcrypt salt rounds for hashing passwords                                                                                                                                  |
+| MQTT_PASSWORD                                               | The password for the MQTT user `aiida`                                                                                                                                        |
+| MQTT_TLS_CERTIFICATE_PATH                                   | Filepath of TLS certificate for MQTT broker (can be mounted to Docker container)                                                                                              |
+| EMQX_DATABASE_PASSWORD                                      | The password for the `emqx` user in TimescaleDB                                                                                                                               |
+| KEYCLOAK_ADMIN_USERNAME                                     | The admin username for Keycloak                                                                                                                                               |
+| KEYCLOAK_ADMIN_PASSWORD                                     | The admin password for Keycloak                                                                                                                                               |
+| KEYCLOAK_EXTERNAL_HOST                                      | The hostname for accessing Keycloak                                                                                                                                           |
+| KEYCLOAK_INTERNAL_HOST                                      | The hostname for docker internal communication                                                                                                                                |
+| KEYCLOAK_REALM                                              | The Keycloak realm used for AIIDA                                                                                                                                             |
+| KEYCLOAK_CLIENT ID                                          | The Keycloak client ID used for AIIDA                                                                                                                                         |
+| SPRING_MAIL_HOST                                            | The hostname of the SMTP server used to email notifications (notifications are disabled if unset)                                                                             |
+| SPRING_MAIL_PORT                                            | The port of the SMTP server (default: 25)                                                                                                                                     |
+| SPRING_MAIL_USERNAME                                        | The username for SMTP authentication and the sender address of notification emails                                                                                            |
+| SPRING_MAIL_PASSWORD                                        | The password for SMTP authentication                                                                                                                                          |
+
+### Email Notifications
+
+AIIDA can send email notifications to users when the measured data of an assigned data source violates the connection limits of a permission,
+and a recovery email when the data is back within the limits.
+Notifications are only sent when a mail server is configured (`SPRING_MAIL_HOST`).
+To receive notifications the user has to set a contact email address in their account settings.
+
+Each violation is also stored with its start, end, the violated limit and the measured power, and can be queried with `GET /connection-limits/{permissionId}/violations`.
+Only active permissions that have a data source assigned are monitored.
+Violations of a permission end when the measured power is back within the limits or the permission is no longer monitored, for example because it was revoked or terminated.
+Periods without any limit are treated as having no limits, so they cannot be violated.
+To avoid flooding the user with notifications when the power oscillates around a limit, a violation only ends after the power stayed within the limits for the recovery hold (`AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_RECOVERY_HOLD_MS`, default: 1 minute).
+The recovery email is sent after that hold, and the violation ends at the first record that was back within the limits.
+A new record is needed to confirm the recovery, so a violation stays open until the data source reports again.
+
+The latest measured value of each assigned data source is checked periodically (`AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_INTERVAL_MS`),
+so a notification can be delayed by up to that interval.
+The detection can be disabled with `AIIDA_CONNECTION_LIMIT_VIOLATION_DETECTION_ENABLED=false`.
+
+Only data recorded while AIIDA is running is checked.
+After a restart, the detection continues with the newest record of each data source, so a violation that started and ended while AIIDA was not running is neither stored nor reported.
+A violation that was ongoing when AIIDA stopped stays open, and ends at the first record that is back within the limits.
+
+The development setup in `aiida/docker` includes a [Mailpit](https://github.com/axllent/mailpit) service to capture outgoing emails.
+Start it with `docker compose --profile mail up` and open `http://localhost:8025` to inspect them.
+Uncomment the `SPRING_MAIL_*` variables in `aiida/docker/.env` to route notifications to Mailpit.
+
+Additional `spring.mail.properties.*` settings (like TLS, authentication, or timeouts) can be supplied through the corresponding environment variables (see [Spring documentation](https://docs.spring.io/spring-boot/reference/io/email.html)).
+AIIDA sets connection, read and write timeouts of 5 seconds, so that an unresponsive mail server does not delay the violation detection.
+They can be changed with `SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT`, `SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT` and `SPRING_MAIL_PROPERTIES_MAIL_SMTP_WRITETIMEOUT` (in milliseconds).
+Failed notifications, for example due to an invalid contact email or an unreachable mail server, are logged and are not retried.
+The mail server is not part of the health endpoint, as notifications are optional.
 
 ### Reverse Proxy Deployment
 
