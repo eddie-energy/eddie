@@ -17,6 +17,7 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
 import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceState;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.SubscribedService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
@@ -297,10 +298,141 @@ class PermissionRequestServiceTest {
     }
 
     @Test
+    void testAuthorizePermissionRequest_withSeveralServicesPerUsagePoint_createsOnePermissionRequestPerActiveUsagePoint() throws PermissionNotFoundException {
+        // Given
+        var today = LocalDate.now(ZONE_ID_FR);
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequestWithGranularity(Granularity.PT30M)));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(6L, List.of(
+                        service("upid", ServiceState.ACTIVE, today, today.plusDays(30)),
+                        service("upid", ServiceState.ACTIVE, today, today.plusDays(30)),
+                        service("upid2", ServiceState.ACTIVE, today, today.plusDays(30)),
+                        service("upid2", ServiceState.ACTIVE, today, today.plusDays(30)),
+                        service("terminated", ServiceState.TERMINATED, today, today.plusDays(30)),
+                        service("ended", ServiceState.ACTIVE, today.minusDays(30), today.minusDays(1))
+                ))));
+        var acceptedCaptor = ArgumentCaptor.forClass(FrAcceptedEvent.class);
+
+        // When
+        var res = permissionRequestService.authorizePermissionRequest("pid", 999999999L);
+
+        // Then
+        assertEquals(Authorization.ACCEPTED, res);
+        verify(outbox, times(2)).commit(acceptedCaptor.capture());
+        verify(outbox, times(1)).commit(isA(FrCreatedEvent.class));
+        var accepted = acceptedCaptor.getAllValues();
+        assertAll(
+                () -> assertEquals("pid", accepted.getFirst().permissionId()),
+                () -> assertEquals("upid", accepted.getFirst().usagePointId()),
+                () -> assertEquals("upid2", accepted.getLast().usagePointId()),
+                () -> assertEquals(Granularity.PT30M, accepted.getFirst().granularity()),
+                () -> assertEquals(Granularity.PT30M, accepted.getLast().granularity())
+        );
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_withUsagePointOfEarlierConsent_acceptsNewUsagePointOnly() throws PermissionNotFoundException {
+        // Given
+        var today = LocalDate.now(ZONE_ID_FR);
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequestWithGranularity(Granularity.PT30M)));
+        when(repository.findAllByConnectionIdAndDataNeedIdAndStatus("cid", "dnid", PermissionProcessStatus.ACCEPTED))
+                .thenReturn(List.of(new EnedisPermissionRequestBuilder()
+                                            .setPermissionId("earlierPid")
+                                            .setConnectionId("cid")
+                                            .setDataNeedId("dnid")
+                                            .setUsagePointId("earlierUpid")
+                                            .create()));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(2L, List.of(
+                        service("earlierUpid", ServiceState.ACTIVE, today.minusDays(1), today.plusDays(30)),
+                        service("upid", ServiceState.ACTIVE, today, today.plusDays(30))
+                ))));
+        var acceptedCaptor = ArgumentCaptor.forClass(FrAcceptedEvent.class);
+
+        // When
+        var res = permissionRequestService.authorizePermissionRequest("pid", 999999999L);
+
+        // Then
+        assertEquals(Authorization.ACCEPTED, res);
+        verify(outbox).commit(acceptedCaptor.capture());
+        verify(outbox, never()).commit(isA(FrCreatedEvent.class));
+        assertEquals("pid", acceptedCaptor.getValue().permissionId());
+        assertEquals("upid", acceptedCaptor.getValue().usagePointId());
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_withSeveralNewUsagePoints_acceptsUsagePointOfNewestService() throws PermissionNotFoundException {
+        // Given
+        var today = LocalDate.now(ZONE_ID_FR);
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequestWithGranularity(Granularity.PT30M)));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(2L, List.of(
+                        service("olderUpid", ServiceState.ACTIVE, today.minusDays(1), today.plusDays(30)),
+                        service("upid", ServiceState.ACTIVE, today, today.plusDays(30))
+                ))));
+        var acceptedCaptor = ArgumentCaptor.forClass(FrAcceptedEvent.class);
+
+        // When
+        permissionRequestService.authorizePermissionRequest("pid", 999999999L);
+
+        // Then
+        verify(outbox, times(2)).commit(acceptedCaptor.capture());
+        var accepted = acceptedCaptor.getAllValues();
+        assertAll(
+                () -> assertEquals("pid", accepted.getFirst().permissionId()),
+                () -> assertEquals("upid", accepted.getFirst().usagePointId()),
+                () -> assertNotEquals("pid", accepted.getLast().permissionId()),
+                () -> assertEquals("olderUpid", accepted.getLast().usagePointId())
+        );
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_withOnlyInactiveServices_isInvalid() throws PermissionNotFoundException {
+        // Given
+        var today = LocalDate.now(ZONE_ID_FR);
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequestWithGranularity(Granularity.PT30M)));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(1L, List.of(
+                        service("upid", ServiceState.REQUESTED, today, today.plusDays(30))
+                ))));
+
+        // When
+        var res = permissionRequestService.authorizePermissionRequest("pid", 999999999L);
+
+        // Then
+        assertEquals(Authorization.INVALID, res);
+        verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.INVALID));
+        verify(outbox, never()).commit(isA(FrAcceptedEvent.class));
+    }
+
+    @Test
     void testAuthorizePermissionRequest_withNonExistingPermissionRequest_throws() {
         // Given, When, Then
         assertThrows(PermissionNotFoundException.class,
                      () -> permissionRequestService.authorizePermissionRequest("NonExistingPid", 999999999L));
+    }
+
+    private static EnedisPermissionRequest permissionRequestWithGranularity(Granularity granularity) {
+        return new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setConnectionId("cid")
+                .setDataNeedId("dnid")
+                .setStart(LocalDate.now(ZoneOffset.UTC).minusDays(3))
+                .setEnd(LocalDate.now(ZoneOffset.UTC))
+                .setGranularity(granularity)
+                .create();
+    }
+
+    private static SubscribedService service(String pointId, ServiceState state, LocalDate start, LocalDate end) {
+        return new SubscribedService(
+                null, null, null, null, start, end, state, null,
+                pointId,
+                null, null, null, null, null, null, null, null,
+                null);
     }
 
     private static SubscribedService serviceWithPointId(String pointId) {

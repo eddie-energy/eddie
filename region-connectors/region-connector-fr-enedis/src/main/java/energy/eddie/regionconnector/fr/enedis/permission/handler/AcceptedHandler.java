@@ -28,10 +28,10 @@ public class AcceptedHandler implements EventHandler<FrAcceptedEvent> {
     @Override
     public void accept(FrAcceptedEvent event) {
         final String usagePointId = event.usagePointId();
-        var request = repository.getByPermissionId(event.permissionId());
 
         // no granularity means accounting point data needs to be fetched
-        if (request.granularity() == null) {
+        if (event.granularity() == null) {
+            var request = repository.getByPermissionId(event.permissionId());
             accountingPointDataService.fetchAccountingPointData(request, usagePointId);
         } else {
             accountingPointDataService.fetchMeteringPointSegment(event.permissionId(), usagePointId);
