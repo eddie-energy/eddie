@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.dtos.datasource;
@@ -27,6 +27,23 @@ class DataSourceDtoTest {
         // Then
         assertInstanceOf(SimulationDataSourceDto.class, dto);
         assertEquals(12, ((SimulationDataSourceDto) dto).pollingInterval());
+    }
+
+    @Test
+    void parseJson_givenSimulationWithLimits() {
+        // Given
+        var json = "{\"name\":\"Test Source\",\"type\":\"SIMULATION\",\"minConsumptionWatt\":200," +
+                   "\"maxConsumptionWatt\":1800,\"minProductionWatt\":0,\"maxProductionWatt\":1200}";
+
+        // When
+        var dto = objectMapper.readValue(json, DataSourceDto.class);
+
+        // Then
+        var simulationDto = assertInstanceOf(SimulationDataSourceDto.class, dto);
+        assertEquals(200L, simulationDto.minConsumptionWatt());
+        assertEquals(1800L, simulationDto.maxConsumptionWatt());
+        assertEquals(0L, simulationDto.minProductionWatt());
+        assertEquals(1200L, simulationDto.maxProductionWatt());
     }
 
     @Test

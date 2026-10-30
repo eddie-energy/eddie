@@ -4,6 +4,7 @@
 
 This data source was developed to simulate measurement data for testing and development purposes within AIIDA.
 It generates random values for predefined OBIS codes at specified intervals.
+The generated active power for consumption (import) and production (export) can be bounded by a minimum and maximum value.
 
 | OBIS Code | Description                       |
 |-----------|-----------------------------------|
@@ -16,7 +17,21 @@ It generates random values for predefined OBIS codes at specified intervals.
 
 ### Data Source Configuration
 
-There is no configuration needed for this data source.
+The simulation data source can be configured with a polling interval as well as energy consumption and production ranges.
+
+| Field                | Description                                                                                                | Default |
+|----------------------|------------------------------------------------------------------------------------------------------------|---------|
+| `pollingInterval`    | Time in seconds between generated records. See [interval-based data sources](../interval-data-sources.md). | `5`     |
+| `minConsumptionWatt` | Minimum instantaneous active power for consumption (import) in watt.                                       | `200`   |
+| `maxConsumptionWatt` | Maximum instantaneous active power for consumption (import) in watt.                                       | `1800`  |
+| `minProductionWatt`  | Minimum instantaneous active power for production (export) in watt.                                        | `0`     |
+| `maxProductionWatt`  | Maximum instantaneous active power for production (export) in watt.                                        | `1200`  |
+
+Both bounds are inclusive; every field is required.
+Each maximum must be greater than or equal to its minimum.
+Setting both bounds of a direction to the same value always produces exactly that value.
+Setting the consumption or production bounds both to `0` effectively disables that direction.
+AIIDA rejects data sources whose maximum is smaller than its minimum with `400 Bad Request`.
 
 ### Setup in AIIDA
 
