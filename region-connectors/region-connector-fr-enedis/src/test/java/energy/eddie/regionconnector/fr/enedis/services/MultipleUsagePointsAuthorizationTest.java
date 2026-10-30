@@ -57,7 +57,8 @@ import static org.mockito.Mockito.*;
 /**
  * Authorizes a permission request whose Enedis authorization covers two usage points, with the event bus, outbox,
  * handlers and database wired as in the application. Every additional usage point gets its own permission request,
- * which has to fetch metering data like the original one, since they share the same data need.
+ * which has to fetch metering data like the original one, since they share the same data need. Usage points that
+ * already have a permission request from an earlier consent under the same authorization don't get another one.
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -69,6 +70,7 @@ class MultipleUsagePointsAuthorizationTest {
     private static final String FIRST_USAGE_POINT = "11111111111111";
     private static final String SECOND_USAGE_POINT = "22222222222222";
     private static final long AUTHORIZATION_ID = 1L;
+    private static final String DATA_NEED_ID = "dnid";
     @SuppressWarnings("unused")
     @Container
     @ServiceConnection
@@ -123,10 +125,36 @@ class MultipleUsagePointsAuthorizationTest {
         assertMeteringDataFetchedForEveryUsagePoint(permissionId);
     }
 
+    @Test
+    void authorizePermissionRequest_forSecondConsentUnderSameAuthorization_acceptsOnlyNewUsagePoint() throws PermissionNotFoundException {
+        // Given
+        var firstPermissionId = givenValidatedPermissionRequest();
+        givenSubscribedServices(FIRST_USAGE_POINT);
+        authorizeWithinOpenEntityManagerInView(firstPermissionId);
+        // Enedis adds the services of the second consent to the same authorization
+        var secondPermissionId = givenValidatedPermissionRequest();
+        givenSubscribedServices(FIRST_USAGE_POINT, SECOND_USAGE_POINT);
+
+        // When
+        var res = authorizeWithinOpenEntityManagerInView(secondPermissionId);
+
+        // Then
+        assertEquals(Authorization.ACCEPTED, res);
+        var accepted = repository.findAllByConnectionIdAndDataNeedIdAndStatus(connectionId,
+                                                                              DATA_NEED_ID,
+                                                                              PermissionProcessStatus.ACCEPTED);
+        assertEquals(2, accepted.size());
+        verify(accountingPointDataService).fetchMeteringPointSegment(firstPermissionId, FIRST_USAGE_POINT);
+        verify(accountingPointDataService).fetchMeteringPointSegment(secondPermissionId, SECOND_USAGE_POINT);
+        verify(accountingPointDataService, times(2)).fetchMeteringPointSegment(anyString(), anyString());
+        verify(accountingPointDataService, never()).fetchAccountingPointData(any(), anyString());
+    }
+
     private void assertMeteringDataFetchedForEveryUsagePoint(String permissionId) {
-        var extraPermissionId = repository.findByStatus(PermissionProcessStatus.ACCEPTED)
+        var extraPermissionId = repository.findAllByConnectionIdAndDataNeedIdAndStatus(connectionId,
+                                                                                      DATA_NEED_ID,
+                                                                                      PermissionProcessStatus.ACCEPTED)
                                           .stream()
-                                          .filter(pr -> pr.connectionId().equals(connectionId))
                                           .map(FrEnedisPermissionRequest::permissionId)
                                           .filter(id -> !id.equals(permissionId))
                                           .findFirst()
@@ -157,7 +185,7 @@ class MultipleUsagePointsAuthorizationTest {
      */
     private String givenValidatedPermissionRequest() {
         var permissionId = UUID.randomUUID().toString();
-        outbox.commit(new FrCreatedEvent(permissionId, connectionId, "dnid"));
+        outbox.commit(new FrCreatedEvent(permissionId, connectionId, DATA_NEED_ID));
         outbox.commit(new FrValidatedEvent(permissionId,
                                            LocalDate.now(ZONE_ID_FR).minusDays(10),
                                            LocalDate.now(ZONE_ID_FR).minusDays(1),
