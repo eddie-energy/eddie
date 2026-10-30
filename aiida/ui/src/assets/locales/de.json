@@ -117,6 +117,7 @@
     "showMqttPassword": "MQTT-Passwort anzeigen",
     "hideMqttPassword": "MQTT-Passwort ausblenden",
     "copyMqttPassword": "MQTT-Passwort kopieren",
+    "openConnectionMonitor": "Im Anschlussmonitor öffnen",
     "mqttProvisioning": {
       "title": "Bereitstellung konfigurieren",
       "openButton": "Bereitstellung konfigurieren",
@@ -188,7 +189,11 @@
       "permissionID": "Berechtigungs-ID",
       "openDetails": "Berechtigungsdetails öffnen",
       "lastMessageReceived": "Letzte Nachricht empfangen",
-      "lastMessageSent": "Letzte Nachricht gesendet"
+      "lastMessageSent": "Letzte Nachricht gesendet",
+      "monitoringDataSource": "Überwachte Datenquelle",
+      "monitoringDataSourcePlaceholder": "Datenquelle auswählen",
+      "monitoringDataSourceNone": "Keine Datenquelle",
+      "monitoringDataSourceHint": "Die ausgewählte Datenquelle wird auf Überschreitungen dieser Grenzwerte überwacht."
     },
     "modal": {
       "title": "Neue Berechtigung hinzufügen",
@@ -215,7 +220,24 @@
     "settings": "Einstellungen",
     "logout": "Abmelden",
     "mqttTlsCertificate": "MQTT TLS Zertifikat",
-    "downloadCertificate": "Herunterladen"
+    "downloadCertificate": "Herunterladen",
+    "contactEmail": "Benachrichtigungs-E-Mail",
+    "contactEmailPlaceholder": "du{'@'}beispiel.com",
+    "contactEmailHint": "Wird nur verwendet, um dich über Überschreitungen der Anschlussgrenzen zu informieren.",
+    "save": "Speichern"
+  },
+  "connectionMonitor": {
+    "title": "Anschlussmonitor",
+    "permissionLabel": "Berechtigung für Anschlussgrenzen",
+    "permissionPlaceholder": "Berechtigung auswählen",
+    "from": "Von",
+    "to": "Bis",
+    "apply": "Anwenden",
+    "maxLimit": "Obergrenze",
+    "minLimit": "Untergrenze",
+    "loading": "Wird geladen …",
+    "noData": "Keine Anschlussgrenzen im gewählten Zeitraum verfügbar.",
+    "noMonitorablePermissions": "Keine überwachbaren Berechtigungen für Anschlussgrenzen verfügbar."
   },
   "toasts": {
     "info": "Wussten Sie schon?",
@@ -225,6 +247,8 @@
     "acceptPermission": "Berechtigungsanfrage akzeptiert.",
     "updateInboundMessageFormat": "Format eingehender Nachrichten aktualisiert.",
     "updateDisplayName": "Anzeigename aktualisiert.",
+    "updateConnectionLimitMonitoring": "Überwachte Datenquelle aktualisiert.",
+    "updateUserSettings": "Benachrichtigungs-E-Mail aktualisiert.",
     "revokePermission": "Die Berechtigung für diesen Dienst wurde widerrufen.",
     "rejectPermission": "Berechtigungsanfrage abgelehnt.",
     "createDatasource": "Datenquelle erstellt.",

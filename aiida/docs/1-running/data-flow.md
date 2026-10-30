@@ -61,3 +61,17 @@ When a streamer is created for a permission, it retrieves the filtered and buffe
 The streamer then transmits this data to **EDDIE** via **MQTT**, using the configuration defined in the permission’s MqttStreamingConfig.
 
 Currently, AIIDA only supports **MQTT** as the streaming protocol - however, the system is designed to be **easily extendable** to other streaming mechanisms.
+
+## Provisioning
+
+The **provisioning** component makes inbound records available to the owning AIIDA user.
+It subscribes to the inbound record stream of the aggregator.
+
+For **MQTT** provisioning, AIIDA publishes every new inbound record to a topic.
+The topic belongs either to an external broker of the customer or to the MQTT broker that AIIDA manages.
+AIIDA recreates the publishers of active MQTT configurations after a restart.
+
+For **REST** provisioning, AIIDA does not publish records.
+The customer retrieves the latest record of the data source on demand through the Inbound API.
+
+See [Inbound Provisioning](../2-integrating/inbound-provisioning.md) for the modes and the configuration.

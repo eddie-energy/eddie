@@ -163,7 +163,7 @@ public class PermissionCommandService {
             @Nullable BigDecimal maxLimitKw
     ) {
         var dataNeed = Objects.requireNonNull(permission.dataNeed());
-        if (!dataNeed.supportsLimitDefaults()) {
+        if (!dataNeed.supportsConnectionLimits()) {
             LOGGER.warn(
                     "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: permission is not inbound or does not have the MIN_MAX_ENVELOPE_CIM_V1_12 schema",
                     permission.id());

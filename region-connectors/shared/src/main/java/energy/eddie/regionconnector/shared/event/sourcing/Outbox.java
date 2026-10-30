@@ -7,10 +7,14 @@ import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Implementation of the outbox pattern.
  * First persists the permission event to the event store and then emits it to the {@link EventBus}.
+ * Within a transaction, emission is deferred until commit and discarded on rollback.
+ * Publication is in-process and is not recovered after a process failure following the database commit.
  *
  * @see <a href="https://microservices.io/patterns/data/transactional-outbox.html">Outbox Pattern</a>
  */
@@ -32,7 +36,16 @@ public class Outbox {
      */
     public void commit(PermissionEvent permissionEvent) {
         if (repository.saveAndFlush(permissionEvent) != null) {
-            eventBus.emit(permissionEvent);
+            if (TransactionSynchronizationManager.isSynchronizationActive()) {
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        eventBus.emit(permissionEvent);
+                    }
+                });
+            } else {
+                eventBus.emit(permissionEvent);
+            }
         } else if (LOGGER.isErrorEnabled()) {
             LOGGER.error("Could not save event, it was not emitted and might not be repeatable: {}",
                         permissionEvent.permissionId());

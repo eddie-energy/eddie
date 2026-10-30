@@ -16,6 +16,7 @@ import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestBuilder;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,7 @@ import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -114,7 +116,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                        ) &&
                                                  permissionId.equals(PERMISSION_ID) &&
                                                  // like this because ZonedDateTime.now() is mocked
-                                                 timestamp.toOffsetDateTime().isBefore(OffsetDateTime.now(AT_ZONE_ID))
+                                                 !timestamp.toOffsetDateTime().isAfter(OffsetDateTime.now(AT_ZONE_ID))
                     )
                     .expectComplete()
                     .verify(Duration.ofSeconds(2));
@@ -197,7 +199,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                    ) &&
                                              permissionId.equals(PERMISSION_ID) && message.equals(
                                            "Could not send request, investigate logs") &&
-                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                                             !timestamp.isAfter(ZonedDateTime.now(AT_ZONE_ID))
                 )
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -230,7 +232,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                    ) &&
                                              permissionId.equals(PERMISSION_ID) && message.equals(
                                            "Retransmission of MasterData not supported") &&
-                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                                             !timestamp.isAfter(ZonedDateTime.now(AT_ZONE_ID))
                 )
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -261,7 +263,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                            ZonedDateTime timestamp
                                    ) &&
                                              permissionId.equals(PERMISSION_ID) &&
-                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                                             !timestamp.isAfter(ZonedDateTime.now(AT_ZONE_ID))
                 )
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -293,7 +295,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                            ZonedDateTime timestamp
                                    ) &&
                                              permissionId.equals(PERMISSION_ID) &&
-                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                                             !timestamp.isAfter(ZonedDateTime.now(AT_ZONE_ID))
                 )
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -328,7 +330,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                            ZonedDateTime timestamp
                                    ) &&
                                              permissionId.equals(PERMISSION_ID) &&
-                                             timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                                             !timestamp.isAfter(ZonedDateTime.now(AT_ZONE_ID))
                 )
                 .expectComplete()
                 .verify(Duration.ofSeconds(2));
@@ -367,11 +369,79 @@ class EdaRegionConnectorRetransmissionServiceTest {
                                                String message
                                        ) && permissionId.equals(PERMISSION_ID) && message.equals(
                                                "Service is shutting down, unclear if request got through to the MDA"
-                                       ) && timestamp.isBefore(ZonedDateTime.now(AT_ZONE_ID))
+                                       ) && !timestamp.isAfter(ZonedDateTime.now(AT_ZONE_ID))
                     );
         }
         stepVerifier.expectComplete()
                     .verify(Duration.ofSeconds(2));
+    }
+
+    @ParameterizedTest
+    @MethodSource("incompleteAssignments")
+    void requestRetransmission_incompleteAssignment_doesNotSendRequest(String meteringPoint, String consentId)
+            throws TransmissionException {
+        when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
+        var permission = permission(meteringPoint, consentId, TODAY, PermissionProcessStatus.ACCEPTED);
+        when(atPermissionRequestRepository.findByPermissionId(PERMISSION_ID)).thenReturn(Optional.of(permission));
+        var service = new EdaRegionConnectorRetransmissionService(atConfiguration, groupingIdFactory, edaAdapter,
+                                                                 atPermissionRequestRepository);
+
+        StepVerifier.create(service.requestRetransmission(getRetransmissionRequest(TODAY.minusDays(2), TODAY.minusDays(1))))
+                    .expectNextMatches(NoActivePermission.class::isInstance).verifyComplete();
+
+        verify(edaAdapter, never()).sendCPRequest(any());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = PermissionProcessStatus.class, names = {"ACCEPTED", "FULFILLED"})
+    void requestRetransmission_openEndedPermission_sendsOnlyItsOwnPoint(PermissionProcessStatus status)
+            throws TransmissionException {
+        var responses = TestPublisher.<CPRequestResult>create();
+        when(edaAdapter.getCPRequestResultStream()).thenReturn(responses.flux());
+        when(atPermissionRequestRepository.findByPermissionId(PERMISSION_ID))
+                .thenReturn(Optional.of(permission("second-point", "second-consent", null, status)));
+        var service = new EdaRegionConnectorRetransmissionService(atConfiguration, groupingIdFactory, edaAdapter,
+                                                                 atPermissionRequestRepository);
+
+        var result = service.requestRetransmission(getRetransmissionRequest(TODAY.minusDays(2), TODAY.minusDays(1)));
+
+        var captor = ArgumentCaptor.forClass(CPRequestCR.class);
+        verify(edaAdapter).sendCPRequest(captor.capture());
+        var request = captor.getValue();
+        assertEquals("second-point", request.meteringPointId());
+        assertEquals(TODAY.minusDays(2), request.start());
+        assertEquals(TODAY.minusDays(1), request.end());
+        responses.emit(new CPRequestResult(request.messageId(), CPRequestResult.Result.ACCEPTED));
+        StepVerifier.create(result).expectNextMatches(Success.class::isInstance).verifyComplete();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void requestRetransmission_emptyOrReversedInterval_doesNotSendRequest(int days) throws TransmissionException {
+        when(edaAdapter.getCPRequestResultStream()).thenReturn(Flux.empty());
+        setupFoundPermissionRequest(TODAY, AllowedGranularity.PT15M, PermissionProcessStatus.ACCEPTED);
+        var service = new EdaRegionConnectorRetransmissionService(atConfiguration, groupingIdFactory, edaAdapter,
+                                                                 atPermissionRequestRepository);
+        var from = TODAY.minusDays(2);
+
+        StepVerifier.create(service.requestRetransmission(getRetransmissionRequest(from, from.plusDays(days))))
+                    .expectNextMatches(NoPermissionForTimeFrame.class::isInstance).verifyComplete();
+
+        verify(edaAdapter, never()).sendCPRequest(any());
+    }
+
+    private static Stream<Arguments> incompleteAssignments() {
+        return Stream.of(Arguments.of(null, "consent"), Arguments.of("", "consent"), Arguments.of(" ", "consent"),
+                         Arguments.of("point", null), Arguments.of("point", ""), Arguments.of("point", " "));
+    }
+
+    private static energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequest permission(
+            String meteringPoint, String consentId, LocalDate end, PermissionProcessStatus status
+    ) {
+        return new EdaPermissionRequestBuilder().setPermissionId(PERMISSION_ID).setConnectionId("connection")
+                .setDataNeedId("data-need").setDsoId("AT009000").setMeteringPointId(meteringPoint)
+                .setConsentId(consentId).setStart(TODAY.minusWeeks(1)).setEnd(end)
+                .setGranularity(AllowedGranularity.PT15M).setStatus(status).build();
     }
 
     private static RetransmissionRequest getRetransmissionRequest(LocalDate from, LocalDate to) {
@@ -422,7 +492,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                         PERMISSION_ID, "connectionId", "dataNeedId",
                         "cmRequestId", "conversationId", "dsoId",
                         Optional.of("meteringPointId"), today.minusWeeks(1), today,
-                        permissionProcessStatus, Optional.empty(), granularity
+                        permissionProcessStatus, Optional.of("consentId"), granularity
                 )
         ));
     }

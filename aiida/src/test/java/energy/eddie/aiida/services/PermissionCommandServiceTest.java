@@ -143,7 +143,7 @@ class PermissionCommandServiceTest {
         when(permission.id()).thenReturn(permissionId);
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsLimitDefaults()).thenReturn(true);
+        when(dataNeed.supportsConnectionLimits()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
 
@@ -164,7 +164,7 @@ class PermissionCommandServiceTest {
         when(permission.id()).thenReturn(permissionId);
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsLimitDefaults()).thenReturn(true);
+        when(dataNeed.supportsConnectionLimits()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, null, null));
 
@@ -178,7 +178,7 @@ class PermissionCommandServiceTest {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsLimitDefaults()).thenReturn(false);
+        when(dataNeed.supportsConnectionLimits()).thenReturn(false);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
 
@@ -192,7 +192,7 @@ class PermissionCommandServiceTest {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsLimitDefaults()).thenReturn(true);
+        when(dataNeed.supportsConnectionLimits()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.TEN, BigDecimal.ONE));
 

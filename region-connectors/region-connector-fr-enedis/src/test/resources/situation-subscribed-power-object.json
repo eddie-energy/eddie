@@ -1,0 +1,10 @@
+{
+  "usage_point_id": "24115050XXXXXX",
+  "subscribed_power": {
+    "unit": "kW",
+    "value": "6"
+  },
+  "segment": [
+    "C5"
+  ]
+}

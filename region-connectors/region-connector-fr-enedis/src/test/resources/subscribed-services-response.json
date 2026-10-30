@@ -1,0 +1,53 @@
+{
+  "nbTotalServices": 2,
+  "serviceSouscrit": [
+    {
+      "id": "1",
+      "injection": false,
+      "soutirage": true,
+      "serviceCode": "ACCES",
+      "dateDebut": "2026-01-15",
+      "dateFin": "2029-01-15",
+      "etatCode": "ACTIF",
+      "etatLibelle": "Actif",
+      "pointId": "12345678901234",
+      "sirenTitulaire": "123456789",
+      "sirenBeneficiaire": "987654321",
+      "mesuresTypeCode": "CDC",
+      "mesuresPas": "PT30M",
+      "periodiciteTransmission": "P1D",
+      "mesuresCorrigees": true,
+      "espaceDynamique": false,
+      "publicationDonnees": false,
+      "autorisation": {
+        "autorisationId": 999999999,
+        "autorisationLibelle": "Consentement client",
+        "autorisationType": "EXPLICITE"
+      }
+    },
+    {
+      "id": "2",
+      "injection": true,
+      "soutirage": false,
+      "serviceCode": "ACCES",
+      "dateDebut": "2026-03-01",
+      "dateFin": "2029-03-01",
+      "etatCode": "DEMANDE",
+      "etatLibelle": "Demande",
+      "pointId": "98765432109876",
+      "sirenTitulaire": "123456789",
+      "sirenBeneficiaire": "987654321",
+      "mesuresTypeCode": "IDX",
+      "mesuresPas": "P1D",
+      "periodiciteTransmission": "P1M",
+      "mesuresCorrigees": false,
+      "espaceDynamique": false,
+      "publicationDonnees": true,
+      "autorisation": {
+        "autorisationId": 888888888,
+        "autorisationLibelle": "Consentement client 2",
+        "autorisationType": "IMPLICITE"
+      }
+    }
+  ]
+}

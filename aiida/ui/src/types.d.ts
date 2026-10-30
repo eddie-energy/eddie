@@ -82,6 +82,8 @@ export type AiidaPermission = {
   effectiveTransmissionSchedule?: string
   inboundMessageFormat?: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
+  monitoringDataSourceId?: string
+  supportsConnectionLimits: boolean
   userId: string
   unimplemented: {
     packageGraph: any
@@ -128,6 +130,11 @@ export type AiidaApplicationInformation = {
   aiidaId: string
 }
 
+export type UserSettings = {
+  userId: string
+  contactEmail: string | null
+}
+
 export type AiidaPermissionRequestsDTO = {
   eddieId: string
   permissionIds: string[]
@@ -170,6 +177,16 @@ export type ProvisioningConnectionDto = {
   username: string
   password: string
   topic: string
+}
+
+export type ConnectionLimit = {
+  permissionId: string
+  meterId: string | null
+  documentId: string | null
+  intervalStart: string
+  intervalEnd: string
+  minLimitKw: number | null
+  maxLimitKw: number | null
 }
 
 export type PermissionTypes = 'Active' | 'Pending' | 'Complete'

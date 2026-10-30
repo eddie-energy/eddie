@@ -10,6 +10,8 @@ import { ref } from 'vue'
 import PermissionDetails from './PermissionDetails.vue'
 import EditableDisplayName from './EditableDisplayName.vue'
 import { useI18n } from 'vue-i18n'
+import ContextBadge from '@/components/ContextBadge.vue'
+import { isFcaPermission } from '@/stores/permissions.ts'
 
 const { permission, status } = defineProps<{
   permission: AiidaPermission
@@ -36,12 +38,7 @@ const isEditingDisplayName = ref(false)
       <div class="header-title">
         <PermissionIcon class="icon" />
         <EditableDisplayName v-model:editing="isEditingDisplayName" :permission />
-        <span
-          v-if="permission.dataNeed.contexts?.includes('FLEXIBLE-CONNECTION-AGREEMENT')"
-          class="fca-label"
-        >
-          FCA
-        </span>
+        <ContextBadge v-if="isFcaPermission(permission)">FCA</ContextBadge>
       </div>
       <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
       <div v-if="!isEditingDisplayName" class="non-essential">
@@ -110,16 +107,6 @@ const isEditingDisplayName = ref(false)
   justify-self: start;
 
   width: 100%;
-}
-
-.fca-label {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: var(--eddie-primary);
-  border-radius: var(--border-radius);
-  color: var(--light);
-  font-weight: var(--font-weight-bold);
-  font-size: 0.75rem;
-  line-height: 1;
 }
 
 .permission-header {

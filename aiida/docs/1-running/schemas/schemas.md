@@ -15,11 +15,12 @@ Currently, the following schemas are supported for outbound data:
 - [CIM message format](cim/cim.md)
     - `SMART-METER-P1-CIM-V1-04`
     - `SMART-METER-P1-CIM-V1-12`
+- Forwarded [inbound data](#inbound-data)
 
 ## Inbound Data
 
 More information about inbound data can be found in the [inbound data source documentation](../data-sources/mqtt/inbound/inbound-data-source.md).
 Currently, the following schemas are supported for inbound data:
 
-- `MIN_MAX_ENVELOPE_CIM_V1_12`: See [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/min-max-envelope.html)
+- `MIN-MAX-ENVELOPE-CIM-V1-12`: See [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/cim/min-max-envelope.html)
 - `OPAQUE`: See [this documentation](https://architecture.eddie.energy/framework/2-integrating/messages/agnostic.html#opaque-envelopes)

@@ -5,7 +5,10 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
+import energy.eddie.aiida.services.connectionlimit.ConnectionLimitViolationService;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,11 +32,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ConnectionLimitController.class)
 class ConnectionLimitControllerTest {
@@ -42,6 +43,8 @@ class ConnectionLimitControllerTest {
 
     @MockitoBean
     private ConnectionLimitService connectionLimitService;
+    @MockitoBean
+    private ConnectionLimitViolationService connectionLimitViolationService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -105,6 +108,45 @@ class ConnectionLimitControllerTest {
                          Arguments.of(null, null, NOW, NOW),
                          Arguments.of("", "  ", NOW, NOW),
                          Arguments.of("-P1D", "P1D", "2026-07-09T10:00:00Z", "2026-07-11T10:00:00Z"));
+    }
+
+    @Test
+    @WithMockUser
+    void givenPermission_returnsViolationsOfTimeFrame() throws Exception {
+        var permissionId = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
+        var dataSourceId = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
+        var start = Instant.parse("2026-07-10T08:45:00Z");
+        var violation = new ConnectionLimitViolation(permissionId,
+                                                      dataSourceId,
+                                                      start,
+                                                      null,
+                                                      new BigDecimal("3.0"),
+                                                      new BigDecimal("8.0"),
+                                                      new BigDecimal("9.1"));
+        violation.registerPower(new BigDecimal("9.8"));
+        var from = Instant.parse("2026-07-10T08:00:00Z");
+        var to = Instant.parse("2026-07-10T10:00:00Z");
+        when(connectionLimitViolationService.getViolations(permissionId, from, to)).thenReturn(List.of(violation));
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/violations", permissionId)
+                                .param("from", from.toString())
+                                .param("to", to.toString()))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].startedAt").value(start.toString()))
+               .andExpect(jsonPath("$[0].endedAt").doesNotExist())
+               .andExpect(jsonPath("$[0].dataSourceId").value(dataSourceId.toString()))
+               .andExpect(jsonPath("$[0].peakPowerKw").value(9.8));
+    }
+
+    @Test
+    @WithMockUser
+    void givenUnknownPermission_returnsNotFound() throws Exception {
+        var permissionId = UUID.randomUUID();
+        doThrow(new PermissionNotFoundException(permissionId)).when(connectionLimitViolationService)
+                                                              .getViolations(any(), any(), any());
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/violations", permissionId))
+               .andExpect(status().isNotFound());
     }
 
     @TestConfiguration

@@ -6,7 +6,10 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
+import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
+import energy.eddie.aiida.services.connectionlimit.ConnectionLimitViolationService;
 import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,10 +24,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -39,10 +39,16 @@ import java.util.UUID;
 @Tag(name = "Connection Limit Controller")
 public class ConnectionLimitController {
     private final ConnectionLimitService connectionLimitService;
+    private final ConnectionLimitViolationService connectionLimitViolationService;
     private final Clock clock;
 
-    public ConnectionLimitController(ConnectionLimitService connectionLimitService, Clock clock) {
+    public ConnectionLimitController(
+            ConnectionLimitService connectionLimitService,
+            ConnectionLimitViolationService connectionLimitViolationService,
+            Clock clock
+    ) {
         this.connectionLimitService = connectionLimitService;
+        this.connectionLimitViolationService = connectionLimitViolationService;
         this.clock = clock;
     }
 
@@ -89,6 +95,41 @@ public class ConnectionLimitController {
                                                                             meterId,
                                                                             fromInstantOrDuration(from),
                                                                             fromInstantOrDuration(to)));
+    }
+
+    @Operation(summary = "Get connection limit violations of a permission", description = """
+            Returns the violations of the connection limits of the permission that overlap with the time frame,
+            ordered by their start. If no time frame is provided, violations that are ongoing NOW are returned.
+            A violation without an end is still ongoing.
+            The limits of a violation are only the ones that were violated first.
+            """)
+    @ApiResponses(value = {@ApiResponse(responseCode = "200",
+                                        description = "Successful operation",
+                                        content = @Content(array = @ArraySchema(schema = @Schema(implementation = ConnectionLimitViolation.class)))), @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input data",
+            content = @Content(schema = @Schema(implementation = EddieApiError.class))), @ApiResponse(responseCode = "401",
+                                                                                                      description = "Unauthorized User",
+                                                                                                      content = @Content), @ApiResponse(
+            responseCode = "404",
+            description = "Permission not found",
+            content = @Content(schema = @Schema(implementation = EddieApiError.class)))})
+    @GetMapping(path = "/{permissionId}/violations", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<ConnectionLimitViolation>> getViolations(
+            @Parameter(description = "Permission ID to query violations for.",
+                       example = "9921f327-f341-4bea-bf08-3cf2acc65bf3") @PathVariable UUID permissionId,
+            @Parameter(description = "Lower bound of the search interval (inclusive), UTC instant or ISO duration.",
+                       example = "2026-07-10T08:00:00Z",
+                       examples = {@ExampleObject("2026-07-10T08:00:00Z"), @ExampleObject("-P1D")}) @RequestParam(
+                    required = false) String from,
+            @Parameter(description = "Upper bound of the search interval (inclusive), UTC instant or ISO duration.",
+                       example = "P1D",
+                       examples = {@ExampleObject("2026-07-12T08:00:00Z"), @ExampleObject("P1D")}) @RequestParam(
+                    required = false) String to
+    ) throws InvalidUserException, InvalidInstantOrDurationException, PermissionNotFoundException {
+        return ResponseEntity.ok(connectionLimitViolationService.getViolations(permissionId,
+                                                                               fromInstantOrDuration(from),
+                                                                               fromInstantOrDuration(to)));
     }
 
     private Instant fromInstantOrDuration(@Nullable String value) throws InvalidInstantOrDurationException {

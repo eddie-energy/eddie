@@ -11,13 +11,20 @@ import PenIcon from '@/assets/icons/PenIcon.svg'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
-import { revokePermission, updateInboundMessageFormat } from '@/api'
-import { fetchPermissions, permissions } from '@/stores/permissions'
-import { computed, ref, watch } from 'vue'
+import {
+  deleteConnectionLimitMonitoring,
+  revokePermission,
+  updateConnectionLimitMonitoring,
+  updateInboundMessageFormat,
+} from '@/api'
+import { dataSources, fetchDataSources } from '@/stores/dataSources'
+import { fetchPermissions, isMonitorablePermission, permissions } from '@/stores/permissions'
+import { computed, onMounted, ref, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
 import { useI18n } from 'vue-i18n'
 import CustomSelect from './CustomSelect.vue'
+import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -151,6 +158,37 @@ const dataSourceDisplayName = computed(() => {
   return inboundPermission?.displayName ?? permission.dataSource.name
 })
 
+const NO_MONITORING_DATA_SOURCE = 'NONE'
+const monitoringDataSourceId = ref<string>(
+  permission.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE,
+)
+
+const monitoringDataSourceOptions = computed(() => [
+  { label: t('permissions.dropdown.monitoringDataSourceNone'), value: NO_MONITORING_DATA_SOURCE },
+  ...dataSources.value.map(({ id, name }) => ({ label: name, value: id })),
+])
+
+const handleMonitoringDataSourceSelection = async (
+  value: string | number | boolean | undefined,
+) => {
+  try {
+    if (value === NO_MONITORING_DATA_SOURCE) {
+      await deleteConnectionLimitMonitoring(permission.permissionId)
+    } else {
+      await updateConnectionLimitMonitoring(permission.permissionId, String(value))
+    }
+    await fetchPermissions()
+  } catch {
+    monitoringDataSourceId.value = permission.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE
+  }
+}
+
+onMounted(async () => {
+  if (permission.supportsConnectionLimits && !dataSources.value.length) {
+    await fetchDataSources()
+  }
+})
+
 const { lastMessageAt } = useLastMessageRefresh(
   () => permission,
   () => !!status,
@@ -196,6 +234,22 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dt>{{ t('permissions.dropdown.maxLimitKw') }}</dt>
         <dd>{{ permission.maxLimitKw }} kW</dd>
       </div>
+      <template v-if="permission.supportsConnectionLimits">
+        <div class="permission-field permission-field--select">
+          <dt>{{ t('permissions.dropdown.monitoringDataSource') }}</dt>
+          <dd>
+            <CustomSelect
+              v-model="monitoringDataSourceId"
+              :options="monitoringDataSourceOptions"
+              :placeholder="t('permissions.dropdown.monitoringDataSourcePlaceholder')"
+              @update:model-value="handleMonitoringDataSourceSelection"
+            />
+          </dd>
+        </div>
+        <p class="monitoring-hint">
+          {{ t('permissions.dropdown.monitoringDataSourceHint') }}
+        </p>
+      </template>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.start') }}</dt>
         <dd>
@@ -340,6 +394,15 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dd>{{ lastMessageAt ? dateTimeFormat.format(lastMessageAt) : 'N/A' }}</dd>
       </div>
       <div v-if="status === 'Active'" class="permission-actions">
+        <div class="actions-row actions-row--end" v-if="isMonitorablePermission(permission)">
+          <Button
+            :isLink="true"
+            :href="`/connection-monitor?permission=${permission.permissionId}`"
+          >
+            <ConnectionMonitorIcon />
+            {{ t('permissions.openConnectionMonitor') }}
+          </Button>
+        </div>
         <div
           v-if="permission.dataNeed.type === 'inbound-aiida'"
           class="actions-row actions-row--end"
@@ -440,6 +503,12 @@ const { lastMessageAt } = useLastMessageRefresh(
   gap: var(--spacing-sm);
 }
 
+.monitoring-hint {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--eddie-grey-medium);
+}
+
 .graph {
   flex-direction: column;
 
@@ -461,6 +530,27 @@ const { lastMessageAt } = useLastMessageRefresh(
 
 .permission-actions {
   margin-top: auto;
+}
+
+.monitor-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border: 1px solid var(--eddie-primary);
+  border-radius: 2rem;
+  color: var(--eddie-primary);
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color 0.3s ease-in-out,
+    color 0.3s ease-in-out;
+
+  &:hover {
+    color: var(--light);
+    background-color: var(--eddie-primary);
+  }
 }
 
 .actions-row {

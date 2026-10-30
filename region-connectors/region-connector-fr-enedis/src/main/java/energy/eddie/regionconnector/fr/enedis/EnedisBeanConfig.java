@@ -29,11 +29,13 @@ import energy.eddie.regionconnector.shared.services.MeterReadingPermissionUpdate
 import energy.eddie.regionconnector.shared.services.data.needs.DataNeedCalculationServiceImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.reactive.function.client.WebClient;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.EnumFeature;
 
 import java.util.function.Supplier;
 
@@ -154,5 +156,11 @@ public class EnedisBeanConfig {
     @Bean
     Supplier<PermissionEventRepository> permissionEventSupplier(FrPermissionEventRepository repo) {
         return () -> repo;
+    }
+
+    @Bean
+    public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
+        return builder -> builder
+                .enable(EnumFeature.READ_UNKNOWN_ENUM_VALUES_USING_DEFAULT_VALUE);
     }
 }

@@ -1,12 +1,11 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fr.enedis.api;
 
-import energy.eddie.regionconnector.fr.enedis.dto.contract.CustomerContract;
-import energy.eddie.regionconnector.fr.enedis.dto.contract.UsagePointContract;
 import org.apache.logging.log4j.util.Strings;
 
+import java.util.List;
 import java.util.Optional;
 
 public enum UsagePointType {
@@ -14,12 +13,11 @@ public enum UsagePointType {
     PRODUCTION,
     CONSUMPTION_AND_PRODUCTION;
 
-    public static Optional<UsagePointType> fromCustomerContract(CustomerContract contract) {
+    public static Optional<UsagePointType> fromSegments(List<String> segments) {
         boolean consumption = false;
         boolean production = false;
 
-        for (UsagePointContract usagePointContract : contract.usagePointContracts()) {
-            var segment = usagePointContract.contract().segment();
+        for (String segment : segments) {
             if (Strings.isEmpty(segment)) {
                 continue;
             }
@@ -32,7 +30,7 @@ public enum UsagePointType {
                 production = true;
             }
         }
-        return UsagePointType.fromBooleans(consumption, production);
+        return fromBooleans(consumption, production);
     }
 
     public static Optional<UsagePointType> fromBooleans(boolean consumption, boolean production) {

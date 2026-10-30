@@ -11,12 +11,14 @@ import type {
   AiidaDataSourceType,
   AiidaPermission,
   AiidaPermissionRequestsDTO,
+  ConnectionLimit,
   InboundMessageFormat,
   LastMessageEvent,
   LatestInboundPermissionRecord,
   LatestOutboundPermissionRecord,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
+  UserSettings,
 } from './types'
 
 const { danger, success } = useToast()
@@ -114,6 +116,14 @@ export function getPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions')
 }
 
+export function getConnectionLimits(
+  permissionId: string,
+  from: string,
+  to: string,
+): Promise<ConnectionLimit[]> {
+  return fetch(`/connection-limits?${new URLSearchParams({ permissionId, from, to })}`)
+}
+
 export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions/inbound/active')
 }
@@ -157,6 +167,19 @@ export function getModbusDevices(
 
 export function getApplicationInformation(): Promise<AiidaApplicationInformation> {
   return fetch('/application-information')
+}
+
+export function getUserSettings(): Promise<UserSettings> {
+  return fetch('/user-settings')
+}
+
+export async function updateUserSettings(contactEmail: string | null): Promise<UserSettings> {
+  const result: UserSettings = await fetch('/user-settings', {
+    method: 'PUT',
+    body: JSON.stringify({ contactEmail }),
+  })
+  success('toasts.updateUserSettings')
+  return result
 }
 
 export function addPermissions(
@@ -228,6 +251,21 @@ export async function updateDisplayName(permissionId: string, displayName: strin
     }),
   })
   success('toasts.updateDisplayName')
+}
+
+export async function updateConnectionLimitMonitoring(permissionId: string, dataSourceId: string) {
+  await fetch(`/connection-limit-monitoring/${permissionId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ dataSourceId }),
+  })
+  success('toasts.updateConnectionLimitMonitoring')
+}
+
+export async function deleteConnectionLimitMonitoring(permissionId: string): Promise<void> {
+  await fetch(`/connection-limit-monitoring/${permissionId}`, {
+    method: 'DELETE',
+  })
+  success('toasts.updateConnectionLimitMonitoring')
 }
 
 export async function addDataSource(dataSource: Omit<AiidaDataSource, 'id'>): Promise<{
