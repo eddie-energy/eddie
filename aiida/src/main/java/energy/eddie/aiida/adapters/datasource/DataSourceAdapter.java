@@ -27,6 +27,7 @@ import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValidator;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.DataSourceRecord;
+import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +73,7 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      * @param mqttConfiguration The MQTT configuration to use for connecting to the broker (if needed).
      * @param aiidaId           The ID of the AIIDA instance, used for formatting the acknowledgements (if needed).
      * @param secretsService    The secrets service to load plaintext passwords (if needed).
+     * @param processingResultHandler Publishes completed inbound processing results.
      * @return The created {@code DataSourceAdapter}.
      */
     public static DataSourceAdapter<? extends DataSource> create(
@@ -79,7 +81,8 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             ObjectMapper objectMapper,
             MqttConfiguration mqttConfiguration,
             UUID aiidaId,
-            SecretsService secretsService
+            SecretsService secretsService,
+            InboundProcessingResultHandler processingResultHandler
     ) {
         return switch (dataSource) {
             case OesterreichsEnergieDataSource ds ->
@@ -88,7 +91,12 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration, secretsService);
             case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
             case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
-            case InboundDataSource ds -> new InboundAdapter(ds, objectMapper, mqttConfiguration, aiidaId, secretsService);
+            case InboundDataSource ds -> new InboundAdapter(ds,
+                                                            objectMapper,
+                                                            mqttConfiguration,
+                                                            aiidaId,
+                                                            secretsService,
+                                                            processingResultHandler);
             case SimulationDataSource ds -> new SimulationAdapter(ds);
             case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
             case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);

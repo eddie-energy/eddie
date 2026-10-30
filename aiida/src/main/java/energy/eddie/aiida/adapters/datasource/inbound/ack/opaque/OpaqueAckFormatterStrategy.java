@@ -4,13 +4,16 @@
 package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 
 import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.v1_12.LocalCodingSchemeType;
 import energy.eddie.cim.v1_12.StandardDocumentTypeList;
-import energy.eddie.cim.v1_12.StandardReasonCodeTypeList;
 import energy.eddie.cim.v1_12.StandardRoleTypeList;
-import energy.eddie.cim.v1_12.ack.*;
+import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.ack.AcknowledgementMarketDocument;
+import energy.eddie.cim.v1_12.ack.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.ack.PartyIDString;
 import tools.jackson.databind.ObjectMapper;
 
 import java.nio.ByteBuffer;
@@ -24,7 +27,11 @@ public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
     }
 
     @Override
-    public AcknowledgementEnvelope convert(ObjectMapper objectMapper, InboundRecord inboundRecord) {
+    public AcknowledgementEnvelope convert(
+            ObjectMapper objectMapper,
+            InboundRecord inboundRecord,
+            InboundProcessingResult processingResult
+    ) {
         var payload = inboundRecord.payload();
         var opaqueEnvelope = objectMapper.readValue(payload, OpaqueEnvelope.class);
         var now = ZonedDateTime.now(UTC);
@@ -35,10 +42,14 @@ public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
 
         return new AcknowledgementEnvelope()
                 .withMessageDocumentHeader(header)
-                .withMarketDocument(toMarketDocument(now, opaqueEnvelope));
+                .withMarketDocument(toMarketDocument(now, opaqueEnvelope, processingResult));
     }
 
-    private AcknowledgementMarketDocument toMarketDocument(ZonedDateTime now, OpaqueEnvelope opaqueEnvelope) {
+    private AcknowledgementMarketDocument toMarketDocument(
+            ZonedDateTime now,
+            OpaqueEnvelope opaqueEnvelope,
+            InboundProcessingResult processingResult
+    ) {
         return new AcknowledgementMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
                 .withCreatedDateTime(now)
@@ -55,10 +66,7 @@ public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
                 .withReceivedMarketDocumentCreatedDateTime(opaqueEnvelope.timestamp())
                 .withReceivedMarketDocumentMRID(opaqueEnvelope.messageId())
                 .withReceivedMarketDocumentType(StandardDocumentTypeList.ACKNOWLEDGEMENT_DOCUMENT.value())
-                .withReasons(
-                        new Reason()
-                                .withCode(StandardReasonCodeTypeList.MESSAGE_FULLY_ACCEPTED.value())
-                );
+                .withReasons(toReason(processingResult));
     }
 
     private static String truncateUUID(UUID uuid) {
