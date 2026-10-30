@@ -83,8 +83,8 @@ class PermissionServiceTest {
     private final String meterId = "003114735";
     private final BigDecimal minLimitKw = BigDecimal.ONE;
     private final BigDecimal maxLimitKw = BigDecimal.TEN;
-    private final LocalDate start = LocalDate.now(ZoneId.systemDefault());
-    private final LocalDate end = LocalDate.now(ZoneId.systemDefault()).plusDays(90);
+    private final LocalDate start = LocalDate.now(AIIDA_ZONE_ID);
+    private final LocalDate end = start.plusDays(90);
     private final Instant fixedInstant = Instant.parse("2023-09-11T22:00:00.00Z");
     private final Clock clock = Clock.fixed(fixedInstant, AIIDA_ZONE_ID);
     private final UUID userId = UUID.randomUUID();

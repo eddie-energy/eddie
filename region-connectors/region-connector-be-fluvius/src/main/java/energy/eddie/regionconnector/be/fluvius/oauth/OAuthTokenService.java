@@ -3,51 +3,73 @@
 
 package energy.eddie.regionconnector.be.fluvius.oauth;
 
-import com.nimbusds.oauth2.sdk.*;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
+import com.nimbusds.oauth2.sdk.ParseException;
+import com.nimbusds.oauth2.sdk.Scope;
+import com.nimbusds.oauth2.sdk.TokenRequest;
+import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import jakarta.annotation.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ssl.SslBundles;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-
-import static energy.eddie.regionconnector.shared.jwt.JwtValidations.isValidUntil;
+import java.security.GeneralSecurityException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class OAuthTokenService {
     private final FluviusOAuthConfiguration config;
+    private final ClientAuthenticationFactory authenticationFactory;
     @Nullable
     private String accessToken = null;
+    private Instant expiresAt = Instant.MIN;
 
-    @Autowired
-    public OAuthTokenService(FluviusOAuthConfiguration config) {
-        this(config, null);
-    }
-
-    OAuthTokenService(FluviusOAuthConfiguration config, @Nullable String accessToken) {
+    public OAuthTokenService(FluviusOAuthConfiguration config, SslBundles sslBundles) {
         this.config = config;
-        this.accessToken = accessToken;
+        switch (config.authenticationMethod()) {
+            case CLIENT_SECRET -> {
+                var authentication = new ClientSecretBasic(new ClientID(config.clientId()),
+                                                           new Secret(Objects.requireNonNull(config.clientSecret())));
+                this.authenticationFactory = () -> authentication;
+            }
+            case CERTIFICATE -> {
+                var authentication = new CertificateClientAuthentication(config.clientId(),
+                                                                         URI.create(config.tokenUrl()),
+                                                                         sslBundles.getBundle(config.sslBundle()));
+                this.authenticationFactory = authentication::create;
+            }
+            default -> throw new IllegalArgumentException("Unsupported Fluvius OAuth authentication method");
+        }
     }
 
-    public String accessToken() throws URISyntaxException, IOException, ParseException, OAuthException {
-        var nowPlusOneMinute = ZonedDateTime.now(ZoneOffset.UTC).plusMinutes(1);
-        if (accessToken != null && isValidUntil(accessToken, nowPlusOneMinute)) {
+    public synchronized String accessToken() throws URISyntaxException, IOException, ParseException, OAuthException {
+        var now = Instant.now();
+        if (accessToken != null && expiresAt.isAfter(now.plusSeconds(60))) {
             return accessToken;
         }
         var clientGrant = new ClientCredentialsGrant();
-        var clientID = new ClientID(config.clientId());
-        var clientSecret = new Secret(config.clientSecret());
-        var clientAuth = new ClientSecretBasic(clientID, clientSecret);
         var scope = new Scope(config.scope());
         var tokenEndpoint = new URI(config.tokenUrl());
-        var request = new TokenRequest(tokenEndpoint, clientAuth, clientGrant, scope);
+        final ClientAuthentication authentication;
+        try {
+            authentication = authenticationFactory.create();
+        } catch (GeneralSecurityException | JOSEException exception) {
+            throw new OAuthException("Cannot sign Fluvius OAuth client assertion", exception);
+        }
+        // Nimbus PrivateKeyJWT only adds assertion fields. Microsoft also requires client_id in the form body.
+        var request = new TokenRequest(tokenEndpoint, authentication, clientGrant, scope, null,
+                                       Map.of("client_id", List.of(config.clientId())));
         var response = TokenResponse.parse(request.toHTTPRequest().send());
         if (!response.indicatesSuccess()) {
             var errorResponse = response.toErrorResponse();
@@ -55,6 +77,12 @@ public class OAuthTokenService {
         }
         var successResponse = response.toSuccessResponse();
         accessToken = successResponse.getTokens().getAccessToken().getValue();
+        expiresAt = now.plusSeconds(successResponse.getTokens().getAccessToken().getLifetime());
         return accessToken;
+    }
+
+    @FunctionalInterface
+    private interface ClientAuthenticationFactory {
+        ClientAuthentication create() throws GeneralSecurityException, JOSEException;
     }
 }

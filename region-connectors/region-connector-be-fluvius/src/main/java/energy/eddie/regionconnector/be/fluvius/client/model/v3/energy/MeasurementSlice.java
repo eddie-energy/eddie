@@ -7,5 +7,22 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.function.Function;
 
-public record MeasurementSlice(ZonedDateTime start, ZonedDateTime end, @Nullable List<Measurement> measurements) {}
+public record MeasurementSlice(ZonedDateTime start, ZonedDateTime end, @Nullable List<Measurement> measurements) {
+    public @Nullable Unit firstUnit(
+            Reading.ReadingKind kind,
+            Function<Measurement, @Nullable Reading> readingSelector
+    ) {
+        if (measurements == null || measurements.isEmpty()) {
+            return null;
+        }
+        var measurement = measurements.getFirst();
+        if (measurement == null) {
+            return null;
+        }
+        var reading = readingSelector.apply(measurement);
+        var total = reading == null ? null : reading.value(kind);
+        return total == null ? null : total.unit();
+    }
+}

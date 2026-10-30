@@ -25,6 +25,7 @@ import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.time.LocalDate;
+import java.time.Month;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -42,8 +43,8 @@ class RetransmissionPollingServiceTest {
         var pr = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .build();
-        var from = LocalDate.of(2025, 1, 1);
-        var to = LocalDate.of(2025, 2, 1);
+        var from = LocalDate.of(2025, Month.JANUARY, 1);
+        var to = LocalDate.of(2025, Month.FEBRUARY, 1);
         var request = new RetransmissionRequest("be-fluvius", "pid", from, to);
         when(pollingService.forcePoll(pr, from, to))
                 .thenReturn(Flux.empty());
@@ -66,8 +67,8 @@ class RetransmissionPollingServiceTest {
         var pr = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .build();
-        var from = LocalDate.of(2025, 1, 1);
-        var to = LocalDate.of(2025, 2, 1);
+        var from = LocalDate.of(2025, Month.JANUARY, 1);
+        var to = LocalDate.of(2025, Month.FEBRUARY, 1);
         var request = new RetransmissionRequest("be-fluvius", "pid", from, to);
         when(pollingService.forcePoll(pr, from, to))
                 .thenReturn(Flux.error(new RuntimeException("message")));
@@ -92,8 +93,8 @@ class RetransmissionPollingServiceTest {
         var pr = new DefaultFluviusPermissionRequestBuilder()
                 .permissionId("pid")
                 .build();
-        var from = LocalDate.of(2025, 1, 1);
-        var to = LocalDate.of(2025, 2, 1);
+        var from = LocalDate.of(2025, Month.JANUARY, 1);
+        var to = LocalDate.of(2025, Month.FEBRUARY, 1);
         var request = new RetransmissionRequest("be-fluvius", "pid", from, to);
         when(pollingService.forcePoll(pr, from, to))
                 .thenReturn(Flux.just(
