@@ -169,6 +169,61 @@ class PollingServiceTest {
     }
 
     @Test
+    void fetchHistoricalMeterReadingsThrowsServiceUnavailable_retries() {
+        // Given
+        when(enedisApi.getConsumptionMeterReading(anyString(), any(), any(), any()))
+                .thenReturn(Mono.error(WebClientResponseException.create(HttpStatus.SERVICE_UNAVAILABLE.value(),
+                                                                         "",
+                                                                         null,
+                                                                         null,
+                                                                         null)))
+                .thenReturn(Mono.just(
+                                    new MeterReading(
+                                            "usagePointId",
+                                            MeterReading.ReadingType.CORRECTED,
+                                            new MeterReading.Period(
+                                                    LocalDate.now(ZoneOffset.UTC),
+                                                    LocalDate.now(ZoneOffset.UTC)),
+                                            Optional.empty(),
+                                            MeterReading.CalculationMode.MEASURED,
+                                            Optional.empty(),
+                                            List.of(),
+                                            List.of()
+                                    )
+                            )
+                );
+        MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
+                new FulfillmentService(outbox, FrSimpleEvent::new),
+                (pr, end) -> {}
+        );
+        EnergyDataStreams streams = new EnergyDataStreams();
+        PollingService pollingService = new PollingService(enedisApi, service, outbox, updateGranularityTask, streams);
+        LocalDate start = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
+        FrEnedisPermissionRequest request = new EnedisPermissionRequestBuilder()
+                .setPermissionId("pid")
+                .setStart(start)
+                .setEnd(end)
+                .setGranularity(Granularity.P1D)
+                .setUsagePointId("usagePointId")
+                .create();
+
+        VirtualTimeScheduler.getOrSet(); // yes, this is necessary
+
+        // When
+        pollingService.pollTimeSeriesData(request);
+
+        // Then
+        StepVerifier.withVirtualTime(streams::getValidatedHistoricalData)
+                    .thenAwait(Duration.ofMinutes(2))
+                    .expectNextCount(1)
+                    .then(streams::close)
+                    .expectComplete()
+                    .verify(Duration.ofSeconds(5));
+        verify(enedisApi, times(2)).getConsumptionMeterReading(anyString(), any(), any(), any());
+    }
+
+    @Test
     void fetchHistoricalMeterReadingsThrowsIllegalStateException_givenUnsupportedGranularity() {
         // Given
         MeterReadingPermissionUpdateAndFulfillmentService service = new MeterReadingPermissionUpdateAndFulfillmentService(
