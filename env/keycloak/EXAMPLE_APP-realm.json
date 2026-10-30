@@ -1,0 +1,46 @@
+{
+  "realm": "EXAMPLE_APP",
+  "enabled": true,
+  "defaultRoles": [
+    "manage-account"
+  ],
+  "loginTheme": "eddie-theme",
+  "clients": [
+    {
+      "id": "example-app-client",
+      "clientId": "example-app-client",
+      "enabled": true,
+      "redirectUris": [
+        "http://localhost:8082/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8082"
+      ],
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "serviceAccountsEnabled": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false
+    }
+  ],
+  "users": [
+    {
+      "username": "eddie",
+      "email": "eddie@eddie.local",
+      "firstName": "John",
+      "lastName": "Doe",
+      "enabled": true,
+      "clientRoles": {
+        "account": [
+          "manage-account"
+        ]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "eddie"
+        }
+      ]
+    }
+  ]
+}
