@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
@@ -18,6 +18,11 @@ public enum ShellyComponent {
     SWITCH_1("switch:1", ShellyPhase.PHASE_L1),
     SWITCH_2("switch:2", ShellyPhase.PHASE_L1),
     SWITCH_3("switch:3", ShellyPhase.PHASE_L1),
+    PM1("pm1:0", ShellyPhase.PHASE_L1),
+    COVER("cover:0", ShellyPhase.PHASE_L1),
+    LIGHT("light:0", ShellyPhase.PHASE_L1),
+    RGB("rgb:0", ShellyPhase.PHASE_L1),
+    RGBW("rgbw:0", ShellyPhase.PHASE_L1),
     UNKNOWN("unknown", ShellyPhase.UNKNOWN);
 
     private final String key;
@@ -30,9 +35,9 @@ public enum ShellyComponent {
 
     public static ShellyComponent fromKey(String componentKey) {
         return Stream.of(values())
-                .filter(component -> componentKey.equals(component.key))
-                .findFirst()
-                .orElse(UNKNOWN);
+                     .filter(component -> componentKey.equals(component.key))
+                     .findFirst()
+                     .orElse(UNKNOWN);
     }
 
     public String key() {

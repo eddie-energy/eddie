@@ -9,6 +9,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
+import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -29,12 +30,60 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class ShellyAdapterTest {
+    private static final String PLUG_M_GEN3_PAYLOAD = """
+            {
+              "src": "shellyplugmg3-907069447380",
+              "dst": "aiida/test/events",
+              "method": "NotifyStatus",
+              "params": {
+                "ts": 1792497540.00,
+                "switch:0": {
+                  "aenergy": {
+                    "by_minute": [206.766, 413.532, 413.532],
+                    "minute_ts": 1792497540,
+                    "total": 204.484
+                  },
+                  "apower": 18.3,
+                  "current": 0.158,
+                  "freq": 50.03,
+                  "ret_aenergy": {
+                    "by_minute": [0.0, 0.0, 0.0],
+                    "minute_ts": 1792497540,
+                    "total": 0.0
+                  },
+                  "voltage": 231.5
+                }
+              }
+            }
+            """;
+    private static final String PM1_PAYLOAD = """
+            {
+              "src": "shellypluspmmini-44179bf90f08",
+              "dst": "aiida/test/events",
+              "method": "NotifyFullStatus",
+              "params": {
+                "ts": 1792497540.0,
+                "pm1:0": {
+                  "id": 0,
+                  "voltage": 225.9,
+                  "current": 0.5,
+                  "apower": 100.0,
+                  "aprtpower": 112.0,
+                  "pf": 0.9,
+                  "freq": 50.0,
+                  "aenergy": {"total": 11.679, "minute_ts": 1792497540},
+                  "ret_aenergy": {"total": 4.126, "minute_ts": 1792497540}
+                }
+              }
+            }
+            """;
     private static final LogCaptor LOG_CAPTOR = LogCaptor.forClass(ShellyAdapter.class);
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final String TOPIC = "aiida/4211ea05-d4ab-48ff-8613-8f4791a56606/events/rpc";
@@ -197,6 +246,58 @@ class ShellyAdapterTest {
     }
 
     @Test
+    void givenPlugMGen3Payload_publishesOnlyDocumentedElectricalMeasurements() {
+        StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
+                    .then(() -> adapter.messageArrived(TOPIC, mqttMessage(PLUG_M_GEN3_PAYLOAD)))
+                    .assertNext(aiidaRecord -> {
+                        assertThat(aiidaRecord.aiidaRecordValues()).hasSize(6);
+                        assertThat(aiidaRecord.aiidaRecordValues())
+                                .extracting(AiidaRecordValue::rawTag)
+                                .containsExactlyInAnyOrder(
+                                        "switch:0:aenergy.total",
+                                        "switch:0:apower",
+                                        "switch:0:current",
+                                        "switch:0:freq",
+                                        "switch:0:ret_aenergy.total",
+                                        "switch:0:voltage"
+                                );
+                        assertThat(aiidaRecord.aiidaRecordValues())
+                                .filteredOn(value -> value.rawTag().equals("switch:0:ret_aenergy.total"))
+                                .extracting(AiidaRecordValue::dataTag)
+                                .containsExactly(ObisCode.NEGATIVE_ACTIVE_ENERGY_IN_PHASE_L1);
+                    })
+                    .then(adapter::close)
+                    .verifyComplete();
+    }
+
+    @Test
+    void givenPM1FullStatus_publishesEquivalentMeteringMeasurements() {
+        StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
+                    .then(() -> adapter.messageArrived(TOPIC, mqttMessage(PM1_PAYLOAD)))
+                    .assertNext(aiidaRecord -> {
+                        assertThat(aiidaRecord.aiidaRecordValues()).hasSize(8);
+                        assertThat(aiidaRecord.aiidaRecordValues())
+                                .filteredOn(value -> value.rawTag().equals("pm1:0:aprtpower"))
+                                .extracting(AiidaRecordValue::dataTag, AiidaRecordValue::value)
+                                .containsExactly(tuple(ObisCode.APPARENT_INSTANTANEOUS_POWER, "0.112"));
+                    })
+                    .then(adapter::close)
+                    .verifyComplete();
+    }
+
+    @Test
+    void givenNotifyEvent_doesNotPublishMeasurementRecord() {
+        var eventPayload = """
+                {"src":"shelly","dst":"aiida","method":"NotifyEvent","params":{"ts":1,"events":[]}}
+                """;
+
+        StepVerifier.create(adapter.startFiltered(AiidaRecord.class))
+                    .then(() -> adapter.messageArrived(TOPIC, mqttMessage(eventPayload)))
+                    .then(adapter::close)
+                    .verifyComplete();
+    }
+
+    @Test
     void givenConnectComplete_subscribesToTopic() throws MqttException {
         try (MockedStatic<MqttFactory> mockMqttFactory = mockStatic(MqttFactory.class)) {
             var mockClient = mock(MqttAsyncClient.class);
@@ -231,5 +332,9 @@ class ShellyAdapterTest {
     void givenConnectionLost_warningIsLogged() {
         adapter.disconnected(new MqttDisconnectResponse(new MqttException(998877)));
         assertThat(LOG_CAPTOR.getWarnLogs()).contains("Disconnected from MQTT broker");
+    }
+
+    private static MqttMessage mqttMessage(String payload) {
+        return new MqttMessage(payload.getBytes(StandardCharsets.UTF_8));
     }
 }

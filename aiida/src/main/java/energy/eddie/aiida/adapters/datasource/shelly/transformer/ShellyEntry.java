@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
@@ -7,6 +7,8 @@ import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 
 import java.util.stream.Stream;
+
+import static java.util.Comparator.comparingInt;
 
 public enum ShellyEntry {
     TOTAL_ACTIVE_ENERGY(
@@ -71,12 +73,10 @@ public enum ShellyEntry {
     ACTIVE_POWER_SWITCH("apower", ObisCode.POSITIVE_ACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1, UnitOfMeasurement.WATT),
     APPARENT_POWER(
             "aprt_power",
-            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER,
-            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L1,
-            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2,
-            ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L3,
-            UnitOfMeasurement.VOLT_AMPERE_REACTIVE
+            ObisCode.APPARENT_INSTANTANEOUS_POWER,
+            UnitOfMeasurement.VOLT_AMPERE
     ),
+    APPARENT_POWER_PM1("aprtpower", ObisCode.APPARENT_INSTANTANEOUS_POWER, UnitOfMeasurement.VOLT_AMPERE),
     POWER_FACTOR(
             "pf",
             ObisCode.INSTANTANEOUS_POWER_FACTOR,
@@ -137,8 +137,9 @@ public enum ShellyEntry {
 
     public static ShellyEntry fromKey(String key) {
         return Stream.of(ShellyEntry.values())
+                     .filter(entry -> entry != UNKNOWN)
                      .filter(entry -> key.endsWith(entry.entrySuffix))
-                     .findFirst()
+                     .max(comparingInt((ShellyEntry entry) -> entry.entrySuffix.length()))
                      .orElse(ShellyEntry.UNKNOWN);
     }
 
