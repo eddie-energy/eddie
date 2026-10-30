@@ -117,6 +117,7 @@
     "showMqttPassword": "Afficher le mot de passe MQTT",
     "hideMqttPassword": "Masquer le mot de passe MQTT",
     "copyMqttPassword": "Copier le mot de passe MQTT",
+    "openConnectionMonitor": "Ouvrir le moniteur de connexion",
     "mqttProvisioning": {
       "title": "Provisionnement entrant",
       "openButton": "Configurer le provisionnement",
@@ -224,6 +225,19 @@
     "contactEmailPlaceholder": "vous{'@'}exemple.com",
     "contactEmailHint": "Utilisé uniquement pour vous informer des dépassements des limites de raccordement.",
     "save": "Enregistrer"
+  },
+  "connectionMonitor": {
+    "title": "Moniteur de connexion",
+    "permissionLabel": "Autorisation de limites de connexion",
+    "permissionPlaceholder": "Sélectionner une autorisation",
+    "from": "De",
+    "to": "À",
+    "apply": "Appliquer",
+    "maxLimit": "Limite maximale",
+    "minLimit": "Limite minimale",
+    "loading": "Chargement…",
+    "noData": "Aucune limite de connexion disponible pour la période sélectionnée.",
+    "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible."
   },
   "toasts": {
     "info": "Le saviez-vous ?",
