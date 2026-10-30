@@ -134,7 +134,7 @@ public class PermissionRequestService {
         }
 
         var usagePointId = usagePointIds.getFirst();
-        outbox.commit(new FrAcceptedEvent(permissionId, usagePointId));
+        outbox.commit(new FrAcceptedEvent(permissionId, usagePointId, permissionRequest.granularity()));
 
         for (int i = 1; i < usagePointIds.size(); i++) {
             var newPermissionId = UUID.randomUUID().toString();
@@ -150,7 +150,7 @@ public class PermissionRequestService {
                     permissionRequest.granularity()
             ));
             outbox.commit(new FrSimpleEvent(newPermissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-            outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds.get(i)));
+            outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds.get(i), permissionRequest.granularity()));
         }
         return Authorization.ACCEPTED;
     }
