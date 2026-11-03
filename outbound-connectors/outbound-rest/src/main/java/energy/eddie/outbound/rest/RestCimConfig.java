@@ -12,10 +12,7 @@ import energy.eddie.outbound.rest.dto.AccountingPointDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.PermissionMarketDocuments;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocuments;
 import energy.eddie.outbound.rest.dto.ValidatedHistoricalDataMarketDocumentsV1_04;
-import energy.eddie.outbound.rest.dto.v1_12.AcknowledgementMarketDocuments;
-import energy.eddie.outbound.rest.dto.v1_12.EnergySharingReferenceDataMarketDocuments;
-import energy.eddie.outbound.rest.dto.v1_12.NearRealTimeDataMarketDocuments;
-import energy.eddie.outbound.rest.dto.v1_12.RequestPermissionMarketDocuments;
+import energy.eddie.outbound.rest.dto.v1_12.*;
 
 import java.util.List;
 
@@ -41,6 +38,7 @@ public class RestCimConfig {
                 List.of(energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope.class, AcknowledgementMarketDocuments.class),
                 List.of(energy.eddie.cim.v1_12.esr.ESRDMDEnvelope.class,
                         EnergySharingReferenceDataMarketDocuments.class),
+                List.of(energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope.class, MinMaxEnvelopeMarketDocuments.class),
                 List.of(energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope.class,
                         RequestPermissionMarketDocuments.class)
         );

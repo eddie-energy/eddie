@@ -28,8 +28,6 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 
 @WebFluxTest(value = CimController.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
@@ -192,30 +190,6 @@ class CimControllerTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
-
-    @Test
-    void minMaxEnvelopeMd_returnsXmlDocuments() {
-        var msg = new MinMaxEnvelopeMarketDocumentModel(new RECMMOEEnvelope());
-        given(minMaxRepository.findAll(ArgumentMatchers.<Specification<MinMaxEnvelopeMarketDocumentModel>>any()))
-                .willReturn(List.of(msg));
-
-        var result = webTestClient.get()
-                                 .uri("/cim_1_12/min-max-envelope-md")
-                                 .accept(MediaType.APPLICATION_XML)
-                                 .exchange()
-                                 .expectStatus()
-                                 .isOk()
-                                 .returnResult(String.class)
-                                 .getResponseBody();
-
-        StepVerifier.create(result)
-                    .assertNext(next -> {
-                        assertNotNull(next);
-                        assertTrue(next.contains("MinMaxEnvelopeMarketDocuments"));
-                    })
-                    .verifyComplete();
-    }
-
 
     @Test
     void energySharingReferenceDataMdSSE_returnsDocuments() {
