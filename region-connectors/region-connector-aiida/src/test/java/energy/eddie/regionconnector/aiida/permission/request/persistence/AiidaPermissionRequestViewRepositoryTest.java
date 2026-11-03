@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.aiida.permission.request.persistence;
 
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.regionconnector.aiida.permission.request.events.AiidaStatusUpdateEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.CreatedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.SimpleEvent;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -48,6 +50,31 @@ class AiidaPermissionRequestViewRepositoryTest {
     private AiidaPermissionRequestViewRepository permissionRequestRepository;
     @Autowired
     private AiidaPermissionEventRepository permissionEventRepository;
+
+    @Test
+    void givenStatusUpdateEventWithReason_viewContainsStatusAndMessage() {
+        // Given
+        var now = ZonedDateTime.now(ZoneOffset.UTC);
+        permissionEventRepository.saveAndFlush((PermissionEvent) new CreatedEvent("rejectedPid",
+                                                                                  "cid",
+                                                                                  "dnid",
+                                                                                  "mid",
+                                                                                  null,
+                                                                                  null,
+                                                                                  now.toLocalDate(),
+                                                                                  now.plusDays(10).toLocalDate()));
+        permissionEventRepository.saveAndFlush((PermissionEvent) new AiidaStatusUpdateEvent("rejectedPid",
+                                                                                            PermissionProcessStatus.REJECTED,
+                                                                                            UUID.randomUUID(),
+                                                                                            "Not interested"));
+
+        // When
+        var request = permissionRequestRepository.findByPermissionId("rejectedPid").orElseThrow();
+
+        // Then
+        assertEquals(PermissionProcessStatus.REJECTED, request.status());
+        assertEquals("Not interested", request.message());
+    }
 
     @Test
     void testFindTimedOutPermissionRequests_findTimedOutPermissionRequests() {

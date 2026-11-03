@@ -77,8 +77,8 @@ class PermissionServiceTest {
     private final UUID permissionId2 = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a6");
     private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID dataSourceId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
-    private final String handshakeUrl = "https://example.org";
-    private final String serviceName = "Hello Service";
+    private final String handshakeUrl = "https://example.org/permission-request/{permissionId}";
+    private final String accessToken = "accessToken";
     private final String connectionId = "NewAiidaRandomConnectionId";
     private final String meterId = "003114735";
     private final BigDecimal minLimitKw = BigDecimal.ONE;
@@ -91,8 +91,8 @@ class PermissionServiceTest {
     private final AiidaPermissionRequestsDto permissionRequests =
             new AiidaPermissionRequestsDto(eddieId,
                                            List.of(permissionId1, permissionId2),
-                                           serviceName,
-                                           handshakeUrl);
+                                           handshakeUrl,
+                                           accessToken);
     @Mock
     private PermissionRepository mockPermissionRepository;
     @Mock
@@ -178,7 +178,7 @@ class PermissionServiceTest {
                                                         HttpHeaders.EMPTY,
                                                         "".getBytes(StandardCharsets.UTF_8),
                                                         StandardCharsets.UTF_8);
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.error(exception));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.error(exception));
         when(mockPermissionRepository.save(any())).thenReturn(mockPermission);
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
@@ -202,7 +202,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.existsById(permissionId2)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
@@ -219,7 +219,7 @@ class PermissionServiceTest {
         service.setupNewPermissions(permissionRequests);
 
         // Then
-        verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
+        verify(mockHandshakeService).fetchDetails(argThat(target -> target.handshakeUrl().endsWith("/" + permissionId1) && target.accessToken().equals(accessToken)));
         verify(mockPermissionRepository, times(4)).save(permissionCaptor.capture());
 
         // As we verify after we modified the permission object twice, we can only assert the last modifications because the two captured objects are the same, see https://groups.google.com/g/mockito/c/KBRocVedYT0/m/UL-QJfNtvhoJ
@@ -250,8 +250,8 @@ class PermissionServiceTest {
         // Given
         var permissionRequest = new AiidaPermissionRequestsDto(eddieId,
                                                                List.of(permissionId1),
-                                                               serviceName,
-                                                               handshakeUrl);
+                                                               handshakeUrl,
+                                                               accessToken);
         var permissionDetails = new PermissionDetailsDto(permissionId1,
                                                          connectionId,
                                                          meterId,
@@ -262,7 +262,7 @@ class PermissionServiceTest {
                                                          mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(mockAiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId)).thenReturn(Optional.of(
                 mockInboundAiidaLocalDataNeed));
@@ -299,7 +299,7 @@ class PermissionServiceTest {
                                                          mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
@@ -312,8 +312,7 @@ class PermissionServiceTest {
 
         // When, Then
         assertThrows(LimitDefaultsNotAllowedException.class, () -> service.setupNewPermissions(permissionRequests));
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(argThat(permission -> permission.status() == PermissionStatus.UNFULFILLABLE),
-                                                                 eq(PermissionStatus.UNFULFILLABLE));
+        verify(mockHandshakeService).denoteUnfulfillable(any(), notNull());
         verify(mockConnectionLimitDefaultRepository, never()).save(any());
     }
 
@@ -332,7 +331,7 @@ class PermissionServiceTest {
                                                          mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(mockDataNeed.type()).thenReturn("illegalValue");
@@ -347,7 +346,7 @@ class PermissionServiceTest {
         // When Then
         assertThrows(PermissionDataNeedTypeNotSupportedException.class,
                      () -> service.setupNewPermissions(permissionRequests));
-        verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
+        verify(mockHandshakeService).fetchDetails(argThat(target -> target.handshakeUrl().endsWith("/" + permissionId1) && target.accessToken().equals(accessToken)));
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
 
         // As we verify after we modified the permission object twice, we can only assert the last modifications because the two captured objects are the same, see https://groups.google.com/g/mockito/c/KBRocVedYT0/m/UL-QJfNtvhoJ
@@ -384,14 +383,14 @@ class PermissionServiceTest {
                                                          mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
 
         // When
         assertThrows(PermissionStartInThePastException.class, () -> service.setupNewPermissions(permissionRequests));
 
         // Then
-        verify(mockHandshakeService).fetchDetailsForPermission(argThat(arg -> arg.id().equals(permissionId1)));
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.UNFULFILLABLE));
+        verify(mockHandshakeService).fetchDetails(argThat(target -> target.handshakeUrl().endsWith("/" + permissionId1) && target.accessToken().equals(accessToken)));
+        verify(mockHandshakeService).denoteUnfulfillable(any(), notNull());
         verify(mockPermissionRepository, times(2)).save(permissionCaptor.capture());
         assertEquals(permissionId1, permissionCaptor.getAllValues().getFirst().id());
         assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getAllValues().getFirst().status());
@@ -420,7 +419,7 @@ class PermissionServiceTest {
         service.rejectPermission(permissionId1);
 
         // Then
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(any(), eq(PermissionStatus.REJECTED));
+        verify(mockHandshakeService).reject(any(), isNull());
         verify(mockPermission).setStatus(PermissionStatus.REJECTED);
         verify(mockPermission).setRevokeTime(fixedInstant);
     }
@@ -450,7 +449,7 @@ class PermissionServiceTest {
                                                          mockDataNeed);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockHandshakeService.fetchDetailsForPermission(any())).thenReturn(Mono.just(permissionDetails));
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
         when(mockDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/23 * * * * *"));
         when(mockDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(mockDataNeed.type()).thenReturn(OutboundAiidaDataNeed.DISCRIMINATOR_VALUE);
@@ -474,8 +473,8 @@ class PermissionServiceTest {
                                      () -> service.setupNewPermissions(permissionRequests));
 
         assertThat(exception.getMessage()).contains("outbound").contains(meterId);
-        verify(mockHandshakeService).sendUnfulfillableOrRejected(permissionCaptor.capture(),
-                                                                 eq(PermissionStatus.UNFULFILLABLE));
+        verify(mockHandshakeService).denoteUnfulfillable(any(), eq(exception.getMessage()));
+        verify(mockPermissionRepository, atLeastOnce()).save(permissionCaptor.capture());
         assertEquals(PermissionStatus.UNFULFILLABLE, permissionCaptor.getValue().status());
     }
 
@@ -487,7 +486,7 @@ class PermissionServiceTest {
                                                         HttpHeaders.EMPTY,
                                                         "".getBytes(StandardCharsets.UTF_8),
                                                         StandardCharsets.UTF_8);
-        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.error(exception));
+        when(mockHandshakeService.accept(any())).thenReturn(Mono.error(exception));
         when(mockPermissionRepository.findById(any())).thenReturn(Optional.of(mockPermission));
         when(mockPermissionRepository.save(any(Permission.class))).thenReturn(mockPermission);
         when(mockPermission.id()).thenReturn(permissionId1);
@@ -504,7 +503,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
-        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockHandshakeService.accept(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
@@ -512,7 +511,7 @@ class PermissionServiceTest {
         service.acceptPermission(permissionId1, dataSourceId, null, null);
 
         // Then
-        verify(mockHandshakeService).fetchMqttDetails(any());
+        verify(mockHandshakeService).accept(any());
         verify(mockPermission).setStatus(PermissionStatus.ACCEPTED);
         verify(mockPermission, never()).setStatus(PermissionStatus.FETCHED_MQTT_CREDENTIALS);
         verify(mockPermission).setGrantTime(fixedInstant);
@@ -537,7 +536,7 @@ class PermissionServiceTest {
         assertThrows(DataSourceNotFoundException.class,
                      () -> service.acceptPermission(permissionId1, dataSourceId, null, null));
 
-        verify(mockHandshakeService, never()).fetchMqttDetails(any());
+        verify(mockHandshakeService, never()).accept(any());
     }
 
     @Test
@@ -554,7 +553,7 @@ class PermissionServiceTest {
         assertThrows(IncompatibleDataSourceException.class,
                      () -> service.acceptPermission(permissionId1, dataSourceId, null, null));
 
-        verify(mockHandshakeService, never()).fetchMqttDetails(any());
+        verify(mockHandshakeService, never()).accept(any());
     }
 
     @Test
@@ -568,7 +567,7 @@ class PermissionServiceTest {
         when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
         when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
         when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE, AiidaSchema.SMART_METER_P1_RAW));
-        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockHandshakeService.accept(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
@@ -590,7 +589,7 @@ class PermissionServiceTest {
         when(mockOutboundAiidaLocalDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE,
                                                                          AiidaSchema.SMART_METER_P1_RAW));
         when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
-        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockHandshakeService.accept(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
@@ -606,7 +605,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
-        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockHandshakeService.accept(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
@@ -624,7 +623,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.status()).thenReturn(PermissionStatus.FETCHED_DETAILS);
-        when(mockHandshakeService.fetchMqttDetails(any())).thenReturn(Mono.just(mockMqttDto));
+        when(mockHandshakeService.accept(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
 
@@ -647,7 +646,7 @@ class PermissionServiceTest {
                      () -> service.acceptPermission(permissionId1, dataSourceId, InboundMessageFormat.OPENADR_3_1, null));
 
         verify(mockPermission).updateInboundMessageFormat(InboundMessageFormat.OPENADR_3_1);
-        verify(mockHandshakeService, never()).fetchMqttDetails(any());
+        verify(mockHandshakeService, never()).accept(any());
     }
 
     @Test

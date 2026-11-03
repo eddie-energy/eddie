@@ -1,29 +1,35 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.PermissionDetailsDto;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.api.agnostic.aiida.AiidaPermissionUpdateDto;
+import energy.eddie.aiida.models.permission.HandshakeTarget;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionAcceptDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionDeclineDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
+import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.UUID;
 
-import static energy.eddie.api.agnostic.aiida.PermissionUpdateOperation.*;
-
-@Component
+/**
+ * Performs the handshake with the EDDIE framework that created a permission request: fetching its details and
+ * reporting whether it was accepted, rejected, or cannot be fulfilled.
+ */
+@Service
 public class HandshakeService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HandshakeService.class);
     private static final String BEARER_PREFIX = "Bearer ";
+    private static final String ACCEPT_PATH = "/accept";
+    private static final String REJECT_PATH = "/reject";
+    private static final String UNFULFILLABLE_PATH = "/unfulfillable";
     private final UUID aiidaId;
     private final WebClient webClient;
 
@@ -36,67 +42,71 @@ public class HandshakeService {
     }
 
     /**
-     * Fetches the details about the permission and the associated data need from the respective EDDIE framework. This
-     * call is blocking.
+     * Fetches the details about the permission and the associated data need from the respective EDDIE framework.
      */
-    public Mono<PermissionDetailsDto> fetchDetailsForPermission(Permission permission) {
-        LOGGER.info("Fetching details for {}", permission.id());
+    public Mono<PermissionDetailsDto> fetchDetails(HandshakeTarget target) {
+        LOGGER.info("Fetching details from {}", target.handshakeUrl());
 
         return webClient.get()
-                        .uri(permission.handshakeUrl())
+                        .uri(target.handshakeUrl())
                         .accept(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + permission.accessToken())
+                        .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + target.accessToken())
                         .retrieve()
                         .bodyToMono(PermissionDetailsDto.class);
     }
 
     /**
-     * Makes a blocking request to the EDDIE framework to update the permission to indicate that this AIIDA instance
-     * cannot fulfill this permission request. Any occurring errors are just logged.
+     * Accepts the permission request at the respective EDDIE framework. Returns the MQTT credentials and topic names
+     * that are to be used by the associated permission.
      */
-    public void sendUnfulfillableOrRejected(Permission permission, PermissionStatus status) {
-        var otherStatus = switch (status) {
-            case PermissionStatus.UNFULFILLABLE -> UNFULFILLABLE;
-            case PermissionStatus.REJECTED -> REJECT;
-            default -> throw new IllegalArgumentException("Need to pass either UNFULFILLABLE or REJECTED");
-        };
+    public Mono<MqttDto> accept(HandshakeTarget target) {
+        LOGGER.info("Accepting permission request {}", target.handshakeUrl());
 
-        LOGGER.info("Sending {} for permission {}", status, permission.id());
-
-        var operation = new AiidaPermissionUpdateDto(otherStatus, aiidaId);
-
-        webClient.patch()
-                 .uri(permission.handshakeUrl())
-                 .contentType(MediaType.APPLICATION_JSON)
-                 .bodyValue(operation)
-                 .accept(MediaType.APPLICATION_JSON)
-                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + permission.accessToken())
-                 .retrieve()
-                 .bodyToMono(MqttDto.class)
-                 .doOnError(error -> LOGGER.atError()
-                                           .addArgument(permission.id())
-                                           .addArgument(status)
-                                           .setCause(error)
-                                           .log("Error while updating permission {} to new status {} at the EDDIE framework"))
-                 .block();
+        return webClient.post()
+                        .uri(target.handshakeUrl() + ACCEPT_PATH)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(new AiidaPermissionAcceptDto(aiidaId))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + target.accessToken())
+                        .retrieve()
+                        .bodyToMono(MqttDto.class);
     }
 
     /**
-     * Accepts the permission and sends the appropriate message to the respective EDDIE framework. Will return the MQTT
-     * credentials and topic names that are to be used by the associated permission.
+     * Makes a blocking request to the EDDIE framework to report that the user rejected the permission request.
+     * Occurring errors are logged and rethrown.
+     *
+     * @param reason Optional human-readable reason that is forwarded to the eligible party.
      */
-    public Mono<MqttDto> fetchMqttDetails(Permission permission) {
-        LOGGER.info("Fetching mqtt details for permission {}", permission.id());
+    public void reject(HandshakeTarget target, @Nullable String reason) {
+        decline(target, REJECT_PATH, reason);
+    }
 
-        var operation = new AiidaPermissionUpdateDto(ACCEPT, aiidaId);
+    /**
+     * Makes a blocking request to the EDDIE framework to report that this AIIDA instance cannot fulfill the permission
+     * request. Occurring errors are logged and rethrown.
+     *
+     * @param reason Optional human-readable reason that is forwarded to the eligible party.
+     */
+    public void denoteUnfulfillable(HandshakeTarget target, @Nullable String reason) {
+        decline(target, UNFULFILLABLE_PATH, reason);
+    }
 
-        return webClient.patch()
-                        .uri(permission.handshakeUrl())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(operation)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + permission.accessToken())
-                        .retrieve()
-                        .bodyToMono(MqttDto.class);
+    private void decline(HandshakeTarget target, String path, @Nullable String reason) {
+        var url = target.handshakeUrl() + path;
+        LOGGER.info("Declining permission request via {}", url);
+
+        webClient.post()
+                 .uri(url)
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .bodyValue(new AiidaPermissionDeclineDto(aiidaId, reason))
+                 .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + target.accessToken())
+                 .retrieve()
+                 .toBodilessEntity()
+                 .doOnError(error -> LOGGER.atError()
+                                           .addArgument(url)
+                                           .setCause(error)
+                                           .log("Error while declining permission request via {}"))
+                 .block();
     }
 }

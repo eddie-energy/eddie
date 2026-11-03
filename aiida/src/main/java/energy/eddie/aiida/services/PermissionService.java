@@ -16,10 +16,7 @@ import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.InboundMessageFormat;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
@@ -204,7 +201,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         // revokeTime is also used to keep reject timestamp, the status indicates which of the two happened
         permission.setRevokeTime(Instant.now(clock));
 
-        handshakeService.sendUnfulfillableOrRejected(permission, PermissionStatus.REJECTED);
+        handshakeService.reject(HandshakeTarget.of(permission), null);
 
         return permission;
     }
@@ -312,7 +309,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         LOGGER.info("Permission ({}) accepted, will fetch MQTT credentials and start or schedule data sharing",
                     permission.id());
 
-        var mqttDto = handshakeService.fetchMqttDetails(permission)
+        var mqttDto = handshakeService.accept(HandshakeTarget.of(permission))
                                       .doOnError(error -> LOGGER.atError()
                                                                 .addArgument(permissionId)
                                                                 .setCause(error)
@@ -431,7 +428,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                     permission.id(),
                     permission.eddieId());
 
-        var details = handshakeService.fetchDetailsForPermission(permission)
+        var details = handshakeService.fetchDetails(HandshakeTarget.of(permission))
                                       .doOnError(error -> LOGGER.atError()
                                                                 .addArgument(permissionId)
                                                                 .setCause(error)
@@ -510,16 +507,18 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var start = requireNonNull(permission.startTime()).atZone(AIIDA_ZONE_ID);
         var today = LocalDate.now(AIIDA_ZONE_ID).atStartOfDay(AIIDA_ZONE_ID);
         if (start.isBefore(today)) {
-            markPermissionAsUnfulfillable(permission);
-            throw new PermissionStartInThePastException(permission.id(), start);
+            var exception = new PermissionStartInThePastException(permission.id(), start);
+            denotePermissionAsUnfulfillable(permission, exception.getMessage());
+            throw exception;
         }
     }
 
     private void validateDataNeedType(Permission permission) throws PermissionDataNeedTypeNotSupportedException {
         var dataNeedType = requireNonNull(permission.dataNeed()).type();
         if (dataNeedType == null || !isValidDataNeedType(dataNeedType)) {
-            markPermissionAsUnfulfillable(permission);
-            throw new PermissionDataNeedTypeNotSupportedException(permission.id(), dataNeedType);
+            var exception = new PermissionDataNeedTypeNotSupportedException(permission.id(), dataNeedType);
+            denotePermissionAsUnfulfillable(permission, exception.getMessage());
+            throw exception;
         }
     }
 
@@ -533,8 +532,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
         var dataNeed = Objects.requireNonNull(permission.dataNeed());
         if (!dataNeed.supportsConnectionLimits() || !isRangeValid) {
-            markPermissionAsUnfulfillable(permission);
-            throw new LimitDefaultsNotAllowedException(permission.id());
+            var exception = new LimitDefaultsNotAllowedException(permission.id());
+            denotePermissionAsUnfulfillable(permission, exception.getMessage());
+            throw exception;
         }
     }
 
@@ -543,12 +543,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                || InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType);
     }
 
-    private void markPermissionAsUnfulfillable(Permission permission) {
+    private void denotePermissionAsUnfulfillable(Permission permission, @Nullable String reason) {
         permission.setStatus(UNFULFILLABLE);
         permission.setRevokeTime(clock.instant());
-        // TODO save reason or at least return to user why it cannot be fulfilled --> GH-1040
+        // TODO return to user why it cannot be fulfilled --> GH-1040
         permission = permissionRepository.save(permission);
-        handshakeService.sendUnfulfillableOrRejected(permission, UNFULFILLABLE);
+        handshakeService.denoteUnfulfillable(HandshakeTarget.of(permission), reason);
     }
 
     private void validateSingleActiveFcaPermissionPerMeterId(Permission permission) throws ActiveFcaPermissionAlreadyExistsException {
@@ -569,8 +569,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                                                                                             PermissionStatus.ACTIVE);
 
         if (hasConflict) {
-            markPermissionAsUnfulfillable(permission);
-            throw new ActiveFcaPermissionAlreadyExistsException(permission.id(), meterId, dataNeed.type());
+            var exception = new ActiveFcaPermissionAlreadyExistsException(permission.id(), meterId, dataNeed.type());
+            denotePermissionAsUnfulfillable(permission, exception.getMessage());
+            throw exception;
         }
     }
 
