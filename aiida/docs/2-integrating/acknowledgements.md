@@ -13,25 +13,31 @@ The EP reads the acknowledgement from the outbound connector of the EDDIE instan
 ```mermaid
 sequenceDiagram
     participant EP as Eligible party
+    participant EDDIE
     participant AIIDA
-    EP ->> AIIDA: Inbound market document
+
+    EP ->> EDDIE: Inbound market document
+    EDDIE ->> AIIDA: Inbound market document
     AIIDA ->> AIIDA: Validate and process
     alt Fully processed
-        AIIDA -->> EP: A01 (fully accepted)
+        AIIDA -->> EDDIE: A01 (fully accepted)
+        EDDIE -->> EP: A01 (fully accepted)
     else Partly processed
-        AIIDA -->> EP: B70 (partially accepted) + reason
+        AIIDA -->> EDDIE: B70 (partially accepted) + reason
+        EDDIE -->> EP: B70 (partially accepted) + reason
     else Processing failed
-        AIIDA -->> EP: A02 (fully rejected) + reason
+        AIIDA -->> EDDIE: A02 (fully rejected) + reason
+        EDDIE -->> EP: A02 (fully rejected) + reason
     end
 ```
 
 ### Processing Results
 
-| AIIDA result         | CIM reason code | Meaning                                                                                                                      |
-|----------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------|
-| `ACCEPTED`           | `A01`           | AIIDA processed every applicable part of the message successfully.                                                           |
-| `PARTIALLY_ACCEPTED` | `B70`           | AIIDA processed part of the message and ignored or rejected another part. The reason text summarizes what was not processed. |
-| `REJECTED`           | `A02`           | AIIDA could not apply any part of the message. The reason text explains the failure.                                         |
+| CIM reason code | Meaning                                                                                                                      |
+|-----------------|------------------------------------------------------------------------------------------------------------------------------|
+| `A01`           | AIIDA processed every applicable part of the message successfully.                                                           |
+| `B70`           | AIIDA processed part of the message and ignored or rejected another part. The reason text summarizes what was not processed. |
+| `A02`           | AIIDA could not apply any part of the message. The reason text explains the failure.                                         |
 
 For connection limits, `B70` is used when AIIDA stores at least one point but ignores other points because newer or equally
 recent values already exist. If all points are ignored or validation fails, AIIDA returns `A02`.

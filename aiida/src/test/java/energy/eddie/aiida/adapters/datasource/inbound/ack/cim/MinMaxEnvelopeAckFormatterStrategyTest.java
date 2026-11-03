@@ -99,7 +99,7 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
                     .collect(Collectors.joining("\n"));
 
             // When
-            var envelope = strategy.convert(objectMapper, inboundRecord);
+            var envelope = strategy.convert(objectMapper, inboundRecord, InboundProcessingResult.accepted());
 
             // Then
             var bytes = serde.serialize(envelope);

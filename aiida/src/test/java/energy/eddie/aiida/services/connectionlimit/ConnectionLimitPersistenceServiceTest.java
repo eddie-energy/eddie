@@ -4,7 +4,6 @@
 package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
-import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
@@ -12,7 +11,6 @@ import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +24,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionTemplate;
-import reactor.test.publisher.TestPublisher;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -48,8 +45,6 @@ class ConnectionLimitPersistenceServiceTest {
     private static final String METER_ID = "003114735";
 
     @Mock
-    private InboundAggregator inboundAggregator;
-    @Mock
     private ConnectionLimitRepository connectionLimitRepository;
     @Mock
     private PermissionRepository permissionRepository;
@@ -59,47 +54,22 @@ class ConnectionLimitPersistenceServiceTest {
     private InboundDataSource inboundDataSource;
     @Mock
     private Permission permission;
-    @Mock
-    private InboundProcessingResultHandler processingResultHandler;
     @Captor
     private ArgumentCaptor<ConnectionLimit> limitCaptor;
     @Captor
     private ArgumentCaptor<List<ConnectionLimit>> limitsCaptor;
-    @Captor
-    private ArgumentCaptor<InboundProcessingResult> processingResultCaptor;
-
     private ConnectionLimitPersistenceService service;
-    private TestPublisher<InboundRecord> publisher;
 
     @BeforeEach
     void setUp() {
-        publisher = TestPublisher.create();
-        when(inboundAggregator.inboundRecordFlux()).thenReturn(publisher.flux());
-        service = new ConnectionLimitPersistenceService(inboundAggregator,
-                                                        connectionLimitRepository,
+        service = new ConnectionLimitPersistenceService(connectionLimitRepository,
                                                         permissionRepository,
                                                         ObjectMapperCreatorUtil.mapper(),
-                                                        transactionTemplate,
-                                                        processingResultHandler);
+                                                        transactionTemplate);
         lenient().when(permissionRepository.findInboundByDataSourceId(DATA_SOURCE_ID)).thenReturn(Optional.of(permission));
         lenient().when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
         lenient().when(permission.id()).thenReturn(PERMISSION_ID);
         lenient().when(permission.meterId()).thenReturn(METER_ID);
-        service.subscribeToInboundRecords();
-    }
-
-    @Test
-    void subscribedMinMaxDocument_publishesProcessingResult() {
-        when(connectionLimitRepository.findMaxRevisionNumberByMrid("document-1")).thenReturn(Optional.empty());
-        when(connectionLimitRepository.findCreatedAtByPermissionMeterAndInterval(any(),
-                                                                                 any(),
-                                                                                 any(),
-                                                                                 any())).thenReturn(Optional.empty());
-        var inboundRecord = inboundRecord(payload("document-1", "1", "2.0", "8.0", "3.0", "7.0"));
-
-        publisher.next(inboundRecord);
-
-        verify(processingResultHandler, timeout(1000)).handle(inboundRecord, InboundProcessingResult.accepted());
     }
 
     @Test
@@ -170,8 +140,7 @@ class ConnectionLimitPersistenceServiceTest {
         when(connectionLimitRepository.findMaxRevisionNumberByMrid("document-1")).thenReturn(Optional.of(2));
 
         var inboundRecord = inboundRecord(payload("document-1", "2", "4.0", "9.0", "5.0", "10.0"));
-        service.process(inboundRecord);
-        var result = handledResult(inboundRecord);
+        var result = service.process(inboundRecord);
 
         verify(connectionLimitRepository, never()).deleteByMrid(anyString());
         verify(connectionLimitRepository, never()).save(any(ConnectionLimit.class));
@@ -188,8 +157,7 @@ class ConnectionLimitPersistenceServiceTest {
                 payload("document-1", "1", "2.0", "8.0", "3.0", "7.0")
                         .replace(PERMISSION_ID.toString(), documentPermissionId.toString())
         );
-        service.process(inboundRecord);
-        var result = handledResult(inboundRecord);
+        var result = service.process(inboundRecord);
         assertEquals(InboundProcessingResult.Status.REJECTED, result.status());
         assertEquals(
                 "Rejected connection limit document for permission %s and mRID document-1: "
@@ -211,8 +179,7 @@ class ConnectionLimitPersistenceServiceTest {
                                                   "3.0",
                                                   "7.0",
                                                   "2026-02-16T10:11:58Z"));
-        service.process(inboundRecord);
-        var result = handledResult(inboundRecord);
+        var result = service.process(inboundRecord);
         assertEquals(InboundProcessingResult.Status.REJECTED, result.status());
         assertEquals(
                 "Rejected connection limit document for permission %s and mRID document-1: "
@@ -263,8 +230,7 @@ class ConnectionLimitPersistenceServiceTest {
                 .thenReturn(Optional.empty());
 
         var inboundRecord = inboundRecord(payload("document-2", "1", "4.0", "9.0", "5.0", "10.0"));
-        service.process(inboundRecord);
-        var result = handledResult(inboundRecord);
+        var result = service.process(inboundRecord);
 
         verify(connectionLimitRepository).save(any(ConnectionLimit.class));
         assertEquals(InboundProcessingResult.Status.PARTIALLY_ACCEPTED, result.status());
@@ -299,11 +265,6 @@ class ConnectionLimitPersistenceServiceTest {
                                  inboundDataSource,
                                  AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12,
                                  payload);
-    }
-
-    private InboundProcessingResult handledResult(InboundRecord inboundRecord) {
-        verify(processingResultHandler).handle(eq(inboundRecord), processingResultCaptor.capture());
-        return processingResultCaptor.getValue();
     }
 
     private static String payload(String mrid, String revision, String min1, String max1, String min2, String max2) {

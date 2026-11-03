@@ -7,6 +7,7 @@ import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.cim.serde.SerdeInitializationException;
@@ -93,7 +94,7 @@ class OpaqueAckFormatterStrategyTest {
         var serde = new XmlMessageSerde();
 
         // When
-        var envelope = strategy.convert(objectMapper, inboundRecord);
+        var envelope = strategy.convert(objectMapper, inboundRecord, InboundProcessingResult.accepted());
 
         // Then
         var header = envelope.getMessageDocumentHeader();

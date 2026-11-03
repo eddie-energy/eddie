@@ -9,10 +9,6 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import tools.jackson.databind.ObjectMapper;
 
 public interface AckFormatterStrategy {
-    default AcknowledgementEnvelope convert(ObjectMapper objectMapper, InboundRecord inboundRecord) {
-        return convert(objectMapper, inboundRecord, InboundProcessingResult.accepted());
-    }
-
     AcknowledgementEnvelope convert(
             ObjectMapper objectMapper,
             InboundRecord inboundRecord,

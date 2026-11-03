@@ -8,6 +8,7 @@ import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
+import energy.eddie.aiida.adapters.datasource.inbound.InboundMqttClientRegistry;
 import energy.eddie.aiida.adapters.datasource.it.SinapsiAlfaAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpClient;
@@ -27,7 +28,6 @@ import energy.eddie.aiida.models.datasource.mqtt.sga.SmartGatewaysDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.shelly.ShellyDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.DataSourceRecord;
-import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.aiida.services.ModbusDeviceService;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.BeforeEach;
@@ -51,12 +51,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class DataSourceAdapterTest {
-    private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
-
     private ObjectMapper mapper;
     private MqttConfiguration mqttConfiguration;
     private SecretsService secretsService;
-    private InboundProcessingResultHandler processingResultHandler;
+    private InboundMqttClientRegistry inboundMqttClientRegistry;
 
     @BeforeEach
     void setUp() {
@@ -69,8 +67,7 @@ class DataSourceAdapterTest {
                 ""
         );
         secretsService = mock(SecretsService.class);
-        processingResultHandler = mock(InboundProcessingResultHandler.class);
-        lenient().when(processingResultHandler.flux()).thenReturn(Flux.never());
+        inboundMqttClientRegistry = mock(InboundMqttClientRegistry.class);
     }
 
     @Test
@@ -82,9 +79,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(OesterreichsEnergieAdapter.class, adapter);
@@ -101,9 +97,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(MicroTeleinfoV3Adapter.class, adapter);
@@ -118,9 +113,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(SinapsiAlfaAdapter.class, adapter);
@@ -136,9 +130,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(SmartGatewaysAdapter.class, adapter);
@@ -153,9 +146,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(ShellyAdapter.class, adapter);
@@ -170,9 +162,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(InboundAdapter.class, adapter);
@@ -187,9 +178,8 @@ class DataSourceAdapterTest {
         var adapter = DataSourceAdapter.create(dataSource,
                                                mapper,
                                                mqttConfiguration,
-                                               AIIDA_ID,
                                                secretsService,
-                                               processingResultHandler);
+                                               inboundMqttClientRegistry);
 
         // Then
         assertInstanceOf(SimulationAdapter.class, adapter);
@@ -209,9 +199,8 @@ class DataSourceAdapterTest {
             var adapter = DataSourceAdapter.create(dataSource,
                                                    mapper,
                                                    mqttConfiguration,
-                                                   AIIDA_ID,
                                                    secretsService,
-                                                   processingResultHandler);
+                                                   inboundMqttClientRegistry);
 
             assertInstanceOf(ModbusTcpDataSourceAdapter.class, adapter);
         }

@@ -4,12 +4,10 @@
 package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
-import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.aiida.services.InboundProcessingResultHandler;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -24,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import reactor.test.StepVerifier;
-import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -40,14 +37,13 @@ class InboundAdapterTest {
     private static final LogCaptor LOG_CAPTOR_ADAPTER = LogCaptor.forClass(DataSourceAdapter.class);
     private static final String INTERNAL_HOST = "tcp://localhost:1883";
     private static final String TOPIC = "aiida/test";
-    private static final UUID AIIDA_ID = UUID.fromString("3211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID MQTT_USERNAME = UUID.fromString("6211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final MqttConfiguration MQTT_CONFIGURATION = mock(MqttConfiguration.class);
     private static final SecretsService SECRETS_SERVICE = mock(SecretsService.class);
     private InboundAdapter adapter;
-    private InboundProcessingResultHandler processingResultHandler;
+    private InboundMqttClientRegistry mqttClientRegistry;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -65,20 +61,14 @@ class InboundAdapterTest {
         when(dataSource.topic()).thenReturn(TOPIC);
         when(dataSource.username()).thenReturn(String.valueOf(MQTT_USERNAME));
         when(dataSource.password()).thenReturn("testPassword");
-        when(dataSource.acknowledgementTopic()).thenReturn("aiida/ack");
         when(SECRETS_SERVICE.loadSecret(anyString())).thenReturn("testPassword");
         when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.REST_BEARER);
 
-        var builder = JsonMapper.builder();
-        new AiidaConfiguration().objectMapperCustomizer().customize(builder);
-        var mapper = builder.build();
-        processingResultHandler = new InboundProcessingResultHandler();
+        mqttClientRegistry = mock(InboundMqttClientRegistry.class);
         adapter = new InboundAdapter(dataSource,
-                                     mapper,
                                      MQTT_CONFIGURATION,
-                                     AIIDA_ID,
                                      SECRETS_SERVICE,
-                                     processingResultHandler);
+                                     mqttClientRegistry);
         LOG_CAPTOR_ADAPTER.setLogLevelToDebug();
     }
 
@@ -97,6 +87,7 @@ class InboundAdapterTest {
 
             StepVerifier.create(adapter.start()).then(adapter::close).expectComplete().verify();
 
+            verify(mqttClientRegistry).unregister(DATA_SOURCE_ID, mockClient);
             verify(mockClient).disconnect(anyLong());
             verify(mockClient).close();
         }
@@ -215,6 +206,7 @@ class InboundAdapterTest {
 
             adapter.connectComplete(false, INTERNAL_HOST);
 
+            verify(mqttClientRegistry).register(DATA_SOURCE_ID, mockClient);
             verify(mockClient).subscribe(TOPIC, 2);
         }
     }
