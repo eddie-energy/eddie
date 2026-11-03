@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
@@ -15,7 +15,7 @@ public class ShellyMeasurement extends SmartMeterAdapterMeasurement {
     public ShellyMeasurement(ShellyComponent component, String entryKey, String rawValue) {
         super(component.key() + COMPONENT_KEY_SEPARATOR + entryKey, rawValue);
 
-        if(component.phase() == ShellyPhase.TOTAL) {
+        if (component.phase() == ShellyPhase.TOTAL) {
             this.phase = ShellyPhase.fromKey(entryKey);
         } else {
             this.phase = component.phase();
@@ -31,5 +31,9 @@ public class ShellyMeasurement extends SmartMeterAdapterMeasurement {
     @Override
     public UnitOfMeasurement rawUnitOfMeasurement() {
         return entry.rawUnitOfMeasurement();
+    }
+
+    public boolean isSupported() {
+        return entry != ShellyEntry.UNKNOWN && phase != ShellyPhase.UNKNOWN;
     }
 }

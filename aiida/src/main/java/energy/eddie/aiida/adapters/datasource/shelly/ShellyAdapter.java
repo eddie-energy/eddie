@@ -61,14 +61,22 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
         try {
             var json = mapper.readValue(payload, ShellyJson.class);
 
+            if (!isStatusNotification(json)) {
+                LOGGER.trace("Ignoring Shelly message with method {}", json.method());
+                return;
+            }
+
             var aiidaRecordValues = json.params().em()
                                         .entrySet()
                                         .stream()
                                         .flatMap(this::componentEntryToMeasurement)
+                                        .filter(ShellyMeasurement::isSupported)
                                         .map(SmartMeterAdapterMeasurement::toAiidaRecordValue)
                                         .toList();
 
-            emitAiidaRecord(aiidaRecordValues);
+            if (!aiidaRecordValues.isEmpty()) {
+                emitAiidaRecord(aiidaRecordValues);
+            }
         } catch (JacksonException e) {
             if (payload.equals("true") || payload.equals("false")) {
                 var online = Boolean.parseBoolean(payload);
@@ -78,6 +86,10 @@ public class ShellyAdapter extends MqttDataSourceAdapter<ShellyDataSource> {
 
             LOGGER.error("Error while deserializing payload received from adapter. Payload was {}", payload, e);
         }
+    }
+
+    private boolean isStatusNotification(ShellyJson json) {
+        return "NotifyStatus".equals(json.method()) || "NotifyFullStatus".equals(json.method());
     }
 
     @Override
