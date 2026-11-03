@@ -3,25 +3,20 @@
 
 package energy.eddie.aiida.services.connectionlimit;
 
-import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.repositories.ConnectionLimitRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.services.InboundProcessingResultHandler;
-import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.Series;
 import energy.eddie.cim.v1_12.recmmoe.SeriesPeriod;
 import energy.eddie.cim.v1_12.recmmoe.TimeSeriesSeries;
 import jakarta.annotation.Nullable;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
-import reactor.core.scheduler.Schedulers;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
@@ -36,68 +31,43 @@ public class ConnectionLimitPersistenceService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionLimitPersistenceService.class);
 
-    private final InboundAggregator inboundAggregator;
     private final ConnectionLimitRepository connectionLimitRepository;
     private final PermissionRepository permissionRepository;
     private final ObjectMapper objectMapper;
     private final TransactionTemplate transactionTemplate;
-    private final InboundProcessingResultHandler processingResultHandler;
 
     public ConnectionLimitPersistenceService(
-            InboundAggregator inboundAggregator,
             ConnectionLimitRepository connectionLimitRepository,
             PermissionRepository permissionRepository,
             ObjectMapper objectMapper,
-            TransactionTemplate transactionTemplate,
-            InboundProcessingResultHandler processingResultHandler
+            TransactionTemplate transactionTemplate
     ) {
-        this.inboundAggregator = inboundAggregator;
         this.connectionLimitRepository = connectionLimitRepository;
         this.permissionRepository = permissionRepository;
         this.objectMapper = objectMapper;
         this.transactionTemplate = transactionTemplate;
-        this.processingResultHandler = processingResultHandler;
     }
 
-    @PostConstruct
-    void subscribeToInboundRecords() {
-        inboundAggregator.inboundRecordFlux()
-                         .filter(inboundRecord -> inboundRecord.schema() == AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12)
-                         .publishOn(Schedulers.boundedElastic())
-                         .doOnNext(this::process)
-                         .onErrorContinue((error, value) -> LOGGER.error(
-                                 "Failed to process connection limits for record {}",
-                                 value,
-                                 error))
-                         .subscribe();
-    }
-
-    void process(InboundRecord inboundRecord) {
+    public InboundProcessingResult process(InboundRecord inboundRecord) {
         try {
-            persistConnectionLimits(inboundRecord);
+            return persistConnectionLimits(inboundRecord);
         } catch (InvalidConnectionLimitDocumentException e) {
             LOGGER.warn(e.getMessage());
-            processingResultHandler.handle(
-                    inboundRecord,
-                    InboundProcessingResult.rejected(
-                            Objects.requireNonNullElse(e.getMessage(), "The connection limit document is invalid")
-                    )
+            return InboundProcessingResult.rejected(
+                    Objects.requireNonNullElse(e.getMessage(), "The connection limit document is invalid")
             );
         } catch (RuntimeException e) {
             LOGGER.error("Failed to persist connection limit from inbound record {}: {}",
                          inboundRecord,
                          e.getMessage(),
                          e);
-            processingResultHandler.handle(
-                    inboundRecord,
-                    InboundProcessingResult.rejected(
-                            "AIIDA could not process the connection limit document: " + errorMessage(e)
-                    )
+            return InboundProcessingResult.rejected(
+                    "AIIDA could not process the connection limit document: " + errorMessage(e)
             );
         }
     }
 
-    private void persistConnectionLimits(InboundRecord inboundRecord) throws InvalidConnectionLimitDocumentException, IllegalArgumentException {
+    private InboundProcessingResult persistConnectionLimits(InboundRecord inboundRecord) throws InvalidConnectionLimitDocumentException, IllegalArgumentException {
         var envelope = objectMapper.readValue(inboundRecord.payload(), RECMMOEEnvelope.class);
 
         var document = parseEnvelope(envelope);
@@ -137,7 +107,7 @@ public class ConnectionLimitPersistenceService {
                                                      period));
         }
 
-        persist(inboundRecord, incomingLimits);
+        return persist(incomingLimits);
     }
 
     private List<ConnectionLimit> toConnectionLimits(
@@ -170,13 +140,9 @@ public class ConnectionLimitPersistenceService {
         return limits;
     }
 
-    private void persist(InboundRecord inboundRecord, List<ConnectionLimit> incomingLimits) {
+    private InboundProcessingResult persist(List<ConnectionLimit> incomingLimits) {
         if (incomingLimits.isEmpty()) {
-            processingResultHandler.handle(
-                    inboundRecord,
-                    InboundProcessingResult.rejected("The document does not contain any connection limit points")
-            );
-            return;
+            return InboundProcessingResult.rejected("The document does not contain any connection limit points");
         }
 
         var document = incomingLimits.getFirst();
@@ -189,25 +155,20 @@ public class ConnectionLimitPersistenceService {
                         document.mrid(),
                         document.revisionNumber(),
                         latestRevision.get());
-                processingResultHandler.handle(
-                        inboundRecord,
-                        InboundProcessingResult.rejected(
-                                "Revision %d is not newer than the latest processed revision %d for mRID %s".formatted(
-                                        document.revisionNumber(),
-                                        latestRevision.get(),
-                                        document.mrid()
-                                )
+                return InboundProcessingResult.rejected(
+                        "Revision %d is not newer than the latest processed revision %d for mRID %s".formatted(
+                                document.revisionNumber(),
+                                latestRevision.get(),
+                                document.mrid()
                         )
                 );
-                return;
             }
 
             replaceByMrid(document.mrid(), incomingLimits);
-            processingResultHandler.handle(inboundRecord, InboundProcessingResult.accepted());
-            return;
+            return InboundProcessingResult.accepted();
         }
 
-        upsertByCreatedAt(inboundRecord, incomingLimits);
+        return upsertByCreatedAt(incomingLimits);
     }
 
     private void replaceByMrid(String mrid, List<ConnectionLimit> incomingLimits) {
@@ -217,7 +178,7 @@ public class ConnectionLimitPersistenceService {
         });
     }
 
-    private void upsertByCreatedAt(InboundRecord inboundRecord, List<ConnectionLimit> incomingLimits) {
+    private InboundProcessingResult upsertByCreatedAt(List<ConnectionLimit> incomingLimits) {
         int persistedCount = 0;
         for (var incoming : incomingLimits) {
             var existing = connectionLimitRepository.findCreatedAtByPermissionMeterAndInterval(incoming.permissionId(),
@@ -242,16 +203,14 @@ public class ConnectionLimitPersistenceService {
 
         int rejectedCount = incomingLimits.size() - persistedCount;
         if (rejectedCount == 0) {
-            processingResultHandler.handle(inboundRecord, InboundProcessingResult.accepted());
-            return;
+            return InboundProcessingResult.accepted();
         }
 
         var reason = "%d of %d connection limit points were ignored because newer or equally recent values already exist"
                 .formatted(rejectedCount, incomingLimits.size());
-        var processingResult = persistedCount == 0
+        return persistedCount == 0
                 ? InboundProcessingResult.rejected(reason)
                 : InboundProcessingResult.partiallyAccepted(reason);
-        processingResultHandler.handle(inboundRecord, processingResult);
     }
 
     private static String errorMessage(RuntimeException exception) {
