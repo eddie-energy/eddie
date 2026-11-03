@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -20,7 +20,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
-import static energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START;
+import static energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_CONNECTION;
 import static java.util.Objects.requireNonNull;
 
 @Service
@@ -84,7 +84,7 @@ public class PermissionScheduler {
         var permissionId = permission.id();
 
         LOGGER.info("Scheduling permission start for permission '{}'.", permissionId);
-        permission.setStatus(WAITING_FOR_START);
+        permission.setStatus(WAITING_FOR_CONNECTION);
 
         var future = scheduler.schedule(() -> startPermission(permission), startTime);
         permissionFutures.put(permissionId, future);
@@ -100,7 +100,7 @@ public class PermissionScheduler {
         try {
             streamerManager.createNewStreamer(permission);
             schedulePermissionExpirationRunnable(permission);
-            permission.setStatus(PermissionStatus.STREAMING_DATA);
+            permission.setStatus(PermissionStatus.CONNECTED);
         } catch (MqttException exception) {
             LOGGER.atError()
                   .addArgument(permission.id())
@@ -108,7 +108,7 @@ public class PermissionScheduler {
                   .setCause(exception)
                   .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
 
-            permission.setStatus(PermissionStatus.FAILED_TO_START);
+            permission.setStatus(PermissionStatus.NOT_CONNECTED);
         }
         return repository.save(permission);
     }

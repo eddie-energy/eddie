@@ -19,7 +19,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
-import static energy.eddie.aiida.models.permission.PermissionStatus.STREAMING_DATA;
+import static energy.eddie.aiida.models.permission.PermissionStatus.CONNECTED;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -41,11 +41,11 @@ class PermissionExpiredRunnableTest {
     void verify_run_changesState_stopsStreamer_andUpdatesDb() {
         // Given
         when(mockPermission.expirationTime()).thenReturn(fixedInstant);
-        when(mockPermission.status()).thenReturn(PermissionStatus.STREAMING_DATA);
+        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
         when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
-        when(mockPermission.status()).thenReturn(STREAMING_DATA);
+        when(mockPermission.status()).thenReturn(CONNECTED);
         var runnable = new PermissionExpiredRunnable(mockPermission, streamerManager, repository, clock);
 
         // When

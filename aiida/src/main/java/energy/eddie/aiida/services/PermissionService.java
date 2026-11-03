@@ -376,7 +376,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var streamingPermissions = permissionRepository.findByStatusIn(STREAMING);
+        var streamingPermissions = permissionRepository.findByStatusIn(CONNECTION_STATES);
         LOGGER.info(
                 "Fetched {} permission from database that should resume streaming or be updated if expired.",
                 streamingPermissions.size());

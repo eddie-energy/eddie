@@ -1,5 +1,5 @@
--- SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
--- SPDX-License-Identifier: Apache-2.0
+--  SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+--  SPDX-License-Identifier: Apache-2.0
 
 INSERT INTO public.aiida_local_data_need(data_need_id,
                                          asset,
@@ -39,7 +39,7 @@ VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         NULL,
         'Test IntelliJ2',
         '2023-09-14 12:39:00.650669 +00:00',
-        'WAITING_FOR_START', 'b69f9bc2-e16c-4de4-8c3e-00d219dcd819'),
+        'WAITING_FOR_CONNECTION', 'b69f9bc2-e16c-4de4-8c3e-00d219dcd819'),
        ('8609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '9609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '6609a9b3-0718-4082-935d-6a98c0f8c5a2',
@@ -51,5 +51,5 @@ VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         NULL,
         'My NewAIIDA Test Service',
         '2023-09-20 13:39:42.610385 +00:00',
-        'STREAMING_DATA',
+        'CONNECTED',
         'b69f9bc2-e16c-4de4-8c3e-00d219dcd819');

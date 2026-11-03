@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -75,7 +75,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.STREAMING_DATA, permission.status());
+        assertEquals(PermissionStatus.CONNECTED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
         verify(mockStreamerManager).createNewStreamer(any());
@@ -94,7 +94,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.WAITING_FOR_START, permission.status());
+        assertEquals(PermissionStatus.WAITING_FOR_CONNECTION, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(not(any(PermissionExpiredRunnable.class)), eq(startTimeInFuture));
         verifyNoInteractions(mockStreamerManager);
@@ -114,7 +114,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.FAILED_TO_START, permission.status());
+        assertEquals(PermissionStatus.NOT_CONNECTED, permission.status());
         verify(mockRepository).save(any());
         verifyNoInteractions(mockTaskScheduler);
     }

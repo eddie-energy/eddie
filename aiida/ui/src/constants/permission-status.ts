@@ -18,28 +18,22 @@ const permissionStatus: {
     isActive: true,
     isRevocable: true,
   },
-  WAITING_FOR_START: {
-    title: 'Waiting for Start',
+  WAITING_FOR_CONNECTION: {
+    title: 'Waiting for Connection',
     description:
-      'You accepted the permission request and it is scheduled to start at the specified start time.',
+      'You accepted the permission request and it waits to connect, as it is scheduled to start at the specified start time.',
     isActive: true,
     isRevocable: true,
   },
-  STREAMING_DATA: {
-    title: 'Streaming Data',
-    description:
-      'You accepted the permission request and it is now actively streaming data to the eligible party.',
+  CONNECTED: {
+    title: 'Connected',
+    description: 'You accepted the permission request and it is connected to the eligible party.',
     isActive: true,
     isRevocable: true,
   },
   REJECTED: {
     title: 'Rejected',
     description: 'You rejected the permission request.',
-  },
-  REVOCATION_RECEIVED: {
-    title: 'Revocation Received',
-    description: 'You requested revocation of the permission.',
-    isActive: true,
   },
   REVOKED: {
     title: 'Revoked',
@@ -53,9 +47,9 @@ const permissionStatus: {
     title: 'Fulfilled',
     description: 'The expiration time of the permission was reached.',
   },
-  FAILED_TO_START: {
-    title: 'Failed to Start',
-    description: 'An error occurred and the permission could not be started.',
+  NOT_CONNECTED: {
+    title: 'Not Connected',
+    description: 'You accepted the permission request, but it failed to connect to the eligible party.',
     isError: true,
   },
   CREATED: {

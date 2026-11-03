@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.permission;
@@ -28,13 +28,14 @@ public enum PermissionStatus {
      */
     FETCHED_MQTT_CREDENTIALS,
     /**
-     * The customer has accepted the permission but the start time for sharing data is still in the future.
+     * The permission has been accepted but waits to connect to the given infrastructure, as the start of the
+     * permission is scheduled at a later point in time.
      */
-    WAITING_FOR_START,
+    WAITING_FOR_CONNECTION,
     /**
-     * The permission has been accepted and data is now actively streamed to the eligible party.
+     * The permission has been accepted and connected to the given infrastructure on start-up.
      */
-    STREAMING_DATA,
+    CONNECTED,
     /**
      * The user rejected the permission request.
      */
@@ -52,12 +53,12 @@ public enum PermissionStatus {
      */
     FULFILLED,
     /**
-     * An error occurred and the permission could not be started.
+     * The permission has been accepted but failed to connect to the given infrastructure on start-up.
      */
-    FAILED_TO_START;
+    NOT_CONNECTED;
 
-    public static final Set<PermissionStatus> STREAMING = Set.of(WAITING_FOR_START, STREAMING_DATA);
-    public static final Set<PermissionStatus> ACTIVE = Set.of(ACCEPTED, WAITING_FOR_START, STREAMING_DATA);
+    public static final Set<PermissionStatus> CONNECTION_STATES = Set.of(WAITING_FOR_CONNECTION, CONNECTED);
+    public static final Set<PermissionStatus> ACTIVE = Set.of(ACCEPTED, WAITING_FOR_CONNECTION, CONNECTED);
 
     public boolean isActive() {
         return ACTIVE.contains(this);

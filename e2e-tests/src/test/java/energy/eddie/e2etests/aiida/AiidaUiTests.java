@@ -97,7 +97,7 @@ class AiidaUiTests {
         assertThat(permission).containsText(dataNeed);
         assertThat(permission).containsText(permissionId);
         // Check if status is correct
-        assertThat(permission).containsText("Streaming Data");
+        assertThat(permission).containsText("Connected");
 
         // Revoke permission
         revokePermission(permission);
