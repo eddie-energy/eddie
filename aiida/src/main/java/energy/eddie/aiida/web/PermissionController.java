@@ -11,6 +11,7 @@ import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.services.ConnectionStatusService;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
@@ -44,24 +45,29 @@ public class PermissionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
     private static final String REVOKE_PERMISSION_EXAMPLE_RETURN_JSON = "{\"permissionId\":\"a4dc1bad-b9fe-47ae-9336-690cfb4aada9\",\"status\":\"REVOKED\",\"serviceName\":\"My Energy Visualization Service\",\"dataNeedId\":\"DATA_NEED_ID\",\"startTime\":\"2023-10-01T08:00:00Z\",\"expirationTime\":\"2023-10-31T20:00:00Z\",\"grantTime\":\"2023-10-01T08:00:00Z\",\"revokeTime\":\"2023-10-20T08:00:00Z\",\"connectionId\":\"SomeRandomString\",\"requestedCodes\":\"[\\\"1-0:1.8.0\\\",\\\"1-0:1.7.0\\\"]\"}}";
     private final PermissionService permissionService;
+    private final ConnectionStatusService connectionStatusService;
 
     @Autowired
-    public PermissionController(PermissionService permissionService) {
+    public PermissionController(
+            PermissionService permissionService,
+            ConnectionStatusService connectionStatusService
+    ) {
         this.permissionService = permissionService;
+        this.connectionStatusService = connectionStatusService;
     }
 
     @Operation(summary = "Get all permissions sorted by grant time desc", description = "Get all permissions sorted by their grant time descending.", operationId = "getPermissionsSorted", tags = {"permission"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Permission>> getAllPermissions() throws InvalidUserException {
-        return ResponseEntity.ok(permissionService.getAllPermissionsSortedByGrantTime());
+        return ResponseEntity.ok(withConnectionStatus(permissionService.getAllPermissionsSortedByGrantTime()));
     }
 
     @Operation(summary = "Get active inbound permissions", description = "Get active inbound permissions that can be used as a data source selection.", operationId = "getActiveInboundPermissions", tags = {"permission"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
     @GetMapping(path = "/inbound/active", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Permission>> getActiveInboundPermissions() throws InvalidUserException {
-        return ResponseEntity.ok(permissionService.getActiveInboundPermissions());
+        return ResponseEntity.ok(withConnectionStatus(permissionService.getActiveInboundPermissions()));
     }
 
     @Operation(summary = "Set up new permissions", description = "Set up a new permissions with data from e.g. a QR code.", operationId = "setupNewPermission", tags = {"permission"})
@@ -77,7 +83,7 @@ public class PermissionController {
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(permission);
+                .body(withConnectionStatus(permission));
     }
 
     @Operation(summary = "Update a permission", description = "Accept, reject, revoke, or update the inbound message format or display name of a permission.", operationId = "updatePermission", tags = {"permission"})
@@ -134,6 +140,10 @@ public class PermissionController {
                     patchDto.displayName()
             );
         };
-        return ResponseEntity.ok(permission);
+        return ResponseEntity.ok(connectionStatusService.withConnectionStatus(permission));
+    }
+
+    private List<Permission> withConnectionStatus(List<Permission> permissions) {
+        return permissions.stream().map(connectionStatusService::withConnectionStatus).toList();
     }
 }

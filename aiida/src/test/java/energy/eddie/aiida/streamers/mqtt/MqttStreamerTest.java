@@ -49,6 +49,8 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.NEGATIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT_HOUR;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -135,6 +137,17 @@ class MqttStreamerTest {
         streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), streamingContext);
     }
 
+
+    @Test
+    void isConnected_delegatesToClient() {
+        // Given
+        streamer.connect();
+        when(mockClient.isConnected()).thenReturn(true, false);
+
+        // When, Then
+        assertTrue(streamer.isConnected());
+        assertFalse(streamer.isConnected());
+    }
 
     @Test
     void verify_connect_setsCallback_andSubscribes() {

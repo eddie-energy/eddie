@@ -25,7 +25,11 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The StreamerManager manages the lifecycle of {@link AiidaStreamer}.
@@ -63,7 +67,7 @@ public class StreamerManager implements AutoCloseable {
         this.permissionLatestRecordMap = permissionLatestRecordMap;
         this.secretsService = secretsService;
 
-        streamers = new HashMap<>();
+        streamers = new ConcurrentHashMap<>();
         commands = Sinks.many().unicast().onBackpressureBuffer();
     }
 
@@ -101,6 +105,13 @@ public class StreamerManager implements AutoCloseable {
         var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux.get());
         streamer.connect();
         streamers.put(id, streamer);
+    }
+
+    /**
+     * Returns whether a streamer exists for the passed permission and is currently connected to the streaming target.
+     */
+    public boolean isConnected(UUID permissionId) {
+        return requireStreamer(permissionId).map(AiidaStreamer::isConnected).orElse(false);
     }
 
     /**

@@ -59,11 +59,6 @@ public class PermissionExpiredRunnable implements Runnable {
             return;
         }
 
-        if (permission.status() == PermissionStatus.ACCEPTED || permission.status() == PermissionStatus.WAITING_FOR_CONNECTION) {
-            LOGGER.warn("Permission {} has status {}, meaning it was never started. Will expire it anyway.",
-                        permission.id(), permission.status());
-        }
-
         var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
         var connectionId = requireNonNull(permission.connectionId());
         var fulfilledMessage = new AiidaConnectionStatusMessageDto(connectionId,

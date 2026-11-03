@@ -404,7 +404,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId1);
-        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class, () -> service.rejectPermission(permissionId1));
@@ -430,7 +430,7 @@ class PermissionServiceTest {
         // Given
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId1);
-        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
@@ -514,7 +514,7 @@ class PermissionServiceTest {
         // Then
         verify(mockHandshakeService).fetchMqttDetails(any());
         verify(mockPermission).setStatus(PermissionStatus.ACCEPTED);
-        verify(mockPermission).setStatus(PermissionStatus.FETCHED_MQTT_CREDENTIALS);
+        verify(mockPermission, never()).setStatus(PermissionStatus.FETCHED_MQTT_CREDENTIALS);
         verify(mockPermission).setGrantTime(fixedInstant);
         verify(mockPermission).setMqttStreamingConfig(assertArg(conf -> assertAll(() -> assertEquals("dataTopic",
                                                                                                      conf.dataTopic()),
@@ -705,7 +705,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
-        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
 
@@ -725,7 +725,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
-        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
         when(mockInboundDataSource.permission()).thenReturn(mockPermission);
@@ -749,7 +749,7 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.connectionId()).thenReturn("connectionId");
         when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
-        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
         when(mockInboundDataSource.permission()).thenReturn(ownerPermission);
@@ -772,7 +772,7 @@ class PermissionServiceTest {
 
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
         when(mockPermission.id()).thenReturn(permissionId1);
-        when(mockPermission.status()).thenReturn(PermissionStatus.CONNECTED);
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockInboundDataSource.permission()).thenReturn(mockPermission);
         when(mockInboundDataSource.id()).thenReturn(dataSourceId);
@@ -874,7 +874,7 @@ class PermissionServiceTest {
             return Stream.of(Arguments.of(per,
                                           "2023-09-01T00:00:00.000Z",
                                           "2023-12-24T00:00:00.000Z",
-                                          PermissionStatus.CONNECTED),
+                                          PermissionStatus.ACCEPTED),
                              Arguments.of(per,
                                           "2023-09-01T00:00:00.000Z",
                                           "2023-09-19T00:00:00.000Z",
@@ -886,11 +886,11 @@ class PermissionServiceTest {
                              Arguments.of(per,
                                           "2023-09-11T00:00:00.000Z",
                                           "2023-10-31T00:00:00.000Z",
-                                          PermissionStatus.CONNECTED),
+                                          PermissionStatus.ACCEPTED),
                              Arguments.of(per,
                                           "2023-10-12T00:00:00.000Z",
                                           "2023-10-15T00:00:00.000Z",
-                                          PermissionStatus.WAITING_FOR_CONNECTION));
+                                          PermissionStatus.ACCEPTED));
         }
 
         @BeforeEach
@@ -931,12 +931,13 @@ class PermissionServiceTest {
         ) {
             // Given
             doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
+            permission.setStatus(PermissionStatus.ACCEPTED);
             permission.setStartTime(Instant.parse(start));
             permission.setExpirationTime(Instant.parse(end));
-            when(mockPermissionRepository.findByStatusIn(PermissionStatus.CONNECTION_STATES)).thenReturn(List.of(permission));
+            when(mockPermissionRepository.findStartableByStatus(PermissionStatus.ACCEPTED)).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
-            if (expectedState == PermissionStatus.WAITING_FOR_CONNECTION || expectedState == PermissionStatus.CONNECTED)
+            if (expectedState == PermissionStatus.ACCEPTED)
                 doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
 
             // When

@@ -64,7 +64,7 @@ class PermissionSchedulerTest {
     }
 
     @Test
-    void givenStartTimeInPast_changesState_andSchedulesExpirationRunnable() throws MqttException {
+    void givenStartTimeInPast_startsStreamer_andSchedulesExpirationRunnable_withoutChangingStatus() throws MqttException {
         // Given
         var startTimeInPast = Instant.parse("2023-09-01T22:00:00.00Z");
         var expirationTime = clock.instant().plusSeconds(10000);
@@ -75,15 +75,15 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.CONNECTED, permission.status());
+        assertEquals(PermissionStatus.CREATED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
         verify(mockStreamerManager).createNewStreamer(any());
-        verify(mockRepository).save(any());
+        verifyNoInteractions(mockRepository);
     }
 
     @Test
-    void givenStartTimeInFuture_changesState_andSchedulesStart() {
+    void givenStartTimeInFuture_schedulesStart_withoutChangingStatus() {
         // Given
         var startTimeInFuture = clock.instant().plusSeconds(1000);
         var expirationTime = startTimeInFuture.plusSeconds(5000);
@@ -94,15 +94,15 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.WAITING_FOR_CONNECTION, permission.status());
+        assertEquals(PermissionStatus.CREATED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(not(any(PermissionExpiredRunnable.class)), eq(startTimeInFuture));
         verifyNoInteractions(mockStreamerManager);
-        verify(mockRepository).save(any());
+        verifyNoInteractions(mockRepository);
     }
 
     @Test
-    void givenExceptionFromStreamer_updatesStatus() throws MqttException {
+    void givenExceptionFromStreamer_doesNotChangeStatus_andStillSchedulesExpiration() throws MqttException {
         // Given
         var startTimeInFuture = clock.instant().minusSeconds(100);
         var expirationTime = startTimeInFuture.plusSeconds(500);
@@ -114,9 +114,9 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.NOT_CONNECTED, permission.status());
-        verify(mockRepository).save(any());
-        verifyNoInteractions(mockTaskScheduler);
+        assertEquals(PermissionStatus.CREATED, permission.status());
+        verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
+        verifyNoInteractions(mockRepository);
     }
 
     @Test

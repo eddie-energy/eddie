@@ -163,7 +163,7 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
                             DATA_NEED_ID,
                             "accessToken",
                             "https://example.org/handshake",
-                            "CONNECTED",
+                            "ACCEPTED",
                             USER_ID,
                             METER_ID,
                             true);

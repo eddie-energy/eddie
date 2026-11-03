@@ -58,7 +58,7 @@ const isEditingDisplayName = ref(false)
         :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'"
         minimal-on-mobile
       >
-        {{ t(permission.status) }}
+        {{ t(permission.connectionStatus ?? permission.status) }}
       </StatusTag>
       <button class="chevron" :aria-label="t('permissions.dropdown.openDetails')">
         <ChevronDownIcon />

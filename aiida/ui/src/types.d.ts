@@ -64,10 +64,13 @@ export type AiidaDataSource = {
 
 export type InboundMessageFormat = 'CIM_1_12' | 'OPENADR_3_1'
 
+export type AiidaConnectionStatus = 'WAITING_FOR_CONNECTION' | 'NOT_CONNECTED' | 'CONNECTED'
+
 export type AiidaPermission = {
   permissionId: string
   eddieId: string
   status: string
+  connectionStatus?: AiidaConnectionStatus
   serviceName: string
   displayName: string
   startTime: string

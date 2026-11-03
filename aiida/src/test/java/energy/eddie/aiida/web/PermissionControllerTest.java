@@ -4,6 +4,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
+import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
@@ -14,7 +15,9 @@ import energy.eddie.aiida.errors.permission.MissingInboundMessageFormatException
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.services.ConnectionStatusService;
 import energy.eddie.aiida.services.PermissionService;
+import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -62,14 +67,22 @@ class PermissionControllerTest {
     private MockMvc mockMvc;
     @MockitoBean
     private PermissionService permissionService;
+    @MockitoBean
+    private StreamerManager streamerManager;
     @Mock
     private Permission mockPermission;
     private Instant grant;
     private ObjectMapper mapper;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         grant = Instant.now();
+        var permission = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
+        when(permissionService.acceptPermission(any(), any(), any(), any())).thenReturn(permission);
+        when(permissionService.rejectPermission(any())).thenReturn(permission);
+        when(permissionService.revokePermission(any())).thenReturn(permission);
+        when(permissionService.updateInboundMessageFormat(any(), any())).thenReturn(permission);
+        when(permissionService.updateDisplayName(any(), any())).thenReturn(permission);
 
         mapper = ObjectMapperCreatorUtil.mapper();
     }
@@ -107,6 +120,25 @@ class PermissionControllerTest {
                .andExpect(status().isOk())
                .andExpect(jsonPath("$[0].monitoringDataSourceId").value(dataSourceId.toString()))
                .andExpect(jsonPath("$[0].supportsConnectionLimits").value(true));
+    }
+
+    @Test
+    @WithMockUser
+    void getAllPermissions_includesDerivedConnectionStatusForAcceptedPermissions() throws Exception {
+        var accepted = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
+        accepted.setStatus(PermissionStatus.ACCEPTED);
+        accepted.setStartTime(Instant.now().minusSeconds(60));
+        var revoked = new Permission(eddieId, UUID.randomUUID(), "https://example.org", "accessToken", userId);
+        revoked.setStatus(PermissionStatus.REVOKED);
+        when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(accepted, revoked));
+        when(streamerManager.isConnected(permissionId)).thenReturn(true);
+
+        mockMvc.perform(get("/permissions"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].status").value("ACCEPTED"))
+               .andExpect(jsonPath("$[0].connectionStatus").value("CONNECTED"))
+               .andExpect(jsonPath("$[1].status").value("REVOKED"))
+               .andExpect(jsonPath("$[1].connectionStatus").doesNotExist());
     }
 
     @Test
@@ -467,6 +499,16 @@ class PermissionControllerTest {
         @Bean
         public GlobalExceptionHandler globalExceptionHandler() {
             return new GlobalExceptionHandler();
+        }
+
+        @Bean
+        public JsonMapperBuilderCustomizer objectMapperCustomizer() {
+            return new AiidaConfiguration().objectMapperCustomizer();
+        }
+
+        @Bean
+        public ConnectionStatusService connectionStatusService(StreamerManager streamerManager) {
+            return new ConnectionStatusService(Clock.systemUTC(), streamerManager);
         }
     }
 }

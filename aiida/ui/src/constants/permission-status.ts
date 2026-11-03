@@ -18,19 +18,6 @@ const permissionStatus: {
     isActive: true,
     isRevocable: true,
   },
-  WAITING_FOR_CONNECTION: {
-    title: 'Waiting for Connection',
-    description:
-      'You accepted the permission request and it waits to connect, as it is scheduled to start at the specified start time.',
-    isActive: true,
-    isRevocable: true,
-  },
-  CONNECTED: {
-    title: 'Connected',
-    description: 'You accepted the permission request and it is connected to the eligible party.',
-    isActive: true,
-    isRevocable: true,
-  },
   REJECTED: {
     title: 'Rejected',
     description: 'You rejected the permission request.',
@@ -46,11 +33,6 @@ const permissionStatus: {
   FULFILLED: {
     title: 'Fulfilled',
     description: 'The expiration time of the permission was reached.',
-  },
-  NOT_CONNECTED: {
-    title: 'Not Connected',
-    description: 'You accepted the permission request, but it failed to connect to the eligible party.',
-    isError: true,
   },
   CREATED: {
     title: 'Created',

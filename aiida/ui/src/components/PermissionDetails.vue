@@ -206,7 +206,7 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dt>{{ t('permissions.dropdown.status') }}</dt>
         <dd>
           <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'">
-            {{ t(permission.status) }}
+            {{ t(permission.connectionStatus ?? permission.status) }}
           </StatusTag>
         </dd>
       </div>

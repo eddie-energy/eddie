@@ -4,7 +4,6 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
@@ -20,7 +19,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
-import static energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_CONNECTION;
 import static java.util.Objects.requireNonNull;
 
 @Service
@@ -52,9 +50,10 @@ public class PermissionScheduler {
 
     /**
      * If the start date of the permission is in the past or now, the streaming is directly started, otherwise a
-     * Runnable will be scheduled to start the permission once its start time has been reached.
+     * Runnable will be scheduled to start the permission once its start time has been reached. The status of the
+     * permission is not changed, its connection state is derived at runtime by {@link ConnectionStatusService}.
      *
-     * @return The updated permission object. It is already persisted in the database.
+     * @return The passed permission object.
      */
     public Permission scheduleOrStart(Permission permission) {
         var startTime = requireNonNull(permission.startTime());
@@ -84,12 +83,11 @@ public class PermissionScheduler {
         var permissionId = permission.id();
 
         LOGGER.info("Scheduling permission start for permission '{}'.", permissionId);
-        permission.setStatus(WAITING_FOR_CONNECTION);
 
         var future = scheduler.schedule(() -> startPermission(permission), startTime);
         permissionFutures.put(permissionId, future);
 
-        return repository.save(permission);
+        return permission;
     }
 
     private Permission startPermission(Permission permission) {
@@ -99,18 +97,15 @@ public class PermissionScheduler {
 
         try {
             streamerManager.createNewStreamer(permission);
-            schedulePermissionExpirationRunnable(permission);
-            permission.setStatus(PermissionStatus.CONNECTED);
         } catch (MqttException exception) {
             LOGGER.atError()
                   .addArgument(permission.id())
                   .addArgument(permission.eddieId())
                   .setCause(exception)
                   .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
-
-            permission.setStatus(PermissionStatus.NOT_CONNECTED);
         }
-        return repository.save(permission);
+        schedulePermissionExpirationRunnable(permission);
+        return permission;
     }
 
     private void schedulePermissionExpirationRunnable(Permission permission) {

@@ -166,6 +166,13 @@ public class Permission {
     private CronExpression transmissionSchedule;
 
     /**
+     * Not persisted, derived at runtime by {@code ConnectionStatusService}.
+     */
+    @Transient
+    @Nullable
+    private ConnectionStatus connectionStatus;
+
+    /**
      * Create a new permission from the contents of the QR code. The status will be set to
      * {@link PermissionStatus#CREATED}.
      */
@@ -302,6 +309,20 @@ public class Permission {
      */
     public PermissionStatus status() {
         return status;
+    }
+
+    /**
+     * Returns the dynamic connection state, if it was derived for this instance, see
+     * {@code ConnectionStatusService}. It is not persisted.
+     */
+    @JsonProperty(value = "connectionStatus", access = JsonProperty.Access.READ_ONLY)
+    @Schema(description = "Dynamic connection state, derived at runtime. Only present for accepted permissions.", example = "CONNECTED", accessMode = Schema.AccessMode.READ_ONLY)
+    public @Nullable ConnectionStatus connectionStatus() {
+        return connectionStatus;
+    }
+
+    public void setConnectionStatus(@Nullable ConnectionStatus connectionStatus) {
+        this.connectionStatus = connectionStatus;
     }
 
     /**

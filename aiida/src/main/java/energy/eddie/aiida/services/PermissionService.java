@@ -328,7 +328,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         secretsService.storeSecret(mqttStreamingConfig.permissionId(), SecretType.PASSWORD, mqttDto.password());
 
         permission.setMqttStreamingConfig(mqttStreamingConfig);
-        permission.setStatus(FETCHED_MQTT_CREDENTIALS);
 
         if (permission.dataNeed() instanceof InboundAiidaLocalDataNeed) {
             aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
@@ -367,7 +366,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Gets all permissions from the database that should be streaming data and checks if they have expired.
+     * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
      * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
      * This is done when a {@link ContextRefreshedEvent} is received,
      * which ensures that all beans are started and the database is set up correctly.
@@ -376,13 +375,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var streamingPermissions = permissionRepository.findByStatusIn(CONNECTION_STATES);
+        var acceptedPermissions = permissionRepository.findStartableByStatus(ACCEPTED);
         LOGGER.info(
                 "Fetched {} permission from database that should resume streaming or be updated if expired.",
-                streamingPermissions.size());
+                acceptedPermissions.size());
 
         var now = clock.instant();
-        for (Permission permission : streamingPermissions) {
+        for (Permission permission : acceptedPermissions) {
             var expirationTime = permission.expirationTime();
             if (expirationTime == null) {
                 LOGGER.error("expirationTime of permission {} is null, this is an unexpected error",

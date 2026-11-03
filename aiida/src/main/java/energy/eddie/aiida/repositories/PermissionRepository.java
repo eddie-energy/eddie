@@ -19,7 +19,16 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
 
     List<Permission> findByMonitoringDataSourceIdIsNotNullAndStatusIn(Set<PermissionStatus> statuses);
 
-    List<Permission> findByStatusIn(Set<PermissionStatus> statuses);
+    /**
+     * Returns all permissions with the given status that have received their MQTT credentials.
+     */
+    @Query("""
+            SELECT p
+            FROM Permission p
+            WHERE p.status = :status
+              AND p.mqttStreamingConfig IS NOT NULL
+            """)
+    List<Permission> findStartableByStatus(PermissionStatus status);
 
     Optional<Permission> findByPermissionIdAndUserId(UUID permissionId, UUID userId);
 

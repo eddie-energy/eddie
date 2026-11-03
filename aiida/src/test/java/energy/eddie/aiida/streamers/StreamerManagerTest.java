@@ -37,8 +37,7 @@ import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -263,6 +262,23 @@ class StreamerManagerTest {
 
         // Then
         verify(mockAiidaStreamer).publishSchemaPayload(permissionId, AiidaSchema.OPAQUE, "test-payload");
+    }
+
+    @Test
+    void givenConnectedStreamer_isConnected_returnsTrue() {
+        // Given
+        ReflectionTestUtils.setField(manager, "streamers", mockMap);
+        when(mockMap.get(permissionId)).thenReturn(mockAiidaStreamer);
+        when(mockAiidaStreamer.isConnected()).thenReturn(true);
+
+        // When, Then
+        assertTrue(manager.isConnected(permissionId));
+    }
+
+    @Test
+    void givenNoStreamer_isConnected_returnsFalse() {
+        // When, Then
+        assertFalse(manager.isConnected(permissionId));
     }
 
     @Test
