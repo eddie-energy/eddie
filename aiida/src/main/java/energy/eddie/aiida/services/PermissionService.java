@@ -250,7 +250,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
         }
 
-        return permissionScheduler.scheduleOrStart(permission);
+        permissionScheduler.scheduleOrStart(ActivePermission.from(permission));
+        return permission;
     }
 
     /**
@@ -379,12 +380,18 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 continue;
             }
 
-            if (expirationTime.isAfter(now)) {
-                permissionScheduler.scheduleOrStart(permission);
-            } else {
+            if (!expirationTime.isAfter(now)) {
                 LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now",
                             permission.id());
                 permission.setStatus(PermissionStatus.FULFILLED);
+                continue;
+            }
+
+            try {
+                permissionScheduler.scheduleOrStart(ActivePermission.from(permission));
+            } catch (IllegalStateException exception) {
+                // don't throw exception so other permissions are not skipped
+                LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
             }
         }
     }

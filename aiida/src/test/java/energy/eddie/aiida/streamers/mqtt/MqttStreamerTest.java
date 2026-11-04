@@ -6,9 +6,9 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -94,7 +94,7 @@ class MqttStreamerTest {
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
-    private Permission permissionMock;
+    private ActivePermission permissionMock;
     @Mock
     private SecretsService mockSecretsService;
     @Mock
@@ -203,6 +203,7 @@ class MqttStreamerTest {
         // Given
         var userId = UUID.randomUUID();
         when(permissionMock.userId()).thenReturn(userId);
+        when(permissionMock.id()).thenReturn(PERMISSION_ID);
         streamer.connect();
 
         // When
@@ -217,6 +218,7 @@ class MqttStreamerTest {
         // Given
         var userId = UUID.randomUUID();
         when(permissionMock.userId()).thenReturn(userId);
+        when(permissionMock.id()).thenReturn(PERMISSION_ID);
         streamer.connect();
 
         // When

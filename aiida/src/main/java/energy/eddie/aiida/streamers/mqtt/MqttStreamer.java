@@ -6,9 +6,9 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
@@ -48,7 +48,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     private final MqttAsyncClient client;
     private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
-    private final Permission permission;
+    private final ActivePermission permission;
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private final SecretsService secretsService;
@@ -70,7 +70,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
      */
     public MqttStreamer(
             StreamerDependencies dependencies,
-            Permission permission,
+            ActivePermission permission,
             Flux<AiidaRecord> recordFlux,
             MqttStreamingContext streamingContext
     ) {
@@ -214,10 +214,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     }
 
     private void publishConnectionStatus(ConnectionStatus connectionStatus) {
-        var userId = permission.userId();
-        if (userId != null) {
-            connectionStatusEventStream.publish(userId, streamingConfig.permissionId(), connectionStatus);
-        }
+        connectionStatusEventStream.publish(permission.userId(), permission.id(), connectionStatus);
     }
 
     @Override
@@ -271,7 +268,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
                     streamingConfig.serverUri()
             );
 
-            var dataNeed = Objects.requireNonNull(permission.dataNeed());
+            var dataNeed = permission.dataNeed();
             var schemas = Objects.requireNonNullElse(dataNeed.schemas(), Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
             for (var schema : schemas) {

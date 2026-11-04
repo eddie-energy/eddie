@@ -5,7 +5,7 @@ package energy.eddie.aiida.schemas.rtd.raw;
 
 import energy.eddie.aiida.errors.formatter.RawSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.schemas.rtd.BaseSchemaFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
@@ -32,7 +32,7 @@ public class RawFormatter extends BaseSchemaFormatter {
     @Override
     public byte[] format(
             AiidaRecord aiidaRecord,
-            Permission permission
+            ActivePermission permission
     ) throws SchemaFormatterException {
         var aiidaRecordDto = aiidaRecord.toDto(permission.id());
         return serializeOrThrow(aiidaRecordDto);

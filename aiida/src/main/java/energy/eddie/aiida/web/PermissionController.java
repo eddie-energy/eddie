@@ -4,10 +4,7 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionstatus.ConnectionStatusEventDto;
-import energy.eddie.aiida.dtos.permission.AcceptPermissionDto;
-import energy.eddie.aiida.dtos.permission.PatchPermissionDto;
-import energy.eddie.aiida.dtos.permission.PendingPermissionDto;
-import energy.eddie.aiida.dtos.permission.RejectPermissionDto;
+import energy.eddie.aiida.dtos.permission.*;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
@@ -50,7 +47,6 @@ import java.util.UUID;
 @Tag(name = "Permission Controller")
 public class PermissionController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionController.class);
-    private static final String REVOKE_PERMISSION_EXAMPLE_RETURN_JSON = "{\"permissionId\":\"a4dc1bad-b9fe-47ae-9336-690cfb4aada9\",\"status\":\"REVOKED\",\"serviceName\":\"My Energy Visualization Service\",\"dataNeedId\":\"DATA_NEED_ID\",\"startTime\":\"2023-10-01T08:00:00Z\",\"expirationTime\":\"2023-10-31T20:00:00Z\",\"grantTime\":\"2023-10-01T08:00:00Z\",\"revokeTime\":\"2023-10-20T08:00:00Z\",\"connectionId\":\"SomeRandomString\",\"requestedCodes\":\"[\\\"1-0:1.8.0\\\",\\\"1-0:1.7.0\\\"]\"}}";
     private final PermissionService permissionService;
     private final ConnectionStatusService connectionStatusService;
     private final ConnectionStatusEventStream connectionStatusEventStream;
@@ -73,10 +69,10 @@ public class PermissionController {
     }
 
     @Operation(summary = "Get all permissions sorted by grant time desc", description = "Get all permissions sorted by their grant time descending.", operationId = "getPermissionsSorted", tags = {"permission"})
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PermissionDto.class))))})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Permission>> getAllPermissions() throws InvalidUserException {
-        return ResponseEntity.ok(withConnectionStatus(permissionService.getAllPermissionsSortedByGrantTime()));
+    public ResponseEntity<List<PermissionDto>> getAllPermissions() throws InvalidUserException {
+        return ResponseEntity.ok(toDtos(permissionService.getAllPermissionsSortedByGrantTime()));
     }
 
     @Operation(summary = "Stream connection status changes", description = "Server-sent events whenever the connection status of a permission of the current user changes, e.g. once the connection to the EDDIE framework is established after accepting a permission.", operationId = "connectionStatusStream", tags = {"permission"})
@@ -91,10 +87,10 @@ public class PermissionController {
     }
 
     @Operation(summary = "Get active inbound permissions", description = "Get active inbound permissions that can be used as a data source selection.", operationId = "getActiveInboundPermissions", tags = {"permission"})
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Permission.class))))})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PermissionDto.class))))})
     @GetMapping(path = "/inbound/active", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Permission>> getActiveInboundPermissions() throws InvalidUserException {
-        return ResponseEntity.ok(withConnectionStatus(permissionService.getActiveInboundPermissions()));
+    public ResponseEntity<List<PermissionDto>> getActiveInboundPermissions() throws InvalidUserException {
+        return ResponseEntity.ok(toDtos(permissionService.getActiveInboundPermissions()));
     }
 
     @Operation(summary = "Fetch details of permission requests", description = "Fetches and validates the details of the permission requests contained in an AIIDA code. Nothing is persisted, so the AIIDA code can be used again until the permission requests are accepted or rejected.", operationId = "fetchPermissionDetails", tags = {"permission"})
@@ -111,20 +107,20 @@ public class PermissionController {
 
     @Operation(summary = "Accept a permission request", description = "Accepts a permission request from an AIIDA code and persists the permission. A data source is required for outbound permissions.", operationId = "acceptPermission", tags = {"permission"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Permission accepted", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class))}),
+            @ApiResponse(responseCode = "201", description = "Permission accepted", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PermissionDto.class))}),
             @ApiResponse(responseCode = "400", description = "Missing or incompatible data source, invalid request body, or the permission was already accepted.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "404", description = "Data source not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "409", description = "Permission cannot be fulfilled.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "503", description = "The EDDIE framework could not be reached.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
     @PostMapping(value = "/{permissionId}/accept", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Permission> acceptPermission(
+    public ResponseEntity<PermissionDto> acceptPermission(
             @Parameter(name = "permissionId", description = "Unique ID of the permission request", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId,
             @Valid @RequestBody AcceptPermissionDto acceptDto
     ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, MissingDataSourceException, DataSourceNotFoundException, IncompatibleDataSourceException, InvalidInboundPermissionException, SecretStoringException {
         LOGGER.info("Got request to accept permission '{}'", permissionId);
         var permission = permissionService.acceptPermission(permissionId, acceptDto);
         return ResponseEntity.status(HttpStatus.CREATED)
-                             .body(connectionStatusService.withConnectionStatus(permission));
+                             .body(connectionStatusService.toDto(permission));
     }
 
     @Operation(summary = "Reject a permission request", description = "Rejects a permission request from an AIIDA code at the EDDIE framework. Nothing is persisted.", operationId = "rejectPermission", tags = {"permission"})
@@ -143,12 +139,12 @@ public class PermissionController {
 
     @Operation(summary = "Update a permission", description = "Revoke, or update the inbound message format or display name of an accepted permission.", operationId = "updatePermission", tags = {"permission"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Permission.class), examples = @ExampleObject(value = REVOKE_PERMISSION_EXAMPLE_RETURN_JSON))}),
+            @ApiResponse(responseCode = "200", description = "successful operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PermissionDto.class))}),
             @ApiResponse(responseCode = "400", description = "Invalid operation", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "404", description = "Permission not found", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))}),
             @ApiResponse(responseCode = "409", description = "Permission cannot be updated as it's not in an eligible state.", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))})})
     @PatchMapping(value = "/{permissionId}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Permission> updatePermission(
+    public ResponseEntity<PermissionDto> updatePermission(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     required = true,
                     description = "Permission patch request. Fields required depend on the selected operation.",
@@ -185,10 +181,10 @@ public class PermissionController {
                     patchDto.displayName()
             );
         };
-        return ResponseEntity.ok(connectionStatusService.withConnectionStatus(permission));
+        return ResponseEntity.ok(connectionStatusService.toDto(permission));
     }
 
-    private List<Permission> withConnectionStatus(List<Permission> permissions) {
-        return permissions.stream().map(connectionStatusService::withConnectionStatus).toList();
+    private List<PermissionDto> toDtos(List<Permission> permissions) {
+        return permissions.stream().map(connectionStatusService::toDto).toList();
     }
 }

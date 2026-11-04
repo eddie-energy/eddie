@@ -4,7 +4,7 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.aggregator.OutboundAggregator;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -26,7 +26,6 @@ import reactor.core.publisher.Sinks;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,7 +81,7 @@ public class StreamerManager implements AutoCloseable {
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
      */
     @Transactional
-    public void createNewStreamer(Permission permission) throws IllegalArgumentException, MqttException {
+    public void createNewStreamer(ActivePermission permission) throws IllegalArgumentException, MqttException {
         LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.id());
         var id = permission.id();
 
@@ -94,10 +93,6 @@ public class StreamerManager implements AutoCloseable {
         }
 
         var recordFlux = buildFilteredFlux(permission);
-        if (recordFlux.isEmpty()) {
-            return;
-        }
-
         var dependencies = new StreamerDependencies(failedToSendRepository,
                                                     mapper,
                                                     schemaFormatterRegistry,
@@ -106,7 +101,7 @@ public class StreamerManager implements AutoCloseable {
                                                     secretsService,
                                                     connectionStatusEventStream);
 
-        var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux.get());
+        var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux);
         streamer.connect();
         streamers.put(id, streamer);
     }
@@ -132,13 +127,13 @@ public class StreamerManager implements AutoCloseable {
      * the new aggregation cadence. No-op for permissions whose data need is not outbound, since only outbound
      * permissions currently have a record flux to rebuild.
      */
-    public void updateSchedule(Permission permission) {
+    public void updateSchedule(ActivePermission permission) {
         if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed)) {
             return;
         }
 
         requireStreamer(permission.id())
-                .ifPresent(streamer -> buildFilteredFlux(permission).ifPresent(streamer::updateRecordFlux));
+                .ifPresent(streamer -> streamer.updateRecordFlux(buildFilteredFlux(permission)));
     }
 
     /**
@@ -186,32 +181,20 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Builds the filtered and aggregated record flux for the passed permission if it was created by an outbound data need.
-     * Returns an empty {@link Optional} if a required field is missing, after logging which one.
-     * The caller is responsible for not creating or for closing the corresponding streamer.
+     * Builds the filtered and aggregated record flux for the passed permission. Permissions that were not created by an
+     * outbound data need get a flux that never emits, as they do not stream any records.
      */
-    private Optional<Flux<AiidaRecord>> buildFilteredFlux(Permission permission) {
-        try {
-            var dataNeed = Objects.requireNonNull(permission.dataNeed(), "data need");
-            var expirationTime = Objects.requireNonNull(permission.expirationTime(), "expiration time");
-            var userId = Objects.requireNonNull(permission.userId(), "user id");
-            var dataSource = Objects.requireNonNull(permission.dataSource(), "data source");
-            var schedule = Objects.requireNonNull(permission.effectiveTransmissionSchedule(), "transmission schedule");
-
-            if (!(dataNeed instanceof OutboundAiidaLocalDataNeed outboundDataNeed)) {
-                return Optional.of(Flux.never());
-            }
-
-            return Optional.of(aggregator.getFilteredFlux(outboundDataNeed.dataTags(),
-                                                          dataNeed.asset(),
-                                                          expirationTime,
-                                                          schedule,
-                                                          userId,
-                                                          dataSource.id()));
-        } catch (NullPointerException e) {
-            LOGGER.error("Cannot build record flux for permission {}: missing {}", permission.id(), e.getMessage());
-            return Optional.empty();
+    private Flux<AiidaRecord> buildFilteredFlux(ActivePermission permission) {
+        if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed outboundDataNeed)) {
+            return Flux.never();
         }
+
+        return aggregator.getFilteredFlux(outboundDataNeed.dataTags(),
+                                          outboundDataNeed.asset(),
+                                          permission.expirationTime(),
+                                          permission.transmissionSchedule(),
+                                          permission.userId(),
+                                          permission.dataSource().id());
     }
 
     private Optional<AiidaStreamer> requireStreamer(UUID permissionId) {

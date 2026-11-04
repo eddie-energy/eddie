@@ -7,7 +7,9 @@ import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -153,7 +155,9 @@ public class PermissionCommandService {
 
         permission.setTransmissionSchedule(cron);
         permissionRepository.save(permission);
-        streamerManager.updateSchedule(permission);
+        if (permission.status() == PermissionStatus.ACCEPTED) {
+            streamerManager.updateSchedule(ActivePermission.from(permission));
+        }
         LOGGER.info("Updated transmission schedule to {} for permission {}", cron, permission.id());
     }
 

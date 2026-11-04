@@ -16,8 +16,10 @@ import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
@@ -61,6 +63,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
@@ -317,7 +320,7 @@ class PermissionServiceTest {
         var mqttStreamingConfig = permission.mqttStreamingConfig();
         assertNotNull(mqttStreamingConfig);
         assertEquals("dataTopic", mqttStreamingConfig.dataTopic());
-        verify(mockPermissionScheduler).scheduleOrStart(permission);
+        verify(mockPermissionScheduler).scheduleOrStart(argThat(activePermission -> activePermission.id().equals(permissionId1)));
         verify(mockAiidaEventPublisher, never()).publishEvent(any());
         verifyNoInteractions(mockConnectionLimitDefaultRepository);
     }
@@ -432,6 +435,7 @@ class PermissionServiceTest {
         // Given
         stubInboundLocalDataNeed(false);
         stubSuccessfulAccept();
+        createInboundDataSourceOnAcceptEvent();
 
         // When
         service.acceptPermission(permissionId1, acceptDto(dataSourceId, InboundMessageFormat.OPENADR_3_1, null));
@@ -440,10 +444,9 @@ class PermissionServiceTest {
         verify(mockDataSourceService, never()).dataSourceByIdOrThrow(any());
         verify(mockPermissionRepository).save(permissionCaptor.capture());
         var permission = permissionCaptor.getValue();
-        assertNull(permission.dataSource());
         assertEquals(InboundMessageFormat.OPENADR_3_1, permission.inboundMessageFormat());
         verify(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
-        verify(mockPermissionScheduler).scheduleOrStart(permission);
+        verify(mockPermissionScheduler).scheduleOrStart(argThat(activePermission -> activePermission.id().equals(permissionId1)));
     }
 
     @Test
@@ -451,6 +454,7 @@ class PermissionServiceTest {
         // Given
         stubInboundLocalDataNeed(true);
         stubSuccessfulAccept(minLimitKw, maxLimitKw);
+        createInboundDataSourceOnAcceptEvent();
 
         // When
         service.acceptPermission(permissionId1, acceptDto(null, null, null));
@@ -749,6 +753,23 @@ class PermissionServiceTest {
         lenient().when(mockInboundAiidaLocalDataNeed.name()).thenReturn("My Name");
         lenient().when(mockInboundAiidaLocalDataNeed.type()).thenReturn(InboundAiidaDataNeed.DISCRIMINATOR_VALUE);
         lenient().when(mockInboundAiidaLocalDataNeed.supportsConnectionLimits()).thenReturn(supportsConnectionLimits);
+        lenient().when(mockInboundAiidaLocalDataNeed.transmissionSchedule())
+                 .thenReturn(CronExpression.parse("*/5 * * * * *"));
+    }
+
+    /**
+     * Mirrors the synchronous event listener, which creates the inbound data source of an accepted inbound permission.
+     */
+    private void createInboundDataSourceOnAcceptEvent() {
+        var savedPermission = new AtomicReference<Permission>();
+        when(mockPermissionRepository.save(any(Permission.class))).then(invocation -> {
+            savedPermission.set(invocation.getArgument(0));
+            return invocation.getArgument(0);
+        });
+        doAnswer(invocation -> {
+            savedPermission.get().setDataSource(mockDataSource);
+            return null;
+        }).when(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
     }
 
     private void stubSuccessfulAccept() throws InvalidUserException {
@@ -765,8 +786,7 @@ class PermissionServiceTest {
         when(mockHandshakeService.accept(any())).thenReturn(Mono.just(mockMqttDto));
         when(mockMqttDto.dataTopic()).thenReturn("dataTopic");
         when(mockMqttDto.username()).thenReturn(permissionId1.toString());
-        when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
-        when(mockPermissionScheduler.scheduleOrStart(any())).then(i -> i.getArgument(0));
+        lenient().when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
     }
 
     private AcceptPermissionDto acceptDto(
@@ -791,6 +811,10 @@ class PermissionServiceTest {
         private TaskScheduler mockScheduler;
         @Mock
         private ScheduledFuture<?> mockScheduledFuture;
+        @Mock
+        private AiidaLocalDataNeed mockStartupDataNeed;
+        @Mock
+        private MqttStreamingConfig mockMqttStreamingConfig;
 
         public static Stream<Arguments> onStartupVariousPermissions() {
             var per = new Permission(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
@@ -861,6 +885,11 @@ class PermissionServiceTest {
             permission.setStatus(PermissionStatus.ACCEPTED);
             permission.setStartTime(Instant.parse(start));
             permission.setExpirationTime(Instant.parse(end));
+            permission.setConnectionId("connectionId");
+            lenient().when(mockStartupDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/5 * * * * *"));
+            permission.initializeFromDataNeed(mockStartupDataNeed);
+            permission.setDataSource(mockDataSource);
+            permission.setMqttStreamingConfig(mockMqttStreamingConfig);
             when(mockPermissionRepository.findStartableByStatus(PermissionStatus.ACCEPTED)).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled

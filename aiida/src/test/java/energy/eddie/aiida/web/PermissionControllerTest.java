@@ -5,6 +5,7 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.dtos.permission.PermissionDto;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
@@ -44,7 +45,6 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -103,7 +103,7 @@ class PermissionControllerTest {
                                     .getResponse()
                                     .getContentAsString();
 
-        var response = mapper.readValue(responseString, new TypeReference<List<Permission>>() {});
+        var response = mapper.readValue(responseString, new TypeReference<List<PermissionDto>>() {});
         assertEquals(0, response.size());
     }
 
@@ -145,19 +145,14 @@ class PermissionControllerTest {
         var permissions = sampleDataForGetAllPermissionsTest();
         when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(permissions);
 
-        var responseString = mockMvc.perform(get("/permissions"))
-                                    .andExpect(status().isOk())
-                                    .andReturn()
-                                    .getResponse()
-                                    .getContentAsString();
-
-        var response = mapper.readValue(responseString, new TypeReference<List<Permission>>() {});
-
-        assertEquals(3, response.size());
-        assertNull(response.getFirst().handshakeUrl());
-        assertEquals(permissionId, response.getFirst().id());
-        assertEquals(PermissionStatus.ACCEPTED, permissions.get(1).status());
-        assertEquals(eddieId, permissions.get(2).eddieId());
+        mockMvc.perform(get("/permissions"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(3))
+               .andExpect(jsonPath("$[0].permissionId").value(permissionId.toString()))
+               .andExpect(jsonPath("$[0].eddieId").value(eddieId.toString()))
+               .andExpect(jsonPath("$[0].status").value("ACCEPTED"))
+               .andExpect(jsonPath("$[0].handshakeUrl").doesNotExist())
+               .andExpect(jsonPath("$[0].accessToken").doesNotExist());
     }
 
     @Test

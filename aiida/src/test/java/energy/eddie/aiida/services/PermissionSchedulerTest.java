@@ -4,8 +4,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
@@ -24,7 +23,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,13 +33,8 @@ class PermissionSchedulerTest {
     private final Clock clock = Clock.fixed(Instant.parse("2023-10-10T10:00:00.00Z"), AiidaConfiguration.AIIDA_ZONE_ID);
     private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("b69f9bc2-e16c-4de4-8c3e-00d219dcd819");
-    private final String handshakeUrl = "https://example.org";
-    private final String accessToken = "someAccess";
-    private final Permission permission = new Permission(eddieId,
-                                                         permissionId,
-                                                         handshakeUrl,
-                                                         accessToken,
-                                                         UUID.randomUUID());
+    @Mock
+    private ActivePermission permission;
     @Mock
     private TaskScheduler mockTaskScheduler;
     @Mock
@@ -56,6 +49,8 @@ class PermissionSchedulerTest {
 
     @BeforeEach
     void setUp() {
+        lenient().when(permission.id()).thenReturn(permissionId);
+        lenient().when(permission.eddieId()).thenReturn(eddieId);
         permissionScheduler = new PermissionScheduler(clock,
                                                       mockTaskScheduler,
                                                       mockRepository,
@@ -64,18 +59,17 @@ class PermissionSchedulerTest {
     }
 
     @Test
-    void givenStartTimeInPast_startsStreamer_andSchedulesExpirationRunnable_withoutChangingStatus() throws MqttException {
+    void givenStartTimeInPast_startsStreamer_andSchedulesExpirationRunnable() throws MqttException {
         // Given
         var startTimeInPast = Instant.parse("2023-09-01T22:00:00.00Z");
         var expirationTime = clock.instant().plusSeconds(10000);
-        permission.setStartTime(startTimeInPast);
-        permission.setExpirationTime(expirationTime);
+        when(permission.startTime()).thenReturn(startTimeInPast);
+        when(permission.expirationTime()).thenReturn(expirationTime);
 
         // When
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.ACCEPTED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
         verify(mockStreamerManager).createNewStreamer(any());
@@ -83,18 +77,15 @@ class PermissionSchedulerTest {
     }
 
     @Test
-    void givenStartTimeInFuture_schedulesStart_withoutChangingStatus() {
+    void givenStartTimeInFuture_schedulesStart() {
         // Given
         var startTimeInFuture = clock.instant().plusSeconds(1000);
-        var expirationTime = startTimeInFuture.plusSeconds(5000);
-        permission.setStartTime(startTimeInFuture);
-        permission.setExpirationTime(expirationTime);
+        when(permission.startTime()).thenReturn(startTimeInFuture);
 
         // When
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.ACCEPTED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(not(any(PermissionExpiredRunnable.class)), eq(startTimeInFuture));
         verifyNoInteractions(mockStreamerManager);
@@ -102,19 +93,18 @@ class PermissionSchedulerTest {
     }
 
     @Test
-    void givenExceptionFromStreamer_doesNotChangeStatus_andStillSchedulesExpiration() throws MqttException {
+    void givenExceptionFromStreamer_stillSchedulesExpiration() throws MqttException {
         // Given
         var startTimeInFuture = clock.instant().minusSeconds(100);
         var expirationTime = startTimeInFuture.plusSeconds(500);
-        permission.setStartTime(startTimeInFuture);
-        permission.setExpirationTime(expirationTime);
+        when(permission.startTime()).thenReturn(startTimeInFuture);
+        when(permission.expirationTime()).thenReturn(expirationTime);
         doThrow(new MqttException(999)).when(mockStreamerManager).createNewStreamer(any());
 
         // When
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.ACCEPTED, permission.status());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
         verifyNoInteractions(mockRepository);
     }

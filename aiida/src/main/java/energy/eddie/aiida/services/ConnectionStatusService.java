@@ -3,6 +3,7 @@
 
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.dtos.permission.PermissionDto;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
@@ -47,12 +48,9 @@ public class ConnectionStatusService {
     }
 
     /**
-     * Sets the derived connection status on the passed permission, so it is included in API responses.
-     *
-     * @return The passed permission.
+     * Creates the API representation of the passed permission, including its derived connection status.
      */
-    public Permission withConnectionStatus(Permission permission) {
-        permission.setConnectionStatus(connectionStatusOf(permission));
-        return permission;
+    public PermissionDto toDto(Permission permission) {
+        return PermissionDto.from(permission, connectionStatusOf(permission));
     }
 }

@@ -20,7 +20,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -96,17 +97,18 @@ class ConnectionStatusServiceTest {
     }
 
     @Test
-    void withConnectionStatus_setsDerivedStatusOnPermission() {
+    void toDto_includesDerivedConnectionStatus() {
         // Given
         permission.setStatus(PermissionStatus.ACCEPTED);
         permission.setStartTime(NOW.minusSeconds(60));
         when(streamerManager.isConnected(permissionId)).thenReturn(true);
 
         // When
-        var result = service.withConnectionStatus(permission);
+        var result = service.toDto(permission);
 
         // Then
-        assertSame(permission, result);
+        assertEquals(permissionId, result.permissionId());
+        assertEquals(PermissionStatus.ACCEPTED, result.status());
         assertEquals(ConnectionStatus.CONNECTED, result.connectionStatus());
     }
 }

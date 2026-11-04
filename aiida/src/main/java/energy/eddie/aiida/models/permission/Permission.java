@@ -166,13 +166,6 @@ public class Permission implements Persistable<UUID> {
     @JsonDeserialize(using = CronExpressionDeserializer.class)
     private CronExpression transmissionSchedule;
 
-    /**
-     * Not persisted, derived at runtime by {@code ConnectionStatusService}.
-     */
-    @Transient
-    @Nullable
-    private ConnectionStatus connectionStatus;
-
     @Transient
     @JsonIgnore
     private boolean isNew = true;
@@ -328,20 +321,6 @@ public class Permission implements Persistable<UUID> {
     }
 
     /**
-     * @return The dynamic connection state, if it was derived for this instance, see
-     * {@code ConnectionStatusService}. It is not persisted.
-     */
-    @JsonProperty(value = "connectionStatus", access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "Dynamic connection state, derived at runtime. Only present for accepted permissions.", example = "CONNECTED", accessMode = Schema.AccessMode.READ_ONLY)
-    public @Nullable ConnectionStatus connectionStatus() {
-        return connectionStatus;
-    }
-
-    public void setConnectionStatus(@Nullable ConnectionStatus connectionStatus) {
-        this.connectionStatus = connectionStatus;
-    }
-
-    /**
      * @return The MQTT streaming configuration for this permission.
      */
     public @Nullable MqttStreamingConfig mqttStreamingConfig() {
@@ -365,7 +344,7 @@ public class Permission implements Persistable<UUID> {
     /**
      * @return The user ID associated with the permission.
      */
-    public @Nullable UUID userId() {
+    public UUID userId() {
         return userId;
     }
 

@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
@@ -18,8 +18,6 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
-
-import static java.util.Objects.requireNonNull;
 
 @Service
 public class PermissionScheduler {
@@ -52,17 +50,15 @@ public class PermissionScheduler {
      * If the start date of the permission is in the past or now, the streaming is directly started, otherwise a
      * Runnable will be scheduled to start the permission once its start time has been reached. The status of the
      * permission is not changed, its connection state is derived at runtime by {@link ConnectionStatusService}.
-     *
-     * @return The passed permission object.
      */
-    public Permission scheduleOrStart(Permission permission) {
-        var startTime = requireNonNull(permission.startTime());
+    public void scheduleOrStart(ActivePermission permission) {
+        var startTime = permission.startTime();
 
         var now = Instant.now(clock);
         if (startTime.isAfter(now)) {
-            return schedulePermissionStart(permission);
+            schedulePermissionStart(permission);
         } else {
-            return startPermission(permission);
+            startPermission(permission);
         }
     }
 
@@ -78,19 +74,17 @@ public class PermissionScheduler {
         }
     }
 
-    private Permission schedulePermissionStart(Permission permission) {
-        var startTime = requireNonNull(permission.startTime());
+    private void schedulePermissionStart(ActivePermission permission) {
+        var startTime = permission.startTime();
         var permissionId = permission.id();
 
         LOGGER.info("Scheduling permission start for permission '{}'.", permissionId);
 
         var future = scheduler.schedule(() -> startPermission(permission), startTime);
         permissionFutures.put(permissionId, future);
-
-        return permission;
     }
 
-    private Permission startPermission(Permission permission) {
+    private void startPermission(ActivePermission permission) {
         LOGGER.info("Starting permission '{}' owned by EDDIE framework '{}'",
                     permission.id(),
                     permission.eddieId());
@@ -105,11 +99,10 @@ public class PermissionScheduler {
                   .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
         }
         schedulePermissionExpirationRunnable(permission);
-        return permission;
     }
 
-    private void schedulePermissionExpirationRunnable(Permission permission) {
-        var expirationTime = requireNonNull(permission.expirationTime());
+    private void schedulePermissionExpirationRunnable(ActivePermission permission) {
+        var expirationTime = permission.expirationTime();
         var permissionId = permission.id();
         LOGGER.info("Will schedule a PermissionExpirationRunnable for permission '{}' to run at  {}",
                     permissionId,

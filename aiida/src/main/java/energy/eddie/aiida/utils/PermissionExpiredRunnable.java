@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.utils;
 
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -15,11 +15,9 @@ import org.slf4j.LoggerFactory;
 import java.time.Clock;
 import java.time.Instant;
 
-import static java.util.Objects.requireNonNull;
-
 public class PermissionExpiredRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionExpiredRunnable.class);
-    private final Permission permission;
+    private final ActivePermission permission;
     private final StreamerManager streamerManager;
     private final PermissionRepository repository;
     private final Instant expirationTime;
@@ -31,7 +29,7 @@ public class PermissionExpiredRunnable implements Runnable {
      * permission and updates the database.
      */
     public PermissionExpiredRunnable(
-            Permission permission,
+            ActivePermission permission,
             StreamerManager streamerManager,
             PermissionRepository repository,
             Clock clock
@@ -40,7 +38,7 @@ public class PermissionExpiredRunnable implements Runnable {
         this.streamerManager = streamerManager;
         this.repository = repository;
         this.clock = clock;
-        this.expirationTime = requireNonNull(permission.expirationTime());
+        this.expirationTime = permission.expirationTime();
     }
 
     @Override
@@ -52,25 +50,29 @@ public class PermissionExpiredRunnable implements Runnable {
               .addArgument(offsetMs)
               .log("Will expire permission permission {}, running {} ms too late compared to target time (negative number would be too early)");
 
-        // safeguard if e.g. a revocation operation could not properly cancel this runnable before it runs
-        if (!permission.status().isActive()) {
-            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
-                        permission.id(), permission.status());
+        var currentPermission = repository.findById(permission.id()).orElse(null);
+        if (currentPermission == null) {
+            LOGGER.warn("Permission {} no longer exists. Will NOT expire the permission", permission.id());
             return;
         }
 
-        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
-        var connectionId = requireNonNull(permission.connectionId());
-        var fulfilledMessage = new AiidaConnectionStatusMessageDto(connectionId,
-                                                                   dataNeedId,
+        // safeguard if e.g. a revocation operation could not properly cancel this runnable before it runs
+        if (!currentPermission.status().isActive()) {
+            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
+                        permission.id(), currentPermission.status());
+            return;
+        }
+
+        var fulfilledMessage = new AiidaConnectionStatusMessageDto(permission.connectionId(),
+                                                                   permission.dataNeed().dataNeedId(),
                                                                    clock.instant(),
                                                                    PermissionProcessStatus.FULFILLED,
                                                                    permission.id(),
                                                                    permission.eddieId()
         );
 
-        permission.setStatus(PermissionStatus.FULFILLED);
-        repository.save(permission);
+        currentPermission.setStatus(PermissionStatus.FULFILLED);
+        repository.save(currentPermission);
 
         streamerManager.stopStreamer(fulfilledMessage);
     }

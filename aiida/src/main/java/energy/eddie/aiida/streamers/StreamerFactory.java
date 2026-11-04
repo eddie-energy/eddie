@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.streamers;
 
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.ActivePermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
@@ -12,8 +12,6 @@ import org.eclipse.paho.mqttv5.client.persist.MqttDefaultFilePersistence;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.springframework.web.util.UriTemplate;
 import reactor.core.publisher.Flux;
-
-import static java.util.Objects.requireNonNull;
 
 public class StreamerFactory {
 
@@ -30,11 +28,11 @@ public class StreamerFactory {
      */
     protected static AiidaStreamer getAiidaStreamer(
             StreamerDependencies dependencies,
-            Permission permission,
+            ActivePermission permission,
             Flux<AiidaRecord> recordFlux
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
-        var streamingConfig = requireNonNull(permission.mqttStreamingConfig());
+        var streamingConfig = permission.mqttStreamingConfig();
         var client = MqttFactory.getMqttAsyncClient(streamingConfig.serverUri(),
                                                     streamingConfig.username().toString(),
                                                     new MqttDefaultFilePersistence(new UriTemplate(
