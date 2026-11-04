@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.aiida.dtos.permission.PermissionDetailsDto;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
@@ -34,6 +34,7 @@ import energy.eddie.api.agnostic.process.model.PermissionStateTransitionExceptio
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
+import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -107,6 +108,8 @@ class PermissionServiceTest {
     private HandshakeService mockHandshakeService;
     @Mock
     private OutboundAiidaDataNeed mockDataNeed;
+    @Mock
+    private PermissionDetailsDto mockDetails;
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
     @Mock
@@ -191,14 +194,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1,
-                                                         connectionId,
-                                                         meterId,
-                                                         null,
-                                                         null,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = outboundDetails(start, null, null);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.existsById(permissionId2)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
@@ -252,14 +248,7 @@ class PermissionServiceTest {
                                                                List.of(permissionId1),
                                                                handshakeUrl,
                                                                accessToken);
-        var permissionDetails = new PermissionDetailsDto(permissionId1,
-                                                         connectionId,
-                                                         meterId,
-                                                         minLimitKw,
-                                                         maxLimitKw,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = outboundDetails(start, minLimitKw, maxLimitKw);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
@@ -289,14 +278,7 @@ class PermissionServiceTest {
     @Test
     void givenLimitDefaultsButIneligibleDataNeed_setupNewPermissions_marksUnfulfillableAndThrows() throws Exception {
         // Given
-        var permissionDetails = new PermissionDetailsDto(permissionId1,
-                                                         connectionId,
-                                                         meterId,
-                                                         minLimitKw,
-                                                         maxLimitKw,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = outboundDetails(start, minLimitKw, maxLimitKw);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
@@ -321,14 +303,7 @@ class PermissionServiceTest {
         // Given
         var expectedStart = ZonedDateTime.of(start, LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
         var expectedEnd = ZonedDateTime.of(end, LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
-        var permissionDetails = new PermissionDetailsDto(permissionId1,
-                                                         connectionId,
-                                                         meterId,
-                                                         minLimitKw,
-                                                         maxLimitKw,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = outboundDetails(start, minLimitKw, maxLimitKw);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
@@ -373,14 +348,7 @@ class PermissionServiceTest {
     @Test
     void givenStartDateInThePast_setsStatusToUnfulfillable_andCallsHandshakeService() {
         // Given
-        var permissionDetails = new PermissionDetailsDto(permissionId1,
-                                                         connectionId,
-                                                         meterId,
-                                                         minLimitKw,
-                                                         maxLimitKw,
-                                                         start.minusDays(1),
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = outboundDetails(start.minusDays(1), minLimitKw, maxLimitKw);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
@@ -439,14 +407,7 @@ class PermissionServiceTest {
     @Test
     void givenFcaPermissionWithMeterIdAndActiveDuplicate_setupNewPermissions_marksUnfulfillableAndThrows() throws Exception {
         // Given
-        var permissionDetails = new PermissionDetailsDto(permissionId1,
-                                                         connectionId,
-                                                         meterId,
-                                                         null,
-                                                         null,
-                                                         start,
-                                                         end,
-                                                         mockDataNeed);
+        var permissionDetails = outboundDetails(start, null, null);
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(false);
         when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
         when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(permissionDetails));
@@ -945,5 +906,21 @@ class PermissionServiceTest {
             // Then
             assertEquals(expectedState, permission.status());
         }
+    }
+
+    private PermissionDetailsDto outboundDetails(
+            LocalDate permissionStart,
+            @Nullable BigDecimal minLimit,
+            @Nullable BigDecimal maxLimit
+    ) {
+        lenient().when(mockDetails.permissionId()).thenReturn(permissionId1);
+        lenient().when(mockDetails.connectionId()).thenReturn(connectionId);
+        lenient().when(mockDetails.meterId()).thenReturn(meterId);
+        lenient().when(mockDetails.minLimitKw()).thenReturn(minLimit);
+        lenient().when(mockDetails.maxLimitKw()).thenReturn(maxLimit);
+        lenient().when(mockDetails.start()).thenReturn(permissionStart);
+        lenient().when(mockDetails.end()).thenReturn(end);
+        lenient().when(mockDetails.dataNeed()).thenReturn(mockDataNeed);
+        return mockDetails;
     }
 }

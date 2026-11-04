@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.PermissionDetailsDto;
+import energy.eddie.aiida.dtos.permission.PermissionDetailsDto;
 import energy.eddie.aiida.models.permission.HandshakeTarget;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionAcceptDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionDeclineDto;

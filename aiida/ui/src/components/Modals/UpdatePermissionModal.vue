@@ -121,9 +121,9 @@ const dataSourceOptions = computed(() => {
         />
       </form>
       <form v-if="permission?.dataNeed.type === 'outbound-aiida'" class="form">
-        <label class="heading-3" id="updatePermLabel">
+        <span class="heading-3" id="updatePermLabel">
           {{ t('permissions.modal.datasourceInputLabel') }}
-        </label>
+        </span>
         <CustomSelect
           v-model="selectedDataSource"
           id="datasourceSelect"

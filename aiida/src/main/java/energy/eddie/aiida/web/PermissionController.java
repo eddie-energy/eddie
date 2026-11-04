@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.web;
 
-import energy.eddie.aiida.dtos.PatchPermissionDto;
+import energy.eddie.aiida.dtos.permission.PatchPermissionDto;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;

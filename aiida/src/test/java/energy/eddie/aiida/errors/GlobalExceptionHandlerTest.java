@@ -5,7 +5,7 @@ package energy.eddie.aiida.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import energy.eddie.aiida.dtos.PatchOperation;
+import energy.eddie.aiida.dtos.permission.PatchOperation;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
