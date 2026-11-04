@@ -8,8 +8,6 @@ public enum PatchOperation {
      * Use this patch operation to indicate that the customer wants to revoke the specific permission.
      */
     REVOKE,
-    ACCEPT,
-    REJECT,
     UPDATE_INBOUND_MESSAGE_FORMAT,
     UPDATE_DISPLAY_NAME
 }

@@ -9,9 +9,11 @@ import type {
   AiidaDataSource,
   AiidaDataSourceHealthStatus,
   AiidaDataSourceType,
+  AiidaPendingPermission,
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   ConnectionLimit,
+  ConnectionStatusEvent,
   InboundMessageFormat,
   LastMessageEvent,
   LatestInboundPermissionRecord,
@@ -182,35 +184,46 @@ export async function updateUserSettings(contactEmail: string | null): Promise<U
   return result
 }
 
-export function addPermissions(
+/**
+ * Fetches and validates the details of the permission requests in an AIIDA code.
+ */
+export function fetchPermissionDetails(
   permissionRequests: AiidaPermissionRequestsDTO,
-): Promise<AiidaPermission[]> {
-  return fetch('/permissions', {
+): Promise<AiidaPendingPermission[]> {
+  return fetch('/permissions/details', {
     method: 'POST',
     body: JSON.stringify(permissionRequests),
   })
 }
 
-export async function rejectPermission(permissionId: string): Promise<any> {
-  const result = await fetch(`/permissions/${permissionId}`, {
-    method: 'PATCH',
+export async function rejectPermission(
+  permissionId: string,
+  aiidaCode: AiidaPermissionRequestsDTO,
+  reason?: string,
+): Promise<void> {
+  await fetch(`/permissions/${permissionId}/reject`, {
+    method: 'POST',
     body: JSON.stringify({
-      operation: 'REJECT',
+      handshakeUrl: aiidaCode.handshakeUrl,
+      accessToken: aiidaCode.accessToken,
+      reason,
     }),
   })
   success('toasts.rejectPermission')
-  return result
 }
 
 export async function acceptPermission(
   permissionId: string,
-  dataSourceId: string,
+  aiidaCode: AiidaPermissionRequestsDTO,
+  dataSourceId?: string,
   displayName?: string,
 ): Promise<void> {
-  await fetch(`/permissions/${permissionId}`, {
-    method: 'PATCH',
+  await fetch(`/permissions/${permissionId}/accept`, {
+    method: 'POST',
     body: JSON.stringify({
-      operation: 'ACCEPT',
+      eddieId: aiidaCode.eddieId,
+      handshakeUrl: aiidaCode.handshakeUrl,
+      accessToken: aiidaCode.accessToken,
       dataSourceId,
       displayName,
     }),
@@ -364,7 +377,22 @@ export function subscribeToLastMessageStream(
   onMessage: (event: LastMessageEvent) => void,
   signal: AbortSignal,
 ): void {
-  void fetchEventSource(`${BASE_URL}/messages/last-message-stream`, {
+  subscribeToEventStream('/messages/last-message-stream', onMessage, signal)
+}
+
+export function subscribeToConnectionStatusStream(
+  onMessage: (event: ConnectionStatusEvent) => void,
+  signal: AbortSignal,
+): void {
+  subscribeToEventStream('/permissions/connection-status-stream', onMessage, signal)
+}
+
+function subscribeToEventStream<T>(
+  path: string,
+  onMessage: (event: T) => void,
+  signal: AbortSignal,
+): void {
+  void fetchEventSource(`${BASE_URL}${path}`, {
     signal,
     headers: { accept: 'text/event-stream, application/json' },
     fetch: async (input, init) => {
@@ -374,7 +402,7 @@ export function subscribeToLastMessageStream(
         headers: { ...init?.headers, Authorization: `Bearer ${keycloak.token}` },
       })
     },
-    onmessage: (event) => onMessage(JSON.parse(event.data) as LastMessageEvent),
+    onmessage: (event) => onMessage(JSON.parse(event.data) as T),
   })
 }
 

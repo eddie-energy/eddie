@@ -67,7 +67,8 @@ class StreamerFactoryTest {
                                                         schemaFormatterRegistry,
                                                         Sinks.many().multicast().onBackpressureBuffer(),
                                                         permissionLatestRecordMap,
-                                                        secretsService);
+                                                        secretsService,
+                                                        new ConnectionStatusEventStream());
 
             // When
             var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, Flux.empty());

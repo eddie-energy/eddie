@@ -84,7 +84,8 @@ class StreamerManagerTest {
                                       mapper,
                                       schemaFormatterRegistry,
                                       mockLatestRecordMap,
-                                      mockSecretsService);
+                                      mockSecretsService,
+                                      new ConnectionStatusEventStream());
     }
 
     @Test

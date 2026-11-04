@@ -20,7 +20,7 @@ import { useI18n } from 'vue-i18n'
 
 const inboundSchemas: Set<AiidaSchema> = new Set(['MIN-MAX-ENVELOPE-CIM-V1-12', 'OPAQUE'])
 
-const { permission, open, resolveDialog } = usePermissionDialog()
+const { permission, aiidaCode, open, resolveDialog } = usePermissionDialog()
 const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
@@ -45,16 +45,20 @@ watch([open], async () => {
   }
 })
 
+const isOutbound = computed(() => permission.value?.dataNeed.type === 'outbound-aiida')
+
 const handleInput = async (confirm: boolean) => {
   loading.value = true
   if (confirm) {
     await acceptPermission(
       permission.value!.permissionId,
-      selectedDataSource.value,
+      aiidaCode.value!,
+      // inbound permissions get their data source created automatically
+      isOutbound.value ? selectedDataSource.value : undefined,
       displayName.value,
     )
   } else {
-    await rejectPermission(permission.value!.permissionId)
+    await rejectPermission(permission.value!.permissionId, aiidaCode.value!)
   }
   modal.value?.close()
   emit('update')
@@ -68,6 +72,7 @@ const handleModalClose = () => {
 
 const dataSourceOptions = computed(() => {
   const requestedSchemas = permission.value?.dataNeed.schemas ?? []
+  const requestedAsset = permission.value?.dataNeed.asset
   const permissionMeterId = permission.value?.meterId
   const matches: { label: string; value: string }[] = []
 
@@ -76,6 +81,7 @@ const dataSourceOptions = computed(() => {
     for (const { dataSource, displayName } of inboundPermissions.value) {
       if (
         dataSource && // For TypeScript, even though it should always be set here
+        dataSource.asset === requestedAsset &&
         requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema)) &&
         (!permissionMeterId || dataSource.meterId === permissionMeterId)
       ) {
@@ -87,10 +93,12 @@ const dataSourceOptions = computed(() => {
   // Request includes outbound schemas
   if (requestedSchemas.some((requestedSchema) => !inboundSchemas.has(requestedSchema))) {
     matches.push(
-      ...outboundDataSources.value.map(({ id, name }) => ({
-        label: name,
-        value: id,
-      })),
+      ...outboundDataSources.value
+        .filter(({ asset }) => asset === requestedAsset)
+        .map(({ id, name }) => ({
+          label: name,
+          value: id,
+        })),
     )
   }
 
@@ -121,7 +129,7 @@ const dataSourceOptions = computed(() => {
         />
       </form>
       <form v-if="permission?.dataNeed.type === 'outbound-aiida'" class="form">
-        <span class="heading-3" id="updatePermLabel">
+        <span id="updatePermLabel" class="heading-3">
           {{ t('permissions.modal.datasourceInputLabel') }}
         </span>
         <CustomSelect

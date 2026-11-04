@@ -5,33 +5,16 @@ package energy.eddie.aiida.models.permission;
 
 import java.util.Set;
 
+/**
+ * Static state of a permission. Permissions are only persisted once the user accepted them, so every permission starts
+ * as {@link #ACCEPTED} and ends in one of the final states. The dynamic connection state of an accepted permission is
+ * described by {@link ConnectionStatus}.
+ */
 public enum PermissionStatus {
     /**
-     * The permission has been created on AIIDA.
-     */
-    CREATED,
-    /**
-     * The details, like start and end date, of the permission have been fetched from the EDDIE framework.
-     */
-    FETCHED_DETAILS,
-    /**
-     * This AIIDA instance is unable to fulfill the permission request, e.g. because the requested data is not
-     * available.
-     */
-    UNFULFILLABLE,
-    /**
-     * The user accepted the permission request. The dynamic connection state of an accepted permission is described
-     * by {@link ConnectionStatus}.
+     * The user accepted the permission request.
      */
     ACCEPTED,
-    /**
-     * The MQTT credentials and topics for the permission have been fetched from the EDDIE framework.
-     */
-    FETCHED_MQTT_CREDENTIALS,
-    /**
-     * The user rejected the permission request.
-     */
-    REJECTED,
     /**
      * The user revoked the permission.
      */

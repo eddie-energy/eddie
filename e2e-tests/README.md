@@ -7,6 +7,12 @@ These tests are not run by default when executing `./gradlew test`, but only whe
 ./gradlew :e2e-tests:test -Prun-e2e-tests
 ```
 
+Run AIIDA relevant E2E tests only:
+
+```sh
+./gradlew :e2e-tests:test -Prun-e2e-tests --tests "*.AiidaUiTests" --tests "*.regionconnector.AiidaTest"
+```
+
 For local execution, Playwright needs to be installed.
 For Windows, macOS, Ubuntu, and Debian derivates, it should work out of the box, but for other Linux distributions the dependencies have to be installed manually.
 On Arch Linux, Playwright can be installed from the AUR: `yay -S playwright`.

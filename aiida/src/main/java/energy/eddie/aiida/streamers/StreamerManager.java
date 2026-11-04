@@ -46,6 +46,7 @@ public class StreamerManager implements AutoCloseable {
     private final Sinks.Many<PermissionCommand> commands;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private final SecretsService secretsService;
+    private final ConnectionStatusEventStream connectionStatusEventStream;
 
     /**
      * The mapper is passed to the {@link AiidaStreamer} instances that which use it to convert POJOs to JSON.
@@ -58,7 +59,8 @@ public class StreamerManager implements AutoCloseable {
             ObjectMapper mapper,
             SchemaFormatterRegistry schemaFormatterRegistry,
             PermissionLatestRecordMap permissionLatestRecordMap,
-            SecretsService secretsService
+            SecretsService secretsService,
+            ConnectionStatusEventStream connectionStatusEventStream
     ) {
         this.mapper = mapper;
         this.aggregator = aggregator;
@@ -66,6 +68,7 @@ public class StreamerManager implements AutoCloseable {
         this.failedToSendRepository = failedToSendRepository;
         this.permissionLatestRecordMap = permissionLatestRecordMap;
         this.secretsService = secretsService;
+        this.connectionStatusEventStream = connectionStatusEventStream;
 
         streamers = new ConcurrentHashMap<>();
         commands = Sinks.many().unicast().onBackpressureBuffer();
@@ -100,7 +103,8 @@ public class StreamerManager implements AutoCloseable {
                                                     schemaFormatterRegistry,
                                                     commands,
                                                     permissionLatestRecordMap,
-                                                    secretsService);
+                                                    secretsService,
+                                                    connectionStatusEventStream);
 
         var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux.get());
         streamer.connect();

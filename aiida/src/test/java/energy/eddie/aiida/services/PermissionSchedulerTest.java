@@ -75,7 +75,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.CREATED, permission.status());
+        assertEquals(PermissionStatus.ACCEPTED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
         verify(mockStreamerManager).createNewStreamer(any());
@@ -94,7 +94,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.CREATED, permission.status());
+        assertEquals(PermissionStatus.ACCEPTED, permission.status());
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(not(any(PermissionExpiredRunnable.class)), eq(startTimeInFuture));
         verifyNoInteractions(mockStreamerManager);
@@ -114,7 +114,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        assertEquals(PermissionStatus.CREATED, permission.status());
+        assertEquals(PermissionStatus.ACCEPTED, permission.status());
         verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
         verifyNoInteractions(mockRepository);
     }

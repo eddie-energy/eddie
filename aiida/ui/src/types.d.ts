@@ -94,6 +94,27 @@ export type AiidaPermission = {
   }
 }
 
+/**
+ * Permission shown in the permission details. Permissions that are not accepted yet have no status.
+ */
+export type AiidaPermissionPreview = Omit<AiidaPermission, 'status'> & { status?: string }
+
+ type AiidaPendingPermission = Pick<
+  AiidaPermission,
+  | 'permissionId'
+  | 'eddieId'
+  | 'serviceName'
+  | 'displayName'
+  | 'startTime'
+  | 'expirationTime'
+  | 'meterId'
+  | 'minLimitKw'
+  | 'maxLimitKw'
+  | 'dataNeed'
+  | 'inboundMessageFormat'
+  | 'supportsConnectionLimits'
+>
+
 export type AiidaPermissionStreamingConfig = {
   dataTopic: string
   serverUri: string
@@ -122,6 +143,11 @@ export type LatestInboundPermissionRecord = {
 export type LastMessageEvent = {
   permissionId: string
   timestamp: string
+}
+
+export type ConnectionStatusEvent = {
+  permissionId: string
+  connectionStatus: AiidaConnectionStatus
 }
 
 export type AiidaDataSourceType = {
@@ -192,6 +218,6 @@ export type ConnectionLimit = {
   maxLimitKw: number | null
 }
 
-export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
+export type PermissionTypes = 'Active' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
 export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'

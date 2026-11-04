@@ -96,7 +96,8 @@ class AiidaUiTests {
         // Check if permission has the right data need and permission ID
         assertThat(permission).containsText(dataNeed);
         assertThat(permission).containsText(permissionId);
-        // Check if status is correct
+        // Check if status is correct ("Not Connected" would also contain "Connected")
+        assertThat(permission).not().containsText("Not Connected");
         assertThat(permission).containsText("Connected");
 
         // Revoke permission
@@ -171,6 +172,28 @@ class AiidaUiTests {
         // Revoke inbound
         revokeInboundPermission(inboundPermissionDisplayName);
         expectAlert("The permission for this service was revoked.");
+    }
+
+    @Test
+    void acceptedPermissionShowsConnectionStatusWithoutReload() {
+        var dataNeed = "FUTURE_MIN_MAX_ENVELOPE_INBOUND";
+        var displayName = "E2E Connection Status Permission";
+        addPermission(aiidaCodeForDataNeed(dataNeed));
+
+        // Permissions that are not accepted yet have no status
+        var dialog = page.getByRole(AriaRole.DIALOG);
+        assertThat(dialog.locator(":text('Permission ID') + dd")).isVisible();
+        assertThat(dialog.getByText("Status", new Locator.GetByTextOptions().setExact(true))).isHidden();
+        dialog.getByPlaceholder("Enter a display name for this permission").fill(displayName);
+        dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
+
+        // The connection is established asynchronously after accepting
+        // The connection status is pushed to the UI, so neither a reload nor a navigation is necessary
+        var permission = openPermission(displayName, PermissionTab.INBOUND, PermissionStatus.ACTIVE);
+        assertThat(permission).not().containsText("Not Connected");
+        assertThat(permission).containsText("Connected");
+
+        revokePermission(permission);
     }
 
     @ParameterizedTest
@@ -434,10 +457,6 @@ class AiidaUiTests {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel").setExact(true)).click();
         expectAlert(expectedError);
 
-        // Failed duplicate ends up as unable to fulfill in the complete tab
-        var failedPermission = selectPermission(inboundDataNeed, PermissionTab.INBOUND, PermissionStatus.COMPLETE);
-        assertThat(failedPermission).containsText("Unable to fulfill");
-
         // Create a data source matching the FCA meter ID, and one that doesn't match
         createSimulationDataSource(dataSource, meterId);
         createSimulationDataSource(otherDataSource, otherMeterId);
@@ -608,6 +627,13 @@ class AiidaUiTests {
 
     private Locator selectPermission(String name, PermissionTab tab, PermissionStatus status) {
         page.getByRole(AriaRole.NAVIGATION).getByRole(AriaRole.LINK).getByText("Permissions").click();
+        return openPermission(name, tab, status);
+    }
+
+    /**
+     * Opens a permission on the current permission list without navigating to it, which would refetch the permissions.
+     */
+    private Locator openPermission(String name, PermissionTab tab, PermissionStatus status) {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(tab.label)).click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(status.label)).click();
         var heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name)).first();
@@ -732,7 +758,6 @@ class AiidaUiTests {
 
     private enum PermissionStatus {
         ACTIVE("Active"),
-        PENDING("Pending"),
         COMPLETE("Complete");
 
         public final String label;
