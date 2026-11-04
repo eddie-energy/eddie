@@ -88,18 +88,12 @@ export type AiidaPermission = {
   monitoringDataSourceId?: string
   supportsConnectionLimits: boolean
   userId: string
-  unimplemented: {
-    packageGraph: any
-    targetIP: any
-  }
 }
 
 /**
- * Permission shown in the permission details. Permissions that are not accepted yet have no status.
+ * Permission request that was fetched with an AIIDA code, but is not accepted yet.
  */
-export type AiidaPermissionPreview = Omit<AiidaPermission, 'status'> & { status?: string }
-
- type AiidaPendingPermission = Pick<
+export type AiidaPendingPermission = Pick<
   AiidaPermission,
   | 'permissionId'
   | 'eddieId'

@@ -1,30 +1,13 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-import type {
-  AiidaPendingPermission,
-  AiidaPermissionPreview,
-  AiidaPermissionRequestsDTO,
-} from '@/types'
+import type { AiidaPendingPermission, AiidaPermissionRequestsDTO } from '@/types'
 import { ref } from 'vue'
 
-const permission = ref<AiidaPermissionPreview>()
+const permission = ref<AiidaPendingPermission>()
 const aiidaCode = ref<AiidaPermissionRequestsDTO>()
 const open = ref<boolean>(false)
 let _resolve: (value: boolean) => void
-
-/**
- * Pending permissions are not persisted yet. To reuse the permission details view, they are shown as a permission
- * without a status.
- */
-function toPermissionPreview(pending: AiidaPendingPermission): AiidaPermissionPreview {
-  return {
-    ...pending,
-    transmissionEnabled: true,
-    userId: '',
-    unimplemented: { packageGraph: undefined, targetIP: undefined },
-  }
-}
 
 export function usePermissionDialog() {
   /**
@@ -35,7 +18,7 @@ export function usePermissionDialog() {
     target: AiidaPendingPermission,
     code: AiidaPermissionRequestsDTO,
   ) {
-    permission.value = toPermissionPreview(target)
+    permission.value = target
     aiidaCode.value = code
     open.value = true
     return new Promise<boolean>((resolve) => {

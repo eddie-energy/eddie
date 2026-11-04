@@ -12,6 +12,7 @@ import {
   getActiveInboundPermissions,
   getDataSources,
   rejectPermission,
+  updateConnectionLimitMonitoring,
 } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
@@ -26,6 +27,7 @@ const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
 const displayName = ref<string>('')
+const monitoringDataSourceId = ref<string>()
 const inboundPermissions = ref<AiidaPermission[]>([])
 const outboundDataSources = ref<AiidaDataSource[]>([])
 const emit = defineEmits(['update'])
@@ -33,6 +35,7 @@ const emit = defineEmits(['update'])
 watch([open], async () => {
   if (open.value) {
     selectedDataSource.value = ''
+    monitoringDataSourceId.value = undefined
     displayName.value = permission.value?.dataNeed.name ?? ''
     modal.value?.showModal()
 
@@ -57,6 +60,13 @@ const handleInput = async (confirm: boolean) => {
       isOutbound.value ? selectedDataSource.value : undefined,
       displayName.value,
     )
+    // the monitoring data source can only be assigned to persisted permissions
+    if (monitoringDataSourceId.value) {
+      await updateConnectionLimitMonitoring(
+        permission.value!.permissionId,
+        monitoringDataSourceId.value,
+      )
+    }
   } else {
     await rejectPermission(permission.value!.permissionId, aiidaCode.value!)
   }
@@ -114,7 +124,11 @@ const dataSourceOptions = computed(() => {
     class="modal"
   >
     <div v-if="!loading">
-      <PermissionDetails v-if="permission" :permission />
+      <PermissionDetails
+        v-if="permission"
+        :permission
+        @select-monitoring-data-source="monitoringDataSourceId = $event"
+      />
       <form v-if="permission" class="form">
         <label id="displayNameLabel" class="heading-3" for="displayNameInput">
           {{ t('permissions.modal.displayNameInputLabel') }}

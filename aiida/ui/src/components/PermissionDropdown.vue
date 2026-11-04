@@ -40,13 +40,13 @@ const isEditingDisplayName = ref(false)
         <EditableDisplayName v-model:editing="isEditingDisplayName" :permission />
         <ContextBadge v-if="isFcaPermission(permission)">FCA</ContextBadge>
       </div>
-      <p v-if="permission.unimplemented" class="small-data-graph">Placeholder</p>
       <div v-if="!isEditingDisplayName" class="non-essential">
         <time>{{
           new Date(permission.startTime).toLocaleDateString(undefined, {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
+            timeZone: 'UTC',
           })
         }}</time>
         <time v-if="permission.grantTime">
