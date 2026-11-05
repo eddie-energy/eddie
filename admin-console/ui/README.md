@@ -1,18 +1,10 @@
-# admin-console
+# Admin Console UI
 
-This template should help get you started developing with Vue 3 in Vite.
+The admin console is a Vue 3 application using the composition API.
 
-## Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
+Most components are provided by [PrimeVue 4](https://v4.primevue.org/).
+Before you implement a new component, see if PrimeVue already provides suitable option.
+[PrimeIcons](https://primevue.org/icons/#list) are used where possible.
 
 ## Project Setup
 
@@ -36,4 +28,10 @@ pnpm build
 
 ```sh
 pnpm lint
+```
+
+### Format with [Prettier](https://prettier.io/)
+
+```sh
+pnpm format
 ```
