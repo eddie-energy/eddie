@@ -238,6 +238,34 @@ class FluviusApiClientTest {
         Assertions.assertEquals(Status.DOWN, api.health().getStatus());
     }
 
+    @Test
+    void shortUrlRequestPreservesLiveBasePathAndDisablesSso() throws Exception {
+        try (var server = new MockWebServer()) {
+            server.start();
+            server.enqueue(new MockResponse().addHeader("Content-Type", "application/json").setBody("{}"));
+            when(oAuthTokenService.accessToken()).thenReturn("token");
+            var client = WebClient.builder().baseUrl(server.url("/esco-live").toString()).build();
+            var api = new FluviusApiClient(client, getConfiguration(), oAuthTokenService, "https://service.example/eddie/");
+            var now = ZonedDateTime.now(ZoneOffset.UTC);
+
+            api.shortUrlIdentifier("permission-id", Flow.B2C, now, now, Granularity.PT15M).block();
+
+            var request = server.takeRequest(1, java.util.concurrent.TimeUnit.SECONDS);
+            Assertions.assertNotNull(request);
+            Assertions.assertEquals("/esco-live/v3/api/shortUrlIdentifier", request.getPath());
+            Assertions.assertEquals("Bearer token", request.getHeader("Authorization"));
+            Assertions.assertEquals("sub-key", request.getHeader("Ocp-Apim-Subscription-Key"));
+            var body = OBJECT_MAPPER.readTree(request.getBody().readUtf8());
+            Assertions.assertFalse(body.get("sso").asBoolean());
+            Assertions.assertEquals("permissionid", body.get("referenceNumber").asText());
+            Assertions.assertEquals("contract-number", body.get("dataAccessContractNumber").asText());
+            Assertions.assertEquals("https://service.example/eddie/region-connectors/be-fluvius/permission-request/permission-id/accepted",
+                                    body.get("returnUrlSuccess").asText());
+            Assertions.assertEquals("https://service.example/eddie/region-connectors/be-fluvius/permission-request/permission-id/rejected",
+                                    body.get("returnUrlFailed").asText());
+        }
+    }
+
     private static FluviusConfiguration getConfiguration() {
         return new FluviusConfiguration("https://localhost",
                                         "sub-key",
