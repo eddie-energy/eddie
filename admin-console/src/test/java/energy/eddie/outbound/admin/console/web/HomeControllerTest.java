@@ -85,6 +85,8 @@ class HomeControllerTest {
     private String managementUrl;
     @Value("${eddie.management.server.urlprefix}")
     private String managementUrlPrefix;
+    @Value("${eddie.data-needs-config.data-need-source}")
+    private String dataNeedSource;
 
     @Test
     void testGetStatusMessages() throws Exception {
@@ -196,6 +198,7 @@ class HomeControllerTest {
                .andExpect(model().attribute("eddiePublicUrl", publicUrl))
                .andExpect(model().attribute("eddieAdminConsoleUrl", managementUrl + ADMIN_CONSOLE_BASE_URL))
                .andExpect(model().attribute("eddieManagementUrl", managementUrl))
-               .andExpect(model().attribute("eddieManagementUrlPrefix", managementUrlPrefix));
+               .andExpect(model().attribute("eddieManagementUrlPrefix", managementUrlPrefix))
+               .andExpect(model().attribute("eddieDataNeedSource", dataNeedSource));
     }
 }

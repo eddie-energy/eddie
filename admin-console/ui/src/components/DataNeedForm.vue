@@ -1,7 +1,5 @@
-<!--
-SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -11,7 +9,7 @@ import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
-import { DATA_NEEDS_API_URL } from '@/config'
+import { DATA_NEEDS_MANAGEMENT_API_URL } from '@/config'
 import { ASSETS, ENERGY_TYPES, GRANULARITIES, REGION_CONNECTORS, SCHEMAS } from '@/constants'
 import type {
   AccountingPointDataNeed,
@@ -90,7 +88,7 @@ async function submitForm() {
 
   submitting.value = true
   try {
-    const response = await fetch(`${DATA_NEEDS_API_URL}`, {
+    const response = await fetch(`${DATA_NEEDS_MANAGEMENT_API_URL}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value)
