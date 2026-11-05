@@ -90,7 +90,11 @@ onMounted(() => refresh())
         <dd>{{ dn.regionConnectorFilter.regionConnectorIds.join(', ') }}</dd>
       </template>
 
-      <template v-if="dn.type !== 'account'">
+      <template
+        v-if="
+          dn.type === 'inbound-aiida' || dn.type === 'outbound-aiida' || dn.type === 'validated'
+        "
+      >
         <dt>Duration Type</dt>
         <dd>{{ dn.duration.type }}</dd>
         <template v-if="dn.duration.start">
@@ -130,6 +134,18 @@ onMounted(() => refresh())
         <dd>{{ dn.schemas?.join(', ') }}</dd>
         <dt>Data Tags</dt>
         <dd>{{ dn.dataTags?.join(', ') }}</dd>
+      </template>
+
+      <!-- CESU -->
+      <template v-if="dn.type === 'cesu-join-request'">
+        <dt>Participation Factor</dt>
+        <dd>{{ dn.participationFactor }}</dd>
+        <dt>Min Granularity</dt>
+        <dd>{{ dn.minGranularity }}</dd>
+        <dt>Max Granularity</dt>
+        <dd>{{ dn.maxGranularity }}</dd>
+        <dt>Energy Direction</dt>
+        <dd>{{ dn.energyDirection }}</dd>
       </template>
     </dl>
 
