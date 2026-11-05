@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
@@ -27,5 +27,21 @@ class ShellyComponentTest {
         var component = ShellyComponent.fromKey("nonexistent:key");
         assertEquals(ShellyComponent.UNKNOWN, component);
         assertEquals(ShellyPhase.UNKNOWN, component.phase());
+    }
+
+    @Test
+    void fromKey_returnsPM1() {
+        var component = ShellyComponent.fromKey("pm1:0");
+
+        assertEquals(ShellyComponent.PM1, component);
+        assertEquals(ShellyPhase.PHASE_L1, component.phase());
+    }
+
+    @Test
+    void fromKey_returnsMeteredOutputComponents() {
+        assertEquals(ShellyPhase.PHASE_L1, ShellyComponent.fromKey("cover:0").phase());
+        assertEquals(ShellyPhase.PHASE_L1, ShellyComponent.fromKey("light:0").phase());
+        assertEquals(ShellyPhase.PHASE_L1, ShellyComponent.fromKey("rgb:0").phase());
+        assertEquals(ShellyPhase.PHASE_L1, ShellyComponent.fromKey("rgbw:0").phase());
     }
 }

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ShellyMeasurementTest {
     @Test
     void constructor_setsFieldsForApparentPowerL2_withTotalComponent() {
-        var exprectedObisCode = ObisCode.POSITIVE_REACTIVE_INSTANTANEOUS_POWER_IN_PHASE_L2;
+        var expectedObisCode = ObisCode.APPARENT_INSTANTANEOUS_POWER;
 
         var measurement = new ShellyMeasurement(
                 ShellyComponent.EM,
@@ -22,10 +22,10 @@ class ShellyMeasurementTest {
         var aiidaRecordValue = measurement.toAiidaRecordValue();
 
         assertEquals("em:0:b_aprt_power", aiidaRecordValue.rawTag());
-        assertEquals(exprectedObisCode, measurement.obisCode());
-        assertEquals(exprectedObisCode, aiidaRecordValue.dataTag());
-        assertEquals(UnitOfMeasurement.VOLT_AMPERE_REACTIVE, aiidaRecordValue.rawUnitOfMeasurement());
-        assertEquals(UnitOfMeasurement.KILO_VOLT_AMPERE_REACTIVE, aiidaRecordValue.unitOfMeasurement());
+        assertEquals(expectedObisCode, measurement.obisCode());
+        assertEquals(expectedObisCode, aiidaRecordValue.dataTag());
+        assertEquals(UnitOfMeasurement.VOLT_AMPERE, aiidaRecordValue.rawUnitOfMeasurement());
+        assertEquals(UnitOfMeasurement.KILO_VOLT_AMPERE, aiidaRecordValue.unitOfMeasurement());
         assertEquals("123.45", aiidaRecordValue.rawValue());
         assertEquals("0.12345", aiidaRecordValue.value());
     }

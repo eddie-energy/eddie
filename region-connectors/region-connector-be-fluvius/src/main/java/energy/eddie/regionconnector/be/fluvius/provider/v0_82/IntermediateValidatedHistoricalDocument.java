@@ -116,7 +116,7 @@ class IntermediateValidatedHistoricalDocument {
             }
             var directions = getFlowDirections(slice.measurements());
             for (var direction : directions) {
-                var unit = getOverallUnit(slice, kind, direction);
+                var unit = slice.firstUnit(kind, measurement -> getReading(direction, measurement));
                 if (unit == null) continue;
                 var ts = new TimeSeriesComplexType()
                         .withMRID(UUID.randomUUID().toString())
@@ -142,27 +142,6 @@ class IntermediateValidatedHistoricalDocument {
             }
         }
         return tss;
-    }
-
-    private static @Nullable Unit getOverallUnit(
-            MeasurementSlice slice,
-            Reading.ReadingKind kind,
-            DirectionTypeList direction
-    ) {
-        if (slice.measurements() == null
-            || slice.measurements().isEmpty()
-            || slice.measurements().getFirst() == null) {
-            return null;
-        }
-        var reading = getReading(direction, slice.measurements().getFirst());
-        if (reading == null) {
-            return null;
-        }
-        var total = reading.value(kind);
-        if (total == null) {
-            return null;
-        }
-        return total.unit();
     }
 
     private @Nullable SeriesPeriodComplexType getSeriesPeriod(

@@ -1,17 +1,17 @@
-<!--
-SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
-SPDX-License-Identifier: Apache-2.0
--->
+<!-- SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at> -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
 import { getDataNeeds } from '@/api'
 import Button from 'primevue/button'
+import Message from 'primevue/message'
 import DataNeedForm from '@/components/DataNeedForm.vue'
 import type { AnyDataNeed } from '@/types'
-import { CSRF_HEADER, CSRF_TOKEN, DATA_NEEDS_API_URL } from '@/config'
+import { CSRF_HEADER, CSRF_TOKEN, DATA_NEED_SOURCE, DATA_NEEDS_MANAGEMENT_API_URL } from '@/config'
 
 const dataNeeds = ref<AnyDataNeed[]>([])
+const canEdit = DATA_NEED_SOURCE === 'DATABASE'
 
 function refresh() {
   getDataNeeds().then((result) => {
@@ -25,7 +25,7 @@ function deleteDataNeed(id: string) {
       'Are you sure you want to delete this data need? Related permissions and permission requests will be removed!'
     )
   ) {
-    fetch(`${DATA_NEEDS_API_URL}/${id}`, {
+    fetch(`${DATA_NEEDS_MANAGEMENT_API_URL}/${id}`, {
       method: 'DELETE',
       credentials: 'include',
       headers: {
@@ -42,7 +42,7 @@ function deleteDataNeed(id: string) {
 }
 
 function toggleEnabled(id: string, current: boolean) {
-  fetch(`${DATA_NEEDS_API_URL}/${id}`, {
+  fetch(`${DATA_NEEDS_MANAGEMENT_API_URL}/${id}`, {
     method: 'PATCH',
     credentials: 'include',
     headers: {
@@ -64,6 +64,12 @@ onMounted(() => refresh())
 
 <template>
   <h1>Data Needs</h1>
+
+  <Message :closable="false" v-if="!canEdit">
+    Data Needs are in config mode and therefore readonly!
+  </Message>
+
+  <br />
 
   <article v-for="dn in dataNeeds" :key="dn.id">
     <dl>
@@ -90,7 +96,11 @@ onMounted(() => refresh())
         <dd>{{ dn.regionConnectorFilter.regionConnectorIds.join(', ') }}</dd>
       </template>
 
-      <template v-if="dn.type !== 'account'">
+      <template
+        v-if="
+          dn.type === 'inbound-aiida' || dn.type === 'outbound-aiida' || dn.type === 'validated'
+        "
+      >
         <dt>Duration Type</dt>
         <dd>{{ dn.duration.type }}</dd>
         <template v-if="dn.duration.start">
@@ -131,17 +141,36 @@ onMounted(() => refresh())
         <dt>Data Tags</dt>
         <dd>{{ dn.dataTags?.join(', ') }}</dd>
       </template>
+
+      <!-- CESU -->
+      <template v-if="dn.type === 'cesu-join-request'">
+        <dt>Participation Factor</dt>
+        <dd>{{ dn.participationFactor }}</dd>
+        <dt>Min Granularity</dt>
+        <dd>{{ dn.minGranularity }}</dd>
+        <dt>Max Granularity</dt>
+        <dd>{{ dn.maxGranularity }}</dd>
+        <dt>Energy Direction</dt>
+        <dd>{{ dn.energyDirection }}</dd>
+      </template>
     </dl>
 
     <Button
+      v-if="canEdit"
       @click="toggleEnabled(dn.id, dn.enabled)"
       :label="dn.enabled ? 'Disable' : 'Enable'"
       severity="warn"
     />
-    <Button @click="deleteDataNeed(dn.id)" icon="pi pi-trash" label="Delete" severity="danger" />
+    <Button
+      v-if="canEdit"
+      @click="deleteDataNeed(dn.id)"
+      icon="pi pi-trash"
+      label="Delete"
+      severity="danger"
+    />
   </article>
 
-  <DataNeedForm @created="refresh" />
+  <DataNeedForm v-if="canEdit" @created="refresh" />
 </template>
 
 <style scoped>

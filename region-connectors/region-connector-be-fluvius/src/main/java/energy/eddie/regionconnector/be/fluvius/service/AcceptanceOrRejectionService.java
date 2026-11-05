@@ -8,6 +8,7 @@ import energy.eddie.dataneeds.needs.ValidatedHistoricalDataDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.be.fluvius.client.FluviusApi;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.GetMandateResponseModelApiDataResponse;
+import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.MandateResponseModel;
 import energy.eddie.regionconnector.be.fluvius.permission.events.AcceptedEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.events.SimpleEvent;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
@@ -105,36 +106,40 @@ public class AcceptanceOrRejectionService {
     }
 
 
-    @SuppressWarnings("NullAway") // False positive for the nullable switch expression
     private void handleSuccess(GetMandateResponseModelApiDataResponse res, FluviusPermissionRequest permissionRequest) {
         var permissionId = permissionRequest.permissionId();
-        if (res.data() == null || res.data().mandates() == null || res.data().mandates().isEmpty()) {
+        var data = res.data();
+        var mandates = data == null ? null : data.mandates();
+        if (mandates == null || mandates.isEmpty()) {
             LOGGER.info("No mandates found for permission request {}", permissionId);
             return;
         }
-        var mandates = res.data().mandates();
         var dn = (ValidatedHistoricalDataDataNeed) dataNeedsService.getById(permissionRequest.dataNeedId());
         var approvedMeters = new ArrayList<String>();
         var rejected = 0;
         for (var mandate : mandates) {
-            if (!mandate.supportsGranularity(permissionRequest.granularity()) || !mandate.supportsEnergyType(dn.energyType())) {
+            if (!supportsDataNeed(mandate, permissionRequest, dn)) {
                 continue;
             }
             var ean = mandate.eanNumber();
             var status = mandate.status();
-            switch (status) {
-                case APPROVED -> {
-                    LOGGER.info("Meter {} of permission request {} approved", ean, permissionId);
-                    approvedMeters.add(ean);
+            if (status == null) {
+                LOGGER.warn("Meter {} of permission request {} has unexpected status {}", ean, permissionId, status);
+            } else {
+                switch (status) {
+                    case APPROVED -> {
+                        LOGGER.info("Meter {} of permission request {} approved", ean, permissionId);
+                        approvedMeters.add(ean);
+                    }
+                    case REJECTED -> {
+                        LOGGER.info("Meter {} of permission request {} rejected", ean, permissionId);
+                        rejected++;
+                    }
+                    default -> LOGGER.warn("Meter {} of permission request {} has unexpected status {}",
+                                           ean,
+                                           permissionId,
+                                           status);
                 }
-                case REJECTED -> {
-                    LOGGER.info("Meter {} of permission request {} rejected", ean, permissionId);
-                    rejected++;
-                }
-                case null, default -> LOGGER.warn("Meter {} of permission request {} has unexpected status {}",
-                                                  ean,
-                                                  permissionId,
-                                                  status);
             }
         }
         if (rejected == mandates.size()) {
@@ -152,6 +157,15 @@ public class AcceptanceOrRejectionService {
             meters.add(new MeterReading(permissionId, approvedMeter, null));
         }
         outbox.commit(new AcceptedEvent(permissionId, meters));
+    }
+
+    private static boolean supportsDataNeed(
+            MandateResponseModel mandate,
+            FluviusPermissionRequest permissionRequest,
+            ValidatedHistoricalDataDataNeed dataNeed
+    ) {
+        return mandate.supportsGranularity(permissionRequest.granularity())
+               && mandate.supportsEnergyType(dataNeed.energyType());
     }
 
     private static boolean isAccepted(PermissionProcessStatus status) {

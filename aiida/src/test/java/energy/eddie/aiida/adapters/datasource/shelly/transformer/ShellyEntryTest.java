@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.shelly.transformer;
@@ -44,5 +44,16 @@ class ShellyEntryTest {
     void rawUnitOfMeasurement_returnsNotDefaultUnit() {
         var entry = ShellyEntry.ACTIVE_POWER_EM;
         assertEquals(UnitOfMeasurement.WATT, entry.rawUnitOfMeasurement());
+    }
+
+    @Test
+    void fromKey_distinguishesReturnedSwitchEnergyFromConsumedEnergy() {
+        assertEquals(ShellyEntry.ACTIVE_ENERGY_SWITCH, ShellyEntry.fromKey("aenergy.total"));
+        assertEquals(ShellyEntry.ACTIVE_RETURNED_ENERGY_SWITCH, ShellyEntry.fromKey("ret_aenergy.total"));
+    }
+
+    @Test
+    void fromKey_returnsApparentPowerForPM1Spelling() {
+        assertEquals(ShellyEntry.APPARENT_POWER_PM1, ShellyEntry.fromKey("aprtpower"));
     }
 }

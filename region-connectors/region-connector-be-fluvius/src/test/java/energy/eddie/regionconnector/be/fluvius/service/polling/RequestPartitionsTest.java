@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.be.fluvius.permission.request.MeterReading;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -22,8 +23,8 @@ class RequestPartitionsTest {
     @Test
     void testPartitions_forOneYearWithoutMeterReading_returnsCorrectPartitions() {
         // Given
-        var start = LocalDate.of(2023, 12, 20);
-        var end = LocalDate.of(2024, 12, 20);
+        var start = LocalDate.of(2023, Month.DECEMBER, 20);
+        var end = LocalDate.of(2024, Month.DECEMBER, 20);
         var pr = new FluviusPermissionRequest(
                 "pid",
                 "cid",
@@ -52,8 +53,8 @@ class RequestPartitionsTest {
     @Test
     void testPartitions_withMeterReading_returnsCorrectPartitions() {
         // Given
-        var start = LocalDate.of(2024, 12, 10);
-        var end = LocalDate.of(2024, 12, 20);
+        var start = LocalDate.of(2024, Month.DECEMBER, 10);
+        var end = LocalDate.of(2024, Month.DECEMBER, 20);
         var pr = new FluviusPermissionRequest(
                 "pid",
                 "cid",

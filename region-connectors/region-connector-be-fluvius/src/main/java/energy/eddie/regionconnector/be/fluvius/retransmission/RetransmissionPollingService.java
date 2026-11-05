@@ -11,14 +11,14 @@ import energy.eddie.api.agnostic.retransmission.result.Success;
 import energy.eddie.regionconnector.be.fluvius.permission.request.FluviusPermissionRequest;
 import energy.eddie.regionconnector.be.fluvius.service.polling.PollingService;
 import energy.eddie.regionconnector.shared.retransmission.PollingFunction;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.be.fluvius.FluviusRegionConnectorMetadata.ZONE_ID_BELGIUM;
 
-@Component
+@Service
 public class RetransmissionPollingService implements PollingFunction<FluviusPermissionRequest> {
     private final PollingService pollingService;
 

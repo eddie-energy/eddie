@@ -112,12 +112,14 @@ public class HomeController {
             Model model,
             @Value("${eddie.public.url}") String publicUrl,
             @Value("${eddie.management.url}") String managementUrl,
-            @Value("${eddie.management.server.urlprefix}") String managementUrlPrefix
+            @Value("${eddie.management.server.urlprefix}") String managementUrlPrefix,
+            @Value("${eddie.data-needs-config.data-need-source}") String dataNeedSource
     ) {
         model.addAttribute("eddiePublicUrl", publicUrl);
         model.addAttribute("eddieAdminConsoleUrl", managementUrl + ADMIN_CONSOLE_BASE_URL);
         model.addAttribute("eddieManagementUrl", managementUrl);
         model.addAttribute("eddieManagementUrlPrefix", managementUrlPrefix);
+        model.addAttribute("eddieDataNeedSource", dataNeedSource);
 
         return "index";
     }
