@@ -4,7 +4,9 @@
 import {
   CSRF_HEADER,
   CSRF_TOKEN,
+  DATA_NEED_SOURCE,
   DATA_NEEDS_API_URL,
+  DATA_NEEDS_MANAGEMENT_API_URL,
   PERMISSIONS_API_URL,
   REGION_CONNECTOR_API_URL,
   REGION_CONNECTOR_HEALTH_API_URL,
@@ -13,7 +15,7 @@ import {
   RETRANSMISSION_API_URL,
   TERMINATION_API_URL
 } from '@/config'
-import type { AnyDataNeed, PermissionStatus } from '@/types'
+import type { AnyDataNeed, DataNeedProjection, PermissionStatus } from '@/types'
 
 export type PageModel<Type> = {
   content: Type[]
@@ -139,8 +141,18 @@ export async function retransmitPermission(permissionId: string) {
   }
 }
 
-export async function getDataNeeds(): Promise<AnyDataNeed[]> {
+export async function getDataNeedProjections(): Promise<DataNeedProjection[]> {
   return await fetch(DATA_NEEDS_API_URL).then((res) => res.json())
+}
+
+export async function getDataNeeds(): Promise<AnyDataNeed[]> {
+  if (DATA_NEED_SOURCE === 'DATABASE') {
+    return await fetch(DATA_NEEDS_MANAGEMENT_API_URL).then((res) => res.json())
+  } else {
+    const projections = await getDataNeedProjections()
+    const ids = projections.map(({ id }) => id).join(',')
+    return await fetch(`${DATA_NEEDS_API_URL}/?data-need-id=${ids}`).then((res) => res.json())
+  }
 }
 
 export async function getRegionConnectors(): Promise<RegionConnectorMetadata[]> {

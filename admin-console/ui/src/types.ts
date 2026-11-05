@@ -8,6 +8,11 @@ export type RegionConnectorFilter = {
   regionConnectorIds: string[]
 }
 
+export type DataNeedProjection = {
+  id: string
+  name: string
+}
+
 export type DataNeed = {
   id: string
   name: string
@@ -44,6 +49,14 @@ export type AccountingPointDataNeed = DataNeed & {
   type: 'account'
 }
 
+export type CesuJoinRequestDataNeed = DataNeed & {
+  type: 'cesu-join-request'
+  participationFactor?: number
+  minGranularity: Granularity
+  maxGranularity: Granularity
+  energyDirection?: 'CONSUMPTION' | 'PRODUCTION'
+}
+
 export type AiidaSchema = (typeof SCHEMAS)[number]
 export type AiidaAsset = (typeof ASSETS)[number]
 export type AiidaContext = (typeof CONTEXTS)[number]
@@ -76,6 +89,7 @@ export type ValidatedHistoricalDataDataNeed = TimeFramedDataNeed & {
 
 export type AnyDataNeed =
   | AccountingPointDataNeed
+  | CesuJoinRequestDataNeed
   | InboundAiidaDataNeed
   | OutboundAiidaDataNeed
   | ValidatedHistoricalDataDataNeed
