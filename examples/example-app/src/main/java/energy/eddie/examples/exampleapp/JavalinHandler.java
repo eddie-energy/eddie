@@ -3,8 +3,8 @@
 
 package energy.eddie.examples.exampleapp;
 
-import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 
 public interface JavalinHandler {
-    void register(Javalin app);
+    void register(RoutesConfig routes);
 }

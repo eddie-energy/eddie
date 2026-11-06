@@ -25,6 +25,9 @@ dependencies {
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.kafka)
 
+    // Declare specific version of vulnerable lz4-java required by Kafka 4.2.x
+    runtimeOnly(libs.lz4.java)
+
     implementation(libs.jakarta.annotation.api)
 
     implementation(libs.reactor.core)
