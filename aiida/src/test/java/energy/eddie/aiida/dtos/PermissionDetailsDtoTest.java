@@ -4,6 +4,7 @@
 package energy.eddie.aiida.dtos;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
+import energy.eddie.aiida.dtos.permission.PermissionDetailsDto;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

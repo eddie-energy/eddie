@@ -6,14 +6,14 @@ import Button from '@/components/Button.vue'
 import ModalDialog from '@/components/ModalDialog.vue'
 import ScanQrCodeIcon from '@/assets/icons/ScanQrCodeIcon.svg'
 import { ref } from 'vue'
-import { addPermissions } from '@/api'
+import { fetchPermissionDetails } from '@/api'
 import { fetchPermissions } from '@/stores/permissions'
 import QrCodeScanner from '@/components/QrCodeScanner.vue'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import type { AiidaPermissionRequestsDTO } from '@/types'
 import { useI18n } from 'vue-i18n'
 
-const { updatePermission } = usePermissionDialog()
+const { decidePendingPermission } = usePermissionDialog()
 const permissionModal = ref<HTMLDialogElement>()
 const qrCodeModal = ref<HTMLDialogElement>()
 const qrCodeIsOpen = ref(false)
@@ -61,9 +61,9 @@ const executePermissionRequests = async (permissionRequests: AiidaPermissionRequ
   loading.value = true
 
   try {
-    const permissions = await addPermissions(permissionRequests)
-    for (const permission of permissions) {
-      await updatePermission(permission)
+    const pendingPermissions = await fetchPermissionDetails(permissionRequests)
+    for (const pendingPermission of pendingPermissions) {
+      await decidePendingPermission(pendingPermission, permissionRequests)
     }
     loading.value = false
     permissionModal.value?.close()

@@ -64,10 +64,13 @@ export type AiidaDataSource = {
 
 export type InboundMessageFormat = 'CIM_1_12' | 'OPENADR_3_1'
 
+export type AiidaConnectionStatus = 'WAITING_FOR_CONNECTION' | 'NOT_CONNECTED' | 'CONNECTED'
+
 export type AiidaPermission = {
   permissionId: string
   eddieId: string
   status: string
+  connectionStatus?: AiidaConnectionStatus
   serviceName: string
   displayName: string
   startTime: string
@@ -85,11 +88,26 @@ export type AiidaPermission = {
   monitoringDataSourceId?: string
   supportsConnectionLimits: boolean
   userId: string
-  unimplemented: {
-    packageGraph: any
-    targetIP: any
-  }
 }
+
+/**
+ * Permission request that was fetched with an AIIDA code, but is not accepted yet.
+ */
+export type AiidaPendingPermission = Pick<
+  AiidaPermission,
+  | 'permissionId'
+  | 'eddieId'
+  | 'serviceName'
+  | 'displayName'
+  | 'startTime'
+  | 'expirationTime'
+  | 'meterId'
+  | 'minLimitKw'
+  | 'maxLimitKw'
+  | 'dataNeed'
+  | 'inboundMessageFormat'
+  | 'supportsConnectionLimits'
+>
 
 export type AiidaPermissionStreamingConfig = {
   dataTopic: string
@@ -119,6 +137,11 @@ export type LatestInboundPermissionRecord = {
 export type LastMessageEvent = {
   permissionId: string
   timestamp: string
+}
+
+export type ConnectionStatusEvent = {
+  permissionId: string
+  connectionStatus: AiidaConnectionStatus
 }
 
 export type AiidaDataSourceType = {
@@ -189,6 +212,6 @@ export type ConnectionLimit = {
   maxLimitKw: number | null
 }
 
-export type PermissionTypes = 'Active' | 'Pending' | 'Complete'
+export type PermissionTypes = 'Active' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
 export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'

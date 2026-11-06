@@ -71,7 +71,7 @@ class InboundPermissionRelayServiceTest {
         mockOutboundPermissionWithSchemas(Set.of(AiidaSchema.OPAQUE));
         when(outboundPermission.connectionId()).thenReturn(OUTBOUND_CONNECTION_ID);
         when(outboundDataNeed.dataNeedId()).thenReturn(OUTBOUND_DATA_NEED_ID);
-        when(permissionRepository.findOutboundByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACTIVE))
+        when(permissionRepository.findOutboundByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(outboundPermission));
 
         relayService.subscribeToInboundRecords();
@@ -116,7 +116,7 @@ class InboundPermissionRelayServiceTest {
         mockOutboundPermissionWithSchemas(Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12));
         when(outboundPermission.connectionId()).thenReturn("outbound-connection");
         when(outboundDataNeed.dataNeedId()).thenReturn(OUTBOUND_DATA_NEED_ID);
-        when(permissionRepository.findOutboundByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACTIVE))
+        when(permissionRepository.findOutboundByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(outboundPermission));
 
         relayService.subscribeToInboundRecords();

@@ -56,7 +56,7 @@ public class InboundPermissionRelayService {
     private void relayInboundRecord(InboundRecord inboundRecord) {
         var outboundPermissions = permissionRepository.findOutboundByDataSourceIdAndStatus(
                 inboundRecord.dataSource().id(),
-                PermissionStatus.ACTIVE
+                PermissionStatus.ACCEPTED
         );
 
         for (var outboundPermission : outboundPermissions) {

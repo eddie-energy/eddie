@@ -4,8 +4,8 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
@@ -14,8 +14,11 @@ import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.utils.MqttFactory;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -24,19 +27,32 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class StreamerFactoryTest {
+    @Mock
+    private MqttStreamingConfig streamingConfig;
+    @Mock
+    private AcceptedPermission permission;
+    @Mock
+    private MqttAsyncClient mqttClient;
+    @Mock
+    private FailedToSendRepository failedToSendRepository;
+    @Mock
+    private SchemaFormatterRegistry schemaFormatterRegistry;
+    @Mock
+    private PermissionLatestRecordMap permissionLatestRecordMap;
+    @Mock
+    private SecretsService secretsService;
+
     @Test
     void getAiidaStreamer_buildsMqttStreamerWithExpandedPersistencePath() throws Exception {
         // Given
         var eddieId = UUID.randomUUID();
         var permissionId = UUID.randomUUID();
-        var streamingConfig = mock(MqttStreamingConfig.class);
         when(streamingConfig.serverUri()).thenReturn("mqtt://broker");
         when(streamingConfig.username()).thenReturn(permissionId);
-        var permission = mock(Permission.class);
         when(permission.eddieId()).thenReturn(eddieId);
         when(permission.id()).thenReturn(permissionId);
         when(permission.mqttStreamingConfig()).thenReturn(streamingConfig);
@@ -44,14 +60,15 @@ class StreamerFactoryTest {
 
         try (MockedStatic<MqttFactory> mqttFactory = Mockito.mockStatic(MqttFactory.class)) {
             mqttFactory.when(() -> MqttFactory.getMqttAsyncClient(any(), any(), any()))
-                       .thenReturn(mock(MqttAsyncClient.class));
+                       .thenReturn(mqttClient);
 
-            var dependencies = new StreamerDependencies(mock(FailedToSendRepository.class),
+            var dependencies = new StreamerDependencies(failedToSendRepository,
                                                         mapper,
-                                                        mock(SchemaFormatterRegistry.class),
+                                                        schemaFormatterRegistry,
                                                         Sinks.many().multicast().onBackpressureBuffer(),
-                                                        mock(PermissionLatestRecordMap.class),
-                                                        mock(SecretsService.class));
+                                                        permissionLatestRecordMap,
+                                                        secretsService,
+                                                        new ConnectionStatusEventStream());
 
             // When
             var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, Flux.empty());

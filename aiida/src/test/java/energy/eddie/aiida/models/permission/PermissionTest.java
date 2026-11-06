@@ -28,9 +28,9 @@ class PermissionTest {
                                                          UUID.randomUUID());
 
     @Test
-    void constructor_setsStatusToCreated() {
+    void constructor_setsStatusToAccepted() {
         // When, Then
-        assertEquals(PermissionStatus.CREATED, permission.status());
+        assertEquals(PermissionStatus.ACCEPTED, permission.status());
     }
 
     @Test

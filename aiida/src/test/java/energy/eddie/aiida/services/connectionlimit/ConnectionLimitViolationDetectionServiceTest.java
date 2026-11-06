@@ -86,7 +86,7 @@ class ConnectionLimitViolationDetectionServiceTest {
 
     @Test
     void givenNoAssignment_doesNotNotify() {
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus.ACCEPTED))
                 .thenReturn(List.of());
 
         service.checkViolations();
@@ -169,10 +169,10 @@ class ConnectionLimitViolationDetectionServiceTest {
         givenNewRecords(5, aiidaRecord(6, imported("9.0")));
 
         service.checkViolations();
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus.ACCEPTED))
                 .thenReturn(List.of());
         service.checkViolations();
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(permission));
         service.checkViolations();
 
@@ -191,7 +191,7 @@ class ConnectionLimitViolationDetectionServiceTest {
                                                           BigDecimal.valueOf(8),
                                                           BigDecimal.valueOf(9)));
         // Only active permissions are returned, so the permission was revoked or terminated
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus.ACCEPTED))
                 .thenReturn(List.of());
 
         service.checkViolations();
@@ -378,7 +378,7 @@ class ConnectionLimitViolationDetectionServiceTest {
     private void givenAssignment() {
         when(permission.id()).thenReturn(PERMISSION_ID);
         when(permission.monitoringDataSourceId()).thenReturn(DATA_SOURCE_ID);
-        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(PermissionStatus.ACTIVE))
+        when(permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(permission));
     }
 

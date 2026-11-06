@@ -4,9 +4,6 @@
 package energy.eddie.aiida.schemas.rtd.cim;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
-import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
@@ -46,26 +43,6 @@ public abstract class BaseCimFormatterStrategy<T, S, V, W> implements CimFormatt
         } catch (NumberFormatException e) {
             throw new CimSchemaFormatterException(e);
         }
-    }
-
-    protected final DataSource dataSourceOfPermissionOrThrow(Permission permission) throws CimSchemaFormatterException {
-        var dataSource = permission.dataSource();
-        if (dataSource == null) {
-            throw new CimSchemaFormatterException(new IllegalArgumentException(
-                    "Data source is required for CIM formatting"));
-        }
-
-        return dataSource;
-    }
-
-    protected final AiidaLocalDataNeed dataNeedOfPermissionOrThrow(Permission permission) throws CimSchemaFormatterException {
-        var dataNeed = permission.dataNeed();
-        if (dataNeed == null) {
-            throw new CimSchemaFormatterException(new IllegalArgumentException(
-                    "Data need is required for CIM formatting"));
-        }
-
-        return dataNeed;
     }
 
     protected final boolean isAiidaRecordValueSupported(AiidaRecordValue recordValue) {

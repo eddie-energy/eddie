@@ -20,6 +20,7 @@ import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Formula;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Persistable;
 import org.springframework.scheduling.support.CronExpression;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
@@ -33,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 @Entity
 @Table(name = "permission")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Permission {
+public class Permission implements Persistable<UUID> {
     @Id
     @Column(name = "permission_id", nullable = false, updatable = false)
     @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
@@ -130,7 +131,7 @@ public class Permission {
     private String accessToken;
 
     @Nullable
-    @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id", insertable = false)
+    @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JsonProperty
     private AiidaLocalDataNeed dataNeed;
@@ -141,7 +142,7 @@ public class Permission {
     private UUID userId;
 
     @Nullable
-    @JoinColumn(name = "data_source_id", referencedColumnName = "id", insertable = false)
+    @JoinColumn(name = "data_source_id", referencedColumnName = "id")
     @ManyToOne(cascade = CascadeType.DETACH)
     @JsonProperty
     private DataSource dataSource;
@@ -165,16 +166,21 @@ public class Permission {
     @JsonDeserialize(using = CronExpressionDeserializer.class)
     private CronExpression transmissionSchedule;
 
+    @Transient
+    @JsonIgnore
+    private boolean isNew = true;
+
     /**
-     * Create a new permission from the contents of the QR code. The status will be set to
-     * {@link PermissionStatus#CREATED}.
+     * Create a new permission from the contents of the AIIDA code. Permissions are only persisted once the user accepted
+     * them, therefore the status is set to {@link PermissionStatus#ACCEPTED}. The details of the permission have to be
+     * set before it is persisted.
      */
     public Permission(UUID eddieId, UUID permissionId, String handshakeUrl, String accessToken, UUID userId) {
         this.eddieId = eddieId;
         this.permissionId = permissionId;
         this.handshakeUrl = handshakeUrl;
         this.accessToken = accessToken;
-        this.status = PermissionStatus.CREATED;
+        this.status = PermissionStatus.ACCEPTED;
         this.userId = userId;
     }
 
@@ -186,38 +192,49 @@ public class Permission {
     public Permission() {
     }
 
-    /**
-     * Returns the UUID of the EDDIE application that created this permission.
-     */
-    public UUID eddieId() {
-        return eddieId;
-    }
-
-    /**
-     * Returns the UUID of this permission.
-     */
-    public UUID id() {
+    @Override
+    @JsonIgnore
+    public UUID getId() {
         return permissionId;
     }
 
+    @Override
+    @JsonIgnore
+    public boolean isNew() {
+        return isNew;
+    }
+
     /**
-     * Returns the UTC start timestamp for sharing data of this permission. Only available if status is
-     * {@link PermissionStatus#FETCHED_DETAILS} or a later status.
+     * @return The UTC timestamp when this permission starts
      */
     public @Nullable Instant startTime() {
         return startTime;
     }
 
     /**
-     * Returns the UTC timestamp when this permission expires and no more data should be shared. Only available if
-     * status is {@link PermissionStatus#FETCHED_DETAILS} or a later status.
+     * @return The UUID of the EDDIE application that created this permission.
+     */
+    public UUID eddieId() {
+        return eddieId;
+    }
+
+    /**
+     * @see #getId()
+     * @return The UUID of this permission.
+     */
+    public UUID id() {
+        return getId();
+    }
+
+    /**
+     * @return The UTC timestamp when this permission expires and no more data should be shared.
      */
     public @Nullable Instant expirationTime() {
         return expirationTime;
     }
 
     /**
-     * Returns the UTC timestamp when the customer granted the permission. Will return null until the customer grants
+     * @return The UTC timestamp when the customer granted the permission. Will return null until the customer grants
      * the permission. Only available if status is {@link PermissionStatus#ACCEPTED} or a later status.
      */
     public @Nullable Instant grantTime() {
@@ -225,7 +242,7 @@ public class Permission {
     }
 
     /**
-     * Returns the time at which either the EP terminated the permission or the customer revoked the permission. The
+     * @return The time at which either the EP terminated the permission or the customer revoked the permission. The
      * return value of {@link #status()} indicates which of the two cases occurred.
      */
     public @Nullable Instant revokeTime() {
@@ -233,15 +250,14 @@ public class Permission {
     }
 
     /**
-     * Returns the connectionId that was generated by the EDDIE framework and is sent along with each message to the EP.
-     * Only available if status is {@link PermissionStatus#FETCHED_DETAILS} or a later status.
+     * @return The connectionId that was generated by the EDDIE framework and is sent along with each message to the EP.
      */
     public @Nullable String connectionId() {
         return connectionId;
     }
 
     /**
-     * Returns the optional physical meter ID provided by the eligible party.
+     * @return The optional physical meter ID provided by the eligible party.
      * Used to map flexible connection agreements and control data source selection in AIIDA.
      */
     public @Nullable String meterId() {
@@ -249,23 +265,23 @@ public class Permission {
     }
 
     /**
-     * Optional current default minimum energy consumption or production limit in kilowatts for controllable units.
      * Resolved from the current connection limit default with the newest start time in the database.
+     * @return Optional current default minimum energy consumption or production limit in kilowatts for controllable units.
      */
     public @Nullable BigDecimal minLimitKw() {
         return minLimitKw;
     }
 
     /**
-     * Optional current default maximum energy consumption or production limit in kilowatts for controllable units.
      * Resolved from the current connection limit default with the newest start time in the database.
+     * @return Optional current default maximum energy consumption or production limit in kilowatts for controllable units.
      */
     public @Nullable BigDecimal maxLimitKw() {
         return maxLimitKw;
     }
 
     /**
-     * Returns the data source monitored for connection limit violations, or null if none is assigned.
+     * @return The data source monitored for connection limit violations, or null if none is assigned.
      */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public @Nullable UUID monitoringDataSourceId() {
@@ -280,14 +296,14 @@ public class Permission {
     }
 
     /**
-     * Returns the service name for which this permission is for.
+     * @return The service name for which this permission is for.
      */
     public @Nullable String serviceName() {
         return serviceName;
     }
 
     /**
-     * Returns the user-chosen display name for this permission. Defaults to the data need's name.
+     * @return The user-chosen display name for this permission. Defaults to the data need's name.
      */
     public @Nullable String displayName() {
         return displayName;
@@ -298,45 +314,57 @@ public class Permission {
     }
 
     /**
-     * Returns the current status of the permission.
+     * @return The current status of the permission.
      */
     public PermissionStatus status() {
         return status;
     }
 
     /**
-     * Only available if status is {@link PermissionStatus#FETCHED_MQTT_CREDENTIALS} or a later status.
+     * @return The MQTT streaming configuration for this permission.
      */
     public @Nullable MqttStreamingConfig mqttStreamingConfig() {
         return mqttStreamingConfig;
     }
 
+    /**
+     * @return The URL for the handshake endpoint.
+     */
     public String handshakeUrl() {
         return handshakeUrl;
     }
 
+    /**
+     * @return The access token for the permission.
+     */
     public String accessToken() {
         return accessToken;
     }
 
-    public @Nullable UUID userId() {
+    /**
+     * @return The user ID associated with the permission.
+     */
+    public UUID userId() {
         return userId;
     }
 
+    /**
+     * @return The data source for the permission.
+     */
     public @Nullable DataSource dataSource() {
         return dataSource;
     }
 
     /**
-     * Only available if status is {@link PermissionStatus#FETCHED_DETAILS} or a later status.
+     * @return The data need for the permission.
      */
     public @Nullable AiidaLocalDataNeed dataNeed() {
         return dataNeed;
     }
 
     /**
-     * Returns whether data transmission is currently enabled for this permission. Defaults to {@code true} and is
-     * toggled by {@link PermissionCommand.SetTransmissionEnabled} commands from the EP.
+     * Defaults to {@code true} and is toggled by {@link PermissionCommand.SetTransmissionEnabled} commands from the EP.
+     * @return Whether data transmission is currently enabled for this permission.
      */
     public boolean transmissionEnabled() {
         return transmissionEnabled;
@@ -408,22 +436,6 @@ public class Permission {
         deriveInboundMessageFormat(dataNeed);
     }
 
-    private void deriveServiceName(AiidaLocalDataNeed dataNeed) {
-        this.serviceName = dataNeed.name();
-    }
-
-    private void deriveDisplayName(AiidaLocalDataNeed dataNeed) {
-        this.displayName = dataNeed.name();
-    }
-
-    private void deriveInboundMessageFormat(AiidaLocalDataNeed dataNeed) {
-        if (dataNeed instanceof InboundAiidaLocalDataNeed && this.inboundMessageFormat == null) {
-            this.inboundMessageFormat = InboundMessageFormat.CIM_1_12;
-        } else {
-            this.inboundMessageFormat = null;
-        }
-    }
-
     public void setDataSource(@Nullable DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -446,7 +458,7 @@ public class Permission {
     }
 
     /**
-     * Returns the schedule that should be used to stream data for this permission: the permission's own
+     * @return The schedule that should be used to stream data for this permission: the permission's own
      * transmission schedule if set, otherwise the data need's schedule as a fallback
      */
     @Nullable
@@ -460,12 +472,34 @@ public class Permission {
     }
 
     /**
-     * True if the permission allows the eligible party to send connection limits,
-     * indicating that the permission supports connection limit features.
+     * {@code true} if the permission allows the eligible party to send connection limits.
+     * @return Whether the permission supports connection limit features such as monitoring.
      */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Schema(description = "Whether the permission supports connection limit features such as monitoring.", example = "true")
     public boolean supportsConnectionLimits() {
         return dataNeed instanceof InboundAiidaLocalDataNeed && dataNeed.supportsConnectionLimits();
+    }
+
+    @PostLoad
+    @PostPersist
+    void markNotNew() {
+        this.isNew = false;
+    }
+
+    private void deriveServiceName(AiidaLocalDataNeed dataNeed) {
+        this.serviceName = dataNeed.name();
+    }
+
+    private void deriveDisplayName(AiidaLocalDataNeed dataNeed) {
+        this.displayName = dataNeed.name();
+    }
+
+    private void deriveInboundMessageFormat(AiidaLocalDataNeed dataNeed) {
+        if (dataNeed instanceof InboundAiidaLocalDataNeed && this.inboundMessageFormat == null) {
+            this.inboundMessageFormat = InboundMessageFormat.CIM_1_12;
+        } else {
+            this.inboundMessageFormat = null;
+        }
     }
 }

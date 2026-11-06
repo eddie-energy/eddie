@@ -1,44 +1,18 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.models.permission;
 
-import java.util.Set;
-
+/**
+ * Static state of a permission. Permissions are only persisted once the user accepted them, so every permission starts
+ * as {@link #ACCEPTED} and ends in one of the final states. The dynamic connection state of an accepted permission is
+ * described by {@link ConnectionStatus}.
+ */
 public enum PermissionStatus {
-    /**
-     * The permission has been created on AIIDA.
-     */
-    CREATED,
-    /**
-     * The details, like start and end date, of the permission have been fetched from the EDDIE framework.
-     */
-    FETCHED_DETAILS,
-    /**
-     * This AIIDA instance is unable to fulfill the permission request, e.g. because the requested data is not
-     * available.
-     */
-    UNFULFILLABLE,
     /**
      * The user accepted the permission request.
      */
     ACCEPTED,
-    /**
-     * The MQTT credentials and topics for the permission have been fetched from the EDDIE framework.
-     */
-    FETCHED_MQTT_CREDENTIALS,
-    /**
-     * The customer has accepted the permission but the start time for sharing data is still in the future.
-     */
-    WAITING_FOR_START,
-    /**
-     * The permission has been accepted and data is now actively streamed to the eligible party.
-     */
-    STREAMING_DATA,
-    /**
-     * The user rejected the permission request.
-     */
-    REJECTED,
     /**
      * The user revoked the permission.
      */
@@ -50,16 +24,12 @@ public enum PermissionStatus {
     /**
      * The expiration time of the permission was reached.
      */
-    FULFILLED,
+    FULFILLED;
+
     /**
-     * An error occurred and the permission could not be started.
+     * {@code true} if the permission is {@link #ACCEPTED}.
      */
-    FAILED_TO_START;
-
-    public static final Set<PermissionStatus> STREAMING = Set.of(WAITING_FOR_START, STREAMING_DATA);
-    public static final Set<PermissionStatus> ACTIVE = Set.of(ACCEPTED, WAITING_FOR_START, STREAMING_DATA);
-
-    public boolean isActive() {
-        return ACTIVE.contains(this);
+    public boolean isAccepted() {
+        return this == ACCEPTED;
     }
 }

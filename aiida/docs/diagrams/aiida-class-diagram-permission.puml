@@ -1,4 +1,4 @@
-' SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+' SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 ' SPDX-License-Identifier: Apache-2.0
 
 @startuml
@@ -13,6 +13,7 @@ class Permission {
     - userId: UUID
     - status: PermissionStatus
     - serviceName: String
+    - displayName: String
     - startTime: Instant
     - expirationTime: Instant
     - grantTime: Instant
@@ -21,6 +22,7 @@ class Permission {
     - meterId: String
     - minLimitKw: BigDecimal
     - maxLimitKw: BigDecimal
+    - monitoringDataSourceId: UUID
     - handshakeUrl: String
     - accessToken: String
     - dataNeed: AiidaLocalDataNeed
@@ -38,7 +40,6 @@ abstract class DataSource {}
 
 class MqttStreamingConfig {
     - permissionId: UUID
-    - username: String
     - password: String
     - serverUri: String
     - dataTopic: String
@@ -48,19 +49,22 @@ class MqttStreamingConfig {
 }
 
 enum PermissionStatus {
-    CREATED,
-    FETCHED_DETAILS,
-    UNFULFILLABLE,
-    ACCEPTED,
-    FETCHED_MQTT_CREDENTIALS,
-    WAITING_FOR_START,
-    STREAMING_DATA,
-    REJECTED,
-    REVOKED,
-    TERMINATED,
-    FULFILLED,
-    FAILED_TO_START
+    ACCEPTED
+    REVOKED
+    TERMINATED
+    FULFILLED
 }
+
+enum ConnectionStatus {
+    WAITING_FOR_CONNECTION
+    NOT_CONNECTED
+    CONNECTED
+}
+
+note bottom of ConnectionStatus
+    Not persisted, derived at runtime
+    for accepted permissions.
+end note
 
 enum InboundMessageFormat {
     CIM_1_12
@@ -69,6 +73,7 @@ enum InboundMessageFormat {
 
 Permission "n" o-- "1" AiidaLocalDataNeed
 Permission - PermissionStatus
+Permission ..> ConnectionStatus : derived
 Permission - InboundMessageFormat
 Permission "1" *-up- "1" MqttStreamingConfig
 Permission "n" o-- "1" DataSource

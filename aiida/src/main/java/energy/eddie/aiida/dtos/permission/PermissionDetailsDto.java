@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-package energy.eddie.aiida.dtos;
+package energy.eddie.aiida.dtos.permission;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -38,24 +38,8 @@ public class PermissionDetailsDto {
     @JsonProperty(value = "data_need")
     private AiidaDataNeed dataNeed;
 
-    public PermissionDetailsDto(
-            UUID permissionId,
-            String connectionId,
-            @Nullable String meterId,
-            @Nullable BigDecimal minLimitKw,
-            @Nullable BigDecimal maxLimitKw,
-            LocalDate start,
-            LocalDate end,
-            AiidaDataNeed dataNeed
-    ) {
-        this.permissionId = permissionId;
-        this.connectionId = connectionId;
-        this.meterId = meterId;
-        this.minLimitKw = minLimitKw;
-        this.maxLimitKw = maxLimitKw;
-        this.start = start;
-        this.end = end;
-        this.dataNeed = dataNeed;
+    @SuppressWarnings("unused") // Used by Jackson, which unpacks the permission request
+    private PermissionDetailsDto() {
     }
 
     public UUID permissionId() {

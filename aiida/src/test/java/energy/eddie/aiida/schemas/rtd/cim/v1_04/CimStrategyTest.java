@@ -5,7 +5,7 @@ package energy.eddie.aiida.schemas.rtd.cim.v1_04;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -43,7 +43,7 @@ class CimStrategyTest {
     private final CimStrategy strategy = new CimStrategy();
 
     @Test
-    void toRealTimeDataEnvelope_mapsMetadataAndSupportedQuantities() throws CimSchemaFormatterException, SerdeInitializationException, SerializationException {
+    void toRealTimeDataEnvelope_mapsMetadataAndSupportedQuantities() throws SerdeInitializationException, SerializationException {
         // Given
         var dataSource = dataSource("AT");
         var permission = permission(dataSource);
@@ -102,7 +102,7 @@ class CimStrategyTest {
     }
 
     @Test
-    void toRealTimeDataEnvelope_noDeviceIdRecordValueGiven_mRIDMapsToDataSourceId() throws CimSchemaFormatterException {
+    void toRealTimeDataEnvelope_noDeviceIdRecordValueGiven_mRIDMapsToDataSourceId() {
         // Given
         var dataSource = dataSource("AT");
         var permission = permission(dataSource);
@@ -131,7 +131,7 @@ class CimStrategyTest {
     }
 
     @Test
-    void toRealTimeDataEnvelope_setsNullCodingSchemeForUnknownCountryCode() throws CimSchemaFormatterException {
+    void toRealTimeDataEnvelope_setsNullCodingSchemeForUnknownCountryCode() {
         // Given
         var dataSource = dataSource("XX");
         var permission = permission(dataSource);
@@ -201,8 +201,8 @@ class CimStrategyTest {
         return dataSource;
     }
 
-    private static Permission permission(DataSource dataSource) {
-        var permission = mock(Permission.class);
+    private static AcceptedPermission permission(DataSource dataSource) {
+        var permission = mock(AcceptedPermission.class);
         var dataNeed = mock(AiidaLocalDataNeed.class);
 
         when(permission.id()).thenReturn(PERMISSION_ID);
