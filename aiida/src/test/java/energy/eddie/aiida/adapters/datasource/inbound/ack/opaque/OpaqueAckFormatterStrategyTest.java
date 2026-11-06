@@ -3,12 +3,14 @@
 
 package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 
+import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.cim.serde.SerdeInitializationException;
 import energy.eddie.cim.serde.SerializationException;
@@ -22,6 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
@@ -55,8 +58,8 @@ class OpaqueAckFormatterStrategyTest {
                           MESSAGE_ID.toString(),
                           TIMESTAMP_STRING);
 
-    private final OpaqueAckFormatterStrategy strategy = new OpaqueAckFormatterStrategy(AIIDA_ID);
-
+    @Mock
+    private ApplicationInformationService applicationInformationService;
     @Mock
     private Permission permission;
     @Mock
@@ -65,13 +68,18 @@ class OpaqueAckFormatterStrategyTest {
     private InboundDataSource inboundDataSource;
     @Mock
     private InboundRecord inboundRecord;
-    private ObjectMapper objectMapper;
+
+    private OpaqueAckFormatterStrategy strategy;
 
     @BeforeEach
     void setUp() {
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
-        objectMapper = builder.build();
+        ObjectMapper objectMapper = builder.build();
+
+        when(applicationInformationService.applicationInformation())
+                .thenReturn(new ApplicationInformation(AIIDA_ID, Instant.EPOCH));
+        strategy = new OpaqueAckFormatterStrategy(applicationInformationService, objectMapper);
 
         when(inboundRecord.dataSource()).thenReturn(inboundDataSource);
 
@@ -94,7 +102,7 @@ class OpaqueAckFormatterStrategyTest {
         var serde = new XmlMessageSerde();
 
         // When
-        var envelope = strategy.convert(objectMapper, inboundRecord, InboundProcessingResult.accepted());
+        var envelope = strategy.convert(inboundRecord, InboundProcessingResult.accepted());
 
         // Then
         var header = envelope.getMessageDocumentHeader();

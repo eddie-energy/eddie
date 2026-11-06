@@ -5,13 +5,11 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack;
 
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
-import tools.jackson.databind.ObjectMapper;
 
 public interface AckFormatterStrategy {
-    AcknowledgementEnvelope convert(
-            ObjectMapper objectMapper,
-            InboundRecord inboundRecord,
-            InboundProcessingResult processingResult
-    );
+    AiidaSchema supportedSchema();
+
+    AcknowledgementEnvelope convert(InboundRecord inboundRecord, InboundProcessingResult processingResult);
 }
