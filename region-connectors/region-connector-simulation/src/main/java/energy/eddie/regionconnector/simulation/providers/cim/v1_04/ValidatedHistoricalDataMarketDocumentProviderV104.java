@@ -15,18 +15,15 @@ import reactor.core.publisher.Flux;
 @Component
 public class ValidatedHistoricalDataMarketDocumentProviderV104 {
     private final Flux<VHDEnvelope> validatedHistoricalData;
-    private final DocumentStreams streams;
-    private final CommonInformationModelConfiguration cimConfig;
 
     public ValidatedHistoricalDataMarketDocumentProviderV104(
             DocumentStreams streams,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
-        this.streams = streams;
-        this.cimConfig = cimConfig;
         this.validatedHistoricalData = streams.getSimulatedMeterReadingStream()
-                      .map(d -> new IntermediateValidatedHistoricalDataMarketDocument(d, cimConfig))
-                      .map(IntermediateValidatedHistoricalDataMarketDocument::value).share();
+                .map(d -> new IntermediateValidatedHistoricalDataMarketDocument(d, cimConfig))
+                .map(IntermediateValidatedHistoricalDataMarketDocument::value)
+                .share();
     }
 
     @MessageStream(VHDEnvelope.class)

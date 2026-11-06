@@ -45,7 +45,8 @@ public class ValidatedHistoricalDataProvider {
                         LOGGER.warn("Got exception when mapping to validated historical data market document", e);
                         return List.of();
                     }
-                }).share();
+                })
+                .share();
     }
 
     @MessageStream(VHDEnvelope.class)

@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -31,7 +32,7 @@ class RestHistoricalDataSecurityTest {
     @Autowired
     private WebApplicationContext context;
     @Autowired
-    private org.springframework.security.web.FilterChainProxy filters;
+    private FilterChainProxy filters;
 
     @Test
     void allHistoricalVersionsAcceptTheSameExistingScope() throws Exception {
@@ -52,8 +53,13 @@ class RestHistoricalDataSecurityTest {
     static class Config {
         @Bean
         SecurityFilterChain security(HttpSecurity http) {
-            JwtDecoder decoder = token -> Jwt.withTokenValue(token).header("alg", "none")
-                    .claim("sub", "eligible-party").claim("scope", token.equals("historical") ? "cim-validated-historical-data-md:read" : "unrelated:read").build();
+            JwtDecoder decoder = token -> Jwt.withTokenValue(token)
+                    .header("alg", "none")
+                    .claim("sub", "eligible-party")
+                    .claim("scope", token.equals("historical")
+                            ? "cim-validated-historical-data-md:read"
+                            : "unrelated:read")
+                    .build();
             return new RestSecurityConfig().restSecurityFilterChain(PathPatternRequestMatcher.withDefaults(), http,
                     request -> new CorsConfiguration(), decoder, true, true);
         }

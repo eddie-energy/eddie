@@ -8,6 +8,10 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
+import energy.eddie.cim.v1_12.vhd.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.vhd.MetaInformation;
+import energy.eddie.cim.v1_12.vhd.VHDMarketDocument;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v1_12.*;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.*;
@@ -19,6 +23,7 @@ import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebS
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -28,6 +33,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -309,8 +315,8 @@ class CimControllerTest {
     }
     @Test
     void validatedHistoricalDataMdSSE_returnsDocuments() {
-        var message1 = new energy.eddie.cim.v1_12.vhd.Envelope();
-        var message2 = new energy.eddie.cim.v1_12.vhd.Envelope();
+        var message1 = new Envelope();
+        var message2 = new Envelope();
 
         given(cimConnector.getValidatedHistoricalDataMarketDocumentStream())
                 .willReturn(Flux.just(message1, message2));
@@ -321,7 +327,7 @@ class CimControllerTest {
                                   .exchange()
                                   .expectStatus()
                                   .isOk()
-                                  .returnResult(energy.eddie.cim.v1_12.vhd.Envelope.class)
+                                  .returnResult(Envelope.class)
                                   .getResponseBody();
 
         StepVerifier.create(result)
@@ -332,8 +338,8 @@ class CimControllerTest {
 
     @Test
     void validatedHistoricalDataMd_returnsDocuments() {
-        var msg = new ValidatedHistoricalDataMarketDocumentModel(new energy.eddie.cim.v1_12.vhd.Envelope());
-        given(vhdRepository.findAll(ArgumentMatchers.<Specification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+        var msg = new ValidatedHistoricalDataMarketDocumentModel(historicalMessage());
+        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
                 .willReturn(List.of(msg));
 
 
@@ -343,11 +349,16 @@ class CimControllerTest {
                                   .exchange()
                                   .expectStatus()
                                   .isOk()
-                                  .returnResult(new ParameterizedTypeReference<List<energy.eddie.cim.v1_12.vhd.Envelope>>() {})
+                                  .returnResult(new ParameterizedTypeReference<List<Envelope>>() {})
                                   .getResponseBody();
 
         StepVerifier.create(result)
-                    .expectNextCount(1)
+                    .assertNext(documents -> {
+                        assertEquals(1, documents.size());
+                        var document = documents.getFirst();
+                        assertEquals("pid", document.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId());
+                        assertEquals("historical-document", document.getVHDMarketDocument().getMRID());
+                    })
                     .verifyComplete();
     }
 
@@ -367,7 +378,7 @@ class CimControllerTest {
 
     @Test
     void validatedHistoricalDataStoredJsonPreservesNestedPermission() {
-        given(vhdRepository.findAll(ArgumentMatchers.<org.springframework.data.jpa.domain.PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
                 .willReturn(List.of(new ValidatedHistoricalDataMarketDocumentModel(historicalMessage())));
         webTestClient.get().uri("/cim_1_12/validated-historical-data-md?permissionId=pid")
                 .accept(MediaType.APPLICATION_JSON).exchange().expectStatus().isOk()
@@ -377,10 +388,12 @@ class CimControllerTest {
                 });
     }
 
-    private static energy.eddie.cim.v1_12.vhd.Envelope historicalMessage() {
-        return new energy.eddie.cim.v1_12.vhd.Envelope().withMessageDocumentHeader(
-                new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader().withMetaInformation(
-                        new energy.eddie.cim.v1_12.vhd.MetaInformation().withRequestPermissionId("pid")
+    private static Envelope historicalMessage() {
+        return new Envelope().withVHDMarketDocument(
+                new VHDMarketDocument().withMRID("historical-document")
+        ).withMessageDocumentHeader(
+                new MessageDocumentHeader().withMetaInformation(
+                        new MetaInformation().withRequestPermissionId("pid")
                                 .withConnectionId("cid").withDataNeedId("dnid").withRegionCountry("AT").withRegionConnector("at-eda")));
     }
 }

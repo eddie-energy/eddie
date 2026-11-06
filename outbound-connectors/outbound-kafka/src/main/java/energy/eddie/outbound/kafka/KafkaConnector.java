@@ -17,15 +17,19 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
+import jakarta.annotation.PreDestroy;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+import reactor.core.Disposable;
+import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -38,10 +42,16 @@ public class KafkaConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
+    private final Disposable.Composite vhdSubscriptions = Disposables.composite();
 
     public KafkaConnector(KafkaTemplate<String, Object> kafkaTemplate, TopicConfiguration config) {
         this.kafkaTemplate = kafkaTemplate;
         this.config = config;
+    }
+
+    @PreDestroy
+    public void closeHistoricalDataStream() {
+        vhdSubscriptions.dispose();
     }
 
     @MessageStream(ConnectionStatusMessage.class)
@@ -96,26 +106,13 @@ public class KafkaConnector {
                 .subscribe();
     }
 
-    private final reactor.core.Disposable.Composite vhdSubscriptions = reactor.core.Disposables.composite();
-
-    @jakarta.annotation.PreDestroy
-    public void closeHistoricalDataStream() {
-        vhdSubscriptions.dispose();
-    }
-
-    @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
-    public void setValidatedHistoricalDataV112Stream(Flux<energy.eddie.cim.v1_12.vhd.Envelope> stream) {
-        vhdSubscriptions.add(stream.onBackpressureBuffer().publishOn(Schedulers.boundedElastic())
-                .doOnNext(envelope -> {
-                    var meta = envelope.getMessageDocumentHeader().getMetaInformation();
-                    var headers = List.<Header>of(new StringHeader(Headers.PERMISSION_ID, meta.getRequestPermissionId()),
-                            new StringHeader(Headers.CONNECTION_ID, meta.getConnectionId()),
-                            new StringHeader(Headers.DATA_NEED_ID, meta.getDataNeedId()));
-                    var record = new ProducerRecord<String, Object>(
-                            config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
-                            null, meta.getConnectionId(), envelope, headers);
-                    sendToKafka(record, "Could not produce CIM 1.12 historical data");
-                }).onErrorContinue(this::logStreamerError)
+    @MessageStream(Envelope.class)
+    public void setValidatedHistoricalDataV112Stream(Flux<Envelope> stream) {
+        vhdSubscriptions.add(stream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceValidatedHistoricalDataMarketDocumentV112)
+                .onErrorContinue(this::logStreamerError)
                 .subscribe(ignored -> { }, error -> LOGGER.warn("Historical data stream failed", error)));
     }
 
@@ -316,6 +313,27 @@ public class KafkaConnector {
                 new StringHeader(Headers.PERMISSION_ID, header.getMessageDocumentHeaderMetaInformationPermissionId()),
                 new StringHeader(Headers.CONNECTION_ID, header.getMessageDocumentHeaderMetaInformationConnectionId()),
                 new StringHeader(Headers.DATA_NEED_ID, header.getMessageDocumentHeaderMetaInformationDataNeedId())
+        );
+    }
+
+    private void produceValidatedHistoricalDataMarketDocumentV112(Envelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
+                null,
+                metaInformation.getConnectionId(),
+                envelope,
+                cimToHeaders(envelope)
+        );
+        sendToKafka(toSend, "Could not produce CIM 1.12 historical data");
+    }
+
+    private static Iterable<Header> cimToHeaders(Envelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
         );
     }
 

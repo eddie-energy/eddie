@@ -4,10 +4,9 @@ import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.vhd.Envelope;
-import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
-import energy.eddie.regionconnector.de.eta.providers.IdentifiableValidatedHistoricalData;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
+import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -18,22 +17,17 @@ import reactor.core.publisher.Flux;
 public class DeValidatedHistoricalDataMarketDocumentProvider {
     private final Flux<VHDEnvelope> validatedHistoricalData;
 
-    private final Flux<IdentifiableValidatedHistoricalData> identifiableData;
-    private final CommonInformationModelConfiguration cimConfig;
-    private final DeEtaPlusConfiguration deConfiguration;
-
     public DeValidatedHistoricalDataMarketDocumentProvider(
             ValidatedHistoricalDataStream stream,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
             CommonInformationModelConfiguration cimConfig,
             DeEtaPlusConfiguration deConfiguration
     ) {
-        this.identifiableData = stream.validatedHistoricalData();
-        this.cimConfig = cimConfig;
-        this.deConfiguration = deConfiguration;
+        var identifiableData = stream.validatedHistoricalData();
         this.validatedHistoricalData = identifiableData
                 .map(data -> new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, deConfiguration, data))
-                .flatMapIterable(IntermediateValidatedHistoricalDataMarketDocument::toVhd).share();
+                .flatMapIterable(IntermediateValidatedHistoricalDataMarketDocument::toVhd)
+                .share();
     }
 
     @MessageStream(VHDEnvelope.class)

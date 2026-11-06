@@ -7,7 +7,11 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.serde.XmlMessageSerde;
+import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.regionconnector.us.green.button.GreenButtonPermissionRequestBuilder;
 import energy.eddie.regionconnector.us.green.button.XmlLoader;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
@@ -20,9 +24,12 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.xml.sax.InputSource;
+import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 class ValidatedHistoricalDataProviderTest {
@@ -88,50 +95,72 @@ class ValidatedHistoricalDataProviderTest {
         // When
 
         // Then
-        StepVerifier.create(reactor.core.publisher.Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), provider.getValidatedHistoricalDataV112Stream()).map(pair -> {
-            var source = pair.getT1();
-            var target = pair.getT2();
-            org.junit.jupiter.api.Assertions.assertEquals(source.getMessageDocumentHeaderMetaInformationPermissionId(), target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId());
-            org.junit.jupiter.api.Assertions.assertEquals(source.getMessageDocumentHeaderMetaInformationDataNeedId(), target.getMessageDocumentHeader().getMetaInformation().getDataNeedId());
-            var sourceSeries = source.getMarketDocument().getTimeSeries();
-            var targetSeries = target.getVHDMarketDocument().getTimeSeries();
-            org.junit.jupiter.api.Assertions.assertEquals(sourceSeries.size(), targetSeries.size());
-            for (int i = 0; i < sourceSeries.size(); i++) {
-                var left = sourceSeries.get(i);
-                var right = targetSeries.get(i);
-                org.junit.jupiter.api.Assertions.assertEquals(left.getEnergyMeasurementUnitName(), right.getEnergyMeasurementUnitName());
-                org.junit.jupiter.api.Assertions.assertEquals(left.getEnergyQualityMeasurementUnitName(), right.getEnergyQualityMeasurementUnitName());
-                org.junit.jupiter.api.Assertions.assertEquals(left.getFlowDirectionDirection(), right.getFlowDirectionDirection());
-                org.junit.jupiter.api.Assertions.assertEquals(left.getPeriods().size(), right.getSeriesPeriods().size());
-                for (int j = 0; j < left.getPeriods().size(); j++) {
-                    var lp = left.getPeriods().get(j);
-                    var rp = right.getSeriesPeriods().get(j);
-                    org.junit.jupiter.api.Assertions.assertEquals(lp.getResolution(), rp.getResolution());
-                    org.junit.jupiter.api.Assertions.assertEquals(lp.getTimeInterval().getStart(), rp.getTimeInterval().getStart());
-                    org.junit.jupiter.api.Assertions.assertEquals(lp.getTimeInterval().getEnd(), rp.getTimeInterval().getEnd());
-                    org.junit.jupiter.api.Assertions.assertEquals(lp.getPoints().size(), rp.getPoints().size());
-                    for (int k = 0; k < lp.getPoints().size(); k++) {
-                        var l = lp.getPoints().get(k);
-                        var r = rp.getPoints().get(k);
-                        org.junit.jupiter.api.Assertions.assertEquals(l.getPosition(), r.getPosition());
-                        org.junit.jupiter.api.Assertions.assertEquals(l.getEnergyQuantityQuantity(), r.getEnergyQuantityQuantity());
-                        org.junit.jupiter.api.Assertions.assertEquals(l.getEnergyQuantityQuality(), r.getEnergyQuantityQuality());
-                        org.junit.jupiter.api.Assertions.assertEquals(l.getEnergyQualityQuantityQuantity(), r.getEnergyQualityQuantityQuantity());
-                        org.junit.jupiter.api.Assertions.assertEquals(l.getEnergyQualityQuantityQuality(), r.getEnergyQualityQuantityQuality());
-                    }
-                }
-            }
-            if (!targetSeries.isEmpty()) {
-                org.junit.jupiter.api.Assertions.assertDoesNotThrow(() -> {
-                    var serialized = new energy.eddie.cim.serde.XmlMessageSerde().serialize(target);
-                    org.junit.jupiter.api.Assertions.assertTrue(energy.eddie.cim.testing.XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
-                });
-            }
-            return target;
-        }))
+        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
+                                       provider.getValidatedHistoricalDataV112Stream());
+        StepVerifier.create(pairedDocuments)
                     .then(() -> publishService.publishValidatedHistoricalData(new IdentifiableSyndFeed(permissionRequest, feed)))
                     .then(publishService::close)
-                    .expectNextCount(1)
+                    .assertNext(pair -> assertEquivalentHistoricalData(pair.getT1(), pair.getT2()))
                     .verifyComplete();
+    }
+
+    private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
+        assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(
+                source.getMessageDocumentHeaderMetaInformationPermissionId(),
+                target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
+        );
+        assertEquals(
+                source.getMessageDocumentHeaderMetaInformationDataNeedId(),
+                target.getMessageDocumentHeader().getMetaInformation().getDataNeedId()
+        );
+        var sourceSeries = source.getMarketDocument().getTimeSeries();
+        var targetSeries = target.getVHDMarketDocument().getTimeSeries();
+        assertEquals(1, sourceSeries.size(), "Fixture time series");
+        assertEquals(sourceSeries.size(), targetSeries.size());
+        for (int i = 0; i < sourceSeries.size(); i++) {
+            var sourceTimeSeries = sourceSeries.get(i);
+            var targetTimeSeries = targetSeries.get(i);
+            assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(
+                    sourceTimeSeries.getEnergyMeasurementUnitName(),
+                    targetTimeSeries.getEnergyMeasurementUnitName()
+            );
+            assertEquals(
+                    sourceTimeSeries.getEnergyQualityMeasurementUnitName(),
+                    targetTimeSeries.getEnergyQualityMeasurementUnitName()
+            );
+            assertEquals(sourceTimeSeries.getFlowDirectionDirection(), targetTimeSeries.getFlowDirectionDirection());
+            assertEquals(67, sourceTimeSeries.getPeriods().size(), "Fixture periods per time series");
+            assertEquals(sourceTimeSeries.getPeriods().size(), targetTimeSeries.getSeriesPeriods().size());
+            for (int j = 0; j < sourceTimeSeries.getPeriods().size(); j++) {
+                var sourcePeriod = sourceTimeSeries.getPeriods().get(j);
+                var targetPeriod = targetTimeSeries.getSeriesPeriods().get(j);
+                assertEquals(sourcePeriod.getResolution(), targetPeriod.getResolution());
+                assertEquals(sourcePeriod.getTimeInterval().getStart(), targetPeriod.getTimeInterval().getStart());
+                assertEquals(sourcePeriod.getTimeInterval().getEnd(), targetPeriod.getTimeInterval().getEnd());
+                assertEquals(1, sourcePeriod.getPoints().size(), "Fixture points per period");
+                assertEquals(sourcePeriod.getPoints().size(), targetPeriod.getPoints().size());
+                for (int k = 0; k < sourcePeriod.getPoints().size(); k++) {
+                    var sourcePoint = sourcePeriod.getPoints().get(k);
+                    var targetPoint = targetPeriod.getPoints().get(k);
+                    assertEquals(sourcePoint.getPosition(), targetPoint.getPosition());
+                    assertEquals(sourcePoint.getEnergyQuantityQuantity(), targetPoint.getEnergyQuantityQuantity());
+                    assertEquals(sourcePoint.getEnergyQuantityQuality(), targetPoint.getEnergyQuantityQuality());
+                    assertEquals(
+                            sourcePoint.getEnergyQualityQuantityQuantity(),
+                            targetPoint.getEnergyQualityQuantityQuantity()
+                    );
+                    assertEquals(
+                            sourcePoint.getEnergyQualityQuantityQuality(),
+                            targetPoint.getEnergyQualityQuantityQuality()
+                    );
+                }
+            }
+        }
+        assertDoesNotThrow(() -> {
+            var serialized = new XmlMessageSerde().serialize(target);
+            assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+        });
     }
 }

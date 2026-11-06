@@ -18,6 +18,7 @@ import energy.eddie.cim.v1_12.esr.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.esr.MetaInformation;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.test.annotation.DirtiesContext;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
+import reactor.core.publisher.Flux;
 import reactor.test.publisher.TestPublisher;
 
 import java.time.ZoneOffset;
@@ -558,9 +560,10 @@ class AmqpOutboundTest {
         consumer.close();
         publisher.complete();
     }
+
     @Test
     void historicalDataV112UsesVersionedBindingAndNestedPermissionHeaders() throws InterruptedException {
-        var envelope = new energy.eddie.cim.v1_12.vhd.Envelope().withMessageDocumentHeader(
+        var envelope = new Envelope().withMessageDocumentHeader(
                 new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader().withMetaInformation(
                         new energy.eddie.cim.v1_12.vhd.MetaInformation().withRequestPermissionId("pid")
                                 .withConnectionId("cid").withDataNeedId("dnid")));
@@ -573,8 +576,27 @@ class AmqpOutboundTest {
                     assertTrue(new String(message.body(), java.nio.charset.StandardCharsets.UTF_8).contains("requestPermissionId"));
                     latch.countDown();
                 }).build()) {
-            amqpOutbound.setValidatedHistoricalDataV112Stream(reactor.core.publisher.Flux.just(envelope));
+            amqpOutbound.setValidatedHistoricalDataV112Stream(Flux.just(envelope));
             assertTrue(latch.await(5, TimeUnit.SECONDS));
         }
+    }
+
+
+    @Test
+    void closingHistoricalDataStreamCancelsAllOwnedSubscriptions() {
+        var first = TestPublisher.<Envelope>create();
+        var second = TestPublisher.<Envelope>create();
+        amqpOutbound.setValidatedHistoricalDataV112Stream(first.flux());
+        amqpOutbound.setValidatedHistoricalDataV112Stream(second.flux());
+        first.assertSubscribers(1);
+        second.assertSubscribers(1);
+
+        amqpOutbound.close();
+
+        first.assertCancelled();
+        second.assertCancelled();
+        var late = TestPublisher.<Envelope>create();
+        amqpOutbound.setValidatedHistoricalDataV112Stream(late.flux());
+        late.assertCancelled();
     }
 }
