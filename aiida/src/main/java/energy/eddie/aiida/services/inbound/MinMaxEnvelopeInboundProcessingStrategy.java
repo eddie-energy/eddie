@@ -3,15 +3,11 @@
 
 package energy.eddie.aiida.services.inbound;
 
-import energy.eddie.aiida.adapters.datasource.inbound.ack.AckFormatterStrategy;
-import energy.eddie.aiida.adapters.datasource.inbound.ack.cim.MinMaxEnvelopeAckFormatterStrategy;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitPersistenceService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.springframework.stereotype.Component;
-
-import java.util.UUID;
 
 @Component
 public class MinMaxEnvelopeInboundProcessingStrategy implements InboundProcessingStrategy {
@@ -31,10 +27,5 @@ public class MinMaxEnvelopeInboundProcessingStrategy implements InboundProcessin
     @Override
     public InboundProcessingResult process(InboundRecord inboundRecord) {
         return connectionLimitPersistenceService.process(inboundRecord);
-    }
-
-    @Override
-    public AckFormatterStrategy acknowledgementFormatter(UUID aiidaId) {
-        return new MinMaxEnvelopeAckFormatterStrategy(aiidaId);
     }
 }

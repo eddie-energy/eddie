@@ -6,6 +6,8 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack.opaque;
 import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.ApplicationInformationService;
+import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.v1_12.LocalCodingSchemeType;
 import energy.eddie.cim.v1_12.StandardDocumentTypeList;
@@ -14,26 +16,32 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.ack.AcknowledgementMarketDocument;
 import energy.eddie.cim.v1_12.ack.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.ack.PartyIDString;
+import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
-import java.nio.ByteBuffer;
 import java.time.ZonedDateTime;
-import java.util.Base64;
 import java.util.UUID;
 
+@Component
 public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
-    public OpaqueAckFormatterStrategy(UUID aiidaId) {
-        super(aiidaId);
+    public OpaqueAckFormatterStrategy(
+            ApplicationInformationService applicationInformationService,
+            ObjectMapper objectMapper
+    ) {
+        super(applicationInformationService, objectMapper);
+    }
+
+    @Override
+    public AiidaSchema supportedSchema() {
+        return AiidaSchema.OPAQUE;
     }
 
     @Override
     public AcknowledgementEnvelope convert(
-            ObjectMapper objectMapper,
             InboundRecord inboundRecord,
             InboundProcessingResult processingResult
     ) {
-        var payload = inboundRecord.payload();
-        var opaqueEnvelope = objectMapper.readValue(payload, OpaqueEnvelope.class);
+        var opaqueEnvelope = objectMapper.readValue(inboundRecord.payload(), OpaqueEnvelope.class);
         var now = ZonedDateTime.now(UTC);
 
         var header = new MessageDocumentHeader()
@@ -67,11 +75,5 @@ public class OpaqueAckFormatterStrategy extends BaseAckFormatterStrategy {
                 .withReceivedMarketDocumentMRID(opaqueEnvelope.messageId())
                 .withReceivedMarketDocumentType(StandardDocumentTypeList.ACKNOWLEDGEMENT_DOCUMENT.value())
                 .withReasons(toReason(processingResult));
-    }
-
-    private static String truncateUUID(UUID uuid) {
-        ByteBuffer bb = ByteBuffer.wrap(new byte[8]);
-        bb.putLong(uuid.getMostSignificantBits());
-        return Base64.getUrlEncoder().encodeToString(bb.array());
     }
 }

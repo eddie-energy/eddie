@@ -3,27 +3,22 @@
 
 package energy.eddie.aiida.services.inbound;
 
-import energy.eddie.aiida.adapters.datasource.inbound.InboundMqttClientRegistry;
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.Disposable;
 import reactor.core.scheduler.Schedulers;
-import tools.jackson.databind.ObjectMapper;
 
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Dispatches inbound records to their schema-specific processing strategy and publishes the resulting acknowledgement.
@@ -31,12 +26,9 @@ import java.util.UUID;
 @Component
 public class InboundProcessingDispatcher {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundProcessingDispatcher.class);
-    private static final AiidaSchema ACK_SCHEMA = AiidaSchema.ACKNOWLEDGEMENT_CIM_V1_12;
 
     private final InboundAggregator inboundAggregator;
-    private final InboundMqttClientRegistry mqttClientRegistry;
-    private final ObjectMapper objectMapper;
-    private final UUID aiidaId;
+    private final AcknowledgementPublisher acknowledgementPublisher;
     private final Map<AiidaSchema, InboundProcessingStrategy> strategies;
 
     @Nullable
@@ -44,16 +36,14 @@ public class InboundProcessingDispatcher {
 
     public InboundProcessingDispatcher(
             InboundAggregator inboundAggregator,
-            InboundMqttClientRegistry mqttClientRegistry,
-            ObjectMapper objectMapper,
-            ApplicationInformationService applicationInformationService,
+            AcknowledgementPublisher acknowledgementPublisher,
             List<InboundProcessingStrategy> strategies
     ) {
         this.inboundAggregator = inboundAggregator;
-        this.mqttClientRegistry = mqttClientRegistry;
-        this.objectMapper = objectMapper;
-        this.aiidaId = applicationInformationService.applicationInformation().aiidaId();
-        this.strategies = strategiesBySchema(strategies);
+        this.acknowledgementPublisher = acknowledgementPublisher;
+        this.strategies = strategies.stream()
+                                    .collect(Collectors.toMap(InboundProcessingStrategy::supportedSchema,
+                                                              strategy -> strategy));
     }
 
     @PostConstruct
@@ -75,7 +65,7 @@ public class InboundProcessingDispatcher {
         }
 
         var processingResult = process(strategy, inboundRecord);
-        publishAcknowledgement(strategy, inboundRecord, processingResult);
+        acknowledgementPublisher.publish(inboundRecord, processingResult);
     }
 
     @PreDestroy
@@ -97,52 +87,6 @@ public class InboundProcessingDispatcher {
                     "AIIDA could not process the inbound document: " + errorMessage(exception)
             );
         }
-    }
-
-    private void publishAcknowledgement(
-            InboundProcessingStrategy strategy,
-            InboundRecord inboundRecord,
-            InboundProcessingResult processingResult
-    ) {
-        var acknowledgementTopic = inboundRecord.dataSource().acknowledgementTopic();
-        if (acknowledgementTopic == null) {
-            LOGGER.debug("Skipping acknowledgement publishing because no acknowledgement topic is configured");
-            return;
-        }
-
-        var mqttClient = mqttClientRegistry.clientFor(inboundRecord.dataSource().id());
-        if (mqttClient.isEmpty()) {
-            LOGGER.debug("Skipping acknowledgement publishing because no MQTT client is registered for data source {}",
-                         inboundRecord.dataSource().id());
-            return;
-        }
-
-        try {
-            var topic = ACK_SCHEMA.buildTopicPath(acknowledgementTopic);
-            var formatter = strategy.acknowledgementFormatter(aiidaId);
-            var acknowledgementEnvelope = formatter.convert(objectMapper, inboundRecord, processingResult);
-            var payload = objectMapper.writeValueAsBytes(acknowledgementEnvelope);
-
-            LOGGER.debug("Publishing acknowledgement for record {} to topic {}", inboundRecord.id(), topic);
-            mqttClient.orElseThrow().publish(topic, payload, 0, false);
-        } catch (MqttException | RuntimeException exception) {
-            LOGGER.error("Failed to publish acknowledgement for record {}", inboundRecord.id(), exception);
-        }
-    }
-
-    private static Map<AiidaSchema, InboundProcessingStrategy> strategiesBySchema(
-            List<InboundProcessingStrategy> strategies
-    ) {
-        var strategiesBySchema = new EnumMap<AiidaSchema, InboundProcessingStrategy>(AiidaSchema.class);
-        for (var strategy : strategies) {
-            var previous = strategiesBySchema.put(strategy.supportedSchema(), strategy);
-            if (previous != null) {
-                throw new IllegalStateException(
-                        "Multiple inbound processing strategies configured for schema " + strategy.supportedSchema()
-                );
-            }
-        }
-        return Map.copyOf(strategiesBySchema);
     }
 
     private static String errorMessage(RuntimeException exception) {

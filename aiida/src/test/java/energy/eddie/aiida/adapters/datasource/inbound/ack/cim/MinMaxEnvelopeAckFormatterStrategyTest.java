@@ -3,12 +3,14 @@
 
 package energy.eddie.aiida.adapters.datasource.inbound.ack.cim;
 
+import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
@@ -26,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -42,8 +45,9 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
     private static final UUID DATA_NEED_ID = UUID.fromString("5dc71d7e-e8cd-4403-a3a8-d3c095c97a12");
 
     private final ClassLoader classLoader = getClass().getClassLoader();
-    private final MinMaxEnvelopeAckFormatterStrategy strategy = new MinMaxEnvelopeAckFormatterStrategy(AIIDA_ID);
 
+    @Mock
+    private ApplicationInformationService applicationInformationService;
     @Mock
     private Permission permission;
     @Mock
@@ -52,13 +56,18 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
     private InboundDataSource inboundDataSource;
     @Mock
     private InboundRecord inboundRecord;
-    private ObjectMapper objectMapper;
+
+    private MinMaxEnvelopeAckFormatterStrategy strategy;
 
     @BeforeEach
     void setUp() {
         var builder = JsonMapper.builder();
         new AiidaConfiguration().objectMapperCustomizer().customize(builder);
-        objectMapper = builder.build();
+        ObjectMapper objectMapper = builder.build();
+
+        when(applicationInformationService.applicationInformation())
+                .thenReturn(new ApplicationInformation(AIIDA_ID, Instant.EPOCH));
+        strategy = new MinMaxEnvelopeAckFormatterStrategy(applicationInformationService, objectMapper);
 
         when(inboundRecord.dataSource()).thenReturn(inboundDataSource);
 
@@ -99,7 +108,7 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
                     .collect(Collectors.joining("\n"));
 
             // When
-            var envelope = strategy.convert(objectMapper, inboundRecord, InboundProcessingResult.accepted());
+            var envelope = strategy.convert(inboundRecord, InboundProcessingResult.accepted());
 
             // Then
             var bytes = serde.serialize(envelope);
@@ -123,7 +132,6 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
         when(inboundRecord.payload()).thenReturn("{");
 
         var envelope = strategy.convert(
-                objectMapper,
                 inboundRecord,
                 InboundProcessingResult.rejected("The connection limit document is malformed")
         );
@@ -145,7 +153,6 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
         when(inboundRecord.payload()).thenReturn(payload);
 
         var envelope = strategy.convert(
-                objectMapper,
                 inboundRecord,
                 InboundProcessingResult.rejected("Document meter id meter-2 does not match permission meter id meter-1")
         );
