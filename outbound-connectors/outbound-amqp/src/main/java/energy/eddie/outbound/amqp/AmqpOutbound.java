@@ -19,12 +19,15 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import energy.eddie.outbound.shared.TopicStructure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.Disposable;
+import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 
 import java.util.Map;
@@ -37,6 +40,7 @@ public class AmqpOutbound implements AutoCloseable {
     private final Publisher publisher;
     private final MessageSerde serde;
     private final TopicConfiguration config;
+    private final Disposable.Composite vhdSubscriptions = Disposables.composite();
 
     public AmqpOutbound(Connection connection, MessageSerde serde, TopicConfiguration config) {
         publisher = connection.publisherBuilder().build();
@@ -96,7 +100,17 @@ public class AmqpOutbound implements AutoCloseable {
 
     @Override
     public void close() {
+        vhdSubscriptions.dispose();
         publisher.close();
+    }
+
+    @MessageStream(Envelope.class)
+    public void setValidatedHistoricalDataV112Stream(Flux<Envelope> stream) {
+        vhdSubscriptions.add(stream.subscribe(
+                publish(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
+                        AmqpOutbound::toHeaders),
+                error -> LOGGER.warn("Historical data stream failed", error)
+        ));
     }
 
     @MessageStream(VHDEnvelope.class)
@@ -205,6 +219,15 @@ public class AmqpOutbound implements AutoCloseable {
     }
 
     private static Map<String, String> toHeaders(RECMMOEEnvelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(Envelope envelope) {
         var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
         return toHeaders(
                 metaInformation.getRequestPermissionId(),

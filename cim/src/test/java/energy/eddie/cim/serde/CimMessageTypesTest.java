@@ -29,6 +29,8 @@ class CimMessageTypesTest {
         assertEquals(VHDEnvelope.class, CimMessageTypes.VALIDATED_HISTORICAL_DATA_V1_04.messageClass());
         assertEquals(RTDEnvelope.class, CimMessageTypes.REAL_TIME_DATA_V1_04.messageClass());
         assertEquals(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class, CimMessageTypes.REAL_TIME_DATA_V1_12.messageClass());
+        assertEquals(energy.eddie.cim.v1_12.vhd.Envelope.class,
+                     CimMessageTypes.VALIDATED_HISTORICAL_DATA_V1_12.messageClass());
         assertEquals(AcknowledgementEnvelope.class, CimMessageTypes.ACKNOWLEDGEMENT_V1_12.messageClass());
         assertEquals(ESRDMDEnvelope.class, CimMessageTypes.ENERGY_SHARING_REFERENCE_DATA_V1_12.messageClass());
         assertEquals(RECMMOEEnvelope.class,

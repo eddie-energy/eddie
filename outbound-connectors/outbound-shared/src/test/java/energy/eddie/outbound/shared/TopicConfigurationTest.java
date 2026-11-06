@@ -149,4 +149,9 @@ class TopicConfigurationTest {
         // Then
         assertEquals("ep.e123.agnostic.opaque-envelope", res);
     }
+    @Test
+    void historicalDataV112UsesVersionedDestination() {
+        assertEquals("ep.e123.cim_1_12.validated-historical-data-md",
+                config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12));
+    }
 }

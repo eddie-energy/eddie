@@ -29,6 +29,7 @@ public enum CimMessageTypes implements MessageType {
     VALIDATED_HISTORICAL_DATA_V1_04(VHDEnvelope.class),
     REAL_TIME_DATA_V1_04(RTDEnvelope.class),
     // CIM v1.12
+    VALIDATED_HISTORICAL_DATA_V1_12(energy.eddie.cim.v1_12.vhd.Envelope.class),
     REAL_TIME_DATA_V1_12(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class),
     ACKNOWLEDGEMENT_V1_12(AcknowledgementEnvelope.class),
     ENERGY_SHARING_REFERENCE_DATA_V1_12(ESRDMDEnvelope.class),

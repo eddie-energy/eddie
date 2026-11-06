@@ -17,6 +17,8 @@ import energy.eddie.cim.v1_12.recmmoe.MessageDocumentHeader;
 import energy.eddie.cim.v1_12.recmmoe.MetaInformation;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
+import energy.eddie.outbound.shared.Headers;
 import energy.eddie.outbound.shared.TopicConfiguration;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.Tag;
@@ -29,7 +31,9 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.core.publisher.Flux;
+import reactor.test.publisher.TestPublisher;
 
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -381,5 +385,44 @@ class KafkaConnectorTest {
 
         // Then
         assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void historicalDataV112UsesTopicAndNestedPermissionHeaders() {
+        var envelope = new Envelope().withMessageDocumentHeader(
+                new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader().withMetaInformation(
+                        new energy.eddie.cim.v1_12.vhd.MetaInformation().withRequestPermissionId("pid")
+                                .withConnectionId("cid").withDataNeedId("dnid")));
+        var props = KafkaTestUtils.consumerProps(embeddedKafka, "historical-v112", true);
+        try (var consumer = new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new StringDeserializer()).createConsumer()) {
+            consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.validated-historical-data-md"));
+            kafkaConnector.setValidatedHistoricalDataV112Stream(Flux.just(envelope));
+            var records = KafkaTestUtils.getRecords(consumer);
+            assertThat(records).hasSize(1);
+            var record = records.iterator().next();
+            assertThat(record.key()).isEqualTo("cid");
+            assertThat(record.value()).contains("requestPermissionId", "pid", "dnid");
+            var permissionHeader = record.headers().lastHeader(Headers.PERMISSION_ID).value();
+            assertThat(new String(permissionHeader, StandardCharsets.UTF_8)).isEqualTo("pid");
+        }
+    }
+
+
+    @Test
+    void closingHistoricalDataStreamCancelsAllOwnedSubscriptions() {
+        var first = TestPublisher.<Envelope>create();
+        var second = TestPublisher.<Envelope>create();
+        kafkaConnector.setValidatedHistoricalDataV112Stream(first.flux());
+        kafkaConnector.setValidatedHistoricalDataV112Stream(second.flux());
+        first.assertSubscribers(1);
+        second.assertSubscribers(1);
+
+        kafkaConnector.closeHistoricalDataStream();
+
+        first.assertCancelled();
+        second.assertCancelled();
+        var late = TestPublisher.<Envelope>create();
+        kafkaConnector.setValidatedHistoricalDataV112Stream(late.flux());
+        late.assertCancelled();
     }
 }

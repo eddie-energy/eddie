@@ -8,6 +8,10 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
+import energy.eddie.cim.v1_12.vhd.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.vhd.MetaInformation;
+import energy.eddie.cim.v1_12.vhd.VHDMarketDocument;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v1_12.*;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.*;
@@ -19,6 +23,7 @@ import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebS
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -28,6 +33,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -49,6 +55,9 @@ class CimControllerTest {
     private MinMaxEnvelopeMarketDocumentRepository minMaxRepository;
     @MockitoBean
     private RequestPermissionMarketDocumentRepository rpmdRepository;
+
+    @MockitoBean
+    private ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
 
     @Test
     void nearRealTimeDataMdSSE_returnsDocuments() {
@@ -303,5 +312,88 @@ class CimControllerTest {
         StepVerifier.create(result)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+    @Test
+    void validatedHistoricalDataMdSSE_returnsDocuments() {
+        var message1 = new Envelope();
+        var message2 = new Envelope();
+
+        given(cimConnector.getValidatedHistoricalDataMarketDocumentStream())
+                .willReturn(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(Envelope.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+
+    @Test
+    void validatedHistoricalDataMd_returnsDocuments() {
+        var msg = new ValidatedHistoricalDataMarketDocumentModel(historicalMessage());
+        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(MediaType.APPLICATION_JSON)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(new ParameterizedTypeReference<List<Envelope>>() {})
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .assertNext(documents -> {
+                        assertEquals(1, documents.size());
+                        var document = documents.getFirst();
+                        assertEquals("pid", document.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId());
+                        assertEquals("historical-document", document.getVHDMarketDocument().getMRID());
+                    })
+                    .verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataLiveXmlPreservesNestedPermission() {
+        var message = historicalMessage();
+        given(cimConnector.getValidatedHistoricalDataMarketDocumentStream()).willReturn(Flux.just(message));
+        var result = webTestClient.get().uri("/cim_1_12/validated-historical-data-md")
+                .accept(MediaType.parseMediaType(energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE))
+                .exchange().expectStatus().isOk().returnResult(String.class).getResponseBody();
+        StepVerifier.create(result).assertNext(xml -> {
+            assertTrue(xml.contains("requestPermissionId"));
+            assertTrue(xml.contains("pid"));
+            assertTrue(xml.contains("CEEDS_ValidatedHistoricalDataDocument_v1.12.38"));
+        }).verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataStoredJsonPreservesNestedPermission() {
+        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+                .willReturn(List.of(new ValidatedHistoricalDataMarketDocumentModel(historicalMessage())));
+        webTestClient.get().uri("/cim_1_12/validated-historical-data-md?permissionId=pid")
+                .accept(MediaType.APPLICATION_JSON).exchange().expectStatus().isOk()
+                .expectBody(String.class).value(json -> {
+                    assertTrue(json.contains("requestPermissionId"));
+                    assertTrue(json.contains("pid"));
+                });
+    }
+
+    private static Envelope historicalMessage() {
+        return new Envelope().withVHDMarketDocument(
+                new VHDMarketDocument().withMRID("historical-document")
+        ).withMessageDocumentHeader(
+                new MessageDocumentHeader().withMetaInformation(
+                        new MetaInformation().withRequestPermissionId("pid")
+                                .withConnectionId("cid").withDataNeedId("dnid").withRegionCountry("AT").withRegionConnector("at-eda")));
     }
 }

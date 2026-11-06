@@ -14,6 +14,7 @@ import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import energy.eddie.outbound.rest.connectors.AgnosticConnector;
 import energy.eddie.outbound.rest.model.ConnectionStatusMessageModel;
@@ -79,6 +80,24 @@ public class TaskConfig {
         return new InsertionTask<>(cimConnector.getNearRealTimeDataMarketDocumentStream(),
                                    repository,
                                    energy.eddie.outbound.rest.model.cim.v1_04.NearRealTimeDataMarketDocumentModel::new);
+    }
+
+    @Bean
+    DeletionTask<energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel> vhdV112DeletionTask(
+            energy.eddie.outbound.rest.persistence.cim.v1_12.ValidatedHistoricalDataMarketDocumentRepository repository,
+            RestOutboundConnectorConfiguration config
+    ) {
+        return new DeletionTask<>(repository, config);
+    }
+
+    @Bean
+    InsertionTask<Envelope, energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel> vhdV112InsertionTask(
+            energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
+            energy.eddie.outbound.rest.persistence.cim.v1_12.ValidatedHistoricalDataMarketDocumentRepository repository
+    ) {
+        return new InsertionTask<>(cimConnector.getValidatedHistoricalDataMarketDocumentStream(),
+                                   repository,
+                                   energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel::new);
     }
 
     @Bean

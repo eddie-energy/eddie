@@ -10,9 +10,12 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import reactor.core.Disposable;
+import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Sinks;
 
@@ -38,6 +41,23 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
     private final Sinks.Many<RECMMOEEnvelope> forwardedMinMaxEnvelopeSink = Sinks.many()
                                                                                  .replay()
                                                                                  .limit(Duration.ofSeconds(10));
+
+    private final Disposable.Composite vhdSubscriptions = Disposables.composite();
+    private final Sinks.Many<Envelope> vhdSink = Sinks.many()
+                                                        .replay()
+                                                        .limit(Duration.ofSeconds(10));
+
+    public Flux<Envelope> getValidatedHistoricalDataMarketDocumentStream() {
+        return vhdSink.asFlux();
+    }
+
+    @MessageStream(Envelope.class)
+    public void setValidatedHistoricalDataMarketDocumentStream(Flux<Envelope> stream) {
+        vhdSubscriptions.add(stream.subscribe(
+                vhdSink::tryEmitNext,
+                error -> LOGGER.warn("Historical data stream failed", error)
+        ));
+    }
 
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentStream() {
         return rtdSink.asFlux();
@@ -121,6 +141,8 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
 
     @Override
     public void close() {
+        vhdSubscriptions.dispose();
+        vhdSink.tryEmitComplete();
         rtdSink.tryEmitComplete();
         ackSink.tryEmitComplete();
         minMaxEnvelopeSink.tryEmitComplete();

@@ -8,6 +8,7 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.rest.dto.v1_12.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -1621,5 +1622,22 @@ public interface CimSwagger {
             @RequestParam(required = false) Optional<String> regionConnectorId,
             @RequestParam(required = false) Optional<ZonedDateTime> from,
             @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
+
+    @Operation(summary = "Stream CIM 1.12 validated historical data as JSON")
+    ResponseEntity<Flux<Envelope>> validatedHistoricalDataMdSSE();
+
+    @Operation(summary = "Stream CIM 1.12 validated historical data as XML")
+    ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML();
+
+    @Operation(summary = "Retrieve stored CIM 1.12 validated historical data as JSON or XML")
+    ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
+            Optional<String> permissionId,
+            Optional<String> connectionId,
+            Optional<String> dataNeedId,
+            Optional<String> countryCode,
+            Optional<String> regionConnectorId,
+            Optional<ZonedDateTime> from,
+            Optional<ZonedDateTime> to
     );
 }
