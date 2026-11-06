@@ -94,6 +94,12 @@ local.properties
 # Ignore Gradle project-specific cache directory
 .gradle
 
+# Ignore Kotlin build output
+.kotlin
+
+# Ignore Trivy cache in the workspace
+.cache/trivy/
+
 # Ignore Gradle build output directory
 build
 
