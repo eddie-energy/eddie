@@ -53,7 +53,9 @@ class ValidatedHistoricalDataV112ConverterTest {
         for (var format : new String[]{"xml", "json"}) {
             var serde = new DefaultSerdeFactory().create(format);
             var bytes = serde.serialize(converted);
-            if (format.equals("xml")) { assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(bytes)); }
+            if (format.equals("xml")) {
+                assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(bytes));
+            }
             var roundTrip = serde.deserialize(bytes, energy.eddie.cim.v1_12.vhd.Envelope.class);
             assertArrayEquals(bytes, serde.serialize(roundTrip));
         }

@@ -6,10 +6,10 @@ package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.vhd.Envelope;
-import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
+import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -19,7 +19,6 @@ import reactor.core.publisher.Flux;
 public class FluviusValidatedHistoricalDataMarketDocumentProvider {
     private final Flux<VHDEnvelope> validatedHistoricalData;
 
-    private final Flux<IdentifiableMeteringData> identifiableMeterReadings;
     private final FluviusOAuthConfiguration fluviusConfig;
 
     public FluviusValidatedHistoricalDataMarketDocumentProvider(
@@ -27,9 +26,11 @@ public class FluviusValidatedHistoricalDataMarketDocumentProvider {
             IdentifiableDataStreams identifiableDataStreams
     ) {
         this.fluviusConfig = fluviusConfig;
-        this.identifiableMeterReadings = identifiableDataStreams.getMeteringData();
-        this.validatedHistoricalData = identifiableMeterReadings.map(this::getIntermediateVHD)
-                                        .mapNotNull(IntermediateValidatedHistoricalDocument::toVHD).share();
+        var identifiableMeterReadings = identifiableDataStreams.getMeteringData();
+        this.validatedHistoricalData = identifiableMeterReadings
+                .map(this::getIntermediateVHD)
+                .mapNotNull(IntermediateValidatedHistoricalDocument::toVHD)
+                .share();
     }
 
     @MessageStream(VHDEnvelope.class)
@@ -37,12 +38,12 @@ public class FluviusValidatedHistoricalDataMarketDocumentProvider {
         return validatedHistoricalData;
     }
 
-    private IntermediateValidatedHistoricalDocument getIntermediateVHD(IdentifiableMeteringData identifiableMeteringData) {
-        return new IntermediateValidatedHistoricalDocument(fluviusConfig, identifiableMeteringData);
-    }
-
     @MessageStream(Envelope.class)
     public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
         return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
+    }
+
+    private IntermediateValidatedHistoricalDocument getIntermediateVHD(IdentifiableMeteringData identifiableMeteringData) {
+        return new IntermediateValidatedHistoricalDocument(fluviusConfig, identifiableMeteringData);
     }
 }

@@ -8,9 +8,11 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
+import reactor.test.publisher.TestPublisher;
 
 class CimConnectorTest {
     private final CimConnector connector = new CimConnector();
@@ -103,12 +105,13 @@ class CimConnectorTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
-    @org.junit.jupiter.api.Test
+
+    @Test
     void historicalDataStreamDisposesUpstreamAndCompletesSinkOnClose() {
-        var publisher = reactor.test.publisher.TestPublisher.<energy.eddie.cim.v1_12.vhd.Envelope>create();
+        var publisher = TestPublisher.<Envelope>create();
         connector.setValidatedHistoricalDataMarketDocumentStream(publisher.flux());
-        var message = new energy.eddie.cim.v1_12.vhd.Envelope();
-        reactor.test.StepVerifier.create(connector.getValidatedHistoricalDataMarketDocumentStream())
+        var message = new Envelope();
+        StepVerifier.create(connector.getValidatedHistoricalDataMarketDocumentStream())
                 .then(() -> publisher.next(message)).expectNext(message).then(connector::close).verifyComplete();
         publisher.assertCancelled();
     }

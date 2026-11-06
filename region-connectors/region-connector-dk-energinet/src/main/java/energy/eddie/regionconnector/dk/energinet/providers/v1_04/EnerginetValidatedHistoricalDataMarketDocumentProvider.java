@@ -7,9 +7,9 @@ import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.vhd.Envelope;
-import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +28,19 @@ public class EnerginetValidatedHistoricalDataMarketDocumentProvider {
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
         this.eddieValidatedHistoricalDataMarketDocumentFlux = streams.getValidatedHistoricalDataStream()
-                                                                     .mapNotNull(this::mapToValidatedHistoricalMarketDocument)
-                                                                     .share();
+                .mapNotNull(this::mapToValidatedHistoricalMarketDocument)
+                .share();
         this.cimConfig = cimConfig;
     }
 
     @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return eddieValidatedHistoricalDataMarketDocumentFlux;
+    }
+
+    @MessageStream(Envelope.class)
+    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
+        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 
     @Nullable
@@ -48,10 +53,5 @@ public class EnerginetValidatedHistoricalDataMarketDocumentProvider {
             LOGGER.error("Failed to map to validated historical market document", e);
             return null;
         }
-    }
-
-    @MessageStream(Envelope.class)
-    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
-        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 }

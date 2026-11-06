@@ -7,9 +7,9 @@ import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.vhd.Envelope;
-import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
+import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -29,12 +29,18 @@ public class EdaValidatedHistoricalDataMarketDocumentProvider {
     ) {
         this.cimConfig = cimConfig;
         this.flux = streams.consumptionRecordStream()
-                           .flatMapIterable(this::getToVhd).share();
+                .flatMapIterable(this::getToVhd)
+                .share();
     }
 
     @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return flux;
+    }
+
+    @MessageStream(Envelope.class)
+    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
+        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 
     private Iterable<VHDEnvelope> getToVhd(IdentifiableConsumptionRecord consumptionRecord) {
@@ -44,10 +50,5 @@ public class EdaValidatedHistoricalDataMarketDocumentProvider {
             LOGGER.warn("Caught exception when mapping consumption record to VHD", e);
         }
         return List.of();
-    }
-
-    @MessageStream(Envelope.class)
-    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
-        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 }

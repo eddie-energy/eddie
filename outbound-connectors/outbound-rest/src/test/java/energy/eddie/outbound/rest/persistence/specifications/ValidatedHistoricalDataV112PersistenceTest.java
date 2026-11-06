@@ -5,10 +5,11 @@ package energy.eddie.outbound.rest.persistence.specifications;
 
 import energy.eddie.cim.v1_12.vhd.*;
 import energy.eddie.outbound.rest.RestTestConfig;
-import energy.eddie.outbound.rest.persistence.PersistenceConfig;
 import energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel;
+import energy.eddie.outbound.rest.persistence.PersistenceConfig;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.ValidatedHistoricalDataMarketDocumentRepository;
 import energy.eddie.outbound.rest.tasks.InsertionTask;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -20,9 +21,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import reactor.core.publisher.Flux;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
@@ -38,7 +43,7 @@ class ValidatedHistoricalDataV112PersistenceTest {
     private ValidatedHistoricalDataMarketDocumentRepository repository;
 
     @Autowired
-    private jakarta.persistence.EntityManager entityManager;
+    private EntityManager entityManager;
 
     @Test
     void insertsFiltersEachNestedMetadataFieldAndDeletesByRetentionTime() {
@@ -50,27 +55,41 @@ class ValidatedHistoricalDataV112PersistenceTest {
             assertThat(repository.findAll()).hasSize(1);
             for (int index = 0; index < 7; index++) {
                 var matching = List.of("pid", "cid", "dnid", "at", "at-eda");
-                var params = new java.util.ArrayList<Optional<String>>(java.util.Collections.nCopies(5, Optional.empty()));
+                var params = new ArrayList<Optional<String>>(Collections.nCopies(5, Optional.empty()));
                 Optional<ZonedDateTime> from = Optional.empty();
                 Optional<ZonedDateTime> to = Optional.empty();
-                if (index < 5) { params.set(index, Optional.of(matching.get(index))); }
-                if (index == 5) { from = Optional.of(ZonedDateTime.now(java.time.ZoneOffset.UTC).minusHours(1)); }
-                if (index == 6) { to = Optional.of(ZonedDateTime.now(java.time.ZoneOffset.UTC).plusHours(1)); }
+                if (index < 5) {
+                    params.set(index, Optional.of(matching.get(index)));
+                }
+                if (index == 5) {
+                    from = Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusHours(1));
+                }
+                if (index == 6) {
+                    to = Optional.of(ZonedDateTime.now(ZoneOffset.UTC).plusHours(1));
+                }
                 var query = CimSpecification.<ValidatedHistoricalDataMarketDocumentModel>buildQueryForV1_12(
                         params.get(0), params.get(1), params.get(2), params.get(3), params.get(4), from, to);
                 assertThat(repository.findAll(query)).hasSize(1);
-                if (index < 5) { params.set(index, Optional.of("missing")); }
-                if (index == 5) { from = Optional.of(ZonedDateTime.now(java.time.ZoneOffset.UTC).plusHours(1)); }
-                if (index == 6) { to = Optional.of(ZonedDateTime.now(java.time.ZoneOffset.UTC).minusHours(1)); }
+                if (index < 5) {
+                    params.set(index, Optional.of("missing"));
+                }
+                if (index == 5) {
+                    from = Optional.of(ZonedDateTime.now(ZoneOffset.UTC).plusHours(1));
+                }
+                if (index == 6) {
+                    to = Optional.of(ZonedDateTime.now(ZoneOffset.UTC).minusHours(1));
+                }
                 var mismatch = CimSpecification.<ValidatedHistoricalDataMarketDocumentModel>buildQueryForV1_12(
                         params.get(0), params.get(1), params.get(2), params.get(3), params.get(4), from, to);
                 assertThat(repository.findAll(mismatch)).isEmpty();
             }
             entityManager.clear();
-            repository.delete(InsertionTimeSpecification.insertedBeforeEquals(ZonedDateTime.now(java.time.ZoneOffset.UTC).minusHours(1)));
+            var beforeRetention = ZonedDateTime.now(ZoneOffset.UTC).minusHours(1);
+            repository.delete(InsertionTimeSpecification.insertedBeforeEquals(beforeRetention));
             assertThat(repository.count()).isEqualTo(1);
             entityManager.clear();
-            repository.delete(InsertionTimeSpecification.insertedBeforeEquals(ZonedDateTime.now(java.time.ZoneOffset.UTC).plusHours(1)));
+            var afterRetention = ZonedDateTime.now(ZoneOffset.UTC).plusHours(1);
+            repository.delete(InsertionTimeSpecification.insertedBeforeEquals(afterRetention));
             assertThat(repository.count()).isZero();
         }
     }

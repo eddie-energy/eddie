@@ -8,6 +8,7 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.dto.v1_12.*;
 import energy.eddie.outbound.rest.model.cim.v1_12.*;
@@ -64,7 +65,7 @@ public class CimController implements CimSwagger {
 
     @Override
     @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<Flux<energy.eddie.cim.v1_12.vhd.Envelope>> validatedHistoricalDataMdSSE() {
+    public ResponseEntity<Flux<Envelope>> validatedHistoricalDataMdSSE() {
         return eventStream.toJson(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
     }
 

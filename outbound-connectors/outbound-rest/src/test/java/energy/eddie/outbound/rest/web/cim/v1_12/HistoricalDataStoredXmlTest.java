@@ -12,30 +12,48 @@ import energy.eddie.outbound.rest.persistence.cim.v1_12.*;
 import energy.eddie.outbound.rest.web.EventStream;
 import energy.eddie.outbound.rest.web.FallbackXmlMessageConverter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.xml.JacksonXmlHttpMessageConverter;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import tools.jackson.dataformat.xml.XmlMapper;
+
 import java.util.List;
-import static org.mockito.ArgumentMatchers.any;
+
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.hamcrest.Matchers.containsString;
 
+@ExtendWith(MockitoExtension.class)
 class HistoricalDataStoredXmlTest {
+    @Mock
+    private ValidatedHistoricalDataMarketDocumentRepository repository;
+    @Mock
+    private NearRealTimeDataMarketDocumentRepository rtdRepository;
+    @Mock
+    private AcknowledgementMarketDocumentRepository ackRepository;
+    @Mock
+    private EnergySharingReferenceDataMarketDocumentRepository esrRepository;
+    @Mock
+    private MinMaxEnvelopeMarketDocumentRepository minMaxRepository;
+    @Mock
+    private RequestPermissionMarketDocumentRepository rpmdRepository;
+
     @Test
     void storedXmlUsesRegisteredCimCollectionAndExactVersionedEndpoint() throws Exception {
-        var repository = mock(ValidatedHistoricalDataMarketDocumentRepository.class);
         var envelope = new Envelope().withMessageDocumentHeader(new MessageDocumentHeader().withMetaInformation(
                 new MetaInformation().withRequestPermissionId("pid").withConnectionId("cid").withDataNeedId("dnid")));
-        when(repository.findAll(org.mockito.ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+        when(repository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
                 .thenReturn(List.of(new ValidatedHistoricalDataMarketDocumentModel(envelope)));
-        var controller = new CimController(new CimConnector(), mock(NearRealTimeDataMarketDocumentRepository.class),
-                mock(AcknowledgementMarketDocumentRepository.class), mock(EnergySharingReferenceDataMarketDocumentRepository.class),
-                mock(MinMaxEnvelopeMarketDocumentRepository.class), mock(RequestPermissionMarketDocumentRepository.class),
-                repository, new EventStream());
+        var controller = new CimController(
+                new CimConnector(), rtdRepository, ackRepository, esrRepository, minMaxRepository, rpmdRepository,
+                repository, new EventStream()
+        );
         var converter = new FallbackXmlMessageConverter(new JacksonXmlHttpMessageConverter(XmlMapper.builder().build()));
         var client = MockMvcBuilders.standaloneSetup(controller).setMessageConverters(converter).build();
         client.perform(get("/cim_1_12/validated-historical-data-md").param("permissionId", "pid").accept(MediaType.APPLICATION_XML))
@@ -43,6 +61,6 @@ class HistoricalDataStoredXmlTest {
                 .andExpect(content().string(containsString("ValidatedHistoricalDataMarketDocuments")))
                 .andExpect(content().string(containsString("CEEDS_ValidatedHistoricalDataDocument_v1.12.38")))
                 .andExpect(content().string(containsString("requestPermissionId>pid")));
-        verify(repository).findAll(any(PredicateSpecification.class));
+        verify(repository).findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any());
     }
 }

@@ -3,9 +3,9 @@
 
 package energy.eddie.regionconnector.shared.cim.v1_12;
 
-import org.jspecify.annotations.Nullable;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.cim.v1_12.vhd.*;
+import org.jspecify.annotations.Nullable;
 
 /** Converts existing historical measurements without requesting or manufacturing provider data. */
 public final class ValidatedHistoricalDataV112Converter {
@@ -42,10 +42,14 @@ public final class ValidatedHistoricalDataV112Converter {
         var target = new Point();
         target.setPosition(source.getPosition());
         target.setEnergyQuantityQuantity(source.getEnergyQuantityQuantity());
-        target.setEnergyQuantityType(source.getEnergyQuantityType() == null ? null : source.getEnergyQuantityType().value());
+        var energyQuantityType = source.getEnergyQuantityType();
+        target.setEnergyQuantityType(energyQuantityType == null ? null : energyQuantityType.value());
         target.setEnergyQuantityQuality(source.getEnergyQuantityQuality());
         target.setEnergyQualityQuantityQuantity(source.getEnergyQualityQuantityQuantity());
-        target.setEnergyQualityQuantityType(source.getEnergyQualityQuantityType() == null ? null : source.getEnergyQualityQuantityType().value());
+        var energyQualityQuantityType = source.getEnergyQualityQuantityType();
+        target.setEnergyQualityQuantityType(
+                energyQualityQuantityType == null ? null : energyQualityQuantityType.value()
+        );
         target.setEnergyQualityQuantityQuality(source.getEnergyQualityQuantityQuality());
         return target;
     }
@@ -67,7 +71,10 @@ public final class ValidatedHistoricalDataV112Converter {
         var target = new SeriesPeriod();
         target.setResolution(source.getResolution());
         target.setTimeInterval(convert(source.getTimeInterval()));
-        target.getPoints().addAll(source.getPoints().stream().map(ValidatedHistoricalDataV112Converter::convert).toList());
+        var convertedPoints = source.getPoints().stream()
+                .map(ValidatedHistoricalDataV112Converter::convert)
+                .toList();
+        target.getPoints().addAll(convertedPoints);
         target.setReasonCode(source.getReasonCode());
         target.setReasonText(source.getReasonText());
         return target;
@@ -114,24 +121,48 @@ public final class ValidatedHistoricalDataV112Converter {
         target.setProduct(source.getProduct());
         target.setEnergyMeasurementUnitName(source.getEnergyMeasurementUnitName());
         target.setFlowDirectionDirection(source.getFlowDirectionDirection());
-        target.getSeriesPeriods().addAll(source.getPeriods().stream().map(ValidatedHistoricalDataV112Converter::convert).toList());
+        var convertedSeriesPeriods = source.getPeriods().stream()
+                .map(ValidatedHistoricalDataV112Converter::convert)
+                .toList();
+        target.getSeriesPeriods().addAll(convertedSeriesPeriods);
         target.setRegisteredResourceMRID(convert(source.getRegisteredResourceMRID()));
         target.setRegisteredResourceName(source.getRegisteredResourceName());
         target.setRegisteredResourceDescription(source.getRegisteredResourceDescription());
         target.setRegisteredResourceFuelFuel(source.getRegisteredResourceFuelFuel());
         target.setRegisteredResourceLocationMRID(source.getRegisteredResourceLocationMRID());
-        target.setRegisteredResourceLocationGeometryCoordinateSystemCrsUrn(source.getRegisteredResourceLocationCoordinateSystemCrsUrn());
-        target.setRegisteredResourceLocationGeometryPositionPointXPosition(source.getRegisteredResourceLocationPositionPointsXPosition());
-        target.setRegisteredResourceLocationGeometryPositionPointYPosition(source.getRegisteredResourceLocationPositionPointsYPosition());
-        target.setRegisteredResourceLocationGeometryPositionPointZPosition(source.getRegisteredResourceLocationPositionPointsZPosition());
+        target.setRegisteredResourceLocationGeometryCoordinateSystemCrsUrn(
+                source.getRegisteredResourceLocationCoordinateSystemCrsUrn()
+        );
+        target.setRegisteredResourceLocationGeometryPositionPointXPosition(
+                source.getRegisteredResourceLocationPositionPointsXPosition()
+        );
+        target.setRegisteredResourceLocationGeometryPositionPointYPosition(
+                source.getRegisteredResourceLocationPositionPointsYPosition()
+        );
+        target.setRegisteredResourceLocationGeometryPositionPointZPosition(
+                source.getRegisteredResourceLocationPositionPointsZPosition()
+        );
         target.setRegisteredResourcePSRTypePsrType(source.getRegisteredResourcePSRTypePsrType());
         target.setAccountingPointMRID(convert(source.getMarketEvaluationPointMRID()));
         target.setAccountingPointMeterReadingsMRID(convert(source.getMarketEvaluationPointMeterReadingsMRID()));
-        target.setAccountingPointMeterReadingsReadingsMRID(convert(source.getMarketEvaluationPointMeterReadingsReadingsMRID()));
-        target.setAccountingPointMeterReadingsReadingsReadingTypeAccumulation(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulation() == null ? null : AccumulationKind.fromValue(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulation().value()));
-        target.setAccountingPointMeterReadingsReadingsReadingTypeAggregate(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate() == null ? null : AggregateKind.fromValue(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate().value()));
-        target.setAccountingPointMeterReadingsReadingsReadingTypeCommodity(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity() == null ? null : CommodityKind.fromValue(source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity().value()));
-        target.setAccountingPointUsagePointLocationGeoInfoReference(source.getMarketEvaluationPointUsagePointLocationGeoInfoReference());
+        target.setAccountingPointMeterReadingsReadingsMRID(
+                convert(source.getMarketEvaluationPointMeterReadingsReadingsMRID())
+        );
+        var accumulation = source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAccumulation();
+        target.setAccountingPointMeterReadingsReadingsReadingTypeAccumulation(
+                accumulation == null ? null : AccumulationKind.fromValue(accumulation.value())
+        );
+        var aggregate = source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeAggregate();
+        target.setAccountingPointMeterReadingsReadingsReadingTypeAggregate(
+                aggregate == null ? null : AggregateKind.fromValue(aggregate.value())
+        );
+        var commodity = source.getMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity();
+        target.setAccountingPointMeterReadingsReadingsReadingTypeCommodity(
+                commodity == null ? null : CommodityKind.fromValue(commodity.value())
+        );
+        target.setAccountingPointUsagePointLocationGeoInfoReference(
+                source.getMarketEvaluationPointUsagePointLocationGeoInfoReference()
+        );
         target.setReasonCode(source.getReasonCode());
         target.setReasonText(source.getReasonText());
         target.setEnergyQualityMeasurementUnitName(source.getEnergyQualityMeasurementUnitName());
@@ -154,7 +185,10 @@ public final class ValidatedHistoricalDataV112Converter {
         target.setReceiverMarketParticipantMRID(convert(source.getReceiverMarketParticipantMRID()));
         target.setReceiverMarketParticipantMarketRoleType(source.getReceiverMarketParticipantMarketRoleType());
         target.setProcessProcessType(source.getProcessProcessType());
-        target.getTimeSeries().addAll(source.getTimeSeries().stream().map(ValidatedHistoricalDataV112Converter::convert).toList());
+        var convertedTimeSeries = source.getTimeSeries().stream()
+                .map(ValidatedHistoricalDataV112Converter::convert)
+                .toList();
+        target.getTimeSeries().addAll(convertedTimeSeries);
         return target;
     }
 }
