@@ -38,6 +38,7 @@ public class RestCimConfig {
                         energy.eddie.outbound.rest.dto.v1_04.NearRealTimeDataMarketDocuments.class),
                 // CIM v1.12
                 List.of(energy.eddie.cim.v1_12.rtd.RTDEnvelope.class, NearRealTimeDataMarketDocuments.class),
+                List.of(energy.eddie.cim.v1_12.vhd.Envelope.class, energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments.class),
                 List.of(energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope.class, AcknowledgementMarketDocuments.class),
                 List.of(energy.eddie.cim.v1_12.esr.ESRDMDEnvelope.class,
                         EnergySharingReferenceDataMarketDocuments.class),

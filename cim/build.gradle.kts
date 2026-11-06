@@ -87,6 +87,7 @@ val generateCIMSchemaClasses = tasks.register<GenerateCimSchemaClassesTask>("gen
         "v1_04/pmd/Permission Document_v1.04_annotated.xsd",
         "v1_04/ap/AccountingPointData Document_v1.04_annotated.xsd",
         // V1.12
+        "v1_12/vhd/CEEDS_ValidatedHistoricalDataDocument_v1.12.38.xsd",
         "v1_12/rtd/RealTimeData Document_v1.12_annotated.xsd",
         "v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd",
         "v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd",

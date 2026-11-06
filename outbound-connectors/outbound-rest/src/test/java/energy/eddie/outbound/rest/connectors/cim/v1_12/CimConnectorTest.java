@@ -103,4 +103,13 @@ class CimConnectorTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
+    @org.junit.jupiter.api.Test
+    void historicalDataStreamDisposesUpstreamAndCompletesSinkOnClose() {
+        var publisher = reactor.test.publisher.TestPublisher.<energy.eddie.cim.v1_12.vhd.Envelope>create();
+        connector.setValidatedHistoricalDataMarketDocumentStream(publisher.flux());
+        var message = new energy.eddie.cim.v1_12.vhd.Envelope();
+        reactor.test.StepVerifier.create(connector.getValidatedHistoricalDataMarketDocumentStream())
+                .then(() -> publisher.next(message)).expectNext(message).then(connector::close).verifyComplete();
+        publisher.assertCancelled();
+    }
 }

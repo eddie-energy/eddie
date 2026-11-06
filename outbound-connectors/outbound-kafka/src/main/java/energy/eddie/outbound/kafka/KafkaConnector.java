@@ -96,6 +96,29 @@ public class KafkaConnector {
                 .subscribe();
     }
 
+    private final reactor.core.Disposable.Composite vhdSubscriptions = reactor.core.Disposables.composite();
+
+    @jakarta.annotation.PreDestroy
+    public void closeHistoricalDataStream() {
+        vhdSubscriptions.dispose();
+    }
+
+    @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
+    public void setValidatedHistoricalDataV112Stream(Flux<energy.eddie.cim.v1_12.vhd.Envelope> stream) {
+        vhdSubscriptions.add(stream.onBackpressureBuffer().publishOn(Schedulers.boundedElastic())
+                .doOnNext(envelope -> {
+                    var meta = envelope.getMessageDocumentHeader().getMetaInformation();
+                    var headers = List.<Header>of(new StringHeader(Headers.PERMISSION_ID, meta.getRequestPermissionId()),
+                            new StringHeader(Headers.CONNECTION_ID, meta.getConnectionId()),
+                            new StringHeader(Headers.DATA_NEED_ID, meta.getDataNeedId()));
+                    var record = new ProducerRecord<String, Object>(
+                            config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
+                            null, meta.getConnectionId(), envelope, headers);
+                    sendToKafka(record, "Could not produce CIM 1.12 historical data");
+                }).onErrorContinue(this::logStreamerError)
+                .subscribe(ignored -> { }, error -> LOGGER.warn("Historical data stream failed", error)));
+    }
+
     @MessageStream(VHDEnvelope.class)
     public void setValidatedHistoricalDataMarketDocumentStream(Flux<VHDEnvelope> marketDocumentStream) {
         marketDocumentStream

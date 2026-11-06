@@ -61,6 +61,7 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
                 () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocuments()),
                 () -> assertTrue(extension.supportsRetransmissionRequests()),
                 () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocumentsV1_04()),
+                () -> assertTrue(extension.supportsValidatedHistoricalDataMarketDocumentsV1_12()),
                 () -> assertTrue(extension.supportsNearRealTimeDataMarketDocuments()),
                 () -> assertTrue(extension.supportsEnergySharingReferenceDataMarketDocuments())
         );
@@ -101,6 +102,11 @@ class RegionConnectorSupportedFeatureExtensionWithAllBeansPresentTest {
 
                 @MessageStream(VHDEnvelope.class)
                 Flux<VHDEnvelope> vhdV104Messages() {
+                    return Flux.empty();
+                }
+
+                @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
+                Flux<energy.eddie.cim.v1_12.vhd.Envelope> historicalDataV112() {
                     return Flux.empty();
                 }
 
@@ -151,6 +157,7 @@ class RegionConnectorSupportedFeatureExtensionWithoutBeansPresentTest {
                 () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocuments()),
                 () -> assertFalse(extension.supportsRetransmissionRequests()),
                 () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocumentsV1_04()),
+                () -> assertFalse(extension.supportsValidatedHistoricalDataMarketDocumentsV1_12()),
                 () -> assertFalse(extension.supportsNearRealTimeDataMarketDocuments()),
                 () -> assertFalse(extension.supportsEnergySharingReferenceDataMarketDocuments())
         );

@@ -96,7 +96,19 @@ public class AmqpOutbound implements AutoCloseable {
 
     @Override
     public void close() {
+        vhdSubscriptions.dispose();
         publisher.close();
+    }
+
+    private final reactor.core.Disposable.Composite vhdSubscriptions = reactor.core.Disposables.composite();
+
+    @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
+    public void setValidatedHistoricalDataV112Stream(Flux<energy.eddie.cim.v1_12.vhd.Envelope> stream) {
+        vhdSubscriptions.add(stream.subscribe(publish(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
+                envelope -> {
+                    var meta = envelope.getMessageDocumentHeader().getMetaInformation();
+                    return toHeaders(meta.getRequestPermissionId(), meta.getConnectionId(), meta.getDataNeedId());
+                }), error -> LOGGER.warn("Historical data stream failed", error)));
     }
 
     @MessageStream(VHDEnvelope.class)

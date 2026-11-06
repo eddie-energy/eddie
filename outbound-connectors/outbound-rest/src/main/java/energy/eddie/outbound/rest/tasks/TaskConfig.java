@@ -82,6 +82,24 @@ public class TaskConfig {
     }
 
     @Bean
+    DeletionTask<energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel> vhdV112DeletionTask(
+            energy.eddie.outbound.rest.persistence.cim.v1_12.ValidatedHistoricalDataMarketDocumentRepository repository,
+            RestOutboundConnectorConfiguration config
+    ) {
+        return new DeletionTask<>(repository, config);
+    }
+
+    @Bean
+    InsertionTask<energy.eddie.cim.v1_12.vhd.Envelope, energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel> vhdV112InsertionTask(
+            energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector cimConnector,
+            energy.eddie.outbound.rest.persistence.cim.v1_12.ValidatedHistoricalDataMarketDocumentRepository repository
+    ) {
+        return new InsertionTask<>(cimConnector.getValidatedHistoricalDataMarketDocumentStream(),
+                                   repository,
+                                   energy.eddie.outbound.rest.model.cim.v1_12.ValidatedHistoricalDataMarketDocumentModel::new);
+    }
+
+    @Bean
     DeletionTask<energy.eddie.outbound.rest.model.cim.v1_12.NearRealTimeDataMarketDocumentModel> rtdV112DeletionTask(
             energy.eddie.outbound.rest.persistence.cim.v1_12.NearRealTimeDataMarketDocumentRepository repository,
             RestOutboundConnectorConfiguration config

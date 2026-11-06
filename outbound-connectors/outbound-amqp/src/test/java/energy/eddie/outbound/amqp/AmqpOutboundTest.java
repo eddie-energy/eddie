@@ -558,4 +558,23 @@ class AmqpOutboundTest {
         consumer.close();
         publisher.complete();
     }
+    @Test
+    void historicalDataV112UsesVersionedBindingAndNestedPermissionHeaders() throws InterruptedException {
+        var envelope = new energy.eddie.cim.v1_12.vhd.Envelope().withMessageDocumentHeader(
+                new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader().withMetaInformation(
+                        new energy.eddie.cim.v1_12.vhd.MetaInformation().withRequestPermissionId("pid")
+                                .withConnectionId("cid").withDataNeedId("dnid")));
+        var latch = new CountDownLatch(1);
+        try (var consumer = connection.consumerBuilder().queue("ep.eddie.cim_1_12.validated-historical-data-md")
+                .messageHandler((ctx, message) -> {
+                    assertEquals("pid", message.property(Headers.PERMISSION_ID));
+                    assertEquals("cid", message.property(Headers.CONNECTION_ID));
+                    assertEquals("dnid", message.property(Headers.DATA_NEED_ID));
+                    assertTrue(new String(message.body(), java.nio.charset.StandardCharsets.UTF_8).contains("requestPermissionId"));
+                    latch.countDown();
+                }).build()) {
+            amqpOutbound.setValidatedHistoricalDataV112Stream(reactor.core.publisher.Flux.just(envelope));
+            assertTrue(latch.await(5, TimeUnit.SECONDS));
+        }
+    }
 }

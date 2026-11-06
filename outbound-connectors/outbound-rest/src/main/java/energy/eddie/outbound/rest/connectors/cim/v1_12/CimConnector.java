@@ -39,6 +39,19 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
                                                                                  .replay()
                                                                                  .limit(Duration.ofSeconds(10));
 
+    private final reactor.core.Disposable.Composite vhdSubscriptions = reactor.core.Disposables.composite();
+    private final Sinks.Many<energy.eddie.cim.v1_12.vhd.Envelope> vhdSink = Sinks.many().replay().limit(Duration.ofSeconds(10));
+
+    public Flux<energy.eddie.cim.v1_12.vhd.Envelope> getValidatedHistoricalDataMarketDocumentStream() {
+        return vhdSink.asFlux();
+    }
+
+    @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
+    public void setValidatedHistoricalDataMarketDocumentStream(Flux<energy.eddie.cim.v1_12.vhd.Envelope> stream) {
+        vhdSubscriptions.add(stream.subscribe(vhdSink::tryEmitNext,
+                error -> LOGGER.warn("Historical data stream failed", error)));
+    }
+
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentStream() {
         return rtdSink.asFlux();
     }
@@ -121,6 +134,8 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
 
     @Override
     public void close() {
+        vhdSubscriptions.dispose();
+        vhdSink.tryEmitComplete();
         rtdSink.tryEmitComplete();
         ackSink.tryEmitComplete();
         minMaxEnvelopeSink.tryEmitComplete();
