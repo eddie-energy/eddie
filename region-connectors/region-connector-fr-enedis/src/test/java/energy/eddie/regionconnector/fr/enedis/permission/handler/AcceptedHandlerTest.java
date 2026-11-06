@@ -28,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 
@@ -48,14 +49,13 @@ class AcceptedHandlerTest {
         // Given
         String pid = "pid";
         String usagePointId = "usagePointId";
-        FrEnedisPermissionRequest permissionRequest = permissionRequest(Granularity.PT30M);
-        when(repository.getByPermissionId(pid)).thenReturn(permissionRequest);
 
         // When
-        eventBus.emit(new FrAcceptedEvent(pid, usagePointId));
+        eventBus.emit(new FrAcceptedEvent(pid, usagePointId, Granularity.PT30M));
 
         // Then
         verify(accountingPointDataService).fetchMeteringPointSegment(pid, usagePointId);
+        verifyNoInteractions(repository);
     }
 
     private static SimpleFrEnedisPermissionRequest permissionRequest(@Nullable Granularity granularity) {
@@ -84,7 +84,7 @@ class AcceptedHandlerTest {
         when(repository.getByPermissionId(pid)).thenReturn(permissionRequest);
 
         // When
-        eventBus.emit(new FrAcceptedEvent(pid, usagePointId));
+        eventBus.emit(new FrAcceptedEvent(pid, usagePointId, null));
 
         // Then
         verify(accountingPointDataService).fetchAccountingPointData(permissionRequest, usagePointId);
