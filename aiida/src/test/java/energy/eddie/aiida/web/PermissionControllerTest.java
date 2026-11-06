@@ -58,6 +58,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @MockitoBean(types = AuthService.class)
 @ExtendWith(MockitoExtension.class)
 class PermissionControllerTest {
+    private static final String OUTBOUND_ACCEPT_BODY = """
+            {"eddieId":"%s","handshakeUrl":"http://localhost/permission-request/{permissionId}","accessToken":"token","dataSourceId":"%s"}""";
+    private static final String INBOUND_ACCEPT_BODY = """
+            {"eddieId":"%s","handshakeUrl":"http://localhost/permission-request/{permissionId}","accessToken":"token"}""";
     private final UUID eddieId = UUID.fromString("31d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID dataSourceId = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
@@ -77,7 +81,8 @@ class PermissionControllerTest {
     void setUp() throws Exception {
         grant = Instant.now();
         var permission = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
-        when(permissionService.acceptPermission(any(), any())).thenReturn(permission);
+        when(permissionService.acceptOutboundPermission(any(), any())).thenReturn(permission);
+        when(permissionService.acceptInboundPermission(any(), any())).thenReturn(permission);
         when(permissionService.revokePermission(any())).thenReturn(permission);
         when(permissionService.updateInboundMessageFormat(any(), any())).thenReturn(permission);
         when(permissionService.updateDisplayName(any(), any())).thenReturn(permission);
@@ -395,57 +400,102 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
-    void givenValidInput_acceptPermission_callsService_andReturnsCreated() throws Exception {
+    void givenValidInput_acceptOutboundPermission_callsService_andReturnsCreated() throws Exception {
         // When
-        mockMvc.perform(post("/permissions/{permissionId}/accept", permissionId)
+        mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"eddieId\":\"" + eddieId + "\",\"handshakeUrl\":\"http://localhost/permission-request/{permissionId}\",\"accessToken\":\"token\",\"dataSourceId\":\"" + dataSourceId + "\"}"))
+                                .content(OUTBOUND_ACCEPT_BODY.formatted(eddieId, dataSourceId)))
                // Then
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.status").value("ACCEPTED"));
 
-        verify(permissionService).acceptPermission(eq(permissionId),
+        verify(permissionService).acceptOutboundPermission(eq(permissionId),
                                                    argThat(dto -> dto.eddieId().equals(eddieId)
-                                                                  && dataSourceId.equals(dto.dataSourceId())
-                                                                  && dto.accessToken().equals("token")));
+                                                                          && dataSourceId.equals(dto.dataSourceId())
+                                                                          && dto.accessToken().equals("token")));
     }
 
     @Test
     @WithMockUser
-    void givenMissingHandshakeUrl_acceptPermission_returnsBadRequest() throws Exception {
-        mockMvc.perform(post("/permissions/{permissionId}/accept", permissionId)
+    void givenValidInput_acceptInboundPermission_callsService_andReturnsCreated() throws Exception {
+        // When
+        mockMvc.perform(post("/permissions/{permissionId}/accept/inbound", permissionId)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"eddieId\":\"" + eddieId + "\",\"accessToken\":\"token\"}"))
+                                .content(INBOUND_ACCEPT_BODY.replace("\"token\"", "\"token\",\"inboundMessageFormat\":\"OPENADR_3_1\"")
+                                                            .formatted(eddieId)))
+               // Then
+               .andExpect(status().isCreated())
+               .andExpect(jsonPath("$.status").value("ACCEPTED"));
+
+        verify(permissionService).acceptInboundPermission(eq(permissionId),
+                                                   argThat(dto -> dto.eddieId().equals(eddieId)
+                                                                         && dto.inboundMessageFormat() == InboundMessageFormat.OPENADR_3_1));
+    }
+
+    @Test
+    @WithMockUser
+    void givenMissingHandshakeUrl_acceptOutboundPermission_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"eddieId\":\"" + eddieId + "\",\"accessToken\":\"token\",\"dataSourceId\":\"" + dataSourceId + "\"}"))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItem("handshakeUrl: must not be blank")));
+        verify(permissionService, never()).acceptOutboundPermission(any(), any());
     }
 
     @Test
     @WithMockUser
-    void givenMissingDataSource_acceptPermission_returnsBadRequest() throws Exception {
-        when(permissionService.acceptPermission(eq(permissionId), any()))
-                .thenThrow(new MissingDataSourceException(permissionId));
-
-        mockMvc.perform(post("/permissions/{permissionId}/accept", permissionId)
+    void givenMissingDataSource_acceptOutboundPermission_returnsBadRequest_withoutCallingService() throws Exception {
+        mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"eddieId\":\"" + eddieId + "\",\"handshakeUrl\":\"http://localhost/permission-request/{permissionId}\",\"accessToken\":\"token\",\"dataSourceId\":\"" + dataSourceId + "\"}"))
+                                .content(INBOUND_ACCEPT_BODY.formatted(eddieId)))
                .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("data source is required")));
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItem("dataSourceId: must not be null")));
+        verify(permissionService, never()).acceptOutboundPermission(any(), any());
     }
 
     @Test
     @WithMockUser
-    void givenIncompatibleDataSource_acceptPermission_returnsBadRequest() throws Exception {
-        when(permissionService.acceptPermission(eq(permissionId), any()))
+    void givenInboundPermission_acceptOutboundPermission_returnsBadRequest() throws Exception {
+        when(permissionService.acceptOutboundPermission(eq(permissionId), any()))
+                .thenThrow(new InvalidOutboundPermissionException(permissionId));
+
+        mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(OUTBOUND_ACCEPT_BODY.formatted(eddieId, dataSourceId)))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("is not an outbound permission")));
+    }
+
+    @Test
+    @WithMockUser
+    void givenOutboundPermission_acceptInboundPermission_returnsBadRequest() throws Exception {
+        when(permissionService.acceptInboundPermission(eq(permissionId), any()))
+                .thenThrow(new InvalidInboundPermissionException(permissionId));
+
+        mockMvc.perform(post("/permissions/{permissionId}/accept/inbound", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(INBOUND_ACCEPT_BODY.formatted(eddieId)))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("is not an inbound permission")));
+    }
+
+    @Test
+    @WithMockUser
+    void givenIncompatibleDataSource_acceptOutboundPermission_returnsBadRequest() throws Exception {
+        when(permissionService.acceptOutboundPermission(eq(permissionId), any()))
                 .thenThrow(new IncompatibleDataSourceException("Data source is incompatible."));
 
-        mockMvc.perform(post("/permissions/{permissionId}/accept", permissionId)
+        mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"eddieId\":\"" + eddieId + "\",\"handshakeUrl\":\"http://localhost/permission-request/{permissionId}\",\"accessToken\":\"token\",\"dataSourceId\":\"" + dataSourceId + "\"}"))
+                                .content(OUTBOUND_ACCEPT_BODY.formatted(eddieId, dataSourceId)))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("incompatible")));
@@ -453,14 +503,14 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
-    void givenDataSourceNotFound_acceptPermission_returnsNotFound() throws Exception {
-        when(permissionService.acceptPermission(eq(permissionId), any()))
+    void givenDataSourceNotFound_acceptOutboundPermission_returnsNotFound() throws Exception {
+        when(permissionService.acceptOutboundPermission(eq(permissionId), any()))
                 .thenThrow(new DataSourceNotFoundException(dataSourceId));
 
-        mockMvc.perform(post("/permissions/{permissionId}/accept", permissionId)
+        mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"eddieId\":\"" + eddieId + "\",\"handshakeUrl\":\"http://localhost/permission-request/{permissionId}\",\"accessToken\":\"token\",\"dataSourceId\":\"" + dataSourceId + "\"}"))
+                                .content(OUTBOUND_ACCEPT_BODY.formatted(eddieId, dataSourceId)))
                .andExpect(status().isNotFound())
                .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString(dataSourceId.toString())));

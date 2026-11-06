@@ -212,19 +212,36 @@ export async function rejectPermission(
   success('toasts.rejectPermission')
 }
 
-export async function acceptPermission(
+export async function acceptOutboundPermission(
   permissionId: string,
   aiidaCode: AiidaPermissionRequestsDTO,
-  dataSourceId?: string,
+  dataSourceId: string,
   displayName?: string,
 ): Promise<void> {
-  await fetch(`/permissions/${permissionId}/accept`, {
+  await fetch(`/permissions/${permissionId}/accept/outbound`, {
     method: 'POST',
     body: JSON.stringify({
       eddieId: aiidaCode.eddieId,
       handshakeUrl: aiidaCode.handshakeUrl,
       accessToken: aiidaCode.accessToken,
       dataSourceId,
+      displayName,
+    }),
+  })
+  success('toasts.acceptPermission')
+}
+
+export async function acceptInboundPermission(
+  permissionId: string,
+  aiidaCode: AiidaPermissionRequestsDTO,
+  displayName?: string,
+): Promise<void> {
+  await fetch(`/permissions/${permissionId}/accept/inbound`, {
+    method: 'POST',
+    body: JSON.stringify({
+      eddieId: aiidaCode.eddieId,
+      handshakeUrl: aiidaCode.handshakeUrl,
+      accessToken: aiidaCode.accessToken,
       displayName,
     }),
   })

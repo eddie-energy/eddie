@@ -5,7 +5,8 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
-import energy.eddie.aiida.dtos.permission.AcceptPermissionDto;
+import energy.eddie.aiida.dtos.permission.AcceptInboundPermissionDto;
+import energy.eddie.aiida.dtos.permission.AcceptOutboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.PermissionDetailsDto;
 import energy.eddie.aiida.dtos.permission.RejectPermissionDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
@@ -297,14 +298,14 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidOutboundPermission_acceptPermission_persistsAcceptedPermission_andStartsIt() throws Exception {
+    void givenValidOutboundPermission_acceptOutboundPermission_persistsAcceptedPermission_andStartsIt() throws Exception {
         // Given
         stubOutboundDataNeed();
         stubSuccessfulAccept();
         when(mockDataSource.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
 
         // When
-        service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, "My display name"));
+        service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, "My display name"));
 
         // Then
         verify(mockHandshakeService).accept(argThat(target -> target.handshakeUrl().endsWith("/" + permissionId1)));
@@ -326,7 +327,22 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenOutboundPermissionWithoutDataSource_acceptPermission_throws() throws Exception {
+    void givenInboundPermission_acceptOutboundPermission_throws() throws Exception {
+        // Given
+        stubInboundLocalDataNeed(false);
+        var details = outboundDetails(start, null, null);
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(details));
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+
+        // When, Then
+        assertThrows(InvalidOutboundPermissionException.class,
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
+        verify(mockHandshakeService, never()).accept(any());
+        verify(mockPermissionRepository, never()).save(any());
+    }
+
+    @Test
+    void givenOutboundPermission_acceptInboundPermission_throws() throws Exception {
         // Given
         stubOutboundDataNeed();
         var details = outboundDetails(start, null, null);
@@ -334,14 +350,15 @@ class PermissionServiceTest {
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
-        assertThrows(MissingDataSourceException.class,
-                     () -> service.acceptPermission(permissionId1, acceptDto(null, null, null)));
+        assertThrows(InvalidInboundPermissionException.class,
+                     () -> service.acceptInboundPermission(permissionId1,
+                                                           inboundAcceptDto(InboundMessageFormat.OPENADR_3_1)));
         verify(mockHandshakeService, never()).accept(any());
         verify(mockPermissionRepository, never()).save(any());
     }
 
     @Test
-    void givenDataSourceOfOtherUser_acceptPermission_throwsDataSourceNotFound() throws Exception {
+    void givenDataSourceOfOtherUser_acceptOutboundPermission_throwsDataSourceNotFound() throws Exception {
         // Given
         stubOutboundDataNeed();
         var details = outboundDetails(start, null, null);
@@ -351,12 +368,12 @@ class PermissionServiceTest {
 
         // When, Then
         assertThrows(DataSourceNotFoundException.class,
-                     () -> service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, null)));
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
         verify(mockHandshakeService, never()).accept(any());
     }
 
     @Test
-    void givenDataSourceWithOtherAsset_acceptPermission_throwsIncompatibleDataSource() throws Exception {
+    void givenDataSourceWithOtherAsset_acceptOutboundPermission_throwsIncompatibleDataSource() throws Exception {
         // Given
         stubOutboundDataNeed();
         var details = outboundDetails(start, null, null);
@@ -366,14 +383,14 @@ class PermissionServiceTest {
 
         // When, Then
         var exception = assertThrows(IncompatibleDataSourceException.class,
-                                     () -> service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, null)));
+                                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
         assertThat(exception.getMessage()).contains("DEDICATED-MEASUREMENT-DEVICE")
                                           .contains("CONNECTION-AGREEMENT-POINT");
         verify(mockHandshakeService, never()).accept(any());
     }
 
     @Test
-    void givenInboundDataSourceWithIncompatibleSchemas_acceptPermission_throwsIncompatibleDataSource() throws Exception {
+    void givenInboundDataSourceWithIncompatibleSchemas_acceptOutboundPermission_throwsIncompatibleDataSource() throws Exception {
         // Given
         stubOutboundDataNeed();
         var details = outboundDetails(start, null, null);
@@ -386,12 +403,12 @@ class PermissionServiceTest {
 
         // When, Then
         assertThrows(IncompatibleDataSourceException.class,
-                     () -> service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, null)));
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
         verify(mockHandshakeService, never()).accept(any());
     }
 
     @Test
-    void givenInboundDataSourceWithPartialSchemaOverlap_acceptPermission_succeeds() throws Exception {
+    void givenInboundDataSourceWithPartialSchemaOverlap_acceptOutboundPermission_succeeds() throws Exception {
         // Given
         stubOutboundDataNeed();
         stubSuccessfulAccept();
@@ -401,7 +418,7 @@ class PermissionServiceTest {
         when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.OPAQUE));
 
         // When
-        service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, null));
+        service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null));
 
         // Then
         verify(mockPermissionRepository).save(permissionCaptor.capture());
@@ -409,7 +426,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenExceptionFromHandshakeService_acceptPermission_throws_withoutPersisting() throws Exception {
+    void givenExceptionFromHandshakeService_acceptOutboundPermission_throws_withoutPersisting() throws Exception {
         // Given
         stubOutboundDataNeed();
         var details = outboundDetails(start, null, null);
@@ -425,20 +442,20 @@ class PermissionServiceTest {
 
         // When, Then
         assertThrows(DetailFetchingFailedException.class,
-                     () -> service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, null)));
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
         verify(mockPermissionRepository, never()).save(any());
         verifyNoInteractions(mockPermissionScheduler);
     }
 
     @Test
-    void givenInboundPermission_acceptPermission_ignoresDataSource_andPublishesInboundAcceptEvent() throws Exception {
+    void givenInboundPermission_acceptInboundPermission_persistsFormat_andPublishesInboundAcceptEvent() throws Exception {
         // Given
         stubInboundLocalDataNeed(false);
         stubSuccessfulAccept();
         createInboundDataSourceOnAcceptEvent();
 
         // When
-        service.acceptPermission(permissionId1, acceptDto(dataSourceId, InboundMessageFormat.OPENADR_3_1, null));
+        service.acceptInboundPermission(permissionId1, inboundAcceptDto(InboundMessageFormat.OPENADR_3_1));
 
         // Then
         verify(mockDataSourceService, never()).dataSourceByIdOrThrow(any());
@@ -450,14 +467,14 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenLimitDefaultsAndEligibleDataNeed_acceptPermission_persistsLimitDefaults() throws Exception {
+    void givenLimitDefaultsAndEligibleDataNeed_acceptInboundPermission_persistsLimitDefaults() throws Exception {
         // Given
         stubInboundLocalDataNeed(true);
         stubSuccessfulAccept(minLimitKw, maxLimitKw);
         createInboundDataSourceOnAcceptEvent();
 
         // When
-        service.acceptPermission(permissionId1, acceptDto(null, null, null));
+        service.acceptInboundPermission(permissionId1, inboundAcceptDto(null));
 
         // Then
         // The default is persisted through the default repository, not through the permission.
@@ -474,30 +491,14 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenOutboundPermissionWithInboundMessageFormat_acceptPermission_throws() throws Exception {
-        // Given
-        stubOutboundDataNeed();
-        var details = outboundDetails(start, null, null);
-        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(details));
-        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
-        when(mockDataSource.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
-
-        // When, Then
-        assertThrows(InvalidInboundPermissionException.class,
-                     () -> service.acceptPermission(permissionId1,
-                                                    acceptDto(dataSourceId, InboundMessageFormat.OPENADR_3_1, null)));
-        verify(mockHandshakeService, never()).accept(any());
-    }
-
-    @Test
-    void givenAlreadyAcceptedPermission_acceptPermission_throws() throws Exception {
+    void givenAlreadyAcceptedPermission_acceptOutboundPermission_throws() throws Exception {
         // Given
         when(mockPermissionRepository.existsById(permissionId1)).thenReturn(true);
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
 
         // When, Then
         assertThrows(PermissionAlreadyExistsException.class,
-                     () -> service.acceptPermission(permissionId1, acceptDto(dataSourceId, null, null)));
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
         verifyNoInteractions(mockHandshakeService);
     }
 
@@ -789,17 +790,12 @@ class PermissionServiceTest {
         lenient().when(mockPermissionRepository.save(any(Permission.class))).then(i -> i.getArgument(0));
     }
 
-    private AcceptPermissionDto acceptDto(
-            @Nullable UUID selectedDataSourceId,
-            @Nullable InboundMessageFormat inboundMessageFormat,
-            @Nullable String displayName
-    ) {
-        return new AcceptPermissionDto(eddieId,
-                                       handshakeUrl,
-                                       accessToken,
-                                       selectedDataSourceId,
-                                       inboundMessageFormat,
-                                       displayName);
+    private AcceptOutboundPermissionDto outboundAcceptDto(UUID selectedDataSourceId, @Nullable String displayName) {
+        return new AcceptOutboundPermissionDto(eddieId, handshakeUrl, accessToken, selectedDataSourceId, displayName);
+    }
+
+    private AcceptInboundPermissionDto inboundAcceptDto(@Nullable InboundMessageFormat inboundMessageFormat) {
+        return new AcceptInboundPermissionDto(eddieId, handshakeUrl, accessToken, inboundMessageFormat, null);
     }
 
     @Nested

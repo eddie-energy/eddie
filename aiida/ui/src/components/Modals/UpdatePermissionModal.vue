@@ -8,7 +8,8 @@ import Button from '@/components/Button.vue'
 import { computed, ref, watch } from 'vue'
 import PermissionDetails from '@/components/PermissionDetails.vue'
 import {
-  acceptPermission,
+  acceptInboundPermission,
+  acceptOutboundPermission,
   getAcceptedInboundPermissions,
   getDataSources,
   rejectPermission,
@@ -53,13 +54,21 @@ const isOutbound = computed(() => permission.value?.dataNeed.type === 'outbound-
 const handleInput = async (confirm: boolean) => {
   loading.value = true
   if (confirm) {
-    await acceptPermission(
-      permission.value!.permissionId,
-      aiidaCode.value!,
+    if (isOutbound.value) {
+      await acceptOutboundPermission(
+        permission.value!.permissionId,
+        aiidaCode.value!,
+        selectedDataSource.value,
+        displayName.value,
+      )
+    } else {
       // inbound permissions get their data source created automatically
-      isOutbound.value ? selectedDataSource.value : undefined,
-      displayName.value,
-    )
+      await acceptInboundPermission(
+        permission.value!.permissionId,
+        aiidaCode.value!,
+        displayName.value,
+      )
+    }
     // the monitoring data source can only be assigned to persisted permissions
     if (monitoringDataSourceId.value) {
       await updateConnectionLimitMonitoring(

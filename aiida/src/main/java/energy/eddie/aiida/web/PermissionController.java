@@ -105,20 +105,37 @@ public class PermissionController {
         return ResponseEntity.ok(permissionService.fetchPermissionDetails(permissionRequests));
     }
 
-    @Operation(summary = "Accept a permission request", description = "Accepts a permission request from an AIIDA code and persists the permission. A data source is required for outbound permissions.", operationId = "acceptPermission", tags = {"permission"})
+    @Operation(summary = "Accept an outbound permission request", description = "Accepts an outbound permission request from an AIIDA code and persists the permission together with the selected data source.", operationId = "acceptOutboundPermission", tags = {"permission"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Permission accepted", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PermissionDto.class))}),
-            @ApiResponse(responseCode = "400", description = "Missing or incompatible data source, invalid request body, or the permission was already accepted.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "400", description = "Not an outbound permission request, incompatible data source, invalid request body, or the permission was already accepted.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "404", description = "Data source not found.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "409", description = "Permission cannot be fulfilled.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "503", description = "The EDDIE framework could not be reached.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
-    @PostMapping(value = "/{permissionId}/accept", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<PermissionDto> acceptPermission(
+    @PostMapping(value = "/{permissionId}/accept/outbound", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PermissionDto> acceptOutboundPermission(
             @Parameter(name = "permissionId", description = "Unique ID of the permission request", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId,
-            @Valid @RequestBody AcceptPermissionDto acceptDto
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, MissingDataSourceException, DataSourceNotFoundException, IncompatibleDataSourceException, InvalidInboundPermissionException, SecretStoringException {
-        LOGGER.info("Got request to accept permission '{}'", permissionId);
-        var permission = permissionService.acceptPermission(permissionId, acceptDto);
+            @Valid @RequestBody AcceptOutboundPermissionDto acceptDto
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidOutboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException, SecretStoringException {
+        LOGGER.info("Got request to accept outbound permission '{}'", permissionId);
+        var permission = permissionService.acceptOutboundPermission(permissionId, acceptDto);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                             .body(connectionStatusService.toDto(permission));
+    }
+
+    @Operation(summary = "Accept an inbound permission request", description = "Accepts an inbound permission request from an AIIDA code and persists the permission. Its data source is created automatically.", operationId = "acceptInboundPermission", tags = {"permission"})
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Permission accepted", content = {@Content(mediaType = "application/json", schema = @Schema(implementation = PermissionDto.class))}),
+            @ApiResponse(responseCode = "400", description = "Not an inbound permission request, invalid request body, or the permission was already accepted.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "409", description = "Permission cannot be fulfilled.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "503", description = "The EDDIE framework could not be reached.", content = @Content(mediaType = "application/json", schema = @Schema(implementation = EddieApiError.class)))})
+    @PostMapping(value = "/{permissionId}/accept/inbound", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<PermissionDto> acceptInboundPermission(
+            @Parameter(name = "permissionId", description = "Unique ID of the permission request", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId,
+            @Valid @RequestBody AcceptInboundPermissionDto acceptDto
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, SecretStoringException {
+        LOGGER.info("Got request to accept inbound permission '{}'", permissionId);
+        var permission = permissionService.acceptInboundPermission(permissionId, acceptDto);
         return ResponseEntity.status(HttpStatus.CREATED)
                              .body(connectionStatusService.toDto(permission));
     }

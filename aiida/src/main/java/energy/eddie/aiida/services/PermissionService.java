@@ -5,9 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
-import energy.eddie.aiida.dtos.permission.AcceptPermissionDto;
-import energy.eddie.aiida.dtos.permission.PendingPermissionDto;
-import energy.eddie.aiida.dtos.permission.RejectPermissionDto;
+import energy.eddie.aiida.dtos.permission.*;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
@@ -178,40 +176,55 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Accepts the permission request with the passed ID. The details are fetched and validated again, as the client
-     * cannot be trusted. Afterward, the permission request is accepted at the EDDIE framework, and the permission is
-     * persisted as {@link PermissionStatus#ACCEPTED} together with its MQTT credentials, before data sharing is started
-     * or scheduled.
+     * Accepts the outbound permission request with the passed ID. The details are fetched and validated again, as the
+     * client cannot be trusted. Afterward, the permission request is accepted at the EDDIE framework, and the
+     * permission is persisted as {@link PermissionStatus#ACCEPTED} together with its MQTT credentials and the selected
+     * data source, before data sharing is started or scheduled.
      *
      * @param permissionId The ID of the permission request that should be accepted.
      * @param acceptDto    Handshake information from the AIIDA code and the selections of the user.
      * @return The accepted and persisted permission.
-     * @throws MissingDataSourceException     The permission is outbound, but no data source was passed.
-     * @throws DataSourceNotFoundException    The data source does not exist or belongs to another user.
-     * @throws IncompatibleDataSourceException The data source does not match the asset or schemas of the data need.
-     * @throws DetailFetchingFailedException  Fetching the details or accepting at the EDDIE framework failed.
+     * @throws InvalidOutboundPermissionException The permission request is not an outbound permission request.
+     * @throws DataSourceNotFoundException        The data source does not exist or belongs to another user.
+     * @throws IncompatibleDataSourceException    The data source does not match the asset or schemas of the data need.
+     * @throws DetailFetchingFailedException      Fetching the details or accepting at the EDDIE framework failed.
      */
     @Transactional
-    public Permission acceptPermission(
+    public Permission acceptOutboundPermission(
             UUID permissionId,
-            AcceptPermissionDto acceptDto
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, MissingDataSourceException, DataSourceNotFoundException, IncompatibleDataSourceException, InvalidInboundPermissionException, SecretStoringException {
-        var currentUserId = authService.getCurrentUserId();
-        var permission = buildValidatedPermission(acceptDto.eddieId(),
-                                                  permissionId,
-                                                  acceptDto.handshakeUrl(),
-                                                  acceptDto.accessToken(),
-                                                  currentUserId);
-        var isInbound = permission.dataNeed() instanceof InboundAiidaLocalDataNeed;
+            AcceptOutboundPermissionDto acceptDto
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidOutboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException, SecretStoringException {
+        var permission = buildValidatedPermission(permissionId, acceptDto);
+        if (isInbound(permission)) {
+            throw new InvalidOutboundPermissionException(permissionId);
+        }
 
-        // validate everything before accepting at EDDIE, to keep the window small in which EDDIE considers the
-        // permission accepted, but AIIDA fails to persist it
-        if (!isInbound) {
-            var dataSourceId = acceptDto.dataSourceId();
-            if (dataSourceId == null) {
-                throw new MissingDataSourceException(permissionId);
-            }
-            permission.setDataSource(validateDataSourceSelection(permission, dataSourceId));
+        permission.setDataSource(validateDataSourceSelection(permission, acceptDto.dataSourceId()));
+        permission = accept(permission, acceptDto);
+        permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
+        return permission;
+    }
+
+    /**
+     * Accepts the inbound permission request with the passed ID. The details are fetched and validated again, as the
+     * client cannot be trusted. Afterward, the permission request is accepted at the EDDIE framework, and the
+     * permission is persisted as {@link PermissionStatus#ACCEPTED} together with its MQTT credentials, before its data
+     * source is created and data sharing is started or scheduled.
+     *
+     * @param permissionId The ID of the permission request that should be accepted.
+     * @param acceptDto    Handshake information from the AIIDA code and the selections of the user.
+     * @return The accepted and persisted permission.
+     * @throws InvalidInboundPermissionException The permission request is not an inbound permission request.
+     * @throws DetailFetchingFailedException     Fetching the details or accepting at the EDDIE framework failed.
+     */
+    @Transactional
+    public Permission acceptInboundPermission(
+            UUID permissionId,
+            AcceptInboundPermissionDto acceptDto
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, SecretStoringException {
+        var permission = buildValidatedPermission(permissionId, acceptDto);
+        if (!isInbound(permission)) {
+            throw new InvalidInboundPermissionException(permissionId);
         }
 
         var inboundMessageFormat = acceptDto.inboundMessageFormat();
@@ -219,11 +232,28 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             permission.updateInboundMessageFormat(inboundMessageFormat);
         }
 
+        permission = accept(permission, acceptDto);
+        // creates the inbound data source, which is required to start the permission
+        aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
+        permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
+        return permission;
+    }
+
+    /**
+     * Accepts the validated permission at the EDDIE framework and persists it together with its MQTT credentials.
+     * Everything has to be validated before, to keep the window small in which EDDIE considers the permission
+     * accepted, but AIIDA fails to persist it.
+     */
+    private Permission accept(
+            Permission permission,
+            AcceptPermissionDto acceptDto
+    ) throws DetailFetchingFailedException, SecretStoringException {
         var displayName = acceptDto.displayName();
         if (displayName != null && !displayName.isBlank()) {
             permission.setDisplayName(displayName);
         }
 
+        var permissionId = permission.id();
         var mqttDto = handshakeService.accept(HandshakeTarget.of(permission))
                                       .doOnError(error -> LOGGER.atError()
                                                                 .addArgument(permissionId)
@@ -246,12 +276,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         persistLimitDefaults(permission);
         LOGGER.info("Permission ({}) accepted, will start or schedule data sharing", permission.id());
-
-        if (isInbound) {
-            aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
-        }
-
-        permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
         return permission;
     }
 
@@ -388,6 +412,24 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                 LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
             }
         }
+    }
+
+    /**
+     * Builds and validates the permission of the AIIDA code passed to accept it, for the current user.
+     */
+    private Permission buildValidatedPermission(
+            UUID permissionId,
+            AcceptPermissionDto acceptDto
+    ) throws InvalidUserException, PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
+        return buildValidatedPermission(acceptDto.eddieId(),
+                                        permissionId,
+                                        acceptDto.handshakeUrl(),
+                                        acceptDto.accessToken(),
+                                        authService.getCurrentUserId());
+    }
+
+    private static boolean isInbound(Permission permission) {
+        return permission.dataNeed() instanceof InboundAiidaLocalDataNeed;
     }
 
     /**
