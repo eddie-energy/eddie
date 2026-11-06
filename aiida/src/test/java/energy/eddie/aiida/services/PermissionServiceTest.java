@@ -280,12 +280,12 @@ class PermissionServiceTest {
         var details = outboundDetails(start, null, null);
         when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(details));
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
-        when(mockPermissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(
+        when(mockPermissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatus(
                 userId,
                 OutboundAiidaDataNeed.DISCRIMINATOR_VALUE,
                 AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
                 meterId,
-                PermissionStatus.ACTIVE)
+                PermissionStatus.ACCEPTED)
         ).thenReturn(true);
 
         // When, Then
@@ -553,7 +553,7 @@ class PermissionServiceTest {
         // Given
         var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
         when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
-        when(mockPermissionRepository.findInboundByUserIdAndStatus(uuid, PermissionStatus.ACTIVE))
+        when(mockPermissionRepository.findInboundByUserIdAndStatus(uuid, PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(mockPermission));
 
         // When
@@ -651,7 +651,7 @@ class PermissionServiceTest {
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockInboundDataSource.permission()).thenReturn(mockPermission);
         when(mockInboundDataSource.id()).thenReturn(dataSourceId);
-        when(mockPermissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACTIVE))
+        when(mockPermissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(blockingPermission1, blockingPermission2));
 
         var exception = assertThrows(InboundDataSourceInUseException.class,
@@ -901,6 +901,34 @@ class PermissionServiceTest {
 
             // Then
             assertEquals(expectedState, permission.status());
+        }
+
+        @Test
+        void givenIncompletePermission_isSkipped_andOtherPermissionsAreStillResumed() {
+            // Given
+            doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
+            var incomplete = new Permission(UUID.randomUUID(), UUID.randomUUID(), "handshakeUrl", "token", userId);
+            incomplete.setStatus(PermissionStatus.ACCEPTED);
+            var complete = new Permission(UUID.randomUUID(), UUID.randomUUID(), "handshakeUrl", "token", userId);
+            complete.setStatus(PermissionStatus.ACCEPTED);
+            complete.setStartTime(Instant.parse("2023-10-02T00:00:00.000Z"));
+            complete.setExpirationTime(Instant.parse("2023-10-05T00:00:00.000Z"));
+            complete.setConnectionId("connectionId");
+            when(mockStartupDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/5 * * * * *"));
+            complete.initializeFromDataNeed(mockStartupDataNeed);
+            complete.setDataSource(mockDataSource);
+            complete.setMqttStreamingConfig(mockMqttStreamingConfig);
+            when(mockPermissionRepository.findStartableByStatus(PermissionStatus.ACCEPTED))
+                    .thenReturn(List.of(incomplete, complete));
+            doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
+
+            // When
+            service.onApplicationEvent(mock(ContextRefreshedEvent.class));
+
+            // Then
+            assertEquals(PermissionStatus.ACCEPTED, incomplete.status());
+            assertEquals(PermissionStatus.ACCEPTED, complete.status());
+            verify(mockScheduler).schedule(any(), any(Instant.class));
         }
     }
 }

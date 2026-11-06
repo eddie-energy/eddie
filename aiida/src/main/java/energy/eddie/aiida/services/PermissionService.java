@@ -49,7 +49,8 @@ import java.time.*;
 import java.util.*;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
-import static energy.eddie.aiida.models.permission.PermissionStatus.*;
+import static energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED;
+import static energy.eddie.aiida.models.permission.PermissionStatus.REVOKED;
 import static java.util.Objects.requireNonNull;
 
 @Service
@@ -114,10 +115,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         LOGGER.info("Got request to revoke permission with id '{}'.", permission.id());
         authService.checkAuthorizationForPermission(permission);
 
-        if (!permission.status().isActive())
+        if (!permission.status().isAccepted())
             throw new PermissionStateTransitionException(permission.id().toString(),
                                                          REVOKED.name(),
-                                                         ACTIVE.stream().map(Enum::name).toList(),
+                                                         List.of(ACCEPTED.name()),
                                                          permission.status().name());
 
         validateInboundDataSourceNotInUse(permission);
@@ -340,7 +341,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     public List<Permission> getActiveInboundPermissions() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
-        return permissionRepository.findInboundByUserIdAndStatus(currentUserId, PermissionStatus.ACTIVE);
+        return permissionRepository.findInboundByUserIdAndStatus(currentUserId, ACCEPTED);
     }
 
     /**
@@ -372,23 +373,16 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         var now = clock.instant();
         for (Permission permission : acceptedPermissions) {
-            var expirationTime = permission.expirationTime();
-            if (expirationTime == null) {
-                LOGGER.error("expirationTime of permission {} is null, this is an unexpected error",
-                             permission.id());
-                // don't throw exception so other permissions are not skipped
-                continue;
-            }
-
-            if (!expirationTime.isAfter(now)) {
-                LOGGER.info("Permission {} has expired but AIIDA was not running at that time, will expire it now",
-                            permission.id());
-                permission.setStatus(PermissionStatus.FULFILLED);
-                continue;
-            }
-
             try {
-                permissionScheduler.scheduleOrStart(ActivePermission.from(permission));
+                var activePermission = ActivePermission.from(permission);
+                if (activePermission.expirationTime().isAfter(now)) {
+                    permissionScheduler.scheduleOrStart(activePermission);
+                } else {
+                    LOGGER.info(
+                            "Permission {} has expired but AIIDA was not running at that time, will expire it now",
+                            permission.id());
+                    permission.setStatus(PermissionStatus.FULFILLED);
+                }
             } catch (IllegalStateException exception) {
                 // don't throw exception so other permissions are not skipped
                 LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
@@ -524,11 +518,11 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             return;
         }
 
-        var hasConflict = permissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(requireNonNull(permission.userId()),
+        var hasConflict = permissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatus(requireNonNull(permission.userId()),
                                                                                                             dataNeed.type(),
                                                                                                             AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
                                                                                                             meterId,
-                                                                                                            PermissionStatus.ACTIVE);
+                                                                                                            ACCEPTED);
 
         if (hasConflict) {
             var exception = new ActiveFcaPermissionAlreadyExistsException(permission.id(), meterId, dataNeed.type());
@@ -582,7 +576,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void validateInboundDataSourceNotInUse(Permission permission) throws InboundDataSourceInUseException {
         var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
         if (dataSourceId != null) {
-            var permissions = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACTIVE);
+            var permissions = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACCEPTED);
             if (!permissions.isEmpty()) {
                 var blockingIds = permissions.stream().map(Permission::id).toList();
                 LOGGER.trace(

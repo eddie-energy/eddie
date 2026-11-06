@@ -48,7 +48,7 @@ public record ActivePermission(
      *                               streaming is missing.
      */
     public static ActivePermission from(Permission permission) throws IllegalStateException {
-        if (permission.status() != PermissionStatus.ACCEPTED) {
+        if (!permission.status().isAccepted()) {
             throw new IllegalStateException("Permission %s is not accepted, its status is %s".formatted(
                     permission.id(),
                     permission.status()));

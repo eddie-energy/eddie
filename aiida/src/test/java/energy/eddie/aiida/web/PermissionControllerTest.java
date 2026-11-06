@@ -110,6 +110,7 @@ class PermissionControllerTest {
     @Test
     @WithMockUser
     void getAllPermissions_includesConnectionLimitFields() throws Exception {
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.monitoringDataSourceId()).thenReturn(dataSourceId);
         when(mockPermission.supportsConnectionLimits()).thenReturn(true);
         when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(mockPermission));
@@ -158,6 +159,7 @@ class PermissionControllerTest {
     @Test
     @WithMockUser
     void getActiveInboundPermissions_returnsPermissionsWithDataSource() throws Exception {
+        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(permissionService.getActiveInboundPermissions()).thenReturn(List.of(mockPermission));
 
         mockMvc.perform(get("/permissions/inbound/active"))

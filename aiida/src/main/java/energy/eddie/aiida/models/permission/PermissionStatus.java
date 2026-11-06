@@ -3,8 +3,6 @@
 
 package energy.eddie.aiida.models.permission;
 
-import java.util.Set;
-
 /**
  * Static state of a permission. Permissions are only persisted once the user accepted them, so every permission starts
  * as {@link #ACCEPTED} and ends in one of the final states. The dynamic connection state of an accepted permission is
@@ -28,9 +26,10 @@ public enum PermissionStatus {
      */
     FULFILLED;
 
-    public static final Set<PermissionStatus> ACTIVE = Set.of(ACCEPTED);
-
-    public boolean isActive() {
-        return ACTIVE.contains(this);
+    /**
+     * {@code true} if the permission is {@link #ACCEPTED}.
+     */
+    public boolean isAccepted() {
+        return this == ACCEPTED;
     }
 }

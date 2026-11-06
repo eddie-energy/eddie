@@ -57,7 +57,7 @@ public class PermissionExpiredRunnable implements Runnable {
         }
 
         // safeguard if e.g. a revocation operation could not properly cancel this runnable before it runs
-        if (!currentPermission.status().isActive()) {
+        if (!currentPermission.status().isAccepted()) {
             LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
                         permission.id(), currentPermission.status());
             return;

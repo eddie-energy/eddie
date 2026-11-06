@@ -77,8 +77,8 @@ public class ConnectionLimitViolationDetectionService {
 
     @Scheduled(fixedDelayString = "${aiida.connection-limit.violation-detection.interval-ms:10000}")
     void checkViolations() {
-        var permissionsByDataSource = permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatusIn(
-                                                                  PermissionStatus.ACTIVE)
+        var permissionsByDataSource = permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(
+                                                                  PermissionStatus.ACCEPTED)
                                                           .stream()
                                                           .collect(Collectors.groupingBy(permission -> Objects.requireNonNull(
                                                                   permission.monitoringDataSourceId())));

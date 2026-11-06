@@ -33,7 +33,7 @@ public class ConnectionStatusService {
      */
     @Nullable
     public ConnectionStatus connectionStatusOf(Permission permission) {
-        if (permission.status() != PermissionStatus.ACCEPTED) {
+        if (!permission.status().isAccepted()) {
             return null;
         }
 

@@ -16,6 +16,19 @@ VALUES ('6609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '*/5 * * * * *',
         'outbound-aiida');
 
+INSERT INTO public.data_source (id, user_id, asset, country_code, enabled, icon, name, type)
+VALUES ('5609a9b3-0718-4082-935d-6a98c0f8c5a2',
+        'b69f9bc2-e16c-4de4-8c3e-00d219dcd819',
+        'CONNECTION_AGREEMENT_POINT',
+        'AT',
+        TRUE,
+        'METER',
+        'simulation',
+        'SIMULATION');
+
+INSERT INTO public.data_source_interval (id, polling_interval)
+VALUES ('5609a9b3-0718-4082-935d-6a98c0f8c5a2', 5);
+
 INSERT INTO public.permission (permission_id,
                                eddie_id,
                                data_need_id,
@@ -28,7 +41,8 @@ INSERT INTO public.permission (permission_id,
                                service_name,
                                start_time,
                                status,
-                               user_id)
+                               user_id,
+                               data_source_id)
 VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '9609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '6609a9b3-0718-4082-935d-6a98c0f8c5a2',
@@ -39,7 +53,8 @@ VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         NULL,
         'Test IntelliJ2',
         '2023-09-14 12:39:00.650669 +00:00',
-        'ACCEPTED', 'b69f9bc2-e16c-4de4-8c3e-00d219dcd819'),
+        'ACCEPTED', 'b69f9bc2-e16c-4de4-8c3e-00d219dcd819',
+        '5609a9b3-0718-4082-935d-6a98c0f8c5a2'),
        ('8609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '9609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '6609a9b3-0718-4082-935d-6a98c0f8c5a2',
@@ -52,7 +67,8 @@ VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         'My NewAIIDA Test Service',
         '2023-09-20 13:39:42.610385 +00:00',
         'ACCEPTED',
-        'b69f9bc2-e16c-4de4-8c3e-00d219dcd819');
+        'b69f9bc2-e16c-4de4-8c3e-00d219dcd819',
+        '5609a9b3-0718-4082-935d-6a98c0f8c5a2');
 
 INSERT INTO public.mqtt_streaming_config (permission_id,
                                           password,
