@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.streamers;
 
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamer;
 import energy.eddie.aiida.streamers.mqtt.MqttStreamingContext;
@@ -28,7 +28,7 @@ public class StreamerFactory {
      */
     protected static AiidaStreamer getAiidaStreamer(
             StreamerDependencies dependencies,
-            ActivePermission permission,
+            AcceptedPermission permission,
             Flux<AiidaRecord> recordFlux
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";

@@ -123,9 +123,9 @@ class PermissionCommandServiceTest {
         service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId, permissionId, "*/30 * * * * *"));
 
         verify(permissionRepository).save(acceptedPermission);
-        verify(streamerManager).updateSchedule(argThat(activePermission ->
-                activePermission.id().equals(permissionId)
-                && activePermission.transmissionSchedule().toString().equals("*/30 * * * * *")));
+        verify(streamerManager).updateSchedule(argThat(snapshot ->
+                snapshot.id().equals(permissionId)
+                && snapshot.transmissionSchedule().toString().equals("*/30 * * * * *")));
     }
 
     @Test

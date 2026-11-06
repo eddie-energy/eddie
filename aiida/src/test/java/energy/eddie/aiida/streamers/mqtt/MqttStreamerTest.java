@@ -6,7 +6,7 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -94,7 +94,7 @@ class MqttStreamerTest {
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
-    private ActivePermission permissionMock;
+    private AcceptedPermission permissionMock;
     @Mock
     private SecretsService mockSecretsService;
     @Mock

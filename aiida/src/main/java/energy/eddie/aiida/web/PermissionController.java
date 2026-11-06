@@ -86,11 +86,11 @@ public class PermissionController {
                                                                      event.connectionStatus())));
     }
 
-    @Operation(summary = "Get active inbound permissions", description = "Get active inbound permissions that can be used as a data source selection.", operationId = "getActiveInboundPermissions", tags = {"permission"})
+    @Operation(summary = "Get accepted inbound permissions", description = "Get accepted inbound permissions that can be used as a data source selection.", operationId = "getAcceptedInboundPermissions", tags = {"permission"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PermissionDto.class))))})
     @GetMapping(path = "/inbound/active", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PermissionDto>> getActiveInboundPermissions() throws InvalidUserException {
-        return ResponseEntity.ok(toDtos(permissionService.getActiveInboundPermissions()));
+    public ResponseEntity<List<PermissionDto>> getAcceptedInboundPermissions() throws InvalidUserException {
+        return ResponseEntity.ok(toDtos(permissionService.getAcceptedInboundPermissions()));
     }
 
     @Operation(summary = "Fetch details of permission requests", description = "Fetches and validates the details of the permission requests contained in an AIIDA code. Nothing is persisted, so the AIIDA code can be used again until the permission requests are accepted or rejected.", operationId = "fetchPermissionDetails", tags = {"permission"})

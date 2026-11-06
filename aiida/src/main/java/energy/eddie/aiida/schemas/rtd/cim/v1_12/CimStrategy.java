@@ -5,7 +5,7 @@ package energy.eddie.aiida.schemas.rtd.cim.v1_12;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.rtd.cim.BaseCimFormatterStrategy;
@@ -118,7 +118,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     public RTDEnvelope toRealTimeDataEnvelope(
             UUID aiidaId,
             AiidaRecord aiidaRecord,
-            ActivePermission permission
+            AcceptedPermission permission
     ) {
         var countryCode = permission.dataSource().countryCode();
 
@@ -152,7 +152,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     private MessageDocumentHeader toMessageDocumentHeader(
             UUID aiidaId,
             AiidaRecord aiidaRecord,
-            ActivePermission permission,
+            AcceptedPermission permission,
             String countryCode
     ) {
         return new MessageDocumentHeader()
@@ -163,7 +163,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     private MetaInformation toMetaInformation(
             UUID aiidaId,
             AiidaRecord aiidaRecord,
-            ActivePermission permission,
+            AcceptedPermission permission,
             String countryCode
     ) {
         var dataNeed = permission.dataNeed();

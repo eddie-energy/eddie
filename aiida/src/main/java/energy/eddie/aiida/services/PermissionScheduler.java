@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
@@ -51,7 +51,7 @@ public class PermissionScheduler {
      * Runnable will be scheduled to start the permission once its start time has been reached. The status of the
      * permission is not changed, its connection state is derived at runtime by {@link ConnectionStatusService}.
      */
-    public void scheduleOrStart(ActivePermission permission) {
+    public void scheduleOrStart(AcceptedPermission permission) {
         var startTime = permission.startTime();
 
         var now = Instant.now(clock);
@@ -74,7 +74,7 @@ public class PermissionScheduler {
         }
     }
 
-    private void schedulePermissionStart(ActivePermission permission) {
+    private void schedulePermissionStart(AcceptedPermission permission) {
         var startTime = permission.startTime();
         var permissionId = permission.id();
 
@@ -84,7 +84,7 @@ public class PermissionScheduler {
         permissionFutures.put(permissionId, future);
     }
 
-    private void startPermission(ActivePermission permission) {
+    private void startPermission(AcceptedPermission permission) {
         LOGGER.info("Starting permission '{}' owned by EDDIE framework '{}'",
                     permission.id(),
                     permission.eddieId());
@@ -101,7 +101,7 @@ public class PermissionScheduler {
         schedulePermissionExpirationRunnable(permission);
     }
 
-    private void schedulePermissionExpirationRunnable(ActivePermission permission) {
+    private void schedulePermissionExpirationRunnable(AcceptedPermission permission) {
         var expirationTime = permission.expirationTime();
         var permissionId = permission.id();
         LOGGER.info("Will schedule a PermissionExpirationRunnable for permission '{}' to run at  {}",

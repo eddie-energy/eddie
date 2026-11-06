@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ActivePermissionTest {
+class AcceptedPermissionTest {
     private static final UUID EDDIE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID PERMISSION_ID = UUID.fromString("a4dc1bad-b9fe-47ae-9336-690cfb4aada9");
     private static final UUID USER_ID = UUID.fromString("6b2a2c5e-0f5e-4b53-9d6b-7f2f8f5f1c11");
@@ -40,20 +40,20 @@ class ActivePermissionTest {
         when(dataNeed.transmissionSchedule()).thenReturn(SCHEDULE);
 
         // When
-        var activePermission = ActivePermission.from(permission);
+        var acceptedPermission = AcceptedPermission.from(permission);
 
         // Then
-        assertThat(activePermission.id()).isEqualTo(PERMISSION_ID);
-        assertThat(activePermission.eddieId()).isEqualTo(EDDIE_ID);
-        assertThat(activePermission.userId()).isEqualTo(USER_ID);
-        assertThat(activePermission.connectionId()).isEqualTo("connection-id");
-        assertThat(activePermission.startTime()).isEqualTo(START);
-        assertThat(activePermission.expirationTime()).isEqualTo(EXPIRATION);
-        assertThat(activePermission.dataNeed()).isSameAs(dataNeed);
-        assertThat(activePermission.dataSource()).isSameAs(dataSource);
-        assertThat(activePermission.mqttStreamingConfig()).isSameAs(mqttStreamingConfig);
-        assertThat(activePermission.transmissionSchedule()).isEqualTo(SCHEDULE);
-        assertThat(activePermission.transmissionEnabled()).isTrue();
+        assertThat(acceptedPermission.id()).isEqualTo(PERMISSION_ID);
+        assertThat(acceptedPermission.eddieId()).isEqualTo(EDDIE_ID);
+        assertThat(acceptedPermission.userId()).isEqualTo(USER_ID);
+        assertThat(acceptedPermission.connectionId()).isEqualTo("connection-id");
+        assertThat(acceptedPermission.startTime()).isEqualTo(START);
+        assertThat(acceptedPermission.expirationTime()).isEqualTo(EXPIRATION);
+        assertThat(acceptedPermission.dataNeed()).isSameAs(dataNeed);
+        assertThat(acceptedPermission.dataSource()).isSameAs(dataSource);
+        assertThat(acceptedPermission.mqttStreamingConfig()).isSameAs(mqttStreamingConfig);
+        assertThat(acceptedPermission.transmissionSchedule()).isEqualTo(SCHEDULE);
+        assertThat(acceptedPermission.transmissionEnabled()).isTrue();
     }
 
     @Test
@@ -64,10 +64,10 @@ class ActivePermissionTest {
         permission.setTransmissionSchedule(ownSchedule);
 
         // When
-        var activePermission = ActivePermission.from(permission);
+        var acceptedPermission = AcceptedPermission.from(permission);
 
         // Then
-        assertThat(activePermission.transmissionSchedule()).isEqualTo(ownSchedule);
+        assertThat(acceptedPermission.transmissionSchedule()).isEqualTo(ownSchedule);
     }
 
     @Test
@@ -77,7 +77,7 @@ class ActivePermissionTest {
         permission.setStatus(PermissionStatus.REVOKED);
 
         // When, Then
-        assertThatThrownBy(() -> ActivePermission.from(permission))
+        assertThatThrownBy(() -> AcceptedPermission.from(permission))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("is not accepted");
     }
@@ -89,7 +89,7 @@ class ActivePermissionTest {
         permission.setDataSource(null);
 
         // When, Then
-        assertThatThrownBy(() -> ActivePermission.from(permission))
+        assertThatThrownBy(() -> AcceptedPermission.from(permission))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Accepted permission %s is missing its data source", PERMISSION_ID);
     }
@@ -105,7 +105,7 @@ class ActivePermissionTest {
         permission.setDataSource(dataSource);
 
         // When, Then
-        assertThatThrownBy(() -> ActivePermission.from(permission))
+        assertThatThrownBy(() -> AcceptedPermission.from(permission))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Accepted permission %s is missing its MQTT streaming config", PERMISSION_ID);
     }

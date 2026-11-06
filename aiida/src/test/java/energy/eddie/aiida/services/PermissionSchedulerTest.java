@@ -4,7 +4,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
@@ -34,7 +34,7 @@ class PermissionSchedulerTest {
     private final UUID eddieId = UUID.fromString("a69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     private final UUID permissionId = UUID.fromString("b69f9bc2-e16c-4de4-8c3e-00d219dcd819");
     @Mock
-    private ActivePermission permission;
+    private AcceptedPermission permission;
     @Mock
     private TaskScheduler mockTaskScheduler;
     @Mock

@@ -158,15 +158,15 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
-    void getActiveInboundPermissions_returnsPermissionsWithDataSource() throws Exception {
+    void getAcceptedInboundPermissions_returnsPermissionsWithDataSource() throws Exception {
         when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
-        when(permissionService.getActiveInboundPermissions()).thenReturn(List.of(mockPermission));
+        when(permissionService.getAcceptedInboundPermissions()).thenReturn(List.of(mockPermission));
 
         mockMvc.perform(get("/permissions/inbound/active"))
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.length()").value(1));
 
-        verify(permissionService).getActiveInboundPermissions();
+        verify(permissionService).getAcceptedInboundPermissions();
     }
 
     @Test

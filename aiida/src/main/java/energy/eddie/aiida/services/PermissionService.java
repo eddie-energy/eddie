@@ -251,7 +251,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
         }
 
-        permissionScheduler.scheduleOrStart(ActivePermission.from(permission));
+        permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
         return permission;
     }
 
@@ -339,7 +339,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(currentUserId);
     }
 
-    public List<Permission> getActiveInboundPermissions() throws InvalidUserException {
+    public List<Permission> getAcceptedInboundPermissions() throws InvalidUserException {
         var currentUserId = authService.getCurrentUserId();
         return permissionRepository.findInboundByUserIdAndStatus(currentUserId, ACCEPTED);
     }
@@ -374,9 +374,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         var now = clock.instant();
         for (Permission permission : acceptedPermissions) {
             try {
-                var activePermission = ActivePermission.from(permission);
-                if (activePermission.expirationTime().isAfter(now)) {
-                    permissionScheduler.scheduleOrStart(activePermission);
+                var acceptedPermission = AcceptedPermission.from(permission);
+                if (acceptedPermission.expirationTime().isAfter(now)) {
+                    permissionScheduler.scheduleOrStart(acceptedPermission);
                 } else {
                     LOGGER.info(
                             "Permission {} has expired but AIIDA was not running at that time, will expire it now",

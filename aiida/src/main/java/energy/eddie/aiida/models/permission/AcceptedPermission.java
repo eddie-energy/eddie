@@ -28,7 +28,7 @@ import java.util.UUID;
  *                             {@link Permission#effectiveTransmissionSchedule()}.
  * @param transmissionEnabled  Whether data transmission is enabled.
  */
-public record ActivePermission(
+public record AcceptedPermission(
         UUID id,
         UUID eddieId,
         UUID userId,
@@ -47,26 +47,26 @@ public record ActivePermission(
      * @throws IllegalStateException If the permission is not {@link PermissionStatus#ACCEPTED} or a field required for
      *                               streaming is missing.
      */
-    public static ActivePermission from(Permission permission) throws IllegalStateException {
+    public static AcceptedPermission from(Permission permission) throws IllegalStateException {
         if (!permission.status().isAccepted()) {
             throw new IllegalStateException("Permission %s is not accepted, its status is %s".formatted(
                     permission.id(),
                     permission.status()));
         }
 
-        return new ActivePermission(permission.id(),
-                                    required(permission, permission.eddieId(), "eddie id"),
-                                    required(permission, permission.userId(), "user id"),
-                                    required(permission, permission.connectionId(), "connection id"),
-                                    required(permission, permission.startTime(), "start time"),
-                                    required(permission, permission.expirationTime(), "expiration time"),
-                                    required(permission, permission.dataNeed(), "data need"),
-                                    required(permission, permission.dataSource(), "data source"),
-                                    required(permission, permission.mqttStreamingConfig(), "MQTT streaming config"),
-                                    required(permission,
-                                             permission.effectiveTransmissionSchedule(),
-                                             "transmission schedule"),
-                                    permission.transmissionEnabled());
+        return new AcceptedPermission(permission.id(),
+                                      permission.eddieId(),
+                                      permission.userId(),
+                                      required(permission, permission.connectionId(), "connection id"),
+                                      required(permission, permission.startTime(), "start time"),
+                                      required(permission, permission.expirationTime(), "expiration time"),
+                                      required(permission, permission.dataNeed(), "data need"),
+                                      required(permission, permission.dataSource(), "data source"),
+                                      required(permission, permission.mqttStreamingConfig(), "MQTT streaming config"),
+                                      required(permission,
+                                               permission.effectiveTransmissionSchedule(),
+                                               "transmission schedule"),
+                                      permission.transmissionEnabled());
     }
 
     private static <T> T required(Permission permission, @Nullable T value, String fieldName) {

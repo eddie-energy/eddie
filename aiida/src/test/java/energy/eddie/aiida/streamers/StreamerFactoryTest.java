@@ -4,7 +4,7 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -34,7 +34,7 @@ class StreamerFactoryTest {
     @Mock
     private MqttStreamingConfig streamingConfig;
     @Mock
-    private ActivePermission permission;
+    private AcceptedPermission permission;
     @Mock
     private MqttAsyncClient mqttClient;
     @Mock

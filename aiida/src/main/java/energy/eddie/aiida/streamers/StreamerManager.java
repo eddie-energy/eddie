@@ -4,7 +4,7 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.aggregator.OutboundAggregator;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
@@ -81,7 +81,7 @@ public class StreamerManager implements AutoCloseable {
      * @throws IllegalArgumentException If an AiidaStreamer for the passed permission has already been created.
      */
     @Transactional
-    public void createNewStreamer(ActivePermission permission) throws IllegalArgumentException, MqttException {
+    public void createNewStreamer(AcceptedPermission permission) throws IllegalArgumentException, MqttException {
         LOGGER.info("Will create a new AiidaStreamer for permission {}", permission.id());
         var id = permission.id();
 
@@ -127,7 +127,7 @@ public class StreamerManager implements AutoCloseable {
      * the new aggregation cadence. No-op for permissions whose data need is not outbound, since only outbound
      * permissions currently have a record flux to rebuild.
      */
-    public void updateSchedule(ActivePermission permission) {
+    public void updateSchedule(AcceptedPermission permission) {
         if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed)) {
             return;
         }
@@ -184,7 +184,7 @@ public class StreamerManager implements AutoCloseable {
      * Builds the filtered and aggregated record flux for the passed permission. Permissions that were not created by an
      * outbound data need get a flux that never emits, as they do not stream any records.
      */
-    private Flux<AiidaRecord> buildFilteredFlux(ActivePermission permission) {
+    private Flux<AiidaRecord> buildFilteredFlux(AcceptedPermission permission) {
         if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed outboundDataNeed)) {
             return Flux.never();
         }

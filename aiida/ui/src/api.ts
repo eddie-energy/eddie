@@ -126,7 +126,7 @@ export function getConnectionLimits(
   return fetch(`/connection-limits?${new URLSearchParams({ permissionId, from, to })}`)
 }
 
-export function getActiveInboundPermissions(): Promise<AiidaPermission[]> {
+export function getAcceptedInboundPermissions(): Promise<AiidaPermission[]> {
   return fetch('/permissions/inbound/active')
 }
 

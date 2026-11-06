@@ -6,7 +6,7 @@ package energy.eddie.aiida.streamers;
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
@@ -56,7 +56,7 @@ class StreamerManagerTest {
     @Mock
     private AiidaConnectionStatusMessageDto mockStatusMessage;
     @Mock
-    private ActivePermission mockPermission;
+    private AcceptedPermission mockPermission;
     @Mock
     private DataSource mockDataSource;
     private StreamerManager manager;

@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.utils;
 
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -17,7 +17,7 @@ import java.time.Instant;
 
 public class PermissionExpiredRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionExpiredRunnable.class);
-    private final ActivePermission permission;
+    private final AcceptedPermission permission;
     private final StreamerManager streamerManager;
     private final PermissionRepository repository;
     private final Instant expirationTime;
@@ -29,7 +29,7 @@ public class PermissionExpiredRunnable implements Runnable {
      * permission and updates the database.
      */
     public PermissionExpiredRunnable(
-            ActivePermission permission,
+            AcceptedPermission permission,
             StreamerManager streamerManager,
             PermissionRepository repository,
             Clock clock

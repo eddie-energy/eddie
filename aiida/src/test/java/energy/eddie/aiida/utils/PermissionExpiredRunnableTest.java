@@ -4,7 +4,7 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -32,7 +32,7 @@ class PermissionExpiredRunnableTest {
     private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final Clock clock = Clock.fixed(fixedInstant, AiidaConfiguration.AIIDA_ZONE_ID);
     @Mock
-    private ActivePermission mockActivePermission;
+    private AcceptedPermission mockAcceptedPermission;
     @Mock
     private Permission mockCurrentPermission;
     @Mock
@@ -44,19 +44,19 @@ class PermissionExpiredRunnableTest {
 
     @BeforeEach
     void setUp() {
-        when(mockActivePermission.id()).thenReturn(permissionId);
-        when(mockActivePermission.expirationTime()).thenReturn(fixedInstant);
+        when(mockAcceptedPermission.id()).thenReturn(permissionId);
+        when(mockAcceptedPermission.expirationTime()).thenReturn(fixedInstant);
     }
 
     @Test
     void verify_run_changesState_stopsStreamer_andUpdatesDb() {
         // Given
-        when(mockActivePermission.connectionId()).thenReturn("connectionId");
-        when(mockActivePermission.dataNeed()).thenReturn(mockAiidaDataNeed);
+        when(mockAcceptedPermission.connectionId()).thenReturn("connectionId");
+        when(mockAcceptedPermission.dataNeed()).thenReturn(mockAiidaDataNeed);
         when(mockAiidaDataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(repository.findById(permissionId)).thenReturn(Optional.of(mockCurrentPermission));
         when(mockCurrentPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
-        var runnable = new PermissionExpiredRunnable(mockActivePermission, streamerManager, repository, clock);
+        var runnable = new PermissionExpiredRunnable(mockAcceptedPermission, streamerManager, repository, clock);
 
         // When
         runnable.run();
@@ -72,7 +72,7 @@ class PermissionExpiredRunnableTest {
         // Given
         when(repository.findById(permissionId)).thenReturn(Optional.of(mockCurrentPermission));
         when(mockCurrentPermission.status()).thenReturn(PermissionStatus.REVOKED);
-        var runnable = new PermissionExpiredRunnable(mockActivePermission, streamerManager, repository, clock);
+        var runnable = new PermissionExpiredRunnable(mockAcceptedPermission, streamerManager, repository, clock);
 
         // When
         runnable.run();
@@ -87,7 +87,7 @@ class PermissionExpiredRunnableTest {
     void givenPermissionNoLongerExists_run_doesNotExpirePermission() {
         // Given
         when(repository.findById(permissionId)).thenReturn(Optional.empty());
-        var runnable = new PermissionExpiredRunnable(mockActivePermission, streamerManager, repository, clock);
+        var runnable = new PermissionExpiredRunnable(mockAcceptedPermission, streamerManager, repository, clock);
 
         // When
         runnable.run();

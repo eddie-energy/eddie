@@ -9,7 +9,7 @@ import { computed, ref, watch } from 'vue'
 import PermissionDetails from '@/components/PermissionDetails.vue'
 import {
   acceptPermission,
-  getActiveInboundPermissions,
+  getAcceptedInboundPermissions,
   getDataSources,
   rejectPermission,
   updateConnectionLimitMonitoring,
@@ -40,7 +40,7 @@ watch([open], async () => {
     modal.value?.showModal()
 
     outboundDataSources.value = await getDataSources(permission.value?.meterId)
-    inboundPermissions.value = await getActiveInboundPermissions()
+    inboundPermissions.value = await getAcceptedInboundPermissions()
 
     if (dataSourceOptions.value.length === 1) {
       selectedDataSource.value = dataSourceOptions.value[0].value

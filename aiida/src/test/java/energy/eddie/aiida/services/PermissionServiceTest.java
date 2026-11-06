@@ -320,7 +320,7 @@ class PermissionServiceTest {
         var mqttStreamingConfig = permission.mqttStreamingConfig();
         assertNotNull(mqttStreamingConfig);
         assertEquals("dataTopic", mqttStreamingConfig.dataTopic());
-        verify(mockPermissionScheduler).scheduleOrStart(argThat(activePermission -> activePermission.id().equals(permissionId1)));
+        verify(mockPermissionScheduler).scheduleOrStart(argThat(acceptedPermission -> acceptedPermission.id().equals(permissionId1)));
         verify(mockAiidaEventPublisher, never()).publishEvent(any());
         verifyNoInteractions(mockConnectionLimitDefaultRepository);
     }
@@ -446,7 +446,7 @@ class PermissionServiceTest {
         var permission = permissionCaptor.getValue();
         assertEquals(InboundMessageFormat.OPENADR_3_1, permission.inboundMessageFormat());
         verify(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
-        verify(mockPermissionScheduler).scheduleOrStart(argThat(activePermission -> activePermission.id().equals(permissionId1)));
+        verify(mockPermissionScheduler).scheduleOrStart(argThat(acceptedPermission -> acceptedPermission.id().equals(permissionId1)));
     }
 
     @Test
@@ -549,7 +549,7 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenValidUser_getActiveInboundPermissions() throws InvalidUserException {
+    void givenValidUser_getAcceptedInboundPermissions() throws InvalidUserException {
         // Given
         var uuid = UUID.fromString("dc9ff3d3-1f1f-445d-a4ee-85c1faffb715");
         when(mockAuthService.getCurrentUserId()).thenReturn(uuid);
@@ -557,7 +557,7 @@ class PermissionServiceTest {
                 .thenReturn(List.of(mockPermission));
 
         // When
-        var result = service.getActiveInboundPermissions();
+        var result = service.getAcceptedInboundPermissions();
 
         // Then
         assertEquals(List.of(mockPermission), result);

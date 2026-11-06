@@ -6,7 +6,7 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.record.*;
@@ -48,7 +48,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     private final MqttAsyncClient client;
     private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
-    private final ActivePermission permission;
+    private final AcceptedPermission permission;
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private final SecretsService secretsService;
@@ -70,7 +70,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
      */
     public MqttStreamer(
             StreamerDependencies dependencies,
-            ActivePermission permission,
+            AcceptedPermission permission,
             Flux<AiidaRecord> recordFlux,
             MqttStreamingContext streamingContext
     ) {

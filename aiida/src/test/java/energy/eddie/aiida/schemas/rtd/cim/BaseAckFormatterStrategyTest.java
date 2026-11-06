@@ -4,7 +4,7 @@
 package energy.eddie.aiida.schemas.rtd.cim;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
-import energy.eddie.aiida.models.permission.ActivePermission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.ObisCode;
@@ -124,7 +124,7 @@ class BaseAckFormatterStrategyTest {
 
     private static class TestStrategy extends BaseCimFormatterStrategy<Object, Object, String, String> {
         @Override
-        public Object toRealTimeDataEnvelope(UUID aiidaId, AiidaRecord aiidaRecord, ActivePermission permission) {
+        public Object toRealTimeDataEnvelope(UUID aiidaId, AiidaRecord aiidaRecord, AcceptedPermission permission) {
             return new Object();
         }
 
