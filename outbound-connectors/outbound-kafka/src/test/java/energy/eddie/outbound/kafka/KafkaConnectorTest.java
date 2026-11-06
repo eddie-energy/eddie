@@ -382,4 +382,22 @@ class KafkaConnectorTest {
         // Then
         assertThat(records).hasSize(1);
     }
+    @Test
+    void historicalDataV112UsesTopicAndNestedPermissionHeaders() {
+        var envelope = new energy.eddie.cim.v1_12.vhd.Envelope().withMessageDocumentHeader(
+                new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader().withMetaInformation(
+                        new energy.eddie.cim.v1_12.vhd.MetaInformation().withRequestPermissionId("pid")
+                                .withConnectionId("cid").withDataNeedId("dnid")));
+        var props = KafkaTestUtils.consumerProps(embeddedKafka, "historical-v112", true);
+        try (var consumer = new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new StringDeserializer()).createConsumer()) {
+            consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.validated-historical-data-md"));
+            kafkaConnector.setValidatedHistoricalDataV112Stream(Flux.just(envelope));
+            var records = KafkaTestUtils.getRecords(consumer);
+            assertThat(records).hasSize(1);
+            var record = records.iterator().next();
+            assertThat(record.key()).isEqualTo("cid");
+            assertThat(record.value()).contains("requestPermissionId", "pid", "dnid");
+            assertThat(new String(record.headers().lastHeader(energy.eddie.outbound.shared.Headers.PERMISSION_ID).value(), java.nio.charset.StandardCharsets.UTF_8)).isEqualTo("pid");
+        }
+    }
 }

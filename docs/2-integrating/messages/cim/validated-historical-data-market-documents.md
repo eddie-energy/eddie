@@ -6,6 +6,21 @@ Validated historical data market documents contain metered data that is received
 > Only the XSD is provided since the CIM is an XML first format, and it cannot be guaranteed that the JSON variant is stable.
 
 The XSD files can be found [here for v0.82](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/vhd) and [here for v1.04](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v1_04/vhd).
+CIM 1.12 uses the [VHD 1.12.38 schema](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v1_12/vhd).
+AT-EDA, BE-Fluvius, CDS, DE-ETA, DK-Energinet, ES-Datadis, FI-Fingrid, FR-Enedis,
+US-Green-Button, and simulation publish the same acquired historical measurements in CIM 1.04 and 1.12.
+Select CIM 1.12 through `/cim_1_12/validated-historical-data-md` (live JSON/XML streams or stored
+JSON/XML documents), or through `ep.<eddie-id>.cim_1_12.validated-historical-data-md` on Kafka or AMQP.
+REST supports the same permission, connection, data need, country, connector, and insertion-time filters.
+The existing validated historical data need and permission apply to every supported output version;
+selecting a version requires no additional data need, permission, or provider acquisition.
+
+In CIM 1.12, `MessageDocumentHeader.MetaInformation.requestPermissionId` carries the existing permission ID.
+The required series `dateAndOrTime.dateTime` preserves the provider process timestamp when supplied.
+Otherwise it carries the source document creation time (EDDIE message creation time), rather than an
+additional measurement timestamp. Measurement intervals remain in each `Series_Period.timeInterval`.
+The document-wide CIM 1.04 period has no direct CIM 1.12 field; series periods preserve measurement coverage.
+
 The following is an example of a validated historical data market document.
 
 ::: code-group

@@ -6,6 +6,8 @@ package energy.eddie.regionconnector.dk.energinet.providers.v1_04;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
+import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import jakarta.annotation.Nullable;
@@ -46,5 +48,10 @@ public class EnerginetValidatedHistoricalDataMarketDocumentProvider {
             LOGGER.error("Failed to map to validated historical market document", e);
             return null;
         }
+    }
+
+    @MessageStream(Envelope.class)
+    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
+        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 }

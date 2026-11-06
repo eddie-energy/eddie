@@ -51,6 +51,8 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents
+- `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.validated-historical-data-md`:
+  Provides validated historical data market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.near-real-time-data-md`:
   Provides near real-time data market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.acknowledgement-md`:

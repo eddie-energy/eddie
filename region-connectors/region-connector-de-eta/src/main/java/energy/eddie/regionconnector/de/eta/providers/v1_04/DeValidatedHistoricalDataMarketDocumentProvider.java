@@ -3,6 +3,8 @@ package energy.eddie.regionconnector.de.eta.providers.v1_04;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
+import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.providers.IdentifiableValidatedHistoricalData;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
@@ -14,6 +16,7 @@ import reactor.core.publisher.Flux;
  */
 @Component("deValidatedHistoricalDataMarketDocumentProviderV104")
 public class DeValidatedHistoricalDataMarketDocumentProvider {
+    private final Flux<VHDEnvelope> validatedHistoricalData;
 
     private final Flux<IdentifiableValidatedHistoricalData> identifiableData;
     private final CommonInformationModelConfiguration cimConfig;
@@ -28,12 +31,18 @@ public class DeValidatedHistoricalDataMarketDocumentProvider {
         this.identifiableData = stream.validatedHistoricalData();
         this.cimConfig = cimConfig;
         this.deConfiguration = deConfiguration;
+        this.validatedHistoricalData = identifiableData
+                .map(data -> new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, deConfiguration, data))
+                .flatMapIterable(IntermediateValidatedHistoricalDataMarketDocument::toVhd).share();
     }
 
     @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
-        return identifiableData
-                .map(data -> new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, deConfiguration, data))
-                .flatMapIterable(IntermediateValidatedHistoricalDataMarketDocument::toVhd);
+        return validatedHistoricalData;
+    }
+
+    @MessageStream(Envelope.class)
+    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
+        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 }

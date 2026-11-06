@@ -50,6 +50,9 @@ class CimControllerTest {
     @MockitoBean
     private RequestPermissionMarketDocumentRepository rpmdRepository;
 
+    @MockitoBean
+    private ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
+
     @Test
     void nearRealTimeDataMdSSE_returnsDocuments() {
         var message1 = new RTDEnvelope();
@@ -303,5 +306,81 @@ class CimControllerTest {
         StepVerifier.create(result)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+    @Test
+    void validatedHistoricalDataMdSSE_returnsDocuments() {
+        var message1 = new energy.eddie.cim.v1_12.vhd.Envelope();
+        var message2 = new energy.eddie.cim.v1_12.vhd.Envelope();
+
+        given(cimConnector.getValidatedHistoricalDataMarketDocumentStream())
+                .willReturn(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(energy.eddie.cim.v1_12.vhd.Envelope.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+
+    @Test
+    void validatedHistoricalDataMd_returnsDocuments() {
+        var msg = new ValidatedHistoricalDataMarketDocumentModel(new energy.eddie.cim.v1_12.vhd.Envelope());
+        given(vhdRepository.findAll(ArgumentMatchers.<Specification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(MediaType.APPLICATION_JSON)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(new ParameterizedTypeReference<List<energy.eddie.cim.v1_12.vhd.Envelope>>() {})
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataLiveXmlPreservesNestedPermission() {
+        var message = historicalMessage();
+        given(cimConnector.getValidatedHistoricalDataMarketDocumentStream()).willReturn(Flux.just(message));
+        var result = webTestClient.get().uri("/cim_1_12/validated-historical-data-md")
+                .accept(MediaType.parseMediaType(energy.eddie.outbound.rest.web.EventStream.EVENT_STREAM_XML_VALUE))
+                .exchange().expectStatus().isOk().returnResult(String.class).getResponseBody();
+        StepVerifier.create(result).assertNext(xml -> {
+            assertTrue(xml.contains("requestPermissionId"));
+            assertTrue(xml.contains("pid"));
+            assertTrue(xml.contains("CEEDS_ValidatedHistoricalDataDocument_v1.12.38"));
+        }).verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataStoredJsonPreservesNestedPermission() {
+        given(vhdRepository.findAll(ArgumentMatchers.<org.springframework.data.jpa.domain.PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+                .willReturn(List.of(new ValidatedHistoricalDataMarketDocumentModel(historicalMessage())));
+        webTestClient.get().uri("/cim_1_12/validated-historical-data-md?permissionId=pid")
+                .accept(MediaType.APPLICATION_JSON).exchange().expectStatus().isOk()
+                .expectBody(String.class).value(json -> {
+                    assertTrue(json.contains("requestPermissionId"));
+                    assertTrue(json.contains("pid"));
+                });
+    }
+
+    private static energy.eddie.cim.v1_12.vhd.Envelope historicalMessage() {
+        return new energy.eddie.cim.v1_12.vhd.Envelope().withMessageDocumentHeader(
+                new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader().withMetaInformation(
+                        new energy.eddie.cim.v1_12.vhd.MetaInformation().withRequestPermissionId("pid")
+                                .withConnectionId("cid").withDataNeedId("dnid").withRegionCountry("AT").withRegionConnector("at-eda")));
     }
 }

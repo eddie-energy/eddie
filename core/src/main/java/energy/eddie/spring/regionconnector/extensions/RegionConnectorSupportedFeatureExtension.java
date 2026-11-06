@@ -107,6 +107,12 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
         return hasMessageStream(ESRDMDEnvelope.class);
     }
 
+    @JsonProperty
+    @SuppressWarnings("java:S100")
+    public boolean supportsValidatedHistoricalDataMarketDocumentsV1_12() {
+        return hasMessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class);
+    }
+
     private boolean hasBean(Class<?> clazz) {
         try {
             context.getBean(clazz);
