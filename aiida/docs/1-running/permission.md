@@ -17,6 +17,13 @@ AIIDA is communicating with EDDIE over MQTT. After the handshake between AIIDA a
 This configuration contains the necessary information to connect to the MQTT broker of EDDIE.
 It also specifies the topics on which AIIDA can publish and subscribe to.
 
+## MQTT delivery retries
+
+Messages that cannot be published are stored for the permission and retried when its MQTT connection is established.
+Retries read at most 100 queued messages at a time, so a large backlog does not have to fit in the Java heap.
+Each retry cycle uses a fixed upper message ID: messages queued or requeued during that cycle are left for a later connection.
+If transmission is disabled or the streamer is closing, unprocessed messages remain in the queue.
+
 ## Adding a permission
 
 Adding a permission is done via the AIIDA Web UI.
