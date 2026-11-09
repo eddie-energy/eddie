@@ -22,7 +22,7 @@ Follow the official quickstart to launch the EDDIE Framework, explore the demons
 ### [➡ ️Open the EDDIE tutorial](https://architecture.eddie.energy/framework/1-running/OPERATION.html#quickstart)
 
 > [!NOTE]
-> For feedback and questions, [create an issue](https://github.com/eddie-energy/eddie/issues/new/choose) or contact [georg.hartner@eddie.energy](mailto:georg.hartner@eddie.energy) and [florian.weingartshofer@fh-hagenberg.at](mailto:florian.weingartshofer@fh-hagenberg.at).
+> For feedback and questions, [create an issue](https://github.com/eddie-energy/eddie/issues/new/choose) or contact [georg.hartner@eddie.energy](mailto:georg.hartner@eddie.energy) and [stefan.gruenberger@fh-hagenberg.at](mailto:stefan.gruenberger@fh-hagenberg.at).
 
 ## Key Takeaways
 

@@ -133,7 +133,7 @@ Minutes of the meetings mentioned above to be stored in the GitHub project.
 
 #### EDDIE Framework Lead
 
-**Nominee:** Florian Weingartshofer (FH Oberösterreich)  
+**Nominee:** Markus Reichl (FH Oberösterreich)  
 **Focus:** Ownership and roadmap of EDDIE.
 
 #### AIIDA Lead
@@ -146,30 +146,30 @@ Minutes of the meetings mentioned above to be stored in the GitHub project.
 ## 4. Organizational Diagram
 
 ```
-                         Administrative & Scientific Coordinator
-                        FH-Prof. Priv.-Doz. Dr. Oliver Hödl
-                                     │
-                                     │
-       ┌─────────────────────────────┼─────────────────────────────┐─────────────────────────────┐
-       │                             │                             │                             │
- Business Coordinator         Technical Coordinator          Development Coordinator    Operationalisation Lead
-  Laurent Schmitt              Georg Hartner              FH-Prof. Dr. Marc Kurz          Nathaniel Boisgard
- (Digital4Grids)           (Entarc.eu GmbH)               (FH Oberösterreich)            (University of Vienna)
-       │                             │                             │
-       │──────────── Community Building (joint responsibility) ────────────│
-       │                             │                             │
-       │                             ├──── Architecture Alignment ────┐
-       │                             │                                 │
-       │                             │                                 │
-       │                      Architecture &                     Development &
-       │                      Integration Team                   Engineering Team
-       │                                                             │
-       │                                                             │
-       │                                     ┌───────────────────────┴──────────────────────┐
-       │                                     │                                              │
-       │                            EDDIE Framework Lead                               AIIDA Lead
-       │                           Florian Weingartshofer                          Stefan Penzinger
-       │                                 (FH OÖ)                                       (FH OÖ)
+                    Administrative & Scientific Coordinator
+                      FH-Prof. Priv.-Doz. Dr. Oliver Hödl
+                                      │
+                                      │
+        ┌─────────────────────────────┼─────────────────────────────┐─────────────────────────────┐
+        │                             │                             │                             │
+ Business Coordinator       Technical Coordinator         Development Coordinator      Operationalisation Lead
+   Laurent Schmitt              Georg Hartner             FH-Prof. Dr. Marc Kurz         Nathaniel Boisgard
+   (Digital4Grids)             (Entarc.eu GmbH)              (FH Oberösterreich)       (University of Vienna)
+        │                             │                             │
+        │──────── Community Building (joint responsibility) ────────│
+                                      │                             │
+                                      ├── Architecture Alignment ───|
+                                      │                             │
+                                      │                             │
+                                Architecture &                 Development &
+                               Integration Team              Engineering Team
+                                                                    │
+                                                                    │
+                                            ┌───────────────────────┴──────────────────────┐
+                                            │                                              │
+                                   EDDIE Framework Lead                               AIIDA Lead
+                                       Markus Reichl                                Stefan Penzinger
+                                         (FH OÖ)                                        (FH OÖ)
 ```
 
 ## 5. Governance Charter
