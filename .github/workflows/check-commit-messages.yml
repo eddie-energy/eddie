@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+# SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 # SPDX-License-Identifier: Apache-2.0
 
 name: 'Check commit messages format'
@@ -22,5 +22,19 @@ jobs:
       REPOSITORY: ${{ github.repository }}
       PR_NUMBER: ${{ github.event.pull_request.number }}
     steps:
-      - uses: actions/checkout@0c366fd6a839edf440554fa01a7085ccba70ac98 # v6
-      - uses: webiny/action-conventional-commits@faccb24fc2550dd15c0390d944379d2d8ed9690e # v1.3.1
+      - name: Check if commit message follows Conventional Commits
+        run: |
+          url="https://api.github.com/repos/$REPOSITORY/pulls/$PR_NUMBER/commits"
+          commits=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$url" | jq -r '.[].commit.message | split("\n")[0]')
+          regex='^(Merge |Revert |(build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([^)]+\))?(!)?: .+)'
+
+          echo "Checking commit messages against \"$regex\"..."
+          
+          invalid=$(echo "$commits" | grep -vE "$regex" || true)
+          
+          if [[ -n "$invalid" ]]; then
+            echo "$invalid" | sed 's/^/❌  /'
+            exit 1
+          fi
+          
+          echo "✅ All commit messages are valid."
