@@ -13,6 +13,8 @@ import energy.eddie.aiida.services.AuthService;
 import energy.eddie.aiida.services.record.LatestRecordService;
 import energy.eddie.api.agnostic.aiida.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration;
@@ -30,6 +32,8 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -316,5 +320,34 @@ class LatestRecordControllerTest {
                .andExpect(status().isUnauthorized());
 
         verify(service, never()).lastMessageStream();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {1, 100})
+    @WithMockUser
+    void latestAiidaRecords_shouldReturnRecordsForAmountWithinBounds(int amount) throws Exception {
+        when(service.latestDataSourceRecords(DATA_SOURCE_ID, amount)).thenReturn(List.of(LATEST_RECORD));
+
+        mockMvc.perform(get("/messages/data-source/4211ea05-d4ab-48ff-8613-8f4791a56606/latestRecords")
+                                .param("amount", String.valueOf(amount))
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(1))
+               .andExpect(jsonPath("$[0].dataSourceId").value("4211ea05-d4ab-48ff-8613-8f4791a56606"))
+               .andExpect(jsonPath("$[0].values.length()").value(2));
+
+        verify(service, times(1)).latestDataSourceRecords(DATA_SOURCE_ID, amount);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-1, 0, 101})
+    @WithMockUser
+    void latestAiidaRecords_shouldReturn400ForAmountOutOfBounds(int amount) throws Exception {
+        mockMvc.perform(get("/messages/data-source/4211ea05-d4ab-48ff-8613-8f4791a56606/latestRecords")
+                                .param("amount", String.valueOf(amount))
+                                .accept(MediaType.APPLICATION_JSON))
+               .andExpect(status().isBadRequest());
+
+        verify(service, never()).latestDataSourceRecords(eq(DATA_SOURCE_ID), anyInt());
     }
 }
