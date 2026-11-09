@@ -147,3 +147,4 @@ docker-compose.override.yml
 
 # Ignore local env and configuration files
 *.local
+*.local.*

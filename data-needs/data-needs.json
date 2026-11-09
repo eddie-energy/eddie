@@ -48,6 +48,22 @@
     "maxGranularity": "P1D"
   },
   {
+    "type": "validated",
+    "id": "dcbc1c74-37bd-4c5b-ab2e-fd0be9c1edf4",
+    "name": "NEXT_10_DAYS_ONE_MEASUREMENT_PER_QUARTER_HOUR",
+    "description": "Historical validated consumption data for the next 10 days, one measurement per 15 minutes",
+    "purpose": "Some purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P10D"
+    },
+    "energyType": "ELECTRICITY",
+    "minGranularity": "PT15M",
+    "maxGranularity": "PT15M"
+  },
+  {
     "type": "outbound-aiida",
     "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
     "name": "FUTURE_NEAR_REALTIME_DATA_OUTBOUND",
