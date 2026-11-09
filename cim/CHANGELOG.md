@@ -138,3 +138,8 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.14.1 - 2026-09-25
 
 - Fix missing validation for real time data market document v1.04
+
+## 3.15.0 - 2026-11-09
+
+- Add the validated historical data schema and generated models for CIM version `1.12`.
+- Add JSON and XML serialization and deserialization support for CIM 1.12 validated historical data.

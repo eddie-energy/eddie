@@ -17,7 +17,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.14.1"
+version = "3.15.0"
 
 repositories {
     mavenCentral()
