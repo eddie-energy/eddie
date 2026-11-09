@@ -53,9 +53,10 @@ class AiidaUiTests {
     }
 
     @Test
-    void dataSourceAndPermissionFlow(Page page) {
+    void dataSourceAndPermissionFlow(Page page) throws IOException {
         var dataSource = "E2E Simulation Data Source";
         var dataNeed = "FUTURE_NEAR_REALTIME_DATA_OUTBOUND";
+        var pollingIntervalSeconds = 5;
 
         // Click "Data Sources" tab
         page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
@@ -69,7 +70,9 @@ class AiidaUiTests {
         page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
         page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
         page.getByRole(AriaRole.OPTION).getByText("Austria").click();
-        page.getByLabel("Polling Interval").fill("120");
+        page.getByLabel("Polling Interval").fill(Integer.toString(pollingIntervalSeconds));
+        // Create the data source disabled, so it does not produce any records yet
+        page.getByLabel("Enabled").uncheck();
         // Choose icon
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Meter")).click();
         // Upload image
@@ -83,7 +86,27 @@ class AiidaUiTests {
                                  .last();
         assertThat(dataSourceCard).isVisible();
         // Visible image
-        assertThat(dataSourceCard.getByAltText("image for data source")).isVisible();
+        assertThat(dataSourceCard.getByAltText("data source", new Locator.GetByAltTextOptions().setExact(true))).isVisible();
+
+        // Disabled data source has no latest message yet
+        dataSourceCard.getByText("Download Latest Message").click();
+        assertThat(page.getByRole(AriaRole.ALERT)
+                       .filter(new Locator.FilterOptions().setHasText("Latest Aiida Record not found"))).isVisible();
+
+        // Enable data source
+        dataSourceCard.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Enable Data Source")).click();
+        assertThat(dataSourceCard.getByRole(AriaRole.BUTTON,
+                                            new Locator.GetByRoleOptions().setName("Disable Data Source"))).isVisible();
+
+        // Wait for the simulation to produce a record
+        page.waitForTimeout((pollingIntervalSeconds + 2) * 1000);
+
+        // Download latest message of the data source
+        var download = page.waitForDownload(() -> dataSourceCard.getByText("Download Latest Message").click());
+        var latestRecord = mapper.readTree(Files.readString(download.path()));
+        assertEquals(dataSource, latestRecord.path("name").asString());
+        assertThat(dataSourceCard).containsText(latestRecord.path("dataSourceId").asString());
+        assertFalse(latestRecord.path("values").isEmpty());
 
         // Create permission request through the EDDIE button
         var aiidaCode = aiidaCodeForDataNeed(dataNeed);
