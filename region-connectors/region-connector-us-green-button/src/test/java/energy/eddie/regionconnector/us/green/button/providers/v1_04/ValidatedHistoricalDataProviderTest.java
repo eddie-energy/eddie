@@ -95,8 +95,9 @@ class ValidatedHistoricalDataProviderTest {
         // When
 
         // Then
+        var providerV112 = new energy.eddie.regionconnector.us.green.button.providers.v1_12.ValidatedHistoricalDataProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> publishService.publishValidatedHistoricalData(new IdentifiableSyndFeed(permissionRequest, feed)))
                     .then(publishService::close)

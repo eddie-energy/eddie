@@ -84,8 +84,9 @@ class EnerginetValidatedHistoricalDataMarketDocumentProviderTest {
         var response = DtoLoader.loadValidatedHistoricalData().getResult();
 
         // When
+        var providerV112 = new energy.eddie.regionconnector.dk.energinet.providers.v1_12.EnerginetValidatedHistoricalDataMarketDocumentProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> {
                         streams.publish(new IdentifiableApiResponse(pr, Objects.requireNonNull(response).getFirst()));

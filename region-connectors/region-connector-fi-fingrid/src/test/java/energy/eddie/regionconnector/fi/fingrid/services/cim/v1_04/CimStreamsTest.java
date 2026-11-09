@@ -82,8 +82,9 @@ class CimStreamsTest {
         var streams = new CimStreams(energyDataService);
 
         // When
+        var providerV112 = new energy.eddie.regionconnector.fi.fingrid.services.cim.v1_12.CimStreams(streams);
         var pairedDocuments = Flux.zip(streams.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       streams.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> publisher.emit(new IdentifiableValidatedHistoricalData(pr, List.of(resp))))
                     .then(publisher::complete)

@@ -86,8 +86,9 @@ class DeValidatedHistoricalDataMarketDocumentProviderTest {
                         3, 2, true, false, null, null)
         );
 
+        var providerV112 = new energy.eddie.regionconnector.de.eta.providers.v1_12.DeValidatedHistoricalDataMarketDocumentProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                 .then(() -> publisher.emit(samplePayload()))
                 .assertNext(pair -> assertEquivalentHistoricalData(pair.getT1(), pair.getT2()))

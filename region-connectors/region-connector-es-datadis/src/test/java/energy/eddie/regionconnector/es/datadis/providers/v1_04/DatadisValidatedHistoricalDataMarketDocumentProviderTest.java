@@ -73,8 +73,9 @@ class DatadisValidatedHistoricalDataMarketDocumentProviderTest {
         var intermediate = IntermediateMeteringData.fromMeteringData(identifiableMeteringData).block();
 
         // When
+        var providerV112 = new energy.eddie.regionconnector.es.datadis.providers.v1_12.DatadisValidatedHistoricalDataMarketDocumentProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> {
                         streams.publish(new IdentifiableMeteringData(pr, intermediate));

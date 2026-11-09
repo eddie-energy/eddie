@@ -73,8 +73,9 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
         var provider = new FluviusValidatedHistoricalDataMarketDocumentProvider(config, streams);
 
         // Then
+        var providerV112 = new energy.eddie.regionconnector.be.fluvius.provider.v1_12.FluviusValidatedHistoricalDataMarketDocumentProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> streams.publish(pr, json))
                     .assertNext(pair -> assertEquivalentHistoricalData(pair.getT1(), pair.getT2()))

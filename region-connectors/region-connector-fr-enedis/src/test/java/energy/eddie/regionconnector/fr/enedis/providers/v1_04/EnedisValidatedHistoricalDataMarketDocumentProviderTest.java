@@ -80,8 +80,9 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
         var provider = new EnedisValidatedHistoricalDataMarketDocumentProvider(streams, enedisConfiguration);
 
         // When
+        var providerV112 = new energy.eddie.regionconnector.fr.enedis.providers.v1_12.EnedisValidatedHistoricalDataMarketDocumentProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> {
                         streams.publish(identifiableMeterReading);

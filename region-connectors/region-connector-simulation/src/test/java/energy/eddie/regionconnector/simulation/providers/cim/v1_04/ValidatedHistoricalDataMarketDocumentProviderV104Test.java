@@ -10,6 +10,7 @@ import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
 import energy.eddie.regionconnector.simulation.dtos.Measurement;
 import energy.eddie.regionconnector.simulation.dtos.SimulatedMeterReading;
 import energy.eddie.regionconnector.simulation.providers.DocumentStreams;
+import energy.eddie.regionconnector.simulation.providers.cim.v1_12.ValidatedHistoricalDataMarketDocumentProviderV112;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -28,8 +29,9 @@ class ValidatedHistoricalDataMarketDocumentProviderV104Test {
             var provider = new ValidatedHistoricalDataMarketDocumentProviderV104(streams, config);
             var reading = new SimulatedMeterReading("cid", "dnid", "pid", "mid", ZonedDateTime.parse("2026-01-01T00:00Z"),
                     "PT15M", List.of(new Measurement(10.25, Measurement.MeasurementType.MEASURED)));
+            var providerV112 = new ValidatedHistoricalDataMarketDocumentProviderV112(provider);
             var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                           provider.getValidatedHistoricalDataV112Stream());
+                                           providerV112.getValidatedHistoricalDataV112Stream());
             StepVerifier.create(pairedDocuments)
                     .then(() -> streams.publish(reading))
                     .assertNext(pair -> {

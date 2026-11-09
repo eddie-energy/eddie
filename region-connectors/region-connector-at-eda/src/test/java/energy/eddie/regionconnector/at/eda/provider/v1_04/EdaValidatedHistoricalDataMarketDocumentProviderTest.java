@@ -113,8 +113,9 @@ class EdaValidatedHistoricalDataMarketDocumentProviderTest {
         Sinks.Many<IdentifiableConsumptionRecord> records = Sinks.many().unicast().onBackpressureBuffer();
         when(streams.consumptionRecordStream()).thenReturn(records.asFlux());
         var provider = new EdaValidatedHistoricalDataMarketDocumentProvider(cimConfig, streams);
+        var providerV112 = new energy.eddie.regionconnector.at.eda.provider.v1_12.EdaValidatedHistoricalDataMarketDocumentProvider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
 
         // When / Then: both versions subscribe before the single provider record is emitted.
         StepVerifier.create(pairedDocuments)

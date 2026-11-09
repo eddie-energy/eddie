@@ -5,9 +5,7 @@ package energy.eddie.regionconnector.fi.fingrid.services.cim.v1_04;
 
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.regionconnector.fi.fingrid.services.EnergyDataService;
-import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
@@ -28,10 +26,5 @@ public class CimStreams {
     @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return validatedHistoricalData;
-    }
-
-    @MessageStream(Envelope.class)
-    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
-        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 }

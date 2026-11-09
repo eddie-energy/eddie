@@ -10,6 +10,7 @@ import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.regionconnector.cds.openapi.model.*;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
+import energy.eddie.regionconnector.cds.providers.vhd.v1_12.CdsValidatedHistoricalDataMarketDocumentV112Provider;
 import org.junit.jupiter.api.Test;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -120,8 +121,9 @@ class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
                 .build();
 
         // When
+        var providerV112 = new CdsValidatedHistoricalDataMarketDocumentV112Provider(provider);
         var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       provider.getValidatedHistoricalDataV112Stream());
+                                       providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> streams.publishValidatedHistoricalData(
                             pr,

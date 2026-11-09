@@ -6,8 +6,6 @@ package energy.eddie.regionconnector.us.green.button.providers.v1_04;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.cim.v1_12.vhd.Envelope;
-import energy.eddie.regionconnector.shared.cim.v1_12.ValidatedHistoricalDataV112Converter;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.providers.UnsupportedUnitException;
 import energy.eddie.regionconnector.us.green.button.services.PublishService;
@@ -52,10 +50,5 @@ public class ValidatedHistoricalDataProvider {
     @MessageStream(VHDEnvelope.class)
     public Flux<VHDEnvelope> getValidatedHistoricalDataMarketDocumentsStream() {
         return validatedHistoricalDataEnvelopes;
-    }
-
-    @MessageStream(Envelope.class)
-    public Flux<Envelope> getValidatedHistoricalDataV112Stream() {
-        return getValidatedHistoricalDataMarketDocumentsStream().map(ValidatedHistoricalDataV112Converter::convert);
     }
 }
