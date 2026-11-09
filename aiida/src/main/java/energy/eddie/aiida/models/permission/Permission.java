@@ -472,6 +472,14 @@ public class Permission implements Persistable<UUID> {
     }
 
     /**
+     * @return {@code true} if the permission is inbound.
+     */
+    @JsonIgnore
+    public boolean isInbound() {
+        return dataNeed instanceof InboundAiidaLocalDataNeed;
+    }
+
+    /**
      * {@code true} if the permission allows the eligible party to send connection limits.
      * @return Whether the permission supports connection limit features such as monitoring.
      */

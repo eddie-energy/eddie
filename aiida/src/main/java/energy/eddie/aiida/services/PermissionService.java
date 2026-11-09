@@ -17,7 +17,6 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -41,7 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
-import org.springframework.web.util.UriTemplate;
 
 import java.time.*;
 import java.util.*;
@@ -113,11 +111,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         LOGGER.info("Got request to revoke permission with id '{}'.", permission.id());
         authService.checkAuthorizationForPermission(permission);
 
-        if (!permission.status().isAccepted())
+        if (!permission.status().isAccepted()) {
             throw new PermissionStateTransitionException(permission.id().toString(),
                                                          REVOKED.name(),
                                                          List.of(ACCEPTED.name()),
                                                          permission.status().name());
+        }
 
         validateInboundDataSourceNotInUse(permission);
         permissionScheduler.removePermission(permissionId);
@@ -195,7 +194,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AcceptOutboundPermissionDto acceptDto
     ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidOutboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException, SecretStoringException {
         var permission = buildValidatedPermission(permissionId, acceptDto);
-        if (isInbound(permission)) {
+        if (permission.isInbound()) {
             throw new InvalidOutboundPermissionException(permissionId);
         }
 
@@ -223,7 +222,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             AcceptInboundPermissionDto acceptDto
     ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, SecretStoringException {
         var permission = buildValidatedPermission(permissionId, acceptDto);
-        if (!isInbound(permission)) {
+        if (!permission.isInbound()) {
             throw new InvalidInboundPermissionException(permissionId);
         }
 
@@ -295,7 +294,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         LOGGER.info("Rejecting permission request {}", permissionId);
-        handshakeService.reject(handshakeTarget(rejectDto.handshakeUrl(), permissionId, rejectDto.accessToken()),
+        handshakeService.reject(HandshakeTarget.of(rejectDto.handshakeUrl(), permissionId, rejectDto.accessToken()),
                                 rejectDto.reason());
     }
 
@@ -390,7 +389,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Transactional
     public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
         // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var acceptedPermissions = permissionRepository.findStartableByStatus(ACCEPTED);
+        var acceptedPermissions = permissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(ACCEPTED);
         LOGGER.info(
                 "Fetched {} permission from database that should resume streaming or be updated if expired.",
                 acceptedPermissions.size());
@@ -428,10 +427,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                         authService.getCurrentUserId());
     }
 
-    private static boolean isInbound(Permission permission) {
-        return permission.dataNeed() instanceof InboundAiidaLocalDataNeed;
-    }
-
     /**
      * Builds a permission from the details fetched from the EDDIE framework and validates whether this AIIDA instance
      * can fulfill it.
@@ -452,7 +447,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new PermissionAlreadyExistsException(permissionId);
         }
 
-        var target = handshakeTarget(handshakeUrlTemplate, permissionId, accessToken);
+        var target = HandshakeTarget.of(handshakeUrlTemplate, permissionId, accessToken);
         var details = handshakeService.fetchDetails(target)
                                       .doOnError(error -> LOGGER.atError()
                                                                 .addArgument(permissionId)
@@ -485,11 +480,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         validateSingleActiveFcaPermissionPerMeterId(permission);
 
         return permission;
-    }
-
-    private static HandshakeTarget handshakeTarget(String handshakeUrlTemplate, UUID permissionId, String accessToken) {
-        var handshakeUrl = new UriTemplate(handshakeUrlTemplate).expand(permissionId).toString();
-        return new HandshakeTarget(handshakeUrl, accessToken);
     }
 
     private void persistLimitDefaults(Permission permission) {

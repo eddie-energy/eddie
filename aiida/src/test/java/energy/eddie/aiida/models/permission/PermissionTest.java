@@ -139,4 +139,22 @@ class PermissionTest {
         assertNull(permission.minLimitKw());
         assertNull(permission.maxLimitKw());
     }
+
+    @Test
+    void isInbound_withInboundDataNeed_returnsTrue() {
+        // Given
+        permission.initializeFromDataNeed(mock(InboundAiidaLocalDataNeed.class));
+
+        // When, Then
+        assertTrue(permission.isInbound());
+    }
+
+    @Test
+    void isInbound_withOutboundDataNeed_returnsFalse() {
+        // Given
+        permission.initializeFromDataNeed(mock(OutboundAiidaLocalDataNeed.class));
+
+        // When, Then
+        assertFalse(permission.isInbound());
+    }
 }

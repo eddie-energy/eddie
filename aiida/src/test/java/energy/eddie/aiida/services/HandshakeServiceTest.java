@@ -116,6 +116,19 @@ class HandshakeServiceTest {
         assertEquals(new HandshakeTarget(HANDSHAKE_URL, "token"), target);
     }
 
+    @Test
+    void handshakeTargetOf_expandsPermissionIdInUrlTemplate() {
+        // Given
+        var permissionId = UUID.fromString("f69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+
+        // When
+        var target = HandshakeTarget.of("https://eddie.example/permission-request/{permissionId}", permissionId, "token");
+
+        // Then
+        assertEquals(new HandshakeTarget("https://eddie.example/permission-request/f69f9bc2-e16c-4de4-8c3e-00d219dcd819",
+                                         "token"), target);
+    }
+
     private void assertRequest(HttpMethod method, String url) {
         assertEquals(1, requests.size());
         var request = requests.getFirst();

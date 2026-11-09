@@ -886,7 +886,7 @@ class PermissionServiceTest {
             permission.initializeFromDataNeed(mockStartupDataNeed);
             permission.setDataSource(mockDataSource);
             permission.setMqttStreamingConfig(mockMqttStreamingConfig);
-            when(mockPermissionRepository.findStartableByStatus(PermissionStatus.ACCEPTED)).thenReturn(List.of(permission));
+            when(mockPermissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED)).thenReturn(List.of(permission));
 
             // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
             if (expectedState == PermissionStatus.ACCEPTED)
@@ -914,7 +914,7 @@ class PermissionServiceTest {
             complete.initializeFromDataNeed(mockStartupDataNeed);
             complete.setDataSource(mockDataSource);
             complete.setMqttStreamingConfig(mockMqttStreamingConfig);
-            when(mockPermissionRepository.findStartableByStatus(PermissionStatus.ACCEPTED))
+            when(mockPermissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED))
                     .thenReturn(List.of(incomplete, complete));
             doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
 
