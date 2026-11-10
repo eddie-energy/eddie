@@ -6,8 +6,9 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
@@ -18,6 +19,7 @@ import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.schemas.rtd.raw.RawFormatter;
 import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.aiida.services.secrets.SecretsService;
+import energy.eddie.aiida.streamers.ConnectionStatusEventStream;
 import energy.eddie.aiida.streamers.StreamerDependencies;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -25,6 +27,8 @@ import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
+import org.eclipse.paho.mqttv5.client.MqttClientException;
+import org.eclipse.paho.mqttv5.client.MqttDisconnectResponse;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +53,8 @@ import java.util.UUID;
 import static energy.eddie.api.agnostic.aiida.ObisCode.NEGATIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.ObisCode.POSITIVE_ACTIVE_ENERGY;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT_HOUR;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.AdditionalMatchers.aryEq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -88,9 +94,11 @@ class MqttStreamerTest {
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
-    private Permission permissionMock;
+    private AcceptedPermission permissionMock;
     @Mock
     private SecretsService mockSecretsService;
+    @Mock
+    private ConnectionStatusEventStream mockConnectionStatusEventStream;
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
@@ -130,11 +138,23 @@ class MqttStreamerTest {
                                                     schemaFormatterRegistry,
                                                     commandSink,
                                                     mockLatestRecordMap,
-                                                    mockSecretsService);
+                                                    mockSecretsService,
+                                                    mockConnectionStatusEventStream);
 
         streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), streamingContext);
     }
 
+
+    @Test
+    void isConnected_delegatesToClient() {
+        // Given
+        streamer.connect();
+        when(mockClient.isConnected()).thenReturn(true, false);
+
+        // When, Then
+        assertTrue(streamer.isConnected());
+        assertFalse(streamer.isConnected());
+    }
 
     @Test
     void verify_connect_setsCallback_andSubscribes() {
@@ -176,6 +196,50 @@ class MqttStreamerTest {
 
         // Then
         verify(mockClient).subscribe(EXPECTED_COMMAND_TOPIC, 2);
+    }
+
+    @Test
+    void givenConnectComplete_publishesConnected() {
+        // Given
+        var userId = UUID.randomUUID();
+        when(permissionMock.userId()).thenReturn(userId);
+        when(permissionMock.id()).thenReturn(PERMISSION_ID);
+        streamer.connect();
+
+        // When
+        streamer.connectComplete(false, "testFoo");
+
+        // Then
+        verify(mockConnectionStatusEventStream).publish(userId, PERMISSION_ID, ConnectionStatus.CONNECTED);
+    }
+
+    @Test
+    void givenDisconnected_publishesNotConnected() {
+        // Given
+        var userId = UUID.randomUUID();
+        when(permissionMock.userId()).thenReturn(userId);
+        when(permissionMock.id()).thenReturn(PERMISSION_ID);
+        streamer.connect();
+
+        // When
+        streamer.disconnected(new MqttDisconnectResponse(new MqttException(MqttClientException.REASON_CODE_CONNECTION_LOST)));
+
+        // Then
+        verify(mockConnectionStatusEventStream).publish(userId, PERMISSION_ID, ConnectionStatus.NOT_CONNECTED);
+    }
+
+    @Test
+    void givenDisconnectedWhileClosing_doesNotPublish() throws MqttException {
+        // Given
+        when(mockClient.disconnect(anyLong())).thenReturn(mockDisconnectToken);
+        streamer.connect();
+        streamer.close();
+
+        // When
+        streamer.disconnected(new MqttDisconnectResponse(new MqttException(MqttClientException.REASON_CODE_CLIENT_CLOSED)));
+
+        // Then
+        verifyNoInteractions(mockConnectionStatusEventStream);
     }
 
     @Test

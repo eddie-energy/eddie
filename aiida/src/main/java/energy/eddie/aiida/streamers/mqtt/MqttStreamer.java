@@ -6,12 +6,15 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterRegistryException;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.AiidaStreamer;
+import energy.eddie.aiida.streamers.ConnectionStatusEventStream;
 import energy.eddie.aiida.streamers.StreamerDependencies;
 import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -25,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Sinks;
 import reactor.core.scheduler.Schedulers;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -37,17 +41,21 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-public class MqttStreamer extends AiidaStreamer implements MqttCallback {
+public class MqttStreamer implements AiidaStreamer, MqttCallback {
     private static final Logger LOGGER = LoggerFactory.getLogger(MqttStreamer.class);
+    private final Sinks.Many<PermissionCommand> commandSink;
+    private final SchemaFormatterRegistry schemaFormatterRegistry;
     private final MqttAsyncClient client;
     private final FailedToSendRepository failedToSendRepository;
     private final ObjectMapper mapper;
-    private final Permission permission;
+    private final AcceptedPermission permission;
     private final MqttStreamingConfig streamingConfig;
     private final PermissionLatestRecordMap permissionLatestRecordMap;
     private final SecretsService secretsService;
+    private final ConnectionStatusEventStream connectionStatusEventStream;
     private boolean isBeingTerminated = false;
     private volatile boolean transmissionEnabled;
+    private Flux<AiidaRecord> recordFlux;
     @Nullable
     private Disposable subscription;
 
@@ -62,12 +70,13 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
      */
     public MqttStreamer(
             StreamerDependencies dependencies,
-            Permission permission,
+            AcceptedPermission permission,
             Flux<AiidaRecord> recordFlux,
             MqttStreamingContext streamingContext
     ) {
-        super(recordFlux, dependencies.schemaFormatterRegistry(), dependencies.commandSink());
-
+        this.recordFlux = recordFlux;
+        this.schemaFormatterRegistry = dependencies.schemaFormatterRegistry();
+        this.commandSink = dependencies.commandSink();
         this.client = streamingContext.client();
         this.failedToSendRepository = dependencies.failedToSendRepository();
         this.mapper = dependencies.mapper();
@@ -75,6 +84,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         this.streamingConfig = streamingContext.streamingConfig();
         this.permissionLatestRecordMap = streamingContext.permissionLatestRecordMap();
         this.secretsService = dependencies.secretsService();
+        this.connectionStatusEventStream = dependencies.connectionStatusEventStream();
         this.transmissionEnabled = permission.transmissionEnabled();
 
         client.setCallback(this);
@@ -108,6 +118,11 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
         }
 
         subscription = recordFlux.publishOn(Schedulers.boundedElastic()).subscribe(this::publishRecord);
+    }
+
+    @Override
+    public boolean isConnected() {
+        return client.isConnected();
     }
 
     @Override
@@ -147,6 +162,10 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                     streamingConfig.permissionId(),
                     disconnectResponse.getServerReference(),
                     disconnectResponse.getException());
+
+        if (!isBeingTerminated) {
+            publishConnectionStatus(ConnectionStatus.NOT_CONNECTED);
+        }
     }
 
     @Override
@@ -191,6 +210,11 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
 
         subscribeToCommandTopic();
         retryFailedToSendMessages();
+        publishConnectionStatus(ConnectionStatus.CONNECTED);
+    }
+
+    private void publishConnectionStatus(ConnectionStatus connectionStatus) {
+        connectionStatusEventStream.publish(permission.userId(), permission.id(), connectionStatus);
     }
 
     @Override
@@ -244,7 +268,7 @@ public class MqttStreamer extends AiidaStreamer implements MqttCallback {
                     streamingConfig.serverUri()
             );
 
-            var dataNeed = Objects.requireNonNull(permission.dataNeed());
+            var dataNeed = permission.dataNeed();
             var schemas = Objects.requireNonNullElse(dataNeed.schemas(), Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
             for (var schema : schemas) {

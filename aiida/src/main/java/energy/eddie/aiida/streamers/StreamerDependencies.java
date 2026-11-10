@@ -21,6 +21,7 @@ public record StreamerDependencies(
         SchemaFormatterRegistry schemaFormatterRegistry,
         Sinks.Many<PermissionCommand> commandSink,
         PermissionLatestRecordMap permissionLatestRecordMap,
-        SecretsService secretsService
+        SecretsService secretsService,
+        ConnectionStatusEventStream connectionStatusEventStream
 ) {
 }

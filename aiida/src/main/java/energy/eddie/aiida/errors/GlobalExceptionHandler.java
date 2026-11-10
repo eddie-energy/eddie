@@ -99,6 +99,7 @@ public class GlobalExceptionHandler {
             InvalidDataSourceTypeException.class,
             IncompatibleDataSourceException.class,
             InvalidInboundPermissionException.class,
+            InvalidOutboundPermissionException.class,
             InvalidInstantOrDurationException.class,
             MissingDisplayNameException.class,
             MissingInboundMessageFormatException.class,

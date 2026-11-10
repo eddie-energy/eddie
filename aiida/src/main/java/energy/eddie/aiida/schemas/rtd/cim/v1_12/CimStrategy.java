@@ -5,7 +5,7 @@ package energy.eddie.aiida.schemas.rtd.cim.v1_12;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.rtd.cim.BaseCimFormatterStrategy;
@@ -118,9 +118,9 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     public RTDEnvelope toRealTimeDataEnvelope(
             UUID aiidaId,
             AiidaRecord aiidaRecord,
-            Permission permission
-    ) throws CimSchemaFormatterException {
-        var countryCode = dataSourceOfPermissionOrThrow(permission).countryCode();
+            AcceptedPermission permission
+    ) {
+        var countryCode = permission.dataSource().countryCode();
 
         return new RTDEnvelope()
                 .withMessageDocumentHeader(toMessageDocumentHeader(aiidaId, aiidaRecord, permission, countryCode))
@@ -152,9 +152,9 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     private MessageDocumentHeader toMessageDocumentHeader(
             UUID aiidaId,
             AiidaRecord aiidaRecord,
-            Permission permission,
+            AcceptedPermission permission,
             String countryCode
-    ) throws CimSchemaFormatterException {
+    ) {
         return new MessageDocumentHeader()
                 .withCreationDateTime(ZonedDateTime.now(UTC))
                 .withMetaInformation(toMetaInformation(aiidaId, aiidaRecord, permission, countryCode));
@@ -163,10 +163,10 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
     private MetaInformation toMetaInformation(
             UUID aiidaId,
             AiidaRecord aiidaRecord,
-            Permission permission,
+            AcceptedPermission permission,
             String countryCode
-    ) throws CimSchemaFormatterException {
-        var dataNeed = dataNeedOfPermissionOrThrow(permission);
+    ) {
+        var dataNeed = permission.dataNeed();
         var dataSource = aiidaRecord.dataSource();
 
         return new MetaInformation()

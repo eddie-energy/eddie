@@ -2,13 +2,17 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import type { AiidaPermission, InboundMessageFormat, PermissionTypes } from '@/types'
+import type {
+  AiidaPendingPermission,
+  AiidaPermission,
+  InboundMessageFormat,
+  PermissionTypes,
+} from '@/types'
 import StatusTag from './StatusTag.vue'
 import cronstrue from 'cronstrue/i18n'
 import Button from '@/components/Button.vue'
 import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
 import PenIcon from '@/assets/icons/PenIcon.svg'
-import { usePermissionDialog } from '@/composables/permission-dialog'
 import { useConfirmDialog } from '@/composables/confirm-dialog'
 import { useLastMessageRefresh } from '@/composables/last-message-refresh'
 import {
@@ -18,7 +22,12 @@ import {
   updateInboundMessageFormat,
 } from '@/api'
 import { dataSources, fetchDataSources } from '@/stores/dataSources'
-import { fetchPermissions, isMonitorablePermission, permissions } from '@/stores/permissions'
+import {
+  fetchPermissions,
+  isAcceptedPermission,
+  isMonitorablePermission,
+  permissions,
+} from '@/stores/permissions'
 import { computed, onMounted, ref, watch } from 'vue'
 import EyeIcon from '@/assets/icons/EyeIcon.svg'
 import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
@@ -29,16 +38,28 @@ import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
 const { permission, status } = defineProps<{
-  permission: AiidaPermission
+  /** Pending permissions are not accepted yet and only previewed before accepting or rejecting them. */
+  permission: AiidaPermission | AiidaPendingPermission
   status?: PermissionTypes
 }>()
+/** Only accepted permissions can be acted on, pending permissions are not persisted yet. */
+const acceptedPermission = computed(() =>
+  isAcceptedPermission(permission) ? permission : undefined,
+)
+const dataSource = computed(() => acceptedPermission.value?.dataSource)
+/** Pending permissions do not have their own schedule yet, they use the schedule of the data need. */
+const transmissionSchedule = computed(
+  () =>
+    acceptedPermission.value?.effectiveTransmissionSchedule ??
+    permission.dataNeed.transmissionSchedule,
+)
 const emit = defineEmits<{
   configureInboundProvisioning: [permission: AiidaPermission]
   resetInboundServerPassword: [permission: AiidaPermission]
   resetInboundRestApiKey: [permission: AiidaPermission]
+  /** The monitoring data source selected for a pending permission, which is assigned once it is accepted. */
+  selectMonitoringDataSource: [dataSourceId: string | undefined]
 }>()
-
-const { updatePermission } = usePermissionDialog()
 
 const selectedInboundMessageFormat = ref(permission.inboundMessageFormat)
 
@@ -60,6 +81,18 @@ const dateTimeFormat = new Intl.DateTimeFormat(undefined, {
   minute: '2-digit',
   hour: '2-digit',
   second: '2-digit',
+})
+
+// AIIDA derives the start and end of a permission from whole days in UTC, so they are shown in UTC as well
+const permissionPeriodFormat = new Intl.DateTimeFormat(undefined, {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  minute: '2-digit',
+  hour: '2-digit',
+  second: '2-digit',
+  timeZone: 'UTC',
+  timeZoneName: 'short',
 })
 
 watch(
@@ -112,30 +145,30 @@ const handleInboundMessageFormatSelection = async (
 }
 
 const openInboundProvisioningModal = () => {
-  emit('configureInboundProvisioning', permission)
+  if (acceptedPermission.value) {
+    emit('configureInboundProvisioning', acceptedPermission.value)
+  }
 }
 
 const isInboundMqttProvisioning = computed(
   () =>
     permission.dataNeed.type === 'inbound-aiida' &&
-    (permission.dataSource?.provisioningType === 'MQTT_SERVER' ||
-      permission.dataSource?.provisioningType === 'MQTT_CLIENT'),
+    (dataSource.value?.provisioningType === 'MQTT_SERVER' ||
+      dataSource.value?.provisioningType === 'MQTT_CLIENT'),
 )
 
 const isInboundRestProvisioning = computed(
   () =>
     permission.dataNeed.type === 'inbound-aiida' &&
-    (permission.dataSource?.provisioningType === 'REST_BEARER' ||
-      permission.dataSource?.provisioningType === 'REST_API_TOKEN'),
+    (dataSource.value?.provisioningType === 'REST_BEARER' ||
+      dataSource.value?.provisioningType === 'REST_API_TOKEN'),
 )
 
-const inboundMqttConnection = computed(
-  () => permission.dataSource?.mqttProvisioningConfig?.connection,
-)
+const inboundMqttConnection = computed(() => dataSource.value?.mqttProvisioningConfig?.connection)
 const inboundMqttServerUri = computed(
   () => inboundMqttConnection.value?.externalHost ?? inboundMqttConnection.value?.internalHost,
 )
-const inboundMqttTopic = computed(() => permission.dataSource?.mqttProvisioningConfig?.topic)
+const inboundMqttTopic = computed(() => dataSource.value?.mqttProvisioningConfig?.topic)
 
 const resetInboundRestApiKey = async () => {
   if (
@@ -146,21 +179,24 @@ const resetInboundRestApiKey = async () => {
       t('cancelButton'),
     )
   ) {
-    emit('resetInboundRestApiKey', permission)
+    if (acceptedPermission.value) {
+      emit('resetInboundRestApiKey', acceptedPermission.value)
+    }
   }
 }
 
 const dataSourceDisplayName = computed(() => {
-  if (!permission.dataSource) return undefined
+  const currentDataSource = dataSource.value
+  if (!currentDataSource) return undefined
   const inboundPermission = permissions.value.find(
-    (p) => p.dataNeed.type === 'inbound-aiida' && p.dataSource?.id === permission.dataSource?.id,
+    (p) => p.dataNeed.type === 'inbound-aiida' && p.dataSource?.id === currentDataSource.id,
   )
-  return inboundPermission?.displayName ?? permission.dataSource.name
+  return inboundPermission?.displayName ?? currentDataSource.name
 })
 
 const NO_MONITORING_DATA_SOURCE = 'NONE'
 const monitoringDataSourceId = ref<string>(
-  permission.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE,
+  acceptedPermission.value?.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE,
 )
 
 const monitoringDataSourceOptions = computed(() => [
@@ -171,6 +207,14 @@ const monitoringDataSourceOptions = computed(() => [
 const handleMonitoringDataSourceSelection = async (
   value: string | number | boolean | undefined,
 ) => {
+  if (!acceptedPermission.value) {
+    emit(
+      'selectMonitoringDataSource',
+      value === NO_MONITORING_DATA_SOURCE ? undefined : String(value),
+    )
+    return
+  }
+
   try {
     if (value === NO_MONITORING_DATA_SOURCE) {
       await deleteConnectionLimitMonitoring(permission.permissionId)
@@ -179,7 +223,8 @@ const handleMonitoringDataSourceSelection = async (
     }
     await fetchPermissions()
   } catch {
-    monitoringDataSourceId.value = permission.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE
+    monitoringDataSourceId.value =
+      acceptedPermission.value?.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE
   }
 }
 
@@ -202,18 +247,18 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dt>{{ t('permissions.dropdown.service') }}</dt>
         <dd>{{ permission.serviceName }}</dd>
       </div>
-      <div class="permission-field permission-field--status">
+      <div v-if="acceptedPermission" class="permission-field permission-field--status">
         <dt>{{ t('permissions.dropdown.status') }}</dt>
         <dd>
           <StatusTag :status-type="status !== 'Complete' ? 'healthy' : 'unhealthy'">
-            {{ t(permission.status) }}
+            {{ t(acceptedPermission.connectionStatus ?? acceptedPermission.status) }}
           </StatusTag>
         </dd>
       </div>
-      <div class="permission-field">
+      <div v-if="acceptedPermission?.grantTime" class="permission-field">
         <dt>{{ t('permissions.dropdown.creationDate') }}</dt>
         <dd>
-          {{ dateTimeFormat.format(new Date(permission.startTime)) }}
+          {{ dateTimeFormat.format(new Date(acceptedPermission.grantTime)) }}
         </dd>
       </div>
       <div class="permission-field">
@@ -252,34 +297,30 @@ const { lastMessageAt } = useLastMessageRefresh(
       </template>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.start') }}</dt>
-        <dd>
-          {{ permission.grantTime ? dateTimeFormat.format(new Date(permission.grantTime)) : 'N/A' }}
-        </dd>
+        <dd>{{ permissionPeriodFormat.format(new Date(permission.startTime)) }}</dd>
       </div>
       <div class="permission-field">
         <dt>{{ t('permissions.dropdown.end') }}</dt>
-        <dd>{{ dateTimeFormat.format(new Date(permission.expirationTime)) }}</dd>
+        <dd>{{ permissionPeriodFormat.format(new Date(permission.expirationTime)) }}</dd>
       </div>
-      <div class="permission-field graph" v-if="permission.unimplemented">
-        <dt>Data Package Graph</dt>
-        <dd class="graph-data">PLACEHOLDER</dd>
-      </div>
-      <div class="permission-field schedule" v-if="permission.effectiveTransmissionSchedule">
+      <div v-if="transmissionSchedule" class="permission-field schedule">
         <dt>{{ t('permissions.dropdown.transmissionSchedule') }}</dt>
         <dd>
           {{
-            cronstrue.toString(permission.effectiveTransmissionSchedule, {
+            cronstrue.toString(transmissionSchedule, {
               locale: locale,
             })
           }}
         </dd>
       </div>
-      <div class="permission-field">
+      <div v-if="acceptedPermission" class="permission-field">
         <dt>{{ t('permissions.dropdown.transmissionEnabled') }}</dt>
         <dd>
-          <StatusTag :status-type="permission.transmissionEnabled ? 'healthy' : 'unhealthy'">
+          <StatusTag
+            :status-type="acceptedPermission.transmissionEnabled ? 'healthy' : 'unhealthy'"
+          >
             {{
-              permission.transmissionEnabled
+              acceptedPermission.transmissionEnabled
                 ? t('permissions.dropdown.transmissionOn')
                 : t('permissions.dropdown.transmissionOff')
             }}
@@ -290,7 +331,7 @@ const { lastMessageAt } = useLastMessageRefresh(
         <div class="permission-field">
           <dt>{{ t('permissions.mqttProvisioning.mode') }}</dt>
           <dd>
-            {{ t(`permissions.mqttProvisioning.types.${permission.dataSource?.provisioningType}`) }}
+            {{ t(`permissions.mqttProvisioning.types.${dataSource?.provisioningType}`) }}
           </dd>
         </div>
       </template>
@@ -325,29 +366,30 @@ const { lastMessageAt } = useLastMessageRefresh(
             </dd>
           </div>
         </div>
-        <div class="permission-field" v-if="permission.dataSource">
+        <div v-if="dataSource" class="permission-field">
           <dt>{{ t('permissions.dropdown.dataSource') }}</dt>
           <dd>{{ dataSourceDisplayName ?? 'undefined' }}</dd>
         </div>
-        <div
-          class="permission-field"
-          v-if="permission.mqttStreamingConfig && permission.mqttStreamingConfig.serverUri"
-        >
+        <div v-if="acceptedPermission?.mqttStreamingConfig?.serverUri" class="permission-field">
           <dt>Streaming Uri</dt>
-          <dd>{{ permission.mqttStreamingConfig.serverUri }}</dd>
+          <dd>{{ acceptedPermission.mqttStreamingConfig.serverUri }}</dd>
         </div>
-        <div
-          class="permission-field"
-          v-if="permission.mqttStreamingConfig && permission.mqttStreamingConfig.dataTopic"
-        >
+        <div v-if="acceptedPermission?.mqttStreamingConfig?.dataTopic" class="permission-field">
           <dt>Streaming Topic</dt>
-          <dd>{{ permission.mqttStreamingConfig.dataTopic }}</dd>
+          <dd>{{ acceptedPermission.mqttStreamingConfig.dataTopic }}</dd>
         </div>
       </template>
       <template v-if="permission.dataNeed.type === 'inbound-aiida'">
         <div class="permission-field permission-field--select">
           <dt>{{ t('permissions.dropdown.inboundMessageFormat') }}</dt>
-          <dd>
+          <dd v-if="!acceptedPermission">
+            {{
+              t(
+                `permissions.inboundMessageFormats.${permission.inboundMessageFormat ?? 'CIM_1_12'}`,
+              )
+            }}
+          </dd>
+          <dd v-else>
             <CustomSelect
               v-model="selectedInboundMessageFormat"
               :options="inboundMessageFormatOptions"
@@ -393,8 +435,11 @@ const { lastMessageAt } = useLastMessageRefresh(
         </dt>
         <dd>{{ lastMessageAt ? dateTimeFormat.format(lastMessageAt) : 'N/A' }}</dd>
       </div>
-      <div v-if="status === 'Active'" class="permission-actions">
-        <div class="actions-row actions-row--end" v-if="isMonitorablePermission(permission)">
+      <div v-if="status === 'Active' && acceptedPermission" class="permission-actions">
+        <div
+          v-if="isMonitorablePermission(acceptedPermission)"
+          class="actions-row actions-row--end"
+        >
           <Button
             :isLink="true"
             :href="`/connection-monitor?permission=${permission.permissionId}`"
@@ -408,10 +453,10 @@ const { lastMessageAt } = useLastMessageRefresh(
           class="actions-row actions-row--end"
         >
           <Button
-            v-if="permission.dataSource?.provisioningType === 'MQTT_SERVER'"
+            v-if="dataSource?.provisioningType === 'MQTT_SERVER'"
             button-style="secondary"
             class="action-btn"
-            @click="emit('resetInboundServerPassword', permission)"
+            @click="emit('resetInboundServerPassword', acceptedPermission)"
           >
             {{ t('datasources.card.resetPasswordButton') }}
           </Button>
@@ -431,18 +476,11 @@ const { lastMessageAt } = useLastMessageRefresh(
           <Button button-style="error" class="action-btn" @click="handleRevoke">
             <RevokeIcon /> {{ t('revokeButton') }}
           </Button>
-          <MessageDownloadButton :data="permission" class="action-btn">
+          <MessageDownloadButton :data="acceptedPermission" class="action-btn">
             <EyeIcon /> {{ t('permissions.dropdown.downloadLatestMessageButton') }}
           </MessageDownloadButton>
         </div>
       </div>
-      <Button
-        v-if="status === 'Pending'"
-        @click="updatePermission(permission)"
-        class="update-button"
-      >
-        {{ t('continueButton') }}
-      </Button>
     </div>
   </dl>
 </template>
@@ -507,18 +545,6 @@ const { lastMessageAt } = useLastMessageRefresh(
   font-size: 0.85rem;
   line-height: 1.4;
   color: var(--eddie-grey-medium);
-}
-
-.graph {
-  flex-direction: column;
-
-  gap: var(--spacing-sm);
-}
-
-.update-button {
-  width: 100%;
-  justify-content: center;
-  margin: auto 0 0 auto;
 }
 
 .permission-actions,
@@ -607,11 +633,6 @@ const { lastMessageAt } = useLastMessageRefresh(
     /**field gap + field padding + border */
     gap: calc(var(--spacing-xlg) + var(--spacing-sm) * 2 + 2px);
   }
-  .update-button {
-    width: fit-content;
-    justify-content: flex-start;
-  }
-
   .actions-row .action-btn {
     width: 100%;
     justify-content: center;

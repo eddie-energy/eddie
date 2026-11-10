@@ -12,6 +12,7 @@ import ScrollToTopButton from './components/ScrollToTopButton.vue'
 import { useFavicon } from '@vueuse/core'
 import { getSvgUrlIfExists } from './utils/files'
 import { connect as connectLastMessageStream } from './stores/lastMessageStream'
+import { connect as connectConnectionStatusStream } from './stores/connectionStatusStream'
 
 const icon = useFavicon()
 
@@ -19,6 +20,7 @@ onMounted(async () => {
   window.addEventListener('focus', checkClipboard)
   icon.value = (await getSvgUrlIfExists('favicon.svg')) || '/favicon.svg'
   connectLastMessageStream()
+  connectConnectionStatusStream()
 })
 </script>
 
