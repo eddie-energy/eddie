@@ -250,14 +250,10 @@ public class InboundDataSource extends MqttDataSource {
         private final UUID userId;
         private final InboundPermission permission;
 
-        @SuppressWarnings("NullAway")
         public Builder(InboundPermission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
-
-            this.permission = Objects.requireNonNull(permission);
-
-            var dataNeed = permission.dataNeed();
-            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
+            this.permission = permission;
+            this.dataSourceDto = new InboundDataSourceDto(permission.id());
         }
 
         public InboundDataSource build() throws MissingMqttStreamingConfigException {

@@ -18,7 +18,8 @@ export type AiidaDataNeed = {
   schemas: AiidaSchema[]
   allowedPermissionCommands: string[]
   acknowledgementRequired: boolean
-  asset: string
+  /** Allowed assets of outbound data needs, an empty list allows any asset. */
+  assets?: string[]
   dataTags: string[]
   contexts?: string[]
   type: 'outbound-aiida' | 'inbound-aiida'
@@ -39,7 +40,8 @@ export type AiidaDataSource = {
   countryCode: string
   enabled: boolean
   icon: AiidaDataSourceIcon
-  asset: string
+  // Not set for inbound data sources
+  asset?: string
   meterId?: string
   operatorId?: string
   //DatasourceType = INBOUND

@@ -23,7 +23,6 @@ public final class LocalDataNeedTestData {
               "transmissionSchedule": "*/5 * * * * *",
               "acknowledgementRequired": true,
               "allowedPermissionCommands": ["UPDATE_LIMIT_DEFAULTS"],
-              "asset": "CONNECTION-AGREEMENT-POINT",
               "schemas": ["OPAQUE", "MIN-MAX-ENVELOPE-CIM-V1-12"]
             }
             """;
@@ -40,7 +39,7 @@ public final class LocalDataNeedTestData {
               "transmissionSchedule": "*/5 * * * * *",
               "acknowledgementRequired": false,
               "allowedPermissionCommands": [],
-              "asset": "CONNECTION-AGREEMENT-POINT",
+              "assets": ["CONNECTION-AGREEMENT-POINT"],
               "schemas": ["SMART-METER-P1-RAW"],
               "dataTags": ["1-0:1.8.0"]
             }

@@ -20,7 +20,7 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
 | `allowedPermissionCommands` | String[]            | Permission commands the EP may send to update an existing permission. See [Permission Commands](#permission-commands). Default `[]`.       |
 | `acknowledgementRequired`   | boolean             | Whether an acknowledgement is required for the data transmission. See [Acknowledgements](../2-integrating/acknowledgements.md).            |
 | `schemas`                   | String[]            | [Schemas](./schemas/schemas.md) that define the structure and format of the data, e.g. standardized schemas such as CIM or custom schemas. |
-| `asset`                     | String              | The asset that the data need is associated with, linking the data to specific physical or logical assets.                                  |
+| `assets`                    | String[] (optional) | Outbound only. Assets the data may be retrieved from. An empty or missing list allows any asset. See [Assets](#assets).                    |
 | `dataTags`                  | String[] (optional) | Data tags further specify the type of data expected. If omitted, it is assumed that all available data is included.                        |
 | `contexts`                  | String[]            | Contexts for permission request that AIIDA can use to provide additional functionality, e.g. flexible connection agreements.               |
 
@@ -50,7 +50,7 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
     "SMART-METER-P1-CIM-V1-04",
     "SMART-METER-P1-CIM-V1-12"
   ],
-  "asset": "CONNECTION-AGREEMENT-POINT",
+  "assets": ["CONNECTION-AGREEMENT-POINT"],
   "dataTags": [
     "1-0:1.8.0",
     "1-0:1.7.0"
@@ -87,13 +87,26 @@ AIIDA supports two types of data needs: inbound and outbound. Outbound data need
     "MIN-MAX-ENVELOPE-CIM-V1-12",
     "OPAQUE"
   ],
-  "asset": "CONNECTION-AGREEMENT-POINT",
   "dataTags": [],
   "contexts": [
     "FLEXIBLE-CONNECTION-AGREEMENT"
   ]
 }
 ```
+
+## Assets
+
+Outbound data needs list the assets the data may be retrieved from, for example
+`["CONNECTION-AGREEMENT-POINT", "SUBMETER"]`.
+The customer can select any data source of one of these assets.
+An empty or missing list allows data sources of any asset.
+
+Inbound data needs have no assets, and neither do the inbound data sources created for them.
+Inbound data sources may therefore be forwarded by any outbound data need, regardless of its assets.
+
+> [!WARNING]
+> The single `asset` field was replaced by the `assets` list and is ignored.
+> A data need that still uses `asset` allows any asset.
 
 ## Acknowledgement
 

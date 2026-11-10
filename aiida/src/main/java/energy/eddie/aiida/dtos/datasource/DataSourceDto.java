@@ -53,6 +53,7 @@ public abstract class DataSourceDto {
     protected boolean enabled;
     @JsonProperty
     protected DataSourceIcon icon;
+    @Nullable
     @JsonProperty
     protected AiidaAsset asset;
     @Nullable
@@ -86,6 +87,7 @@ public abstract class DataSourceDto {
         return icon;
     }
 
+    @Nullable
     public AiidaAsset asset() {
         return asset;
     }

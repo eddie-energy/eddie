@@ -107,6 +107,32 @@ class CimStrategyTest {
     }
 
     @Test
+    void toRealTimeDataEnvelope_withoutAsset_leavesAssetTypeEmpty() {
+        // Given
+        var dataSource = dataSource("AT");
+        when(dataSource.asset()).thenReturn(null);
+        var permission = permission(dataSource);
+        var aiidaRecord = new AiidaRecord(
+                TIMESTAMP,
+                dataSource,
+                List.of(new AiidaRecordValue("1-0:1.8.0",
+                                             POSITIVE_ACTIVE_ENERGY,
+                                             "100",
+                                             KILO_WATT_HOUR,
+                                             "100",
+                                             KILO_WATT_HOUR))
+        );
+
+        // When
+        var envelope = strategy.toRealTimeDataEnvelope(AIIDA_ID, aiidaRecord, permission);
+
+        // Then
+        var asset = envelope.getMessageDocumentHeader().getMetaInformation().getAsset();
+        assertThat(asset.getType()).isNull();
+        assertThat(asset.getMeterId()).isEqualTo("meter-123");
+    }
+
+    @Test
     void toRealTimeDataEnvelope_noDeviceIdRecordValueGiven_mRIDMapsToDataSourceId() {
         // Given
         var dataSource = dataSource("AT");

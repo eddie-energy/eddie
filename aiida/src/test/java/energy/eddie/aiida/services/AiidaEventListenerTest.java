@@ -51,13 +51,12 @@ class AiidaEventListenerTest {
     @Test
     void testOnInboundPermissionAcceptEvent() throws SecretStoringException, SecretLoadingException {
         // Given
-        var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        var event = new InboundPermissionAcceptEvent(permissionId);
         var permission = mock(InboundPermission.class);
         var inboundDataSource = mock(InboundDataSource.class);
 
         // When
-        when(event.permissionId()).thenReturn(permissionId);
         when(inboundPermissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(dataSourceService.createInboundDataSource(permission)).thenReturn(inboundDataSource);
         aiidaEventPublisher.publishEvent(event);
@@ -73,11 +72,10 @@ class AiidaEventListenerTest {
     @Test
     void testOnInboundPermissionAcceptEvent_missingMqttStreamingConfigIsHandled()
             throws SecretStoringException, SecretLoadingException {
-        var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        var event = new InboundPermissionAcceptEvent(permissionId);
         var permission = mock(InboundPermission.class);
 
-        when(event.permissionId()).thenReturn(permissionId);
         when(inboundPermissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(dataSourceService.createInboundDataSource(permission))
                 .thenThrow(new MissingMqttStreamingConfigException(null));

@@ -63,9 +63,10 @@ public abstract class DataSource {
     @JsonProperty
     protected DataSourceIcon icon;
 
+    @Nullable
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    @Schema(description = "The type of asset this data source is categorized as.")
+    @Column
+    @Schema(description = "The type of asset this data source is categorized as. Inbound data sources have no asset.")
     @JsonProperty
     protected AiidaAsset asset;
 
@@ -161,6 +162,7 @@ public abstract class DataSource {
         return icon;
     }
 
+    @Nullable
     public AiidaAsset asset() {
         return asset;
     }

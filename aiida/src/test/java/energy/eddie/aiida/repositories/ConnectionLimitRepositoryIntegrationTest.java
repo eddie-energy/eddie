@@ -302,10 +302,9 @@ class ConnectionLimitRepositoryIntegrationTest {
                                         purpose,
                                         policy_link,
                                         transmission_schedule,
-                                        acknowledgement_required,
-                                        asset
+                                        acknowledgement_required
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)
                                     """,
                             DATA_NEED_ID,
                             "inbound-aiida",
@@ -313,8 +312,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                             "test",
                             "https://example.org/policy",
                             "*/5 * * * * *",
-                            false,
-                            "CONNECTION_AGREEMENT_POINT");
+                            false);
     }
 
     private ConnectionLimit limit(UUID permissionId, Instant start, Instant end, String mrid, String minLimitKw) {

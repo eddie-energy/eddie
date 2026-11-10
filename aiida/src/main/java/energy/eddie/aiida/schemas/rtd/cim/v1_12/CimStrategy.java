@@ -183,7 +183,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
 
     private Asset toAsset(DataSource dataSource) {
         return new Asset()
-                .withType(dataSource.asset().toString())
+                .withType(Objects.toString(dataSource.asset(), null))
                 .withMeterId(dataSource.meterId())
                 .withOperatorId(dataSource.operatorId());
     }

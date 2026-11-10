@@ -99,12 +99,24 @@ class DataSourceControllerTest {
 
         mockMvc.perform(post("/datasources")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content("{\"name\":\"Test Source\",\"type\":\"SIMULATION\"}")
+                                .content("{\"name\":\"Test Source\",\"type\":\"SIMULATION\",\"asset\":\"SUBMETER\"}")
                                 .with(csrf()))
                .andExpect(status().isCreated())
                .andExpect(jsonPath("$.plaintextPassword").value(PLAIN_TEXT_PASSWORD));
 
         verify(service, times(1)).addDataSource(any(DataSourceDto.class));
+    }
+
+    @Test
+    @WithMockUser
+    void addDataSource_withoutAsset_shouldReturn400() throws Exception {
+        mockMvc.perform(post("/datasources")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"Test Source\",\"type\":\"SIMULATION\"}")
+                                .with(csrf()))
+               .andExpect(status().isBadRequest());
+
+        verify(service, never()).addDataSource(any());
     }
 
     @Test

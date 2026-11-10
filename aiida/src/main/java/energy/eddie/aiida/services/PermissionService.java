@@ -576,7 +576,7 @@ public class PermissionService {
         handshakeService.denoteUnfulfillable(target, reason);
     }
 
-    private DataSource validateDataSourceSelection(Permission permission, UUID dataSourceId)
+    private DataSource validateDataSourceSelection(OutboundPermission permission, UUID dataSourceId)
             throws DataSourceNotFoundException, IncompatibleDataSourceException {
         var dataSource = dataSourceService.dataSourceByIdOrThrow(dataSourceId);
 
@@ -584,13 +584,16 @@ public class PermissionService {
             throw new DataSourceNotFoundException(dataSourceId);
         }
 
-        var requiredAsset = permission.dataNeed().asset();
-        if (dataSource.asset() != requiredAsset) {
+        // inbound data sources have no asset and may be forwarded regardless of the requested assets
+        var requiredAssets = permission.dataNeed().assets();
+        if (!(dataSource instanceof InboundDataSource)
+            && !requiredAssets.isEmpty()
+            && !requiredAssets.contains(dataSource.asset())) {
             throw new IncompatibleDataSourceException(
                     dataSourceId,
-                    "The selected data source has asset '%s', but the data need requires '%s'.".formatted(
+                    "The selected data source has asset '%s', but the data need requires one of %s.".formatted(
                             dataSource.asset(),
-                            requiredAsset)
+                            requiredAssets)
             );
         }
 

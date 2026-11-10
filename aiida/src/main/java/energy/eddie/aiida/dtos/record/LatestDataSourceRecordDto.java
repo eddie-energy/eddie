@@ -6,6 +6,7 @@ package energy.eddie.aiida.dtos.record;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaRecordValueDto;
+import jakarta.annotation.Nullable;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.UUID;
 public record LatestDataSourceRecordDto(
         @JsonProperty Instant timestamp,
         @JsonProperty String name,
-        @JsonProperty AiidaAsset asset,
+        @JsonProperty @Nullable AiidaAsset asset,
         @JsonProperty UUID dataSourceId,
         @JsonProperty("values") List<AiidaRecordValueDto> aiidaRecordValues
 ) {

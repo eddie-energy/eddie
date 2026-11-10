@@ -126,7 +126,7 @@ public class DataSourceController {
     ) throws InvalidUserException, ModbusConnectionException, SinapsiAlfaEmptyConfigException, SecretStoringException {
         LOGGER.info("Adding new datasource");
 
-        if (dataSource.name() == null || dataSource.name().isEmpty()) {
+        if (dataSource.name() == null || dataSource.name().isEmpty() || dataSource.asset() == null) {
             return ResponseEntity.badRequest().build();
         }
 

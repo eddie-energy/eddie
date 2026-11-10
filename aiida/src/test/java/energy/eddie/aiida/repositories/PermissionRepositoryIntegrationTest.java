@@ -196,8 +196,8 @@ class PermissionRepositoryIntegrationTest {
 
     private void insertOtherDataNeed() {
         jdbcTemplate.update("""
-                            INSERT INTO aiida_local_data_need (data_need_id, asset, name, policy_link, purpose, transmission_schedule, type)
-                            VALUES (?, 'CONNECTION_AGREEMENT_POINT', 'other', 'https://example.com', 'purpose', '*/5 * * * * *', 'outbound-aiida')
+                            INSERT INTO aiida_local_data_need (data_need_id, name, policy_link, purpose, transmission_schedule, type)
+                            VALUES (?, 'other', 'https://example.com', 'purpose', '*/5 * * * * *', 'outbound-aiida')
                             """, UUID.randomUUID());
     }
 

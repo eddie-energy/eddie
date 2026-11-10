@@ -28,7 +28,6 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
@@ -308,7 +307,6 @@ class DataSourceServiceTest {
         var permission = mock(InboundPermission.class);
         var permissionId = UUID.randomUUID();
         var userId = UUID.randomUUID();
-        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         var mqttStreamingConfig = mock(MqttStreamingConfig.class);
         var password = "password";
 
@@ -316,7 +314,6 @@ class DataSourceServiceTest {
         when(secretsService.loadSecret(anyString())).thenReturn(password);
         when(permission.id()).thenReturn(permissionId);
         when(permission.userId()).thenReturn(userId);
-        when(permission.dataNeed()).thenReturn(dataNeed);
         when(permission.mqttStreamingConfig()).thenReturn(mqttStreamingConfig);
         when(mqttStreamingConfig.password()).thenReturn(password);
         dataSourceService.createInboundDataSource(permission);

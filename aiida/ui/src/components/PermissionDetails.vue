@@ -2,38 +2,28 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import type {
-  AiidaPendingPermission,
-  AiidaPermission,
-  InboundMessageFormat,
-  PermissionTypes,
-} from '@/types'
-import StatusTag from './StatusTag.vue'
-import cronstrue from 'cronstrue/i18n'
-import Button from '@/components/Button.vue'
-import RevokeIcon from '@/assets/icons/RevokeIcon.svg'
-import PenIcon from '@/assets/icons/PenIcon.svg'
-import { useConfirmDialog } from '@/composables/confirm-dialog'
-import { useLastMessageRefresh } from '@/composables/last-message-refresh'
+import type { AiidaPendingPermission, AiidaPermission, InboundMessageFormat, PermissionTypes, } from "@/types";
+import StatusTag from "./StatusTag.vue";
+import cronstrue from "cronstrue/i18n";
+import Button from "@/components/Button.vue";
+import RevokeIcon from "@/assets/icons/RevokeIcon.svg";
+import PenIcon from "@/assets/icons/PenIcon.svg";
+import { useConfirmDialog } from "@/composables/confirm-dialog";
+import { useLastMessageRefresh } from "@/composables/last-message-refresh";
 import {
   deleteConnectionLimitMonitoring,
   revokePermission,
   updateConnectionLimitMonitoring,
   updateInboundMessageFormat,
-} from '@/api'
-import { dataSources, fetchDataSources } from '@/stores/dataSources'
-import {
-  fetchPermissions,
-  isAcceptedPermission,
-  isMonitorablePermission,
-  permissions,
-} from '@/stores/permissions'
-import { computed, onMounted, ref, watch } from 'vue'
-import EyeIcon from '@/assets/icons/EyeIcon.svg'
-import MessageDownloadButton from '@/components/MessageDownloadButton.vue'
-import { useI18n } from 'vue-i18n'
-import CustomSelect from './CustomSelect.vue'
-import ConnectionMonitorIcon from '@/assets/icons/ConnectionMonitorIcon.svg'
+} from "@/api";
+import { dataSources, fetchDataSources } from "@/stores/dataSources";
+import { fetchPermissions, isAcceptedPermission, isMonitorablePermission, permissions, } from "@/stores/permissions";
+import { computed, onMounted, ref, watch } from "vue";
+import EyeIcon from "@/assets/icons/EyeIcon.svg";
+import MessageDownloadButton from "@/components/MessageDownloadButton.vue";
+import { useI18n } from "vue-i18n";
+import CustomSelect from "./CustomSelect.vue";
+import ConnectionMonitorIcon from "@/assets/icons/ConnectionMonitorIcon.svg";
 
 const { t, locale } = useI18n()
 const { confirm } = useConfirmDialog()
@@ -363,9 +353,9 @@ const { lastMessageAt } = useLastMessageRefresh(
     <div class="column">
       <template v-if="permission.type === 'outbound'">
         <div class="permission-field">
-          <dt>{{ t('permissions.dropdown.asset') }}</dt>
+          <dt>{{ t('permissions.dropdown.assets') }}</dt>
           <dd>
-            {{ permission.dataNeed.asset }}
+            {{ permission.dataNeed.assets?.join(', ') || t('permissions.dropdown.anyAsset') }}
           </dd>
         </div>
         <div class="permission-field schemas">

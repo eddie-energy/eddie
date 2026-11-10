@@ -35,6 +35,8 @@ import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -53,6 +55,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -382,6 +385,48 @@ class PermissionServiceTest {
         verify(mockHandshakeService, never()).accept(any());
     }
 
+    static Stream<Set<AiidaAsset>> allowedAssetsContainingSubmeter() {
+        return Stream.of(
+                Set.of(),
+                Set.of(AiidaAsset.SUBMETER),
+                Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT, AiidaAsset.SUBMETER)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("allowedAssetsContainingSubmeter")
+    void givenDataSourceWithAllowedAsset_acceptOutboundPermission_acceptsPermission(Set<AiidaAsset> allowedAssets) throws Exception {
+        // Given
+        stubOutboundDataNeed();
+        stubSuccessfulAccept();
+        when(mockDataNeed.assets()).thenReturn(allowedAssets);
+        // not read if any asset is allowed
+        lenient().when(mockDataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+
+        // When
+        service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null));
+
+        // Then
+        verify(mockPermissionRepository).save(permissionCaptor.capture());
+        assertEquals(mockDataSource, permissionCaptor.getValue().dataSource());
+    }
+
+    @Test
+    void givenDataSourceWithAssetNotInMultipleAllowedAssets_acceptOutboundPermission_throwsIncompatibleDataSource() throws Exception {
+        // Given
+        stubOutboundDataNeed();
+        var details = outboundDetails(start, null, null);
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(details));
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT, AiidaAsset.CONTROLLABLE_UNIT));
+        when(mockDataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+
+        // When, Then
+        assertThrows(IncompatibleDataSourceException.class,
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
+        verify(mockHandshakeService, never()).accept(any());
+    }
+
     @Test
     void givenInboundDataSourceWithIncompatibleSchemas_acceptOutboundPermission_throwsIncompatibleDataSource() throws Exception {
         // Given
@@ -391,7 +436,6 @@ class PermissionServiceTest {
         when(mockAuthService.getCurrentUserId()).thenReturn(userId);
         when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
         when(mockInboundDataSource.userId()).thenReturn(userId);
-        when(mockInboundDataSource.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
         when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
 
         // When, Then
@@ -407,8 +451,25 @@ class PermissionServiceTest {
         stubSuccessfulAccept();
         when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
         when(mockInboundDataSource.userId()).thenReturn(userId);
-        when(mockInboundDataSource.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
         when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW, AiidaSchema.OPAQUE));
+
+        // When
+        service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null));
+
+        // Then
+        verify(mockPermissionRepository).save(permissionCaptor.capture());
+        assertEquals(mockInboundDataSource, permissionCaptor.getValue().dataSource());
+    }
+
+    @Test
+    void givenInboundDataSourceAndRestrictedAssets_acceptOutboundPermission_ignoresAssetOfInboundDataSource() throws Exception {
+        // Given
+        stubOutboundDataNeed();
+        stubSuccessfulAccept();
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
+        when(mockDataSourceService.dataSourceByIdOrThrow(dataSourceId)).thenReturn(mockInboundDataSource);
+        when(mockInboundDataSource.userId()).thenReturn(userId);
+        when(mockInboundDataSource.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
 
         // When
         service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null));
@@ -455,7 +516,7 @@ class PermissionServiceTest {
         verify(mockPermissionRepository).save(permissionCaptor.capture());
         var permission = permissionCaptor.getValue();
         assertEquals(InboundMessageFormat.OPENADR_3_1, ((InboundPermission) permission).inboundMessageFormat());
-        verify(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
+        verify(mockAiidaEventPublisher).publishEvent(new InboundPermissionAcceptEvent(permissionId1));
         verify(mockPermissionScheduler).scheduleOrStart(argThat(acceptedPermission -> acceptedPermission.id().equals(permissionId1)));
     }
 
@@ -720,7 +781,7 @@ class PermissionServiceTest {
         lenient().when(mockDataNeed.name()).thenReturn("My Name");
         lenient().when(mockDataNeed.purpose()).thenReturn("Some purpose");
         lenient().when(mockDataNeed.policyLink()).thenReturn("https://example.org");
-        lenient().when(mockDataNeed.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
+        lenient().when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT));
         lenient().when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         lenient().when(mockDataNeed.contexts()).thenReturn(Set.of());
         lenient().when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
