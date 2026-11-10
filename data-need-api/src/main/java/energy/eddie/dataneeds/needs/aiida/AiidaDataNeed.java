@@ -4,6 +4,7 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -19,6 +20,7 @@ import org.springframework.scheduling.support.CronExpression;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -59,11 +61,16 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @NotEmpty(message = "must contain at least one schema")
     private Set<AiidaSchema> schemas;
 
-    @Column(name = "asset", nullable = false)
-    @JsonProperty(required = true)
-    @Schema(description = "The kind of asset the data is retrieved from ('CONNECTION-AGREEMENT-POINT', 'CONTROLLABLE-UNIT', 'DEDICATED-MEASUREMENT-DEVICE', 'SUBMETER')")
+    @Schema(description = "The kinds of asset the data may be retrieved from ('CONNECTION-AGREEMENT-POINT', 'CONTROLLABLE-UNIT', 'DEDICATED-MEASUREMENT-DEVICE', 'SUBMETER'). An empty or missing list allows any asset.")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_data_need_assets",
+            joinColumns = @JoinColumn(name = "data_need_id"),
+            schema = "data_needs")
+    @Column(name = "asset")
+    @JsonProperty
     @Enumerated(EnumType.STRING)
-    private AiidaAsset asset;
+    // Mutable, since Hibernate adds the elements to the default value of a new instance when merging
+    private Set<AiidaAsset> assets = new HashSet<>();
 
     @Schema(description = "Define contexts to be provided to AIIDA ('FLEXIBLE-CONNECTION-AGREEMENT')")
     @ElementCollection(fetch = FetchType.EAGER)
@@ -86,8 +93,18 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     }
 
     @Override
-    public AiidaAsset asset() {
-        return asset;
+    public Set<AiidaAsset> assets() {
+        return assets == null ? Set.of() : assets;
+    }
+
+    /**
+     * The single {@code asset} field was replaced by the {@code assets} list. Reject it explicitly, since unknown
+     * properties are otherwise silently ignored, which would widen the data need to allow any asset.
+     */
+    @JsonSetter("asset")
+    @SuppressWarnings("unused")
+    private void rejectLegacyAsset(Object ignored) {
+        throw new IllegalArgumentException("The field 'asset' is no longer supported, use the list 'assets' instead");
     }
 
     @Override

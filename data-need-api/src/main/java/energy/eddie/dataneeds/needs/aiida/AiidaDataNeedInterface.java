@@ -30,11 +30,11 @@ public interface AiidaDataNeedInterface {
     Set<PermissionCommand.Action> allowedPermissionCommands();
 
     /**
-     * Returns the kind of asset the data is retrieved from
+     * Returns the kinds of asset the data may be retrieved from. An empty set allows any asset.
      *
      * @see AiidaAsset
      */
-    AiidaAsset asset();
+    Set<AiidaAsset> assets();
 
     /**
      * Returns information about the usage context of permissions created from the data need that AIIDA can use to

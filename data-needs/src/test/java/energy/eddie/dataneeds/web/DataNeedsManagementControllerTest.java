@@ -169,6 +169,15 @@ class DataNeedsManagementControllerTest {
     }
 
     @Test
+    void givenLegacyAiidaAsset_createNewDataNeed_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/management")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .accept(MediaType.APPLICATION_JSON)
+                                .content("{\"type\":\"outbound-aiida\",\"name\":\"AIIDA Data Need Test\",\"description\":\"With data tags\",\"purpose\":\"Test aiida data need with data tags\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"asset\":\"CONNECTION-AGREEMENT-POINT\",\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"P0D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1-0:1.8.0\",\"1-0:1.7.0\"],\"schemas\":[\"SMART-METER-P1-RAW\"],\"acknowledgementRequired\":false}"))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void givenDataNeeds_getAllDataNeeds_returnsAllDataNeeds() throws Exception {
         // Given
         when(mockService.findAll()).thenReturn(List.of(exampleAccount, exampleVhd));
@@ -297,7 +306,13 @@ class DataNeedsManagementFullTest {
                 Arguments.of(
                         "{\"type\":\"validated\",\"name\":\"My awesome data need\",\"description\":\"descr\",\"purpose\":\"purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"relativeDuration\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"PT1H\",\"maxGranularity\":\"P1D\"}"),
                 Arguments.of(
-                        "{\"type\":\"outbound-aiida\",\"name\":\"AIIDA Data Need Test\",\"description\":\"With data tags\",\"purpose\":\"Test aiida data need with data tags\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"asset\":\"CONNECTION-AGREEMENT-POINT\",\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"P0D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1-0:1.8.0\",\"1-0:1.7.0\"],\"schemas\":[\"SMART-METER-P1-RAW\"],\"acknowledgementRequired\":false}"),
+                        "{\"type\":\"outbound-aiida\",\"name\":\"AIIDA Data Need Test\",\"description\":\"With data tags\",\"purpose\":\"Test aiida data need with data tags\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"assets\":[\"CONNECTION-AGREEMENT-POINT\"],\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"P0D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1-0:1.8.0\",\"1-0:1.7.0\"],\"schemas\":[\"SMART-METER-P1-RAW\"],\"acknowledgementRequired\":false}"),
+                Arguments.of(
+                        "{\"type\":\"outbound-aiida\",\"name\":\"AIIDA Data Need Test\",\"description\":\"With data tags\",\"purpose\":\"Test aiida data need with data tags\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"P0D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1-0:1.8.0\",\"1-0:1.7.0\"],\"schemas\":[\"SMART-METER-P1-RAW\"],\"acknowledgementRequired\":false}"),
+                Arguments.of(
+                        "{\"type\":\"outbound-aiida\",\"name\":\"AIIDA Data Need Test\",\"description\":\"With data tags\",\"purpose\":\"Test aiida data need with data tags\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"assets\":[\"CONNECTION-AGREEMENT-POINT\",\"SUBMETER\"],\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"P0D\",\"durationEnd\":\"P10D\"},\"dataTags\":[\"1-0:1.8.0\",\"1-0:1.7.0\"],\"schemas\":[\"SMART-METER-P1-RAW\"],\"acknowledgementRequired\":false}"),
+                Arguments.of(
+                        "{\"type\":\"inbound-aiida\",\"name\":\"AIIDA Data Need Test\",\"description\":\"With data tags\",\"purpose\":\"Test aiida data need with data tags\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"assets\":[\"CONTROLLABLE-UNIT\",\"SUBMETER\"],\"duration\":{\"type\":\"relativeDuration\",\"durationStart\":\"P0D\",\"durationEnd\":\"P10D\"},\"schemas\":[\"SMART-METER-P1-CIM-V1-12\"],\"acknowledgementRequired\":false}"),
                 Arguments.of(
                         "{\"type\":\"validated\",\"name\":\"NEXT_10_DAYS_ONE_MEASUREMENT_PER_DAY\",\"description\":\"Historical validated consumption data for the next 10 days, one measurement per day\",\"purpose\":\"Some purpose\",\"policyLink\":\"https://example.com/toc\",\"duration\":{\"type\":\"absoluteDuration\",\"start\":\"2024-04-01\",\"end\":\"2024-04-05\"},\"energyType\":\"ELECTRICITY\",\"minGranularity\":\"P1D\",\"maxGranularity\":\"P1D\"}"),
                 Arguments.of(

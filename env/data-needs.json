@@ -49,7 +49,7 @@
     "schemas": [
       "SMART-METER-P1-CIM-V1-12"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"
@@ -76,7 +76,7 @@
       "MIN-MAX-ENVELOPE-CIM-V1-12",
       "OPAQUE"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": []
   },
   {
@@ -97,7 +97,7 @@
       "MIN-MAX-ENVELOPE-CIM-V1-12",
       "OPAQUE"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": []
   },
   {
@@ -136,7 +136,7 @@
     "schemas": [
       "MIN-MAX-ENVELOPE-CIM-V1-12"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": [],
     "contexts": [
       "FLEXIBLE-CONNECTION-AGREEMENT"
@@ -160,7 +160,7 @@
     "schemas": [
       "SMART-METER-P1-CIM-V1-12"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"
