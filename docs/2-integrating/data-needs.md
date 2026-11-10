@@ -19,7 +19,7 @@ For example, a validated historical data data need, requests data from a MDA, wh
 
 The AiidaDataNeed specifies that a permission request is only for data from an AIIDA device.
 It defines what schema should be used to send the data, such as CIM or as raw data.
-Furthermore, the asset from which the data is received is defined.
+Outbound AIIDA data needs may further restrict the assets from which the data is received.
 
 More information in the [AIIDA documentation](https://architecture.eddie.energy/aiida/1-running/data-need.html).
 

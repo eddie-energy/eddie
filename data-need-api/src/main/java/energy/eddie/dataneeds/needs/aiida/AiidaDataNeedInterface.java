@@ -3,7 +3,6 @@
 
 package energy.eddie.dataneeds.needs.aiida;
 
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
@@ -28,13 +27,6 @@ public interface AiidaDataNeedInterface {
      * in this set; otherwise it is rejected. {@code TERMINATE} is always accepted, regardless of this set.
      */
     Set<PermissionCommand.Action> allowedPermissionCommands();
-
-    /**
-     * Returns the kind of asset the data is retrieved from
-     *
-     * @see AiidaAsset
-     */
-    AiidaAsset asset();
 
     /**
      * Returns information about the usage context of permissions created from the data need that AIIDA can use to

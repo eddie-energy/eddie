@@ -4,7 +4,6 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
@@ -59,12 +58,6 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @NotEmpty(message = "must contain at least one schema")
     private Set<AiidaSchema> schemas;
 
-    @Column(name = "asset", nullable = false)
-    @JsonProperty(required = true)
-    @Schema(description = "The kind of asset the data is retrieved from ('CONNECTION-AGREEMENT-POINT', 'CONTROLLABLE-UNIT', 'DEDICATED-MEASUREMENT-DEVICE', 'SUBMETER')")
-    @Enumerated(EnumType.STRING)
-    private AiidaAsset asset;
-
     @Schema(description = "Define contexts to be provided to AIIDA ('FLEXIBLE-CONNECTION-AGREEMENT')")
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_data_need_contexts",
@@ -83,11 +76,6 @@ public abstract class AiidaDataNeed extends TimeframedDataNeed implements AiidaD
     @Override
     public Set<PermissionCommand.Action> allowedPermissionCommands() {
         return allowedPermissionCommands;
-    }
-
-    @Override
-    public AiidaAsset asset() {
-        return asset;
     }
 
     @Override
