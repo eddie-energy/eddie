@@ -234,6 +234,7 @@ export async function acceptOutboundPermission(
 export async function acceptInboundPermission(
   permissionId: string,
   aiidaCode: AiidaPermissionRequestsDTO,
+  asset: string,
   displayName?: string,
 ): Promise<void> {
   await fetch(`/permissions/${permissionId}/accept/inbound`, {
@@ -242,6 +243,7 @@ export async function acceptInboundPermission(
       eddieId: aiidaCode.eddieId,
       handshakeUrl: aiidaCode.handshakeUrl,
       accessToken: aiidaCode.accessToken,
+      asset,
       displayName,
     }),
   })

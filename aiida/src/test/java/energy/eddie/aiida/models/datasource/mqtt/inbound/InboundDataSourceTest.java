@@ -308,24 +308,22 @@ class InboundDataSourceTest {
     void builder_throwsNpe_whenPermissionUserIdMissing() {
         var permissionWithoutUser = mock(Permission.class);
 
-        assertThrows(NullPointerException.class, () -> new InboundDataSource.Builder(permissionWithoutUser));
+        assertThrows(NullPointerException.class, () -> new InboundDataSource.Builder(permissionWithoutUser, AiidaAsset.SUBMETER));
     }
 
     @Test
     void builder_build_createsInboundDataSourceLinkedToPermission() {
         var permissionId = UUID.randomUUID();
-        var dataNeed = mock(AiidaLocalDataNeed.class);
         var streamingConfig = mock(MqttStreamingConfig.class);
-        when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         var owningPermission = mock(Permission.class);
         when(owningPermission.userId()).thenReturn(USER_ID);
         when(owningPermission.id()).thenReturn(permissionId);
-        when(owningPermission.dataNeed()).thenReturn(dataNeed);
         when(owningPermission.mqttStreamingConfig()).thenReturn(streamingConfig);
 
-        var inboundDataSource = new InboundDataSource.Builder(owningPermission).build();
+        var inboundDataSource = new InboundDataSource.Builder(owningPermission, AiidaAsset.SUBMETER).build();
 
         assertEquals(owningPermission, inboundDataSource.permission());
+        assertEquals(AiidaAsset.SUBMETER, inboundDataSource.asset());
     }
 
     private static InboundDataSourceDto dto() {

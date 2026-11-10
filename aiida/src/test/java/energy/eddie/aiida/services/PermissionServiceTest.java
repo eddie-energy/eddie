@@ -389,6 +389,48 @@ class PermissionServiceTest {
         verify(mockHandshakeService, never()).accept(any());
     }
 
+    static Stream<Set<AiidaAsset>> allowedAssetsContainingSubmeter() {
+        return Stream.of(
+                Set.of(),
+                Set.of(AiidaAsset.SUBMETER),
+                Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT, AiidaAsset.SUBMETER)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("allowedAssetsContainingSubmeter")
+    void givenDataSourceWithAllowedAsset_acceptOutboundPermission_acceptsPermission(Set<AiidaAsset> allowedAssets) throws Exception {
+        // Given
+        stubOutboundDataNeed();
+        stubSuccessfulAccept();
+        when(mockDataNeed.assets()).thenReturn(allowedAssets);
+        // not read if any asset is allowed
+        lenient().when(mockDataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+
+        // When
+        service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null));
+
+        // Then
+        verify(mockPermissionRepository).save(permissionCaptor.capture());
+        assertEquals(mockDataSource, permissionCaptor.getValue().dataSource());
+    }
+
+    @Test
+    void givenDataSourceWithAssetNotInMultipleAllowedAssets_acceptOutboundPermission_throwsIncompatibleDataSource() throws Exception {
+        // Given
+        stubOutboundDataNeed();
+        var details = outboundDetails(start, null, null);
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(details));
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT, AiidaAsset.CONTROLLABLE_UNIT));
+        when(mockDataSource.asset()).thenReturn(AiidaAsset.SUBMETER);
+
+        // When, Then
+        assertThrows(IncompatibleDataSourceException.class,
+                     () -> service.acceptOutboundPermission(permissionId1, outboundAcceptDto(dataSourceId, null)));
+        verify(mockHandshakeService, never()).accept(any());
+    }
+
     @Test
     void givenInboundDataSourceWithIncompatibleSchemas_acceptOutboundPermission_throwsIncompatibleDataSource() throws Exception {
         // Given
@@ -462,8 +504,55 @@ class PermissionServiceTest {
         verify(mockPermissionRepository).save(permissionCaptor.capture());
         var permission = permissionCaptor.getValue();
         assertEquals(InboundMessageFormat.OPENADR_3_1, permission.inboundMessageFormat());
-        verify(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
+        verify(mockAiidaEventPublisher).publishEvent(new InboundPermissionAcceptEvent(permissionId1,
+                                                                                      AiidaAsset.CONNECTION_AGREEMENT_POINT));
         verify(mockPermissionScheduler).scheduleOrStart(argThat(acceptedPermission -> acceptedPermission.id().equals(permissionId1)));
+    }
+
+    static Stream<Arguments> inboundAssetSelections() {
+        return Stream.of(
+                // an empty set allows any asset
+                Arguments.of(Set.of(), AiidaAsset.DEDICATED_MEASUREMENT_DEVICE),
+                Arguments.of(Set.of(AiidaAsset.SUBMETER, AiidaAsset.CONTROLLABLE_UNIT), AiidaAsset.SUBMETER)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("inboundAssetSelections")
+    void givenAllowedAssets_acceptInboundPermission_publishesEventWithInboundAsset(
+            Set<AiidaAsset> allowedAssets,
+            AiidaAsset selectedAsset
+    ) throws Exception {
+        // Given
+        stubInboundLocalDataNeed(false);
+        when(mockInboundAiidaLocalDataNeed.assets()).thenReturn(allowedAssets);
+        stubSuccessfulAccept();
+        createInboundDataSourceOnAcceptEvent();
+
+        // When
+        service.acceptInboundPermission(permissionId1, inboundAcceptDto(null, selectedAsset));
+
+        // Then
+        verify(mockAiidaEventPublisher).publishEvent(new InboundPermissionAcceptEvent(permissionId1, selectedAsset));
+    }
+
+    @Test
+    void givenAssetNotAllowedByDataNeed_acceptInboundPermission_throwsWithoutAccepting() throws Exception {
+        // Given
+        stubInboundLocalDataNeed(false);
+        when(mockInboundAiidaLocalDataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
+        var details = outboundDetails(start, null, null);
+        when(mockHandshakeService.fetchDetails(any())).thenReturn(Mono.just(details));
+        when(mockAuthService.getCurrentUserId()).thenReturn(userId);
+
+        // When, Then
+        var exception = assertThrows(AssetNotAllowedException.class,
+                                     () -> service.acceptInboundPermission(permissionId1,
+                                                                           inboundAcceptDto(null,
+                                                                                            AiidaAsset.CONTROLLABLE_UNIT)));
+        assertThat(exception.getMessage()).contains("CONTROLLABLE-UNIT").contains("SUBMETER");
+        verify(mockHandshakeService, never()).accept(any());
+        verify(mockPermissionRepository, never()).save(any());
     }
 
     @Test
@@ -741,7 +830,7 @@ class PermissionServiceTest {
         lenient().when(mockDataNeed.name()).thenReturn("My Name");
         lenient().when(mockDataNeed.purpose()).thenReturn("Some purpose");
         lenient().when(mockDataNeed.policyLink()).thenReturn("https://example.org");
-        lenient().when(mockDataNeed.asset()).thenReturn(AiidaAsset.CONNECTION_AGREEMENT_POINT);
+        lenient().when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT));
         lenient().when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
         lenient().when(mockDataNeed.contexts()).thenReturn(Set.of());
         lenient().when(mockDataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
@@ -795,7 +884,14 @@ class PermissionServiceTest {
     }
 
     private AcceptInboundPermissionDto inboundAcceptDto(@Nullable InboundMessageFormat inboundMessageFormat) {
-        return new AcceptInboundPermissionDto(eddieId, handshakeUrl, accessToken, inboundMessageFormat, null);
+        return inboundAcceptDto(inboundMessageFormat, AiidaAsset.CONNECTION_AGREEMENT_POINT);
+    }
+
+    private AcceptInboundPermissionDto inboundAcceptDto(
+            @Nullable InboundMessageFormat inboundMessageFormat,
+            AiidaAsset asset
+    ) {
+        return new AcceptInboundPermissionDto(eddieId, handshakeUrl, accessToken, inboundMessageFormat, asset, null);
     }
 
     @Nested

@@ -351,13 +351,20 @@ const { lastMessageAt } = useLastMessageRefresh(
       </template>
     </div>
     <div class="column">
+      <div class="permission-field">
+        <dt>{{ t('permissions.dropdown.assets') }}</dt>
+        <dd>
+          {{ permission.dataNeed.assets.join(', ') || t('permissions.dropdown.anyAsset') }}
+        </dd>
+      </div>
+      <div
+        v-if="permission.dataNeed.type === 'inbound-aiida' && dataSource"
+        class="permission-field"
+      >
+        <dt>{{ t('permissions.dropdown.inboundAsset') }}</dt>
+        <dd>{{ dataSource.asset }}</dd>
+      </div>
       <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
-        <div class="permission-field">
-          <dt>{{ t('permissions.dropdown.asset') }}</dt>
-          <dd>
-            {{ permission.dataNeed.asset }}
-          </dd>
-        </div>
         <div class="permission-field schemas">
           <dt>{{ t('permissions.dropdown.obisCodes') }}</dt>
           <div class="column schema">

@@ -33,6 +33,7 @@ import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,9 +249,9 @@ public class DataSourceService {
 
     @Transactional
     @SuppressWarnings("NullAway")
-    public InboundDataSource createInboundDataSource(Permission permission)
+    public InboundDataSource createInboundDataSource(Permission permission, AiidaAsset asset)
             throws SecretStoringException, SecretLoadingException, MissingMqttStreamingConfigException {
-        var inboundDataSource = new InboundDataSource.Builder(permission).build();
+        var inboundDataSource = new InboundDataSource.Builder(permission, asset).build();
         repository.save(inboundDataSource);
         storeInboundDataSourceSecrets(inboundDataSource, permission.mqttStreamingConfig());
 

@@ -94,6 +94,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            AssetNotAllowedException.class,
             ImageFormatException.class,
             ImageReadException.class,
             InvalidDataSourceTypeException.class,

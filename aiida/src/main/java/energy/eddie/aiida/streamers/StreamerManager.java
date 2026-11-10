@@ -190,7 +190,7 @@ public class StreamerManager implements AutoCloseable {
         }
 
         return aggregator.getFilteredFlux(outboundDataNeed.dataTags(),
-                                          outboundDataNeed.asset(),
+                                          outboundDataNeed.assets(),
                                           permission.expirationTime(),
                                           permission.transmissionSchedule(),
                                           permission.userId(),

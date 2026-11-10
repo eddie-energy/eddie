@@ -11,6 +11,7 @@ import {
   acceptInboundPermission,
   acceptOutboundPermission,
   getAcceptedInboundPermissions,
+  getAssetTypes,
   getDataSources,
   rejectPermission,
   updateConnectionLimitMonitoring,
@@ -27,6 +28,8 @@ const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
+const selectedAsset = ref<string>('')
+const assetTypes = ref<string[]>([])
 const displayName = ref<string>('')
 const monitoringDataSourceId = ref<string>()
 const inboundPermissions = ref<AiidaPermission[]>([])
@@ -36,6 +39,7 @@ const emit = defineEmits(['update'])
 watch([open], async () => {
   if (open.value) {
     selectedDataSource.value = ''
+    selectedAsset.value = ''
     monitoringDataSourceId.value = undefined
     displayName.value = permission.value?.dataNeed.name ?? ''
     modal.value?.showModal()
@@ -46,10 +50,26 @@ watch([open], async () => {
     if (dataSourceOptions.value.length === 1) {
       selectedDataSource.value = dataSourceOptions.value[0].value
     }
+
+    if (!isOutbound.value) {
+      assetTypes.value = (await getAssetTypes()).assets
+      selectedAsset.value = assetOptions.value[0]?.value ?? ''
+    }
   }
 })
 
 const isOutbound = computed(() => permission.value?.dataNeed.type === 'outbound-aiida')
+
+/** An empty list of allowed assets allows any asset. */
+const isAllowedAsset = (asset: string) => {
+  const allowedAssets = permission.value?.dataNeed.assets ?? []
+  return allowedAssets.length === 0 || allowedAssets.includes(asset)
+}
+
+/** The asset of the automatically created inbound data source, in the order of the asset types. */
+const assetOptions = computed(() =>
+  assetTypes.value.filter(isAllowedAsset).map((asset) => ({ label: asset, value: asset })),
+)
 
 const handleInput = async (confirm: boolean) => {
   loading.value = true
@@ -66,6 +86,7 @@ const handleInput = async (confirm: boolean) => {
       await acceptInboundPermission(
         permission.value!.permissionId,
         aiidaCode.value!,
+        selectedAsset.value,
         displayName.value,
       )
     }
@@ -91,7 +112,6 @@ const handleModalClose = () => {
 
 const dataSourceOptions = computed(() => {
   const requestedSchemas = permission.value?.dataNeed.schemas ?? []
-  const requestedAsset = permission.value?.dataNeed.asset
   const permissionMeterId = permission.value?.meterId
   const matches: { label: string; value: string }[] = []
 
@@ -100,7 +120,7 @@ const dataSourceOptions = computed(() => {
     for (const { dataSource, displayName } of inboundPermissions.value) {
       if (
         dataSource && // For TypeScript, even though it should always be set here
-        dataSource.asset === requestedAsset &&
+        isAllowedAsset(dataSource.asset) &&
         requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema)) &&
         (!permissionMeterId || dataSource.meterId === permissionMeterId)
       ) {
@@ -113,7 +133,7 @@ const dataSourceOptions = computed(() => {
   if (requestedSchemas.some((requestedSchema) => !inboundSchemas.has(requestedSchema))) {
     matches.push(
       ...outboundDataSources.value
-        .filter(({ asset }) => asset === requestedAsset)
+        .filter(({ asset }) => isAllowedAsset(asset))
         .map(({ id, name }) => ({
           label: name,
           value: id,
@@ -171,13 +191,26 @@ const dataSourceOptions = computed(() => {
         </p>
       </form>
 
+      <form v-if="permission?.dataNeed.type === 'inbound-aiida'" class="form">
+        <span id="assetLabel" class="heading-3">
+          {{ t('permissions.modal.assetInputLabel') }}
+        </span>
+        <CustomSelect
+          id="assetSelect"
+          v-model="selectedAsset"
+          :options="assetOptions"
+          :placeholder="t('permissions.modal.assetInputPlaceholder')"
+          aria-labelledby="assetLabel"
+        />
+      </form>
+
       <div class="two-item-pair">
         <Button button-style="error-secondary" @click="handleInput(false)">
           {{ t('rejectButton') }}
         </Button>
         <Button
           @click="handleInput(true)"
-          :disabled="!selectedDataSource && permission?.dataNeed.type === 'outbound-aiida'"
+          :disabled="isOutbound ? !selectedDataSource : !selectedAsset"
         >
           {{ t('acceptButton') }}
         </Button>

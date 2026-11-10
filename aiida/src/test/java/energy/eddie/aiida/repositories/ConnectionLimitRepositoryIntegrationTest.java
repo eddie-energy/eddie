@@ -290,10 +290,9 @@ class ConnectionLimitRepositoryIntegrationTest {
                                         purpose,
                                         policy_link,
                                         transmission_schedule,
-                                        acknowledgement_required,
-                                        asset
+                                        acknowledgement_required
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)
                                     """,
                             DATA_NEED_ID,
                             "outbound-aiida",
@@ -301,7 +300,9 @@ class ConnectionLimitRepositoryIntegrationTest {
                             "test",
                             "https://example.org/policy",
                             "*/5 * * * * *",
-                            false,
+                            false);
+        jdbcTemplate.update("INSERT INTO aiida_local_data_need_assets (data_need_id, asset) VALUES (?, ?)",
+                            DATA_NEED_ID,
                             "CONNECTION_AGREEMENT_POINT");
     }
 

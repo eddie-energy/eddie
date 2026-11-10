@@ -28,10 +28,10 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -317,7 +317,6 @@ class DataSourceServiceTest {
         var permission = mock(Permission.class);
         var permissionId = UUID.randomUUID();
         var userId = UUID.randomUUID();
-        var dataNeed = mock(AiidaLocalDataNeed.class);
         var mqttStreamingConfig = mock(MqttStreamingConfig.class);
         var password = "password";
 
@@ -325,10 +324,9 @@ class DataSourceServiceTest {
         when(secretsService.loadSecret(anyString())).thenReturn(password);
         when(permission.id()).thenReturn(permissionId);
         when(permission.userId()).thenReturn(userId);
-        when(permission.dataNeed()).thenReturn(dataNeed);
         when(permission.mqttStreamingConfig()).thenReturn(mqttStreamingConfig);
         when(mqttStreamingConfig.password()).thenReturn(password);
-        dataSourceService.createInboundDataSource(permission);
+        dataSourceService.createInboundDataSource(permission, AiidaAsset.SUBMETER);
 
         // Then
         verify(repository).save(any(InboundDataSource.class));

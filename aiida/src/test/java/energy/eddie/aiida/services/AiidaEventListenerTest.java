@@ -16,6 +16,7 @@ import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -47,21 +48,20 @@ class AiidaEventListenerTest {
     @Test
     void testOnInboundPermissionAcceptEvent() throws PermissionNotFoundException, SecretStoringException, SecretLoadingException {
         // Given
-        var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        var event = new InboundPermissionAcceptEvent(permissionId, AiidaAsset.SUBMETER);
         var permission = mock(Permission.class);
         var inboundDataSource = mock(InboundDataSource.class);
 
         // When
-        when(event.permissionId()).thenReturn(permissionId);
         when(permissionService.findById(permissionId)).thenReturn(permission);
-        when(dataSourceService.createInboundDataSource(permission)).thenReturn(inboundDataSource);
+        when(dataSourceService.createInboundDataSource(permission, AiidaAsset.SUBMETER)).thenReturn(inboundDataSource);
         aiidaEventPublisher.publishEvent(event);
 
         // Then
         verify(aiidaEventListener).createInboundDataSource(event);
         verify(permissionService).findById(permissionId);
-        verify(dataSourceService).createInboundDataSource(permission);
+        verify(dataSourceService).createInboundDataSource(permission, AiidaAsset.SUBMETER);
         verify(permission).setDataSource(inboundDataSource);
         verify(dataSourceService).startDataSource(inboundDataSource);
     }
@@ -69,19 +69,18 @@ class AiidaEventListenerTest {
     @Test
     void testOnInboundPermissionAcceptEvent_missingMqttStreamingConfigIsHandled()
             throws PermissionNotFoundException, SecretStoringException, SecretLoadingException {
-        var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+        var event = new InboundPermissionAcceptEvent(permissionId, AiidaAsset.SUBMETER);
         var permission = mock(Permission.class);
 
-        when(event.permissionId()).thenReturn(permissionId);
         when(permissionService.findById(permissionId)).thenReturn(permission);
-        when(dataSourceService.createInboundDataSource(permission))
+        when(dataSourceService.createInboundDataSource(permission, AiidaAsset.SUBMETER))
                 .thenThrow(new MissingMqttStreamingConfigException(null));
 
         assertThatCode(() -> aiidaEventPublisher.publishEvent(event)).doesNotThrowAnyException();
 
         verify(aiidaEventListener).createInboundDataSource(event);
-        verify(dataSourceService).createInboundDataSource(permission);
+        verify(dataSourceService).createInboundDataSource(permission, AiidaAsset.SUBMETER);
         verify(permission, never()).setDataSource(any());
         verify(dataSourceService, never()).startDataSource(any());
     }

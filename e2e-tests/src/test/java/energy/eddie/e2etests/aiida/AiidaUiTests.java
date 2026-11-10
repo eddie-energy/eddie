@@ -55,7 +55,8 @@ class AiidaUiTests {
     @Test
     void dataSourceAndPermissionFlow(Page page) throws IOException {
         var dataSource = "E2E Simulation Data Source";
-        var dataNeed = "FUTURE_NEAR_REALTIME_DATA_OUTBOUND";
+        // Allows any asset, so a data source of an asset other than the usual connection agreement point is used
+        var dataNeed = "FUTURE_NEAR_REALTIME_DATA_ANY_ASSET_OUTBOUND";
         var pollingIntervalSeconds = 5;
 
         // Click "Data Sources" tab
@@ -65,7 +66,7 @@ class AiidaUiTests {
         // Fill fields
         page.getByLabel("Name").fill(dataSource);
         page.getByRole(AriaRole.LISTBOX).getByText("Asset Type").click();
-        page.getByRole(AriaRole.OPTION).getByText("CONNECTION-AGREEMENT-POINT").click();
+        page.getByRole(AriaRole.OPTION).getByText("SUBMETER").click();
         page.getByRole(AriaRole.LISTBOX).getByText("Data Source Type").click();
         page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
         page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
@@ -119,6 +120,7 @@ class AiidaUiTests {
         // Check if permission has the right data need and permission ID
         assertThat(permission).containsText(dataNeed);
         assertThat(permission).containsText(permissionId);
+        assertThat(detailsValue(permission, "Assets")).hasText("Any asset");
         // Check if status is correct ("Not Connected" would also contain "Connected")
         assertThat(permission).not().containsText("Not Connected");
         assertThat(permission).containsText("Connected");
@@ -199,7 +201,7 @@ class AiidaUiTests {
 
     @Test
     void acceptedPermissionShowsConnectionStatusWithoutReload() {
-        var dataNeed = "FUTURE_MIN_MAX_ENVELOPE_INBOUND";
+        var dataNeed = "FUTURE_OPAQUE_SUBMETER_OR_CONTROLLABLE_UNIT_INBOUND";
         var displayName = "E2E Connection Status Permission";
         addPermission(aiidaCodeForDataNeed(dataNeed));
 
@@ -208,6 +210,17 @@ class AiidaUiTests {
         assertThat(dialog.locator(":text('Permission ID') + dd")).isVisible();
         assertThat(dialog.getByText("Status", new Locator.GetByTextOptions().setExact(true))).isHidden();
         dialog.getByPlaceholder("Enter a display name for this permission").fill(displayName);
+
+        // Only the allowed assets are offered, the first one in declaration order is preselected
+        var assets = detailsValue(dialog, "Assets");
+        assertThat(assets).containsText("SUBMETER");
+        assertThat(assets).containsText("CONTROLLABLE-UNIT");
+        dialog.getByRole(AriaRole.LISTBOX).click();
+        var assetOptions = dialog.getByRole(AriaRole.OPTION);
+        assertThat(assetOptions).hasCount(2);
+        assertThat(assetOptions.getByText("CONTROLLABLE-UNIT")).hasAttribute("aria-selected", "true");
+        assetOptions.getByText("SUBMETER", new Locator.GetByTextOptions().setExact(true)).click();
+
         dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
 
         // The connection is established asynchronously after accepting
@@ -215,6 +228,7 @@ class AiidaUiTests {
         var permission = openPermission(displayName, PermissionTab.INBOUND, PermissionStatus.ACTIVE);
         assertThat(permission).not().containsText("Not Connected");
         assertThat(permission).containsText("Connected");
+        assertThat(detailsValue(permission, "Asset of the data source")).hasText("SUBMETER");
 
         revokePermission(permission);
     }
@@ -662,6 +676,13 @@ class AiidaUiTests {
         var heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name)).first();
         heading.click();
         return page.getByRole(AriaRole.LISTITEM).filter(new Locator.FilterOptions().setHas(heading)).first();
+    }
+
+    /**
+     * Returns the value of a field in the permission details, which are rendered as a description list.
+     */
+    private static Locator detailsValue(Locator details, String term) {
+        return details.locator("dt:text-is('%s') + dd".formatted(term));
     }
 
     private void deleteDataSource(String dataSource) {
