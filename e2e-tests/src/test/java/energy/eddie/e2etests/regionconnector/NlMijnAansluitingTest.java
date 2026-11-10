@@ -39,6 +39,7 @@ class NlMijnAansluitingTest extends E2eTestSetup {
         assertThat(page.getByText("Permission granted")).isVisible();
     }
 
+    @Disabled("Disabled due to known unavailability of unknown duration.")
     @Test
     void testInvalidHouseNumber() {
         this.navigateToRegionConnector(null, "Netherlands", null);
