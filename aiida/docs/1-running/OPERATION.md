@@ -80,7 +80,7 @@ and a recovery email when the data is back within the limits.
 Notifications are only sent when a mail server is configured (`SPRING_MAIL_HOST`).
 To receive notifications the user has to set a contact email address in their account settings.
 
-Each violation is also stored with its start, end, the violated limit and the measured power, and can be queried with `GET /connection-limits/{permissionId}/violations`.
+Each violation is also stored with its start, end, the violated limit, the first measured power, and the lowest and highest measured power while violating, and can be queried with `GET /connection-limits/{permissionId}/violations`.
 Only active permissions that have a data source assigned are monitored.
 Violations of a permission end when the measured power is back within the limits or the permission is no longer monitored, for example because it was revoked or terminated.
 Periods without any limit are treated as having no limits, so they cannot be violated.
