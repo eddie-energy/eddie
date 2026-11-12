@@ -19,8 +19,16 @@ public class PublishService implements AutoCloseable {
                                                                                                             .multicast()
                                                                                                             .onBackpressureBuffer();
 
+    private final Flux<HistoricalDataInput> historicalDataInputs = vhdFeeds.asFlux()
+            .map(HistoricalDataInput::new)
+            .share();
+
     public void publishValidatedHistoricalData(IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed> identifiablePayload) {
         vhdFeeds.tryEmitNext(identifiablePayload);
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed>> validatedHistoricalData() {

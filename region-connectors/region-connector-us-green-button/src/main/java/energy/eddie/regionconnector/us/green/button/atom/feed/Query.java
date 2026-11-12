@@ -80,7 +80,8 @@ public class Query {
 
     public Optional<SyndEntry> findFirstBySelfLinkAndTitle(String selfLink, String title) {
         for (var entry : findAllByTitle(title)) {
-            if (entry.findRelatedLink("self").getHref().startsWith(selfLink)) {
+            var self = entry.findRelatedLink("self");
+            if (self != null && self.getHref() != null && self.getHref().startsWith(selfLink)) {
                 return Optional.of(entry);
             }
         }

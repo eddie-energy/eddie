@@ -5,6 +5,7 @@ package energy.eddie.regionconnector.es.datadis.providers.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
@@ -18,6 +19,8 @@ import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -54,8 +57,9 @@ class DatadisValidatedHistoricalDataMarketDocumentProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments_alsoEmitsEquivalentV112() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments_alsoEmitsEquivalentV112(boolean subscribeV112First) throws Exception {
         // Given
         EnergyDataStreams streams = new EnergyDataStreams();
         DatadisConfiguration datadisConfig = new DatadisConfiguration("clientId", "clientSecret", "basepath");
@@ -73,9 +77,11 @@ class DatadisValidatedHistoricalDataMarketDocumentProviderTest {
         var intermediate = IntermediateMeteringData.fromMeteringData(identifiableMeteringData).block();
 
         // When
-        var providerV112 = new energy.eddie.regionconnector.es.datadis.providers.v1_12.DatadisValidatedHistoricalDataMarketDocumentProvider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new energy.eddie.regionconnector.es.datadis.providers.v1_12.DatadisValidatedHistoricalDataMarketDocumentProvider(streams, datadisConfig, cimConfig);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> {
                         streams.publish(new IdentifiableMeteringData(pr, intermediate));
@@ -87,6 +93,9 @@ class DatadisValidatedHistoricalDataMarketDocumentProviderTest {
 
     private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
         assertEquals(
                 source.getMessageDocumentHeaderMetaInformationPermissionId(),
                 target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
@@ -103,6 +112,11 @@ class DatadisValidatedHistoricalDataMarketDocumentProviderTest {
             var sourceTimeSeries = sourceSeries.get(i);
             var targetTimeSeries = targetSeries.get(i);
             assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(sourceTimeSeries.getBusinessType(), targetTimeSeries.getBusinessType());
+            assertEquals(sourceTimeSeries.getProduct(), targetTimeSeries.getProduct());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getValue(), targetTimeSeries.getAccountingPointMRID().getValue());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getCodingScheme(), targetTimeSeries.getAccountingPointMRID().getCodingScheme());
+            assertEquals(source.getMarketDocument().getCreatedDateTime(), targetTimeSeries.getDateAndOrTimeDateTime());
             assertEquals(
                     sourceTimeSeries.getEnergyMeasurementUnitName(),
                     targetTimeSeries.getEnergyMeasurementUnitName()
@@ -142,6 +156,13 @@ class DatadisValidatedHistoricalDataMarketDocumentProviderTest {
         assertDoesNotThrow(() -> {
             var serialized = new XmlMessageSerde().serialize(target);
             assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+            var xmlRoundTrip = new XmlMessageSerde().deserialize(serialized, Envelope.class);
+            var json = new JsonMessageSerde();
+            var jsonRoundTrip = json.deserialize(json.serialize(target), Envelope.class);
+            assertEquals(target.getVHDMarketDocument().getMRID(), xmlRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getMRID(), jsonRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), xmlRoundTrip.getVHDMarketDocument().getTimeSeries().size());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), jsonRoundTrip.getVHDMarketDocument().getTimeSeries().size());
         });
     }
 }

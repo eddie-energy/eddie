@@ -21,6 +21,10 @@ public class IdentifiableDataStreams implements AutoCloseable {
                                                                                .multicast()
                                                                                .onBackpressureBuffer();
 
+    private final Flux<HistoricalDataInput> historicalDataInputs = meteringDataSink.asFlux()
+            .map(HistoricalDataInput::new)
+            .share();
+
     public void publish(
             FluviusPermissionRequest permissionRequest,
             GetEnergyResponseModelApiDataResponse payload
@@ -30,6 +34,10 @@ public class IdentifiableDataStreams implements AutoCloseable {
               .log("Publishing metering data for permission request {}");
         var id = new IdentifiableMeteringData(permissionRequest, payload);
         meteringDataSink.emitNext(id, Sinks.EmitFailureHandler.busyLooping(Duration.ofMinutes(1)));
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiableMeteringData> getMeteringData() {

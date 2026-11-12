@@ -7,22 +7,35 @@ import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @SuppressWarnings("java:S6830")
 @Component("EnedisValidatedHistoricalDataMarketDocumentProvider_v1_04")
 public class EnedisValidatedHistoricalDataMarketDocumentProvider {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnedisValidatedHistoricalDataMarketDocumentProvider.class);
     private final Flux<VHDEnvelope> validatedHistoricalData;
 
     public EnedisValidatedHistoricalDataMarketDocumentProvider(
             EnergyDataStreams streams,
             EnedisConfiguration enedisConfig
     ) {
-        var identifiableMeterReadings = streams.getValidatedHistoricalData();
+        var identifiableMeterReadings = streams.historicalDataInputs();
         this.validatedHistoricalData = identifiableMeterReadings
-                .map(id -> new IntermediateValidatedHistoricalDocument(id, enedisConfig))
-                .map(IntermediateValidatedHistoricalDocument::value)
+                .concatMap(input -> Flux.defer(() -> {
+                    var document = new IntermediateValidatedHistoricalDocument(
+                            input.source(),
+                            enedisConfig,
+                            input.metadata()
+                    ).value();
+                    return Flux.just(document);
+                })
+                        .onErrorResume(error -> {
+                            LOGGER.warn("Failed to map historical data input", error);
+                            return Flux.empty();
+                        }))
                 .share();
     }
 

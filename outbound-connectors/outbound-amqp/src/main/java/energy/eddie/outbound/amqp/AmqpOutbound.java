@@ -162,7 +162,17 @@ public class AmqpOutbound implements AutoCloseable {
     }
 
     private <T> Consumer<T> publish(String exchange, Function<T, Map<String, String>> toHeaders) {
-        return payload -> publish(payload, exchange, toHeaders.apply(payload));
+        return payload -> {
+            Map<String, String> headers;
+            try {
+                headers = toHeaders.apply(payload);
+            } catch (RuntimeException e) {
+                // A malformed message must not terminate the subscription of the whole stream
+                LOGGER.warn("Could not read headers of message for exchange {}", exchange, e);
+                return;
+            }
+            publish(payload, exchange, headers);
+        };
     }
 
     private void callback(Publisher.Context context) {

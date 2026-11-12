@@ -49,12 +49,12 @@ class ValidatedHistoricalDataV112PersistenceTest {
     void insertsFiltersEachNestedMetadataFieldAndDeletesByRetentionTime() {
         var payload = new Envelope().withMessageDocumentHeader(new MessageDocumentHeader().withMetaInformation(
                 new MetaInformation().withRequestPermissionId("pid").withConnectionId("cid").withDataNeedId("dnid")
-                        .withRegionConnector("at-eda").withRegionCountry("AT")));
+                        .withRegionConnector("at-eda").withRegionCountry("NAT")));
         try (var task = new InsertionTask<>(Flux.just(payload), repository, ValidatedHistoricalDataMarketDocumentModel::new)) {
             repository.flush();
             assertThat(repository.findAll()).hasSize(1);
             for (int index = 0; index < 7; index++) {
-                var matching = List.of("pid", "cid", "dnid", "at", "at-eda");
+                var matching = List.of("pid", "cid", "dnid", "nat", "at-eda");
                 var params = new ArrayList<Optional<String>>(Collections.nCopies(5, Optional.empty()));
                 Optional<ZonedDateTime> from = Optional.empty();
                 Optional<ZonedDateTime> to = Optional.empty();

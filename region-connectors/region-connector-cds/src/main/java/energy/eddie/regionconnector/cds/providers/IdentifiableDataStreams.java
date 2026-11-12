@@ -26,6 +26,7 @@ public class IdentifiableDataStreams implements AutoCloseable {
     private final Sinks.Many<IdentifiableAccountingPointData> accountingPointDataSink = Sinks.many()
                                                                                              .multicast()
                                                                                              .onBackpressureBuffer();
+    private final Flux<HistoricalDataInput> historicalDataInputs;
     private final Flux<IdentifiableValidatedHistoricalData> flux;
 
     @Autowired
@@ -37,10 +38,16 @@ public class IdentifiableDataStreams implements AutoCloseable {
                                                .map(dataNeedMapper)
                                                .filter(emptyDataFilter)
                                                .share();
+        this.historicalDataInputs = flux.map(HistoricalDataInput::new).share();
     }
 
     public IdentifiableDataStreams() {
         this.flux = validatedHistoricalDataSink.asFlux();
+        this.historicalDataInputs = flux.map(HistoricalDataInput::new).share();
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiableValidatedHistoricalData> validatedHistoricalData() {

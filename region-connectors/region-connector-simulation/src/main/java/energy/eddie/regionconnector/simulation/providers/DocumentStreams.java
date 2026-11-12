@@ -35,6 +35,10 @@ public class DocumentStreams implements AutoCloseable {
     private final ObjectMapper objectMapper;
     private final Sinks.Many<RequestPermissionEnvelope> rpmdSink = Sinks.many().multicast().onBackpressureBuffer();
 
+    private final Flux<HistoricalDataInput> historicalDataInputs = vhdSink.asFlux()
+            .map(HistoricalDataInput::new)
+            .share();
+
     public DocumentStreams(
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig,
             @Qualifier("jacksonJsonMapper") ObjectMapper objectMapper
@@ -104,6 +108,10 @@ public class DocumentStreams implements AutoCloseable {
                         new SimulationDataSourceInformation(),
                         ZonedDateTime.now(ZoneOffset.UTC),
                         objectMapper.writeValueAsString(data)));
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<SimulatedMeterReading> getSimulatedMeterReadingStream() {

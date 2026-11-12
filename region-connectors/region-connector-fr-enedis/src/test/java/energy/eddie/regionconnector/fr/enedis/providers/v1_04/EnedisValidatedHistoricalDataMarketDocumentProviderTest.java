@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.fr.enedis.providers.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
@@ -15,6 +16,8 @@ import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading
 import energy.eddie.regionconnector.fr.enedis.providers.MeterReadingType;
 import energy.eddie.regionconnector.fr.enedis.services.EnergyDataStreams;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Flux;
@@ -57,8 +60,9 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments_alsoEmitsEquivalentV112() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testGetValidatedHistoricalDataMarketDocumentsStream_publishesDocuments_alsoEmitsEquivalentV112(boolean subscribeV112First) throws Exception {
         // Given
         var meterReading = TestResourceProvider.readMeterReadingFromFile(TestResourceProvider.DAILY_CONSUMPTION_1_WEEK);
         var permissionRequest = new EnedisPermissionRequestBuilder()
@@ -80,9 +84,11 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
         var provider = new EnedisValidatedHistoricalDataMarketDocumentProvider(streams, enedisConfiguration);
 
         // When
-        var providerV112 = new energy.eddie.regionconnector.fr.enedis.providers.v1_12.EnedisValidatedHistoricalDataMarketDocumentProvider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new energy.eddie.regionconnector.fr.enedis.providers.v1_12.EnedisValidatedHistoricalDataMarketDocumentProvider(streams, enedisConfiguration);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> {
                         streams.publish(identifiableMeterReading);
@@ -97,6 +103,9 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
 
     private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
         assertEquals(
                 source.getMessageDocumentHeaderMetaInformationPermissionId(),
                 target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
@@ -113,6 +122,11 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
             var sourceTimeSeries = sourceSeries.get(i);
             var targetTimeSeries = targetSeries.get(i);
             assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(sourceTimeSeries.getBusinessType(), targetTimeSeries.getBusinessType());
+            assertEquals(sourceTimeSeries.getProduct(), targetTimeSeries.getProduct());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getValue(), targetTimeSeries.getAccountingPointMRID().getValue());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getCodingScheme(), targetTimeSeries.getAccountingPointMRID().getCodingScheme());
+            assertEquals(source.getMarketDocument().getCreatedDateTime(), targetTimeSeries.getDateAndOrTimeDateTime());
             assertEquals(
                     sourceTimeSeries.getEnergyMeasurementUnitName(),
                     targetTimeSeries.getEnergyMeasurementUnitName()
@@ -152,6 +166,13 @@ class EnedisValidatedHistoricalDataMarketDocumentProviderTest {
         assertDoesNotThrow(() -> {
             var serialized = new XmlMessageSerde().serialize(target);
             assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+            var xmlRoundTrip = new XmlMessageSerde().deserialize(serialized, Envelope.class);
+            var json = new JsonMessageSerde();
+            var jsonRoundTrip = json.deserialize(json.serialize(target), Envelope.class);
+            assertEquals(target.getVHDMarketDocument().getMRID(), xmlRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getMRID(), jsonRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), xmlRoundTrip.getVHDMarketDocument().getTimeSeries().size());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), jsonRoundTrip.getVHDMarketDocument().getTimeSeries().size());
         });
     }
 }

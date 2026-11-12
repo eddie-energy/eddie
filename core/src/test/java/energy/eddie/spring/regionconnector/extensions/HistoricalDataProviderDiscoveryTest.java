@@ -88,12 +88,17 @@ class HistoricalDataProviderDiscoveryTest {
                              .map(method -> method.getAnnotation(MessageStream.class))
                              .filter(annotation -> annotation != null)
                              .noneMatch(annotation -> annotation.value().equals(Envelope.class)));
+        }
 
-            context.register(adapterType);
+        try (var context = context()) {
+            context.register(sourceType, adapterType);
+            context.refresh();
             var adapter = context.getBean(adapterType);
             var method = adapterType.getDeclaredMethod("getValidatedHistoricalDataV112Stream");
             assertEquals(Envelope.class, method.getAnnotation(MessageStream.class).value());
             assertInstanceOf(Flux.class, method.invoke(adapter));
+            var extension = new RegionConnectorSupportedFeatureExtension(new SupportedFeatureService(), metadata);
+            extension.setApplicationContext(context);
             assertTrue(extension.supportsValidatedHistoricalDataMarketDocumentsV1_04());
             assertTrue(extension.supportsValidatedHistoricalDataMarketDocumentsV1_12());
 
@@ -105,8 +110,26 @@ class HistoricalDataProviderDiscoveryTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("providers")
+    void discoversV112WithoutLegacyProvider(Class<?> sourceType, Class<?> providerType) throws Exception {
+        try (var context = context()) {
+            context.register(providerType);
+            context.refresh();
+            assertEquals(0, context.getBeanNamesForType(sourceType).length);
+            var provider = context.getBean(providerType);
+            var method = providerType.getDeclaredMethod("getValidatedHistoricalDataV112Stream");
+            assertEquals(Envelope.class, method.getAnnotation(MessageStream.class).value());
+            assertInstanceOf(Flux.class, method.invoke(provider));
+            var extension = new RegionConnectorSupportedFeatureExtension(new SupportedFeatureService(), metadata);
+            extension.setApplicationContext(context);
+            assertFalse(extension.supportsValidatedHistoricalDataMarketDocumentsV1_04());
+            assertTrue(extension.supportsValidatedHistoricalDataMarketDocumentsV1_12());
+        }
+    }
+
     @Test
-    void allVersionedProvidersHaveDistinctBeanNamesAndInjectTheirConcreteSource() {
+    void allVersionedProvidersHaveDistinctBeanNamesAndInjectTheirRawSource() {
         try (var context = context()) {
             context.setAllowBeanDefinitionOverriding(false);
             providers().forEach(pair -> {
@@ -124,15 +147,15 @@ class HistoricalDataProviderDiscoveryTest {
 
     private AnnotationConfigApplicationContext context() {
         // No provider acquisition or mapping is needed to discover the concrete stream declarations.
-        lenient().when(edaStreams.consumptionRecordStream()).thenReturn(Flux.never());
-        lenient().when(fluviusStreams.getMeteringData()).thenReturn(Flux.never());
-        lenient().when(cdsStreams.validatedHistoricalData()).thenReturn(Flux.never());
-        lenient().when(etaStream.validatedHistoricalData()).thenReturn(Flux.never());
-        lenient().when(energinetStreams.getValidatedHistoricalDataStream()).thenReturn(Flux.never());
-        lenient().when(datadisStreams.getValidatedHistoricalData()).thenReturn(Flux.never());
-        lenient().when(fingridService.getIdentifiableValidatedHistoricalDataStream()).thenReturn(Flux.never());
-        lenient().when(enedisStreams.getValidatedHistoricalData()).thenReturn(Flux.never());
-        lenient().when(simulationStreams.getSimulatedMeterReadingStream()).thenReturn(Flux.never());
+        lenient().when(edaStreams.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(fluviusStreams.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(cdsStreams.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(etaStream.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(energinetStreams.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(datadisStreams.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(fingridService.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(enedisStreams.historicalDataInputs()).thenReturn(Flux.never());
+        lenient().when(simulationStreams.historicalDataInputs()).thenReturn(Flux.never());
         var context = new AnnotationConfigApplicationContext();
         context.registerBean("hub", MessageStreamHub.class, () -> hub);
         context.registerBean("config", CommonInformationModelConfiguration.class, () -> config);

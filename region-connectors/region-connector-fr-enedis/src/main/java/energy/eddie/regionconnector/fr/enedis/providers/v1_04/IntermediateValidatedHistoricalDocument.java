@@ -13,6 +13,7 @@ import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
 import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading.Reading;
 import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
@@ -20,14 +21,13 @@ import jakarta.annotation.Nullable;
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 public final class IntermediateValidatedHistoricalDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final EnedisConfiguration enedisConfig;
     private final IdentifiableMeterReading identifiableMeterReading;
 
@@ -35,6 +35,15 @@ public final class IntermediateValidatedHistoricalDocument {
             IdentifiableMeterReading identifiableMeterReading,
             EnedisConfiguration enedisConfig
     ) {
+        this(identifiableMeterReading, enedisConfig, new HistoricalDataEmissionMetadata());
+    }
+
+    IntermediateValidatedHistoricalDocument(
+            IdentifiableMeterReading identifiableMeterReading,
+            EnedisConfiguration enedisConfig,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.identifiableMeterReading = identifiableMeterReading;
         this.enedisConfig = enedisConfig;
     }
@@ -45,7 +54,7 @@ public final class IntermediateValidatedHistoricalDocument {
                 meterReading().period().end().atStartOfDay(ZONE_ID_FR)
         );
         var vhd = new VHDMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.id("document"))
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
@@ -56,7 +65,7 @@ public final class IntermediateValidatedHistoricalDocument {
                                 .withCodingScheme(StandardCodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME.value())
                                 .withValue("ENEDIS")
                 )
-                .withCreatedDateTime(ZonedDateTime.now(ZONE_ID_FR))
+                .withCreatedDateTime(metadata.created(ZONE_ID_FR))
                 .withReceiverMarketParticipantMRID(
                         new PartyIDString()
                                 .withCodingScheme(StandardCodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME.value())
@@ -69,7 +78,7 @@ public final class IntermediateValidatedHistoricalDocument {
                 )
                 .withTimeSeries(timeSeries());
         FrEnedisPermissionRequest permissionRequest = identifiableMeterReading.permissionRequest();
-        return new VhdEnvelopeWrapper(vhd, permissionRequest).wrap();
+        return new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap();
     }
 
     private MeterReading meterReading() {
@@ -78,9 +87,10 @@ public final class IntermediateValidatedHistoricalDocument {
 
     private List<TimeSeries> timeSeries() {
         var tss = new ArrayList<TimeSeries>();
-        for (var reading : meterReading().readings()) {
+        for (var readingIndex = 0; readingIndex < meterReading().readings().size(); readingIndex++) {
+            var reading = meterReading().readings().get(readingIndex);
             var ts = new TimeSeries()
-                    .withMRID(UUID.randomUUID().toString())
+                    .withMRID(metadata.id("reading:" + readingIndex))
                     .withBusinessType(businessType(reading).value())
                     .withProduct(energyProductTypeList(reading))
                     .withVersion("1")

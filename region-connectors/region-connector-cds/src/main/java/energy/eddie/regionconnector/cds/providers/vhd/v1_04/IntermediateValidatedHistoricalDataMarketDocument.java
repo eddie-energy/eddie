@@ -12,6 +12,7 @@ import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest
 import energy.eddie.regionconnector.cds.providers.cim.Account;
 import energy.eddie.regionconnector.cds.providers.cim.Meter;
 import energy.eddie.regionconnector.cds.providers.cim.UsageSegment;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.CimUtils;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
@@ -24,11 +25,11 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 
 class IntermediateValidatedHistoricalDataMarketDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final CdsPermissionRequest permissionRequest;
     private final List<Account> accounts;
 
@@ -36,29 +37,47 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             CdsPermissionRequest permissionRequest,
             List<Account> accounts
     ) {
+        this(permissionRequest, accounts, new HistoricalDataEmissionMetadata());
+    }
+
+    public IntermediateValidatedHistoricalDataMarketDocument(
+            CdsPermissionRequest permissionRequest,
+            List<Account> accounts,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.permissionRequest = permissionRequest;
         this.accounts = accounts;
     }
 
     public List<VHDEnvelope> toVhds() {
-        return accounts.stream()
-                       .map(this::toVhds)
-                       .flatMap(List::stream)
-                       .toList();
+        var envelopes = new ArrayList<VHDEnvelope>();
+        for (var accountIndex = 0; accountIndex < accounts.size(); accountIndex++) {
+            envelopes.addAll(toVhds(accounts.get(accountIndex), accountIndex));
+        }
+        return envelopes;
     }
 
     public List<VHDEnvelope> toVhds(Account account) {
-        var created = ZonedDateTime.now(ZoneOffset.UTC);
+        return toVhds(account, accounts.indexOf(account));
+    }
+
+    private List<VHDEnvelope> toVhds(Account account, int accountIndex) {
+        var created = metadata.created(ZoneOffset.UTC);
         List<VHDEnvelope> envelopes = new ArrayList<>();
-        for (var meter : account.meters()) {
-            for (var usageSegment : meter.usageSegments()) {
+        var meters = account.meters();
+        for (var meterIndex = 0; meterIndex < meters.size(); meterIndex++) {
+            var meter = meters.get(meterIndex);
+            for (var segmentIndex = 0; segmentIndex < meter.usageSegments().size(); segmentIndex++) {
+                var usageSegment = meter.usageSegments().get(segmentIndex);
+                var sourceKey = "account:" + accountIndex + "/meter:" + meterIndex + "/segment:" + segmentIndex;
                 var interval = new EsmpTimeInterval(usageSegment.start(), usageSegment.end());
-                var vhd = getVhd(account, created)
+                var vhd = getVhd(account, created, sourceKey)
                         .withPeriodTimeInterval(new ESMPDateTimeInterval()
                                                         .withStart(interval.start())
                                                         .withEnd(interval.end()))
-                        .withTimeSeries(getTimeSeriesList(meter, usageSegment, interval));
-                envelopes.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
+                        .withTimeSeries(getTimeSeriesList(meter, usageSegment, interval, sourceKey));
+                envelopes.add(new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap());
             }
         }
         return envelopes;
@@ -67,7 +86,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     private List<TimeSeries> getTimeSeriesList(
             Meter meter,
             UsageSegment usageSegment,
-            EsmpTimeInterval interval
+            EsmpTimeInterval interval,
+            String sourceKey
     ) {
         List<TimeSeries> timeSeriesList = new ArrayList<>();
         var resolution = getResolution(usageSegment);
@@ -78,7 +98,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             var unit = converter.unit();
             var timeSeries = new TimeSeries()
                     .withVersion("1")
-                    .withMRID(UUID.randomUUID().toString())
+                    .withMRID(metadata.child(sourceKey).id("format:" + format.name()))
                     .withBusinessType(getBusinessType(direction))
                     .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
                     .withFlowDirectionDirection(direction.value())
@@ -175,10 +195,10 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return DatatypeFactory.newDefaultInstance().newDuration(duration.toMillis());
     }
 
-    private VHDMarketDocument getVhd(Account account, ZonedDateTime created) {
+    private VHDMarketDocument getVhd(Account account, ZonedDateTime created, String sourceKey) {
         var codingScheme = getCodingScheme();
         return new VHDMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.child(sourceKey).id("document"))
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                 .withCreatedDateTime(created)

@@ -1,0 +1,216 @@
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
+package energy.eddie.regionconnector.fr.enedis.providers.v1_12;
+
+import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.api.utils.Pair;
+import energy.eddie.cim.CommonInformationModelVersions;
+import energy.eddie.cim.v1_12.*;
+import energy.eddie.cim.v1_12.vhd.*;
+import energy.eddie.regionconnector.fr.enedis.api.FrEnedisPermissionRequest;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading;
+import energy.eddie.regionconnector.fr.enedis.dto.readings.MeterReading.Reading;
+import energy.eddie.regionconnector.fr.enedis.providers.IdentifiableMeterReading;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
+import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
+import energy.eddie.regionconnector.shared.cim.v1_12.VhdEnvelopeWrapper;
+import jakarta.annotation.Nullable;
+
+import javax.xml.datatype.DatatypeFactory;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
+
+public final class IntermediateValidatedHistoricalDocument {
+    private final HistoricalDataEmissionMetadata metadata;
+    private final EnedisConfiguration enedisConfig;
+    private final IdentifiableMeterReading identifiableMeterReading;
+
+    IntermediateValidatedHistoricalDocument(
+            IdentifiableMeterReading identifiableMeterReading,
+            EnedisConfiguration enedisConfig
+    ) {
+        this(identifiableMeterReading, enedisConfig, new HistoricalDataEmissionMetadata());
+    }
+
+    IntermediateValidatedHistoricalDocument(
+            IdentifiableMeterReading identifiableMeterReading,
+            EnedisConfiguration enedisConfig,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
+        this.identifiableMeterReading = identifiableMeterReading;
+        this.enedisConfig = enedisConfig;
+    }
+
+    public Envelope value() {
+        var vhd = new VHDMarketDocument()
+                .withMRID(metadata.id("document"))
+                .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
+                .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
+                .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
+                .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
+                .withProcessProcessType(StandardProcessTypeList.REALISED.value())
+                .withSenderMarketParticipantMRID(
+                        new PartyIDString()
+                                .withCodingScheme(StandardCodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME.value())
+                                .withValue("ENEDIS")
+                )
+                .withCreatedDateTime(metadata.created(ZONE_ID_FR))
+                .withReceiverMarketParticipantMRID(
+                        new PartyIDString()
+                                .withCodingScheme(StandardCodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME.value())
+                                .withValue(enedisConfig.clientId())
+                )
+                .withTimeSeries(timeSeries());
+        FrEnedisPermissionRequest permissionRequest = identifiableMeterReading.permissionRequest();
+        return new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap();
+    }
+
+    private MeterReading meterReading() {
+        return this.identifiableMeterReading.payload();
+    }
+
+    private List<TimeSeries> timeSeries() {
+        var tss = new ArrayList<TimeSeries>();
+        for (var readingIndex = 0; readingIndex < meterReading().readings().size(); readingIndex++) {
+            var reading = meterReading().readings().get(readingIndex);
+            var ts = new TimeSeries()
+                    .withMRID(metadata.id("reading:" + readingIndex))
+                    .withBusinessType(businessType(reading).value())
+                    .withProduct(energyProductTypeList(reading))
+                    .withVersion("1")
+                    .withFlowDirectionDirection(direction(reading).value())
+                    .withAccountingPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind._2)
+                    .withAccountingPointMRID(
+                            new MeasurementPointIDString()
+                                    .withCodingScheme(StandardCodingSchemeTypeList.FRANCE_NATIONAL_CODING_SCHEME.value())
+                                    .withValue(meterReading().usagePointId())
+                    )
+                    .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value());
+            switch (reading.unit()) {
+                case "W", "VA" -> ts.withEnergyMeasurementUnitName(StandardUnitOfMeasureTypeList.WATT.value())
+                                    .withSeriesPeriods(seriesPeriods(reading, false));
+                case "Wh" -> ts.withEnergyMeasurementUnitName(StandardUnitOfMeasureTypeList.KILOWATT_HOUR.value())
+                               .withSeriesPeriods(seriesPeriods(reading, true));
+                default -> ts.withSeriesPeriods(seriesPeriods(reading, false));
+            }
+            tss.add(ts);
+        }
+        return tss;
+    }
+
+    private StandardBusinessTypeList businessType(Reading reading) {
+        return switch (reading.direction()) {
+            case CONSUMPTION -> StandardBusinessTypeList.CONSUMPTION;
+            case PRODUCTION -> StandardBusinessTypeList.PRODUCTION;
+        };
+    }
+
+    @Nullable
+    private String energyProductTypeList(Reading reading) {
+        return switch (reading.unit()) {
+            case "W", "VA" -> StandardEnergyProductTypeList.ACTIVE_POWER.value();
+            case "Wh" -> StandardEnergyProductTypeList.ACTIVE_ENERGY.value();
+            default -> null;
+        };
+    }
+
+    private StandardDirectionTypeList direction(Reading reading) {
+        return switch (reading.direction()) {
+            case CONSUMPTION -> StandardDirectionTypeList.DOWN;
+            case PRODUCTION -> StandardDirectionTypeList.UP;
+        };
+    }
+
+    private List<SeriesPeriod> seriesPeriods(Reading reading, boolean convertToKiloWatt) {
+        var pointsWithResolutions = batchIntoChunks(reading, convertToKiloWatt);
+
+        List<SeriesPeriod> seriesPeriods = new ArrayList<>();
+        for (PointsWithResolution pointsWithResolution : pointsWithResolutions) {
+            var resolution = pointsWithResolution.resolution();
+            var start = pointsWithResolution.start();
+
+            if (resolution.toMinutes() <= 60) {
+                start = start.minusMinutes(resolution.toMinutes());
+            }
+            var end = pointsWithResolution.end();
+
+            if (resolution.equals(Duration.ofDays(1))) {
+                end = end.plusMinutes(resolution.toMinutes());
+            }
+            var interval = new EsmpTimeInterval(start, end);
+            var seriesPeriod = new SeriesPeriod()
+                    .withResolution(DatatypeFactory.newDefaultInstance()
+                                                   .newDuration(resolution.toMillis()))
+                    .withTimeInterval(new ESMPDateTimeInterval()
+                                              .withStart(interval.start())
+                                              .withEnd(interval.end())
+                    )
+                    .withPoints(pointsWithResolution.points());
+            seriesPeriods.add(seriesPeriod);
+        }
+        return seriesPeriods;
+    }
+
+    private List<PointsWithResolution> batchIntoChunks(Reading reading, boolean convertToKiloWatt) {
+        var points = reading.points();
+        if (points.isEmpty()) {
+            return List.of();
+        }
+        var prevResolution = resolutionOf(points.getFirst());
+        var position = 1;
+        var currentChunk = new ArrayList<>(List.of(new Pair<>(position++, points.getFirst())));
+        var chunks = new ArrayList<PointsWithResolution>();
+        for (int i = 1; i < points.size(); i++) {
+            var cur = points.get(i);
+            var curResolution = resolutionOf(cur);
+
+            if (!curResolution.equals(prevResolution)) {
+                addChunk(convertToKiloWatt, chunks, currentChunk, prevResolution);
+                currentChunk = new ArrayList<>();
+                position = 1;
+                prevResolution = curResolution;
+            }
+            currentChunk.add(new Pair<>(position++, cur));
+        }
+        addChunk(convertToKiloWatt, chunks, currentChunk, prevResolution);
+        return chunks;
+    }
+
+    private Duration resolutionOf(MeterReading.Point point) {
+        return point.granularity()
+                    .orElseGet(() -> meterReading().granularity()
+                                                   .orElse(Granularity.P1D.duration()));
+    }
+
+    private void addChunk(
+            boolean convertToKiloWatt,
+            List<PointsWithResolution> chunks,
+            List<Pair<Integer, MeterReading.Point>> currentChunk,
+            Duration prevResolution
+    ) {
+        chunks.add(new PointsWithResolution(currentChunk.stream()
+                                                        .map(p -> toPoint(p, convertToKiloWatt))
+                                                        .toList(),
+                                            prevResolution,
+                                            currentChunk.getFirst().value().timestamp(),
+                                            currentChunk.getLast().value().timestamp()));
+    }
+
+    private Point toPoint(Pair<Integer, MeterReading.Point> point, boolean convertToKiloWatt) {
+        var quantity = point.value().value();
+        if (convertToKiloWatt) {
+            quantity = quantity / 1000.0;
+        }
+        return new Point()
+                .withPosition(point.key())
+                .withEnergyQuantityQuantity(BigDecimal.valueOf(quantity))
+                .withEnergyQuantityQuality(StandardQualityTypeList.AS_PROVIDED.value());
+    }
+}

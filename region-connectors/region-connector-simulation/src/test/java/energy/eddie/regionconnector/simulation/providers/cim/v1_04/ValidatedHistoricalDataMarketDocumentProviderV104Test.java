@@ -12,6 +12,8 @@ import energy.eddie.regionconnector.simulation.dtos.SimulatedMeterReading;
 import energy.eddie.regionconnector.simulation.providers.DocumentStreams;
 import energy.eddie.regionconnector.simulation.providers.cim.v1_12.ValidatedHistoricalDataMarketDocumentProviderV112;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 import tools.jackson.databind.ObjectMapper;
@@ -22,16 +24,19 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ValidatedHistoricalDataMarketDocumentProviderV104Test {
-    @Test
-    void sameSimulatedInputProducesBothVersionsWithSamePermissionAndMeasurements() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void sameSimulatedInputProducesBothVersionsWithSamePermissionAndMeasurements(boolean subscribeV112First) {
         var config = new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "ep");
         try (var streams = new DocumentStreams(config, new ObjectMapper())) {
             var provider = new ValidatedHistoricalDataMarketDocumentProviderV104(streams, config);
             var reading = new SimulatedMeterReading("cid", "dnid", "pid", "mid", ZonedDateTime.parse("2026-01-01T00:00Z"),
                     "PT15M", List.of(new Measurement(10.25, Measurement.MeasurementType.MEASURED)));
-            var providerV112 = new ValidatedHistoricalDataMarketDocumentProviderV112(provider);
-            var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                           providerV112.getValidatedHistoricalDataV112Stream());
+            var providerV112 = new ValidatedHistoricalDataMarketDocumentProviderV112(streams, config);
+            var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
             StepVerifier.create(pairedDocuments)
                     .then(() -> streams.publish(reading))
                     .assertNext(pair -> {
@@ -40,6 +45,9 @@ class ValidatedHistoricalDataMarketDocumentProviderV104Test {
                         assertEquals("pid", target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId());
                         assertEquals("dnid", target.getMessageDocumentHeader().getMetaInformation().getDataNeedId());
                         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
                         assertEquals(1, source.getMarketDocument().getTimeSeries().size());
                         assertEquals(1, target.getVHDMarketDocument().getTimeSeries().size());
                         var sourceSeries = source.getMarketDocument().getTimeSeries().getFirst();

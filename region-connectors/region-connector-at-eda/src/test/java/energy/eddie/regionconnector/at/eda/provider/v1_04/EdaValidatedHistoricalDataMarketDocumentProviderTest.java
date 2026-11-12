@@ -15,7 +15,10 @@ import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.dto.SimpleEnergy;
 import energy.eddie.regionconnector.at.eda.dto.SimpleEnergyData;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
+import energy.eddie.regionconnector.at.eda.provider.HistoricalDataInput;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -44,7 +47,7 @@ class EdaValidatedHistoricalDataMarketDocumentProviderTest {
                                                                      "ep-id");
         var start = LocalDate.of(2025, 1, 1);
         var end = LocalDate.of(2025, 1, 2);
-        when(streams.consumptionRecordStream())
+        when(streams.historicalDataInputs())
                 .thenReturn(Flux.just(
                         new IdentifiableConsumptionRecord(
                                 new SimpleEdaConsumptionRecord()
@@ -55,7 +58,7 @@ class EdaValidatedHistoricalDataMarketDocumentProviderTest {
                                 start,
                                 end
                         )
-                ));
+                ).map(HistoricalDataInput::new).share());
         var provider = new EdaValidatedHistoricalDataMarketDocumentProvider(cimConfig, streams);
 
         // When
@@ -67,8 +70,9 @@ class EdaValidatedHistoricalDataMarketDocumentProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void getValidatedHistoricalDataMarketDocumentsStream_returnsDocuments_alsoEmitsEquivalentV112() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void getValidatedHistoricalDataMarketDocumentsStream_returnsDocuments_alsoEmitsEquivalentV112(boolean subscribeV112First) {
         // Given
         var cimConfig = new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
                                                                      "ep-id");
@@ -111,11 +115,13 @@ class EdaValidatedHistoricalDataMarketDocumentProviderTest {
                 end
         );
         Sinks.Many<IdentifiableConsumptionRecord> records = Sinks.many().unicast().onBackpressureBuffer();
-        when(streams.consumptionRecordStream()).thenReturn(records.asFlux());
+        when(streams.historicalDataInputs()).thenReturn(records.asFlux().map(HistoricalDataInput::new).share());
         var provider = new EdaValidatedHistoricalDataMarketDocumentProvider(cimConfig, streams);
-        var providerV112 = new energy.eddie.regionconnector.at.eda.provider.v1_12.EdaValidatedHistoricalDataMarketDocumentProvider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new energy.eddie.regionconnector.at.eda.provider.v1_12.EdaValidatedHistoricalDataMarketDocumentProvider(cimConfig, streams);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
 
         // When / Then: both versions subscribe before the single provider record is emitted.
         StepVerifier.create(pairedDocuments)
@@ -133,6 +139,9 @@ class EdaValidatedHistoricalDataMarketDocumentProviderTest {
                                      target.getMessageDocumentHeader().getCreationDateTime());
                         assertEquals("message-id", source.getMarketDocument().getMRID());
                         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
                         assertEquals(created, source.getMarketDocument().getCreatedDateTime());
                         assertEquals(created, target.getVHDMarketDocument().getCreatedDateTime());
 

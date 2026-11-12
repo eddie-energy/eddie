@@ -11,6 +11,7 @@ import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeries;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesData;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
@@ -20,9 +21,9 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 final class IntermediateValidatedHistoricalDataMarketDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final List<TimeSeriesResponse> timeSeriesResponses;
     private final FingridPermissionRequest permissionRequest;
 
@@ -30,19 +31,30 @@ final class IntermediateValidatedHistoricalDataMarketDocument {
             List<TimeSeriesResponse> timeSeriesResponses,
             FingridPermissionRequest permissionRequest
     ) {
+        this(timeSeriesResponses, permissionRequest, new HistoricalDataEmissionMetadata());
+    }
+
+    IntermediateValidatedHistoricalDataMarketDocument(
+            List<TimeSeriesResponse> timeSeriesResponses,
+            FingridPermissionRequest permissionRequest,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.timeSeriesResponses = timeSeriesResponses;
         this.permissionRequest = permissionRequest;
     }
 
     public List<VHDEnvelope> toVhds() {
         List<VHDEnvelope> vhds = new ArrayList<>();
-        for (var timeSeriesResponse : timeSeriesResponses) {
-            vhds.add(new VhdEnvelopeWrapper(toSingleVhd(timeSeriesResponse), permissionRequest).wrap());
+        for (var responseIndex = 0; responseIndex < timeSeriesResponses.size(); responseIndex++) {
+            var timeSeriesResponse = timeSeriesResponses.get(responseIndex);
+            var document = toSingleVhd(timeSeriesResponse, responseIndex);
+            vhds.add(new VhdEnvelopeWrapper(document, permissionRequest, metadata.envelopeCreated()).wrap());
         }
         return vhds;
     }
 
-    private VHDMarketDocument toSingleVhd(TimeSeriesResponse timeSeriesResponse) {
+    private VHDMarketDocument toSingleVhd(TimeSeriesResponse timeSeriesResponse, int responseIndex) {
         var data = timeSeriesResponse.data();
         var timeSeries = data.transaction().timeSeries();
 
@@ -80,7 +92,7 @@ final class IntermediateValidatedHistoricalDataMarketDocument {
                 .withPeriodTimeInterval(interval)
                 .withTimeSeries(
                         new energy.eddie.cim.v1_04.vhd.TimeSeries()
-                                .withMRID(UUID.randomUUID().toString())
+                                .withMRID(metadata.id("response:" + responseIndex + "/series"))
                                 .withVersion("1")
                                 .withProduct(StandardEnergyProductTypeList.ACTIVE_ENERGY.value())
                                 .withFlowDirectionDirection(StandardDirectionTypeList.UP_AND_DOWN.value())

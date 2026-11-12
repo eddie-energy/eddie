@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.cds.providers.vhd.v1_04;
 
+import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
@@ -12,6 +13,8 @@ import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequest
 import energy.eddie.regionconnector.cds.providers.IdentifiableDataStreams;
 import energy.eddie.regionconnector.cds.providers.vhd.v1_12.CdsValidatedHistoricalDataMarketDocumentV112Provider;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -80,8 +83,9 @@ class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void testValidatedHistoricalDataMarketDocument_returnsDocuments_alsoEmitsEquivalentV112() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testValidatedHistoricalDataMarketDocument_returnsDocuments_alsoEmitsEquivalentV112(boolean subscribeV112First) {
         // Given
         var streams = new IdentifiableDataStreams();
         var provider = new CdsValidatedHistoricalDataMarketDocumentV104Provider(streams);
@@ -121,9 +125,11 @@ class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
                 .build();
 
         // When
-        var providerV112 = new CdsValidatedHistoricalDataMarketDocumentV112Provider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new CdsValidatedHistoricalDataMarketDocumentV112Provider(streams);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> streams.publishValidatedHistoricalData(
                             pr,
@@ -140,6 +146,9 @@ class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
 
     private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
         assertEquals(
                 source.getMessageDocumentHeaderMetaInformationPermissionId(),
                 target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
@@ -156,6 +165,11 @@ class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
             var sourceTimeSeries = sourceSeries.get(i);
             var targetTimeSeries = targetSeries.get(i);
             assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(sourceTimeSeries.getBusinessType(), targetTimeSeries.getBusinessType());
+            assertEquals(sourceTimeSeries.getProduct(), targetTimeSeries.getProduct());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getValue(), targetTimeSeries.getAccountingPointMRID().getValue());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getCodingScheme(), targetTimeSeries.getAccountingPointMRID().getCodingScheme());
+            assertEquals(source.getMarketDocument().getCreatedDateTime(), targetTimeSeries.getDateAndOrTimeDateTime());
             assertEquals(
                     sourceTimeSeries.getEnergyMeasurementUnitName(),
                     targetTimeSeries.getEnergyMeasurementUnitName()
@@ -195,6 +209,13 @@ class CdsValidatedHistoricalDataMarketDocumentV104ProviderTest {
         assertDoesNotThrow(() -> {
             var serialized = new XmlMessageSerde().serialize(target);
             assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+            var xmlRoundTrip = new XmlMessageSerde().deserialize(serialized, Envelope.class);
+            var json = new JsonMessageSerde();
+            var jsonRoundTrip = json.deserialize(json.serialize(target), Envelope.class);
+            assertEquals(target.getVHDMarketDocument().getMRID(), xmlRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getMRID(), jsonRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), xmlRoundTrip.getVHDMarketDocument().getTimeSeries().size());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), jsonRoundTrip.getVHDMarketDocument().getTimeSeries().size());
         });
     }
 }

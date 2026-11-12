@@ -13,18 +13,19 @@ import energy.eddie.regionconnector.es.datadis.config.DatadisConfiguration;
 import energy.eddie.regionconnector.es.datadis.dtos.MeteringData;
 import energy.eddie.regionconnector.es.datadis.permission.request.DistributorCode;
 import energy.eddie.regionconnector.es.datadis.providers.agnostic.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 
 import javax.xml.datatype.DatatypeFactory;
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.function.ToDoubleFunction;
 
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 
 public final class IntermediateValidatedHistoricalDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final CommonInformationModelConfiguration cimConfig;
     private final DatadisConfiguration datadisConfig;
     private final IdentifiableMeteringData identifiableMeteringData;
@@ -34,6 +35,16 @@ public final class IntermediateValidatedHistoricalDocument {
             CommonInformationModelConfiguration cimConfig,
             DatadisConfiguration datadisConfig
     ) {
+        this(identifiableMeteringData, cimConfig, datadisConfig, new HistoricalDataEmissionMetadata());
+    }
+
+    IntermediateValidatedHistoricalDocument(
+            IdentifiableMeteringData identifiableMeteringData,
+            CommonInformationModelConfiguration cimConfig,
+            DatadisConfiguration datadisConfig,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.identifiableMeteringData = identifiableMeteringData;
         this.cimConfig = cimConfig;
         this.datadisConfig = datadisConfig;
@@ -50,7 +61,7 @@ public final class IntermediateValidatedHistoricalDocument {
                 cimConfig.eligiblePartyNationalCodingScheme().value()
         );
         var vhd = new VHDMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.id("document"))
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
@@ -64,7 +75,7 @@ public final class IntermediateValidatedHistoricalDocument {
                                                                    .map(DistributorCode::name)
                                                                    .orElse("Datadis"))
                 )
-                .withCreatedDateTime(ZonedDateTime.now(ZONE_ID_SPAIN))
+                .withCreatedDateTime(metadata.created(ZONE_ID_SPAIN))
                 .withReceiverMarketParticipantMRID(
                         new PartyIDString()
                                 .withCodingScheme(receiverCodingScheme.value())
@@ -76,7 +87,9 @@ public final class IntermediateValidatedHistoricalDocument {
                                 .withEnd(timeframe.end())
                 )
                 .withTimeSeries(timeSeriesList(timeframe));
-        return new VhdEnvelopeWrapper(vhd, identifiableMeteringData.permissionRequest()).wrap();
+        return new VhdEnvelopeWrapper(
+                vhd, identifiableMeteringData.permissionRequest(), metadata.envelopeCreated()
+        ).wrap();
     }
 
     private List<TimeSeries> timeSeriesList(EsmpTimeInterval timeframe) {
@@ -109,7 +122,7 @@ public final class IntermediateValidatedHistoricalDocument {
             list.add(
                     new TimeSeries()
                             .withVersion("1")
-                            .withMRID(UUID.randomUUID().toString())
+                            .withMRID(metadata.child(cups.getKey()).id(directionTypeList.value()))
                             .withBusinessType(businessType.value())
                             .withProduct(StandardEnergyProductTypeList.ACTIVE_ENERGY.value())
                             .withFlowDirectionDirection(directionTypeList.value())

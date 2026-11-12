@@ -6,6 +6,7 @@ package energy.eddie.regionconnector.dk.energinet.providers.v1_04;
 import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
@@ -16,6 +17,8 @@ import energy.eddie.regionconnector.dk.energinet.permission.request.EnerginetPer
 import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
@@ -61,8 +64,9 @@ class EnerginetValidatedHistoricalDataMarketDocumentProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void givenValidatedHistoricalData_whenReceived_thenPublishValidatedHistoricalDataMarketDocument_alsoEmitsEquivalentV112() throws IOException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void givenValidatedHistoricalData_whenReceived_thenPublishValidatedHistoricalDataMarketDocument_alsoEmitsEquivalentV112(boolean subscribeV112First) throws IOException {
         // Given
         var streams = new EnergyDataStreams();
         var cimConfig = new PlainCommonInformationModelConfiguration(CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
@@ -84,9 +88,11 @@ class EnerginetValidatedHistoricalDataMarketDocumentProviderTest {
         var response = DtoLoader.loadValidatedHistoricalData().getResult();
 
         // When
-        var providerV112 = new energy.eddie.regionconnector.dk.energinet.providers.v1_12.EnerginetValidatedHistoricalDataMarketDocumentProvider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new energy.eddie.regionconnector.dk.energinet.providers.v1_12.EnerginetValidatedHistoricalDataMarketDocumentProvider(streams, cimConfig);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> {
                         streams.publish(new IdentifiableApiResponse(pr, Objects.requireNonNull(response).getFirst()));
@@ -99,6 +105,9 @@ class EnerginetValidatedHistoricalDataMarketDocumentProviderTest {
 
     private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
         assertEquals(
                 source.getMessageDocumentHeaderMetaInformationPermissionId(),
                 target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
@@ -115,6 +124,11 @@ class EnerginetValidatedHistoricalDataMarketDocumentProviderTest {
             var sourceTimeSeries = sourceSeries.get(i);
             var targetTimeSeries = targetSeries.get(i);
             assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(sourceTimeSeries.getBusinessType(), targetTimeSeries.getBusinessType());
+            assertEquals(sourceTimeSeries.getProduct(), targetTimeSeries.getProduct());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getValue(), targetTimeSeries.getAccountingPointMRID().getValue());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getCodingScheme(), targetTimeSeries.getAccountingPointMRID().getCodingScheme());
+            assertEquals(source.getMarketDocument().getCreatedDateTime(), targetTimeSeries.getDateAndOrTimeDateTime());
             assertEquals(
                     sourceTimeSeries.getEnergyMeasurementUnitName(),
                     targetTimeSeries.getEnergyMeasurementUnitName()
@@ -154,6 +168,13 @@ class EnerginetValidatedHistoricalDataMarketDocumentProviderTest {
         assertDoesNotThrow(() -> {
             var serialized = new XmlMessageSerde().serialize(target);
             assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+            var xmlRoundTrip = new XmlMessageSerde().deserialize(serialized, Envelope.class);
+            var json = new JsonMessageSerde();
+            var jsonRoundTrip = json.deserialize(json.serialize(target), Envelope.class);
+            assertEquals(target.getVHDMarketDocument().getMRID(), xmlRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getMRID(), jsonRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), xmlRoundTrip.getVHDMarketDocument().getTimeSeries().size());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), jsonRoundTrip.getVHDMarketDocument().getTimeSeries().size());
         });
     }
 }

@@ -8,6 +8,7 @@ import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import energy.eddie.regionconnector.simulation.SimulationConnectorMetadata;
@@ -22,9 +23,9 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public final class IntermediateValidatedHistoricalDataMarketDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final SimulatedMeterReading simulatedMeterReading;
     private final CommonInformationModelConfiguration cimConfig;
 
@@ -32,6 +33,15 @@ public final class IntermediateValidatedHistoricalDataMarketDocument {
             SimulatedMeterReading simulatedMeterReading,
             CommonInformationModelConfiguration cimConfig
     ) {
+        this(simulatedMeterReading, cimConfig, new HistoricalDataEmissionMetadata());
+    }
+
+    public IntermediateValidatedHistoricalDataMarketDocument(
+            SimulatedMeterReading simulatedMeterReading,
+            CommonInformationModelConfiguration cimConfig,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.simulatedMeterReading = simulatedMeterReading;
         this.cimConfig = cimConfig;
     }
@@ -58,8 +68,8 @@ public final class IntermediateValidatedHistoricalDataMarketDocument {
                                 .withCodingScheme(StandardCodingSchemeTypeList.EIC.value())
                                 .withValue(SimulationConnectorMetadata.REGION_CONNECTOR_ID)
                 )
-                .withMRID(UUID.randomUUID().toString())
-                .withCreatedDateTime(ZonedDateTime.now(ZoneOffset.UTC))
+                .withMRID(metadata.id("document"))
+                .withCreatedDateTime(metadata.created(ZoneOffset.UTC))
                 .withReceiverMarketParticipantMRID(
                         new PartyIDString()
                                 .withCodingScheme(cimConfig.eligiblePartyNationalCodingScheme().value())
@@ -72,7 +82,7 @@ public final class IntermediateValidatedHistoricalDataMarketDocument {
                 )
                 .withTimeSeries(
                         new TimeSeries()
-                                .withMRID(UUID.randomUUID().toString())
+                                .withMRID(metadata.id("series"))
                                 .withBusinessType(StandardBusinessTypeList.CONSUMPTION.value())
                                 .withProduct(StandardEnergyProductTypeList.ACTIVE_ENERGY.value())
                                 .withVersion("1")
@@ -98,7 +108,8 @@ public final class IntermediateValidatedHistoricalDataMarketDocument {
                         simulatedMeterReading.permissionId(),
                         simulatedMeterReading.dataNeedId(),
                         PermissionProcessStatus.ACCEPTED
-                )
+                ),
+                metadata.envelopeCreated()
         ).wrap();
     }
 

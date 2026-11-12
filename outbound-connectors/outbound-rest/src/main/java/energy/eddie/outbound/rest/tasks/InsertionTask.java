@@ -26,8 +26,13 @@ public class InsertionTask<T1, T2 extends ModelWithJsonPayload<T1>> implements A
 
     public void insert(T1 payload) {
         LOGGER.debug("Inserting {}", payload.getClass().getSimpleName());
-        var model = converter.apply(payload);
-        repository.save(model);
+        try {
+            var model = converter.apply(payload);
+            repository.save(model);
+        } catch (RuntimeException e) {
+            // A single failing document must not terminate persistence of the whole stream
+            LOGGER.warn("Could not insert {}", payload.getClass().getSimpleName(), e);
+        }
     }
 
     @Override

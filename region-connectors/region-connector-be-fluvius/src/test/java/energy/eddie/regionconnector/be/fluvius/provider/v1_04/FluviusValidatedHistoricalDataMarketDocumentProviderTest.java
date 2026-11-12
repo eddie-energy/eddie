@@ -4,6 +4,7 @@
 package energy.eddie.regionconnector.be.fluvius.provider.v1_04;
 
 import energy.eddie.api.agnostic.Granularity;
+import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
@@ -13,6 +14,8 @@ import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.streams.IdentifiableDataStreams;
 import energy.eddie.regionconnector.be.fluvius.util.DefaultFluviusPermissionRequestBuilder;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
@@ -54,8 +57,9 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void quarterHourlyElectricityEmitsEquivalentV112() {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void quarterHourlyElectricityEmitsEquivalentV112(boolean subscribeV112First) {
         // Given
         InputStream inputStream = classLoader.getResourceAsStream("electricity_data_measurement_quarter_hourly.json");
         GetEnergyResponseModelApiDataResponse json = mapper.readValue(inputStream,
@@ -73,9 +77,11 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
         var provider = new FluviusValidatedHistoricalDataMarketDocumentProvider(config, streams);
 
         // Then
-        var providerV112 = new energy.eddie.regionconnector.be.fluvius.provider.v1_12.FluviusValidatedHistoricalDataMarketDocumentProvider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new energy.eddie.regionconnector.be.fluvius.provider.v1_12.FluviusValidatedHistoricalDataMarketDocumentProvider(config, streams);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> streams.publish(pr, json))
                     .assertNext(pair -> assertEquivalentHistoricalData(pair.getT1(), pair.getT2()))
@@ -85,6 +91,9 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
 
     private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
         assertEquals(
                 source.getMessageDocumentHeaderMetaInformationPermissionId(),
                 target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
@@ -101,6 +110,11 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
             var sourceTimeSeries = sourceSeries.get(i);
             var targetTimeSeries = targetSeries.get(i);
             assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(sourceTimeSeries.getBusinessType(), targetTimeSeries.getBusinessType());
+            assertEquals(sourceTimeSeries.getProduct(), targetTimeSeries.getProduct());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getValue(), targetTimeSeries.getAccountingPointMRID().getValue());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getCodingScheme(), targetTimeSeries.getAccountingPointMRID().getCodingScheme());
+            assertEquals(source.getMarketDocument().getCreatedDateTime(), targetTimeSeries.getDateAndOrTimeDateTime());
             assertEquals(
                     sourceTimeSeries.getEnergyMeasurementUnitName(),
                     targetTimeSeries.getEnergyMeasurementUnitName()
@@ -140,6 +154,13 @@ class FluviusValidatedHistoricalDataMarketDocumentProviderTest {
         assertDoesNotThrow(() -> {
             var serialized = new XmlMessageSerde().serialize(target);
             assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+            var xmlRoundTrip = new XmlMessageSerde().deserialize(serialized, Envelope.class);
+            var json = new JsonMessageSerde();
+            var jsonRoundTrip = json.deserialize(json.serialize(target), Envelope.class);
+            assertEquals(target.getVHDMarketDocument().getMRID(), xmlRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getMRID(), jsonRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), xmlRoundTrip.getVHDMarketDocument().getTimeSeries().size());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), jsonRoundTrip.getVHDMarketDocument().getTimeSeries().size());
         });
     }
 }

@@ -10,6 +10,7 @@ import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.energy.*;
 import energy.eddie.regionconnector.be.fluvius.config.FluviusOAuthConfiguration;
 import energy.eddie.regionconnector.be.fluvius.dtos.IdentifiableMeteringData;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import org.jspecify.annotations.NonNull;
@@ -20,12 +21,11 @@ import javax.xml.datatype.Duration;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 class IntermediateValidatedHistoricalDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final FluviusOAuthConfiguration fluviusConfig;
     private final IdentifiableMeteringData identifiableMeteredData;
 
@@ -33,6 +33,15 @@ class IntermediateValidatedHistoricalDocument {
             FluviusOAuthConfiguration fluviusConfiguration,
             IdentifiableMeteringData identifiableMeteredData
     ) {
+        this(fluviusConfiguration, identifiableMeteredData, new HistoricalDataEmissionMetadata());
+    }
+
+    IntermediateValidatedHistoricalDocument(
+            FluviusOAuthConfiguration fluviusConfiguration,
+            IdentifiableMeteringData identifiableMeteredData,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.fluviusConfig = fluviusConfiguration;
         this.identifiableMeteredData = identifiableMeteredData;
     }
@@ -42,14 +51,16 @@ class IntermediateValidatedHistoricalDocument {
         if (meteringData.data().headpoint() == null) {
             return null;
         }
-        return new VhdEnvelopeWrapper(createVHD(meteringData), identifiableMeteredData.permissionRequest()).wrap();
+        return new VhdEnvelopeWrapper(
+                createVHD(meteringData), identifiableMeteredData.permissionRequest(), metadata.envelopeCreated()
+        ).wrap();
     }
 
     private @Nullable VHDMarketDocument createVHD(
             GetEnergyResponseModelApiDataResponse getEnergyResponseModel
     ) {
         var fetchTime = getEnergyResponseModel.metaData().fetchTime() == null
-                ? ZonedDateTime.now(ZoneOffset.UTC)
+                ? metadata.created(ZoneOffset.UTC)
                 : getEnergyResponseModel.metaData().fetchTime();
         var headpoint = getEnergyResponseModel.data().headpoint();
         var granularity = identifiableMeteredData.permissionRequest().granularity();
@@ -61,7 +72,7 @@ class IntermediateValidatedHistoricalDocument {
             return null;
         }
         return new VHDMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.id("document"))
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardDocumentTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                 .withCreatedDateTime(fetchTime)
@@ -85,10 +96,12 @@ class IntermediateValidatedHistoricalDocument {
     private List<TimeSeries> createTimeSeriesList(Headpoint headpoint) {
         var tss = new ArrayList<TimeSeries>();
         var granularity = identifiableMeteredData.permissionRequest().granularity();
-        for (var meter : headpoint.allMeasurements()) {
+        var meters = headpoint.allMeasurements();
+        for (var meterIndex = 0; meterIndex < meters.size(); meterIndex++) {
+            var meter = meters.get(meterIndex);
             var measurementSlice = meter.getForGranularity(granularity);
             if (measurementSlice != null) {
-                tss.addAll(createTimeSeriesList(headpoint, measurementSlice));
+                tss.addAll(createTimeSeriesList(headpoint, measurementSlice, "meter:" + meterIndex));
             }
         }
         return tss;
@@ -96,17 +109,19 @@ class IntermediateValidatedHistoricalDocument {
 
     private List<TimeSeries> createTimeSeriesList(
             Headpoint headpoint,
-            List<MeasurementSlice> measurementSlice
+            List<MeasurementSlice> measurementSlice,
+            String meterKey
     ) {
         var tss = new ArrayList<TimeSeries>();
-        for (var slice : measurementSlice) {
-            tss.addAll(createTimeSeriesList(headpoint, slice));
+        for (var sliceIndex = 0; sliceIndex < measurementSlice.size(); sliceIndex++) {
+            var slice = measurementSlice.get(sliceIndex);
+            tss.addAll(createTimeSeriesList(headpoint, slice, meterKey + "/slice:" + sliceIndex));
         }
         return tss;
     }
 
     @SuppressWarnings("NullAway")
-    private List<TimeSeries> createTimeSeriesList(Headpoint headpoint, MeasurementSlice slice) {
+    private List<TimeSeries> createTimeSeriesList(Headpoint headpoint, MeasurementSlice slice, String sliceKey) {
         var tss = new ArrayList<TimeSeries>();
         for (var kind : Reading.ReadingKind.values()) {
             var product = getProduct(slice, kind);
@@ -118,7 +133,7 @@ class IntermediateValidatedHistoricalDocument {
                 var unit = slice.firstUnit(kind, measurement -> getReading(direction, measurement));
                 if (unit == null) continue;
                 var ts = new TimeSeries()
-                        .withMRID(UUID.randomUUID().toString())
+                        .withMRID(metadata.child(sliceKey).child(kind.name()).id(direction.value()))
                         .withBusinessType(getBusinessType(direction))
                         .withProduct(product.value())
                         .withFlowDirectionDirection(direction.value())

@@ -16,8 +16,16 @@ public class EnergyDataStreams implements AutoCloseable {
                                                                                .multicast()
                                                                                .onBackpressureBuffer();
 
+    private final Flux<HistoricalDataInput> historicalDataInputs = vhdSink.asFlux()
+            .map(HistoricalDataInput::new)
+            .share();
+
     public void publish(IdentifiableApiResponse response) {
         vhdSink.tryEmitNext(response);
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiableApiResponse> getValidatedHistoricalDataStream() {

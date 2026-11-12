@@ -14,12 +14,20 @@ public class EnergyDataStreams implements AutoCloseable {
     private final Sinks.Many<IdentifiableMeteringData> vhdSink = Sinks.many().multicast().onBackpressureBuffer();
     private final Sinks.Many<IdentifiableAccountingPointData> apSink = Sinks.many().multicast().onBackpressureBuffer();
 
+    private final Flux<HistoricalDataInput> historicalDataInputs = vhdSink.asFlux()
+            .map(HistoricalDataInput::new)
+            .share();
+
     public Sinks.EmitResult publish(IdentifiableMeteringData data) {
         return vhdSink.tryEmitNext(data);
     }
 
     public void publish(IdentifiableAccountingPointData data) {
         apSink.tryEmitNext(data);
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiableMeteringData> getValidatedHistoricalData() {

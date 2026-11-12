@@ -6,7 +6,7 @@ package energy.eddie.regionconnector.at.eda.provider.v1_04;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
-import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.provider.HistoricalDataInput;
 import energy.eddie.regionconnector.at.eda.provider.IdentifiableStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +26,7 @@ public class EdaValidatedHistoricalDataMarketDocumentProvider {
             IdentifiableStreams streams
     ) {
         this.cimConfig = cimConfig;
-        this.flux = streams.consumptionRecordStream()
+        this.flux = streams.historicalDataInputs()
                 .flatMapIterable(this::getToVhd)
                 .share();
     }
@@ -36,9 +36,11 @@ public class EdaValidatedHistoricalDataMarketDocumentProvider {
         return flux;
     }
 
-    private Iterable<VHDEnvelope> getToVhd(IdentifiableConsumptionRecord consumptionRecord) {
+    private Iterable<VHDEnvelope> getToVhd(HistoricalDataInput consumptionRecord) {
         try {
-            return new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, consumptionRecord).toVhd();
+            return new IntermediateValidatedHistoricalDataMarketDocument(
+                    cimConfig, consumptionRecord.source(), consumptionRecord.metadata()
+            ).toVhd();
         } catch (Exception e) {
             LOGGER.warn("Caught exception when mapping consumption record to VHD", e);
         }

@@ -8,6 +8,7 @@ import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
@@ -24,6 +25,7 @@ import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_
 
 class IntermediateValidatedHistoricalDataMarketDocument {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateValidatedHistoricalDataMarketDocument.class);
+    private final HistoricalDataEmissionMetadata metadata;
     private final CommonInformationModelConfiguration cimConfig;
     private final EdaConsumptionRecord consumptionRecord;
     private final List<AtPermissionRequest> permissionRequests;
@@ -32,6 +34,15 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             CommonInformationModelConfiguration cimConfig,
             IdentifiableConsumptionRecord consumptionRecord
     ) {
+        this(cimConfig, consumptionRecord, new HistoricalDataEmissionMetadata());
+    }
+
+    public IntermediateValidatedHistoricalDataMarketDocument(
+            CommonInformationModelConfiguration cimConfig,
+            IdentifiableConsumptionRecord consumptionRecord,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.cimConfig = cimConfig;
         this.consumptionRecord = consumptionRecord.consumptionRecord();
         this.permissionRequests = consumptionRecord.permissionRequests();
@@ -65,7 +76,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 .withTimeSeries(timeSeriesList());
         var docs = new ArrayList<VHDEnvelope>(permissionRequests.size());
         for (var permissionRequest : permissionRequests) {
-            docs.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
+            docs.add(new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap());
         }
         return docs;
     }

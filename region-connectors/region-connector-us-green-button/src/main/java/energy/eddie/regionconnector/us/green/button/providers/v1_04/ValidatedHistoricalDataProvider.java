@@ -15,7 +15,6 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
-import java.util.List;
 
 @Component("v104ValidatedHistoricalDataProvider")
 public class ValidatedHistoricalDataProvider {
@@ -29,21 +28,21 @@ public class ValidatedHistoricalDataProvider {
             GreenButtonConfiguration greenButtonConfiguration
     ) {
         validatedHistoricalDataEnvelopes = publishService
-                .validatedHistoricalData()
-                .map(id -> new IntermediateValidatedHistoricalDataMarketDocument(
-                        id,
-                        jaxb2Marshaller,
-                        cimConfig,
-                        greenButtonConfiguration
-                ))
-                .flatMapIterable(vhd -> {
+                .historicalDataInputs()
+                .concatMap(input -> Flux.defer(() -> {
                     try {
-                        return vhd.toVhd();
-                    } catch (UnsupportedUnitException e) {
-                        LOGGER.warn("Got exception when mapping to validated historical data market document", e);
-                        return List.of();
+                        return Flux.fromIterable(new IntermediateValidatedHistoricalDataMarketDocument(
+                                input.source(), jaxb2Marshaller, cimConfig, greenButtonConfiguration, input.metadata()
+                        ).toVhd());
+                    } catch (UnsupportedUnitException error) {
+                        LOGGER.warn("Got exception when mapping to validated historical data market document", error);
+                        return Flux.empty();
                     }
                 })
+                        .onErrorResume(error -> {
+                            LOGGER.warn("Failed to map historical data input", error);
+                            return Flux.empty();
+                        }))
                 .share();
     }
 

@@ -7,6 +7,7 @@ import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
+import energy.eddie.cim.serde.JsonMessageSerde;
 import energy.eddie.cim.serde.XmlMessageSerde;
 import energy.eddie.cim.testing.XmlValidator;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
@@ -18,6 +19,8 @@ import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfigurat
 import energy.eddie.regionconnector.us.green.button.providers.IdentifiableSyndFeed;
 import energy.eddie.regionconnector.us.green.button.services.PublishService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
@@ -78,8 +81,9 @@ class ValidatedHistoricalDataProviderTest {
                     .verifyComplete();
     }
 
-    @Test
-    void testReceivesIdentifiablePayload_emitsValidatedHistoricalDataMarketDocument_alsoEmitsEquivalentV112() throws FeedException {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testReceivesIdentifiablePayload_emitsValidatedHistoricalDataMarketDocument_alsoEmitsEquivalentV112(boolean subscribeV112First) throws FeedException {
         // Given
         marshaller.setPackagesToScan("org.naesb.espi");
         var xml = XmlLoader.xmlStreamFromResource("/xml/batch/Batch.xml");
@@ -95,9 +99,11 @@ class ValidatedHistoricalDataProviderTest {
         // When
 
         // Then
-        var providerV112 = new energy.eddie.regionconnector.us.green.button.providers.v1_12.ValidatedHistoricalDataProvider(provider);
-        var pairedDocuments = Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(),
-                                       providerV112.getValidatedHistoricalDataV112Stream());
+        var providerV112 = new energy.eddie.regionconnector.us.green.button.providers.v1_12.ValidatedHistoricalDataProvider(publishService, marshaller, cimConfig, config);
+        var pairedDocuments = subscribeV112First
+                ? Flux.zip(providerV112.getValidatedHistoricalDataV112Stream(), provider.getValidatedHistoricalDataMarketDocumentsStream())
+                      .map(pair -> reactor.util.function.Tuples.of(pair.getT2(), pair.getT1()))
+                : Flux.zip(provider.getValidatedHistoricalDataMarketDocumentsStream(), providerV112.getValidatedHistoricalDataV112Stream());
         StepVerifier.create(pairedDocuments)
                     .then(() -> publishService.publishValidatedHistoricalData(new IdentifiableSyndFeed(permissionRequest, feed)))
                     .then(publishService::close)
@@ -107,6 +113,9 @@ class ValidatedHistoricalDataProviderTest {
 
     private static void assertEquivalentHistoricalData(VHDEnvelope source, Envelope target) {
         assertEquals(source.getMarketDocument().getMRID(), target.getVHDMarketDocument().getMRID());
+        assertEquals(source.getMarketDocument().getCreatedDateTime(), target.getVHDMarketDocument().getCreatedDateTime());
+        assertEquals(source.getMarketDocument().getRevisionNumber(), target.getVHDMarketDocument().getRevisionNumber());
+        assertEquals(source.getMessageDocumentHeaderCreationDateTime(), target.getMessageDocumentHeader().getCreationDateTime());
         assertEquals(
                 source.getMessageDocumentHeaderMetaInformationPermissionId(),
                 target.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()
@@ -123,6 +132,11 @@ class ValidatedHistoricalDataProviderTest {
             var sourceTimeSeries = sourceSeries.get(i);
             var targetTimeSeries = targetSeries.get(i);
             assertEquals(sourceTimeSeries.getMRID(), targetTimeSeries.getMRID());
+            assertEquals(sourceTimeSeries.getBusinessType(), targetTimeSeries.getBusinessType());
+            assertEquals(sourceTimeSeries.getProduct(), targetTimeSeries.getProduct());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getValue(), targetTimeSeries.getAccountingPointMRID().getValue());
+            assertEquals(sourceTimeSeries.getMarketEvaluationPointMRID().getCodingScheme(), targetTimeSeries.getAccountingPointMRID().getCodingScheme());
+            assertEquals(source.getMarketDocument().getCreatedDateTime(), targetTimeSeries.getDateAndOrTimeDateTime());
             assertEquals(
                     sourceTimeSeries.getEnergyMeasurementUnitName(),
                     targetTimeSeries.getEnergyMeasurementUnitName()
@@ -162,6 +176,13 @@ class ValidatedHistoricalDataProviderTest {
         assertDoesNotThrow(() -> {
             var serialized = new XmlMessageSerde().serialize(target);
             assertTrue(XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(serialized));
+            var xmlRoundTrip = new XmlMessageSerde().deserialize(serialized, Envelope.class);
+            var json = new JsonMessageSerde();
+            var jsonRoundTrip = json.deserialize(json.serialize(target), Envelope.class);
+            assertEquals(target.getVHDMarketDocument().getMRID(), xmlRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getMRID(), jsonRoundTrip.getVHDMarketDocument().getMRID());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), xmlRoundTrip.getVHDMarketDocument().getTimeSeries().size());
+            assertEquals(target.getVHDMarketDocument().getTimeSeries().size(), jsonRoundTrip.getVHDMarketDocument().getTimeSeries().size());
         });
     }
 }

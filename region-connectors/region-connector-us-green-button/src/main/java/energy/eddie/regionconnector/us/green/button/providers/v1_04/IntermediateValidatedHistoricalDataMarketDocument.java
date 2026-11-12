@@ -11,6 +11,7 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import energy.eddie.regionconnector.us.green.button.atom.feed.Query;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
@@ -29,16 +30,15 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import javax.xml.datatype.DatatypeFactory;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import static energy.eddie.regionconnector.us.green.button.GreenButtonRegionConnectorMetadata.US_ZONE_ID;
 
 class IntermediateValidatedHistoricalDataMarketDocument {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateValidatedHistoricalDataMarketDocument.class);
+    private final HistoricalDataEmissionMetadata metadata;
     private final UsGreenButtonPermissionRequest permissionRequest;
     private final SyndFeed syndFeed;
     private final Unmarshaller unmarshaller;
@@ -51,6 +51,18 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             CommonInformationModelConfiguration cimConfig,
             GreenButtonConfiguration greenButtonConfiguration
     ) {
+        this(identifiableSyndFeed, marshaller, cimConfig, greenButtonConfiguration,
+             new HistoricalDataEmissionMetadata());
+    }
+
+    public IntermediateValidatedHistoricalDataMarketDocument(
+            IdentifiablePayload<UsGreenButtonPermissionRequest, SyndFeed> identifiableSyndFeed,
+            Jaxb2Marshaller marshaller,
+            CommonInformationModelConfiguration cimConfig,
+            GreenButtonConfiguration greenButtonConfiguration,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         permissionRequest = identifiableSyndFeed.permissionRequest();
         syndFeed = identifiableSyndFeed.payload();
         unmarshaller = marshaller.createUnmarshaller();
@@ -64,8 +76,17 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var query = new Query(syndFeed, unmarshaller);
         var readings = query.findAllByTitle("ReadingType");
         var vhds = new ArrayList<VHDEnvelope>(readings.size());
-        for (var reading : readings) {
-            var related = reading.findRelatedLink("related").getHref();
+        for (var entryIndex = 0; entryIndex < syndFeed.getEntries().size(); entryIndex++) {
+            var reading = syndFeed.getEntries().get(entryIndex);
+            if (!"ReadingType".equals(reading.getTitle())) {
+                continue;
+            }
+            var relatedLink = reading.findRelatedLink("related");
+            if (relatedLink == null || relatedLink.getHref() == null) {
+                LOGGER.warn("Missing interval block link for permission request {}", permissionId);
+                continue;
+            }
+            var related = relatedLink.getHref();
             var optionalIntervalBlock = query.findFirstBySelfLinkAndTitle(related, "IntervalBlock");
             var readingType = query.unmarshal(reading, ReadingType.class);
 
@@ -81,8 +102,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             if (intervalBlock == null) {
                 LOGGER.warn("Could not parse interval block {} for permission request {}", related, permissionId);
             } else {
-                var vhd = getVHDMarketDocument(readingType, intervalBlock, optionalIntervalBlockVal);
-                vhds.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
+                var vhd = getVHDMarketDocument(readingType, intervalBlock, optionalIntervalBlockVal, entryIndex);
+                vhds.add(new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap());
             }
         }
         return vhds;
@@ -90,7 +111,8 @@ class IntermediateValidatedHistoricalDataMarketDocument {
 
     private VHDMarketDocument getVHDMarketDocument(ReadingType readingType,
                                                    IntervalBlock intervalBlock,
-                                                   SyndEntry optionalIntervalBlockVal) throws UnsupportedUnitException {
+                                                   SyndEntry optionalIntervalBlockVal,
+                                                   int entryIndex) throws UnsupportedUnitException {
         var interval = intervalBlock.getInterval();
         var start = Instant.ofEpochSecond(interval.getStart()).atZone(ZoneOffset.UTC);
         var end = Instant.ofEpochSecond(interval.getStart() + interval.getDuration()).atZone(ZoneOffset.UTC);
@@ -105,10 +127,10 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var meterUid = Query.intervalBlockSelfToUsagePointId(optionalIntervalBlockVal);
 
         return new VHDMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.id("entry:" + entryIndex + "/document"))
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
-                .withCreatedDateTime(ZonedDateTime.now(US_ZONE_ID))
+                .withCreatedDateTime(metadata.created(US_ZONE_ID))
                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
                 .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
                 .withProcessProcessType(StandardProcessTypeList.REALISED.value())
@@ -130,7 +152,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 .withTimeSeries(
                         new TimeSeries()
                                 .withVersion("1")
-                                .withMRID(UUID.randomUUID().toString())
+                                .withMRID(metadata.id("entry:" + entryIndex + "/series"))
                                 .withBusinessType(Objects.requireNonNull(getBusinessType(flowDirection)).value())
                                 .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
                                 .withFlowDirectionDirection(Objects.requireNonNull(flowDirection).value())

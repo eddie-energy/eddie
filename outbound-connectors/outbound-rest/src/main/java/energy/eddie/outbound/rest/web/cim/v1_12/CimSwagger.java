@@ -1624,20 +1624,103 @@ public interface CimSwagger {
             @RequestParam(required = false) Optional<ZonedDateTime> to
     );
 
-    @Operation(summary = "Stream CIM 1.12 validated historical data as JSON")
+    @Operation(
+            operationId = "GET validated historical data market document stream",
+            summary = "GET validated historical data market document stream",
+            description = "Get all new CIM v1.12 validated historical data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = "text/event-stream",
+                            schema = @Schema(implementation = Envelope.class)
+                    )
+            )
+    )
     ResponseEntity<Flux<Envelope>> validatedHistoricalDataMdSSE();
 
-    @Operation(summary = "Stream CIM 1.12 validated historical data as XML")
+    @Operation(
+            operationId = "GET validated historical data market document stream",
+            summary = "GET validated historical data market document stream",
+            description = "Get all new CIM v1.12 validated historical data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = Envelope.class)
+                    )
+            )
+    )
     ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML();
 
-    @Operation(summary = "Retrieve stored CIM 1.12 validated historical data as JSON or XML")
+    @Operation(
+            operationId = "GET validated historical data market documents",
+            summary = "GET validated historical data market documents",
+            description = "Get all past CIM v1.12 validated historical data market documents",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = Envelope.class))
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = ValidatedHistoricalDataMarketDocuments.class)
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by connectionId ID",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the country, is a uppercase two letter country code",
+                            schema = @Schema(implementation = String.class, pattern = "N[A-Z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    )
+            }
+    )
     ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
-            Optional<String> permissionId,
-            Optional<String> connectionId,
-            Optional<String> dataNeedId,
-            Optional<String> countryCode,
-            Optional<String> regionConnectorId,
-            Optional<ZonedDateTime> from,
-            Optional<ZonedDateTime> to
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
     );
 }

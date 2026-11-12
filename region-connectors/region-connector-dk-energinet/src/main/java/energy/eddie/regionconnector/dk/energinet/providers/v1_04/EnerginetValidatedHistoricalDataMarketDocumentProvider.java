@@ -7,7 +7,7 @@ import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.dk.energinet.providers.EnergyDataStreams;
-import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.dk.energinet.providers.HistoricalDataInput;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +25,10 @@ public class EnerginetValidatedHistoricalDataMarketDocumentProvider {
             EnergyDataStreams streams,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") CommonInformationModelConfiguration cimConfig
     ) {
-        this.eddieValidatedHistoricalDataMarketDocumentFlux = streams.getValidatedHistoricalDataStream()
+        this.cimConfig = cimConfig;
+        this.eddieValidatedHistoricalDataMarketDocumentFlux = streams.historicalDataInputs()
                 .mapNotNull(this::mapToValidatedHistoricalMarketDocument)
                 .share();
-        this.cimConfig = cimConfig;
     }
 
     @MessageStream(VHDEnvelope.class)
@@ -38,10 +38,12 @@ public class EnerginetValidatedHistoricalDataMarketDocumentProvider {
 
     @Nullable
     private VHDEnvelope mapToValidatedHistoricalMarketDocument(
-            IdentifiableApiResponse response
+            HistoricalDataInput response
     ) {
         try {
-            return new IntermediateValidatedHistoricalDataMarketDocument(cimConfig, response).value();
+            return new IntermediateValidatedHistoricalDataMarketDocument(
+                    cimConfig, response.source(), response.metadata()
+            ).value();
         } catch (Exception e) {
             LOGGER.error("Failed to map to validated historical market document", e);
             return null;

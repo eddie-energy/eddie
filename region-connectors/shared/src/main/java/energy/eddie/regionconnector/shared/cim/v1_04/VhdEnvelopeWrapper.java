@@ -10,14 +10,33 @@ import energy.eddie.regionconnector.shared.cim.v0_82.DocumentType;
 
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.shared.cim.v0_82.CimUtils.getCodingSchemeVhdV104;
 
 public class VhdEnvelopeWrapper {
     private final VHDMarketDocument vhdMarketDocument;
     private final PermissionRequest permissionRequest;
+    private final Supplier<ZonedDateTime> creationTime;
 
     public VhdEnvelopeWrapper(VHDMarketDocument vhdMarketDocument, PermissionRequest permissionRequest) {
+        this(vhdMarketDocument, permissionRequest, () -> ZonedDateTime.now(ZoneOffset.UTC));
+    }
+
+    public VhdEnvelopeWrapper(
+            VHDMarketDocument vhdMarketDocument,
+            PermissionRequest permissionRequest,
+            ZonedDateTime created
+    ) {
+        this(vhdMarketDocument, permissionRequest, () -> created);
+    }
+
+    private VhdEnvelopeWrapper(
+            VHDMarketDocument vhdMarketDocument,
+            PermissionRequest permissionRequest,
+            Supplier<ZonedDateTime> creationTime
+    ) {
+        this.creationTime = creationTime;
         this.vhdMarketDocument = vhdMarketDocument;
         this.permissionRequest = permissionRequest;
     }
@@ -25,7 +44,7 @@ public class VhdEnvelopeWrapper {
     public VHDEnvelope wrap() {
         return new VHDEnvelope()
                 .withMarketDocument(vhdMarketDocument)
-                .withMessageDocumentHeaderCreationDateTime(ZonedDateTime.now(ZoneOffset.UTC))
+                .withMessageDocumentHeaderCreationDateTime(creationTime.get())
                 .withMessageDocumentHeaderMetaInformationDocumentType(DocumentType.VALIDATED_HISTORICAL_DATA_MARKET_DOCUMENT.description())
                 .withMessageDocumentHeaderMetaInformationRegionConnector(permissionRequest.dataSourceInformation().regionConnectorId())
                 .withMessageDocumentHeaderMetaInformationDataNeedId(permissionRequest.dataNeedId())

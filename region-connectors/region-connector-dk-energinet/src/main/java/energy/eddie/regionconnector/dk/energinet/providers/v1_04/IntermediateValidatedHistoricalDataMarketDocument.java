@@ -14,6 +14,7 @@ import energy.eddie.regionconnector.dk.energinet.customer.model.*;
 import energy.eddie.regionconnector.dk.energinet.filter.EnerginetResolution;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
@@ -25,12 +26,12 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 
 import static energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata.DK_ZONE_ID;
 
 class IntermediateValidatedHistoricalDataMarketDocument {
+    private final HistoricalDataEmissionMetadata metadata;
     private final CommonInformationModelConfiguration cimConfig;
     private final MyEnergyDataMarketDocument myEnergyDataMarketDocument;
     private final DkEnerginetPermissionRequest permissionRequest;
@@ -39,6 +40,15 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             CommonInformationModelConfiguration cimConfig,
             IdentifiableApiResponse identifiableApiResponse
     ) {
+        this(cimConfig, identifiableApiResponse, new HistoricalDataEmissionMetadata());
+    }
+
+    public IntermediateValidatedHistoricalDataMarketDocument(
+            CommonInformationModelConfiguration cimConfig,
+            IdentifiableApiResponse identifiableApiResponse,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.cimConfig = cimConfig;
         this.myEnergyDataMarketDocument = identifiableApiResponse.payload().getMyEnergyDataMarketDocument();
         this.permissionRequest = identifiableApiResponse.permissionRequest();
@@ -48,14 +58,14 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var timeSeriesList = Optional.ofNullable(myEnergyDataMarketDocument.getTimeSeries()).orElse(List.of());
         var createdDateTime = myEnergyDataMarketDocument.getCreatedDateTime();
         var created = createdDateTime == null
-                ? ZonedDateTime.now(DK_ZONE_ID)
+                ? metadata.created(DK_ZONE_ID)
                 : ZonedDateTime.parse(createdDateTime);
         var epCodingScheme = cimConfig.eligiblePartyNationalCodingScheme().value();
         var vhd = new VHDMarketDocument()
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
                 .withMRID(Optional.ofNullable(myEnergyDataMarketDocument.getmRID())
-                                  .orElse(UUID.randomUUID().toString()))
+                                  .orElse(metadata.id("document")))
                 .withCreatedDateTime(created)
                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
                 .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
@@ -72,7 +82,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 )
                 .withPeriodTimeInterval(fromPeriodTimeInterval(myEnergyDataMarketDocument.getPeriodTimeInterval()))
                 .withTimeSeries(timeSeries(timeSeriesList));
-        return new VhdEnvelopeWrapper(vhd, permissionRequest).wrap();
+        return new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap();
     }
 
     public List<SeriesPeriod> getPeriods(List<Period> periodList) {

@@ -6,20 +6,31 @@ package energy.eddie.regionconnector.fi.fingrid.services.cim.v1_04;
 import energy.eddie.api.agnostic.MessageStream;
 import energy.eddie.cim.v1_04.vhd.VHDEnvelope;
 import energy.eddie.regionconnector.fi.fingrid.services.EnergyDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 
 @SuppressWarnings("java:S6830")
 @Component("CimStreamsV1_04")
 public class CimStreams {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CimStreams.class);
     private final Flux<VHDEnvelope> validatedHistoricalData;
 
     public CimStreams(EnergyDataService energyDataService) {
-        this.validatedHistoricalData = energyDataService.getIdentifiableValidatedHistoricalDataStream()
-                .flatMapIterable(id -> new IntermediateValidatedHistoricalDataMarketDocument(
-                        id.payload(),
-                        id.permissionRequest()
-                ).toVhds())
+        this.validatedHistoricalData = energyDataService.historicalDataInputs()
+                .concatMap(input -> Flux.defer(() -> {
+                    var documents = new IntermediateValidatedHistoricalDataMarketDocument(
+                            input.source().payload(),
+                            input.source().permissionRequest(),
+                            input.metadata()
+                    ).toVhds();
+                    return Flux.fromIterable(documents);
+                })
+                        .onErrorResume(error -> {
+                            LOGGER.warn("Failed to map historical data input", error);
+                            return Flux.empty();
+                        }))
                 .share();
     }
 

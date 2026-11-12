@@ -15,6 +15,7 @@ import java.util.function.UnaryOperator;
 
 @Component
 public class IdentifiableStreams {
+    private final Flux<HistoricalDataInput> historicalDataInputs;
     private final Flux<IdentifiableConsumptionRecord> consumptionRecordStream;
     private final Flux<IdentifiableMasterData> masterDataStream;
     private final Flux<IdentifiableECMPList> ecmpListStream;
@@ -27,8 +28,13 @@ public class IdentifiableStreams {
         this.consumptionRecordStream = edaAdapter.getConsumptionRecordStream()
                                                  .map(filter)
                                                  .share();
+        this.historicalDataInputs = consumptionRecordStream.map(HistoricalDataInput::new).share();
         this.masterDataStream = edaAdapter.getMasterDataStream();
         this.ecmpListStream = edaAdapter.getECMPListStream();
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiableConsumptionRecord> consumptionRecordStream() {

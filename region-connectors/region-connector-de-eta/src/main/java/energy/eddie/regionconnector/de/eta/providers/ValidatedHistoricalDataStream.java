@@ -32,6 +32,7 @@ public class ValidatedHistoricalDataStream implements AutoCloseable {
     private final Sinks.Many<IdentifiableValidatedHistoricalData> sink = Sinks.many()
             .multicast()
             .onBackpressureBuffer();
+    private final Flux<HistoricalDataInput> historicalDataInputs;
     private final Flux<IdentifiableValidatedHistoricalData> flux;
 
     private final Outbox outbox;
@@ -39,6 +40,11 @@ public class ValidatedHistoricalDataStream implements AutoCloseable {
     public ValidatedHistoricalDataStream(Outbox outbox) {
         this.outbox = outbox;
         this.flux = sink.asFlux().share();
+        this.historicalDataInputs = flux.map(HistoricalDataInput::new).share();
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     /**

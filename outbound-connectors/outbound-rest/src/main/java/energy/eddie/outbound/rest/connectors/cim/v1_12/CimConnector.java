@@ -53,10 +53,15 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
 
     @MessageStream(Envelope.class)
     public void setValidatedHistoricalDataMarketDocumentStream(Flux<Envelope> stream) {
-        vhdSubscriptions.add(stream.subscribe(
-                vhdSink::tryEmitNext,
-                error -> LOGGER.warn("Historical data stream failed", error)
-        ));
+        vhdSubscriptions.add(stream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing validated historical data market document",
+                        err
+                ))
+                .subscribe(
+                        vhdSink::tryEmitNext,
+                        error -> LOGGER.warn("Historical data stream failed", error)
+                ));
     }
 
     public Flux<RTDEnvelope> getNearRealTimeDataMarketDocumentStream() {

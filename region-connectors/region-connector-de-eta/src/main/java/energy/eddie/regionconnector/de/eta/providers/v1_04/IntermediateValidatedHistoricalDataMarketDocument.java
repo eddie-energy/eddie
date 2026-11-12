@@ -9,6 +9,7 @@ import energy.eddie.regionconnector.de.eta.config.DeEtaPlusConfiguration;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusVhdMappings;
 import energy.eddie.regionconnector.de.eta.providers.IdentifiableValidatedHistoricalData;
+import energy.eddie.regionconnector.shared.cim.HistoricalDataEmissionMetadata;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
@@ -20,7 +21,6 @@ import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Maps a single ETA Plus historical-readings response (one metering point, one unit, one direction)
@@ -32,6 +32,7 @@ import java.util.UUID;
 class IntermediateValidatedHistoricalDataMarketDocument {
     private static final Logger LOGGER = LoggerFactory.getLogger(IntermediateValidatedHistoricalDataMarketDocument.class);
 
+    private final HistoricalDataEmissionMetadata metadata;
     private final CommonInformationModelConfiguration cimConfig;
     private final DeEtaPlusConfiguration deConfiguration;
     private final IdentifiableValidatedHistoricalData identifiableData;
@@ -41,6 +42,16 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             DeEtaPlusConfiguration deConfiguration,
             IdentifiableValidatedHistoricalData identifiableData
     ) {
+        this(cimConfig, deConfiguration, identifiableData, new HistoricalDataEmissionMetadata());
+    }
+
+    IntermediateValidatedHistoricalDataMarketDocument(
+            CommonInformationModelConfiguration cimConfig,
+            DeEtaPlusConfiguration deConfiguration,
+            IdentifiableValidatedHistoricalData identifiableData,
+            HistoricalDataEmissionMetadata metadata
+    ) {
+        this.metadata = metadata;
         this.cimConfig = cimConfig;
         this.deConfiguration = deConfiguration;
         this.identifiableData = identifiableData;
@@ -73,10 +84,10 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var senderId = permissionRequest.dataSourceInformation().meteredDataAdministratorId();
 
         var vhd = new VHDMarketDocument()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.id("document"))
                 .withRevisionNumber(CommonInformationModelVersions.V1_04.cimify())
                 .withType(StandardMessageTypeList.MEASUREMENT_VALUE_DOCUMENT.value())
-                .withCreatedDateTime(ZonedDateTime.now(ZoneOffset.UTC))
+                .withCreatedDateTime(metadata.created(ZoneOffset.UTC))
                 .withSenderMarketParticipantMarketRoleType(StandardRoleTypeList.METERING_POINT_ADMINISTRATOR.value())
                 .withReceiverMarketParticipantMarketRoleType(StandardRoleTypeList.CONSUMER.value())
                 .withProcessProcessType(StandardProcessTypeList.REALISED.value())
@@ -93,7 +104,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                 .withPeriodTimeInterval(esmpInterval(start, end))
                 .withTimeSeries(timeSeries(payload, sortedReadings, energyType, unit, direction, start, end));
 
-        return List.of(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
+        return List.of(new VhdEnvelopeWrapper(vhd, permissionRequest, metadata.envelopeCreated()).wrap());
     }
 
     private TimeSeries timeSeries(
@@ -106,7 +117,7 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             ZonedDateTime end
     ) {
         var ts = new TimeSeries()
-                .withMRID(UUID.randomUUID().toString())
+                .withMRID(metadata.id("series"))
                 .withVersion("1")
                 .withBusinessType(businessTypeFor(direction).value())
                 .withMarketEvaluationPointMeterReadingsReadingsReadingTypeCommodity(commodityKindFor(energyType))

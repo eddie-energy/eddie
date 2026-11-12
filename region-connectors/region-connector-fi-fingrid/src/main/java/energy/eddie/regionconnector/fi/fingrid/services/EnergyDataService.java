@@ -40,6 +40,10 @@ public class EnergyDataService implements AutoCloseable {
                                                                               .multicast()
                                                                               .onBackpressureBuffer();
 
+    private final Flux<HistoricalDataInput> historicalDataInputs = vhds.asFlux()
+            .map(HistoricalDataInput::new)
+            .share();
+
     public EnergyDataService(ObjectMapper objectMapper, Outbox outbox) {
         this.objectMapper = objectMapper;
         this.outbox = outbox;
@@ -89,6 +93,10 @@ public class EnergyDataService implements AutoCloseable {
         rawData.tryEmitComplete();
         vhds.tryEmitComplete();
         aps.tryEmitComplete();
+    }
+
+    public Flux<HistoricalDataInput> historicalDataInputs() {
+        return historicalDataInputs;
     }
 
     public Flux<IdentifiableValidatedHistoricalData> getIdentifiableValidatedHistoricalDataStream() {
