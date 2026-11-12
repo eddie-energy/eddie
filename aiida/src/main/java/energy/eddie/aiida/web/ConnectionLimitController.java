@@ -4,12 +4,15 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.dtos.monitoring.MeasurementPointDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
+import energy.eddie.aiida.errors.connectionlimit.ConnectionLimitMonitoringNotAllowedException;
 import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitViolationService;
+import energy.eddie.aiida.services.monitoring.MeasurementService;
 import energy.eddie.api.agnostic.EddieApiError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -38,17 +41,22 @@ import java.util.UUID;
 @RequestMapping("/connection-limits")
 @Tag(name = "Connection Limit Controller")
 public class ConnectionLimitController {
+    private static final Duration DEFAULT_MEASUREMENT_RANGE = Duration.ofDays(1);
+
     private final ConnectionLimitService connectionLimitService;
     private final ConnectionLimitViolationService connectionLimitViolationService;
+    private final MeasurementService measurementService;
     private final Clock clock;
 
     public ConnectionLimitController(
             ConnectionLimitService connectionLimitService,
             ConnectionLimitViolationService connectionLimitViolationService,
+            MeasurementService measurementService,
             Clock clock
     ) {
         this.connectionLimitService = connectionLimitService;
         this.connectionLimitViolationService = connectionLimitViolationService;
+        this.measurementService = measurementService;
         this.clock = clock;
     }
 
@@ -132,9 +140,50 @@ public class ConnectionLimitController {
                                                                                fromInstantOrDuration(to)));
     }
 
+    @Operation(
+            summary = "Get measurements of a connection limit permission",
+            description = """
+                    Returns the measured signed power in kW of the data source that is monitored for the permission,
+                    ordered by timestamp. Imported power is positive, exported power is negative.
+                    One point is returned per retained record, without aggregation.
+                    Measurements are only available as long as the records of the data source are retained.
+                    If no time frame is provided, the measurements of the last day are returned.
+                    If no data source is monitored for the permission, an empty list is returned.
+                    """
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = MeasurementPointDto.class)))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data or permission does not support connection limits", content = @Content(schema = @Schema(implementation = EddieApiError.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized User", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Permission not found", content = @Content(schema = @Schema(implementation = EddieApiError.class)))
+    })
+    @GetMapping(path = "/{permissionId}/measurements", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<MeasurementPointDto>> getMeasurements(
+            @Parameter(description = "Permission ID to query measurements for.",
+                       example = "9921f327-f341-4bea-bf08-3cf2acc65bf3")
+            @PathVariable UUID permissionId,
+            @Parameter(description = "Lower bound of the search interval (inclusive), UTC instant or ISO duration.", example = "2026-07-10T08:00:00Z", examples = {@ExampleObject("2026-07-10T08:00:00Z"), @ExampleObject("-P1D")})
+            @RequestParam(required = false) String from,
+            @Parameter(description = "Upper bound of the search interval (inclusive), UTC instant or ISO duration.", example = "2026-07-11T08:00:00Z", examples = {@ExampleObject("2026-07-11T08:00:00Z"), @ExampleObject("P1D")})
+            @RequestParam(required = false) String to
+    ) throws InvalidUserException, InvalidInstantOrDurationException, PermissionNotFoundException,
+             ConnectionLimitMonitoringNotAllowedException {
+        return ResponseEntity.ok(measurementService.getMeasurements(
+                permissionId,
+                fromInstantOrDuration(from, DEFAULT_MEASUREMENT_RANGE.negated()),
+                fromInstantOrDuration(to)));
+    }
+
     private Instant fromInstantOrDuration(@Nullable String value) throws InvalidInstantOrDurationException {
+        return fromInstantOrDuration(value, Duration.ZERO);
+    }
+
+    private Instant fromInstantOrDuration(
+            @Nullable String value,
+            Duration defaultOffset
+    ) throws InvalidInstantOrDurationException {
         if (value == null || value.isBlank()) {
-            return clock.instant();
+            return clock.instant().plus(defaultOffset);
         }
         try {
             return Instant.parse(value);

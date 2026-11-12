@@ -224,6 +224,11 @@ export type ConnectionLimitViolation = {
   highestPowerKw: number
 }
 
+export type MeasurementPoint = {
+  timestamp: string
+  powerKw: number
+}
+
 export type PermissionTypes = 'Active' | 'Complete'
 export type ToastTypes = 'info' | 'success' | 'warning' | 'danger'
 export type StatusTypes = 'healthy' | 'partially-healthy' | 'unhealthy' | 'unknown'

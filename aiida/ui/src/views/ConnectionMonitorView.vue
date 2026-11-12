@@ -6,18 +6,41 @@ import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import Chart from 'chart.js/auto'
-import type { ChartDataset, ChartOptions, TooltipItem } from 'chart.js'
+import type { ChartDataset, ChartOptions, Plugin, TooltipItem } from 'chart.js'
 import 'chartjs-adapter-date-fns'
-import { getConnectionLimits, getConnectionLimitViolations } from '@/api'
+import { getConnectionLimits, getConnectionLimitViolations, getConnectionMeasurements } from '@/api'
 import { fetchPermissions, isFcaPermission, monitorablePermissions } from '@/stores/permissions'
 import CustomSelect from '@/components/CustomSelect.vue'
 import Button from '@/components/Button.vue'
-import type { ConnectionLimit, ConnectionLimitViolation } from '@/types'
+import type { ConnectionLimit, ConnectionLimitViolation, MeasurementPoint } from '@/types'
 import ContextBadge from '@/components/ContextBadge.vue'
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const VIOLATION_COLOR = '#b3261e'
 const VIOLATION_FILL = 'rgba(179, 38, 30, 0.18)'
+const MEASUREMENT_COLOR = '#4e4e4e'
+const NOW_COLOR = 'rgba(78, 78, 78, 0.7)'
+
+const nowMarker: Plugin<'line'> = {
+  id: 'nowMarker',
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea, scales } = chart
+    const xScale = scales.x
+    if (!xScale) return
+
+    const x = xScale.getPixelForValue(Date.now())
+    if (x < chartArea.left || x > chartArea.right) return
+
+    ctx.save()
+    ctx.strokeStyle = NOW_COLOR
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(x, chartArea.top)
+    ctx.lineTo(x, chartArea.bottom)
+    ctx.stroke()
+    ctx.restore()
+  },
+}
 
 const { t } = useI18n()
 const route = useRoute()
@@ -39,6 +62,7 @@ const fromInput = ref(toLocalInput(from.value))
 const toInput = ref(toLocalInput(to.value))
 const limits = ref<ConnectionLimit[]>([])
 const violations = ref<ConnectionLimitViolation[]>([])
+const measurements = ref<MeasurementPoint[]>([])
 const loading = ref(false)
 
 type Point = { x: string; y: number | null; violation?: ConnectionLimitViolation }
@@ -89,6 +113,20 @@ const datasets = computed<ChartDataset<'line', Point[]>[]>(() => [
     pointHoverRadius: 4,
     pointHoverBackgroundColor: VIOLATION_COLOR,
     fill: 1,
+  },
+  {
+    label: t('connectionMonitor.measuredPower'),
+    data: measurements.value.map(({ powerKw, timestamp }) => ({
+      x: timestamp,
+      y: powerKw,
+    })),
+    showLine: false,
+    borderColor: MEASUREMENT_COLOR,
+    backgroundColor: MEASUREMENT_COLOR,
+    pointRadius: 1.5,
+    pointHoverRadius: 4,
+    pointHitRadius: 8,
+    fill: false,
   },
 ])
 
@@ -252,6 +290,7 @@ function syncChart() {
       type: 'line',
       data: { datasets: datasets.value },
       options: chartOptions.value,
+      plugins: [nowMarker],
     })
     return
   }
@@ -268,15 +307,18 @@ async function reload() {
   try {
     const fromIso = from.value.toISOString()
     const toIso = to.value.toISOString()
-    const [limitResult, violationResult] = await Promise.all([
+    const [limitResult, violationResult, measurementResult] = await Promise.all([
       getConnectionLimits(permissionId.value, fromIso, toIso),
       getConnectionLimitViolations(permissionId.value, fromIso, toIso),
+      getConnectionMeasurements(permissionId.value, fromIso, toIso),
     ])
     limits.value = limitResult
     violations.value = violationResult
+    measurements.value = measurementResult
   } catch {
     limits.value = []
     violations.value = []
+    measurements.value = []
   } finally {
     loading.value = false
   }
@@ -362,10 +404,18 @@ onBeforeUnmount(() => {
           <div class="chart-container">
             <canvas ref="chartCanvas"></canvas>
             <div v-if="loading" class="chart-overlay">{{ t('connectionMonitor.loading') }}</div>
-            <div v-else-if="limits.length === 0" class="chart-overlay">
+            <div
+              v-else-if="
+                limits.length === 0 && measurements.length === 0 && violations.length === 0
+              "
+              class="chart-overlay"
+            >
               {{ t('connectionMonitor.noData') }}
             </div>
           </div>
+          <small v-if="measurements.length > 0" class="retention-note">
+            {{ t('connectionMonitor.retentionNote') }}
+          </small>
         </div>
 
         <div v-if="selectedPermission" class="chart-card violations">
@@ -480,6 +530,12 @@ onBeforeUnmount(() => {
 .chart-container {
   position: relative;
   height: 380px;
+}
+
+.retention-note {
+  display: block;
+  margin-top: var(--spacing-md);
+  color: var(--eddie-grey-medium);
 }
 
 .violations {

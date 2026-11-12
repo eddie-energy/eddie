@@ -235,8 +235,10 @@
     "apply": "Käytä",
     "maxLimit": "Enimmäisraja",
     "minLimit": "Vähimmäisraja",
+    "measuredPower": "Mitattu teho",
     "loading": "Ladataan…",
-    "noData": "Valitulle aikavälille ei ole saatavilla liittymärajoja.",
+    "noData": "Valitulle aikavälille ei ole saatavilla tietoja.",
+    "retentionNote": "Mittaukset ovat saatavilla vain tämän AIIDA-instanssin tallentamista raakatiedoista.",
     "noMonitorablePermissions": "Valvottavia liittymärajan lupia ei ole saatavilla.",
     "violations": {
       "title": "Rajarikkomukset",

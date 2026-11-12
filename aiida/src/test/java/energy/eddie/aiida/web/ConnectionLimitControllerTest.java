@@ -4,11 +4,14 @@
 package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
+import energy.eddie.aiida.dtos.monitoring.MeasurementPointDto;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
+import energy.eddie.aiida.errors.connectionlimit.ConnectionLimitMonitoringNotAllowedException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitService;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitViolationService;
+import energy.eddie.aiida.services.monitoring.MeasurementService;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,6 +28,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -45,6 +49,8 @@ class ConnectionLimitControllerTest {
     private ConnectionLimitService connectionLimitService;
     @MockitoBean
     private ConnectionLimitViolationService connectionLimitViolationService;
+    @MockitoBean
+    private MeasurementService measurementService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -148,6 +154,69 @@ class ConnectionLimitControllerTest {
                                                               .getViolations(any(), any(), any());
 
         mockMvc.perform(get("/connection-limits/{permissionId}/violations", permissionId))
+               .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser
+    void givenPermission_returnsMeasurementsOfTimeFrame() throws Exception {
+        var permissionId = UUID.fromString("9921f327-f341-4bea-bf08-3cf2acc65bf3");
+        var timestamp = Instant.parse("2026-07-10T09:55:00Z");
+        var from = Instant.parse("2026-07-09T10:00:00Z");
+        var to = Instant.parse("2026-07-10T10:00:00Z");
+        when(measurementService.getMeasurements(permissionId, from, to))
+                .thenReturn(List.of(new MeasurementPointDto(timestamp, new BigDecimal("4.2"))));
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", permissionId)
+                                .param("from", from.toString())
+                                .param("to", to.toString()))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$.length()").value(1))
+               .andExpect(jsonPath("$[0].timestamp").value(timestamp.toString()))
+               .andExpect(jsonPath("$[0].powerKw").value(4.2));
+    }
+
+    @Test
+    @WithMockUser
+    void givenNoMeasurementTimeFrame_returnsMeasurementsOfTheLastDay() throws Exception {
+        var permissionId = UUID.randomUUID();
+        when(measurementService.getMeasurements(any(), any(), any())).thenReturn(List.of());
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", permissionId))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$").isEmpty());
+
+        verify(measurementService).getMeasurements(permissionId,
+                                                   Instant.parse(NOW).minus(Duration.ofDays(1)),
+                                                   Instant.parse(NOW));
+    }
+
+    @Test
+    @WithMockUser
+    void givenInvalidMeasurementTimeFrame_returnsBadRequest() throws Exception {
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", UUID.randomUUID()).param("from", "foo"))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void givenPermissionWithoutConnectionLimits_measurementsReturnBadRequest() throws Exception {
+        var permissionId = UUID.randomUUID();
+        doThrow(new ConnectionLimitMonitoringNotAllowedException(permissionId)).when(measurementService)
+                                                                               .getMeasurements(any(), any(), any());
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", permissionId))
+               .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void givenUnknownPermission_measurementsReturnNotFound() throws Exception {
+        var permissionId = UUID.randomUUID();
+        doThrow(new PermissionNotFoundException(permissionId)).when(measurementService)
+                                                              .getMeasurements(any(), any(), any());
+
+        mockMvc.perform(get("/connection-limits/{permissionId}/measurements", permissionId))
                .andExpect(status().isNotFound());
     }
 

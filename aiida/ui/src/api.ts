@@ -19,6 +19,7 @@ import type {
   LastMessageEvent,
   LatestInboundPermissionRecord,
   LatestOutboundPermissionRecord,
+  MeasurementPoint,
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
   UserSettings,
@@ -134,6 +135,16 @@ export function getConnectionLimitViolations(
 ): Promise<ConnectionLimitViolation[]> {
   return fetch(
     `/connection-limits/${encodeURIComponent(permissionId)}/violations?${new URLSearchParams({ from, to })}`,
+  )
+}
+
+export function getConnectionMeasurements(
+  permissionId: string,
+  from: string,
+  to: string,
+): Promise<MeasurementPoint[]> {
+  return fetch(
+    `/connection-limits/${encodeURIComponent(permissionId)}/measurements?${new URLSearchParams({ from, to })}`,
   )
 }
 

@@ -231,8 +231,10 @@
     "apply": "Apply",
     "maxLimit": "Max Limit",
     "minLimit": "Min Limit",
+    "measuredPower": "Measured Power",
     "loading": "Loading…",
-    "noData": "No connection limits available for the selected time range.",
+    "noData": "No data available for the selected time range.",
+    "retentionNote": "Measurements are only available for raw records retained by this AIIDA instance.",
     "noMonitorablePermissions": "No monitorable connection limit permissions available.",
     "violations": {
       "title": "Limit Violations",
