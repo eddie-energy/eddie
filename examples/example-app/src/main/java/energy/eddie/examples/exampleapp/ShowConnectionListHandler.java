@@ -4,7 +4,7 @@
 package energy.eddie.examples.exampleapp;
 
 import com.google.inject.Inject;
-import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 import io.javalin.http.Context;
 import org.jdbi.v3.core.Jdbi;
 import org.slf4j.Logger;
@@ -25,8 +25,8 @@ public class ShowConnectionListHandler implements JavalinHandler {
     }
 
     @Override
-    public void register(Javalin app) {
-        app.get("/connections/", this::listConnections);
+    public void register(RoutesConfig routes) {
+        routes.get("/connections/", this::listConnections);
     }
 
     @Nullable
