@@ -51,17 +51,25 @@ public record ContractPartner01p33(
     @Override
     @Nullable
     public ZonedDateTime dateOfBirth() {
-        return contractPartner.getDateOfBirth()
-                              .toGregorianCalendar()
-                              .toZonedDateTime();
+        var dateOfBirth = contractPartner.getDateOfBirth();
+        if (dateOfBirth == null) {
+            return null;
+        }
+        return dateOfBirth
+                .toGregorianCalendar()
+                .toZonedDateTime();
     }
 
     @Override
     @Nullable
     public ZonedDateTime dateOfDeath() {
-        return contractPartner.getDateOfDeath()
-                              .toGregorianCalendar()
-                              .toZonedDateTime();
+        var dateOfDeath = contractPartner.getDateOfDeath();
+        if (dateOfDeath == null) {
+            return null;
+        }
+        return dateOfDeath
+                .toGregorianCalendar()
+                .toZonedDateTime();
     }
 
     @Override
