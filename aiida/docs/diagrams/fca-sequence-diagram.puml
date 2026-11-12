@@ -28,9 +28,18 @@ AIIDA --> CSO: Send updated permission status
 
 == 5. Activation limitation of Flexibility event ==
 
-CSO -> AIIDA: Receive activation per final customer
-AIIDA --> "Customer Energy Management Systems" as CEMS: Provide activation
-AIIDA --> CSO: Send acknowledgement of the activation
+CSO -> AIIDA: Send activation per final customer
+AIIDA -> AIIDA: Validate and process market document
+
+alt all applicable data processed
+   AIIDA --> "Customer Energy Management Systems" as CEMS: Provide activation
+   AIIDA --> CSO: Send A01 acknowledgement\nwith market document trace
+else some applicable data processed
+   AIIDA --> CEMS: Provide accepted activation data
+   AIIDA --> CSO: Send B70 acknowledgement\nwith market document trace and reason
+else processing failed
+   AIIDA --> CSO: Send A02 acknowledgement\nwith market document trace and reason
+end
 
 alt no active activation present
    AIIDA -> CEMS: Provide default value

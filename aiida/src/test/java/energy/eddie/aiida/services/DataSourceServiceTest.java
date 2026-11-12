@@ -3,11 +3,11 @@
 
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.adapters.datasource.inbound.InboundMqttClientRegistry;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusDeviceTestHelper;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
-import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
@@ -32,7 +32,6 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -51,7 +50,6 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class DataSourceServiceTest {
-    private static final UUID AIIDA_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID VENDOR_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -66,8 +64,6 @@ class DataSourceServiceTest {
     private OesterreichsEnergieDataSource mqttOutboundDataSource;
     @Mock
     private InboundDataSource inboundDataSource;
-    @Mock
-    private ApplicationInformationService applicationInformationService;
     @Mock
     private DataSourceRepository repository;
     @Mock
@@ -84,16 +80,11 @@ class DataSourceServiceTest {
     private AiidaEventPublisher aiidaEventPublisher;
     @Mock
     private SecretsService secretsService;
+    @Mock
+    private InboundMqttClientRegistry inboundMqttClientRegistry;
 
     @InjectMocks
     private DataSourceService dataSourceService;
-
-    @BeforeEach
-    void setUp() {
-        var appInfo = mock(ApplicationInformation.class);
-        lenient().when(applicationInformationService.applicationInformation()).thenReturn(appInfo);
-        lenient().when(appInfo.aiidaId()).thenReturn(AIIDA_ID);
-    }
 
     @Test
     void shouldReturndataSourceByIdOrThrow() throws DataSourceNotFoundException {

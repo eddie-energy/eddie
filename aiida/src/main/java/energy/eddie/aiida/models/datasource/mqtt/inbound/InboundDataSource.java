@@ -53,18 +53,6 @@ public class InboundDataSource extends MqttDataSource {
     private InboundProvisioningType provisioningType;
 
     @Nullable
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(
-            name = "permission_id",
-            table = TABLE_NAME,
-            referencedColumnName = "permission_id",
-            insertable = false,
-            updatable = false
-    )
-    @JsonIgnore
-    private MqttStreamingConfig config;
-
-    @Nullable
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "mqtt_provisioning_config_id", table = TABLE_NAME, referencedColumnName = "id")
     @JsonProperty("mqttProvisioningConfig")
@@ -117,7 +105,6 @@ public class InboundDataSource extends MqttDataSource {
             throws MissingMqttStreamingConfigException {
         super(dto, userId);
         this.permission = permission;
-        this.config = permission.mqttStreamingConfig();
 
         var streamingConfig = streamingConfig();
         this.mqttConnection = new MqttConnection(streamingConfig.serverUri(), streamingConfig.serverUri());
@@ -146,7 +133,8 @@ public class InboundDataSource extends MqttDataSource {
 
     @Nullable
     public String acknowledgementTopic() {
-        return config == null ? null : config.acknowledgementTopic();
+        var streamingConfig = permission == null ? null : permission.mqttStreamingConfig();
+        return streamingConfig == null ? null : streamingConfig.acknowledgementTopic();
     }
 
     public InboundProvisioningType inboundProvisioningType() {
@@ -241,8 +229,9 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     private MqttStreamingConfig streamingConfig() throws MissingMqttStreamingConfigException {
-        if (config != null) {
-            return config;
+        var streamingConfig = permission == null ? null : permission.mqttStreamingConfig();
+        if (streamingConfig != null) {
+            return streamingConfig;
         }
 
         throw new MissingMqttStreamingConfigException(id);

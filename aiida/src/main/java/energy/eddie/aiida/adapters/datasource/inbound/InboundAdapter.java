@@ -4,7 +4,6 @@
 package energy.eddie.aiida.adapters.datasource.inbound;
 
 import energy.eddie.aiida.adapters.datasource.MqttDataSourceAdapter;
-import energy.eddie.aiida.adapters.datasource.inbound.ack.InboundAcknowledgementPublisher;
 import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
@@ -16,42 +15,33 @@ import org.eclipse.paho.mqttv5.client.MqttConnectionOptions;
 import org.eclipse.paho.mqttv5.common.MqttMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.UUID;
 
 public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundAdapter.class);
-    private final InboundAcknowledgementPublisher acknowledgementPublisher;
     private final SecretsService secretsService;
+    private final InboundMqttClientRegistry mqttClientRegistry;
 
     /**
      * Creates the adapter for the inbound data source. It connects to the specified MQTT broker and expects that the
      * EP publishes its messages on the specified topic.
      *
      * @param dataSource        The entity of the data source.
-     * @param mapper            The object mapper to use for parsing the messages and formatting the acknowledgements.
      * @param mqttConfiguration The MQTT configuration to use for connecting to the broker.
-     * @param aiidaId           The ID of the AiiDA instance, used for formatting the acknowledgements.
      * @param secretsService    The secrets service to load the plaintext password.
+     * @param mqttClientRegistry Registry for sharing the active inbound MQTT connection.
      */
     public InboundAdapter(
             InboundDataSource dataSource,
-            ObjectMapper mapper,
             MqttConfiguration mqttConfiguration,
-            UUID aiidaId,
-            SecretsService secretsService
+            SecretsService secretsService,
+            InboundMqttClientRegistry mqttClientRegistry
     ) {
         super(dataSource, LOGGER, mqttConfiguration);
         this.secretsService = secretsService;
-
-        acknowledgementPublisher = new InboundAcknowledgementPublisher(
-                aiidaId,
-                mapper,
-                dataSource.acknowledgementTopic()
-        );
+        this.mqttClientRegistry = mqttClientRegistry;
     }
 
     /**
@@ -78,13 +68,17 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
                 new String(message.getPayload(), StandardCharsets.UTF_8)
         );
 
-        recordSink.tryEmitNext(inboundRecord);
-        acknowledgementPublisher.publishAcknowledgement(inboundRecord);
+        var emissionResult = recordSink.tryEmitNext(inboundRecord);
+        if (emissionResult.isFailure()) {
+            LOGGER.error("Could not emit inbound record {} for processing: {}", inboundRecord.id(), emissionResult);
+        }
     }
 
     @Override
     public void close() {
-        acknowledgementPublisher.setMqttClient(null);
+        if (asyncClient != null) {
+            mqttClientRegistry.unregister(dataSource().id(), asyncClient);
+        }
         super.close();
     }
 
@@ -95,7 +89,9 @@ public class InboundAdapter extends MqttDataSourceAdapter<InboundDataSource> {
 
     @Override
     public void connectComplete(boolean reconnect, String serverURI) {
-        acknowledgementPublisher.setMqttClient(asyncClient);
+        if (asyncClient != null) {
+            mqttClientRegistry.register(dataSource().id(), asyncClient);
+        }
         super.connectComplete(reconnect, serverURI);
     }
 
