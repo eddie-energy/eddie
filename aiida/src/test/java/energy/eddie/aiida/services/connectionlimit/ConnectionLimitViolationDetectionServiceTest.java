@@ -218,11 +218,11 @@ class ConnectionLimitViolationDetectionServiceTest {
         service.checkViolations();
 
         verifyNoInteractions(notificationService);
-        assertEquals(0, BigDecimal.valueOf(9.5).compareTo(storedViolations.getFirst().peakPowerKw()));
+        assertEquals(0, BigDecimal.valueOf(9.5).compareTo(storedViolations.getFirst().highestPowerKw()));
     }
 
     @Test
-    void givenWorseValues_storesPeakAndNotifiesOnce() {
+    void givenMoreExtremeValues_storesExtremesAndNotifiesOnce() {
         givenViolationContext();
         givenLatestRecordId(5);
         givenNewRecords(5,
@@ -236,8 +236,30 @@ class ConnectionLimitViolationDetectionServiceTest {
         verifyNoMoreInteractions(notificationService);
         assertEquals(1, storedViolations.size());
         assertEquals(0, BigDecimal.valueOf(9).compareTo(storedViolations.getFirst().startPowerKw()));
-        assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().peakPowerKw()));
+        assertEquals(0, BigDecimal.valueOf(9).compareTo(storedViolations.getFirst().lowestPowerKw()));
+        assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().highestPowerKw()));
         assertNull(storedViolations.getFirst().endedAt());
+    }
+
+    @Test
+    void givenPowerAlternatingBetweenMaxAndMin_tracksBothExtremes() {
+        givenViolationContext();
+        givenLatestRecordId(5);
+        givenNewRecords(5,
+                        aiidaRecord(6, TIMESTAMP, imported("9.0")),
+                        aiidaRecord(7, TIMESTAMP.plusSeconds(10), exported("5.0")),
+                        aiidaRecord(8, TIMESTAMP.plusSeconds(20), imported("8.5")));
+
+        service.checkViolations();
+
+        assertEquals(1, storedViolations.size());
+        var violation = storedViolations.getFirst();
+        assertEquals(0, BigDecimal.valueOf(9).compareTo(violation.startPowerKw()));
+        assertEquals(0, BigDecimal.valueOf(-5).compareTo(violation.lowestPowerKw()));
+        assertEquals(0, BigDecimal.valueOf(9).compareTo(violation.highestPowerKw()));
+        assertNull(violation.endedAt());
+        verify(notificationService).notifyViolationStarted(eq(permission), any());
+        verifyNoMoreInteractions(notificationService);
     }
 
     @Test
@@ -271,7 +293,8 @@ class ConnectionLimitViolationDetectionServiceTest {
 
         assertEquals(1, storedViolations.size());
         assertNull(storedViolations.getFirst().endedAt());
-        assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().peakPowerKw()));
+        assertEquals(0, BigDecimal.valueOf(9).compareTo(storedViolations.getFirst().lowestPowerKw()));
+        assertEquals(0, BigDecimal.TEN.compareTo(storedViolations.getFirst().highestPowerKw()));
         verify(notificationService).notifyViolationStarted(eq(permission), any());
         verifyNoMoreInteractions(notificationService);
     }

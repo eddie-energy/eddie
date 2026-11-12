@@ -15,26 +15,47 @@ class ConnectionLimitViolationTest {
     private static final Instant START = Instant.parse("2026-07-10T10:00:00Z");
 
     @Test
-    void registerPower_aboveMax_tracksHighestValue() {
+    void givenStartPower_bothExtremesAreTheStartPower() {
+        var violation = violation("9");
+
+        assertEquals(0, new BigDecimal("9").compareTo(violation.lowestPowerKw()));
+        assertEquals(0, new BigDecimal("9").compareTo(violation.highestPowerKw()));
+    }
+
+    @Test
+    void registerPower_higherValue_updatesHighestOnly() {
         var violation = violation("9");
 
         assertTrue(violation.registerPower(new BigDecimal("10")));
         assertFalse(violation.registerPower(new BigDecimal("9.5")));
-        assertFalse(violation.registerPower(new BigDecimal("2")));
 
-        assertEquals(0, new BigDecimal("10").compareTo(violation.peakPowerKw()));
+        assertEquals(0, BigDecimal.TEN.compareTo(violation.highestPowerKw()));
+        assertEquals(0, new BigDecimal("9").compareTo(violation.lowestPowerKw()));
         assertEquals(0, new BigDecimal("9").compareTo(violation.startPowerKw()));
     }
 
     @Test
-    void registerPower_belowMin_tracksLowestValue() {
+    void registerPower_lowerValue_updatesLowestOnly() {
         var violation = violation("1");
 
         assertTrue(violation.registerPower(new BigDecimal("-2")));
         assertFalse(violation.registerPower(new BigDecimal("0")));
-        assertFalse(violation.registerPower(new BigDecimal("12")));
 
-        assertEquals(0, new BigDecimal("-2").compareTo(violation.peakPowerKw()));
+        assertEquals(0, new BigDecimal("-2").compareTo(violation.lowestPowerKw()));
+        assertEquals(0, new BigDecimal("1").compareTo(violation.highestPowerKw()));
+    }
+
+    @Test
+    void registerPower_alternatingDirections_tracksBothExtremes() {
+        var violation = violation("9");
+
+        assertTrue(violation.registerPower(new BigDecimal("12")));
+        assertTrue(violation.registerPower(new BigDecimal("-3")));
+        assertFalse(violation.registerPower(new BigDecimal("11")));
+
+        assertEquals(0, new BigDecimal("12").compareTo(violation.highestPowerKw()));
+        assertEquals(0, new BigDecimal("-3").compareTo(violation.lowestPowerKw()));
+        assertEquals(0, new BigDecimal("9").compareTo(violation.startPowerKw()));
     }
 
     @Test
