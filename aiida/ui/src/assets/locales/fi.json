@@ -240,6 +240,11 @@
     "noData": "Valitulle aikavälille ei ole saatavilla tietoja.",
     "retentionNote": "Mittaukset ovat saatavilla vain tämän AIIDA-instanssin tallentamista raakatiedoista.",
     "noMonitorablePermissions": "Valvottavia liittymärajan lupia ei ole saatavilla.",
+    "measurement": {
+      "lowest": "Alin",
+      "highest": "Ylin",
+      "average": "Keskiarvo"
+    },
     "violations": {
       "title": "Rajarikkomukset",
       "aboveMaximum": "Enimmäisrajan yli",

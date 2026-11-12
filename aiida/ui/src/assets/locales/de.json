@@ -236,6 +236,11 @@
     "noData": "Keine Daten im gewählten Zeitraum verfügbar.",
     "retentionNote": "Messwerte sind nur für die von dieser AIIDA-Instanz gespeicherten Rohdaten verfügbar.",
     "noMonitorablePermissions": "Keine überwachbaren Berechtigungen für Anschlussgrenzen verfügbar.",
+    "measurement": {
+      "lowest": "Niedrigster Wert",
+      "highest": "Höchster Wert",
+      "average": "Durchschnitt"
+    },
     "violations": {
       "title": "Grenzwertverletzungen",
       "aboveMaximum": "Über der Höchstgrenze",

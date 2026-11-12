@@ -236,6 +236,11 @@
     "noData": "No data available for the selected time range.",
     "retentionNote": "Measurements are only available for raw records retained by this AIIDA instance.",
     "noMonitorablePermissions": "No monitorable connection limit permissions available.",
+    "measurement": {
+      "lowest": "Lowest",
+      "highest": "Highest",
+      "average": "Average"
+    },
     "violations": {
       "title": "Limit Violations",
       "aboveMaximum": "Above Maximum Limit",

@@ -236,6 +236,11 @@
     "noData": "Aucune donnée disponible pour la période sélectionnée.",
     "retentionNote": "Les mesures ne sont disponibles que pour les enregistrements bruts conservés par cette instance AIIDA.",
     "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible.",
+    "measurement": {
+      "lowest": "Valeur la plus basse",
+      "highest": "Valeur la plus haute",
+      "average": "Moyenne"
+    },
     "violations": {
       "title": "Dépassements des limites",
       "aboveMaximum": "Au-dessus de la limite maximale",

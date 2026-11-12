@@ -10,6 +10,7 @@ import type { ChartDataset, ChartOptions, Plugin, TooltipItem } from 'chart.js'
 import 'chartjs-adapter-date-fns'
 import { getConnectionLimits, getConnectionLimitViolations, getConnectionMeasurements } from '@/api'
 import { fetchPermissions, isFcaPermission, monitorablePermissions } from '@/stores/permissions'
+import { bucketMeasurements, type MeasurementBucket } from '@/utils/measurementBuckets'
 import CustomSelect from '@/components/CustomSelect.vue'
 import Button from '@/components/Button.vue'
 import type { ConnectionLimit, ConnectionLimitViolation, MeasurementPoint } from '@/types'
@@ -19,7 +20,11 @@ const DAY_IN_MS = 24 * 60 * 60 * 1000
 const VIOLATION_COLOR = '#b3261e'
 const VIOLATION_FILL = 'rgba(179, 38, 30, 0.18)'
 const MEASUREMENT_COLOR = '#4e4e4e'
+const MEASUREMENT_SPREAD_COLOR = 'rgba(78, 78, 78, 0.45)'
 const NOW_COLOR = 'rgba(78, 78, 78, 0.7)'
+// Above this many readings the series collapses into an unreadable band of points, so it is summarized.
+const MAX_RAW_MEASUREMENTS = 600
+const MAX_BUCKETS = 300
 
 const nowMarker: Plugin<'line'> = {
   id: 'nowMarker',
@@ -65,7 +70,48 @@ const violations = ref<ConnectionLimitViolation[]>([])
 const measurements = ref<MeasurementPoint[]>([])
 const loading = ref(false)
 
-type Point = { x: string; y: number | null; violation?: ConnectionLimitViolation }
+// Dense series are summarized, so they do not collapse into an unreadable band of points.
+const measurementBuckets = computed(() =>
+  measurements.value.length > MAX_RAW_MEASUREMENTS
+    ? bucketMeasurements(measurements.value, MAX_BUCKETS)
+    : [],
+)
+
+// Draws the spread of each bucket as a vertical line from its lowest to its highest power.
+const measurementSpread: Plugin<'line'> = {
+  id: 'measurementSpread',
+  beforeDatasetsDraw(chart) {
+    const buckets = measurementBuckets.value
+    if (buckets.length === 0) return
+
+    const { ctx, chartArea } = chart
+    const xScale = chart.scales.x
+    const yScale = chart.scales.y
+    if (!xScale || !yScale) return
+
+    ctx.save()
+    ctx.beginPath()
+    ctx.rect(chartArea.left, chartArea.top, chartArea.width, chartArea.height)
+    ctx.clip()
+    ctx.strokeStyle = MEASUREMENT_SPREAD_COLOR
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    for (const bucket of buckets) {
+      const x = xScale.getPixelForValue(Date.parse(bucket.center))
+      ctx.moveTo(x, yScale.getPixelForValue(bucket.highestPowerKw))
+      ctx.lineTo(x, yScale.getPixelForValue(bucket.lowestPowerKw))
+    }
+    ctx.stroke()
+    ctx.restore()
+  },
+}
+
+type Point = {
+  x: string
+  y: number | null
+  violation?: ConnectionLimitViolation
+  bucket?: MeasurementBucket
+}
 
 const minLimitPoints = ref<Point[]>([])
 const maxLimitPoints = ref<Point[]>([])
@@ -116,14 +162,22 @@ const datasets = computed<ChartDataset<'line', Point[]>[]>(() => [
   },
   {
     label: t('connectionMonitor.measuredPower'),
-    data: measurements.value.map(({ powerKw, timestamp }) => ({
-      x: timestamp,
-      y: powerKw,
-    })),
-    showLine: false,
+    data: measurementBuckets.value.length
+      ? measurementBuckets.value.map((bucket) => ({
+          x: bucket.center,
+          y: bucket.averagePowerKw,
+          bucket,
+        }))
+      : measurements.value.map(({ powerKw, timestamp }) => ({
+          x: timestamp,
+          y: powerKw,
+        })),
+    // A bucket summarizes an interval, so its average is connected. Single readings are not.
+    showLine: measurementBuckets.value.length > 0,
     borderColor: MEASUREMENT_COLOR,
     backgroundColor: MEASUREMENT_COLOR,
-    pointRadius: 1.5,
+    borderWidth: 1,
+    pointRadius: measurementBuckets.value.length ? 0 : 1.5,
     pointHoverRadius: 4,
     pointHitRadius: 8,
     fill: false,
@@ -254,6 +308,10 @@ function violationOf(raw: unknown): ConnectionLimitViolation | undefined {
   return (raw as Point | undefined)?.violation
 }
 
+function bucketOf(raw: unknown): MeasurementBucket | undefined {
+  return (raw as Point | undefined)?.bucket
+}
+
 function tooltipTitle(items: TooltipItem<'line'>[]): string {
   const violation = violationOf(items[0]?.raw)
   if (violation) {
@@ -263,21 +321,33 @@ function tooltipTitle(items: TooltipItem<'line'>[]): string {
       : t('connectionMonitor.violations.ongoing')
     return `${start} – ${end}`
   }
+  const bucket = bucketOf(items[0]?.raw)
+  if (bucket) {
+    return `${timeFormat.format(new Date(bucket.start))} – ${timeFormat.format(new Date(bucket.end))}`
+  }
   const timestamp = items[0]?.parsed.x
   return timestamp == null ? '' : timeFormat.format(new Date(timestamp))
 }
 
 function tooltipLine(item: TooltipItem<'line'>): string | string[] {
   const violation = violationOf(item.raw)
-  if (!violation) {
-    return `${item.dataset.label ?? ''}: ${item.parsed.y} kW`
+  if (violation) {
+    return [
+      `${t('connectionMonitor.violations.limits')}: ${limitText(violation)}`,
+      `${t('connectionMonitor.violations.startPower')}: ${violation.startPowerKw} kW`,
+      `${t('connectionMonitor.violations.lowestPower')}: ${violation.lowestPowerKw} kW`,
+      `${t('connectionMonitor.violations.highestPower')}: ${violation.highestPowerKw} kW`,
+    ]
   }
-  return [
-    `${t('connectionMonitor.violations.limits')}: ${limitText(violation)}`,
-    `${t('connectionMonitor.violations.startPower')}: ${violation.startPowerKw} kW`,
-    `${t('connectionMonitor.violations.lowestPower')}: ${violation.lowestPowerKw} kW`,
-    `${t('connectionMonitor.violations.highestPower')}: ${violation.highestPowerKw} kW`,
-  ]
+  const bucket = bucketOf(item.raw)
+  if (bucket) {
+    return [
+      `${t('connectionMonitor.measurement.lowest')}: ${bucket.lowestPowerKw} kW`,
+      `${t('connectionMonitor.measurement.highest')}: ${bucket.highestPowerKw} kW`,
+      `${t('connectionMonitor.measurement.average')}: ${bucket.averagePowerKw} kW`,
+    ]
+  }
+  return `${item.dataset.label ?? ''}: ${item.parsed.y} kW`
 }
 
 function syncChart() {
@@ -290,7 +360,7 @@ function syncChart() {
       type: 'line',
       data: { datasets: datasets.value },
       options: chartOptions.value,
-      plugins: [nowMarker],
+      plugins: [measurementSpread, nowMarker],
     })
     return
   }
