@@ -28,6 +28,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @OutboundConnectorSecurityConfig
 public class RestSecurityConfig {
     private static final Logger LOGGER = LoggerFactory.getLogger(RestSecurityConfig.class);
+    private static final String VALIDATED_HISTORICAL_DATA_MD_READ = "SCOPE_cim-validated-historical-data-md:read";
 
     @Bean
     @ConditionalOnExpression(value = "${outbound-connector.rest.enabled:false} and ${outbound-connector.rest.oauth2.enabled:false}")
@@ -94,14 +95,15 @@ public class RestSecurityConfig {
                 .requestMatchers(restRequestMatcher.matcher("/agnostic/opaque-envelope")).hasAuthority("SCOPE_agnostic-opaque-envelope:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/permission-md")).hasAuthority("SCOPE_cim-permission-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/accounting-point-data-md")).hasAuthority("SCOPE_cim-accounting-point-data-md:read")
-                .requestMatchers(restRequestMatcher.matcher("/cim_0_82/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
+                .requestMatchers(restRequestMatcher.matcher("/cim_0_82/validated-historical-data-md")).hasAuthority(VALIDATED_HISTORICAL_DATA_MD_READ)
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_04/near-real-time-data-md")).hasAuthority("SCOPE_cim-near-real-time-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_12/near-real-time-data-md")).hasAuthority("SCOPE_cim-near-real-time-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_12/acknowledgement-md")).hasAuthority("SCOPE_cim-acknowledgement-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_82/termination-md")).hasAuthority("SCOPE_cim-termination-md:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_0_91_08/redistribution-transaction-rd")).hasAuthority("SCOPE_cim-redistribution-transaction-rd:write")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_12/min-max-envelope-md")).hasAuthority("SCOPE_cim-min-max-envelope-md:write")
-                .requestMatchers(restRequestMatcher.matcher("/cim_1_04/validated-historical-data-md")).hasAuthority("SCOPE_cim-validated-historical-data-md:read")
+                .requestMatchers(restRequestMatcher.matcher("/cim_1_04/validated-historical-data-md")).hasAuthority(VALIDATED_HISTORICAL_DATA_MD_READ)
+                .requestMatchers(restRequestMatcher.matcher("/cim_1_12/validated-historical-data-md")).hasAuthority(VALIDATED_HISTORICAL_DATA_MD_READ)
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_12/energy-sharing-reference-data-md")).hasAuthority("SCOPE_cim-energy-sharing-reference-data-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/cim_1_12/request-permission-md")).hasAuthority("SCOPE_cim-permission-md:read")
                 .requestMatchers(restRequestMatcher.matcher("/v3/api-docs")).permitAll() // Allow requests to the swagger file

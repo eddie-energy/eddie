@@ -10,6 +10,7 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,9 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
     private final Sinks.Many<RTDEnvelope> rtdSink = Sinks.many()
                                                          .replay()
                                                          .limit(Duration.ofSeconds(10));
+    private final Sinks.Many<Envelope> vhdSink = Sinks.many()
+                                                      .replay()
+                                                      .limit(Duration.ofSeconds(10));
     private final Sinks.Many<AcknowledgementEnvelope> ackSink = Sinks.many()
                                                                      .replay()
                                                                      .limit(Duration.ofSeconds(10));
@@ -52,6 +56,21 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
                         err
                 ))
                 .subscribe(rtdSink::tryEmitNext);
+    }
+
+    public Flux<Envelope> getValidatedHistoricalDataMarketDocumentStream() {
+        return vhdSink.asFlux();
+    }
+
+    @MessageStream(Envelope.class)
+    @SuppressWarnings("java:S100")
+    public void setValidatedHistoricalDataMarketDocumentStreamV1_12(Flux<Envelope> marketDocumentStream) {
+        marketDocumentStream
+                .onErrorContinue((err, obj) -> LOGGER.warn(
+                        "Encountered error while processing validated historical data market document",
+                        err
+                ))
+                .subscribe(vhdSink::tryEmitNext);
     }
 
     public Flux<AcknowledgementEnvelope> getAcknowledgementMarketDocumentStream() {
@@ -122,6 +141,7 @@ public class CimConnector implements MinMaxEnvelopeOutboundConnector, AutoClosea
     @Override
     public void close() {
         rtdSink.tryEmitComplete();
+        vhdSink.tryEmitComplete();
         ackSink.tryEmitComplete();
         minMaxEnvelopeSink.tryEmitComplete();
         esrdmdSink.tryEmitComplete();

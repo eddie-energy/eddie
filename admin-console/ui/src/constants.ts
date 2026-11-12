@@ -98,6 +98,10 @@ export const FEATURES: Record<RegionConnectorFeature, { text: string; link: stri
     text: 'Validated Historical Data Market Documents v1.04',
     link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/validated-historical-data-market-documents.html'
   },
+  supportsValidatedHistoricalDataMarketDocumentsV1_12: {
+    text: 'Validated Historical Data Market Documents v1.12',
+    link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/validated-historical-data-market-documents.html'
+  },
   supportsNearRealTimeDataMarketDocuments: {
     text: 'Near Real Time Data Market Documents v1.04',
     link: 'https://architecture.eddie.energy/framework/2-integrating/messages/cim/near-real-time-data-market-documents.html'

@@ -17,7 +17,7 @@ plugins {
 
 group = "energy.eddie"
 
-version = "3.14.1"
+version = "3.15.0"
 
 repositories {
     mavenCentral()
@@ -91,7 +91,8 @@ val generateCIMSchemaClasses = tasks.register<GenerateCimSchemaClassesTask>("gen
         "v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd",
         "v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd",
         "v1_12/esr/CEEDS_EnergySharingReferenceDataMarketDocument_annotated_v1.12.xsd",
-        "v1_12/rpmd/RequestPermissionDocument_annotated_v1.12.xsd"
+        "v1_12/rpmd/RequestPermissionDocument_annotated_v1.12.xsd",
+        "v1_12/vhd/CEEDS_ValidatedHistoricalDataDocument_v1.12.38.xsd"
     )
 
     schemaDirectory.set(layout.projectDirectory.dir("src/main/schemas/cim/xsd"))

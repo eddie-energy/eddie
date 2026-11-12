@@ -105,6 +105,13 @@ public class AmqpOutbound implements AutoCloseable {
                                                AmqpOutbound::toHeaders));
     }
 
+    @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
+    @SuppressWarnings("java:S100")
+    public void setValidatedHistoricalDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.vhd.Envelope> marketDocumentStream) {
+        marketDocumentStream.subscribe(publish(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
+                                               AmqpOutbound::toHeaders));
+    }
+
     @MessageStream(ESRDMDEnvelope.class)
     public void setEnergySharingReferenceDataMarketDocumentStream(Flux<ESRDMDEnvelope> marketDocumentStream) {
         marketDocumentStream.subscribe(publish(config.energySharingReferenceDataMarketDocument(),
@@ -187,6 +194,15 @@ public class AmqpOutbound implements AutoCloseable {
     }
 
     private static Map<String, String> toHeaders(energy.eddie.cim.v1_12.rtd.RTDEnvelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        return toHeaders(
+                metaInformation.getRequestPermissionId(),
+                metaInformation.getConnectionId(),
+                metaInformation.getDataNeedId()
+        );
+    }
+
+    private static Map<String, String> toHeaders(energy.eddie.cim.v1_12.vhd.Envelope envelope) {
         var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
         return toHeaders(
                 metaInformation.getRequestPermissionId(),

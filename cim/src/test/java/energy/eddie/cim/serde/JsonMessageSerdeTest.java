@@ -50,6 +50,27 @@ class JsonMessageSerdeTest {
     }
 
     @Test
+    void testDeserialize_roundTripsCIM_v1_12_ValidatedHistoricalDataMarketDocument() throws SerializationException, DeserializationException {
+        // Given
+        var serde = new JsonMessageSerde();
+        var document = ValidatedHistoricalDataV112TestDocuments.envelope();
+
+        // When
+        var bytes = serde.serialize(document);
+        var res = serde.deserialize(bytes, energy.eddie.cim.v1_12.vhd.Envelope.class);
+
+        // Then
+        var timeSeries = res.getVHDMarketDocument().getTimeSeries().getFirst();
+        assertAll(
+                () -> assertEquals("cid", res.getMessageDocumentHeader().getMetaInformation().getConnectionId()),
+                () -> assertEquals("AT", res.getMessageDocumentHeader().getMetaInformation().getRegionCountry()),
+                () -> assertEquals("mrid", res.getVHDMarketDocument().getMRID()),
+                () -> assertEquals("1", timeSeries.getVersion()),
+                () -> assertEquals(1, timeSeries.getSeriesPeriods().getFirst().getPoints().size())
+        );
+    }
+
+    @Test
     void testDeserialize_throwsOnInvalidJson() {
         // Given
         var serde = new JsonMessageSerde();
