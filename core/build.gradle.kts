@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-us-green-button"))
     implementation(project(":region-connectors:region-connector-cds"))
     implementation(project(":region-connectors:region-connector-si-moj-elektro"))
+    implementation(project(":region-connectors:region-connector-ee-elering"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)

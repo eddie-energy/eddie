@@ -115,6 +115,10 @@ export default withMermaid(
                   link: "/1-running/region-connectors/region-connector-si-moj-elektro.md",
                 },
                 {
+                  text: "Elering (Estonia)",
+                  link: "/1-running/region-connectors/region-connector-ee-elering.md",
+                },
+                {
                   text: "Simulation (Dev)",
                   link: "/1-running/region-connectors/region-connector-sim.md",
                 },
