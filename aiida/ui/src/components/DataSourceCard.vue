@@ -40,6 +40,10 @@ const {
   username,
   name,
   pollingInterval,
+  minConsumptionWatt,
+  maxConsumptionWatt,
+  minProductionWatt,
+  maxProductionWatt,
   icon,
 } = dataSource
 
@@ -138,6 +142,20 @@ const healthStatusConfig = computed<HealthStatusConfig>(
         <div>
           <dt>{{ t('datasources.card.pollingInterval') }}</dt>
           <dd>{{ pollingInterval }} s</dd>
+        </div>
+      </template>
+
+      <template v-if="minConsumptionWatt !== undefined && maxConsumptionWatt !== undefined">
+        <div>
+          <dt>{{ t('datasources.card.consumptionRange') }}</dt>
+          <dd>{{ minConsumptionWatt }} – {{ maxConsumptionWatt }} W</dd>
+        </div>
+      </template>
+
+      <template v-if="minProductionWatt !== undefined && maxProductionWatt !== undefined">
+        <div>
+          <dt>{{ t('datasources.card.productionRange') }}</dt>
+          <dd>{{ minProductionWatt }} – {{ maxProductionWatt }} W</dd>
         </div>
       </template>
 

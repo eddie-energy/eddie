@@ -6,6 +6,7 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
+import energy.eddie.aiida.errors.datasource.InvalidSimulationRangeException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.services.DataSourceService;
@@ -115,6 +116,20 @@ class DataSourceControllerTest {
                                 .content("{}")
                                 .with(csrf()))
                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser
+    void addDataSource_shouldReturn400ForInvalidSimulationRange() throws Exception {
+        doThrow(new InvalidSimulationRangeException("consumption", 2000, 1000)).when(service)
+                                                                               .addDataSource(any(DataSourceDto.class));
+
+        mockMvc.perform(post("/datasources").contentType(MediaType.APPLICATION_JSON)
+                                            .content("{\"name\":\"Test Source\",\"type\":\"SIMULATION\"}")
+                                            .with(csrf()))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath("$.errors[0].message").value(
+                       "The minimum consumption (2000 W) must not be greater than the maximum consumption (1000 W)."));
     }
 
     @Test
