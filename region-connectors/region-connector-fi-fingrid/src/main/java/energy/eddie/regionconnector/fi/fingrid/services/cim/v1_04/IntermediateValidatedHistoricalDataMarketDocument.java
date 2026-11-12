@@ -6,14 +6,12 @@ package energy.eddie.regionconnector.fi.fingrid.services.cim.v1_04;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
-import energy.eddie.regionconnector.fi.fingrid.client.model.Observation;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeries;
-import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesData;
 import energy.eddie.regionconnector.fi.fingrid.client.model.TimeSeriesResponse;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
+import energy.eddie.regionconnector.fi.fingrid.services.cim.FingridMeteringSeries;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
-import jakarta.annotation.Nullable;
 
 import javax.xml.datatype.DatatypeFactory;
 import java.time.ZonedDateTime;
@@ -94,59 +92,32 @@ final class IntermediateValidatedHistoricalDataMarketDocument {
                                                 .withValue(meteringPointEAN)
                                 )
                                 .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value())
-                                .withReasonText(getReasons(data))
+                                .withReasonText(FingridMeteringSeries.reasons(data))
                                 .withPeriods(seriesPeriods)
                 );
     }
 
     private List<SeriesPeriod> getSeriesPeriods(List<TimeSeries> timeSeries) {
         var list = new ArrayList<SeriesPeriod>();
-        for (var series : timeSeries) {
-            var interval = new EsmpTimeInterval(series.start(), series.end());
-            var points = getPoints(series);
-            var duration = DatatypeFactory.newDefaultInstance()
-                                          .newDuration(series.resolutionDuration().duration().toMillis());
+        for (var period : FingridMeteringSeries.periods(timeSeries)) {
+            var points = new ArrayList<Point>(period.points().size());
+            for (var point : period.points()) {
+                points.add(new Point()
+                                   .withPosition(point.position())
+                                   .withEnergyQualityQuantityQuantity(point.quantity())
+                                   .withEnergyQualityQuantityQuality(point.quality()));
+            }
             list.add(
                     new SeriesPeriod()
-                            .withResolution(duration)
+                            .withResolution(DatatypeFactory.newDefaultInstance()
+                                                           .newDuration(period.resolution().toMillis()))
                             .withTimeInterval(new ESMPDateTimeInterval()
-                                                      .withStart(interval.start())
-                                                      .withEnd(interval.end()))
+                                                      .withStart(period.start())
+                                                      .withEnd(period.end()))
                             .withPoints(points)
             );
         }
         return list;
-    }
-
-    private static List<Point> getPoints(TimeSeries series) {
-        List<Point> result = new ArrayList<>();
-        var position = 1;
-        for (Observation obs : series.observations()) {
-            Point point = new Point()
-                    .withPosition(position)
-                    .withEnergyQualityQuantityQuantity(obs.quantity())
-                    .withEnergyQualityQuantityQuality(
-                            obs.quality()
-                               .equals("OK") ? StandardQualityTypeList.AS_PROVIDED.value() : StandardQualityTypeList.NOT_AVAILABLE.value()
-                    );
-            result.add(point);
-            position++;
-        }
-        return result;
-    }
-
-    @Nullable
-    private static String getReasons(TimeSeriesData data) {
-        var eventReasons = data.transaction().eventReasons();
-        if (eventReasons == null || eventReasons.reasons().isEmpty()) {
-            return null;
-        }
-        var reasons = new StringBuilder();
-        for (var reason : eventReasons.reasons()) {
-            reasons.append(reason.eventReasonText())
-                   .append("\n");
-        }
-        return reasons.toString();
     }
 
     private ESMPDateTimeInterval getOverallTimeInterval(List<TimeSeries> timeSeriesList) {

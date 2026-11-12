@@ -3,32 +3,27 @@
 
 package energy.eddie.regionconnector.us.green.button.providers.v1_12;
 
-import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
-import energy.eddie.api.agnostic.Granularity;
 import energy.eddie.api.agnostic.IdentifiablePayload;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v1_12.*;
 import energy.eddie.cim.v1_12.vhd.*;
+import energy.eddie.regionconnector.shared.cim.CimCodes;
 import energy.eddie.regionconnector.shared.cim.v1_12.vhd.VhdEnvelopeWrapper;
 import energy.eddie.regionconnector.us.green.button.atom.feed.Query;
 import energy.eddie.regionconnector.us.green.button.config.GreenButtonConfiguration;
 import energy.eddie.regionconnector.us.green.button.permission.request.api.UsGreenButtonPermissionRequest;
+import energy.eddie.regionconnector.us.green.button.providers.GreenButtonMeteringSeries;
 import energy.eddie.regionconnector.us.green.button.providers.MeasurementScale;
 import energy.eddie.regionconnector.us.green.button.providers.ReadingTypeValueConverter;
 import energy.eddie.regionconnector.us.green.button.providers.UnsupportedUnitException;
-import jakarta.annotation.Nullable;
 import jakarta.xml.bind.Unmarshaller;
-import org.naesb.espi.IntervalBlock;
-import org.naesb.espi.ReadingType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 import javax.xml.datatype.DatatypeFactory;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,42 +57,25 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         var permissionId = permissionRequest.permissionId();
         LOGGER.info("Mapping validated historical data of permission request {} to CIM", permissionId);
         var query = new Query(syndFeed, unmarshaller);
-        var readings = query.findAllByTitle("ReadingType");
-        var vhds = new ArrayList<Envelope>(readings.size());
-        for (var reading : readings) {
-            var related = reading.findRelatedLink("related").getHref();
-            var optionalIntervalBlock = query.findFirstBySelfLinkAndTitle(related, "IntervalBlock");
-            var readingType = query.unmarshal(reading, ReadingType.class);
-
-            if (optionalIntervalBlock.isEmpty() || readingType == null) {
-                LOGGER.warn("Could not parse interval block for reading type {} for permission request {}",
-                        related,
-                        permissionId);
-                continue;
-            }
-
-            var optionalIntervalBlockVal = optionalIntervalBlock.get();
-            var intervalBlock = query.unmarshal(optionalIntervalBlockVal, IntervalBlock.class);
-            if (intervalBlock == null) {
-                LOGGER.warn("Could not parse interval block {} for permission request {}", related, permissionId);
-            } else {
-                var vhd = getVHDMarketDocument(readingType, intervalBlock, optionalIntervalBlockVal);
-                vhds.add(new VhdEnvelopeWrapper(vhd, permissionRequest).wrap());
-            }
+        var intervalReadings = GreenButtonMeteringSeries.intervalReadings(query, permissionId);
+        var vhds = new ArrayList<Envelope>(intervalReadings.size());
+        for (var readings : intervalReadings) {
+            vhds.add(new VhdEnvelopeWrapper(getVHDMarketDocument(readings), permissionRequest).wrap());
         }
         return vhds;
     }
 
-    private VHDMarketDocument getVHDMarketDocument(ReadingType readingType,
-                                                   IntervalBlock intervalBlock,
-                                                   SyndEntry optionalIntervalBlockVal) throws UnsupportedUnitException {
+    private VHDMarketDocument getVHDMarketDocument(
+            GreenButtonMeteringSeries.IntervalReadings intervalReadings
+    ) throws UnsupportedUnitException {
+        var readingType = intervalReadings.readingType();
         var created = ZonedDateTime.now(US_ZONE_ID);
-        var flowDirection = getDirection(readingType.getFlowDirection());
+        var flowDirection = GreenButtonMeteringSeries.direction(readingType);
+        var commodity = GreenButtonMeteringSeries.commodity(readingType);
         var scale = ReadingTypeValueConverter.v112UnitOfMeasureTypeList(readingType).scale();
-        var seriesPeriods = getSeriesPeriods(readingType, intervalBlock, scale);
         var permissionAdmin = permissionRequest.dataSourceInformation().permissionAdministratorId();
         var clientId = greenButtonConfiguration.clientIds().getOrDefault(permissionAdmin, "");
-        var meterUid = Query.intervalBlockSelfToUsagePointId(optionalIntervalBlockVal);
+        var meterUid = Query.intervalBlockSelfToUsagePointId(intervalReadings.intervalBlockEntry());
 
         return new VHDMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
@@ -123,14 +101,12 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                 // dateAndOrTime.dateTime is mandatory in CIM v1.12, use the creation time of the document
                                 .withDateAndOrTimeDateTime(created)
                                 .withMRID(UUID.randomUUID().toString())
-                                .withBusinessType(Objects.requireNonNull(getBusinessType(flowDirection)).value())
-                                .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
-                                .withFlowDirectionDirection(Objects.requireNonNull(flowDirection).value())
-                                .withAccountingPointMeterReadingsReadingsReadingTypeAggregate(
-                                        AggregateKind._26
-                                )
+                                .withBusinessType(Objects.requireNonNull(GreenButtonMeteringSeries.businessType(flowDirection)))
+                                .withProduct(CimCodes.EnergyProduct.ACTIVE_POWER)
+                                .withFlowDirectionDirection(Objects.requireNonNull(flowDirection))
+                                .withAccountingPointMeterReadingsReadingsReadingTypeAggregate(AggregateKind.fromValue(CimCodes.Aggregate.SUM))
                                 .withAccountingPointMeterReadingsReadingsReadingTypeCommodity(
-                                        getCommodity(readingType)
+                                        commodity == null ? null : CommodityKind.fromValue(commodity)
                                 )
                                 .withEnergyMeasurementUnitName(scale.unit().value())
                                 .withAccountingPointMRID(
@@ -139,72 +115,27 @@ class IntermediateValidatedHistoricalDataMarketDocument {
                                                 .withValue(meterUid)
                                 )
                                 .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value())
-                                .withSeriesPeriods(seriesPeriods)
+                                .withSeriesPeriods(getSeriesPeriods(intervalReadings, scale))
                 );
     }
 
-    private List<SeriesPeriod> getSeriesPeriods(ReadingType readingType,
-                                                IntervalBlock intervalBlock,
-                                                MeasurementScale<StandardUnitOfMeasureTypeList> scale) {
+    private static List<SeriesPeriod> getSeriesPeriods(
+            GreenButtonMeteringSeries.IntervalReadings intervalReadings,
+            MeasurementScale<StandardUnitOfMeasureTypeList> scale
+    ) {
         List<SeriesPeriod> seriesPeriods = new ArrayList<>();
-        for (var intervalReading : intervalBlock.getIntervalReading()) {
-            var timePeriod = intervalReading.getTimePeriod();
-            var interval = new ESMPDateTimeInterval()
-                    .withStart(Instant.ofEpochSecond(
-                            timePeriod.getStart()
-                    ).atZone(ZoneOffset.UTC).toString())
-                    .withEnd(Instant.ofEpochSecond(
-                            timePeriod.getStart() + timePeriod.getDuration()
-                    ).atZone(ZoneOffset.UTC).toString());
-
-            var granularity = Granularity.fromMinutes(Math.toIntExact(readingType.getIntervalLength() / 60));
-            var duration = DatatypeFactory.newDefaultInstance()
-                    .newDuration(granularity.duration().toMillis());
-            var value = scale.scaled(intervalReading.getValue());
-            var seriesPeriod = new SeriesPeriod()
-                    .withResolution(duration)
-                    .withTimeInterval(
-                            new ESMPDateTimeInterval()
-                                    .withStart(interval.getStart())
-                                    .withEnd(interval.getEnd())
-                    )
-                    .withPoints(
-                            new Point()
-                                    .withPosition(1)
-                                    .withEnergyQuantityQuantity(value)
-                                    .withEnergyQuantityQuality(StandardQualityTypeList.AS_PROVIDED.value())
-                    );
-            seriesPeriods.add(seriesPeriod);
+        for (var period : GreenButtonMeteringSeries.periods(intervalReadings, scale)) {
+            seriesPeriods.add(new SeriesPeriod()
+                                      .withResolution(DatatypeFactory.newDefaultInstance()
+                                                                     .newDuration(period.resolution().toMillis()))
+                                      .withTimeInterval(new ESMPDateTimeInterval()
+                                                                .withStart(period.start())
+                                                                .withEnd(period.end()))
+                                      .withPoints(new Point()
+                                                          .withPosition(1)
+                                                          .withEnergyQuantityQuantity(period.value())
+                                                          .withEnergyQuantityQuality(CimCodes.Quality.AS_PROVIDED)));
         }
         return seriesPeriods;
-    }
-
-    @Nullable
-    private static CommodityKind getCommodity(ReadingType readingType) {
-        return switch (readingType.getCommodity()) {
-            case "2" -> CommodityKind._2;
-            case "1" -> CommodityKind._1;
-            default -> null;
-        };
-    }
-
-    @Nullable
-    private static StandardDirectionTypeList getDirection(String direction) {
-        return switch (direction) {
-            case "1" -> StandardDirectionTypeList.DOWN;
-            case "19" -> StandardDirectionTypeList.UP;
-            case "4" -> StandardDirectionTypeList.UP_AND_DOWN;
-            default -> null;
-        };
-    }
-
-    @Nullable
-    private static StandardBusinessTypeList getBusinessType(@Nullable StandardDirectionTypeList direction) {
-        return switch (direction) {
-            case UP -> StandardBusinessTypeList.PRODUCTION;
-            case DOWN -> StandardBusinessTypeList.CONSUMPTION;
-            case UP_AND_DOWN -> StandardBusinessTypeList.NET_PRODUCTION__CONSUMPTION;
-            case null, default -> null;
-        };
     }
 }

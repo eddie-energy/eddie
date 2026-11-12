@@ -11,16 +11,13 @@ import energy.eddie.cim.v1_12.vhd.Point;
 import energy.eddie.cim.v1_12.vhd.TimeSeries;
 import energy.eddie.regionconnector.dk.energinet.EnerginetRegionConnectorMetadata;
 import energy.eddie.regionconnector.dk.energinet.customer.model.*;
-import energy.eddie.regionconnector.dk.energinet.filter.EnerginetResolution;
 import energy.eddie.regionconnector.dk.energinet.permission.request.api.DkEnerginetPermissionRequest;
+import energy.eddie.regionconnector.dk.energinet.providers.EnerginetMeteringSeries;
 import energy.eddie.regionconnector.dk.energinet.providers.agnostic.IdentifiableApiResponse;
-import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_12.vhd.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
 
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,38 +71,28 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return new VhdEnvelopeWrapper(vhd, permissionRequest).wrap();
     }
 
-    public List<SeriesPeriod> getPeriods(List<Period> periodList) {
+    private static List<SeriesPeriod> getPeriods(List<Period> periodList) {
         var periods = new ArrayList<SeriesPeriod>();
-        for (var period : periodList) {
-            var pointList = Optional.ofNullable(period.getPoint()).orElse(List.of());
-            var duration = parseResolution(period.getResolution());
-            var seriesPeriod = new SeriesPeriod()
-                    .withResolution(duration)
-                    .withTimeInterval(fromPeriodTimeInterval(period.getTimeInterval()))
-                    .withPoints(fromPointList(pointList))
-                    .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value());
-            periods.add(seriesPeriod);
+        for (var period : EnerginetMeteringSeries.periods(periodList, code -> isKnown(code, StandardQualityTypeList::fromValue))) {
+            var points = new ArrayList<Point>(period.points().size());
+            for (var point : period.points()) {
+                points.add(new Point()
+                                   .withPosition(point.position())
+                                   .withEnergyQuantityQuality(point.quality())
+                                   .withEnergyQuantityQuantity(point.quantity()));
+            }
+            var timeInterval = period.start() == null
+                    ? new ESMPDateTimeInterval()
+                    : new ESMPDateTimeInterval().withStart(period.start()).withEnd(period.end());
+            periods.add(new SeriesPeriod()
+                                .withResolution(period.resolution() == null
+                                                        ? null
+                                                        : DatatypeFactory.newDefaultInstance().newDuration(period.resolution()))
+                                .withTimeInterval(timeInterval)
+                                .withPoints(points)
+                                .withReasonCode(StandardReasonCodeTypeList.ERRORS_NOT_SPECIFICALLY_IDENTIFIED.value()));
         }
         return periods;
-    }
-
-    @Nullable
-    private static Duration parseResolution(@Nullable String resolution) {
-        if (resolution == null) {
-            return null;
-        }
-        return DatatypeFactory.newDefaultInstance()
-                              .newDuration(new EnerginetResolution(resolution).toISO8601Duration());
-    }
-
-    private ESMPDateTimeInterval fromPeriodTimeInterval(@Nullable PeriodtimeInterval periodTimeInterval) {
-        if (periodTimeInterval == null) {
-            return new ESMPDateTimeInterval();
-        }
-        var interval = new EsmpTimeInterval(periodTimeInterval.getStart(), periodTimeInterval.getEnd());
-        return new ESMPDateTimeInterval()
-                .withStart(interval.start())
-                .withEnd(interval.end());
     }
 
     private List<TimeSeries> timeSeries(
@@ -114,7 +101,10 @@ class IntermediateValidatedHistoricalDataMarketDocument {
     ) {
         var result = new ArrayList<TimeSeries>();
         for (var timeSeries : timeSeriesList) {
-            var businessType = getBusinessType(timeSeries);
+            var businessType = EnerginetMeteringSeries.businessType(
+                    timeSeries.getBusinessType(),
+                    code -> isKnown(code, StandardBusinessTypeList::fromValue)
+            );
             var marketEvaluationPoint = Optional.ofNullable(timeSeries.getMarketEvaluationPoint())
                                                 .map(MarketEvaluationPoint::getmRID);
             List<Period> periodList = timeSeries.getPeriod() == null ? List.of() : timeSeries.getPeriod();
@@ -125,12 +115,12 @@ class IntermediateValidatedHistoricalDataMarketDocument {
             );
             var ts = new TimeSeries()
                     .withMRID(timeSeries.getmRID())
-                    .withBusinessType(businessType == null ? null : businessType.value())
+                    .withBusinessType(businessType)
                     .withVersion("1")
                     // dateAndOrTime.dateTime is mandatory in CIM v1.12, use the creation time of the document
                     .withDateAndOrTimeDateTime(created)
                     .withProduct(StandardEnergyProductTypeList.ACTIVE_POWER.value())
-                    .withFlowDirectionDirection(getDirection(businessType).value())
+                    .withFlowDirectionDirection(EnerginetMeteringSeries.direction(businessType))
                     .withAccountingPointMeterReadingsReadingsReadingTypeCommodity(CommodityKind._2)
                     .withEnergyMeasurementUnitName(getStandardUnitOfMeasureTypeList(timeSeries).value())
                     .withAccountingPointMRID(
@@ -157,43 +147,12 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         return toEnum(codingScheme, StandardCodingSchemeTypeList::fromValue, StandardCodingSchemeTypeList.CODING_SCHEME_WHICH_ARE_PART_OF_GS1_SYSTEM);
     }
 
-    private static StandardDirectionTypeList getDirection(@Nullable StandardBusinessTypeList businessType) {
-        return switch (businessType) {
-            case CONSUMPTION -> StandardDirectionTypeList.DOWN;
-            case PRODUCTION -> StandardDirectionTypeList.UP;
-            case null, default -> StandardDirectionTypeList.UP_AND_DOWN;
-        };
-    }
-
-    @Nullable
-    @SuppressWarnings("NullAway")
-    private static StandardBusinessTypeList getBusinessType(energy.eddie.regionconnector.dk.energinet.customer.model.TimeSeries timeSeries) {
-        return toEnum(timeSeries.getBusinessType(), StandardBusinessTypeList::fromValue, null);
-    }
-
-    private List<Point> fromPointList(List<energy.eddie.regionconnector.dk.energinet.customer.model.Point> pointList) {
-        var list = new ArrayList<Point>();
-        var i = 1;
-        for (var point : pointList) {
-            var outQuantityQuantity = point.getOutQuantityQuantity() == null
-                    ? 0
-                    : Double.parseDouble(point.getOutQuantityQuantity());
-            var position = point.getPosition();
-            list.add(
-                    new Point()
-                            .withPosition(position == null ? i : Integer.parseInt(position))
-                            .withEnergyQuantityQuality(getStandardQualityTypeList(point).value())
-                            .withEnergyQuantityQuantity(BigDecimal.valueOf(outQuantityQuantity))
-            );
-            i++;
+    private static boolean isKnown(String code, Function<String, ?> converter) {
+        try {
+            return converter.apply(code) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
         }
-        return list;
-    }
-
-    private static StandardQualityTypeList getStandardQualityTypeList(energy.eddie.regionconnector.dk.energinet.customer.model.Point point) {
-        return toEnum(point.getOutQuantityQuality(),
-                      StandardQualityTypeList::fromValue,
-                      StandardQualityTypeList.AS_PROVIDED);
     }
 
     private static <T> T toEnum(@Nullable String value, Function<String, T> converter, T defaultValue) {
