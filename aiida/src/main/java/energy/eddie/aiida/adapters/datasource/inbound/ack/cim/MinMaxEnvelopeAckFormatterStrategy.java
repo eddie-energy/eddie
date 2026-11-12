@@ -4,6 +4,7 @@
 package energy.eddie.aiida.adapters.datasource.inbound.ack.cim;
 
 import energy.eddie.aiida.adapters.datasource.inbound.ack.BaseAckFormatterStrategy;
+import energy.eddie.aiida.errors.formatter.MinMaxEnvelopeAcknowledgementFormattingException;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.ApplicationInformationService;
@@ -43,11 +44,11 @@ public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy
     ) {
         try {
             return convertParsed(inboundRecord, processingResult);
-        } catch (RuntimeException exception) {
-            if (processingResult.status() != InboundProcessingResult.Status.REJECTED) {
-                throw exception;
+        } catch (MinMaxEnvelopeAcknowledgementFormattingException exception) {
+            if (processingResult.status() == InboundProcessingResult.Status.REJECTED) {
+                return fallbackRejection(inboundRecord, processingResult);
             }
-            return fallbackRejection(inboundRecord, processingResult);
+            throw exception;
         }
     }
 
@@ -55,24 +56,31 @@ public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy
             InboundRecord inboundRecord,
             InboundProcessingResult processingResult
     ) {
-        var minMaxEnvelope = objectMapper.readValue(inboundRecord.payload(), RECMMOEEnvelope.class);
-        var now = ZonedDateTime.now(UTC);
+        try {
+            var minMaxEnvelope = objectMapper.readValue(inboundRecord.payload(), RECMMOEEnvelope.class);
+            var now = ZonedDateTime.now(UTC);
 
-        var minMaxHeader = minMaxEnvelope.getMessageDocumentHeader();
-        var minMaxMetaInformation = minMaxHeader.getMetaInformation();
+            var minMaxHeader = minMaxEnvelope.getMessageDocumentHeader();
+            var minMaxMetaInformation = minMaxHeader.getMetaInformation();
 
-        var header = new MessageDocumentHeader()
-                .withCreationDateTime(now)
-                .withMetaInformation(toMetaInformation(inboundRecord.dataSource(),
-                                                       minMaxMetaInformation.getConnectionId()));
+            var header = new MessageDocumentHeader()
+                    .withCreationDateTime(now)
+                    .withMetaInformation(toMetaInformation(inboundRecord.dataSource(),
+                                                           minMaxMetaInformation.getConnectionId()));
 
-        var marketDocument = toMarketDocument(now, minMaxEnvelope.getMarketDocument(), processingResult)
-                .withReceivedMarketDocumentCreatedDateTime(minMaxHeader.getCreationDateTime())
-                .withReceivedMarketDocumentType(StandardMessageTypeList.ACKNOWLEDGEMENT_DOCUMENT.value());
+            var marketDocument = toMarketDocument(now, minMaxEnvelope.getMarketDocument(), processingResult)
+                    .withReceivedMarketDocumentCreatedDateTime(minMaxHeader.getCreationDateTime())
+                    .withReceivedMarketDocumentType(StandardMessageTypeList.ACKNOWLEDGEMENT_DOCUMENT.value());
 
-        return new AcknowledgementEnvelope()
-                .withMessageDocumentHeader(header)
-                .withMarketDocument(marketDocument);
+            return new AcknowledgementEnvelope()
+                    .withMessageDocumentHeader(header)
+                    .withMarketDocument(marketDocument);
+        } catch (RuntimeException exception) {
+            throw new MinMaxEnvelopeAcknowledgementFormattingException(
+                    "Failed to create an acknowledgement from the min-max envelope",
+                    exception
+            );
+        }
     }
 
     private AcknowledgementEnvelope fallbackRejection(
@@ -113,9 +121,9 @@ public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy
         return new AcknowledgementMarketDocument()
                 .withMRID(UUID.randomUUID().toString())
                 .withCreatedDateTime(now)
-                .withSenderMarketParticipantMRID(toPartyIdString(marketDocument.getReceiverMarketParticipantMRID()))
+                .withSenderMarketParticipantMRID(toAckPartyIdString(marketDocument.getReceiverMarketParticipantMRID()))
                 .withSenderMarketParticipantMarketRoleType(marketDocument.getReceiverMarketParticipantMarketRoleType())
-                .withReceiverMarketParticipantMRID(toPartyIdString(marketDocument.getSenderMarketParticipantMRID()))
+                .withReceiverMarketParticipantMRID(toAckPartyIdString(marketDocument.getSenderMarketParticipantMRID()))
                 .withReceiverMarketParticipantMarketRoleType(marketDocument.getSenderMarketParticipantMarketRoleType())
                 .withReceivedMarketDocumentMRID(marketDocument.getMRID())
                 .withReceivedMarketDocumentRevisionNumber(marketDocument.getRevisionNumber())
@@ -123,7 +131,7 @@ public class MinMaxEnvelopeAckFormatterStrategy extends BaseAckFormatterStrategy
                 .withReasons(toReason(processingResult));
     }
 
-    private PartyIDString toPartyIdString(energy.eddie.cim.v1_12.recmmoe.PartyIDString partyIdString) {
+    private PartyIDString toAckPartyIdString(energy.eddie.cim.v1_12.recmmoe.PartyIDString partyIdString) {
         return new PartyIDString()
                 .withValue(partyIdString.getValue())
                 .withCodingScheme(partyIdString.getCodingScheme());

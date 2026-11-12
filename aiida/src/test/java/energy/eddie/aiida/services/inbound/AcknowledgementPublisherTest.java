@@ -108,8 +108,9 @@ class AcknowledgementPublisherTest {
         var duplicate = mock(AckFormatterStrategy.class);
         when(formatter.supportedSchema()).thenReturn(AiidaSchema.OPAQUE);
         when(duplicate.supportedSchema()).thenReturn(AiidaSchema.OPAQUE);
+        var formatters = List.of(formatter, duplicate);
 
-        assertThrows(IllegalStateException.class, () -> publisher(List.of(formatter, duplicate)));
+        assertThrows(IllegalStateException.class, () -> publisher(formatters));
     }
 
     private AcknowledgementPublisher publisher(List<AckFormatterStrategy> formatters) {
