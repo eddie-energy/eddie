@@ -72,7 +72,7 @@ public class OutboundAggregator extends Aggregator<AiidaRecord> {
      * Additionally, the records are buffered and aggregated by the {@link CronExpression} {@code transmissionSchedule}.
      *
      * @param allowedDataTags          Tags which should be included in the returned Flux.
-     * @param allowedAsset             The asset that should be included in the returned Flux.
+     * @param allowedAssets            The assets that should be included in the returned Flux. An empty set allows any asset.
      * @param permissionExpirationTime Instant when the permission expires.
      * @param transmissionSchedule     The schedule at which the data should be transmitted.
      * @param userId                   The user id of the permission creator.
@@ -83,7 +83,7 @@ public class OutboundAggregator extends Aggregator<AiidaRecord> {
     @SuppressWarnings("FutureReturnValueIgnored")
     public Flux<AiidaRecord> getFilteredFlux(
             Set<ObisCode> allowedDataTags,
-            AiidaAsset allowedAsset,
+            Set<AiidaAsset> allowedAssets,
             Instant permissionExpirationTime,
             CronExpression transmissionSchedule,
             UUID userId,
@@ -104,7 +104,7 @@ public class OutboundAggregator extends Aggregator<AiidaRecord> {
         return flux.ofType(AiidaRecord.class)
                    .map(AiidaRecord::new)
                    .filter(aiidaRecord -> isValidAiidaRecord(aiidaRecord,
-                                                             allowedAsset,
+                                                             allowedAssets,
                                                              permissionExpirationTime,
                                                              userId,
                                                              dataSourceId))
@@ -120,21 +120,21 @@ public class OutboundAggregator extends Aggregator<AiidaRecord> {
 
     private boolean isValidAiidaRecord(
             AiidaRecord aiidaRecord,
-            AiidaAsset allowedAsset,
+            Set<AiidaAsset> allowedAssets,
             Instant expirationTime,
             UUID userId,
             UUID dataSourceId
     ) {
         var dataSource = aiidaRecord.dataSource();
-        return isAllowedAsset(dataSource, allowedAsset) &&
+        return isAllowedAsset(dataSource, allowedAssets) &&
                areAiidaRecordValuesValid(aiidaRecord.aiidaRecordValues()) &&
                isBeforeExpiration(aiidaRecord, expirationTime) &&
                isSameDataSource(dataSource, dataSourceId) &&
                doesDataSourceBelongToCurrentUser(dataSource, userId);
     }
 
-    private boolean isAllowedAsset(DataSource dataSource, AiidaAsset allowedAsset) {
-        return dataSource.asset() == allowedAsset;
+    private boolean isAllowedAsset(DataSource dataSource, Set<AiidaAsset> allowedAssets) {
+        return allowedAssets.isEmpty() || allowedAssets.contains(dataSource.asset());
     }
 
     private boolean areAiidaRecordValuesValid(List<AiidaRecordValue> aiidaRecordValues) {

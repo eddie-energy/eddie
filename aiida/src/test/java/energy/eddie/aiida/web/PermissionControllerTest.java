@@ -18,6 +18,7 @@ import energy.eddie.aiida.services.ConnectionStatusService;
 import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.aiida.streamers.ConnectionStatusEventStream;
 import energy.eddie.aiida.streamers.StreamerManager;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
@@ -61,7 +63,7 @@ class PermissionControllerTest {
     private static final String OUTBOUND_ACCEPT_BODY = """
             {"eddieId":"%s","handshakeUrl":"http://localhost/permission-request/{permissionId}","accessToken":"token","dataSourceId":"%s"}""";
     private static final String INBOUND_ACCEPT_BODY = """
-            {"eddieId":"%s","handshakeUrl":"http://localhost/permission-request/{permissionId}","accessToken":"token"}""";
+            {"eddieId":"%s","handshakeUrl":"http://localhost/permission-request/{permissionId}","accessToken":"token","asset":"SUBMETER"}""";
     private final UUID eddieId = UUID.fromString("31d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID permissionId = UUID.fromString("41d0a13e-688a-454d-acab-7a6b2951cde2");
     private final UUID dataSourceId = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
@@ -452,7 +454,7 @@ class PermissionControllerTest {
         mockMvc.perform(post("/permissions/{permissionId}/accept/outbound", permissionId)
                                 .with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(INBOUND_ACCEPT_BODY.formatted(eddieId)))
+                                .content("{\"eddieId\":\"" + eddieId + "\",\"handshakeUrl\":\"http://localhost\",\"accessToken\":\"token\"}"))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItem("dataSourceId: must not be null")));
         verify(permissionService, never()).acceptOutboundPermission(any(), any());
@@ -484,6 +486,47 @@ class PermissionControllerTest {
                                 .content(INBOUND_ACCEPT_BODY.formatted(eddieId)))
                .andExpect(status().isBadRequest())
                .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("is not an inbound permission")));
+    }
+
+    @Test
+    @WithMockUser
+    void givenSelectedAsset_acceptInboundPermission_passesAssetToService() throws Exception {
+        mockMvc.perform(post("/permissions/{permissionId}/accept/inbound", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(INBOUND_ACCEPT_BODY.formatted(eddieId)))
+               .andExpect(status().isCreated());
+
+        verify(permissionService).acceptInboundPermission(eq(permissionId),
+                                                          argThat(dto -> dto.asset() == AiidaAsset.SUBMETER));
+    }
+
+    @Test
+    @WithMockUser
+    void givenMissingAsset_acceptInboundPermission_returnsBadRequest() throws Exception {
+        mockMvc.perform(post("/permissions/{permissionId}/accept/inbound", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(INBOUND_ACCEPT_BODY.replace(",\"asset\":\"SUBMETER\"", "")
+                                                            .formatted(eddieId)))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[*].message", hasItem("asset: must not be null")));
+
+        verify(permissionService, never()).acceptInboundPermission(any(), any());
+    }
+
+    @Test
+    @WithMockUser
+    void givenAssetNotAllowed_acceptInboundPermission_returnsBadRequest() throws Exception {
+        when(permissionService.acceptInboundPermission(eq(permissionId), any()))
+                .thenThrow(new AssetNotAllowedException(AiidaAsset.SUBMETER, Set.of(AiidaAsset.CONTROLLABLE_UNIT)));
+
+        mockMvc.perform(post("/permissions/{permissionId}/accept/inbound", permissionId)
+                                .with(csrf())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(INBOUND_ACCEPT_BODY.formatted(eddieId)))
+               .andExpect(status().isBadRequest())
+               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message", containsString("'SUBMETER' is not allowed")));
     }
 
     @Test

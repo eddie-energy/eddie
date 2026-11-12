@@ -133,7 +133,7 @@ public class PermissionController {
     public ResponseEntity<PermissionDto> acceptInboundPermission(
             @Parameter(name = "permissionId", description = "Unique ID of the permission request", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId,
             @Valid @RequestBody AcceptInboundPermissionDto acceptDto
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, SecretStoringException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, AssetNotAllowedException, SecretStoringException {
         LOGGER.info("Got request to accept inbound permission '{}'", permissionId);
         var permission = permissionService.acceptInboundPermission(permissionId, acceptDto);
         return ResponseEntity.status(HttpStatus.CREATED)

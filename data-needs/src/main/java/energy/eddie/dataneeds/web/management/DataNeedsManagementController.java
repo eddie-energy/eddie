@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.dataneeds.web.management;
@@ -56,7 +56,7 @@ public class DataNeedsManagementController {
                             ),
                             @ExampleObject(name = "Generic AIIDA data need for the next 10 days",
                                     description = "Create a new data need to get the generic AIIDA data tags '1.7.0' and '1.8.0' in a two second interval for the next ten days including today",
-                                    value = "{\"type\":\"aiida\",\"name\":\"Generic AIIDA data need\",\"description\":\"Please describe the data need.\",\"purpose\":\"And also its purpose.\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"asset\":\"CONNECTION-AGREEMENT-POINT\",\"duration\":{\"type\":\"relativeDuration\",\"start\":\"P0D\",\"end\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"],\"regionConnectorFilter\":{\"type\":\"allowlist\",\"regionConnectorIds\":[\"aiida\"]}}"
+                                    value = "{\"type\":\"aiida\",\"name\":\"Generic AIIDA data need\",\"description\":\"Please describe the data need.\",\"purpose\":\"And also its purpose.\",\"policyLink\":\"https://example.com/toc\",\"transmissionSchedule\":\"*/2 * * * * *\",\"assets\":[\"CONNECTION-AGREEMENT-POINT\"],\"duration\":{\"type\":\"relativeDuration\",\"start\":\"P0D\",\"end\":\"P10D\"},\"dataTags\":[\"1.8.0\",\"1.7.0\"],\"regionConnectorFilter\":{\"type\":\"allowlist\",\"regionConnectorIds\":[\"aiida\"]}}"
                             )
                     }
             )

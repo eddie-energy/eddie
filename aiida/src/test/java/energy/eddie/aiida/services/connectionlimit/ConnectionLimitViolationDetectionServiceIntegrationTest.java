@@ -140,18 +140,20 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
 
     private void seedPermission() {
         jdbcTemplate.update("""
-                                    INSERT INTO aiida_local_data_need (data_need_id, asset, name, policy_link, purpose,
+                                    INSERT INTO aiida_local_data_need (data_need_id, name, policy_link, purpose,
                                                                        transmission_schedule, acknowledgement_required, type)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?)
                                     """,
                             DATA_NEED_ID,
-                            "CONNECTION_AGREEMENT_POINT",
                             "TEST_INBOUND",
                             "https://example.org",
                             "purpose",
                             "*/5 * * * * *",
                             false,
                             "inbound-aiida");
+        jdbcTemplate.update("INSERT INTO aiida_local_data_need_assets (data_need_id, asset) VALUES (?, ?)",
+                            DATA_NEED_ID,
+                            "CONNECTION_AGREEMENT_POINT");
 
         jdbcTemplate.update("""
                                     INSERT INTO permission (permission_id, eddie_id, data_need_id, access_token,

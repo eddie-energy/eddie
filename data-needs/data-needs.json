@@ -58,6 +58,33 @@
       "type": "relativeDuration",
       "start": "P0D",
       "end": "P10D"
+    },
+    "transmissionSchedule": "*/5 * * * * *",
+    "allowedPermissionCommands": [],
+    "acknowledgementRequired": false,
+    "schemas": [
+      "SMART-METER-P1-RAW",
+      "SMART-METER-P1-CIM-V1-04",
+      "SMART-METER-P1-CIM-V1-12"
+    ],
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
+    "dataTags": [
+      "1-0:1.8.0",
+      "1-0:1.7.0"
+    ]
+  },
+
+  {
+    "type": "outbound-aiida",
+    "id": "5dc71d7e-e8cd-4403-a3a8-d3c095c97a84",
+    "name": "FUTURE_NEAR_REALTIME_DATA_OUTBOUND",
+    "description": "Near realtime consumption data from the smart meter",
+    "purpose": "purpose",
+    "policyLink": "https://example.com/toc",
+    "duration": {
+      "type": "relativeDuration",
+      "start": "P0D",
+      "end": "P10D"
     }, 
     "transmissionSchedule": "*/5 * * * * *",
     "allowedPermissionCommands": [],
@@ -67,7 +94,7 @@
       "SMART-METER-P1-CIM-V1-04",
       "SMART-METER-P1-CIM-V1-12"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"
@@ -94,7 +121,7 @@
       "MIN-MAX-ENVELOPE-CIM-V1-12",
       "OPAQUE"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": []
   },
   {
@@ -115,7 +142,7 @@
       "MIN-MAX-ENVELOPE-CIM-V1-12",
       "OPAQUE"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": []
   },
   {
@@ -193,7 +220,7 @@
     "schemas": [
       "MIN-MAX-ENVELOPE-CIM-V1-12"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": [],
     "contexts": [
       "FLEXIBLE-CONNECTION-AGREEMENT"
@@ -217,7 +244,7 @@
     "schemas": [
       "SMART-METER-P1-CIM-V1-12"
     ],
-    "asset": "CONNECTION-AGREEMENT-POINT",
+    "assets": ["CONNECTION-AGREEMENT-POINT"],
     "dataTags": [
       "1-0:1.8.0",
       "1-0:1.7.0"

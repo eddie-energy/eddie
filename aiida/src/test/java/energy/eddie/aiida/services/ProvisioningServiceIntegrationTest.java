@@ -345,7 +345,7 @@ class ProvisioningServiceIntegrationTest {
     private UUID createInboundPermission() {
         var permission = createPermission();
 
-        var dataSource = new InboundDataSource.Builder(permission).build();
+        var dataSource = new InboundDataSource.Builder(permission, AiidaAsset.SUBMETER).build();
         dataSource = inboundDataSourceRepository.saveAndFlush(dataSource);
         permission.setDataSource(dataSource);
         permissionRepository.saveAndFlush(permission);
@@ -391,7 +391,7 @@ class ProvisioningServiceIntegrationTest {
                 CronExpression.parse("0 * * * * *")
         );
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
-        when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(dataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of());
         when(dataNeed.contexts()).thenReturn(Set.of());
         return new InboundAiidaLocalDataNeed(dataNeed);

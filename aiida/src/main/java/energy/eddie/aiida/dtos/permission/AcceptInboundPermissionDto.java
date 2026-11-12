@@ -4,6 +4,7 @@
 package energy.eddie.aiida.dtos.permission;
 
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +20,7 @@ import java.util.UUID;
  * @param handshakeUrl         Handshake URL template from the AIIDA code.
  * @param accessToken          Access token from the AIIDA code.
  * @param inboundMessageFormat Optional format for inbound permission messages.
+ * @param asset                Asset of the inbound data source, must be allowed by the data need.
  * @param displayName          Optional display name, defaults to the name of the data need.
  */
 public record AcceptInboundPermissionDto(
@@ -37,6 +39,10 @@ public record AcceptInboundPermissionDto(
         @Schema(description = "Selected format for inbound permission messages.", example = "OPENADR_3_1")
         @Nullable
         InboundMessageFormat inboundMessageFormat,
+
+        @Schema(description = "Selected asset of the inbound data source, must be allowed by the data need.", example = "CONNECTION-AGREEMENT-POINT")
+        @NotNull(message = "must not be null")
+        AiidaAsset asset,
 
         @Schema(description = "Display name to assign to the permission.", example = "My smart meter")
         @Nullable

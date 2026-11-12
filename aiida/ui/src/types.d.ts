@@ -18,7 +18,8 @@ export type AiidaDataNeed = {
   schemas: AiidaSchema[]
   allowedPermissionCommands: string[]
   acknowledgementRequired: boolean
-  asset: string
+  /** Allowed assets, an empty list allows any asset. */
+  assets: string[]
   dataTags: string[]
   contexts?: string[]
   type: 'outbound-aiida' | 'inbound-aiida'

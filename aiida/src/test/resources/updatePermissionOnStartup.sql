@@ -2,19 +2,20 @@
 --  SPDX-License-Identifier: Apache-2.0
 
 INSERT INTO public.aiida_local_data_need(data_need_id,
-                                         asset,
                                          name,
                                          policy_link,
                                          purpose,
                                          transmission_schedule,
                                          type)
 VALUES ('6609a9b3-0718-4082-935d-6a98c0f8c5a2',
-        'CONNECTION_AGREEMENT_POINT',
         'FUTURE_NEAR_REALTIME_DATA_OUTBOUND',
         'https://example.com/toc',
         'purpose',
         '*/5 * * * * *',
         'outbound-aiida');
+
+INSERT INTO public.aiida_local_data_need_assets(data_need_id, asset)
+VALUES ('6609a9b3-0718-4082-935d-6a98c0f8c5a2', 'CONNECTION_AGREEMENT_POINT');
 
 INSERT INTO public.data_source (id, user_id, asset, country_code, enabled, icon, name, type)
 VALUES ('5609a9b3-0718-4082-935d-6a98c0f8c5a2',

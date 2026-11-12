@@ -53,8 +53,7 @@ CREATE TABLE IF NOT EXISTS data_needs.outbound_aiida_data_need
     policy_link                text                        NOT NULL,
     purpose                    text                        NOT NULL,
     transmission_schedule      VARCHAR(36)                 NOT NULL,
-    acknowledgement_required   boolean                     NOT NULL,
-    asset                      text                        NOT NULL
+    acknowledgement_required   boolean                     NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS data_needs.inbound_aiida_data_need
@@ -67,8 +66,7 @@ CREATE TABLE IF NOT EXISTS data_needs.inbound_aiida_data_need
     policy_link                text                        NOT NULL,
     purpose                    text                        NOT NULL,
     transmission_schedule      VARCHAR(36)                 NOT NULL,
-    acknowledgement_required   boolean                     NOT NULL,
-    asset                      text                        NOT NULL
+    acknowledgement_required   boolean                     NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_data_tags
@@ -90,6 +88,13 @@ CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_permission_commands
     data_need_id       uuid NOT NULL,
     permission_command text NOT NULL,
     PRIMARY KEY (data_need_id, permission_command)
+);
+
+CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_assets
+(
+    data_need_id varchar(36) NOT NULL,
+    asset        text        NOT NULL,
+    PRIMARY KEY (data_need_id, asset)
 );
 
 CREATE TABLE IF NOT EXISTS data_needs.aiida_data_need_contexts

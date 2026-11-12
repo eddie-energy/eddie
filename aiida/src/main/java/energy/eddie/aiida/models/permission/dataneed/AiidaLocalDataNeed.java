@@ -18,6 +18,7 @@ import org.springframework.scheduling.support.CronExpression;
 import tools.jackson.databind.annotation.JsonDeserialize;
 import tools.jackson.databind.annotation.JsonSerialize;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -77,10 +78,12 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Enumerated(EnumType.STRING)
     protected Set<AiidaSchema> schemas;
 
-    @Column(nullable = false, name = "asset")
-    @JsonProperty
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_local_data_need_assets", joinColumns = @JoinColumn(name = "data_need_id"))
+    @Column(name = "asset")
     @Enumerated(EnumType.STRING)
-    protected AiidaAsset asset;
+    @JsonProperty
+    protected Set<AiidaAsset> assets;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_contexts", joinColumns = @JoinColumn(name = "data_need_id"))
@@ -104,7 +107,7 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.policyLink = dataNeed.policyLink();
         this.transmissionSchedule = dataNeed.transmissionSchedule();
         this.schemas = dataNeed.schemas();
-        this.asset = dataNeed.asset();
+        this.assets = new HashSet<>(dataNeed.assets());
         this.acknowledgementRequired = dataNeed.acknowledgementRequired();
         this.allowedPermissionCommands = Objects.requireNonNullElse(dataNeed.allowedPermissionCommands(), Set.of());
         this.contexts = Objects.requireNonNullElse(dataNeed.contexts(), Set.of());
@@ -125,8 +128,8 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     }
 
     @Override
-    public AiidaAsset asset() {
-        return asset;
+    public Set<AiidaAsset> assets() {
+        return assets;
     }
 
     @Override

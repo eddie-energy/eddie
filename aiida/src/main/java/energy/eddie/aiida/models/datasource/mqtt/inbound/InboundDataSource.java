@@ -18,6 +18,7 @@ import energy.eddie.aiida.models.mqtt.MqttConnection;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.secrets.SecretType;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -263,13 +264,12 @@ public class InboundDataSource extends MqttDataSource {
         private final Permission permission;
 
         @SuppressWarnings("NullAway")
-        public Builder(Permission permission) {
+        public Builder(Permission permission, AiidaAsset asset) {
             this.userId = Objects.requireNonNull(permission.userId());
 
             this.permission = Objects.requireNonNull(permission);
 
-            var dataNeed = Objects.requireNonNull(permission.dataNeed());
-            this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
+            this.dataSourceDto = new InboundDataSourceDto(Objects.requireNonNull(asset), permission.id());
         }
 
         public InboundDataSource build() throws MissingMqttStreamingConfigException {

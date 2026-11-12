@@ -214,13 +214,14 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
      * @param acceptDto    Handshake information from the AIIDA code and the selections of the user.
      * @return The accepted and persisted permission.
      * @throws InvalidInboundPermissionException The permission request is not an inbound permission request.
+     * @throws AssetNotAllowedException          The selected asset is not allowed by the data need.
      * @throws DetailFetchingFailedException     Fetching the details or accepting at the EDDIE framework failed.
      */
     @Transactional
     public Permission acceptInboundPermission(
             UUID permissionId,
             AcceptInboundPermissionDto acceptDto
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, SecretStoringException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, AssetNotAllowedException, SecretStoringException {
         var permission = buildValidatedPermission(permissionId, acceptDto);
         if (!permission.isInbound()) {
             throw new InvalidInboundPermissionException(permissionId);
@@ -231,9 +232,15 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             permission.updateInboundMessageFormat(inboundMessageFormat);
         }
 
+        var allowedAssets = requireNonNull(permission.dataNeed()).assets();
+        var asset = acceptDto.asset();
+        if (!allowedAssets.isEmpty() && !allowedAssets.contains(asset)) {
+            throw new AssetNotAllowedException(asset, allowedAssets);
+        }
+
         permission = accept(permission, acceptDto);
         // creates the inbound data source, which is required to start the permission
-        aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
+        aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id(), asset));
         permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
         return permission;
     }
@@ -571,13 +578,13 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new DataSourceNotFoundException(dataSourceId);
         }
 
-        var requiredAsset = requireNonNull(permission.dataNeed()).asset();
-        if (dataSource.asset() != requiredAsset) {
+        var allowedAssets = requireNonNull(permission.dataNeed()).assets();
+        if (!allowedAssets.isEmpty() && !allowedAssets.contains(dataSource.asset())) {
             throw new IncompatibleDataSourceException(
                     dataSourceId,
-                    "The selected data source has asset '%s', but the data need requires '%s'.".formatted(
+                    "The selected data source has asset '%s', but the data need requires one of %s.".formatted(
                             dataSource.asset(),
-                            requiredAsset)
+                            allowedAssets)
             );
         }
 

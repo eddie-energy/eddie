@@ -46,7 +46,7 @@ public class AiidaEventListener {
         LOGGER.trace("Received InboundPermissionCreationEvent: {}", event);
         try {
             var permission = permissionService.findById(event.permissionId());
-            var inboundDataSource = dataSourceService.createInboundDataSource(permission);
+            var inboundDataSource = dataSourceService.createInboundDataSource(permission, event.asset());
 
             LOGGER.debug("Set data source {} to permission {}", inboundDataSource, permission);
             permission.setDataSource(inboundDataSource);
