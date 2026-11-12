@@ -31,6 +31,35 @@ class CimConnectorTest {
     }
 
     @Test
+    void setValidatedHistoricalData_producesValidatedHistoricalData() {
+        // Given
+        var flux = Flux.just(new energy.eddie.cim.v1_12.vhd.Envelope());
+
+        // When
+        connector.setValidatedHistoricalDataMarketDocumentStreamV1_12(flux);
+
+        // Then
+        StepVerifier.create(connector.getValidatedHistoricalDataMarketDocumentStream())
+                    .then(connector::close)
+                    .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void setValidatedHistoricalData_doesNotEmitNearRealTimeData() {
+        // Given
+        var flux = Flux.just(new energy.eddie.cim.v1_12.vhd.Envelope());
+
+        // When
+        connector.setValidatedHistoricalDataMarketDocumentStreamV1_12(flux);
+
+        // Then
+        StepVerifier.create(connector.getNearRealTimeDataMarketDocumentStream())
+                    .then(connector::close)
+                    .verifyComplete();
+    }
+
+    @Test
     void setAcknowledgement_producesAcknowledgements() {
         // Given
         var ackFlux = Flux.just(new AcknowledgementEnvelope());

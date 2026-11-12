@@ -8,9 +8,13 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
+import energy.eddie.cim.v1_12.vhd.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.vhd.MetaInformation;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.model.cim.v1_12.*;
 import energy.eddie.outbound.rest.persistence.cim.v1_12.*;
+import energy.eddie.outbound.rest.web.EventStream;
 import energy.eddie.outbound.rest.web.WebTestConfig;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -19,6 +23,7 @@ import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebS
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.data.jpa.domain.PredicateSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -28,6 +33,7 @@ import reactor.test.StepVerifier;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -49,6 +55,8 @@ class CimControllerTest {
     private MinMaxEnvelopeMarketDocumentRepository minMaxRepository;
     @MockitoBean
     private RequestPermissionMarketDocumentRepository rpmdRepository;
+    @MockitoBean
+    private ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
 
     @Test
     void nearRealTimeDataMdSSE_returnsDocuments() {
@@ -91,6 +99,99 @@ class CimControllerTest {
 
         StepVerifier.create(result)
                     .expectNextCount(1)
+                    .verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataMdSSE_returnsDocuments() {
+        var message1 = vhdEnvelope();
+        var message2 = vhdEnvelope();
+
+        given(cimConnector.getValidatedHistoricalDataMarketDocumentStream())
+                .willReturn(Flux.just(message1, message2));
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(MediaType.TEXT_EVENT_STREAM)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(Envelope.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .expectNextCount(2)
+                    .verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataMdSSEXml_returnsDocuments() {
+        given(cimConnector.getValidatedHistoricalDataMarketDocumentStream())
+                .willReturn(Flux.just(vhdEnvelope()));
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(EventStream.EVENT_STREAM_XML)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(String.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .assertNext(next -> assertTrue(next.contains("Envelope"), next))
+                    .thenCancel()
+                    .verify();
+    }
+
+    @Test
+    void validatedHistoricalDataMd_returnsDocuments() {
+        var msg = new ValidatedHistoricalDataMarketDocumentModel(vhdEnvelope());
+        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+                .willReturn(List.of(msg));
+
+        var result = webTestClient.get()
+                                  .uri(uriBuilder -> uriBuilder.path("/cim_1_12/validated-historical-data-md")
+                                                               .queryParam("permissionId", "pid")
+                                                               .queryParam("connectionId", "cid")
+                                                               .queryParam("dataNeedId", "dnid")
+                                                               .queryParam("countryCode", "AT")
+                                                               .queryParam("regionConnectorId", "at-eda")
+                                                               .build())
+                                  .accept(MediaType.APPLICATION_JSON)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(new ParameterizedTypeReference<List<Envelope>>() {})
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .assertNext(next -> assertEquals(1, next.size()))
+                    .verifyComplete();
+    }
+
+    @Test
+    void validatedHistoricalDataMd_returnsXmlDocuments() {
+        // The WebFlux test slice uses the default JAXB encoder, which does not know the CIM envelope classes.
+        // The XML serialization of CIM documents is covered by FallbackXmlMessageConverterTest,
+        // so this test only verifies that the endpoint serves the XML collection.
+        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
+                .willReturn(List.of());
+
+        var result = webTestClient.get()
+                                  .uri("/cim_1_12/validated-historical-data-md")
+                                  .accept(MediaType.APPLICATION_XML)
+                                  .exchange()
+                                  .expectStatus()
+                                  .isOk()
+                                  .returnResult(String.class)
+                                  .getResponseBody();
+
+        StepVerifier.create(result)
+                    .assertNext(next -> {
+                        assertNotNull(next);
+                        assertTrue(next.contains("ValidatedHistoricalDataMarketDocuments"), next);
+                    })
                     .verifyComplete();
     }
 
@@ -303,5 +404,20 @@ class CimControllerTest {
         StepVerifier.create(result)
                     .expectNextCount(1)
                     .verifyComplete();
+    }
+
+    private static Envelope vhdEnvelope() {
+        return new Envelope()
+                .withMessageDocumentHeader(
+                        new MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                                .withRegionConnector("at-eda")
+                                                .withRegionCountry("AT")
+                                )
+                );
     }
 }

@@ -36,6 +36,7 @@ import java.util.List;
 @Component
 public class KafkaConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
+    private static final String COULD_NOT_PRODUCE = "Could not produce ";
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
 
@@ -106,6 +107,16 @@ public class KafkaConnector {
                 .subscribe();
     }
 
+    @MessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class)
+    @SuppressWarnings("java:S100")
+    public void setValidatedHistoricalDataMarketDocumentStreamV1_12(Flux<energy.eddie.cim.v1_12.vhd.Envelope> marketDocumentStream) {
+        marketDocumentStream
+                .onBackpressureBuffer()
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext(this::produceValidatedHistoricalDataMarketDocumentV112)
+                .onErrorContinue(this::logStreamerError)
+                .subscribe();
+    }
 
     @MessageStream(energy.eddie.cim.v1_04.rtd.RTDEnvelope.class)
     @SuppressWarnings("java:S100")
@@ -296,6 +307,31 @@ public class KafkaConnector {
         );
     }
 
+    private void produceValidatedHistoricalDataMarketDocumentV112(energy.eddie.cim.v1_12.vhd.Envelope envelope) {
+        var metaInformation = envelope.getMessageDocumentHeader().getMetaInformation();
+        var toSend = new ProducerRecord<String, Object>(
+                config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
+                null,
+                metaInformation.getConnectionId(),
+                envelope,
+                cimToHeaders(envelope)
+        );
+        sendToKafka(toSend,
+                    COULD_NOT_PRODUCE + TopicStructure.DataModels.CIM_1_12 + " validated historical data market document message");
+        LOGGER.debug("Produced {} validated historical data market document message for permission request {}",
+                     TopicStructure.DataModels.CIM_1_12,
+                     metaInformation.getRequestPermissionId());
+    }
+
+    private static Iterable<Header> cimToHeaders(energy.eddie.cim.v1_12.vhd.Envelope header) {
+        var metaInformation = header.getMessageDocumentHeader().getMetaInformation();
+        return List.of(
+                new StringHeader(Headers.PERMISSION_ID, metaInformation.getRequestPermissionId()),
+                new StringHeader(Headers.CONNECTION_ID, metaInformation.getConnectionId()),
+                new StringHeader(Headers.DATA_NEED_ID, metaInformation.getDataNeedId())
+        );
+    }
+
     private void produceRawDataMessage(RawDataMessage message) {
         var toSend = new ProducerRecord<String, Object>(config.rawDataMessage(),
                                                         message.connectionId(),
@@ -328,7 +364,7 @@ public class KafkaConnector {
                 cimToHeaders(marketDocument)
         );
         sendToKafka(toSend,
-                    "Could not produce " + TopicStructure.DataModels.CIM_1_04 + " near real-time market document message");
+                    COULD_NOT_PRODUCE + TopicStructure.DataModels.CIM_1_04 + " near real-time market document message");
         LOGGER.debug("Produced {} near real-time market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_04,
                      marketDocument.getMessageDocumentHeaderMetaInformationPermissionId());
@@ -344,7 +380,7 @@ public class KafkaConnector {
                 cimToHeaders(marketDocument)
         );
         sendToKafka(toSend,
-                    "Could not produce " + TopicStructure.DataModels.CIM_1_12 + " near real-time market document message");
+                    COULD_NOT_PRODUCE + TopicStructure.DataModels.CIM_1_12 + " near real-time market document message");
         LOGGER.debug("Produced {} near real-time market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_12,
                      metaInformation.getRequestPermissionId());

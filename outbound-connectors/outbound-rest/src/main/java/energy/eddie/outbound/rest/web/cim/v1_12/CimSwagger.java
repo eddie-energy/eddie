@@ -288,6 +288,278 @@ public interface CimSwagger {
     );
 
     @Operation(
+            operationId = "GET validated historical data market document stream",
+            summary = "GET validated historical data market document stream",
+            description = "Get all new validated historical data market documents as Server Sent Events",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(mediaType = "text/event-stream",
+                            schema = @Schema(implementation = energy.eddie.cim.v1_12.vhd.Envelope.class),
+                            examples = @ExampleObject(
+                                    // language=JSON
+                                    value = """
+                                            {
+                                              "MessageDocumentHeader": {
+                                                "creationDateTime": "2026-11-09T07:59:39Z",
+                                                "MetaInformation": {
+                                                  "connectionId": "1",
+                                                  "requestPermissionId": "69a800c4-8c5f-4b9a-9541-97f6d7b676b6",
+                                                  "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                  "documentType": "validated-historical-data-market-document",
+                                                  "regionConnector": "at-eda",
+                                                  "regionCountry": "AT"
+                                                }
+                                              },
+                                              "VHD_MarketDocument": {
+                                                "mRID": "AT003000202611061110154591074115141",
+                                                "createdDateTime": "2026-11-06T10:10:15Z",
+                                                "revisionNumber": "112",
+                                                "process.processType": "A16",
+                                                "receiver_MarketParticipant.mRID": {
+                                                  "value": "EP100307",
+                                                  "codingScheme": "NAT"
+                                                },
+                                                "receiver_MarketParticipant.marketRole.type": "A13",
+                                                "sender_MarketParticipant.mRID": {
+                                                  "value": "AT003000",
+                                                  "codingScheme": "NAT"
+                                                },
+                                                "sender_MarketParticipant.marketRole.type": "A26",
+                                                "TimeSeries": [
+                                                  {
+                                                    "version": "1",
+                                                    "flowDirection.direction": "A02",
+                                                    "dateAndOrTime.dateTime": "2026-11-05T23:00:00Z",
+                                                    "energy_Measurement_Unit.name": "KWH",
+                                                    "accountingPoint.mRID": {
+                                                      "value": "AT0030000000000000000000030107193",
+                                                      "codingScheme": "NAT"
+                                                    },
+                                                    "Series_Period": [
+                                                      {
+                                                        "resolution": "PT15M",
+                                                        "timeInterval": {
+                                                          "start": "2026-11-04T23:00Z",
+                                                          "end": "2026-11-05T23:00Z"
+                                                        },
+                                                        "Point": [
+                                                          {
+                                                            "position": 1,
+                                                            "energy_Quantity.quantity": 0.123,
+                                                            "energy_Quantity.quality": "A04"
+                                                          }
+                                                        ]
+                                                      }
+                                                    ]
+                                                  }
+                                                ]
+                                              }
+                                            }
+                                            """
+                            )
+                    )
+            )
+    )
+    ResponseEntity<Flux<energy.eddie.cim.v1_12.vhd.Envelope>> validatedHistoricalDataMdSSE();
+
+    @Operation(
+            operationId = "GET validated historical data market document stream as XML",
+            summary = "GET validated historical data market document stream as XML",
+            description = "Get all new validated historical data market documents as Server Sent Events in XML format",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = @Content(
+                            mediaType = EVENT_STREAM_XML_VALUE,
+                            schema = @Schema(implementation = energy.eddie.cim.v1_12.vhd.Envelope.class)
+                    )
+            )
+    )
+    ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML();
+
+    @Operation(
+            operationId = "GET validated historical data market documents",
+            summary = "GET validated historical data market documents",
+            description = "Get all past validated historical data market documents",
+            responses = @ApiResponse(
+                    responseCode = "200",
+                    content = {
+                            @Content(
+                                    mediaType = "application/json",
+                                    array = @ArraySchema(schema = @Schema(implementation = energy.eddie.cim.v1_12.vhd.Envelope.class)),
+                                    examples = @ExampleObject(
+                                            // language=JSON
+                                            value = """
+                                                    [
+                                                      {
+                                                        "MessageDocumentHeader": {
+                                                          "creationDateTime": "2026-11-09T07:59:39Z",
+                                                          "MetaInformation": {
+                                                            "connectionId": "1",
+                                                            "requestPermissionId": "69a800c4-8c5f-4b9a-9541-97f6d7b676b6",
+                                                            "dataNeedId": "9bd0668f-cc19-40a8-99db-dc2cb2802b17",
+                                                            "documentType": "validated-historical-data-market-document",
+                                                            "regionConnector": "at-eda",
+                                                            "regionCountry": "AT"
+                                                          }
+                                                        },
+                                                        "VHD_MarketDocument": {
+                                                          "mRID": "AT003000202611061110154591074115141",
+                                                          "createdDateTime": "2026-11-06T10:10:15Z",
+                                                          "revisionNumber": "112",
+                                                          "process.processType": "A16",
+                                                          "receiver_MarketParticipant.mRID": {
+                                                            "value": "EP100307",
+                                                            "codingScheme": "NAT"
+                                                          },
+                                                          "receiver_MarketParticipant.marketRole.type": "A13",
+                                                          "sender_MarketParticipant.mRID": {
+                                                            "value": "AT003000",
+                                                            "codingScheme": "NAT"
+                                                          },
+                                                          "sender_MarketParticipant.marketRole.type": "A26",
+                                                          "TimeSeries": [
+                                                            {
+                                                              "version": "1",
+                                                              "flowDirection.direction": "A02",
+                                                              "dateAndOrTime.dateTime": "2026-11-05T23:00:00Z",
+                                                              "energy_Measurement_Unit.name": "KWH",
+                                                              "accountingPoint.mRID": {
+                                                                "value": "AT0030000000000000000000030107193",
+                                                                "codingScheme": "NAT"
+                                                              },
+                                                              "Series_Period": [
+                                                                {
+                                                                  "resolution": "PT15M",
+                                                                  "timeInterval": {
+                                                                    "start": "2026-11-04T23:00Z",
+                                                                    "end": "2026-11-05T23:00Z"
+                                                                  },
+                                                                  "Point": [
+                                                                    {
+                                                                      "position": 1,
+                                                                      "energy_Quantity.quantity": 0.123,
+                                                                      "energy_Quantity.quality": "A04"
+                                                                    }
+                                                                  ]
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      }
+                                                    ]
+                                                    """
+                                    )
+                            ),
+                            @Content(
+                                    mediaType = "application/xml",
+                                    schema = @Schema(implementation = ValidatedHistoricalDataMarketDocuments.class),
+                                    examples = @ExampleObject(
+                                            // language=XML
+                                            value = """
+                                                    <Envelope xmlns="https://insieme.energy/CEEDS_ValidatedHistoricalDataDocument_v1.12.38">
+                                                        <MessageDocumentHeader>
+                                                            <creationDateTime>2026-11-09T07:59:39Z</creationDateTime>
+                                                            <MetaInformation>
+                                                                <connectionId>1</connectionId>
+                                                                <requestPermissionId>69a800c4-8c5f-4b9a-9541-97f6d7b676b6</requestPermissionId>
+                                                                <dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</dataNeedId>
+                                                                <documentType>validated-historical-data-market-document</documentType>
+                                                                <regionConnector>at-eda</regionConnector>
+                                                                <regionCountry>AT</regionCountry>
+                                                            </MetaInformation>
+                                                        </MessageDocumentHeader>
+                                                        <VHD_MarketDocument>
+                                                            <mRID>AT003000202611061110154591074115141</mRID>
+                                                            <createdDateTime>2026-11-06T10:10:15Z</createdDateTime>
+                                                            <revisionNumber>112</revisionNumber>
+                                                            <process.processType>A16</process.processType>
+                                                            <receiver_MarketParticipant.mRID codingScheme="NAT">EP100307</receiver_MarketParticipant.mRID>
+                                                            <receiver_MarketParticipant.marketRole.type>A13</receiver_MarketParticipant.marketRole.type>
+                                                            <sender_MarketParticipant.mRID codingScheme="NAT">AT003000</sender_MarketParticipant.mRID>
+                                                            <sender_MarketParticipant.marketRole.type>A26</sender_MarketParticipant.marketRole.type>
+                                                            <TimeSeries>
+                                                                <version>1</version>
+                                                                <flowDirection.direction>A02</flowDirection.direction>
+                                                                <dateAndOrTime.dateTime>2026-11-05T23:00:00Z</dateAndOrTime.dateTime>
+                                                                <energy_Measurement_Unit.name>KWH</energy_Measurement_Unit.name>
+                                                                <accountingPoint.mRID codingScheme="NAT">AT0030000000000000000000030107193</accountingPoint.mRID>
+                                                                <Series_Period>
+                                                                    <resolution>PT15M</resolution>
+                                                                    <timeInterval>
+                                                                        <start>2026-11-04T23:00Z</start>
+                                                                        <end>2026-11-05T23:00Z</end>
+                                                                    </timeInterval>
+                                                                    <Point>
+                                                                        <position>1</position>
+                                                                        <energy_Quantity.quantity>0.123</energy_Quantity.quantity>
+                                                                        <energy_Quantity.quality>A04</energy_Quantity.quality>
+                                                                    </Point>
+                                                                </Series_Period>
+                                                            </TimeSeries>
+                                                        </VHD_MarketDocument>
+                                                    </Envelope>
+                                                    """
+                                    )
+                            )
+                    }
+            ),
+            parameters = {
+                    @Parameter(
+                            name = "permissionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by permission ID, use it only get the messages related to a single permission request",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "connectionId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by connectionId ID",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "dataNeedId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the data need ID",
+                            schema = @Schema(implementation = UUID.class)
+                    ),
+                    @Parameter(
+                            name = "countryCode",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the country, is a two letter ISO country code",
+                            schema = @Schema(implementation = String.class, pattern = "[A-Za-z]{2}")
+                    ),
+                    @Parameter(
+                            name = "regionConnectorId",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the region connector",
+                            schema = @Schema(implementation = String.class)
+                    ),
+                    @Parameter(
+                            name = "from",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+                    @Parameter(
+                            name = "to",
+                            in = ParameterIn.QUERY,
+                            description = "Filters the validated historical data market documents by the time they were received",
+                            schema = @Schema(implementation = ZonedDateTime.class)
+                    ),
+            }
+    )
+    ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    );
+
+    @Operation(
             operationId = "GET acknowledgement market document stream",
             summary = "GET acknowledgement market document stream",
             description = "Get all new acknowledgement market documents as Server Sent Events",

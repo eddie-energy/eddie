@@ -42,7 +42,9 @@ public class RestCimConfig {
                 List.of(energy.eddie.cim.v1_12.esr.ESRDMDEnvelope.class,
                         EnergySharingReferenceDataMarketDocuments.class),
                 List.of(energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope.class,
-                        RequestPermissionMarketDocuments.class)
+                        RequestPermissionMarketDocuments.class),
+                List.of(energy.eddie.cim.v1_12.vhd.Envelope.class,
+                        energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments.class)
         );
     }
 }

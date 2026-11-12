@@ -88,6 +88,7 @@ export type RegionConnectorFeature =
   | 'supportsRetransmissionRequests'
   | 'supportsNearRealTimeDataMarketDocuments'
   | 'supportsValidatedHistoricalDataMarketDocumentsV1_04'
+  | 'supportsValidatedHistoricalDataMarketDocumentsV1_12'
 
 export type RegionConnectorSupportedFeatures = {
   regionConnectorId: string

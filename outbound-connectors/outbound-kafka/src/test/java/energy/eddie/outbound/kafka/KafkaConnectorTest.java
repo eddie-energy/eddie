@@ -30,6 +30,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.core.publisher.Flux;
 
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -201,6 +202,36 @@ class KafkaConnectorTest {
 
         // Then
         assertThat(records).hasSize(1);
+    }
+
+    @Test
+    void testCIM_v1_12_ValidatedHistoricalDataMarketDocuments_areProducedToKafka() {
+        // Given
+        var data = new energy.eddie.cim.v1_12.vhd.Envelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.vhd.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withConnectionId("cid")
+                                                .withDataNeedId("dnid")
+                                                .withDocumentType("validated-historical-data-market-document")));
+        kafkaConnector.setValidatedHistoricalDataMarketDocumentStreamV1_12(Flux.just(data));
+        var consumerProps = KafkaTestUtils.consumerProps(embeddedKafka, "testGroup", true);
+        var consumer = new DefaultKafkaConsumerFactory<>(consumerProps,
+                                                         new StringDeserializer(),
+                                                         new StringDeserializer()).createConsumer();
+        consumer.subscribe(Collections.singleton("ep.eddie.cim_1_12.validated-historical-data-md"));
+
+        // When
+        var records = KafkaTestUtils.getRecords(consumer);
+
+        // Then
+        assertThat(records).hasSize(1);
+        var consumerRecord = records.iterator().next();
+        assertThat(consumerRecord.key()).isEqualTo("cid");
+        assertThat(new String(consumerRecord.headers().lastHeader("permission-id").value(), StandardCharsets.UTF_8))
+                .isEqualTo("pid");
     }
 
     @Test

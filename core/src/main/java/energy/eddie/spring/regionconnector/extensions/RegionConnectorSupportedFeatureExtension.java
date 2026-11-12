@@ -103,6 +103,12 @@ public class RegionConnectorSupportedFeatureExtension implements ApplicationCont
     }
 
     @JsonProperty
+    @SuppressWarnings("java:S100")
+    public boolean supportsValidatedHistoricalDataMarketDocumentsV1_12() {
+        return hasMessageStream(energy.eddie.cim.v1_12.vhd.Envelope.class);
+    }
+
+    @JsonProperty
     public boolean supportsEnergySharingReferenceDataMarketDocuments() {
         return hasMessageStream(ESRDMDEnvelope.class);
     }
