@@ -74,10 +74,15 @@ public class PollingService implements CommonPollingService<FrEnedisPermissionRe
     }
 
     /**
-     * Retries when the error is: - a 429 TooManyRequests - a 401 Unauthorized (i.e. when the token is expired)
+     * Retries when the error is: - a 429 TooManyRequests - a 401 Unauthorized (i.e. when the token is expired) - a 502
+     * BadGateway, 503 ServiceUnavailable or 504 GatewayTimeout (i.e. Enedis is temporarily unavailable)
      */
     private static boolean isRetryable(Throwable e) {
-        var retryable = e instanceof WebClientResponseException.TooManyRequests || e instanceof WebClientResponseException.Unauthorized;
+        var retryable = e instanceof WebClientResponseException.TooManyRequests
+                        || e instanceof WebClientResponseException.Unauthorized
+                        || e instanceof WebClientResponseException.BadGateway
+                        || e instanceof WebClientResponseException.ServiceUnavailable
+                        || e instanceof WebClientResponseException.GatewayTimeout;
         LOGGER.info("Checking if error is retryable({})", retryable, e);
         return retryable;
     }
