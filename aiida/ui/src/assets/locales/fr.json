@@ -6,7 +6,6 @@
   "deleteButton": "Supprimer",
   "editButton": "Modifier",
   "revokeButton": "Révoquer",
-  "continueButton": "Continuer",
   "saveButton": "Enregistrer",
   "closeButton": "Fermer",
   "scrollToTop": "Revenir en haut de la page",
@@ -93,17 +92,14 @@
     "title": "Autorisations",
     "addButton": "Ajouter une autorisation",
     "tagActive": "Actif",
-    "tagPending": "En attente",
     "tagComplete": "Terminé",
     "outbound": "Sortant",
     "inbound": "Entrant",
     "outboundTab": "Autorisations sortantes",
     "inboundTab": "Autorisations entrantes",
     "emptyListCompleteInbound": "Aucune autorisation entrante terminée",
-    "emptyListPendingInbound": "Aucune autorisation entrante en attente",
     "emptyListActiveInbound": "Aucune autorisation entrante active",
     "emptyListCompleteOutbound": "Aucune autorisation sortante terminée",
-    "emptyListPendingOutbound": "Aucune autorisation sortante en attente",
     "emptyListActiveOutbound": "Aucune autorisation sortante active",
     "loadMore": "Charger plus d’autorisations",
     "loadLess": "Charger moins d’autorisations",
@@ -237,7 +233,21 @@
     "minLimit": "Limite minimale",
     "loading": "Chargement…",
     "noData": "Aucune limite de connexion disponible pour la période sélectionnée.",
-    "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible."
+    "noMonitorablePermissions": "Aucune autorisation de limites de connexion surveillable n'est disponible.",
+    "violations": {
+      "title": "Dépassements des limites",
+      "aboveMaximum": "Au-dessus de la limite maximale",
+      "belowMinimum": "En dessous de la limite minimale",
+      "none": "Aucun dépassement des limites pour la période sélectionnée.",
+      "notMonitored": "Aucune source de données n'est surveillée pour cette autorisation, les dépassements ne sont donc pas détectés. Sélectionnez une source de données surveillée dans les détails de l'autorisation.",
+      "ongoing": "En cours",
+      "start": "Début",
+      "end": "Fin",
+      "limits": "Limites dépassées",
+      "startPower": "Puissance au début",
+      "lowestPower": "Puissance la plus basse",
+      "highestPower": "Puissance la plus haute"
+    }
   },
   "toasts": {
     "info": "Le saviez-vous ?",
@@ -262,16 +272,10 @@
     "unexpectedError": "Une erreur inattendue s’est produite. Veuillez réessayer."
   },
   "ACCEPTED": "Accepté",
-  "WAITING_FOR_START": "En attente de démarrage",
-  "STREAMING_DATA": "Données en flux",
-  "REJECTED": "Refusé",
-  "REVOCATION_RECEIVED": "Révocation reçue",
+  "WAITING_FOR_CONNECTION": "En attente de connexion",
+  "CONNECTED": "Connecté",
   "REVOKED": "Révoqué",
   "TERMINATED": "Terminé",
   "FULFILLED": "Exécuté",
-  "FAILED_TO_START": "Échec du démarrage",
-  "CREATED": "Créé",
-  "FETCHED_DETAILS": "Détails récupérés",
-  "UNFULFILLABLE": "Impossible à exécuter",
-  "FETCHED_MQTT_CREDENTIALS": "Informations MQTT récupérées"
+  "NOT_CONNECTED": "Non connecté"
 }

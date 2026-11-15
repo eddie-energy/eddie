@@ -25,6 +25,7 @@ import energy.eddie.regionconnector.aiida.exceptions.CredentialsAlreadyExistExce
 import energy.eddie.regionconnector.aiida.exceptions.DataNeedMalformedException;
 import energy.eddie.regionconnector.aiida.permission.request.AiidaPermissionRequest;
 import energy.eddie.regionconnector.aiida.permission.request.events.AiidaIdReceivedEvent;
+import energy.eddie.regionconnector.aiida.permission.request.events.AiidaStatusUpdateEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.FailedToTerminateEvent;
 import energy.eddie.regionconnector.aiida.permission.request.events.MqttCredentialsCreatedEvent;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -67,6 +68,7 @@ import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
 class AiidaPermissionServiceTest {
+    private static final String REASON = "Some reason";
     private static final String HANDSHAKE_URL = "http://localhost:8080/region-connectors/aiida/permission-request/{permissionId}";
     private final String connectionId = "testConnId";
     private final String dataNeedId = "testDataNeedId";
@@ -371,7 +373,7 @@ class AiidaPermissionServiceTest {
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
 
         // When, Then
-        assertThrows(PermissionNotFoundException.class, () -> service.rejectPermission(permissionId, aiidaId));
+        assertThrows(PermissionNotFoundException.class, () -> service.rejectPermission(permissionId, aiidaId, REASON));
     }
 
     @Test
@@ -381,7 +383,7 @@ class AiidaPermissionServiceTest {
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.CREATED);
 
         // When, Then
-        assertThrows(PermissionStateTransitionException.class, () -> service.rejectPermission(permissionId, aiidaId));
+        assertThrows(PermissionStateTransitionException.class, () -> service.rejectPermission(permissionId, aiidaId, REASON));
     }
 
     @Test
@@ -391,14 +393,16 @@ class AiidaPermissionServiceTest {
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         // When
-        service.rejectPermission(permissionId, aiidaId);
+        service.rejectPermission(permissionId, aiidaId, REASON);
 
         // Then
         verify(mockOutbox, times(1)).commit(permissionEventCaptor.capture());
-        var aiidaIdReceivedEvent = (AiidaIdReceivedEvent) permissionEventCaptor.getAllValues().getFirst();
-        testAiidaIdReceivedEvent(aiidaIdReceivedEvent, REJECTED);
+        var statusUpdateEvent = assertInstanceOf(AiidaStatusUpdateEvent.class,
+                                                 permissionEventCaptor.getAllValues().getFirst());
+        testAiidaIdReceivedEvent(statusUpdateEvent, REJECTED);
+        assertEquals(REASON, statusUpdateEvent.message());
 
-        var actualAiidaId = aiidaIdThroughReflection(aiidaIdReceivedEvent);
+        var actualAiidaId = aiidaIdThroughReflection(statusUpdateEvent);
         assertEquals(aiidaId, actualAiidaId);
     }
 
@@ -408,7 +412,7 @@ class AiidaPermissionServiceTest {
         when(mockViewRepository.findById(permissionId)).thenReturn(Optional.empty());
 
         // When, Then
-        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulfillPermission(permissionId, aiidaId));
+        assertThrows(PermissionNotFoundException.class, () -> service.unableToFulfillPermission(permissionId, aiidaId, REASON));
     }
 
     @Test
@@ -419,7 +423,7 @@ class AiidaPermissionServiceTest {
 
         // When, Then
         assertThrows(PermissionStateTransitionException.class,
-                     () -> service.unableToFulfillPermission(permissionId, aiidaId));
+                     () -> service.unableToFulfillPermission(permissionId, aiidaId, REASON));
     }
 
     @Test
@@ -429,14 +433,16 @@ class AiidaPermissionServiceTest {
         when(mockRequest.status()).thenReturn(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
 
         // When
-        service.unableToFulfillPermission(permissionId, aiidaId);
+        service.unableToFulfillPermission(permissionId, aiidaId, REASON);
 
         // Then
         verify(mockOutbox, times(1)).commit(permissionEventCaptor.capture());
-        var aiidaIdReceivedEvent = (AiidaIdReceivedEvent) permissionEventCaptor.getAllValues().getFirst();
-        testAiidaIdReceivedEvent(aiidaIdReceivedEvent, UNFULFILLABLE);
+        var statusUpdateEvent = assertInstanceOf(AiidaStatusUpdateEvent.class,
+                                                 permissionEventCaptor.getAllValues().getFirst());
+        testAiidaIdReceivedEvent(statusUpdateEvent, UNFULFILLABLE);
+        assertEquals(REASON, statusUpdateEvent.message());
 
-        var actualAiidaId = aiidaIdThroughReflection(aiidaIdReceivedEvent);
+        var actualAiidaId = aiidaIdThroughReflection(statusUpdateEvent);
         assertEquals(aiidaId, actualAiidaId);
     }
 
@@ -711,7 +717,7 @@ class AiidaPermissionServiceTest {
     }
 
     private UUID aiidaIdThroughReflection(AiidaIdReceivedEvent aiidaIdReceivedEvent) throws NoSuchFieldException, IllegalAccessException {
-        var aiidaIdField = aiidaIdReceivedEvent.getClass().getDeclaredField("aiidaId");
+        var aiidaIdField = AiidaIdReceivedEvent.class.getDeclaredField("aiidaId");
         aiidaIdField.setAccessible(true);
 
         return (UUID) aiidaIdField.get(aiidaIdReceivedEvent);

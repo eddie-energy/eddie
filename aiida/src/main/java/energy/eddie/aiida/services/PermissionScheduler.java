@@ -1,10 +1,9 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
@@ -19,9 +18,6 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
-
-import static energy.eddie.aiida.models.permission.PermissionStatus.WAITING_FOR_START;
-import static java.util.Objects.requireNonNull;
 
 @Service
 public class PermissionScheduler {
@@ -52,18 +48,17 @@ public class PermissionScheduler {
 
     /**
      * If the start date of the permission is in the past or now, the streaming is directly started, otherwise a
-     * Runnable will be scheduled to start the permission once its start time has been reached.
-     *
-     * @return The updated permission object. It is already persisted in the database.
+     * Runnable will be scheduled to start the permission once its start time has been reached. The status of the
+     * permission is not changed, its connection state is derived at runtime by {@link ConnectionStatusService}.
      */
-    public Permission scheduleOrStart(Permission permission) {
-        var startTime = requireNonNull(permission.startTime());
+    public void scheduleOrStart(AcceptedPermission permission) {
+        var startTime = permission.startTime();
 
         var now = Instant.now(clock);
         if (startTime.isAfter(now)) {
-            return schedulePermissionStart(permission);
+            schedulePermissionStart(permission);
         } else {
-            return startPermission(permission);
+            startPermission(permission);
         }
     }
 
@@ -79,42 +74,35 @@ public class PermissionScheduler {
         }
     }
 
-    private Permission schedulePermissionStart(Permission permission) {
-        var startTime = requireNonNull(permission.startTime());
+    private void schedulePermissionStart(AcceptedPermission permission) {
+        var startTime = permission.startTime();
         var permissionId = permission.id();
 
         LOGGER.info("Scheduling permission start for permission '{}'.", permissionId);
-        permission.setStatus(WAITING_FOR_START);
 
         var future = scheduler.schedule(() -> startPermission(permission), startTime);
         permissionFutures.put(permissionId, future);
-
-        return repository.save(permission);
     }
 
-    private Permission startPermission(Permission permission) {
+    private void startPermission(AcceptedPermission permission) {
         LOGGER.info("Starting permission '{}' owned by EDDIE framework '{}'",
                     permission.id(),
                     permission.eddieId());
 
         try {
             streamerManager.createNewStreamer(permission);
-            schedulePermissionExpirationRunnable(permission);
-            permission.setStatus(PermissionStatus.STREAMING_DATA);
         } catch (MqttException exception) {
             LOGGER.atError()
                   .addArgument(permission.id())
                   .addArgument(permission.eddieId())
                   .setCause(exception)
                   .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
-
-            permission.setStatus(PermissionStatus.FAILED_TO_START);
         }
-        return repository.save(permission);
+        schedulePermissionExpirationRunnable(permission);
     }
 
-    private void schedulePermissionExpirationRunnable(Permission permission) {
-        var expirationTime = requireNonNull(permission.expirationTime());
+    private void schedulePermissionExpirationRunnable(AcceptedPermission permission) {
+        var expirationTime = permission.expirationTime();
         var permissionId = permission.id();
         LOGGER.info("Will schedule a PermissionExpirationRunnable for permission '{}' to run at  {}",
                     permissionId,

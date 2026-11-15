@@ -11,15 +11,14 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     List<Permission> findByUserIdOrderByGrantTimeDescRevokeTimeDesc(UUID userId);
 
-    List<Permission> findByMonitoringDataSourceIdIsNotNullAndStatusIn(Set<PermissionStatus> statuses);
+    List<Permission> findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus status);
 
-    List<Permission> findByStatusIn(Set<PermissionStatus> statuses);
+    List<Permission> findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus status);
 
     Optional<Permission> findByPermissionIdAndUserId(UUID permissionId, UUID userId);
 
@@ -28,9 +27,9 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
             FROM Permission p
             WHERE p.dataSource.id = :dataSourceId
               AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed.DISCRIMINATOR_VALUE
-              AND p.status IN (:statuses)
+              AND p.status = :status
             """)
-    List<Permission> findOutboundByDataSourceIdAndStatus(UUID dataSourceId, Set<PermissionStatus> statuses);
+    List<Permission> findOutboundByDataSourceIdAndStatus(UUID dataSourceId, PermissionStatus status);
 
     @Query("""
             SELECT p
@@ -46,10 +45,10 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
             WHERE p.userId = :userId
               AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed.DISCRIMINATOR_VALUE
               AND p.dataSource IS NOT NULL
-              AND p.status IN (:statuses)
+              AND p.status = :status
             ORDER BY p.grantTime DESC
             """)
-    List<Permission> findInboundByUserIdAndStatus(UUID userId, Set<PermissionStatus> statuses);
+    List<Permission> findInboundByUserIdAndStatus(UUID userId, PermissionStatus status);
 
     @Query("""
             SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END
@@ -58,16 +57,16 @@ public interface PermissionRepository extends JpaRepository<Permission, UUID> {
             JOIN dn.contexts c
             WHERE p.userId = :userId
               AND p.meterId = :meterId
-              AND p.status IN (:statuses)
+              AND p.status = :status
               AND dn.type = :dataNeedType
               AND c = :context
             """)
-    boolean existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatusIn(
+    boolean existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatus(
             UUID userId,
             String dataNeedType,
             AiidaContext context,
             String meterId,
-            Set<PermissionStatus> statuses
+            PermissionStatus status
     );
 
 }

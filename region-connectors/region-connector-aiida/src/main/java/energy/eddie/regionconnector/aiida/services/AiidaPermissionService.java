@@ -139,20 +139,22 @@ public class AiidaPermissionService {
 
     public void unableToFulfillPermission(
             String permissionId,
-            UUID aiidaId
+            UUID aiidaId,
+            @Nullable String reason
     ) throws PermissionNotFoundException, PermissionStateTransitionException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, UNFULFILLABLE);
 
-        outbox.commit(new AiidaIdReceivedEvent(permissionId, UNFULFILLABLE, aiidaId));
+        outbox.commit(new AiidaStatusUpdateEvent(permissionId, UNFULFILLABLE, aiidaId, reason));
     }
 
     public void rejectPermission(
             String permissionId,
-            UUID aiidaId
+            UUID aiidaId,
+            @Nullable String reason
     ) throws PermissionNotFoundException, PermissionStateTransitionException {
         checkIfPermissionHasValidStatus(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR, REJECTED);
 
-        outbox.commit(new AiidaIdReceivedEvent(permissionId, REJECTED, aiidaId));
+        outbox.commit(new AiidaStatusUpdateEvent(permissionId, REJECTED, aiidaId, reason));
     }
 
     public MqttDto acceptPermission(

@@ -2,7 +2,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
 import { fetchInboundProvisioningTypes } from '@/stores/inboundProvisioningTypes.ts'
@@ -10,7 +9,6 @@ import type { AiidaDataNeed, AiidaPermission, PermissionTypes } from '@/types'
 import Button from '@/components/Button.vue'
 import CompleteIcon from '@/assets/icons/CompleteIcon.svg'
 import ActiveIcon from '@/assets/icons/ActiveIcon.svg'
-import PendingIcon from '@/assets/icons/PendingIcon.svg'
 import PermissionDropdown from './PermissionDropdown.vue'
 import UpdatePermissionModal from './Modals/UpdatePermissionModal.vue'
 import PermissionsNavIcon from '@/assets/icons/PermissionsNavIcon.svg'
@@ -31,7 +29,7 @@ const activePermissionCategory = ref<AiidaPermission[]>(
 )
 
 const activePermissions = ref<AiidaPermission[]>(
-  activePermissionCategory.value.filter((p) => STATUS[p.status].isActive),
+  activePermissionCategory.value.filter((p) => p.status === 'ACCEPTED'),
 )
 
 onMounted(async () => {
@@ -46,11 +44,6 @@ const tabs = [
     translation: 'permissions.tagActive',
   },
   {
-    name: 'Pending',
-    icon: PendingIcon,
-    translation: 'permissions.tagPending',
-  },
-  {
     name: 'Complete',
     icon: CompleteIcon,
     translation: 'permissions.tagComplete',
@@ -62,17 +55,10 @@ watch([selectedTab, permissions, selectedPermissionCategory], () => {
   activePermissionCategory.value = permissions.value.filter(
     (p) => p.dataNeed?.type === selectedPermissionCategory.value,
   )
-  if (selectedTab.value === 'Active') {
-    activePermissions.value = activePermissionCategory.value.filter(
-      (p) => STATUS[p.status].isActive,
-    )
-  } else if (selectedTab.value === 'Pending') {
-    activePermissions.value = activePermissionCategory.value.filter((p) => STATUS[p.status].isOpen)
-  } else {
-    activePermissions.value = activePermissionCategory.value.filter(
-      (p) => !STATUS[p.status].isOpen && !STATUS[p.status].isActive && !STATUS[p.status].isFetching,
-    )
-  }
+  activePermissions.value =
+    selectedTab.value === 'Active'
+      ? activePermissionCategory.value.filter((p) => p.status === 'ACCEPTED')
+      : activePermissionCategory.value.filter((p) => p.status !== 'ACCEPTED')
 })
 
 const slicedPermissions = computed(() => {
@@ -82,7 +68,7 @@ const slicedPermissions = computed(() => {
   return activePermissions.value.slice(0, initialPermissionsCount)
 })
 
-const handleTabClick = (tab: 'Active' | 'Pending' | 'Complete') => {
+const handleTabClick = (tab: PermissionTypes) => {
   showMore.value = false
   selectedTab.value = tab
 }
@@ -133,7 +119,7 @@ const handleCategoryChange = (category: AiidaDataNeed['type']) => {
           v-for="tab in tabs"
           button-style="secondary"
           :key="tab.name"
-          @click="handleTabClick(tab.name as 'Active' | 'Pending' | 'Complete')"
+          @click="handleTabClick(tab.name as PermissionTypes)"
           :class="{ active: selectedTab === tab.name }"
         >
           <component :is="tab.icon" class="icon" /> {{ t(tab.translation) }}

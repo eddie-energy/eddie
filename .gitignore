@@ -144,6 +144,7 @@ application-local.properties
 
 # Ignore local compose overrides
 docker-compose.override.yml
+compose.override.yml
 
 # Ignore local env and configuration files
 *.local

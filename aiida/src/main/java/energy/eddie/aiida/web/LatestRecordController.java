@@ -24,10 +24,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -39,9 +42,12 @@ import static org.springframework.http.MediaType.TEXT_EVENT_STREAM_VALUE;
 @RestController
 @RequestMapping("/messages")
 @Tag(name = "Latest Record Controller")
+@Validated
 public class LatestRecordController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LatestRecordController.class);
+    private static final int MIN_LATEST_RECORDS_AMOUNT = 1;
+    private static final int MAX_LATEST_RECORDS_AMOUNT = 100;
     private final LatestRecordService latestRecordService;
     private final EventStream eventStream;
     private final AuthService authService;
@@ -74,8 +80,10 @@ public class LatestRecordController {
             operationId = "latestDataSourceRecords",
             tags = {"dataSourceRecord"})
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "No latest data source records found",
+            @ApiResponse(responseCode = "200", description = "Latest data source records found",
                     content = @Content(schema = @Schema(implementation = LatestDataSourceRecordDto.class))),
+            @ApiResponse(responseCode = "400", description = "Amount is outside the allowed range",
+                    content = @Content(schema = @Schema(implementation = String.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
                     content = @Content(schema = @Schema(implementation = String.class)))
     })
@@ -83,9 +91,9 @@ public class LatestRecordController {
     public List<LatestDataSourceRecordDto> latestDataSourceRecords(
             @PathVariable("id") UUID dataSourceId,
             @Parameter(
-                    description = "Maximum number of latest records to return"
+                    description = "Maximum number of latest records to return (between 1 and 100)"
             )
-            @RequestParam("amount") int amount
+            @RequestParam("amount") @Min(MIN_LATEST_RECORDS_AMOUNT) @Max(MAX_LATEST_RECORDS_AMOUNT) int amount
     )
             throws LatestAiidaRecordNotFoundException {
         LOGGER.info("Fetching latest {} data source records for datasource with ID: {}", amount, dataSourceId);

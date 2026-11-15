@@ -3,9 +3,9 @@
 
 package energy.eddie.regionconnector.aiida.web;
 
-import energy.eddie.api.agnostic.EddieApiError;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionAcceptDto;
+import energy.eddie.api.agnostic.aiida.AiidaPermissionDeclineDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
-import energy.eddie.api.agnostic.aiida.AiidaPermissionUpdateDto;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
@@ -18,24 +18,20 @@ import energy.eddie.regionconnector.aiida.services.AiidaPermissionService;
 import energy.eddie.regionconnector.shared.exceptions.JwtCreationFailedException;
 import energy.eddie.regionconnector.shared.exceptions.PermissionNotFoundException;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-import java.util.Map;
-
-import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_PROPERTY_NAME;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.connectionStatusMessagesStreamFor;
 
 @RestController
 public class PermissionRequestController {
     public static final String PATH_HANDSHAKE_PERMISSION_REQUEST = PATH_PERMISSION_REQUEST + "/{permissionId}";
-    private static final Logger LOGGER = LoggerFactory.getLogger(PermissionRequestController.class);
+    public static final String PATH_HANDSHAKE_ACCEPT = PATH_HANDSHAKE_PERMISSION_REQUEST + "/accept";
+    public static final String PATH_HANDSHAKE_REJECT = PATH_HANDSHAKE_PERMISSION_REQUEST + "/reject";
+    public static final String PATH_HANDSHAKE_UNFULFILLABLE = PATH_HANDSHAKE_PERMISSION_REQUEST + "/unfulfillable";
     private final AiidaPermissionService permissionService;
 
     @Autowired
@@ -54,35 +50,43 @@ public class PermissionRequestController {
         return ResponseEntity.created(location).body(qrCodeDto);
     }
 
-    @PatchMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST,
+    /**
+     * Called by AIIDA when the user accepted the permission request. Returns the MQTT credentials and topics AIIDA has
+     * to use for this permission.
+     */
+    @PostMapping(value = PATH_HANDSHAKE_ACCEPT,
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> updatePermissionRequest(
+    public ResponseEntity<MqttDto> acceptPermissionRequest(
             @PathVariable String permissionId,
-            @Valid @RequestBody AiidaPermissionUpdateDto updateDto
+            @Valid @RequestBody AiidaPermissionAcceptDto acceptDto
     ) throws PermissionNotFoundException, CredentialsAlreadyExistException, PermissionStateTransitionException, DataNeedNotFoundException {
-        var aiidaId = updateDto.aiidaId();
+        return ResponseEntity.ok(permissionService.acceptPermission(permissionId, acceptDto.aiidaId()));
+    }
 
-        switch (updateDto.operation()) {
-            case ACCEPT -> {
-                MqttDto body = permissionService.acceptPermission(permissionId, aiidaId);
-                return ResponseEntity.ok(body);
-            }
-            case REJECT -> {
-                permissionService.rejectPermission(permissionId, aiidaId);
-                return ResponseEntity.noContent().build();
-            }
-            case UNFULFILLABLE -> {
-                permissionService.unableToFulfillPermission(permissionId, aiidaId);
-                return ResponseEntity.noContent().build();
-            }
-            default -> {
-                LOGGER.warn("Operation {} is not supported", updateDto.operation());
-                return ResponseEntity.badRequest()
-                                     .body(Map.of(ERRORS_PROPERTY_NAME,
-                                                  List.of(new EddieApiError("Operation not supported"))));
-            }
-        }
+    /**
+     * Called by AIIDA when the user rejected the permission request.
+     */
+    @PostMapping(value = PATH_HANDSHAKE_REJECT, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> rejectPermissionRequest(
+            @PathVariable String permissionId,
+            @Valid @RequestBody AiidaPermissionDeclineDto declineDto
+    ) throws PermissionNotFoundException, PermissionStateTransitionException {
+        permissionService.rejectPermission(permissionId, declineDto.aiidaId(), declineDto.reason());
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Called by AIIDA when the AIIDA instance cannot fulfill the permission request, e.g. because the requested data is
+     * not available.
+     */
+    @PostMapping(value = PATH_HANDSHAKE_UNFULFILLABLE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> markPermissionRequestUnfulfillable(
+            @PathVariable String permissionId,
+            @Valid @RequestBody AiidaPermissionDeclineDto declineDto
+    ) throws PermissionNotFoundException, PermissionStateTransitionException {
+        permissionService.unableToFulfillPermission(permissionId, declineDto.aiidaId(), declineDto.reason());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping(value = PATH_HANDSHAKE_PERMISSION_REQUEST, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -14,7 +14,7 @@ import { computed, ref, watch } from 'vue'
  * Only one SSE stream per user and not per permission, as HTTP/1.1 limits concurrent SSE streams to a maximum of 6.
  */
 export function useLastMessageRefresh(
-  getPermission: () => AiidaPermission,
+  getPermission: () => Pick<AiidaPermission, 'permissionId' | 'dataNeed'>,
   isEnabled: () => boolean,
 ) {
   const initialLastMessageAt = ref<Date | null>(null)

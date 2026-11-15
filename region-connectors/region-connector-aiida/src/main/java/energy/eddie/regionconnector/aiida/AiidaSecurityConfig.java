@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.aiida;
@@ -17,7 +17,7 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import org.springframework.web.cors.CorsConfigurationSource;
 import tools.jackson.databind.ObjectMapper;
 
-import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.*;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.ALL_REGION_CONNECTORS_BASE_URL_PATH;
 import static energy.eddie.regionconnector.shared.utils.CommonPaths.CE_FILE_NAME;
 import static energy.eddie.regionconnector.shared.web.RestApiPaths.PATH_PERMISSION_REQUEST;
@@ -50,6 +50,9 @@ public class AiidaSecurityConfig {
 // @formatter:off   all calls for one request pattern should be on one line
                         .requestMatchers(aiidaRequestMatcher.matcher(PATH_PERMISSION_REQUEST)).permitAll()
                         .requestMatchers(aiidaRequestMatcher.matcher(PATH_HANDSHAKE_PERMISSION_REQUEST)).access(jwtHeaderAuthorizationManager)
+                        .requestMatchers(aiidaRequestMatcher.matcher(PATH_HANDSHAKE_ACCEPT)).access(jwtHeaderAuthorizationManager)
+                        .requestMatchers(aiidaRequestMatcher.matcher(PATH_HANDSHAKE_REJECT)).access(jwtHeaderAuthorizationManager)
+                        .requestMatchers(aiidaRequestMatcher.matcher(PATH_HANDSHAKE_UNFULFILLABLE)).access(jwtHeaderAuthorizationManager)
                         .requestMatchers(aiidaRequestMatcher.matcher("/" + CE_FILE_NAME)).permitAll()
                         .requestMatchers(aiidaRequestMatcher.matcher("/" + SWAGGER_DOC_PATH)).permitAll()
                         .anyRequest().denyAll()

@@ -23,19 +23,38 @@ This RC also subscribes to the status message topic and updates the internal sta
 such a message is received.
 
 When a permission of this region connector should be terminated (_terminology: the EP requests a termination, the
-customer revokes a permission_), this RC publishes a special message on the termination topic of the
+customer revokes a permission_), this RC publishes a termination command on the command topic of the
 specific permission. The AIIDA instance is subscribed to this topic and will therefore receive and honor the termination
 request.
 
 There is a dedicated topic per AIIDA instance and permission for the near real-time data and connection status messages.
 ACLs and authentication ensure that only the permitted AIIDA instance may publish/subscribe to these topics.
 
+## Handshake endpoints
+
+AIIDA communicates with this RC via the following endpoints during the handshake. All of them require the access token
+from the AIIDA code as `Authorization: Bearer <token>` header, which is only valid for the permission IDs it was issued
+for.
+
+| Method | Path                                                                       | Description                                                                                                          |
+| ------ | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `GET`  | `/region-connectors/aiida/permission-request/{permissionId}`               | Returns the details of the permission request and its data need.                                                     |
+| `POST` | `/region-connectors/aiida/permission-request/{permissionId}/accept`        | Accepts the permission request with body `{"aiidaId": "<uuid>"}` and returns the MQTT credentials and topics.        |
+| `POST` | `/region-connectors/aiida/permission-request/{permissionId}/reject`        | The user rejected the permission request. Body `{"aiidaId": "<uuid>", "reason": "<optional text>"}`.                 |
+| `POST` | `/region-connectors/aiida/permission-request/{permissionId}/unfulfillable` | The AIIDA instance cannot fulfill the permission request. Body `{"aiidaId": "<uuid>", "reason": "<optional text>"}`. |
+
+The optional `reason` of a rejected or unfulfillable permission request is forwarded as message of the resulting
+connection status message. Both endpoints respond with `204 No Content`.
+
+If the access token in the AIIDA code has expired, AIIDA cannot reach these endpoints and the permission request will
+transition to `TIMED_OUT` once the configured timeout is reached.
+
 ## Prerequisites
 
 ### Configuration of the Region Connector
 
 | Configuration values                     | Description                                                                                                                                                                                                                                                                                                                                                                                                                   |
-|------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `region-connector.aiida.customer.id`     | A unique ID of the eligible party, should not be changed.                                                                                                                                                                                                                                                                                                                                                                     |
 | `region-connector.aiida.bcrypt.strength` | Strength to be used by the BCryptPasswordEncoder instance used to hash the passwords for the MQTT user accounts for the AIIDA instances. It should be configured to a value that the hashing of a password takes around ~1 second. See also <a href="https://docs.spring.io/spring-security/site/docs/current/api/org/springframework/security/crypto/bcrypt/BCrypt.html">Spring documentation for BCryptPasswordEncoder</a>. |
 | `region-connector.aiida.mqtt.server.uri` | URI of the MQTT server which the AIIDA instances and the region connector use for communication.                                                                                                                                                                                                                                                                                                                              |
@@ -118,9 +137,9 @@ The ACLs are used to authorize the AIIDA instance to publish and subscribe.
 The `<schema>` part must use the `topicName()` defined in the corresponding `AiidaSchema` (for example, `AiidaSchema.SMART_METER_P1_CIM.topicName()`).
 
 | topic_name                                         | action      | acl_type | data_need_type | note       |
-|----------------------------------------------------|-------------|----------|----------------|------------|
+| -------------------------------------------------- | ----------- | -------- | -------------- | ---------- |
 | `aiida/v1/<permissionId>/data/outbound/<schema>`   | `publish`   | `allow`  | outbound-aiida |            |
 | `aiida/v1/<permissionId>/data/inbound/<schema>`    | `subscribe` | `allow`  | inbound-aiida  |            |
 | `aiida/v1/<permissionId>/status`                   | `publish`   | `allow`  | all            |            |
-| `aiida/v1/<permissionId>/termination`              | `subscribe` | `allow`  | all            |            |
+| `aiida/v1/<permissionId>/command/+`                | `subscribe` | `allow`  | all            |            |
 | `aiida/v1/<permissionId>/acknowledgement/<schema>` | `publish`   | `allow`  | all            | if enabled |

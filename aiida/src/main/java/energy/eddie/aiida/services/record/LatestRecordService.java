@@ -14,7 +14,6 @@ import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.LatestAiidaRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.InboundRecord;
@@ -27,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -62,6 +62,7 @@ public class LatestRecordService {
         this.authService = authService;
     }
 
+    @Transactional(readOnly = true)
     public LatestDataSourceRecordDto latestDataSourceRecord(UUID dataSourceId) throws LatestAiidaRecordNotFoundException {
         var aiidaRecord = aiidaRecordRepository.findFirstByDataSourceIdOrderByIdDesc(dataSourceId)
                                                .orElseThrow(() -> new LatestAiidaRecordNotFoundException(dataSourceId));
@@ -73,6 +74,7 @@ public class LatestRecordService {
         return recordToLatestDto(aiidaRecord);
     }
 
+    @Transactional(readOnly = true)
     public List<LatestDataSourceRecordDto> latestDataSourceRecords(
             UUID dataSourceId,
             int amount
@@ -180,7 +182,7 @@ public class LatestRecordService {
     private Flux<LastMessageEventDto> retrieveOutboundEventsFlux(List<Permission> permissions) {
         return Flux.merge(
                 permissions.stream()
-                           .filter(permission -> !(permission.dataNeed() instanceof InboundAiidaLocalDataNeed))
+                           .filter(permission -> !permission.isInbound())
                            .map(permission -> permissionLatestRecordMap.lastMessageStream(permission.id())
                                                                        .map(timestamp -> new LastMessageEventDto(
                                                                                permission.id(),
@@ -204,7 +206,7 @@ public class LatestRecordService {
 
     private Map<UUID, UUID> mapDataSourceIdToPermissionId(List<Permission> permissions) {
         return permissions.stream()
-                          .filter(permission -> permission.dataNeed() instanceof InboundAiidaLocalDataNeed
+                          .filter(permission -> permission.isInbound()
                                                 && permission.dataSource() != null)
                           .collect(Collectors.toMap(permission -> permission.dataSource().id(), Permission::id));
     }

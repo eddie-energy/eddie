@@ -6,6 +6,7 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
@@ -60,6 +61,8 @@ class PermissionCommandServiceTest {
     @Mock
     private DataSource dataSource;
     @Mock
+    private MqttStreamingConfig mqttStreamingConfig;
+    @Mock
     private PermissionCommandService self;
 
     private PermissionCommandService service;
@@ -113,15 +116,16 @@ class PermissionCommandServiceTest {
 
     @Test
     void givenValidSchedule_updateSchedule_persistsAndRebuildsFlux() {
-        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
-        when(permission.dataNeed()).thenReturn(dataNeed);
+        var acceptedPermission = acceptedPermission();
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(acceptedPermission));
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_TRANSMISSION_SCHEDULE));
 
         service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId, permissionId, "*/30 * * * * *"));
 
-        verify(permission).setTransmissionSchedule(argThat(cron -> cron.toString().equals("*/30 * * * * *")));
-        verify(permissionRepository).save(permission);
-        verify(streamerManager).updateSchedule(permission);
+        verify(permissionRepository).save(acceptedPermission);
+        verify(streamerManager).updateSchedule(argThat(snapshot ->
+                snapshot.id().equals(permissionId)
+                && snapshot.transmissionSchedule().toString().equals("*/30 * * * * *")));
     }
 
     @Test
@@ -223,5 +227,16 @@ class PermissionCommandServiceTest {
                 argThat(msg -> msg.status() == PermissionProcessStatus.EXTERNALLY_TERMINATED));
         verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
         verify(permission).setDataSource(null);
+    }
+
+    private Permission acceptedPermission() {
+        var acceptedPermission = new Permission(eddieId, permissionId, "https://example.org", "token", UUID.randomUUID());
+        acceptedPermission.setConnectionId(connectionId);
+        acceptedPermission.setStartTime(clock.instant());
+        acceptedPermission.setExpirationTime(clock.instant().plusSeconds(3600));
+        acceptedPermission.initializeFromDataNeed(dataNeed);
+        acceptedPermission.setDataSource(dataSource);
+        acceptedPermission.setMqttStreamingConfig(mqttStreamingConfig);
+        return acceptedPermission;
     }
 }

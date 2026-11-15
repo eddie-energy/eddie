@@ -6,7 +6,6 @@
   "deleteButton": "Delete",
   "editButton": "Edit",
   "revokeButton": "Revoke",
-  "continueButton": "Continue",
   "saveButton": "Save",
   "closeButton": "Close",
   "scrollToTop": "Scroll back to top",
@@ -93,17 +92,14 @@
     "title": "Permissions",
     "addButton": "Add Permissions",
     "tagActive": "Active",
-    "tagPending": "Pending",
     "tagComplete": "Complete",
     "outbound": "Outbound",
     "inbound": "Inbound",
     "outboundTab": "Outbound Permissions",
     "inboundTab": "Inbound Permissions",
     "emptyListCompleteInbound": "No Complete Inbound Permissions",
-    "emptyListPendingInbound": "No Pending Inbound Permissions",
     "emptyListActiveInbound": "No Active Inbound Permissions",
     "emptyListCompleteOutbound": "No Complete Outbound Permissions",
-    "emptyListPendingOutbound": "No Pending Outbound Permissions",
     "emptyListActiveOutbound": "No Active Outbound Permissions",
     "loadMore": "Load More Permissions",
     "loadLess": "Load Less Permissions",
@@ -237,7 +233,21 @@
     "minLimit": "Min Limit",
     "loading": "Loading…",
     "noData": "No connection limits available for the selected time range.",
-    "noMonitorablePermissions": "No monitorable connection limit permissions available."
+    "noMonitorablePermissions": "No monitorable connection limit permissions available.",
+    "violations": {
+      "title": "Limit Violations",
+      "aboveMaximum": "Above Maximum Limit",
+      "belowMinimum": "Below Minimum Limit",
+      "none": "No limit violations in the selected time range.",
+      "notMonitored": "No data source is monitored for this permission, so violations are not detected. Select a monitored data source in the permission details.",
+      "ongoing": "Ongoing",
+      "start": "Start",
+      "end": "End",
+      "limits": "Violated Limits",
+      "startPower": "Power at Start",
+      "lowestPower": "Lowest Power",
+      "highestPower": "Highest Power"
+    }
   },
   "toasts": {
     "info": "Did you know?",
@@ -262,16 +272,10 @@
     "unexpectedError": "An unexpected error occurred. Please try again."
   },
   "ACCEPTED": "Accepted",
-  "WAITING_FOR_START": "Waiting for Start",
-  "STREAMING_DATA": "Streaming Data",
-  "REJECTED": "Rejected",
-  "REVOCATION_RECEIVED": "Revocation Received",
+  "WAITING_FOR_CONNECTION": "Waiting for Connection",
+  "CONNECTED": "Connected",
   "REVOKED": "Revoked",
   "TERMINATED": "Terminated",
   "FULFILLED": "Fulfilled",
-  "FAILED_TO_START": "Failed to Start",
-  "CREATED": "Created",
-  "FETCHED_DETAILS": "Fetched details",
-  "UNFULFILLABLE": "Unable to fulfill",
-  "FETCHED_MQTT_CREDENTIALS": "Fetched MQTT details"
+  "NOT_CONNECTED": "Not Connected"
 }

@@ -8,10 +8,12 @@ import Button from '@/components/Button.vue'
 import { computed, ref, watch } from 'vue'
 import PermissionDetails from '@/components/PermissionDetails.vue'
 import {
-  acceptPermission,
-  getActiveInboundPermissions,
+  acceptInboundPermission,
+  acceptOutboundPermission,
+  getAcceptedInboundPermissions,
   getDataSources,
   rejectPermission,
+  updateConnectionLimitMonitoring,
 } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
@@ -20,12 +22,13 @@ import { useI18n } from 'vue-i18n'
 
 const inboundSchemas: Set<AiidaSchema> = new Set(['MIN-MAX-ENVELOPE-CIM-V1-12', 'OPAQUE'])
 
-const { permission, open, resolveDialog } = usePermissionDialog()
+const { permission, aiidaCode, open, resolveDialog } = usePermissionDialog()
 const { t } = useI18n()
 const modal = ref<HTMLDialogElement>()
 const loading = ref(false)
 const selectedDataSource = ref<string>('')
 const displayName = ref<string>('')
+const monitoringDataSourceId = ref<string>()
 const inboundPermissions = ref<AiidaPermission[]>([])
 const outboundDataSources = ref<AiidaDataSource[]>([])
 const emit = defineEmits(['update'])
@@ -33,11 +36,12 @@ const emit = defineEmits(['update'])
 watch([open], async () => {
   if (open.value) {
     selectedDataSource.value = ''
+    monitoringDataSourceId.value = undefined
     displayName.value = permission.value?.dataNeed.name ?? ''
     modal.value?.showModal()
 
     outboundDataSources.value = await getDataSources(permission.value?.meterId)
-    inboundPermissions.value = await getActiveInboundPermissions()
+    inboundPermissions.value = await getAcceptedInboundPermissions()
 
     if (dataSourceOptions.value.length === 1) {
       selectedDataSource.value = dataSourceOptions.value[0].value
@@ -45,16 +49,35 @@ watch([open], async () => {
   }
 })
 
+const isOutbound = computed(() => permission.value?.dataNeed.type === 'outbound-aiida')
+
 const handleInput = async (confirm: boolean) => {
   loading.value = true
   if (confirm) {
-    await acceptPermission(
-      permission.value!.permissionId,
-      selectedDataSource.value,
-      displayName.value,
-    )
+    if (isOutbound.value) {
+      await acceptOutboundPermission(
+        permission.value!.permissionId,
+        aiidaCode.value!,
+        selectedDataSource.value,
+        displayName.value,
+      )
+    } else {
+      // inbound permissions get their data source created automatically
+      await acceptInboundPermission(
+        permission.value!.permissionId,
+        aiidaCode.value!,
+        displayName.value,
+      )
+    }
+    // the monitoring data source can only be assigned to persisted permissions
+    if (monitoringDataSourceId.value) {
+      await updateConnectionLimitMonitoring(
+        permission.value!.permissionId,
+        monitoringDataSourceId.value,
+      )
+    }
   } else {
-    await rejectPermission(permission.value!.permissionId)
+    await rejectPermission(permission.value!.permissionId, aiidaCode.value!)
   }
   modal.value?.close()
   emit('update')
@@ -68,6 +91,7 @@ const handleModalClose = () => {
 
 const dataSourceOptions = computed(() => {
   const requestedSchemas = permission.value?.dataNeed.schemas ?? []
+  const requestedAsset = permission.value?.dataNeed.asset
   const permissionMeterId = permission.value?.meterId
   const matches: { label: string; value: string }[] = []
 
@@ -76,6 +100,7 @@ const dataSourceOptions = computed(() => {
     for (const { dataSource, displayName } of inboundPermissions.value) {
       if (
         dataSource && // For TypeScript, even though it should always be set here
+        dataSource.asset === requestedAsset &&
         requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema)) &&
         (!permissionMeterId || dataSource.meterId === permissionMeterId)
       ) {
@@ -87,10 +112,12 @@ const dataSourceOptions = computed(() => {
   // Request includes outbound schemas
   if (requestedSchemas.some((requestedSchema) => !inboundSchemas.has(requestedSchema))) {
     matches.push(
-      ...outboundDataSources.value.map(({ id, name }) => ({
-        label: name,
-        value: id,
-      })),
+      ...outboundDataSources.value
+        .filter(({ asset }) => asset === requestedAsset)
+        .map(({ id, name }) => ({
+          label: name,
+          value: id,
+        })),
     )
   }
 
@@ -106,7 +133,11 @@ const dataSourceOptions = computed(() => {
     class="modal"
   >
     <div v-if="!loading">
-      <PermissionDetails v-if="permission" :permission />
+      <PermissionDetails
+        v-if="permission"
+        :permission
+        @select-monitoring-data-source="monitoringDataSourceId = $event"
+      />
       <form v-if="permission" class="form">
         <label id="displayNameLabel" class="heading-3" for="displayNameInput">
           {{ t('permissions.modal.displayNameInputLabel') }}
@@ -121,9 +152,9 @@ const dataSourceOptions = computed(() => {
         />
       </form>
       <form v-if="permission?.dataNeed.type === 'outbound-aiida'" class="form">
-        <label class="heading-3" id="updatePermLabel">
+        <span id="updatePermLabel" class="heading-3">
           {{ t('permissions.modal.datasourceInputLabel') }}
-        </label>
+        </span>
         <CustomSelect
           v-model="selectedDataSource"
           id="datasourceSelect"

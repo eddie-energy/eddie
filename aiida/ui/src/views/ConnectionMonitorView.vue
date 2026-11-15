@@ -2,22 +2,24 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import Chart from 'chart.js/auto'
-import type { ChartDataset, ChartOptions } from 'chart.js'
-import { getConnectionLimits } from '@/api'
+import type { ChartDataset, ChartOptions, TooltipItem } from 'chart.js'
+import 'chartjs-adapter-date-fns'
+import { getConnectionLimits, getConnectionLimitViolations } from '@/api'
 import { fetchPermissions, isFcaPermission, monitorablePermissions } from '@/stores/permissions'
 import CustomSelect from '@/components/CustomSelect.vue'
 import Button from '@/components/Button.vue'
-import type { ConnectionLimit } from '@/types'
+import type { ConnectionLimit, ConnectionLimitViolation } from '@/types'
 import ContextBadge from '@/components/ContextBadge.vue'
 
-const HOUR_IN_MS = 60 * 60 * 1000
-const DAY_IN_MS = 24 * HOUR_IN_MS
+const DAY_IN_MS = 24 * 60 * 60 * 1000
+const VIOLATION_COLOR = '#b3261e'
+const VIOLATION_FILL = 'rgba(179, 38, 30, 0.18)'
 
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 
@@ -36,14 +38,112 @@ const to = ref(new Date(now + DAY_IN_MS))
 const fromInput = ref(toLocalInput(from.value))
 const toInput = ref(toLocalInput(to.value))
 const limits = ref<ConnectionLimit[]>([])
+const violations = ref<ConnectionLimitViolation[]>([])
 const loading = ref(false)
 
+type Point = { x: string; y: number | null; violation?: ConnectionLimitViolation }
+
+const minLimitPoints = ref<Point[]>([])
+const maxLimitPoints = ref<Point[]>([])
+const minViolationPoints = ref<Point[]>([])
+const maxViolationPoints = ref<Point[]>([])
+
+const datasets = computed<ChartDataset<'line', Point[]>[]>(() => [
+  {
+    label: t('connectionMonitor.minLimit'),
+    data: minLimitPoints.value,
+    borderColor: '#017aa0',
+    borderDash: [6, 6],
+    borderWidth: 2,
+    pointRadius: 0,
+    fill: 1,
+    backgroundColor: 'rgba(1, 122, 160, 0.12)',
+  },
+  {
+    label: t('connectionMonitor.maxLimit'),
+    data: maxLimitPoints.value,
+    borderColor: '#b3261e',
+    borderDash: [6, 6],
+    borderWidth: 2,
+    pointRadius: 0,
+    fill: false,
+  },
+  {
+    label: t('connectionMonitor.violations.belowMinimum'),
+    data: minViolationPoints.value,
+    borderColor: VIOLATION_COLOR,
+    backgroundColor: VIOLATION_FILL,
+    borderWidth: 4,
+    pointRadius: 0,
+    pointHoverRadius: 4,
+    pointHoverBackgroundColor: VIOLATION_COLOR,
+    fill: 0,
+  },
+  {
+    label: t('connectionMonitor.violations.aboveMaximum'),
+    data: maxViolationPoints.value,
+    borderColor: VIOLATION_COLOR,
+    backgroundColor: VIOLATION_FILL,
+    borderWidth: 4,
+    pointRadius: 0,
+    pointHoverRadius: 4,
+    pointHoverBackgroundColor: VIOLATION_COLOR,
+    fill: 1,
+  },
+])
+
+watch(limits, () => {
+  minLimitPoints.value = []
+  maxLimitPoints.value = []
+  for (const limit of limits.value) {
+    minLimitPoints.value.push(
+      { x: limit.intervalStart, y: limit.minLimitKw },
+      { x: limit.intervalEnd, y: limit.minLimitKw },
+    )
+
+    maxLimitPoints.value.push(
+      { x: limit.intervalStart, y: limit.maxLimitKw },
+      { x: limit.intervalEnd, y: limit.maxLimitKw },
+    )
+  }
+})
+
+watch(violations, () => {
+  minViolationPoints.value = []
+  maxViolationPoints.value = []
+  // An ongoing violation reaches up to now, not to the end of the shown time frame.
+  const ongoingEnd = new Date().toISOString()
+  for (const violation of violations.value) {
+    const start = violation.startedAt
+    const end = violation.endedAt ?? ongoingEnd
+
+    // A violation can exceed the maximum and fall below the minimum, so both are drawn independently.
+    // The null point ends each segment, so two violations are never connected.
+    if (violation.maxLimitKw != null && violation.highestPowerKw > violation.maxLimitKw) {
+      maxViolationPoints.value.push(
+        { x: start, y: violation.highestPowerKw, violation },
+        { x: end, y: violation.highestPowerKw, violation },
+        { x: end, y: null },
+      )
+    }
+    if (violation.minLimitKw != null && violation.lowestPowerKw < violation.minLimitKw) {
+      minViolationPoints.value.push(
+        { x: start, y: violation.lowestPowerKw, violation },
+        { x: end, y: violation.lowestPowerKw, violation },
+        { x: end, y: null },
+      )
+    }
+  }
+})
+
 const chartCanvas = useTemplateRef<HTMLCanvasElement>('chartCanvas')
-let chartInstance: Chart | undefined
+let chartInstance: Chart<'line', Point[]> | undefined
 
 const selectedPermission = computed(() =>
   monitorablePermissions.value.find((p) => p.permissionId === permissionId.value),
 )
+
+const newestViolationsFirst = computed(() => [...violations.value].reverse())
 
 const permissionOptions = computed(() =>
   monitorablePermissions.value.map((permission) => ({
@@ -67,57 +167,28 @@ function applyRange() {
   to.value = toDate
 }
 
-function limitPoints(value: (limit: ConnectionLimit) => number | null) {
-  return limits.value.flatMap((limit) => [
-    { x: Date.parse(limit.intervalStart), y: value(limit) },
-    { x: Date.parse(limit.intervalEnd), y: value(limit) },
-  ])
-}
-
-const tickStep = computed(() => {
-  const span = to.value.getTime() - from.value.getTime()
-  if (span <= 2 * DAY_IN_MS) return HOUR_IN_MS
-  if (span <= 14 * DAY_IN_MS) return 6 * HOUR_IN_MS
-  return DAY_IN_MS
-})
-
-const datasets = computed<ChartDataset<'line', { x: number; y: number | null }[]>[]>(() => [
-  {
-    label: t('connectionMonitor.maxLimit'),
-    data: limitPoints((limit) => limit.maxLimitKw),
-    borderColor: '#b3261e',
-    borderDash: [6, 6],
-    borderWidth: 2,
-    pointRadius: 0,
-    fill: false,
-  },
-  {
-    label: t('connectionMonitor.minLimit'),
-    data: limitPoints((limit) => limit.minLimitKw),
-    borderColor: '#017aa0',
-    borderDash: [6, 6],
-    borderWidth: 2,
-    pointRadius: 0,
-    fill: '-1',
-    backgroundColor: 'rgba(1, 122, 160, 0.12)',
-  },
-])
-
 const chartOptions = computed<ChartOptions<'line'>>(() => ({
   responsive: true,
   maintainAspectRatio: false,
-  parsing: false,
   interaction: { mode: 'nearest', intersect: false },
   scales: {
     x: {
-      type: 'linear',
-      min: Math.floor(from.value.getTime() / tickStep.value) * tickStep.value,
+      type: 'time',
+      min: from.value.getTime(),
       max: to.value.getTime(),
-      ticks: {
-        stepSize: tickStep.value,
-        autoSkip: true,
-        maxRotation: 0,
-        callback: (value) => timeFormat.format(new Date(Number(value))),
+      ticks: { autoSkip: true, maxRotation: 0 },
+      time: {
+        displayFormats: {
+          millisecond: 'HH:mm:ss',
+          second: 'HH:mm:ss',
+          minute: 'HH:mm',
+          hour: 'dd.MM, HH:mm',
+          day: 'dd.MM',
+          week: 'dd.MM',
+          month: 'MM.yyyy',
+          quarter: 'MM.yyyy',
+          year: 'yyyy',
+        },
       },
     },
     y: { title: { display: true, text: 'kW' } },
@@ -126,49 +197,89 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
     legend: { position: 'bottom' },
     tooltip: {
       callbacks: {
-        title: (items) => {
-          const timestamp = items[0]?.parsed.x
-          return timestamp == null ? '' : timeFormat.format(new Date(timestamp))
-        },
+        title: tooltipTitle,
+        label: tooltipLine,
       },
     },
   },
 }))
 
-const showEmptyMessage = computed(() => !loading.value && limits.value.length === 0)
+function limitText({ minLimitKw, maxLimitKw }: ConnectionLimitViolation) {
+  const bounds = [
+    minLimitKw == null ? null : `≥ ${minLimitKw}`,
+    maxLimitKw == null ? null : `≤ ${maxLimitKw}`,
+  ]
+  return `${bounds.filter(Boolean).join(' · ')} kW`
+}
 
-function renderChart() {
-  const canvasElement = chartCanvas.value
-  if (!canvasElement) return
-  if (!chartInstance) {
-    chartInstance = new Chart(canvasElement, {
+function violationOf(raw: unknown): ConnectionLimitViolation | undefined {
+  return (raw as Point | undefined)?.violation
+}
+
+function tooltipTitle(items: TooltipItem<'line'>[]): string {
+  const violation = violationOf(items[0]?.raw)
+  if (violation) {
+    const start = timeFormat.format(new Date(violation.startedAt))
+    const end = violation.endedAt
+      ? timeFormat.format(new Date(violation.endedAt))
+      : t('connectionMonitor.violations.ongoing')
+    return `${start} – ${end}`
+  }
+  const timestamp = items[0]?.parsed.x
+  return timestamp == null ? '' : timeFormat.format(new Date(timestamp))
+}
+
+function tooltipLine(item: TooltipItem<'line'>): string | string[] {
+  const violation = violationOf(item.raw)
+  if (!violation) {
+    return `${item.dataset.label ?? ''}: ${item.parsed.y} kW`
+  }
+  return [
+    `${t('connectionMonitor.violations.limits')}: ${limitText(violation)}`,
+    `${t('connectionMonitor.violations.startPower')}: ${violation.startPowerKw} kW`,
+    `${t('connectionMonitor.violations.lowestPower')}: ${violation.lowestPowerKw} kW`,
+    `${t('connectionMonitor.violations.highestPower')}: ${violation.highestPowerKw} kW`,
+  ]
+}
+
+function syncChart() {
+  const canvas = chartCanvas.value
+  if (!canvas) return
+  // Vue replaces the canvas when the permission changes, so a chart on another canvas is stale.
+  if (chartInstance?.canvas !== canvas) {
+    chartInstance?.destroy()
+    chartInstance = new Chart(canvas, {
       type: 'line',
       data: { datasets: datasets.value },
       options: chartOptions.value,
     })
-  } else {
-    chartInstance.data.datasets = datasets.value
-    chartInstance.options = chartOptions.value
-    chartInstance.update()
+    return
   }
+  chartInstance.data.datasets = datasets.value
+  chartInstance.options = chartOptions.value
+  chartInstance.update()
 }
+
+watch([datasets, chartOptions], syncChart)
 
 async function reload() {
   if (!permissionId.value) return
   loading.value = true
   try {
-    limits.value = await getConnectionLimits(
-      permissionId.value,
-      from.value.toISOString(),
-      to.value.toISOString(),
-    )
+    const fromIso = from.value.toISOString()
+    const toIso = to.value.toISOString()
+    const [limitResult, violationResult] = await Promise.all([
+      getConnectionLimits(permissionId.value, fromIso, toIso),
+      getConnectionLimitViolations(permissionId.value, fromIso, toIso),
+    ])
+    limits.value = limitResult
+    violations.value = violationResult
   } catch {
     limits.value = []
+    violations.value = []
   } finally {
     loading.value = false
   }
-  await nextTick()
-  renderChart()
 }
 
 onMounted(async () => {
@@ -189,21 +300,6 @@ watch([permissionId, from, to], () => {
 
 watch(permissionId, (id) => {
   void router.replace({ query: id ? { permission: id } : {} })
-})
-
-watch(selectedPermission, (permission) => {
-  if (!permission) {
-    chartInstance?.destroy()
-    chartInstance = undefined
-  }
-})
-
-watch(locale, () => {
-  if (chartInstance) {
-    chartInstance.data.datasets = datasets.value
-    chartInstance.options = chartOptions.value
-    chartInstance.update()
-  }
 })
 
 onBeforeUnmount(() => {
@@ -266,10 +362,51 @@ onBeforeUnmount(() => {
           <div class="chart-container">
             <canvas ref="chartCanvas"></canvas>
             <div v-if="loading" class="chart-overlay">{{ t('connectionMonitor.loading') }}</div>
-            <div v-else-if="showEmptyMessage" class="chart-overlay">
+            <div v-else-if="limits.length === 0" class="chart-overlay">
               {{ t('connectionMonitor.noData') }}
             </div>
           </div>
+        </div>
+
+        <div v-if="selectedPermission" class="chart-card violations">
+          <h2 class="chart-title">{{ t('connectionMonitor.violations.title') }}</h2>
+          <div v-if="violations.length" class="violations-table-wrapper">
+            <table class="violations-table">
+              <thead>
+                <tr>
+                  <th scope="col">{{ t('connectionMonitor.violations.start') }}</th>
+                  <th scope="col">{{ t('connectionMonitor.violations.end') }}</th>
+                  <th scope="col">{{ t('connectionMonitor.violations.limits') }}</th>
+                  <th scope="col">{{ t('connectionMonitor.violations.startPower') }}</th>
+                  <th scope="col">{{ t('connectionMonitor.violations.lowestPower') }}</th>
+                  <th scope="col">{{ t('connectionMonitor.violations.highestPower') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="violation in newestViolationsFirst" :key="violation.startedAt">
+                  <td>{{ timeFormat.format(new Date(violation.startedAt)) }}</td>
+                  <td>
+                    {{
+                      violation.endedAt
+                        ? timeFormat.format(new Date(violation.endedAt))
+                        : t('connectionMonitor.violations.ongoing')
+                    }}
+                  </td>
+                  <td>{{ limitText(violation) }}</td>
+                  <td>{{ violation.startPowerKw }} kW</td>
+                  <td>{{ violation.lowestPowerKw }} kW</td>
+                  <td>{{ violation.highestPowerKw }} kW</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p v-else-if="!loading" class="violations-hint">
+            {{
+              selectedPermission.monitoringDataSourceId
+                ? t('connectionMonitor.violations.none')
+                : t('connectionMonitor.violations.notMonitored')
+            }}
+          </p>
         </div>
       </div>
     </template>
@@ -343,6 +480,39 @@ onBeforeUnmount(() => {
 .chart-container {
   position: relative;
   height: 380px;
+}
+
+.violations {
+  margin-top: var(--spacing-xxl);
+}
+
+.violations-table-wrapper {
+  overflow-x: auto;
+}
+
+.violations-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+
+  th,
+  td {
+    padding: var(--spacing-sm) var(--spacing-md);
+    white-space: nowrap;
+  }
+
+  th {
+    font-weight: var(--font-weight-semibold);
+    border-bottom: 1px solid var(--eddie-grey-medium);
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: var(--eddie-secondary);
+  }
+}
+
+.violations-hint {
+  color: var(--eddie-grey-medium);
 }
 
 .chart-overlay {

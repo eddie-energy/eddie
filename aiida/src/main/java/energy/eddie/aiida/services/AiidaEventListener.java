@@ -6,12 +6,10 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
-import energy.eddie.aiida.dtos.events.OutboundPermissionAcceptEvent;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
@@ -40,17 +38,6 @@ public class AiidaEventListener {
         this.dataSourceService = dataSourceService;
         this.permissionService = permissionService;
         this.provisioningService = provisioningService;
-    }
-
-    @EventListener
-    protected void addDataSourceToPermission(OutboundPermissionAcceptEvent event) {
-        LOGGER.trace("Received OutboundPermissionCreationEvent: {}", event);
-        try {
-            var dataSource = dataSourceService.dataSourceByIdOrThrow(event.dataSourceId());
-            permissionService.addDataSourceToPermission(dataSource, event.permissionId());
-        } catch (DataSourceNotFoundException e) {
-            LOGGER.error("No data source found with id {}", event.dataSourceId(), e);
-        }
     }
 
     @Transactional

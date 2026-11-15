@@ -5,7 +5,7 @@ package energy.eddie.aiida.errors;
 
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import energy.eddie.aiida.dtos.PatchOperation;
+import energy.eddie.aiida.dtos.permission.PatchOperation;
 import energy.eddie.aiida.errors.permission.DetailFetchingFailedException;
 import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionAlreadyExistsException;
@@ -83,7 +83,7 @@ class GlobalExceptionHandlerTest {
         assertEquals(1, responseBody.size());
         assertEquals(1, responseBody.get(ERRORS_PROPERTY_NAME).size());
         // Only the annotated values are included in the valid values array
-        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, ACCEPT, REJECT, UPDATE_INBOUND_MESSAGE_FORMAT, UPDATE_DISPLAY_NAME].",
+        assertEquals("operation: Invalid enum value: 'FooBar'. Valid values: [REVOKE, UPDATE_INBOUND_MESSAGE_FORMAT, UPDATE_DISPLAY_NAME].",
                      responseBody.get(ERRORS_PROPERTY_NAME).getFirst().message());
     }
 

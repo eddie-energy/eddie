@@ -3,18 +3,22 @@
 
 import { computed, ref } from 'vue'
 import { getPermissions } from '@/api.js'
-import STATUS from '@/constants/permission-status'
-import type { AiidaPermission } from '@/types'
+import type { AiidaPendingPermission, AiidaPermission } from '@/types'
 import { connect as reconnectLastMessageStream } from '@/stores/lastMessageStream'
 
 export const permissions = ref<AiidaPermission[]>([])
 
+/**
+ * Pending permissions are not accepted yet and therefore have no status.
+ */
+export function isAcceptedPermission(
+  permission: AiidaPermission | AiidaPendingPermission,
+): permission is AiidaPermission {
+  return 'status' in permission
+}
+
 export function isMonitorablePermission(permission: AiidaPermission): boolean {
-  return (
-    STATUS[permission.status]?.isActive === true &&
-    permission.dataNeed?.type === 'inbound-aiida' &&
-    permission.dataNeed.schemas.includes('MIN-MAX-ENVELOPE-CIM-V1-12')
-  )
+  return permission.status === 'ACCEPTED' && permission.supportsConnectionLimits
 }
 
 export function isFcaPermission(permission: AiidaPermission): boolean {

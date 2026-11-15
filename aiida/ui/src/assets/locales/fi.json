@@ -237,7 +237,21 @@
     "minLimit": "Vähimmäisraja",
     "loading": "Ladataan…",
     "noData": "Valitulle aikavälille ei ole saatavilla liittymärajoja.",
-    "noMonitorablePermissions": "Valvottavia liittymärajan lupia ei ole saatavilla."
+    "noMonitorablePermissions": "Valvottavia liittymärajan lupia ei ole saatavilla.",
+    "violations": {
+      "title": "Rajarikkomukset",
+      "aboveMaximum": "Enimmäisrajan yli",
+      "belowMinimum": "Vähimmäisrajan alle",
+      "none": "Valitulla aikavälillä ei ole rajarikkomuksia.",
+      "notMonitored": "Tällä luvalla ei valvota tietolähdettä, joten rikkomuksia ei havaita. Valitse valvottu tietolähde luvan tiedoista.",
+      "ongoing": "Jatkuu",
+      "start": "Alku",
+      "end": "Loppu",
+      "limits": "Rikotut rajat",
+      "startPower": "Teho alussa",
+      "lowestPower": "Alin teho",
+      "highestPower": "Ylin teho"
+    }
   },
   "toasts": {
     "info": "Tiesitkö?",

@@ -5,7 +5,7 @@ package energy.eddie.aiida.schemas.rtd.cim.v1_12;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.schemas.rtd.BaseSchemaFormatter;
 import energy.eddie.aiida.schemas.rtd.cim.CimFormatterStrategy;
@@ -36,7 +36,7 @@ public class CimFormatter extends BaseSchemaFormatter {
     @Override
     public byte[] format(
             AiidaRecord aiidaRecord,
-            Permission permission
+            AcceptedPermission permission
     ) throws SchemaFormatterException {
         try {
             return mapper.writeValueAsBytes(cimFormatterStrategy.toRealTimeDataEnvelope(aiidaId,

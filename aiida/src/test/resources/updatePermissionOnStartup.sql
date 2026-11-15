@@ -1,5 +1,5 @@
--- SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
--- SPDX-License-Identifier: Apache-2.0
+--  SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+--  SPDX-License-Identifier: Apache-2.0
 
 INSERT INTO public.aiida_local_data_need(data_need_id,
                                          asset,
@@ -16,6 +16,19 @@ VALUES ('6609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '*/5 * * * * *',
         'outbound-aiida');
 
+INSERT INTO public.data_source (id, user_id, asset, country_code, enabled, icon, name, type)
+VALUES ('5609a9b3-0718-4082-935d-6a98c0f8c5a2',
+        'b69f9bc2-e16c-4de4-8c3e-00d219dcd819',
+        'CONNECTION_AGREEMENT_POINT',
+        'AT',
+        TRUE,
+        'METER',
+        'simulation',
+        'SIMULATION');
+
+INSERT INTO public.data_source_interval (id, polling_interval)
+VALUES ('5609a9b3-0718-4082-935d-6a98c0f8c5a2', 5);
+
 INSERT INTO public.permission (permission_id,
                                eddie_id,
                                data_need_id,
@@ -28,7 +41,8 @@ INSERT INTO public.permission (permission_id,
                                service_name,
                                start_time,
                                status,
-                               user_id)
+                               user_id,
+                               data_source_id)
 VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '9609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '6609a9b3-0718-4082-935d-6a98c0f8c5a2',
@@ -39,7 +53,8 @@ VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         NULL,
         'Test IntelliJ2',
         '2023-09-14 12:39:00.650669 +00:00',
-        'WAITING_FOR_START', 'b69f9bc2-e16c-4de4-8c3e-00d219dcd819'),
+        'ACCEPTED', 'b69f9bc2-e16c-4de4-8c3e-00d219dcd819',
+        '5609a9b3-0718-4082-935d-6a98c0f8c5a2'),
        ('8609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '9609a9b3-0718-4082-935d-6a98c0f8c5a2',
         '6609a9b3-0718-4082-935d-6a98c0f8c5a2',
@@ -51,5 +66,25 @@ VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
         NULL,
         'My NewAIIDA Test Service',
         '2023-09-20 13:39:42.610385 +00:00',
-        'STREAMING_DATA',
-        'b69f9bc2-e16c-4de4-8c3e-00d219dcd819');
+        'ACCEPTED',
+        'b69f9bc2-e16c-4de4-8c3e-00d219dcd819',
+        '5609a9b3-0718-4082-935d-6a98c0f8c5a2');
+
+INSERT INTO public.mqtt_streaming_config (permission_id,
+                                          password,
+                                          server_uri,
+                                          data_topic,
+                                          status_topic,
+                                          command_topic)
+VALUES ('7609a9b3-0718-4082-935d-6a98c0f8c5a2',
+        'password',
+        'tcp://localhost:1883',
+        'aiida/v1/7609a9b3-0718-4082-935d-6a98c0f8c5a2/data/outbound/+',
+        'aiida/v1/7609a9b3-0718-4082-935d-6a98c0f8c5a2/status',
+        'aiida/v1/7609a9b3-0718-4082-935d-6a98c0f8c5a2/command/+'),
+       ('8609a9b3-0718-4082-935d-6a98c0f8c5a2',
+        'password',
+        'tcp://localhost:1883',
+        'aiida/v1/8609a9b3-0718-4082-935d-6a98c0f8c5a2/data/outbound/+',
+        'aiida/v1/8609a9b3-0718-4082-935d-6a98c0f8c5a2/status',
+        'aiida/v1/8609a9b3-0718-4082-935d-6a98c0f8c5a2/command/+');

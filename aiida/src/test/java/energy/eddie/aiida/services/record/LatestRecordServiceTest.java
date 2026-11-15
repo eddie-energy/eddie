@@ -18,8 +18,6 @@ import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -328,16 +326,13 @@ class LatestRecordServiceTest {
         var inboundPermissionId = UUID.randomUUID();
 
         var outboundPermission = mock(Permission.class);
-        var outboundAiidaLocalDataNeed = mock(OutboundAiidaLocalDataNeed.class);
         when(outboundPermission.id()).thenReturn(PERMISSION_ID);
-        when(outboundPermission.dataNeed()).thenReturn(outboundAiidaLocalDataNeed);
 
         var inboundPermission = mock(Permission.class);
-        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
         var inboundDataSource = mock(InboundDataSource.class);
         when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(inboundPermission.id()).thenReturn(inboundPermissionId);
-        when(inboundPermission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(inboundPermission.isInbound()).thenReturn(true);
         when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
@@ -372,10 +367,9 @@ class LatestRecordServiceTest {
         var otherDataSourceId = UUID.randomUUID();
         var permission = mock(Permission.class);
         var dataSource = mock(InboundDataSource.class);
-        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
         when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(permission.id()).thenReturn(PERMISSION_ID);
-        when(permission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(permission.isInbound()).thenReturn(true);
         when(permission.dataSource()).thenReturn(dataSource);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
@@ -407,8 +401,7 @@ class LatestRecordServiceTest {
     @Test
     void lastMessageStream_shouldSkipInboundPermissionsWithNoDataSource() throws InvalidUserException {
         var permission = mock(Permission.class);
-        var inboundAiidaLocalDataNeed = mock(InboundAiidaLocalDataNeed.class);
-        when(permission.dataNeed()).thenReturn(inboundAiidaLocalDataNeed);
+        when(permission.isInbound()).thenReturn(true);
         when(permission.dataSource()).thenReturn(null);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);

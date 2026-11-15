@@ -49,6 +49,7 @@ import tools.jackson.module.jakarta.xmlbind.JakartaXmlBindAnnotationModule;
 
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static energy.eddie.regionconnector.aiida.AiidaRegionConnectorMetadata.MQTT_CLIENT_ID;
@@ -119,8 +120,10 @@ public class AiidaBeanConfig {
             EventBus eventBus,
             AiidaPermissionRequestViewRepository repository
     ) {
-        // AIIDA does not populate additional info for messages
-        return new ConnectionStatusMessageHandler<>(eventBus, repository, request -> "");
+        // Forwards e.g. the reason AIIDA sent along with a rejected or unfulfillable permission request
+        return new ConnectionStatusMessageHandler<>(eventBus,
+                                                    repository,
+                                                    request -> Objects.requireNonNullElse(request.message(), ""));
     }
 
     @Bean

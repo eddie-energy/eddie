@@ -90,7 +90,7 @@ const healthStatusConfig = computed<HealthStatusConfig>(
       </button>
     </header>
 
-    <img v-if="image" :src="image" alt="image for data source" role="presentation" class="image" />
+    <img v-if="image" :src="image" alt="data source" class="image" role="presentation" />
 
     <dl class="fields" :class="{ 'with-image': image }">
       <div>
@@ -171,7 +171,7 @@ const healthStatusConfig = computed<HealthStatusConfig>(
           :class="{ enabled: enabled }"
           @click="emit('enableToggle')"
           :aria-label="
-            enabled ? t('datasources.enableDatasource') : t('datasources.disableDataSource')
+            enabled ? t('datasources.disableDataSource') : t('datasources.enableDataSource')
           "
         >
           <StatusDotIcon class="toggle-icon" />

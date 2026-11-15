@@ -53,9 +53,10 @@ class AiidaUiTests {
     }
 
     @Test
-    void dataSourceAndPermissionFlow(Page page) {
+    void dataSourceAndPermissionFlow(Page page) throws IOException {
         var dataSource = "E2E Simulation Data Source";
         var dataNeed = "FUTURE_NEAR_REALTIME_DATA_OUTBOUND";
+        var pollingIntervalSeconds = 5;
 
         // Click "Data Sources" tab
         page.getByRole(AriaRole.LINK).getByText("Data Sources").click();
@@ -69,7 +70,9 @@ class AiidaUiTests {
         page.getByRole(AriaRole.OPTION).getByText("Simulation").click();
         page.getByRole(AriaRole.LISTBOX).getByText("Country").click();
         page.getByRole(AriaRole.OPTION).getByText("Austria").click();
-        page.getByLabel("Polling Interval").fill("120");
+        page.getByLabel("Polling Interval").fill(Integer.toString(pollingIntervalSeconds));
+        // Create the data source disabled, so it does not produce any records yet
+        page.getByLabel("Enabled").uncheck();
         // Choose icon
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Meter")).click();
         // Upload image
@@ -83,7 +86,27 @@ class AiidaUiTests {
                                  .last();
         assertThat(dataSourceCard).isVisible();
         // Visible image
-        assertThat(dataSourceCard.getByAltText("image for data source")).isVisible();
+        assertThat(dataSourceCard.getByAltText("data source", new Locator.GetByAltTextOptions().setExact(true))).isVisible();
+
+        // Disabled data source has no latest message yet
+        dataSourceCard.getByText("Download Latest Message").click();
+        assertThat(page.getByRole(AriaRole.ALERT)
+                       .filter(new Locator.FilterOptions().setHasText("Latest Aiida Record not found"))).isVisible();
+
+        // Enable data source
+        dataSourceCard.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Enable Data Source")).click();
+        assertThat(dataSourceCard.getByRole(AriaRole.BUTTON,
+                                            new Locator.GetByRoleOptions().setName("Disable Data Source"))).isVisible();
+
+        // Wait for the simulation to produce a record
+        page.waitForTimeout((pollingIntervalSeconds + 2) * 1000);
+
+        // Download latest message of the data source
+        var download = page.waitForDownload(() -> dataSourceCard.getByText("Download Latest Message").click());
+        var latestRecord = mapper.readTree(Files.readString(download.path()));
+        assertEquals(dataSource, latestRecord.path("name").asString());
+        assertThat(dataSourceCard).containsText(latestRecord.path("dataSourceId").asString());
+        assertFalse(latestRecord.path("values").isEmpty());
 
         // Create permission request through the EDDIE button
         var aiidaCode = aiidaCodeForDataNeed(dataNeed);
@@ -96,8 +119,9 @@ class AiidaUiTests {
         // Check if permission has the right data need and permission ID
         assertThat(permission).containsText(dataNeed);
         assertThat(permission).containsText(permissionId);
-        // Check if status is correct
-        assertThat(permission).containsText("Streaming Data");
+        // Check if status is correct ("Not Connected" would also contain "Connected")
+        assertThat(permission).not().containsText("Not Connected");
+        assertThat(permission).containsText("Connected");
 
         // Revoke permission
         revokePermission(permission);
@@ -171,6 +195,28 @@ class AiidaUiTests {
         // Revoke inbound
         revokeInboundPermission(inboundPermissionDisplayName);
         expectAlert("The permission for this service was revoked.");
+    }
+
+    @Test
+    void acceptedPermissionShowsConnectionStatusWithoutReload() {
+        var dataNeed = "FUTURE_MIN_MAX_ENVELOPE_INBOUND";
+        var displayName = "E2E Connection Status Permission";
+        addPermission(aiidaCodeForDataNeed(dataNeed));
+
+        // Permissions that are not accepted yet have no status
+        var dialog = page.getByRole(AriaRole.DIALOG);
+        assertThat(dialog.locator(":text('Permission ID') + dd")).isVisible();
+        assertThat(dialog.getByText("Status", new Locator.GetByTextOptions().setExact(true))).isHidden();
+        dialog.getByPlaceholder("Enter a display name for this permission").fill(displayName);
+        dialog.getByRole(AriaRole.BUTTON).getByText("Accept").click();
+
+        // The connection is established asynchronously after accepting
+        // The connection status is pushed to the UI, so neither a reload nor a navigation is necessary
+        var permission = openPermission(displayName, PermissionTab.INBOUND, PermissionStatus.ACTIVE);
+        assertThat(permission).not().containsText("Not Connected");
+        assertThat(permission).containsText("Connected");
+
+        revokePermission(permission);
     }
 
     @ParameterizedTest
@@ -434,10 +480,6 @@ class AiidaUiTests {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel").setExact(true)).click();
         expectAlert(expectedError);
 
-        // Failed duplicate ends up as unable to fulfill in the complete tab
-        var failedPermission = selectPermission(inboundDataNeed, PermissionTab.INBOUND, PermissionStatus.COMPLETE);
-        assertThat(failedPermission).containsText("Unable to fulfill");
-
         // Create a data source matching the FCA meter ID, and one that doesn't match
         createSimulationDataSource(dataSource, meterId);
         createSimulationDataSource(otherDataSource, otherMeterId);
@@ -608,6 +650,13 @@ class AiidaUiTests {
 
     private Locator selectPermission(String name, PermissionTab tab, PermissionStatus status) {
         page.getByRole(AriaRole.NAVIGATION).getByRole(AriaRole.LINK).getByText("Permissions").click();
+        return openPermission(name, tab, status);
+    }
+
+    /**
+     * Opens a permission on the current permission list without navigating to it, which would refetch the permissions.
+     */
+    private Locator openPermission(String name, PermissionTab tab, PermissionStatus status) {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(tab.label)).click();
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName(status.label)).click();
         var heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(name)).first();
@@ -732,7 +781,6 @@ class AiidaUiTests {
 
     private enum PermissionStatus {
         ACTIVE("Active"),
-        PENDING("Pending"),
         COMPLETE("Complete");
 
         public final String label;

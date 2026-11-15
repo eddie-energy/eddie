@@ -49,13 +49,12 @@ import java.util.Set;
 import java.util.UUID;
 
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
-import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.PATH_HANDSHAKE_PERMISSION_REQUEST;
+import static energy.eddie.regionconnector.aiida.web.PermissionRequestController.*;
 import static energy.eddie.regionconnector.aiida.web.PermissionRequestControllerTest.HMAC_SECRET;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -166,48 +165,19 @@ class PermissionRequestControllerTest {
     }
 
     @Test
-    void givenInvalidOperation_updatePermissionRequest_returnsBadRequest() throws Exception {
-        // Given
-        var json = "{\"operation\":\"INVALID_VALUE_BLA\"}";
-
+    void givenMissingAiidaId_acceptPermissionRequest_returnsBadRequest() throws Exception {
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
-                                                                               .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post(PATH_HANDSHAKE_ACCEPT, permissionId1).content("{}")
+                                                                  .contentType(MediaType.APPLICATION_JSON))
                // Then
-               .andExpect(status().isBadRequest())
-               .andExpect(jsonPath(ERRORS_JSON_PATH, iterableWithSize(1)))
-               .andExpect(jsonPath(ERRORS_JSON_PATH + "[0].message",
-                                   is("operation: Invalid enum value: 'INVALID_VALUE_BLA'. Valid values: [ACCEPT, REJECT, UNFULFILLABLE].")));
+               .andExpect(status().isBadRequest());
+        verifyNoInteractions(mockService);
     }
 
     @Test
-    void givenRejected_updatePermissionRequest_returnsNoContent() throws Exception {
+    void givenAccepted_acceptPermissionRequest_callsServiceAndReturnsCredentials() throws Exception {
         // Given
-        var json = "{\"operation\":\"REJECT\"}";
-
-        // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
-                                                                               .contentType(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void givenUnfulfillable_updatePermissionRequest_returnsNoContent() throws Exception {
-        // Given
-        var json = "{\"operation\":\"UNFULFILLABLE\"}";
-
-        // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
-                                                                               .contentType(MediaType.APPLICATION_JSON))
-               // Then
-               .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void givenAccepted_updatePermissionRequest_callsServiceAndReturnsCredentials() throws Exception {
-        // Given
-        var json = "{\"operation\":\"ACCEPT\", \"aiidaId\":\"" + aiidaId + "\"}";
+        var json = "{\"aiidaId\":\"" + aiidaId + "\"}";
         when(mockService.acceptPermission(permissionId1.toString(), aiidaId)).thenReturn(new MqttDto(
                 "tcp://localhost:1883",
                 permissionId1.toString(),
@@ -218,8 +188,8 @@ class PermissionRequestControllerTest {
                 "ack"));
 
         // When
-        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
-                                                                               .contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(post(PATH_HANDSHAKE_ACCEPT, permissionId1).content(json)
+                                                                  .contentType(MediaType.APPLICATION_JSON))
                // Then
                .andExpect(status().isOk())
                .andExpect(jsonPath("$.username", is(permissionId1.toString())))
@@ -227,6 +197,58 @@ class PermissionRequestControllerTest {
                .andExpect(jsonPath("$.dataTopic", is("data")))
                .andExpect(jsonPath("$.statusTopic", is("status")))
                .andExpect(jsonPath("$.commandTopic", is("command")));
+    }
+
+    @Test
+    void givenReason_rejectPermissionRequest_callsServiceWithReason() throws Exception {
+        // Given
+        var json = "{\"aiidaId\":\"" + aiidaId + "\", \"reason\":\"Not interested\"}";
+
+        // When
+        mockMvc.perform(post(PATH_HANDSHAKE_REJECT, permissionId1).content(json)
+                                                                  .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNoContent());
+        verify(mockService).rejectPermission(permissionId1.toString(), aiidaId, "Not interested");
+    }
+
+    @Test
+    void givenNoReason_rejectPermissionRequest_callsServiceWithoutReason() throws Exception {
+        // Given
+        var json = "{\"aiidaId\":\"" + aiidaId + "\"}";
+
+        // When
+        mockMvc.perform(post(PATH_HANDSHAKE_REJECT, permissionId1).content(json)
+                                                                  .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNoContent());
+        verify(mockService).rejectPermission(permissionId1.toString(), aiidaId, null);
+    }
+
+    @Test
+    void givenReason_markPermissionRequestUnfulfillable_callsServiceWithReason() throws Exception {
+        // Given
+        var json = "{\"aiidaId\":\"" + aiidaId + "\", \"reason\":\"Data not available\"}";
+
+        // When
+        mockMvc.perform(post(PATH_HANDSHAKE_UNFULFILLABLE, permissionId1).content(json)
+                                                                         .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isNoContent());
+        verify(mockService).unableToFulfillPermission(permissionId1.toString(), aiidaId, "Data not available");
+    }
+
+    @Test
+    void patchOnPermissionRequest_isNotSupportedAnymore() throws Exception {
+        // Given
+        var json = "{\"operation\":\"ACCEPT\", \"aiidaId\":\"" + aiidaId + "\"}";
+
+        // When
+        mockMvc.perform(patch(PATH_HANDSHAKE_PERMISSION_REQUEST, permissionId1).content(json)
+                                                                               .contentType(MediaType.APPLICATION_JSON))
+               // Then
+               .andExpect(status().isMethodNotAllowed());
+        verifyNoInteractions(mockService);
     }
 
     @Test

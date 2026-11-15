@@ -4,12 +4,9 @@
 admin-console @re1 @eddie-energy/fh-dev
 aiida @re1 @stefanpenzinger @tformatix @Maikaru-Sensei @eddie-energy/fh-dev
 aiida/ui @GoodVibezOnly @re1 @eddie-energy/fh-dev
-cim @fweingartshofer @eddie-energy/fh-dev
 core/src/main/js @re1 @eddie-energy/fh-dev
 core/src/main/resources/templates @re1 @eddie-energy/fh-dev
 e2e-tests @re1 @eddie-energy/fh-dev
 european-masterdata @re1 @eddie-energy/fh-dev
-outbound-connectors @fweingartshofer @eddie-energy/fh-dev
-region-connectors @fweingartshofer @eddie-energy/fh-dev
 region-connectors/region-connector-aiida @re1 @stefanpenzinger @tformatix @Maikaru-Sensei @eddie-energy/fh-dev
 region-connectors/*.js @re1 @eddie-energy/fh-dev

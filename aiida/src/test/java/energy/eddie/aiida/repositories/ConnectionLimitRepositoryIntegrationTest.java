@@ -273,7 +273,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                                     """,
                             permissionId,
                             eddieId,
-                            "CREATED",
+                            "ACCEPTED",
                             "https://example.org",
                             "token",
                             userId,
