@@ -10,6 +10,11 @@ The following class diagram shows the main entities involved in the permission s
 ![Class diagram showing the main entities involved in the permission system.](../diagrams/aiida-class-diagram-permission.svg)
 
 Each permission is associated with a single `Datasource` and a single `DataNeed` (`LocalAiidaDataNeed`).
+Depending on the type of the data need, a permission is either an `OutboundPermission`, which shares data of the
+selected data source with the eligible party, or an `InboundPermission`, which receives data from the eligible party via
+a data source that AIIDA creates for it.
+Fields that only apply to one direction are only part of that permission type, e.g. the transmission schedule of
+outbound permissions, or the connection limits and the message format of inbound permissions.
 Permissions are only stored once the user accepted them.
 Permission requests that are rejected or cannot be fulfilled are never stored in AIIDA.
 
