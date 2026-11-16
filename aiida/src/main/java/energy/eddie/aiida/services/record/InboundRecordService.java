@@ -92,7 +92,7 @@ public class InboundRecordService {
             );
         }
 
-        return toDto(permission, latestRecord(dataSource));
+        return toDto(permission, latestRecord(permissionId, dataSource));
     }
 
     /**
@@ -111,11 +111,15 @@ public class InboundRecordService {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
 
-        return toDto(permission, latestRecord(dataSource));
+        return toDto(permission, latestRecord(permissionId, dataSource));
     }
 
-    private InboundDataSource dataSource(InboundPermission permission) throws InvalidDataSourceTypeException {
+    private InboundDataSource dataSource(InboundPermission permission)
+            throws InvalidDataSourceTypeException, InboundRecordNotFoundException {
         var dataSource = permission.dataSource();
+        if (dataSource == null) {
+            throw new InboundRecordNotFoundException(permission.id());
+        }
         if (!(dataSource instanceof InboundDataSource inboundDataSource)) {
             throw new InvalidDataSourceTypeException();
         }
@@ -129,10 +133,10 @@ public class InboundRecordService {
                                           .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
-    private InboundRecord latestRecord(InboundDataSource dataSource) throws InboundRecordNotFoundException {
+    private InboundRecord latestRecord(UUID permissionId, InboundDataSource dataSource) throws InboundRecordNotFoundException {
         return inboundRecordRepository
                 .findTopByDataSourceIdOrderByTimestampDesc(dataSource.id())
-                .orElseThrow(() -> new InboundRecordNotFoundException(dataSource.id()));
+                .orElseThrow(() -> new InboundRecordNotFoundException(permissionId, dataSource.id()));
     }
 
     private InboundRecordDto toDto(InboundPermission permission, InboundRecord inboundRecord)
