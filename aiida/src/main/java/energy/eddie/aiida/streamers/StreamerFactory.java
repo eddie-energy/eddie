@@ -21,15 +21,17 @@ public class StreamerFactory {
     /**
      * Creates a new {@link AiidaStreamer} applying the specified streamingConfig.
      *
-     * @param dependencies Streamer dependencies shared by every streamer implementation.
-     * @param permission   Permission for which to create the AiidaStreamer.
-     * @param recordFlux   Flux on which the records that should be sent are published.
+     * @param dependencies        Streamer dependencies shared by every streamer implementation.
+     * @param permission          Permission for which to create the AiidaStreamer.
+     * @param recordFlux          Flux on which the records that should be sent are published.
+     * @param transmissionEnabled Whether the streamer publishes messages initially.
      * @throws MqttException If the creation of the MqttClient failed.
      */
     protected static AiidaStreamer getAiidaStreamer(
             StreamerDependencies dependencies,
             AcceptedPermission permission,
-            Flux<AiidaRecord> recordFlux
+            Flux<AiidaRecord> recordFlux,
+            boolean transmissionEnabled
     ) throws MqttException {
         var mqttFilePersistenceDirectory = "mqtt-persistence/{eddieId}/{permissionId}";
         var streamingConfig = permission.mqttStreamingConfig();
@@ -41,6 +43,6 @@ public class StreamerFactory {
                                                                                          .getPath()));
         var streamingContext = new MqttStreamingContext(client, streamingConfig, dependencies.permissionLatestRecordMap());
 
-        return new MqttStreamer(dependencies, permission, recordFlux, streamingContext);
+        return new MqttStreamer(dependencies, permission, recordFlux, transmissionEnabled, streamingContext);
     }
 }

@@ -14,8 +14,9 @@ import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -24,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -40,27 +42,29 @@ class AiidaEventListenerTest {
     private PermissionService permissionService;
     @MockitoBean
     private ProvisioningService provisioningService;
+    @MockitoBean
+    private InboundPermissionRepository inboundPermissionRepository;
     @MockitoSpyBean
     @InjectMocks
     private AiidaEventListener aiidaEventListener;
 
     @Test
-    void testOnInboundPermissionAcceptEvent() throws PermissionNotFoundException, SecretStoringException, SecretLoadingException {
+    void testOnInboundPermissionAcceptEvent() throws SecretStoringException, SecretLoadingException {
         // Given
         var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
-        var permission = mock(Permission.class);
+        var permission = mock(InboundPermission.class);
         var inboundDataSource = mock(InboundDataSource.class);
 
         // When
         when(event.permissionId()).thenReturn(permissionId);
-        when(permissionService.findById(permissionId)).thenReturn(permission);
+        when(inboundPermissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(dataSourceService.createInboundDataSource(permission)).thenReturn(inboundDataSource);
         aiidaEventPublisher.publishEvent(event);
 
         // Then
         verify(aiidaEventListener).createInboundDataSource(event);
-        verify(permissionService).findById(permissionId);
+        verify(inboundPermissionRepository).findById(permissionId);
         verify(dataSourceService).createInboundDataSource(permission);
         verify(permission).setDataSource(inboundDataSource);
         verify(dataSourceService).startDataSource(inboundDataSource);
@@ -68,13 +72,13 @@ class AiidaEventListenerTest {
 
     @Test
     void testOnInboundPermissionAcceptEvent_missingMqttStreamingConfigIsHandled()
-            throws PermissionNotFoundException, SecretStoringException, SecretLoadingException {
+            throws SecretStoringException, SecretLoadingException {
         var event = mock(InboundPermissionAcceptEvent.class);
         var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
-        var permission = mock(Permission.class);
+        var permission = mock(InboundPermission.class);
 
         when(event.permissionId()).thenReturn(permissionId);
-        when(permissionService.findById(permissionId)).thenReturn(permission);
+        when(inboundPermissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(dataSourceService.createInboundDataSource(permission))
                 .thenThrow(new MissingMqttStreamingConfigException(null));
 
@@ -84,6 +88,19 @@ class AiidaEventListenerTest {
         verify(dataSourceService).createInboundDataSource(permission);
         verify(permission, never()).setDataSource(any());
         verify(dataSourceService, never()).startDataSource(any());
+    }
+
+    @Test
+    void testOnInboundPermissionAcceptEvent_missingInboundPermissionIsHandled() {
+        var event = mock(InboundPermissionAcceptEvent.class);
+        var permissionId = UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+        when(event.permissionId()).thenReturn(permissionId);
+        when(inboundPermissionRepository.findById(permissionId)).thenReturn(Optional.empty());
+
+        assertThatCode(() -> aiidaEventPublisher.publishEvent(event)).doesNotThrowAnyException();
+
+        verifyNoInteractions(dataSourceService);
     }
 
     @Test

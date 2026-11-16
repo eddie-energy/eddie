@@ -6,7 +6,7 @@ package energy.eddie.aiida.services.inbound;
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.connectionlimit.ConnectionLimitPersistenceService;
@@ -43,7 +43,7 @@ class MinMaxEnvelopeInboundProcessingStrategyTest {
     @Mock
     private InboundDataSource inboundDataSource;
     @Mock
-    private Permission permission;
+    private InboundPermission permission;
     @Captor
     private ArgumentCaptor<List<ConnectionLimit>> limitsCaptor;
 

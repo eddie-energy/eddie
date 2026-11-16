@@ -13,6 +13,7 @@ import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ public class AiidaEventListener {
     private final DataSourceService dataSourceService;
     private final PermissionService permissionService;
     private final ProvisioningService provisioningService;
+    private final InboundPermissionRepository inboundPermissionRepository;
 
     /**
      * Creates the central listener for permission and data-source lifecycle events.
@@ -33,19 +35,23 @@ public class AiidaEventListener {
     public AiidaEventListener(
             DataSourceService dataSourceService,
             PermissionService permissionService,
-            ProvisioningService provisioningService
+            ProvisioningService provisioningService,
+            InboundPermissionRepository inboundPermissionRepository
     ) {
         this.dataSourceService = dataSourceService;
         this.permissionService = permissionService;
         this.provisioningService = provisioningService;
+        this.inboundPermissionRepository = inboundPermissionRepository;
     }
 
     @Transactional
     @EventListener
     protected void createInboundDataSource(InboundPermissionAcceptEvent event) {
         LOGGER.trace("Received InboundPermissionCreationEvent: {}", event);
+        var permissionId = event.permissionId();
         try {
-            var permission = permissionService.findById(event.permissionId());
+            var permission = inboundPermissionRepository.findById(permissionId)
+                                                        .orElseThrow(() -> new PermissionNotFoundException(permissionId));
             var inboundDataSource = dataSourceService.createInboundDataSource(permission);
 
             LOGGER.debug("Set data source {} to permission {}", inboundDataSource, permission);
@@ -53,7 +59,7 @@ public class AiidaEventListener {
 
             dataSourceService.startDataSource(inboundDataSource);
         } catch (PermissionNotFoundException e) {
-            LOGGER.error("No permission found with id {}", event.permissionId(), e);
+            LOGGER.error("No inbound permission found with id {}", permissionId, e);
         } catch (SecretStoringException | SecretLoadingException e) {
             LOGGER.error("Could not create secrets for inbound datasource.", e);
         } catch (MissingMqttStreamingConfigException e) {

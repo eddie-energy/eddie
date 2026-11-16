@@ -38,7 +38,7 @@ public abstract class BaseAckFormatterStrategy implements AckFormatterStrategy {
 
     protected MetaInformation toMetaInformation(InboundDataSource dataSource, @Nullable String connectionId) {
         var permission = Objects.requireNonNull(dataSource.permission());
-        var dataNeed = Objects.requireNonNull(permission.dataNeed());
+        var dataNeed = permission.dataNeed();
 
         return new MetaInformation()
                 .withAsset(toAsset(dataSource))

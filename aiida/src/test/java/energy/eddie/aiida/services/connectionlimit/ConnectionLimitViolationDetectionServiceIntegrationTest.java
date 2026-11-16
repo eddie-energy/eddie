@@ -9,6 +9,7 @@ import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.user.UserSettings;
@@ -155,8 +156,11 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
 
         jdbcTemplate.update("""
                                     INSERT INTO permission (permission_id, eddie_id, data_need_id, access_token,
-                                                            handshake_url, status, user_id, meter_id, transmission_enabled)
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                                            handshake_url, status, user_id, meter_id, type,
+                                                            connection_id, start_time, expiration_time, grant_time,
+                                                            service_name, display_name)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'connection-id', now(), now() + INTERVAL '1 day',
+                                            now(), 'Test', 'Test')
                                     """,
                             PERMISSION_ID,
                             EDDIE_ID,
@@ -166,7 +170,7 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
                             "ACCEPTED",
                             USER_ID,
                             METER_ID,
-                            true);
+                            InboundPermission.DISCRIMINATOR_VALUE);
     }
 
     private void seedDataSource() {
@@ -197,7 +201,7 @@ class ConnectionLimitViolationDetectionServiceIntegrationTest {
     }
 
     private void seedMonitoring() {
-        var permission = permissionRepository.findById(PERMISSION_ID).orElseThrow();
+        var permission = (InboundPermission) permissionRepository.findById(PERMISSION_ID).orElseThrow();
         permission.updateMonitoringDataSource(dataSourceId);
         permissionRepository.save(permission);
     }

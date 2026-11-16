@@ -8,7 +8,6 @@ import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
-import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -17,7 +16,8 @@ import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationEx
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.record.*;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -253,8 +253,7 @@ class LatestRecordServiceTest {
     @Test
     void latestInboundPermissionRecord_shouldReturnLatestRecord_whenFound()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException {
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         var inboundRecord = mock(InboundRecordDto.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
         when(inboundRecord.dataSourceId()).thenReturn(DATA_SOURCE_ID);
@@ -278,8 +277,7 @@ class LatestRecordServiceTest {
     @Test
     void latestInboundPermissionRecord_shouldPropagatePermissionNotFoundException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException {
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
 
@@ -293,8 +291,7 @@ class LatestRecordServiceTest {
     @Test
     void latestInboundPermissionRecord_shouldPropagateInboundRecordNotFoundException()
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException {
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InboundRecordNotFoundException(UUID.randomUUID()));
 
@@ -306,33 +303,17 @@ class LatestRecordServiceTest {
     }
 
     @Test
-    void latestInboundPermissionRecord_shouldPropagateInvalidInboundPermissionException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException {
-        when(inboundRecordService.latestRecord(PERMISSION_ID))
-                .thenThrow(new InvalidInboundPermissionException(PERMISSION_ID));
-
-        assertThrows(InvalidInboundPermissionException.class, () ->
-                aiidaRecordService.latestInboundPermissionRecord(PERMISSION_ID)
-        );
-
-        verify(inboundRecordService, times(1)).latestRecord(PERMISSION_ID);
-    }
-
-    @Test
     void lastMessageStream_shouldStreamEventsForBothInboundAndOutboundPermissions_belongingToCurrentUser()
             throws InvalidUserException {
         var inboundPermissionId = UUID.randomUUID();
 
-        var outboundPermission = mock(Permission.class);
+        var outboundPermission = mock(OutboundPermission.class);
         when(outboundPermission.id()).thenReturn(PERMISSION_ID);
 
-        var inboundPermission = mock(Permission.class);
+        var inboundPermission = mock(InboundPermission.class);
         var inboundDataSource = mock(InboundDataSource.class);
         when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(inboundPermission.id()).thenReturn(inboundPermissionId);
-        when(inboundPermission.isInbound()).thenReturn(true);
         when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
@@ -365,11 +346,10 @@ class LatestRecordServiceTest {
     void lastMessageStream_shouldFilterOutInboundRecordsFromDataSourcesNotBelongingToCurrentUser()
             throws InvalidUserException {
         var otherDataSourceId = UUID.randomUUID();
-        var permission = mock(Permission.class);
+        var permission = mock(InboundPermission.class);
         var dataSource = mock(InboundDataSource.class);
         when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
         when(permission.id()).thenReturn(PERMISSION_ID);
-        when(permission.isInbound()).thenReturn(true);
         when(permission.dataSource()).thenReturn(dataSource);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);
@@ -400,8 +380,7 @@ class LatestRecordServiceTest {
 
     @Test
     void lastMessageStream_shouldSkipInboundPermissionsWithNoDataSource() throws InvalidUserException {
-        var permission = mock(Permission.class);
-        when(permission.isInbound()).thenReturn(true);
+        var permission = mock(InboundPermission.class);
         when(permission.dataSource()).thenReturn(null);
 
         when(authService.getCurrentUserId()).thenReturn(USER_ID);

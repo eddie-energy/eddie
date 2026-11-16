@@ -5,13 +5,13 @@ package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.UnitOfMeasurement;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,13 +49,13 @@ class ConnectionLimitViolationDetectionServiceTest {
     @Mock
     private ConnectionLimitViolationRepository connectionLimitViolationRepository;
     @Mock
-    private PermissionRepository permissionRepository;
+    private InboundPermissionRepository permissionRepository;
     @Mock
     private ConnectionLimitService connectionLimitService;
     @Mock
     private ConnectionLimitNotificationService notificationService;
     @Mock
-    private Permission permission;
+    private InboundPermission permission;
     private ConnectionLimitViolationDetectionService service;
 
     @BeforeEach

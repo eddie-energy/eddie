@@ -8,16 +8,15 @@ import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
-import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.record.transform.InboundPayloadTransformationService;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import org.slf4j.Logger;
@@ -32,7 +31,7 @@ public class InboundRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundRecordService.class);
 
     private final InboundRecordRepository inboundRecordRepository;
-    private final PermissionRepository permissionRepository;
+    private final InboundPermissionRepository inboundPermissionRepository;
     private final InboundPayloadTransformationService inboundPayloadTransformationService;
     private final SecretsService secretsService;
 
@@ -40,18 +39,18 @@ public class InboundRecordService {
      * Creates a service for retrieving, authorizing, and transforming inbound records.
      *
      * @param inboundRecordRepository             Repository containing inbound records.
-     * @param permissionRepository                Repository used to resolve inbound permissions.
+     * @param inboundPermissionRepository         Repository used to resolve inbound permissions.
      * @param inboundPayloadTransformationService Service used to transform stored payloads into the requested format.
      * @param secretsService                      Service used to load the inbound access code.
      */
     public InboundRecordService(
             InboundRecordRepository inboundRecordRepository,
-            PermissionRepository permissionRepository,
+            InboundPermissionRepository inboundPermissionRepository,
             InboundPayloadTransformationService inboundPayloadTransformationService,
             SecretsService secretsService
     ) {
         this.inboundRecordRepository = inboundRecordRepository;
-        this.permissionRepository = permissionRepository;
+        this.inboundPermissionRepository = inboundPermissionRepository;
         this.inboundPayloadTransformationService = inboundPayloadTransformationService;
         this.secretsService = secretsService;
     }
@@ -63,12 +62,11 @@ public class InboundRecordService {
      * @param accessCode       Access code supplied by the caller.
      * @param provisioningType REST provisioning type through which the caller supplied the access code.
      * @return The latest inbound record transformed to the permission's configured message format.
-     * @throws PermissionNotFoundException                     If the permission does not exist.
+     * @throws PermissionNotFoundException                     If no inbound permission with the ID exists.
      * @throws UnauthorizedException                           If the supplied access code is invalid.
      * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
      * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
      * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
-     * @throws InvalidInboundPermissionException               If the permission has no inbound message format.
      * @throws ProvisioningTypeNotConfiguredException          If the requested REST provisioning type is not active.
      * @throws SecretLoadingException                          If the stored access code cannot be loaded.
      */
@@ -78,7 +76,7 @@ public class InboundRecordService {
             InboundProvisioningType provisioningType
     ) throws PermissionNotFoundException, UnauthorizedException,
              InvalidDataSourceTypeException, InboundRecordNotFoundException,
-             UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException,
+             UnsupportedInboundRecordTransformationException,
              ProvisioningTypeNotConfiguredException, SecretLoadingException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
@@ -102,23 +100,21 @@ public class InboundRecordService {
      *
      * @param permissionId ID of the inbound permission whose latest record should be returned.
      * @return The latest inbound record transformed to the permission's configured message format.
-     * @throws PermissionNotFoundException                     If the permission does not exist.
+     * @throws PermissionNotFoundException                     If no inbound permission with the ID exists.
      * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
      * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
      * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
-     * @throws InvalidInboundPermissionException               If the permission has no inbound message format.
      */
     public InboundRecordDto latestRecord(UUID permissionId)
             throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException {
+                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
 
         return toDto(permission, latestRecord(dataSource));
     }
 
-    private InboundDataSource dataSource(Permission permission) throws InvalidDataSourceTypeException {
+    private InboundDataSource dataSource(InboundPermission permission) throws InvalidDataSourceTypeException {
         var dataSource = permission.dataSource();
         if (!(dataSource instanceof InboundDataSource inboundDataSource)) {
             throw new InvalidDataSourceTypeException();
@@ -126,11 +122,11 @@ public class InboundRecordService {
         return inboundDataSource;
     }
 
-    private Permission permission(UUID permissionId) throws PermissionNotFoundException {
+    private InboundPermission permission(UUID permissionId) throws PermissionNotFoundException {
         LOGGER.trace("Getting latest raw inboundRecord for permission {}", permissionId);
 
-        return permissionRepository.findById(permissionId)
-                                   .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        return inboundPermissionRepository.findById(permissionId)
+                                          .orElseThrow(() -> new PermissionNotFoundException(permissionId));
     }
 
     private InboundRecord latestRecord(InboundDataSource dataSource) throws InboundRecordNotFoundException {
@@ -139,12 +135,9 @@ public class InboundRecordService {
                 .orElseThrow(() -> new InboundRecordNotFoundException(dataSource.id()));
     }
 
-    private InboundRecordDto toDto(Permission permission, InboundRecord inboundRecord)
-            throws UnsupportedInboundRecordTransformationException, InvalidInboundPermissionException {
+    private InboundRecordDto toDto(InboundPermission permission, InboundRecord inboundRecord)
+            throws UnsupportedInboundRecordTransformationException {
         var format = permission.inboundMessageFormat();
-        if (format == null) {
-            throw new InvalidInboundPermissionException(permission.id());
-        }
 
         var dataSource = inboundRecord.dataSource();
         var payload = inboundPayloadTransformationService.transform(inboundRecord, format);
