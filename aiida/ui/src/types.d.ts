@@ -66,7 +66,7 @@ export type InboundMessageFormat = 'CIM_1_12' | 'OPENADR_3_1'
 
 export type AiidaConnectionStatus = 'WAITING_FOR_CONNECTION' | 'NOT_CONNECTED' | 'CONNECTED'
 
-export type AiidaPermission = {
+type AiidaPermissionBase = {
   permissionId: string
   eddieId: string
   status: string
@@ -75,26 +75,33 @@ export type AiidaPermission = {
   displayName: string
   startTime: string
   expirationTime: string
-  grantTime?: string
+  grantTime: string
   meterId?: string
-  minLimitKw?: number
-  maxLimitKw?: number
   dataNeed: AiidaDataNeed
   dataSource?: AiidaDataSource
-  transmissionEnabled: boolean
-  effectiveTransmissionSchedule?: string
-  inboundMessageFormat?: InboundMessageFormat
   mqttStreamingConfig?: AiidaPermissionStreamingConfig
-  monitoringDataSourceId?: string
-  supportsConnectionLimits: boolean
   userId: string
 }
 
-/**
- * Permission request that was fetched with an AIIDA code, but is not accepted yet.
- */
-export type AiidaPendingPermission = Pick<
-  AiidaPermission,
+export type AiidaInboundPermission = AiidaPermissionBase & {
+  type: 'inbound'
+  minLimitKw?: number
+  maxLimitKw?: number
+  inboundMessageFormat: InboundMessageFormat
+  monitoringDataSourceId?: string
+  supportsConnectionLimits: boolean
+}
+
+export type AiidaOutboundPermission = AiidaPermissionBase & {
+  type: 'outbound'
+  transmissionEnabled: boolean
+  effectiveTransmissionSchedule?: string
+}
+
+export type AiidaPermission = AiidaInboundPermission | AiidaOutboundPermission
+
+type AiidaPendingPermissionFields =
+  | 'type'
   | 'permissionId'
   | 'eddieId'
   | 'serviceName'
@@ -102,12 +109,21 @@ export type AiidaPendingPermission = Pick<
   | 'startTime'
   | 'expirationTime'
   | 'meterId'
-  | 'minLimitKw'
-  | 'maxLimitKw'
   | 'dataNeed'
-  | 'inboundMessageFormat'
-  | 'supportsConnectionLimits'
->
+
+/**
+ * Permission request that was fetched with an AIIDA code, but is not accepted yet.
+ */
+export type AiidaPendingPermission =
+  | Pick<
+      AiidaInboundPermission,
+      | AiidaPendingPermissionFields
+      | 'minLimitKw'
+      | 'maxLimitKw'
+      | 'inboundMessageFormat'
+      | 'supportsConnectionLimits'
+    >
+  | Pick<AiidaOutboundPermission, AiidaPendingPermissionFields>
 
 export type AiidaPermissionStreamingConfig = {
   dataTopic: string
