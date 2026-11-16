@@ -1,10 +1,10 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-import type { AiidaPermission, LatestSchemaRecord } from '@/types'
-import { getLatestInboundPermissionMessage, getLatestOutboundPermissionMessage } from '@/api'
-import { lastMessageByPermissionId } from '@/stores/lastMessageStream'
-import { computed, ref, watch } from 'vue'
+import type { AiidaPermission, LatestSchemaRecord } from "@/types";
+import { getLatestInboundPermissionMessage, getLatestOutboundPermissionMessage } from "@/api";
+import { lastMessageByPermissionId } from "@/stores/lastMessageStream";
+import { computed, ref, watch } from "vue";
 
 /**
  * Keeps `lastMessageAt` up to date with the permission's latest inbound/outbound
@@ -14,7 +14,7 @@ import { computed, ref, watch } from 'vue'
  * Only one SSE stream per user and not per permission, as HTTP/1.1 limits concurrent SSE streams to a maximum of 6.
  */
 export function useLastMessageRefresh(
-  getPermission: () => Pick<AiidaPermission, 'permissionId' | 'dataNeed'>,
+  getPermission: () => Pick<AiidaPermission, 'permissionId' | 'type'>,
   isEnabled: () => boolean,
 ) {
   const initialLastMessageAt = ref<Date | null>(null)
@@ -22,7 +22,7 @@ export function useLastMessageRefresh(
   const fetchInitialLastMessageTimestamp = async () => {
     const permission = getPermission()
     try {
-      if (permission.dataNeed.type === 'inbound-aiida') {
+      if (permission.type === 'inbound') {
         const record = await getLatestInboundPermissionMessage(permission.permissionId, true)
         initialLastMessageAt.value = new Date(record.timestamp)
       } else {

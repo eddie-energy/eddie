@@ -2,15 +2,15 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from 'vue'
-import Button from '@/components/Button.vue'
-import { createJsonBlobUrl, revokeUrl } from '@/utils/files'
-import type { AiidaDataSource, AiidaPermission } from '@/types'
+import { computed, nextTick, onBeforeUnmount, ref, useTemplateRef } from "vue";
+import Button from "@/components/Button.vue";
+import { createJsonBlobUrl, revokeUrl } from "@/utils/files";
+import type { AiidaDataSource, AiidaPermission } from "@/types";
 import {
   getLatestDataSourceMessage,
   getLatestInboundPermissionMessage,
   getLatestOutboundPermissionMessage,
-} from '@/api'
+} from "@/api";
 
 const { data, buttonStyle = 'primary' } = defineProps<{
   data: AiidaDataSource | AiidaPermission
@@ -43,7 +43,7 @@ const handleClick = async () => {
       latestMessage = await getLatestDataSourceMessage(data.id)
     } else {
       latestMessage =
-        data.dataNeed.type === 'inbound-aiida'
+        data.type === 'inbound'
           ? await getLatestInboundPermissionMessage(data.permissionId)
           : await getLatestOutboundPermissionMessage(data.permissionId)
     }
