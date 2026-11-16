@@ -147,6 +147,17 @@ class InboundRecordServiceTest {
     }
 
     @Test
+    void testLatestRecord_withoutDataSource_throwsInboundRecordNotFound() {
+        // Given
+        permission.setDataSource(null);
+        mockPermissionRepository();
+
+        // When, Then
+        assertThrows(InboundRecordNotFoundException.class,
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID));
+    }
+
+    @Test
     void testLatestRecord_withMissingRecord_throwsException() {
         // Given
         mockDataSource();
