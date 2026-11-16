@@ -6,10 +6,10 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.FailedToSendEntity;
@@ -94,7 +94,7 @@ class MqttStreamerTest {
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
-    private AcceptedPermission permissionMock;
+    private AcceptedOutboundPermission permissionMock;
     @Mock
     private SecretsService mockSecretsService;
     @Mock
@@ -104,9 +104,6 @@ class MqttStreamerTest {
 
     @BeforeEach()
     void setUp() throws Exception {
-        // Permission
-        when(permissionMock.transmissionEnabled()).thenReturn(true);
-
         // Mqtt Streaming Config
         var mqttDto = new MqttDto("tcp://localhost:1883",
                                   PERMISSION_ID.toString(),
@@ -141,7 +138,7 @@ class MqttStreamerTest {
                                                     mockSecretsService,
                                                     mockConnectionStatusEventStream);
 
-        streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), streamingContext);
+        streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), true, streamingContext);
     }
 
 
@@ -462,7 +459,7 @@ class MqttStreamerTest {
     }
 
     private void mockDataNeedWithSchemas() {
-        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
         when(permissionMock.dataNeed()).thenReturn(dataNeed);
     }

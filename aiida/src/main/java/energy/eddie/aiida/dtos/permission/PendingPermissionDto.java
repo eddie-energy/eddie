@@ -3,50 +3,62 @@
 
 package energy.eddie.aiida.dtos.permission;
 
-import energy.eddie.aiida.models.permission.InboundMessageFormat;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import energy.eddie.aiida.models.permission.InboundPermission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Details of a permission request that was fetched from the EDDIE framework and validated, but is not yet accepted
- * and therefore not persisted.
+ * and therefore not persisted. The {@code type} property tells inbound and outbound permission requests apart.
  */
-public record PendingPermissionDto(
-        UUID permissionId,
-        UUID eddieId,
-        @Nullable String serviceName,
-        @Nullable String displayName,
-        Instant startTime,
-        Instant expirationTime,
-        @Nullable String meterId,
-        @Nullable BigDecimal minLimitKw,
-        @Nullable BigDecimal maxLimitKw,
-        AiidaLocalDataNeed dataNeed,
-        @Nullable InboundMessageFormat inboundMessageFormat,
-        boolean supportsConnectionLimits
-) {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = PermissionDto.TYPE_PROPERTY)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = PendingInboundPermissionDto.class, name = InboundPermission.DISCRIMINATOR_VALUE),
+        @JsonSubTypes.Type(value = PendingOutboundPermissionDto.class, name = OutboundPermission.DISCRIMINATOR_VALUE)
+})
+@Schema(
+        oneOf = {PendingInboundPermissionDto.class, PendingOutboundPermissionDto.class},
+        discriminatorProperty = PermissionDto.TYPE_PROPERTY,
+        discriminatorMapping = {
+                @DiscriminatorMapping(value = InboundPermission.DISCRIMINATOR_VALUE, schema = PendingInboundPermissionDto.class),
+                @DiscriminatorMapping(value = OutboundPermission.DISCRIMINATOR_VALUE, schema = PendingOutboundPermissionDto.class)
+        }
+)
+public sealed interface PendingPermissionDto permits PendingInboundPermissionDto, PendingOutboundPermissionDto {
     /**
-     * Creates the DTO from a permission that was built from the fetched details.
+     * Creates the DTO matching the direction of a permission that was built from the fetched details.
      */
-    public static PendingPermissionDto from(Permission permission) {
-        return new PendingPermissionDto(permission.id(),
-                                        permission.eddieId(),
-                                        permission.serviceName(),
-                                        permission.displayName(),
-                                        requireNonNull(permission.startTime()),
-                                        requireNonNull(permission.expirationTime()),
-                                        permission.meterId(),
-                                        permission.minLimitKw(),
-                                        permission.maxLimitKw(),
-                                        requireNonNull(permission.dataNeed()),
-                                        permission.inboundMessageFormat(),
-                                        permission.supportsConnectionLimits());
+    static PendingPermissionDto from(Permission permission) {
+        return switch (permission) {
+            case InboundPermission inboundPermission -> PendingInboundPermissionDto.from(inboundPermission);
+            case OutboundPermission outboundPermission -> PendingOutboundPermissionDto.from(outboundPermission);
+            default -> throw new IllegalArgumentException("Unsupported permission type " + permission.getClass().getName());
+        };
     }
+
+    UUID permissionId();
+
+    UUID eddieId();
+
+    String serviceName();
+
+    String displayName();
+
+    Instant startTime();
+
+    Instant expirationTime();
+
+    @Nullable
+    String meterId();
+
+    AiidaLocalDataNeed dataNeed();
 }

@@ -4,10 +4,10 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
@@ -32,7 +32,7 @@ class PermissionExpiredRunnableTest {
     private final UUID dataNeedId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final Clock clock = Clock.fixed(fixedInstant, AiidaConfiguration.AIIDA_ZONE_ID);
     @Mock
-    private AcceptedPermission mockAcceptedPermission;
+    private AcceptedOutboundPermission mockAcceptedPermission;
     @Mock
     private Permission mockCurrentPermission;
     @Mock
@@ -40,7 +40,7 @@ class PermissionExpiredRunnableTest {
     @Mock
     private PermissionRepository repository;
     @Mock
-    private AiidaLocalDataNeed mockAiidaDataNeed;
+    private OutboundAiidaLocalDataNeed mockAiidaDataNeed;
 
     @BeforeEach
     void setUp() {

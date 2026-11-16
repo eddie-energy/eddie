@@ -1,11 +1,11 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.Authentication;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.outboundDataNeed;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -46,7 +47,16 @@ class AuthServiceTest {
     @Test
     void givenValidPermissionForUser_checkAuthorization_notThrows() {
         // Given
-        var permission = new Permission(eddieId, permissionId, handshakeUrl, accessToken, userId);
+        var permission = new OutboundPermission(eddieId,
+                                                permissionId,
+                                                handshakeUrl,
+                                                accessToken,
+                                                userId,
+                                                outboundDataNeed(),
+                                                "connection-id",
+                                                Instant.parse("2026-01-01T00:00:00Z"),
+                                                Instant.parse("2026-12-31T00:00:00Z"),
+                                                Instant.parse("2026-01-01T00:00:00Z"));
 
         // When, Then
         assertDoesNotThrow(() -> service.checkAuthorizationForPermission(permission));
@@ -55,7 +65,16 @@ class AuthServiceTest {
     @Test
     void givenInValidPermissionForUser_checkAuthorization_Throws() {
         // Given
-        var permission = new Permission(eddieId, permissionId, handshakeUrl, accessToken, UUID.randomUUID());
+        var permission = new OutboundPermission(eddieId,
+                                                permissionId,
+                                                handshakeUrl,
+                                                accessToken,
+                                                UUID.randomUUID(),
+                                                outboundDataNeed(),
+                                                "connection-id",
+                                                Instant.parse("2026-01-01T00:00:00Z"),
+                                                Instant.parse("2026-12-31T00:00:00Z"),
+                                                Instant.parse("2026-01-01T00:00:00Z"));
 
         // When, Then
         assertThrows(UnauthorizedException.class, () -> service.checkAuthorizationForPermission(permission));

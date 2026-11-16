@@ -5,11 +5,11 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
@@ -40,13 +40,13 @@ class InboundPermissionRelayServiceTest {
     @Mock
     private InboundAggregator inboundAggregator;
     @Mock
-    private PermissionRepository permissionRepository;
+    private OutboundPermissionRepository permissionRepository;
     @Mock
     private StreamerManager streamerManager;
     @Mock
-    private Permission outboundPermission;
+    private OutboundPermission outboundPermission;
     @Mock
-    private AiidaLocalDataNeed outboundDataNeed;
+    private OutboundAiidaLocalDataNeed outboundDataNeed;
     @Mock
     private InboundDataSource inboundDataSource;
 
@@ -71,7 +71,7 @@ class InboundPermissionRelayServiceTest {
         mockOutboundPermissionWithSchemas(Set.of(AiidaSchema.OPAQUE));
         when(outboundPermission.connectionId()).thenReturn(OUTBOUND_CONNECTION_ID);
         when(outboundDataNeed.dataNeedId()).thenReturn(OUTBOUND_DATA_NEED_ID);
-        when(permissionRepository.findOutboundByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACCEPTED))
+        when(permissionRepository.findByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(outboundPermission));
 
         relayService.subscribeToInboundRecords();
@@ -116,7 +116,7 @@ class InboundPermissionRelayServiceTest {
         mockOutboundPermissionWithSchemas(Set.of(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12));
         when(outboundPermission.connectionId()).thenReturn("outbound-connection");
         when(outboundDataNeed.dataNeedId()).thenReturn(OUTBOUND_DATA_NEED_ID);
-        when(permissionRepository.findOutboundByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACCEPTED))
+        when(permissionRepository.findByDataSourceIdAndStatus(INBOUND_DATA_SOURCE_ID, PermissionStatus.ACCEPTED))
                 .thenReturn(List.of(outboundPermission));
 
         relayService.subscribeToInboundRecords();

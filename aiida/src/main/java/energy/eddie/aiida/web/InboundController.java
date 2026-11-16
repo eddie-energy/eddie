@@ -8,7 +8,6 @@ import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
-import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
@@ -54,7 +53,6 @@ public class InboundController {
      * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
      * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
      * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
-     * @throws InvalidInboundPermissionException               If the permission has no inbound message format.
      * @throws ProvisioningTypeNotConfiguredException          If the selected REST provisioning type is not active.
      * @throws SecretLoadingException                          If the stored access code cannot be loaded.
      */
@@ -71,7 +69,6 @@ public class InboundController {
              InvalidDataSourceTypeException,
              InboundRecordNotFoundException,
              UnsupportedInboundRecordTransformationException,
-             InvalidInboundPermissionException,
              ProvisioningTypeNotConfiguredException,
              SecretLoadingException {
         if (bearerKey != null && !bearerKey.isBlank()) {
