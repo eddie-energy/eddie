@@ -26,6 +26,7 @@ import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.*;
@@ -114,8 +115,6 @@ class PermissionServiceTest {
     @Mock
     private InboundAiidaLocalDataNeed mockInboundAiidaLocalDataNeed;
     @Mock
-    private OutboundAiidaLocalDataNeed mockOutboundAiidaLocalDataNeed;
-    @Mock
     private AuthService mockAuthService;
     @Mock
     private DataSourceService mockDataSourceService;
@@ -131,6 +130,8 @@ class PermissionServiceTest {
     private AiidaLocalDataNeedService mockAiidaLocalDataNeedService;
     @Mock
     private SecretsService mockSecretsService;
+    @Mock
+    private PermissionMarketDocumentFactory mockPermissionMarketDocumentFactory;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     @Captor
@@ -152,7 +153,8 @@ class PermissionServiceTest {
                                         mockDataSourceService,
                                         mockAiidaLocalDataNeedService,
                                         mockAiidaEventPublisher,
-                                        mockSecretsService);
+                                        mockSecretsService,
+                                        mockPermissionMarketDocumentFactory);
     }
 
     @Test
@@ -579,8 +581,6 @@ class PermissionServiceTest {
     void givenValidPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws Exception {
         // Given
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
-        when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
         when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
@@ -592,15 +592,14 @@ class PermissionServiceTest {
         verify(mockPermissionScheduler).removePermission(permissionId1);
         verify(mockPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockPermission).setRevokeTime(fixedInstant);
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
+        verify(mockPermissionMarketDocumentFactory).create(mockPermission, PermissionProcessStatus.REVOKED);
+        verify(streamerManager).stopStreamer(any());
     }
 
     @Test
     void givenValidInboundPermission_revokePermission_updatesState_andRemovesScheduledRunnables() throws Exception {
         // Given
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
-        when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.dataNeed()).thenReturn(mockInboundAiidaLocalDataNeed);
         when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
@@ -614,7 +613,8 @@ class PermissionServiceTest {
         verify(mockPermissionScheduler).removePermission(permissionId1);
         verify(mockPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockPermission).setRevokeTime(fixedInstant);
-        verify(streamerManager).stopStreamer(argThat(msg -> msg.status() == PermissionProcessStatus.REVOKED));
+        verify(mockPermissionMarketDocumentFactory).create(mockPermission, PermissionProcessStatus.REVOKED);
+        verify(streamerManager).stopStreamer(any());
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
     }
 
@@ -623,8 +623,6 @@ class PermissionServiceTest {
         // Given
         var ownerPermission = mock(Permission.class);
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockPermission));
-        when(mockPermission.connectionId()).thenReturn("connectionId");
-        when(mockPermission.dataNeed()).thenReturn(mockOutboundAiidaLocalDataNeed);
         when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockPermission.dataSource()).thenReturn(mockInboundDataSource);
         when(mockPermission.id()).thenReturn(permissionId1);
@@ -846,7 +844,8 @@ class PermissionServiceTest {
                                                               mockScheduler,
                                                               mockPermissionRepository,
                                                               new ConcurrentHashMap<>(),
-                                                              streamerManager);
+                                                              streamerManager,
+                                                              mockPermissionMarketDocumentFactory);
             service = new PermissionService(mockPermissionRepository,
                                             mockConnectionLimitDefaultRepository,
                                             mockClock,
@@ -857,7 +856,8 @@ class PermissionServiceTest {
                                             mockDataSourceService,
                                             mockAiidaLocalDataNeedService,
                                             mockAiidaEventPublisher,
-                                            mockSecretsService);
+                                            mockSecretsService,
+                                        mockPermissionMarketDocumentFactory);
         }
 
         /**

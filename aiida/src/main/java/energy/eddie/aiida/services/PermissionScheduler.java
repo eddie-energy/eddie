@@ -5,6 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -31,19 +32,22 @@ public class PermissionScheduler {
      */
     private final ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures;
     private final StreamerManager streamerManager;
+    private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
 
     public PermissionScheduler(
             Clock clock,
             TaskScheduler scheduler,
             PermissionRepository repository,
             ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures,
-            StreamerManager streamerManager
+            StreamerManager streamerManager,
+            PermissionMarketDocumentFactory permissionMarketDocumentFactory
     ) {
         this.clock = clock;
         this.scheduler = scheduler;
         this.repository = repository;
         this.permissionFutures = permissionFutures;
         this.streamerManager = streamerManager;
+        this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
     }
 
     /**
@@ -108,7 +112,11 @@ public class PermissionScheduler {
                     permissionId,
                     expirationTime);
 
-        var expirationRunnable = new PermissionExpiredRunnable(permission, streamerManager, repository, clock);
+        var expirationRunnable = new PermissionExpiredRunnable(permission,
+                                                               streamerManager,
+                                                               permissionMarketDocumentFactory,
+                                                               repository,
+                                                               clock);
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, expirationTime);
 
         permissionFutures.put(permissionId, future);
