@@ -3,12 +3,14 @@
 
 package energy.eddie.regionconnector.aiida.mqtt;
 
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaRecordDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
+import energy.eddie.cim.v1_12.rpmd.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.rpmd.MetaInformation;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.regionconnector.aiida.AiidaBeanConfig;
 import energy.eddie.regionconnector.aiida.mqtt.callback.MqttMessageCallback;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.AiidaMessageProcessor;
@@ -60,9 +62,9 @@ class MqttMessageCallbackTest {
     private static final UUID PERMISSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     // Sinks
-    private final Sinks.Many<AiidaConnectionStatusMessageDto> statusSink = Sinks.many()
-                                                                                .unicast()
-                                                                                .onBackpressureBuffer();
+    private final Sinks.Many<RequestPermissionEnvelope> statusSink = Sinks.many()
+                                                                          .unicast()
+                                                                          .onBackpressureBuffer();
     private static final Sinks.Many<energy.eddie.cim.v1_04.rtd.RTDEnvelope> nearRealTimeDataSinkCimV104 = Sinks.many()
                                                                                                                .unicast()
                                                                                                                .onBackpressureBuffer();
@@ -103,41 +105,21 @@ class MqttMessageCallbackTest {
     }
 
     @Test
-    void messageArrived_statusMessage_revoked() {
+    void messageArrived_statusMessage_emitsPermissionMarketDocument() {
         // Given
         var topic = statusTopic();
-        var connectionStatusMessage = getAiidaConnectionStatusMessage(PermissionProcessStatus.REVOKED);
+        var permissionMarketDocument = new RequestPermissionEnvelope()
+                .withMessageDocumentHeader(new MessageDocumentHeader()
+                                                   .withMetaInformation(new MetaInformation()
+                                                                                .withRequestPermissionId(PERMISSION_ID.toString())));
 
-        when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaConnectionStatusMessageDto.class)))
-                .thenReturn(connectionStatusMessage);
+        when(mockObjectMapper.readValue(any(byte[].class), eq(RequestPermissionEnvelope.class)))
+                .thenReturn(permissionMarketDocument);
 
         // When
         StepVerifier.create(statusSink.asFlux())
                     .then(() -> messageArrived(topic))
-                    .assertNext(msg -> {
-                        assertEquals(connectionStatusMessage, msg);
-                        assertEquals(PermissionProcessStatus.REVOKED, msg.status());
-                    })
-                    .thenCancel()
-                    .verify();
-    }
-
-    @Test
-    void messageArrived_statusMessage_accepted() {
-        // Given
-        var topic = statusTopic();
-        var connectionStatusMessage = getAiidaConnectionStatusMessage(PermissionProcessStatus.ACCEPTED);
-
-        when(mockObjectMapper.readValue(any(byte[].class), eq(AiidaConnectionStatusMessageDto.class)))
-                .thenReturn(connectionStatusMessage);
-
-        // When
-        StepVerifier.create(statusSink.asFlux())
-                    .then(() -> messageArrived(topic))
-                    .assertNext(msg -> {
-                        assertEquals(connectionStatusMessage, msg);
-                        assertEquals(PermissionProcessStatus.ACCEPTED, msg.status());
-                    })
+                    .assertNext(msg -> assertEquals(permissionMarketDocument, msg))
                     .thenCancel()
                     .verify();
     }
@@ -409,11 +391,6 @@ class MqttMessageCallbackTest {
                        rtdCimDataMessageProcessorV104,
                        rtdCimDataMessageProcessorV112,
                        ackCimDataMessageProcessor);
-    }
-
-    private AiidaConnectionStatusMessageDto getAiidaConnectionStatusMessage(PermissionProcessStatus status) {
-        var aiidaConnectionStatusMessageJson = "{\"connectionId\":\"30\",\"dataNeedId\":\"00000000-0000-0000-0000-000000000001\",\"timestamp\":1725458241.237425343,\"status\":\"" + status + "\",\"permissionId\":\"" + PERMISSION_ID + "\",\"eddieId\":\"00000000-0000-0000-0000-000000000002\"}";
-        return realObjectMapper.readValue(aiidaConnectionStatusMessageJson, AiidaConnectionStatusMessageDto.class);
     }
 
     private AiidaRecordDto getAiidaRecordDto() {
