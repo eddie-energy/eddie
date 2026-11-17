@@ -7,6 +7,7 @@ import energy.eddie.aiida.adapters.datasource.at.OesterreichsEnergieAdapter;
 import energy.eddie.aiida.adapters.datasource.cim.CimAdapter;
 import energy.eddie.aiida.adapters.datasource.fr.MicroTeleinfoV3Adapter;
 import energy.eddie.aiida.adapters.datasource.inbound.InboundAdapter;
+import energy.eddie.aiida.adapters.datasource.inbound.InboundMqttClientRegistry;
 import energy.eddie.aiida.adapters.datasource.it.SinapsiAlfaAdapter;
 import energy.eddie.aiida.adapters.datasource.modbus.ModbusTcpDataSourceAdapter;
 import energy.eddie.aiida.adapters.datasource.sga.SmartGatewaysAdapter;
@@ -40,7 +41,6 @@ import java.time.Instant;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class DataSourceAdapter<T extends DataSource> implements AutoCloseable, HealthIndicator {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceAdapter.class);
@@ -70,16 +70,16 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
      * @param dataSource        The entity of the data source.
      * @param objectMapper      The object mapper to use for deserialization.
      * @param mqttConfiguration The MQTT configuration to use for connecting to the broker (if needed).
-     * @param aiidaId           The ID of the AIIDA instance, used for formatting the acknowledgements (if needed).
      * @param secretsService    The secrets service to load plaintext passwords (if needed).
+     * @param inboundMqttClientRegistry Registry for active inbound MQTT connections.
      * @return The created {@code DataSourceAdapter}.
      */
     public static DataSourceAdapter<? extends DataSource> create(
             DataSource dataSource,
             ObjectMapper objectMapper,
             MqttConfiguration mqttConfiguration,
-            UUID aiidaId,
-            SecretsService secretsService
+            SecretsService secretsService,
+            InboundMqttClientRegistry inboundMqttClientRegistry
     ) {
         return switch (dataSource) {
             case OesterreichsEnergieDataSource ds ->
@@ -88,7 +88,10 @@ public abstract class DataSourceAdapter<T extends DataSource> implements AutoClo
             case SinapsiAlfaDataSource ds -> new SinapsiAlfaAdapter(ds, objectMapper, mqttConfiguration, secretsService);
             case SmartGatewaysDataSource ds -> new SmartGatewaysAdapter(ds, mqttConfiguration);
             case ShellyDataSource ds -> new ShellyAdapter(ds, objectMapper, mqttConfiguration);
-            case InboundDataSource ds -> new InboundAdapter(ds, objectMapper, mqttConfiguration, aiidaId, secretsService);
+            case InboundDataSource ds -> new InboundAdapter(ds,
+                                                            mqttConfiguration,
+                                                            secretsService,
+                                                            inboundMqttClientRegistry);
             case SimulationDataSource ds -> new SimulationAdapter(ds);
             case ModbusDataSource ds -> new ModbusTcpDataSourceAdapter(ds);
             case CimDataSource ds -> new CimAdapter(ds, objectMapper, mqttConfiguration);

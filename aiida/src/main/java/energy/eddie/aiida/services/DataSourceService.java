@@ -4,6 +4,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.adapters.datasource.DataSourceAdapter;
+import energy.eddie.aiida.adapters.datasource.inbound.InboundMqttClientRegistry;
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.aggregator.OutboundAggregator;
 import energy.eddie.aiida.config.MqttConfiguration;
@@ -51,7 +52,6 @@ import java.util.stream.Collectors;
 public class DataSourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceService.class);
 
-    private final ApplicationInformationService applicationInformationService;
     private final DataSourceRepository repository;
     private final AiidaEventPublisher aiidaEventPublisher;
     private final OutboundAggregator outboundAggregator;
@@ -63,10 +63,10 @@ public class DataSourceService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final SinapsiAlfaConfiguration sinapsiAlfaConfiguration;
     private final SecretsService secretsService;
+    private final InboundMqttClientRegistry inboundMqttClientRegistry;
 
     @Autowired
     public DataSourceService(
-            ApplicationInformationService applicationInformationService,
             DataSourceRepository repository,
             OutboundAggregator outboundAggregator,
             InboundAggregator inboundAggregator,
@@ -76,9 +76,9 @@ public class DataSourceService {
             BCryptPasswordEncoder bCryptPasswordEncoder,
             SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
             AiidaEventPublisher aiidaEventPublisher,
-            SecretsService secretsService
+            SecretsService secretsService,
+            InboundMqttClientRegistry inboundMqttClientRegistry
     ) {
-        this.applicationInformationService = applicationInformationService;
         this.repository = repository;
         this.outboundAggregator = outboundAggregator;
         this.inboundAggregator = inboundAggregator;
@@ -89,6 +89,7 @@ public class DataSourceService {
         this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
         this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
+        this.inboundMqttClientRegistry = inboundMqttClientRegistry;
     }
 
     @EventListener(ContextRefreshedEvent.class)
@@ -101,9 +102,11 @@ public class DataSourceService {
     }
 
     public void startDataSource(DataSource dataSource) throws ModbusConnectionException {
-        var aiidaId = applicationInformationService.applicationInformation().aiidaId();
-
-        var dataSourceAdapter = DataSourceAdapter.create(dataSource, objectMapper, mqttConfiguration, aiidaId, secretsService);
+        var dataSourceAdapter = DataSourceAdapter.create(dataSource,
+                                                         objectMapper,
+                                                         mqttConfiguration,
+                                                         secretsService,
+                                                         inboundMqttClientRegistry);
         dataSourceAdapters.add(dataSourceAdapter);
 
         if (dataSource.enabled()) {
