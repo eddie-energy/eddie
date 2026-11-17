@@ -6,12 +6,15 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -23,7 +26,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
-import static org.mockito.AdditionalMatchers.not;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -45,6 +48,10 @@ class PermissionSchedulerTest {
     private StreamerManager mockStreamerManager;
     @Mock
     private ScheduledFuture<?> mockScheduledFuture;
+    @Mock
+    private PermissionMarketDocumentFactory mockPermissionMarketDocumentFactory;
+    @Captor
+    private ArgumentCaptor<Runnable> runnableCaptor;
     private PermissionScheduler permissionScheduler;
 
     @BeforeEach
@@ -55,7 +62,8 @@ class PermissionSchedulerTest {
                                                       mockTaskScheduler,
                                                       mockRepository,
                                                       permissionFutures,
-                                                      mockStreamerManager);
+                                                      mockStreamerManager,
+                                                      mockPermissionMarketDocumentFactory);
     }
 
     @Test
@@ -87,7 +95,8 @@ class PermissionSchedulerTest {
 
         // Then
         verify(permissionFutures).put(eq(permissionId), any());
-        verify(mockTaskScheduler).schedule(not(any(PermissionExpiredRunnable.class)), eq(startTimeInFuture));
+        verify(mockTaskScheduler).schedule(runnableCaptor.capture(), eq(startTimeInFuture));
+        assertFalse(runnableCaptor.getValue() instanceof PermissionExpiredRunnable);
         verifyNoInteractions(mockStreamerManager);
         verifyNoInteractions(mockRepository);
     }

@@ -6,8 +6,8 @@ package energy.eddie.aiida.utils;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,23 +19,26 @@ public class PermissionExpiredRunnable implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionExpiredRunnable.class);
     private final AcceptedPermission permission;
     private final StreamerManager streamerManager;
+    private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
     private final PermissionRepository repository;
     private final Instant expirationTime;
     private final Clock clock;
 
     /**
      * Create a new PermissionExpiredRunnable that when executed, instructs the {@link StreamerManager} to send the
-     * {@link PermissionStatus#FULFILLED} status message to the EDDIE framework, stops streaming for the specified
+     * {@link PermissionStatus#FULFILLED} permission market document to the EDDIE framework, stops streaming for the specified
      * permission and updates the database.
      */
     public PermissionExpiredRunnable(
             AcceptedPermission permission,
             StreamerManager streamerManager,
+            PermissionMarketDocumentFactory permissionMarketDocumentFactory,
             PermissionRepository repository,
             Clock clock
     ) {
         this.permission = permission;
         this.streamerManager = streamerManager;
+        this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
         this.repository = repository;
         this.clock = clock;
         this.expirationTime = permission.expirationTime();
@@ -63,17 +66,10 @@ public class PermissionExpiredRunnable implements Runnable {
             return;
         }
 
-        var fulfilledMessage = new AiidaConnectionStatusMessageDto(permission.connectionId(),
-                                                                   permission.dataNeed().dataNeedId(),
-                                                                   clock.instant(),
-                                                                   PermissionProcessStatus.FULFILLED,
-                                                                   permission.id(),
-                                                                   permission.eddieId()
-        );
-
         currentPermission.setStatus(PermissionStatus.FULFILLED);
         repository.save(currentPermission);
 
-        streamerManager.stopStreamer(fulfilledMessage);
+        streamerManager.stopStreamer(permissionMarketDocumentFactory.create(currentPermission,
+                                                                            PermissionProcessStatus.FULFILLED));
     }
 }
