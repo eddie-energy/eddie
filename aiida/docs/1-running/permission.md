@@ -64,6 +64,31 @@ stateDiagram-v2
 
 The AIIDA Web UI is notified about changes of the connection status and updates them without reloading the page.
 
+### Informing EDDIE about status changes
+
+When a permission reaches a final state, AIIDA publishes a CIM v1.12 permission market document
+(`RequestPermissionEnvelope`) on the status topic `aiida/v1/<permissionId>/status` and then closes the connection
+of the permission.
+Only CIM v1.12 is currently supported.
+
+The status is set in `RequestPermission.MktActivityRecord.status` as a CIM status code.
+`MktActivityRecord.description` contains the matching EDDIE permission process status.
+
+| AIIDA status | CIM status (`MktActivityRecord.status`) | EDDIE status (`MktActivityRecord.description`) |
+|--------------|-----------------------------------------|------------------------------------------------|
+| `REVOKED`    | `A13` (Withdrawn)                       | `REVOKED`                                      |
+| `TERMINATED` | `A16` (Deactivation)                    | `EXTERNALLY_TERMINATED`                        |
+| `FULFILLED`  | `A37` (Confirmed)                       | `FULFILLED`                                    |
+
+The following fields identify the permission:
+
+| Field                                                       | Content                   |
+|-------------------------------------------------------------|---------------------------|
+| `MessageDocumentHeader.MetaInformation.requestPermissionId` | ID of the permission.     |
+| `MessageDocumentHeader.MetaInformation.connectionId`        | Connection ID of the EP.  |
+| `MessageDocumentHeader.MetaInformation.dataNeedId`          | ID of the data need.      |
+| `MessageDocumentHeader.MetaInformation.finalCustomerId`     | ID of the AIIDA instance. |
+
 ## Adding a permission
 
 Adding a permission is done via the AIIDA Web UI.
