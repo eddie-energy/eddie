@@ -3,7 +3,7 @@
 
 package energy.eddie.regionconnector.aiida.mqtt.message.processor.status;
 
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.regionconnector.aiida.mqtt.message.processor.BaseMessageProcessor;
 import energy.eddie.regionconnector.aiida.mqtt.topic.MqttTopicType;
 import energy.eddie.regionconnector.aiida.permission.request.persistence.AiidaPermissionRequestViewRepository;
@@ -14,12 +14,12 @@ import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class StatusMessageProcessor extends BaseMessageProcessor {
-    private final Sinks.Many<AiidaConnectionStatusMessageDto> statusSink;
+    private final Sinks.Many<RequestPermissionEnvelope> statusSink;
 
     public StatusMessageProcessor(
             AiidaPermissionRequestViewRepository permissionRequestViewRepository,
             ObjectMapper objectMapper,
-            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink
+            Sinks.Many<RequestPermissionEnvelope> statusSink
     ) {
         super(permissionRequestViewRepository, objectMapper);
         this.statusSink = statusSink;
@@ -27,13 +27,11 @@ public class StatusMessageProcessor extends BaseMessageProcessor {
 
     @Override
     public void processMessage(MqttMessage message) {
-        var statusMessage = objectMapper.readValue(message.getPayload(), AiidaConnectionStatusMessageDto.class);
-        var permissionId = statusMessage.permissionId();
+        var permissionMarketDocument = objectMapper.readValue(message.getPayload(), RequestPermissionEnvelope.class);
 
-        logger.debug("Received connection status message for permission {} with status {}",
-                    permissionId,
-                    statusMessage.status());
-        statusSink.tryEmitNext(statusMessage);
+        logger.debug("Received permission market document for permission {}",
+                     permissionMarketDocument.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId());
+        statusSink.tryEmitNext(permissionMarketDocument);
     }
 
     @Override

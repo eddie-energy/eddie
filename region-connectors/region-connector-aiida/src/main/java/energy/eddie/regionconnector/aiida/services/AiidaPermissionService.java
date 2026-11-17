@@ -4,7 +4,6 @@
 package energy.eddie.regionconnector.aiida.services;
 
 import energy.eddie.api.agnostic.ApplicationInformationAware;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
@@ -15,6 +14,8 @@ import energy.eddie.api.agnostic.data.needs.DataNeedNotSupportedResult;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.v1_12.StandardStatusTypeList;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.dataneeds.needs.DataNeed;
@@ -73,7 +74,7 @@ public class AiidaPermissionService {
             MqttService mqttService,
             AiidaPermissionRequestViewRepository viewRepository,
             DataNeedCalculationService calculationService,
-            Sinks.Many<AiidaConnectionStatusMessageDto> statusSink,
+            Sinks.Many<RequestPermissionEnvelope> statusSink,
             ApplicationContext applicationContext,
             JwtUtil jwtUtil,
             @Value("${eddie.public.url}") String eddiePublicUrl
@@ -99,16 +100,32 @@ public class AiidaPermissionService {
         }
     }
 
-    public void statusChangedExternally(AiidaConnectionStatusMessageDto message) {
-        var permissionId = message.permissionId().toString();
+    /**
+     * Applies a status change that happened on the AIIDA side. AIIDA only sends {@link StandardStatusTypeList#WITHDRAWN}
+     * (revoked), {@link StandardStatusTypeList#DEACTIVATION} (externally terminated) and
+     * {@link StandardStatusTypeList#CONFIRMED} (fulfilled).
+     */
+    public void statusChangedExternally(RequestPermissionEnvelope permissionMarketDocument) {
+        try {
+            var permissionId = permissionMarketDocument.getMessageDocumentHeader()
+                                                       .getMetaInformation()
+                                                       .getRequestPermissionId();
+            var status = StandardStatusTypeList.fromValue(permissionMarketDocument.getMarketDocument()
+                                                                                  .getRequestPermission()
+                                                                                  .getMktActivityRecords()
+                                                                                  .getFirst()
+                                                                                  .getStatus());
 
-        switch (message.status()) {
-            case REVOKED -> revokePermission(permissionId);
-            case EXTERNALLY_TERMINATED -> externallyTerminatePermission(permissionId);
-            case FULFILLED -> fulfillPermission(permissionId);
-            default -> LOGGER.warn("Received unsupported external status {} for permission {}",
-                                   message.status(),
-                                   message.permissionId());
+            switch (status) {
+                case WITHDRAWN -> revokePermission(permissionId);
+                case DEACTIVATION -> externallyTerminatePermission(permissionId);
+                case CONFIRMED -> fulfillPermission(permissionId);
+                default -> LOGGER.warn("Received unsupported external status {} for permission {}",
+                                       status,
+                                       permissionId);
+            }
+        } catch (RuntimeException exception) {
+            LOGGER.warn("Cannot process permission market document received from AIIDA", exception);
         }
     }
 
