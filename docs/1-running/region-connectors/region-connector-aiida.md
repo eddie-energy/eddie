@@ -13,21 +13,32 @@ AIIDA instances are run by customers in their homes, and they can share their in
 The diagram above shows the end-to-end flow of how the AIIDA region connector (RC) works in conjunction with the AIIDA instance.
 The customer visits the EP's website and clicks on the EDDIE connect button.
 If the EP service requires near real-time data, the connect button sends a request to this region connector, requesting
-a new permission. The region connector sends a response with the handshake information for AIIDA. When the customer grants the permission, their AIIDA instance will send data and status messages to
+a new permission. The region connector sends a response with the handshake information for AIIDA. When the customer grants the permission, their AIIDA instance will send data and permission status updates to
 separate topics on the MQTT broker.
 
 All messages are sent directly from AIIDA to the MQTT broker and routed through the Region Connector (RC),
 which then forwards them to the active outbound connectors.
 
-This RC also subscribes to the status message topic and updates the internal status of a permission when
-such a message is received.
+This RC also subscribes to the status topic and updates the internal status of a permission when AIIDA reports a
+status change.
+AIIDA sends a CIM v1.12 permission market document (`RequestPermissionEnvelope`); other CIM versions are not supported yet.
+The permission is identified by `MessageDocumentHeader.MetaInformation.requestPermissionId`, and the RC reads the CIM
+status code of the first `RequestPermission.MktActivityRecord`:
+
+| CIM status (`MktActivityRecord.status`) | Resulting permission status |
+| --------------------------------------- | --------------------------- |
+| `A13` (Withdrawn)                       | `REVOKED`                   |
+| `A16` (Deactivation)                    | `EXTERNALLY_TERMINATED`     |
+| `A37` (Confirmed)                       | `FULFILLED`                 |
+
+Other status codes and malformed documents are logged and ignored.
 
 When a permission of this region connector should be terminated (_terminology: the EP requests a termination, the
 customer revokes a permission_), this RC publishes a termination command on the command topic of the
 specific permission. The AIIDA instance is subscribed to this topic and will therefore receive and honor the termination
 request.
 
-There is a dedicated topic per AIIDA instance and permission for the near real-time data and connection status messages.
+There is a dedicated topic per AIIDA instance and permission for the near real-time data and permission status updates.
 ACLs and authentication ensure that only the permitted AIIDA instance may publish/subscribe to these topics.
 
 ## Handshake endpoints
