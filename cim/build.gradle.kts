@@ -13,6 +13,7 @@ plugins {
     jacoco
     signing
     `java-library`
+    `java-test-fixtures`
 }
 
 group = "energy.eddie"
@@ -128,6 +129,11 @@ tasks.compileJava {
 
 val mavenCentralUsername: String? = System.getenv("MAVEN_CENTRAL_USERNAME")
 val mavenCentralPassword: String? = System.getenv("MAVEN_CENTRAL_PASSWORD")
+// Test fixtures are only shared with the tests of other modules and are not part of the published artifact
+val javaComponent = components["java"] as AdhocComponentWithVariants
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+
 publishing {
     repositories {
         maven {
