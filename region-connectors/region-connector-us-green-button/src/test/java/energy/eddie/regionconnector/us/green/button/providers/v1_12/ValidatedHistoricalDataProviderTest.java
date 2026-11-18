@@ -32,7 +32,7 @@ class ValidatedHistoricalDataProviderTest {
     private final PublishService publishService = new PublishService();
     private final Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
     private final CommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-            CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "client-id"
+            CodingSchemeTypeList.USA_NATIONAL_CODING_SCHEME, "client-id"
     );
     private final GreenButtonConfiguration config = new GreenButtonConfiguration(
             "http://localhost",

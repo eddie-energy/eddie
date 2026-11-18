@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class EnerginetValidatedHistoricalDataMarketDocumentProviderV112Test {
     private final PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-            CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+            CodingSchemeTypeList.DENMARK_NATIONAL_CODING_SCHEME,
             "ep-id"
     );
     private final XmlMessageSerde serde = new XmlMessageSerde();

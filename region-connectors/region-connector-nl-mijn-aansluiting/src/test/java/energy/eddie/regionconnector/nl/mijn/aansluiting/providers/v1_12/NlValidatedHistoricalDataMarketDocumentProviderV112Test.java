@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class NlValidatedHistoricalDataMarketDocumentProviderV112Test {
     private final CommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-            CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+            CodingSchemeTypeList.NETHERLANDS_NATIONAL_CODING_SCHEME,
             "fallback"
     );
     private final JsonResourceObjectMapper<List<MijnAansluitingResponse>> mapper = new JsonResourceObjectMapper<>(new TypeReference<>() {});
