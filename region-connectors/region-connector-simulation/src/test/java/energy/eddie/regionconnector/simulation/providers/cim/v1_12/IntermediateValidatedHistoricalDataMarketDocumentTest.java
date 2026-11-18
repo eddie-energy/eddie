@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IntermediateValidatedHistoricalDataMarketDocumentTest {
     private final XmlMessageSerde serde = new XmlMessageSerde();
     private final PlainCommonInformationModelConfiguration cimConfig = new PlainCommonInformationModelConfiguration(
-            CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "EP-ID");
+            CodingSchemeTypeList.GERMANY_NATIONAL_CODING_SCHEME, "EP-ID");
 
     IntermediateValidatedHistoricalDataMarketDocumentTest() throws SerdeInitializationException {}
 

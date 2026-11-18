@@ -40,7 +40,7 @@ class ValidatedHistoricalDataMarketDocumentProviderV112Test {
                                                 List.of(new Measurement(10.0, Measurement.MeasurementType.MEASURED)));
         when(streams.getSimulatedMeterReadingStream()).thenReturn(Flux.just(reading));
         var cimConfig = new PlainCommonInformationModelConfiguration(
-                CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME, "EP-ID");
+                CodingSchemeTypeList.GERMANY_NATIONAL_CODING_SCHEME, "EP-ID");
         var provider = new ValidatedHistoricalDataMarketDocumentProviderV112(streams, cimConfig);
 
         // When
