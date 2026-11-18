@@ -142,3 +142,4 @@ For more information, see [Common Information Model Client Libraries](https://ar
 ## 3.15.0 - 2026-11-12
 
 - Add validated historical data market document for CIM version `1.12` (`energy.eddie.cim.v1_12.vhd.Envelope`)
+- Omit `null` fields when serializing messages to JSON

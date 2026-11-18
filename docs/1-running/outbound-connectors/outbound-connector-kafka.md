@@ -13,6 +13,8 @@ The following parameters are of special interest:
 | outbound-connector.kafka.eddie-id | String                                         |         | Sets the ID of the eddie instance in relation to the kafka broker                                                           |
 | kafka.bootstrap.servers           | comma-separated _host:port_ tuples (mandatory) |         | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                              |
 
+In JSON, fields without a value are omitted instead of being sent as `null`, matching the XML output.
+
 E.g., if Kafka is installed locally:
 
 ```properties :spring

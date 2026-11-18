@@ -27,6 +27,8 @@ They can be seen via the hosted swagger UI under `<host>:<server.port>/outbound-
 For the [development setup](../OPERATION.md#quickstart) this would be:
 - http://localhost:9090/outbound-connectors/rest/swagger-ui/index.html
 
+In JSON, fields without a value are omitted instead of being sent as `null`, matching the XML output.
+
 While OpenAPI provides examples and schemas, it is recommended to use [the client library](../../2-integrating/messages/cim/client-libraries.md) to parse CIM documents, since the OpenAPI generated schemas are not true to the actual schema.
 
 ```http request

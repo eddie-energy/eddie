@@ -71,6 +71,23 @@ class JsonMessageSerdeTest {
     }
 
     @Test
+    void testSerialize_omitsNullFields() throws SerializationException {
+        // Given
+        var serde = new JsonMessageSerde();
+        var document = ValidatedHistoricalDataV112TestDocuments.envelope();
+
+        // When
+        var json = new String(serde.serialize(document), StandardCharsets.UTF_8);
+
+        // Then
+        assertAll(
+                () -> assertFalse(json.contains("null"), json),
+                () -> assertFalse(json.contains("quantityDefinition"), json),
+                () -> assertTrue(json.contains("\"energy_Quantity.quantity\""), json)
+        );
+    }
+
+    @Test
     void testDeserialize_throwsOnInvalidJson() {
         // Given
         var serde = new JsonMessageSerde();

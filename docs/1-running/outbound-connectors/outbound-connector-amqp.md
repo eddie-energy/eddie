@@ -65,6 +65,8 @@ The following configuration values are supported by the AMQP outbound-connector:
 | `outbound-connector.amqp.uri`      | [URI](https://docs.oasis-open.org/amqp/addressing/v1.0/csd01/addressing-v1.0-csd01.html#_Toc69731043) |         | Sets the URI of the AMQP 1.0 broker.                              |
 | `outbound-connector.amqp.eddie-id` | String                                                                                                |         | Sets the ID of the eddie instance in relation to the amqp broker. |
 
+In JSON, fields without a value are omitted instead of being sent as `null`, matching the XML output.
+
 ### .properties file
 
 Example configuration for an `application.properties` file:
