@@ -36,7 +36,6 @@ import java.util.List;
 @Component
 public class KafkaConnector {
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaConnector.class);
-    private static final String COULD_NOT_PRODUCE = "Could not produce ";
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final TopicConfiguration config;
 
@@ -317,7 +316,7 @@ public class KafkaConnector {
                 cimToHeaders(envelope)
         );
         sendToKafka(toSend,
-                    COULD_NOT_PRODUCE + TopicStructure.DataModels.CIM_1_12 + " validated historical data market document message");
+                    "Could not produce CIM v1.12 validated historical data market document message");
         LOGGER.debug("Produced {} validated historical data market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_12,
                      metaInformation.getRequestPermissionId());
@@ -364,7 +363,7 @@ public class KafkaConnector {
                 cimToHeaders(marketDocument)
         );
         sendToKafka(toSend,
-                    COULD_NOT_PRODUCE + TopicStructure.DataModels.CIM_1_04 + " near real-time market document message");
+                    "Could not produce " + TopicStructure.DataModels.CIM_1_04 + " near real-time market document message");
         LOGGER.debug("Produced {} near real-time market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_04,
                      marketDocument.getMessageDocumentHeaderMetaInformationPermissionId());
@@ -380,7 +379,7 @@ public class KafkaConnector {
                 cimToHeaders(marketDocument)
         );
         sendToKafka(toSend,
-                    COULD_NOT_PRODUCE + TopicStructure.DataModels.CIM_1_12 + " near real-time market document message");
+                    "Could not produce " + TopicStructure.DataModels.CIM_1_12 + " near real-time market document message");
         LOGGER.debug("Produced {} near real-time market document message for permission request {}",
                      TopicStructure.DataModels.CIM_1_12,
                      metaInformation.getRequestPermissionId());
