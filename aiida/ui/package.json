@@ -21,7 +21,7 @@
     "date-fns": "^4.4.0",
     "keycloak-js": "^26.2.3",
     "vue": "^3.5.44",
-    "vue-i18n": "^11.2.8",
+    "vue-i18n": "^11.4.14",
     "vue-qrcode-reader": "^5.7.3",
     "vue-router": "^4.6.4"
   },
