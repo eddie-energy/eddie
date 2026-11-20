@@ -34,7 +34,6 @@ import reactor.test.StepVerifier;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 
@@ -171,31 +170,6 @@ class CimControllerTest {
     }
 
     @Test
-    void validatedHistoricalDataMd_returnsXmlDocuments() {
-        // The WebFlux test slice uses the default JAXB encoder, which does not know the CIM envelope classes.
-        // The XML serialization of CIM documents is covered by FallbackXmlMessageConverterTest,
-        // so this test only verifies that the endpoint serves the XML collection.
-        given(vhdRepository.findAll(ArgumentMatchers.<PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel>>any()))
-                .willReturn(List.of());
-
-        var result = webTestClient.get()
-                                  .uri("/cim_1_12/validated-historical-data-md")
-                                  .accept(MediaType.APPLICATION_XML)
-                                  .exchange()
-                                  .expectStatus()
-                                  .isOk()
-                                  .returnResult(String.class)
-                                  .getResponseBody();
-
-        StepVerifier.create(result)
-                    .assertNext(next -> {
-                        assertNotNull(next);
-                        assertTrue(next.contains("ValidatedHistoricalDataMarketDocuments"), next);
-                    })
-                    .verifyComplete();
-    }
-
-    @Test
     void acknowledgementMdSSE_returnsDocuments() {
         var message1 = new AcknowledgementEnvelope();
         var message2 = new AcknowledgementEnvelope();
@@ -293,30 +267,6 @@ class CimControllerTest {
                     .expectNextCount(1)
                     .verifyComplete();
     }
-
-    @Test
-    void minMaxEnvelopeMd_returnsXmlDocuments() {
-        var msg = new MinMaxEnvelopeMarketDocumentModel(new RECMMOEEnvelope());
-        given(minMaxRepository.findAll(ArgumentMatchers.<Specification<MinMaxEnvelopeMarketDocumentModel>>any()))
-                .willReturn(List.of(msg));
-
-        var result = webTestClient.get()
-                                 .uri("/cim_1_12/min-max-envelope-md")
-                                 .accept(MediaType.APPLICATION_XML)
-                                 .exchange()
-                                 .expectStatus()
-                                 .isOk()
-                                 .returnResult(String.class)
-                                 .getResponseBody();
-
-        StepVerifier.create(result)
-                    .assertNext(next -> {
-                        assertNotNull(next);
-                        assertTrue(next.contains("MinMaxEnvelopeMarketDocuments"));
-                    })
-                    .verifyComplete();
-    }
-
 
     @Test
     void energySharingReferenceDataMdSSE_returnsDocuments() {

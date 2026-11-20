@@ -160,6 +160,20 @@ class ProvisioningServiceIntegrationTest {
     }
 
     @Test
+    void creatingInboundDataSource_withNewStreamingConfig_persistsBothEntities() {
+        var permission = createPermissionWithoutStreamingConfig();
+        permission.setMqttStreamingConfig(streamingConfig(permission.id()));
+
+        var dataSource = new InboundDataSource.Builder(permission).build();
+
+        assertThatCode(() -> inboundDataSourceRepository.saveAndFlush(dataSource)).doesNotThrowAnyException();
+
+        entityManager.clear();
+        var persistedDataSource = inboundDataSourceRepository.findById(dataSource.id()).orElseThrow();
+        assertThat(persistedDataSource.acknowledgementTopic()).isEqualTo("aiida/ack");
+    }
+
+    @Test
     void loadingMqttProvisioningDataSourcesForStartup_eagerlyLoadsMqttConfig() throws Exception {
         var permissionId = createInboundPermission();
         var mqttClient = mock(MqttAsyncClient.class);
@@ -354,6 +368,12 @@ class ProvisioningServiceIntegrationTest {
     }
 
     private Permission createPermission() {
+        var permission = createPermissionWithoutStreamingConfig();
+        permission.setMqttStreamingConfig(streamingConfig(permission.id()));
+        return permissionRepository.saveAndFlush(permission);
+    }
+
+    private Permission createPermissionWithoutStreamingConfig() {
         var permissionId = UUID.randomUUID();
         var permission = new Permission(
                 UUID.randomUUID(),
@@ -366,9 +386,11 @@ class ProvisioningServiceIntegrationTest {
 
         var localDataNeed = aiidaLocalDataNeedRepository.saveAndFlush(inboundDataNeed());
         permission.initializeFromDataNeed(localDataNeed);
-        permissionRepository.saveAndFlush(permission);
+        return permissionRepository.saveAndFlush(permission);
+    }
 
-        permission.setMqttStreamingConfig(new MqttStreamingConfig(new MqttDto(
+    private static MqttStreamingConfig streamingConfig(UUID permissionId) {
+        return new MqttStreamingConfig(new MqttDto(
                 "tcp://aiida-broker.test:1883",
                 permissionId.toString(),
                 "streaming-password",
@@ -376,8 +398,7 @@ class ProvisioningServiceIntegrationTest {
                 "aiida/status",
                 "aiida/command",
                 "aiida/ack"
-        )));
-        return permissionRepository.saveAndFlush(permission);
+        ));
     }
 
     private static InboundAiidaLocalDataNeed inboundDataNeed() {
