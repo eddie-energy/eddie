@@ -15,8 +15,8 @@ import energy.eddie.aiida.models.datasource.mqtt.MqttAccessControlEntry;
 import energy.eddie.aiida.models.datasource.mqtt.MqttDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.SecretGenerator;
 import energy.eddie.aiida.models.mqtt.MqttConnection;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -44,7 +44,7 @@ public class InboundDataSource extends MqttDataSource {
     @OneToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "permission_id", table = TABLE_NAME)
     @JsonIgnore
-    protected Permission permission;
+    protected InboundPermission permission;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "provisioning_type", table = TABLE_NAME, nullable = false)
@@ -96,12 +96,12 @@ public class InboundDataSource extends MqttDataSource {
         );
     }
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission)
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, InboundPermission permission)
             throws MissingMqttStreamingConfigException {
         this(dto, userId, permission, SecretGenerator.generate());
     }
 
-    public InboundDataSource(InboundDataSourceDto dto, UUID userId, Permission permission, String accessCode)
+    public InboundDataSource(InboundDataSourceDto dto, UUID userId, InboundPermission permission, String accessCode)
             throws MissingMqttStreamingConfigException {
         super(dto, userId);
         this.permission = permission;
@@ -121,14 +121,14 @@ public class InboundDataSource extends MqttDataSource {
         this.accessCode = accessCode;
     }
 
-    public Permission permission() {
+    public InboundPermission permission() {
         return permission;
     }
 
     @JsonProperty
     public Set<AiidaSchema> schemas() {
-        var dataNeed = permission == null ? null : permission.dataNeed();
-        return dataNeed == null ? Set.of() : dataNeed.schemas();
+        // legacy inbound data sources may have lost their permission
+        return permission == null ? Set.of() : permission.dataNeed().schemas();
     }
 
     @Nullable
@@ -249,15 +249,15 @@ public class InboundDataSource extends MqttDataSource {
     public static class Builder {
         private final InboundDataSourceDto dataSourceDto;
         private final UUID userId;
-        private final Permission permission;
+        private final InboundPermission permission;
 
         @SuppressWarnings("NullAway")
-        public Builder(Permission permission) {
+        public Builder(InboundPermission permission) {
             this.userId = Objects.requireNonNull(permission.userId());
 
             this.permission = Objects.requireNonNull(permission);
 
-            var dataNeed = Objects.requireNonNull(permission.dataNeed());
+            var dataNeed = permission.dataNeed();
             this.dataSourceDto = new InboundDataSourceDto(dataNeed.asset(), permission.id());
         }
 

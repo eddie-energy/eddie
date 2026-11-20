@@ -5,14 +5,13 @@ package energy.eddie.aiida.web;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.dtos.permission.PendingPermissionDto;
 import energy.eddie.aiida.dtos.permission.PermissionDto;
 import energy.eddie.aiida.errors.GlobalExceptionHandler;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
 import energy.eddie.aiida.errors.permission.*;
-import energy.eddie.aiida.models.permission.InboundMessageFormat;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.services.AuthService;
 import energy.eddie.aiida.services.ConnectionStatusService;
 import energy.eddie.aiida.services.PermissionService;
@@ -22,7 +21,6 @@ import energy.eddie.api.agnostic.process.model.PermissionStateTransitionExceptio
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
@@ -42,6 +40,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.inboundDataNeed;
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.outboundDataNeed;
 import static energy.eddie.api.agnostic.GlobalConfig.ERRORS_JSON_PATH;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -72,15 +72,22 @@ class PermissionControllerTest {
     private PermissionService permissionService;
     @MockitoBean
     private StreamerManager streamerManager;
-    @Mock
-    private Permission mockPermission;
     private Instant grant;
     private ObjectMapper mapper;
 
     @BeforeEach
     void setUp() throws Exception {
         grant = Instant.now();
-        var permission = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
+        var permission = new OutboundPermission(eddieId,
+                                                permissionId,
+                                                "https://example.org",
+                                                "accessToken",
+                                                userId,
+                                                outboundDataNeed(),
+                                                "connection-id",
+                                                Instant.parse("2026-01-01T00:00:00Z"),
+                                                Instant.parse("2026-12-31T00:00:00Z"),
+                                                Instant.now());
         when(permissionService.acceptOutboundPermission(any(), any())).thenReturn(permission);
         when(permissionService.acceptInboundPermission(any(), any())).thenReturn(permission);
         when(permissionService.revokePermission(any())).thenReturn(permission);
@@ -115,10 +122,9 @@ class PermissionControllerTest {
     @Test
     @WithMockUser
     void getAllPermissions_includesConnectionLimitFields() throws Exception {
-        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
-        when(mockPermission.monitoringDataSourceId()).thenReturn(dataSourceId);
-        when(mockPermission.supportsConnectionLimits()).thenReturn(true);
-        when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(mockPermission));
+        var permission = inboundPermission();
+        permission.updateMonitoringDataSource(dataSourceId);
+        when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(permission));
 
         mockMvc.perform(get("/permissions"))
                .andExpect(status().isOk())
@@ -128,11 +134,56 @@ class PermissionControllerTest {
 
     @Test
     @WithMockUser
+    void getAllPermissions_includesTypeAndOnlyFieldsOfItsDirection() throws Exception {
+        var outbound = new OutboundPermission(eddieId,
+                                              UUID.randomUUID(),
+                                              "https://example.org",
+                                              "accessToken",
+                                              userId,
+                                              outboundDataNeed(),
+                                              "connection-id",
+                                              Instant.parse("2026-01-01T00:00:00Z"),
+                                              Instant.parse("2026-12-31T00:00:00Z"),
+                                              Instant.now());
+        when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(inboundPermission(), outbound));
+
+        mockMvc.perform(get("/permissions"))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].type").value("inbound"))
+               .andExpect(jsonPath("$[0].inboundMessageFormat").value("CIM_1_12"))
+               .andExpect(jsonPath("$[0].transmissionEnabled").doesNotExist())
+               .andExpect(jsonPath("$[0].effectiveTransmissionSchedule").doesNotExist())
+               .andExpect(jsonPath("$[1].type").value("outbound"))
+               .andExpect(jsonPath("$[1].transmissionEnabled").value(true))
+               .andExpect(jsonPath("$[1].effectiveTransmissionSchedule").value("*/5 * * * * *"))
+               .andExpect(jsonPath("$[1].inboundMessageFormat").doesNotExist())
+               .andExpect(jsonPath("$[1].supportsConnectionLimits").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser
     void getAllPermissions_includesDerivedConnectionStatusForAcceptedPermissions() throws Exception {
-        var accepted = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
+        var accepted = new OutboundPermission(eddieId,
+                                              permissionId,
+                                              "https://example.org",
+                                              "accessToken",
+                                              userId,
+                                              outboundDataNeed(),
+                                              "connection-id",
+                                              Instant.now().minusSeconds(60),
+                                              Instant.parse("2026-12-31T00:00:00Z"),
+                                              Instant.now());
         accepted.setStatus(PermissionStatus.ACCEPTED);
-        accepted.setStartTime(Instant.now().minusSeconds(60));
-        var revoked = new Permission(eddieId, UUID.randomUUID(), "https://example.org", "accessToken", userId);
+        var revoked = new OutboundPermission(eddieId,
+                                             UUID.randomUUID(),
+                                             "https://example.org",
+                                             "accessToken",
+                                             userId,
+                                             outboundDataNeed(),
+                                             "connection-id",
+                                             Instant.parse("2026-01-01T00:00:00Z"),
+                                             Instant.parse("2026-12-31T00:00:00Z"),
+                                             Instant.now());
         revoked.setStatus(PermissionStatus.REVOKED);
         when(permissionService.getAllPermissionsSortedByGrantTime()).thenReturn(List.of(accepted, revoked));
         when(streamerManager.isConnected(permissionId)).thenReturn(true);
@@ -164,12 +215,12 @@ class PermissionControllerTest {
     @Test
     @WithMockUser
     void getAcceptedInboundPermissions_returnsPermissionsWithDataSource() throws Exception {
-        when(mockPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
-        when(permissionService.getAcceptedInboundPermissions()).thenReturn(List.of(mockPermission));
+        when(permissionService.getAcceptedInboundPermissions()).thenReturn(List.of(inboundPermission()));
 
         mockMvc.perform(get("/permissions/inbound/active"))
                .andExpect(status().isOk())
-               .andExpect(jsonPath("$.length()").value(1));
+               .andExpect(jsonPath("$.length()").value(1))
+               .andExpect(jsonPath("$[0].type").value("inbound"));
 
         verify(permissionService).getAcceptedInboundPermissions();
     }
@@ -228,6 +279,37 @@ class PermissionControllerTest {
         verify(permissionService).fetchPermissionDetails(argThat(dto -> dto.permissionIds()
                                                                         .getFirst()
                                                                         .equals(permissionId)));
+    }
+
+    @Test
+    @WithMockUser
+    void givenInboundAndOutboundRequests_fetchPermissionDetails_returnsTypedDetails() throws Exception {
+        // Given
+        var outboundPermission = new OutboundPermission(eddieId,
+                                                        permissionId,
+                                                        "https://example.org",
+                                                        "accessToken",
+                                                        userId,
+                                                        outboundDataNeed(),
+                                                        "connection-id",
+                                                        Instant.parse("2026-12-01T00:00:00Z"),
+                                                        Instant.parse("2026-12-31T00:00:00Z"),
+                                                        Instant.now());
+        var inboundPermission = inboundPermission();
+        when(permissionService.fetchPermissionDetails(any()))
+                .thenReturn(List.of(PendingPermissionDto.from(inboundPermission),
+                                    PendingPermissionDto.from(outboundPermission)));
+        var requestJson = "{\"eddieId\":\"" + eddieId + "\", \"permissionIds\":[\"" + permissionId + "\"],\"handshakeUrl\":\"http://localhost:8080/region-connectors/aiida/permission-request/41d0a13e-688a-450d-acab-7a6b2951cde2\",\"accessToken\":\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.\"}";
+
+        // When, Then
+        mockMvc.perform(post("/permissions/details").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(requestJson))
+               .andExpect(status().isOk())
+               .andExpect(jsonPath("$[0].type").value("inbound"))
+               .andExpect(jsonPath("$[0].inboundMessageFormat").value("CIM_1_12"))
+               .andExpect(jsonPath("$[0].supportsConnectionLimits").value(true))
+               .andExpect(jsonPath("$[1].type").value("outbound"))
+               .andExpect(jsonPath("$[1].inboundMessageFormat").doesNotExist())
+               .andExpect(jsonPath("$[1].supportsConnectionLimits").doesNotExist());
     }
 
     @Test
@@ -552,17 +634,54 @@ class PermissionControllerTest {
                .andExpect(status().isBadRequest());
     }
 
+    private InboundPermission inboundPermission() {
+        return new InboundPermission(eddieId,
+                                               permissionId,
+                                               "https://example.org",
+                                               "accessToken",
+                                               userId,
+                                               inboundDataNeed(),
+                                               "connection-id",
+                                               Instant.parse("2026-01-01T00:00:00Z"),
+                                               Instant.parse("2026-12-31T00:00:00Z"),
+                                               Instant.now());
+    }
+
     private List<Permission> sampleDataForGetAllPermissionsTest() {
-        var permission1 = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
-        permission1.setGrantTime(grant);
+        var permission1 = new OutboundPermission(eddieId,
+                                                 permissionId,
+                                                 "https://example.org",
+                                                 "accessToken",
+                                                 userId,
+                                                 outboundDataNeed(),
+                                                 "connection-id",
+                                                 Instant.parse("2026-01-01T00:00:00Z"),
+                                                 Instant.parse("2026-12-31T00:00:00Z"),
+                                                 grant);
 
         grant = grant.plusSeconds(1000);
-        var permission2 = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
-        permission2.setGrantTime(grant);
+        var permission2 = new OutboundPermission(eddieId,
+                                                 permissionId,
+                                                 "https://example.org",
+                                                 "accessToken",
+                                                 userId,
+                                                 outboundDataNeed(),
+                                                 "connection-id",
+                                                 Instant.parse("2026-01-01T00:00:00Z"),
+                                                 Instant.parse("2026-12-31T00:00:00Z"),
+                                                 grant);
 
         grant = grant.plusSeconds(5000);
-        var permission3 = new Permission(eddieId, permissionId, "https://example.org", "accessToken", userId);
-        permission3.setGrantTime(grant);
+        var permission3 = new OutboundPermission(eddieId,
+                                                 permissionId,
+                                                 "https://example.org",
+                                                 "accessToken",
+                                                 userId,
+                                                 outboundDataNeed(),
+                                                 "connection-id",
+                                                 Instant.parse("2026-01-01T00:00:00Z"),
+                                                 Instant.parse("2026-12-31T00:00:00Z"),
+                                                 grant);
 
         // grant time order is permission3, permission2, permission1
         return List.of(permission3, permission2, permission1);

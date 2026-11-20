@@ -7,7 +7,7 @@ import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
 import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.services.AuthService;
 import org.springframework.stereotype.Service;
 
@@ -18,16 +18,16 @@ import java.util.UUID;
 @Service
 public class ConnectionLimitViolationService {
     private final ConnectionLimitViolationRepository connectionLimitViolationRepository;
-    private final PermissionRepository permissionRepository;
+    private final InboundPermissionRepository inboundPermissionRepository;
     private final AuthService authService;
 
     public ConnectionLimitViolationService(
             ConnectionLimitViolationRepository connectionLimitViolationRepository,
-            PermissionRepository permissionRepository,
+            InboundPermissionRepository inboundPermissionRepository,
             AuthService authService
     ) {
         this.connectionLimitViolationRepository = connectionLimitViolationRepository;
-        this.permissionRepository = permissionRepository;
+        this.inboundPermissionRepository = inboundPermissionRepository;
         this.authService = authService;
     }
 
@@ -39,7 +39,7 @@ public class ConnectionLimitViolationService {
             Instant from,
             Instant to
     ) throws InvalidUserException, PermissionNotFoundException {
-        if (permissionRepository.findByPermissionIdAndUserId(permissionId, authService.getCurrentUserId()).isEmpty()) {
+        if (!inboundPermissionRepository.existsByPermissionIdAndUserId(permissionId, authService.getCurrentUserId())) {
             throw new PermissionNotFoundException(permissionId);
         }
 

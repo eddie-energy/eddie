@@ -6,8 +6,8 @@ package energy.eddie.aiida.adapters.datasource.inbound.ack.cim;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.InboundPermission;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.InboundProcessingResult;
 import energy.eddie.aiida.models.record.InboundRecord;
 import energy.eddie.aiida.services.ApplicationInformationService;
@@ -49,9 +49,9 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
     @Mock
     private ApplicationInformationService applicationInformationService;
     @Mock
-    private Permission permission;
+    private InboundPermission permission;
     @Mock
-    private AiidaLocalDataNeed dataNeed;
+    private InboundAiidaLocalDataNeed dataNeed;
     @Mock
     private InboundDataSource inboundDataSource;
     @Mock
@@ -102,7 +102,7 @@ class MinMaxEnvelopeAckFormatterStrategyTest {
                     "createdDateTime"
             );
             var expectedStream = classLoader.getResourceAsStream("cim/v1_12/min-max-envelope.xml");
-            assert expectedStream != null;
+            assertNotNull(expectedStream);
             var expected = new BufferedReader(new InputStreamReader(expectedStream, Charset.defaultCharset()))
                     .lines()
                     .collect(Collectors.joining("\n"));

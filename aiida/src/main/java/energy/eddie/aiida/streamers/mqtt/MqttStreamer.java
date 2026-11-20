@@ -62,16 +62,18 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     /**
      * Creates a new MqttStreamer and initialized the client callback.
      *
-     * @param dependencies     Streamer dependencies shared by every streamer implementation.
-     * @param permission       Permission for which this streamer is created.
-     * @param recordFlux       Flux, where records that should be sent are published.
-     * @param streamingContext Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
-     *                         MQTT configuration values.
+     * @param dependencies        Streamer dependencies shared by every streamer implementation.
+     * @param permission          Permission for which this streamer is created.
+     * @param recordFlux          Flux, where records that should be sent are published.
+     * @param transmissionEnabled Whether messages are published initially, see {@link #setTransmissionEnabled(boolean)}.
+     * @param streamingContext    Holds the {@link MqttAsyncClient} used to send to MQTT broker and the necessary
+     *                            MQTT configuration values.
      */
     public MqttStreamer(
             StreamerDependencies dependencies,
             AcceptedPermission permission,
             Flux<AiidaRecord> recordFlux,
+            boolean transmissionEnabled,
             MqttStreamingContext streamingContext
     ) {
         this.recordFlux = recordFlux;
@@ -85,7 +87,7 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
         this.permissionLatestRecordMap = streamingContext.permissionLatestRecordMap();
         this.secretsService = dependencies.secretsService();
         this.connectionStatusEventStream = dependencies.connectionStatusEventStream();
-        this.transmissionEnabled = permission.transmissionEnabled();
+        this.transmissionEnabled = transmissionEnabled;
 
         client.setCallback(this);
     }
@@ -157,67 +159,6 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     }
 
     @Override
-    public void disconnected(MqttDisconnectResponse disconnectResponse) {
-        LOGGER.warn("MqttStreamer for permission {} has disconnected from remote server {}",
-                    streamingConfig.permissionId(),
-                    disconnectResponse.getServerReference(),
-                    disconnectResponse.getException());
-
-        if (!isBeingTerminated) {
-            publishConnectionStatus(ConnectionStatus.NOT_CONNECTED);
-        }
-    }
-
-    @Override
-    public void mqttErrorOccurred(MqttException exception) {
-        LOGGER.error("Error in MqttStreamer for permission {}", streamingConfig.permissionId(), exception);
-    }
-
-    @Override
-    public void messageArrived(String topic, MqttMessage message) {
-        LOGGER.info("Got permission command message {}", message);
-
-        PermissionCommand command;
-        try {
-            command = mapper.readValue(message.getPayload(), PermissionCommand.class);
-        } catch (JacksonException e) {
-            LOGGER.warn("MqttStreamer for permission {} received an unparseable permission command",
-                        streamingConfig.permissionId(),
-                        e);
-            return;
-        }
-
-        var result = commandSink.tryEmitNext(command);
-        if (result.isFailure()) {
-            LOGGER.error("MqttStreamer for permission {} failed to forward command {}. Error was: {}",
-                         streamingConfig.permissionId(),
-                         command.action(),
-                         result);
-        }
-    }
-
-    @Override
-    public void deliveryComplete(IMqttToken token) {
-        LOGGER.trace("MqttStreamer for permission {}, delivery complete {}", streamingConfig.permissionId(), token);
-    }
-
-    @Override
-    public void connectComplete(boolean reconnect, String serverURI) {
-        LOGGER.debug("MqttStreamer for permission {} has connected to server {}, was because of reconnect: {}",
-                     streamingConfig.permissionId(),
-                     serverURI,
-                     reconnect);
-
-        subscribeToCommandTopic();
-        retryFailedToSendMessages();
-        publishConnectionStatus(ConnectionStatus.CONNECTED);
-    }
-
-    private void publishConnectionStatus(ConnectionStatus connectionStatus) {
-        connectionStatusEventStream.publish(permission.userId(), permission.id(), connectionStatus);
-    }
-
-    @Override
     public void setTransmissionEnabled(boolean enabled) {
         this.transmissionEnabled = enabled;
         LOGGER.info("MqttStreamer for permission {} set transmissionEnabled to {}",
@@ -253,8 +194,67 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     }
 
     @Override
+    public void disconnected(MqttDisconnectResponse disconnectResponse) {
+        LOGGER.warn("MqttStreamer for permission {} has disconnected from remote server {}",
+                    streamingConfig.permissionId(),
+                    disconnectResponse.getServerReference(),
+                    disconnectResponse.getException());
+
+        if (!isBeingTerminated) {
+            publishConnectionStatus(ConnectionStatus.NOT_CONNECTED);
+        }
+    }
+
+    @Override
+    public void mqttErrorOccurred(MqttException exception) {
+        LOGGER.error("Error in MqttStreamer for permission {}", streamingConfig.permissionId(), exception);
+    }
+
+    @Override
+    public void messageArrived(String topic, MqttMessage message) {
+        try {
+            LOGGER.info("Got permission command message {}", message);
+
+            var command = mapper.readValue(message.getPayload(), PermissionCommand.class);
+
+            var result = commandSink.tryEmitNext(command);
+            if (result.isFailure()) {
+                LOGGER.error("MqttStreamer for permission {} failed to forward command {}. Error was: {}",
+                             streamingConfig.permissionId(),
+                             command.action(),
+                             result);
+            }
+        } catch (JacksonException e) {
+            LOGGER.warn("MqttStreamer for permission {} received an unparseable permission command",
+                        streamingConfig.permissionId(),
+                        e);
+        }
+    }
+
+    @Override
+    public void deliveryComplete(IMqttToken token) {
+        LOGGER.trace("MqttStreamer for permission {}, delivery complete {}", streamingConfig.permissionId(), token);
+    }
+
+    @Override
+    public void connectComplete(boolean reconnect, String serverURI) {
+        LOGGER.debug("MqttStreamer for permission {} has connected to server {}, was because of reconnect: {}",
+                     streamingConfig.permissionId(),
+                     serverURI,
+                     reconnect);
+
+        subscribeToCommandTopic();
+        retryFailedToSendMessages();
+        publishConnectionStatus(ConnectionStatus.CONNECTED);
+    }
+
+    @Override
     public void authPacketArrived(int reasonCode, MqttProperties properties) {
         // Not needed
+    }
+
+    private void publishConnectionStatus(ConnectionStatus connectionStatus) {
+        connectionStatusEventStream.publish(permission.userId(), permission.id(), connectionStatus);
     }
 
     private void publishRecord(AiidaRecord aiidaRecord) {

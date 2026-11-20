@@ -87,10 +87,13 @@ public class PermissionController {
     }
 
     @Operation(summary = "Get accepted inbound permissions", description = "Get accepted inbound permissions that can be used as a data source selection.", operationId = "getAcceptedInboundPermissions", tags = {"permission"})
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PermissionDto.class))))})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = InboundPermissionDto.class))))})
     @GetMapping(path = "/inbound/active", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<PermissionDto>> getAcceptedInboundPermissions() throws InvalidUserException {
-        return ResponseEntity.ok(toDtos(permissionService.getAcceptedInboundPermissions()));
+    public ResponseEntity<List<InboundPermissionDto>> getAcceptedInboundPermissions() throws InvalidUserException {
+        return ResponseEntity.ok(permissionService.getAcceptedInboundPermissions()
+                                                  .stream()
+                                                  .map(connectionStatusService::toDto)
+                                                  .toList());
     }
 
     @Operation(summary = "Fetch details of permission requests", description = "Fetches and validates the details of the permission requests contained in an AIIDA code. Nothing is persisted, so the AIIDA code can be used again until the permission requests are accepted or rejected.", operationId = "fetchPermissionDetails", tags = {"permission"})
@@ -180,7 +183,7 @@ public class PermissionController {
             @Parameter(name = "permissionId", description = "Unique ID of the permission", example = "f38a1953-ae7a-480c-814f-1cca3989981e") @PathVariable UUID permissionId
     ) throws PermissionStateTransitionException, PermissionNotFoundException, UnauthorizedException,
              InvalidUserException, MissingInboundMessageFormatException, MissingDisplayNameException,
-             InvalidInboundPermissionException, InboundDataSourceInUseException {
+             InboundDataSourceInUseException {
         LOGGER.atInfo()
               // Validate that it's a real permission ID and not some malicious string
               .addArgument(() -> permissionId)

@@ -8,6 +8,8 @@ import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.InboundPermission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
@@ -30,10 +32,8 @@ import reactor.core.scheduler.Schedulers;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.Objects;
 
 import static energy.eddie.aiida.models.permission.PermissionStatus.TERMINATED;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Handles {@link PermissionCommand}s that the EP sends to a streamer. The {@link energy.eddie.aiida.streamers.mqtt.MqttStreamer}
@@ -100,13 +100,41 @@ public class PermissionCommandService {
 
         switch (command) {
             case PermissionCommand.Terminate ignored -> terminate(permission);
-            case PermissionCommand.SetTransmissionEnabled setTransmissionEnabled ->
-                    setTransmissionEnabled(permission, setTransmissionEnabled.enabled());
-            case PermissionCommand.UpdateTransmissionSchedule updateTransmissionSchedule ->
-                    updateSchedule(permission, updateTransmissionSchedule.transmissionSchedule());
-            case PermissionCommand.UpdateLimitDefaults updateLimitDefaults ->
-                    updateLimitDefaults(permission, updateLimitDefaults.minLimitKw(), updateLimitDefaults.maxLimitKw());
+            case PermissionCommand.SetTransmissionEnabled setTransmissionEnabled -> {
+                if (permission instanceof OutboundPermission outboundPermission) {
+                    setTransmissionEnabled(outboundPermission, setTransmissionEnabled.enabled());
+                } else {
+                    rejectWrongDirection(permission, action, OutboundPermission.DISCRIMINATOR_VALUE);
+                }
+            }
+            case PermissionCommand.UpdateTransmissionSchedule updateTransmissionSchedule -> {
+                if (permission instanceof OutboundPermission outboundPermission) {
+                    updateSchedule(outboundPermission, updateTransmissionSchedule.transmissionSchedule());
+                } else {
+                    rejectWrongDirection(permission, action, OutboundPermission.DISCRIMINATOR_VALUE);
+                }
+            }
+            case PermissionCommand.UpdateLimitDefaults updateLimitDefaults -> {
+                if (permission instanceof InboundPermission inboundPermission) {
+                    updateLimitDefaults(inboundPermission,
+                                        updateLimitDefaults.minLimitKw(),
+                                        updateLimitDefaults.maxLimitKw());
+                } else {
+                    rejectWrongDirection(permission, action, InboundPermission.DISCRIMINATOR_VALUE);
+                }
+            }
         }
+    }
+
+    private static void rejectWrongDirection(
+            Permission permission,
+            PermissionCommand.Action action,
+            String requiredDirection
+    ) {
+        LOGGER.warn("Rejected command {} for permission {}: permission is not {}",
+                    action,
+                    permission.id(),
+                    requiredDirection);
     }
 
     @PostConstruct
@@ -128,19 +156,18 @@ public class PermissionCommandService {
         }
 
         var dataNeed = permission.dataNeed();
-        return dataNeed != null
-                && dataNeed.allowedPermissionCommands() != null
+        return dataNeed.allowedPermissionCommands() != null
                 && dataNeed.allowedPermissionCommands().contains(action);
     }
 
-    private void setTransmissionEnabled(Permission permission, boolean enabled) {
+    private void setTransmissionEnabled(OutboundPermission permission, boolean enabled) {
         permission.setTransmissionEnabled(enabled);
         permissionRepository.save(permission);
         streamerManager.setTransmissionEnabled(permission.id(), enabled);
         LOGGER.info("Set transmissionEnabled to {} for permission {}", enabled, permission.id());
     }
 
-    private void updateSchedule(Permission permission, String transmissionSchedule) {
+    private void updateSchedule(OutboundPermission permission, String transmissionSchedule) {
         CronExpression cron;
         try {
             cron = CronExpression.parse(transmissionSchedule);
@@ -161,14 +188,13 @@ public class PermissionCommandService {
     }
 
     private void updateLimitDefaults(
-            Permission permission,
+            InboundPermission permission,
             @Nullable BigDecimal minLimitKw,
             @Nullable BigDecimal maxLimitKw
     ) {
-        var dataNeed = Objects.requireNonNull(permission.dataNeed());
-        if (!dataNeed.supportsConnectionLimits()) {
+        if (!permission.supportsConnectionLimits()) {
             LOGGER.warn(
-                    "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: permission is not inbound or does not have the MIN_MAX_ENVELOPE_CIM_V1_12 schema",
+                    "Rejected UPDATE_LIMIT_DEFAULTS for permission {}: data need does not have the MIN_MAX_ENVELOPE_CIM_V1_12 schema",
                     permission.id());
             return;
         }
@@ -210,8 +236,8 @@ public class PermissionCommandService {
         permission.setStatus(TERMINATED);
         permission = permissionRepository.save(permission);
 
-        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
-        var connectionId = requireNonNull(permission.connectionId());
+        var dataNeedId = permission.dataNeed().dataNeedId();
+        var connectionId = permission.connectionId();
         var terminatedMessage = new AiidaConnectionStatusMessageDto(connectionId,
                                                                     dataNeedId,
                                                                     clock.instant(),

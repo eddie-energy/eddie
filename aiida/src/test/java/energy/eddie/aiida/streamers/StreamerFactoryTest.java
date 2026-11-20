@@ -4,7 +4,7 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.ObjectMapperCreatorUtil;
-import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -34,7 +34,7 @@ class StreamerFactoryTest {
     @Mock
     private MqttStreamingConfig streamingConfig;
     @Mock
-    private AcceptedPermission permission;
+    private AcceptedOutboundPermission permission;
     @Mock
     private MqttAsyncClient mqttClient;
     @Mock
@@ -71,7 +71,7 @@ class StreamerFactoryTest {
                                                         new ConnectionStatusEventStream());
 
             // When
-            var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, Flux.empty());
+            var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, Flux.empty(), true);
 
             // Then
             assertInstanceOf(MqttStreamer.class, streamer);

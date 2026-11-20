@@ -5,8 +5,9 @@ package energy.eddie.aiida.schemas.rtd.cim.v1_12;
 
 import energy.eddie.aiida.errors.formatter.CimSchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -207,8 +208,8 @@ class CimStrategyTest {
     }
 
     private static AcceptedPermission permission(DataSource dataSource) {
-        var permission = mock(AcceptedPermission.class);
-        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var permission = mock(AcceptedOutboundPermission.class);
+        var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
 
         when(permission.id()).thenReturn(PERMISSION_ID);
         when(permission.connectionId()).thenReturn("connection-123");

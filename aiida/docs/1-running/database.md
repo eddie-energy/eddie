@@ -43,6 +43,7 @@ table.
 Each `aiida_record` may contain multiple measurements, which are stored in the `aiida_record_value` table.
 When a user creates a permission for an Eligible Party (EP) to access their data, a new entry is created in the
 `permission` table. This permission is always associated with one data source.
+Inbound and outbound permissions share this table and are told apart by the `type` column (`inbound` or `outbound`).
 
 For each permission, the given data need is stored locally as a copy in the `aiida_local_data_need` table.
 If the data need is MQTT-based, the MQTT configuration is stored in the `mqtt_streaming_config` table.
