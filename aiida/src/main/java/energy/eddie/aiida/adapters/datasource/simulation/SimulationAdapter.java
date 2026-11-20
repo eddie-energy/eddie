@@ -29,11 +29,7 @@ import java.util.Random;
 public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimulationAdapter.class);
 
-    private static final long MIN_POSITIVE_WATT = 200;
-    private static final long MAX_POSITIVE_WATT = 1800;
     private static final long AVG_POSITIVE_WATT = 400;
-    private static final long MIN_NEGATIVE_WATT = 0;
-    private static final long MAX_NEGATIVE_WATT = 1200;
     private static final long AVG_NEGATIVE_WATT = 100;
 
     private static final Instant SIMULATION_START = Instant.parse("2024-01-01T00:00:00Z");
@@ -124,8 +120,8 @@ public class SimulationAdapter extends DataSourceAdapter<SimulationDataSource> {
     }
 
     private void emitRandomAiidaRecords() {
-        var positivePower = random.nextLong(MIN_POSITIVE_WATT, MAX_POSITIVE_WATT);
-        var negativePower = random.nextLong(MIN_NEGATIVE_WATT, MAX_NEGATIVE_WATT);
+        var positivePower = random.nextLong(dataSource().minConsumptionWatt(), dataSource().maxConsumptionWatt() + 1);
+        var negativePower = random.nextLong(dataSource().minProductionWatt(), dataSource().maxProductionWatt() + 1);
 
         var positiveEnergy = positivePower * dataSource.pollingInterval();
         var negativeEnergy = negativePower * dataSource.pollingInterval();

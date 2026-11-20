@@ -27,6 +27,12 @@ import { fetchDataSourcesFull } from '@/stores/dataSources'
 import { useI18n } from 'vue-i18n'
 
 const { t, locale } = useI18n()
+const SIMULATION_DEFAULTS = {
+  minConsumptionWatt: 200,
+  maxConsumptionWatt: 1800,
+  minProductionWatt: 0,
+  maxProductionWatt: 1200,
+}
 const getEmptyDataSource = (): AiidaDataSource => {
   return {
     name: '',
@@ -42,6 +48,7 @@ const getEmptyDataSource = (): AiidaDataSource => {
     icon: '' as AiidaDataSourceIcon,
     meterId: undefined,
     operatorId: undefined,
+    ...SIMULATION_DEFAULTS,
   }
 }
 // All EU countries
@@ -176,6 +183,25 @@ const handleRequired = (value: string | number | undefined, label: string, key: 
   }
 }
 
+const validateSimulationRange = (
+  min: number | undefined,
+  max: number | undefined,
+  minKey: string,
+  maxKey: string,
+) => {
+  const minMissing = typeof min !== 'number'
+  const maxMissing = typeof max !== 'number'
+  if (minMissing) {
+    errors.value[minKey] = `* ${t('datasources.modal.isRequired')}`
+  }
+  if (maxMissing) {
+    errors.value[maxKey] = `* ${t('datasources.modal.isRequired')}`
+  }
+  if (typeof min === 'number' && typeof max === 'number' && min > max) {
+    errors.value[maxKey] = t('datasources.modal.maxLessThanMin')
+  }
+}
+
 const validateForm = () => {
   errors.value = {}
   const requiredFields = [
@@ -221,6 +247,18 @@ const validateForm = () => {
       dataSource.value?.pollingInterval,
       t('datasources.modal.pollingInterval'),
       'pollInterval',
+    )
+    validateSimulationRange(
+      dataSource.value?.minConsumptionWatt,
+      dataSource.value?.maxConsumptionWatt,
+      'minConsumptionWatt',
+      'maxConsumptionWatt',
+    )
+    validateSimulationRange(
+      dataSource.value?.minProductionWatt,
+      dataSource.value?.maxProductionWatt,
+      'minProductionWatt',
+      'maxProductionWatt',
     )
   }
   if (dataSource.value?.type === 'SINAPSI_ALFA') {
@@ -402,24 +440,86 @@ defineExpose({ showModal })
               <p v-if="errors['device']" class="error-message">{{ errors['device'] }}</p>
             </div>
           </div>
-          <div
-            class="input-field extra-margin"
-            v-if="dataSource.type === 'SIMULATION'"
-            key="simulation"
-          >
-            <label for="pollInterval"> {{ t('datasources.modal.pollingInterval') }} </label>
-            <input
-              :placeholder="t('datasources.modal.pollingInterval')"
-              required
-              type="number"
-              id="pollInterval"
-              v-model="dataSource.pollingInterval"
-              min="0"
-              name="pollInterval"
-            />
-            <p v-if="errors['pollInterval']" class="error-message">
-              {{ errors['pollInterval'] }}
-            </p>
+          <div v-if="dataSource.type === 'SIMULATION'" class="column" key="simulation">
+            <div class="input-field extra-margin">
+              <label for="pollInterval"> {{ t('datasources.modal.pollingInterval') }} </label>
+              <input
+                :placeholder="t('datasources.modal.pollingInterval')"
+                required
+                type="number"
+                id="pollInterval"
+                v-model="dataSource.pollingInterval"
+                min="0"
+                name="pollInterval"
+              />
+              <p v-if="errors['pollInterval']" class="error-message">
+                {{ errors['pollInterval'] }}
+              </p>
+            </div>
+            <div class="input-field">
+              <label for="minConsumptionWatt">
+                {{ t('datasources.modal.minConsumptionWatt') }}
+              </label>
+              <input
+                required
+                type="number"
+                id="minConsumptionWatt"
+                v-model.number="dataSource.minConsumptionWatt"
+                min="0"
+                name="minConsumptionWatt"
+              />
+              <p v-if="errors['minConsumptionWatt']" class="error-message">
+                {{ errors['minConsumptionWatt'] }}
+              </p>
+            </div>
+            <div class="input-field">
+              <label for="maxConsumptionWatt">
+                {{ t('datasources.modal.maxConsumptionWatt') }}
+              </label>
+              <input
+                required
+                type="number"
+                id="maxConsumptionWatt"
+                v-model.number="dataSource.maxConsumptionWatt"
+                min="0"
+                name="maxConsumptionWatt"
+              />
+              <p v-if="errors['maxConsumptionWatt']" class="error-message">
+                {{ errors['maxConsumptionWatt'] }}
+              </p>
+            </div>
+            <div class="input-field">
+              <label for="minProductionWatt">
+                {{ t('datasources.modal.minProductionWatt') }}
+              </label>
+              <input
+                required
+                type="number"
+                id="minProductionWatt"
+                v-model.number="dataSource.minProductionWatt"
+                min="0"
+                name="minProductionWatt"
+              />
+              <p v-if="errors['minProductionWatt']" class="error-message">
+                {{ errors['minProductionWatt'] }}
+              </p>
+            </div>
+            <div class="input-field">
+              <label for="maxProductionWatt">
+                {{ t('datasources.modal.maxProductionWatt') }}
+              </label>
+              <input
+                required
+                type="number"
+                id="maxProductionWatt"
+                v-model.number="dataSource.maxProductionWatt"
+                min="0"
+                name="maxProductionWatt"
+              />
+              <p v-if="errors['maxProductionWatt']" class="error-message">
+                {{ errors['maxProductionWatt'] }}
+              </p>
+            </div>
           </div>
           <div
             class="input-field extra-margin"
