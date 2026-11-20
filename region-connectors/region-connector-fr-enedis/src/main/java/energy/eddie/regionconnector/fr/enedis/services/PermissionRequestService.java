@@ -12,8 +12,10 @@ import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
 import energy.eddie.regionconnector.fr.enedis.api.EnedisSubscribedServicesApi;
 import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
+import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceState;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.SubscribedService;
 import energy.eddie.regionconnector.fr.enedis.permission.events.*;
+import energy.eddie.regionconnector.fr.enedis.permission.request.EnedisPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.CreatedPermissionRequest;
 import energy.eddie.regionconnector.fr.enedis.permission.request.dtos.PermissionRequestForCreation;
 import energy.eddie.regionconnector.fr.enedis.persistence.FrPermissionRequestRepository;
@@ -29,12 +31,15 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.REGION_CONNECTOR_ID;
+import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 @Service
 public class PermissionRequestService {
@@ -117,26 +122,41 @@ public class PermissionRequestService {
             return Authorization.REJECTED;
         }
 
-        var usagePointIds = enedisApiClient.getSubscribedServices(authorizationId)
-                                           .map(response -> response.services() == null
-                                                   ? List.<String>of()
-                                                   : response.services()
-                                                             .stream()
-                                                             .map(SubscribedService::pointId)
-                                                             .filter(Objects::nonNull)
-                                                             .toList())
-                                           .onErrorReturn(List.of())
-                                           .block();
-        if (usagePointIds == null || usagePointIds.isEmpty()) {
+        var services = enedisApiClient.getSubscribedServices(authorizationId)
+                                      .map(response -> response.services() == null
+                                              ? List.<SubscribedService>of()
+                                              : response.services())
+                                      .onErrorReturn(List.of())
+                                      .block();
+        var usagePointIds = activeUsagePointIds(services);
+        if (usagePointIds.isEmpty()) {
             LOGGER.warn("No usage point id found for authorization id '{}'", authorizationId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));
             return Authorization.INVALID;
         }
 
-        var usagePointId = usagePointIds.getFirst();
-        outbox.commit(new FrAcceptedEvent(permissionId, usagePointId));
+        // Enedis reuses one authorization for all consents of a customer, so the services contain the usage points of
+        // earlier consents too, which already have a permission request.
+        var acceptedUsagePointIds = repository.findAllByConnectionIdAndDataNeedIdAndStatus(
+                                                      permissionRequest.connectionId(),
+                                                      permissionRequest.dataNeedId(),
+                                                      PermissionProcessStatus.ACCEPTED
+                                              )
+                                              .stream()
+                                              .map(EnedisPermissionRequest::usagePointId)
+                                              .filter(Objects::nonNull)
+                                              .collect(Collectors.toSet());
+        var newUsagePointIds = usagePointIds.stream()
+                                            .filter(id -> !acceptedUsagePointIds.contains(id))
+                                            .toList();
+        var usagePointId = newUsagePointIds.isEmpty() ? usagePointIds.getFirst() : newUsagePointIds.getFirst();
+        var granularity = permissionRequest.granularity();
+        outbox.commit(new FrAcceptedEvent(permissionId, usagePointId, granularity));
 
-        for (int i = 1; i < usagePointIds.size(); i++) {
+        for (var additionalUsagePointId : newUsagePointIds) {
+            if (additionalUsagePointId.equals(usagePointId)) {
+                continue;
+            }
             var newPermissionId = UUID.randomUUID().toString();
             outbox.commit(new FrCreatedEvent(
                     newPermissionId,
@@ -147,10 +167,10 @@ public class PermissionRequestService {
                     newPermissionId,
                     permissionRequest.start(),
                     permissionRequest.end(),
-                    permissionRequest.granularity()
+                    granularity
             ));
             outbox.commit(new FrSimpleEvent(newPermissionId, PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR));
-            outbox.commit(new FrAcceptedEvent(newPermissionId, usagePointIds.get(i)));
+            outbox.commit(new FrAcceptedEvent(newPermissionId, additionalUsagePointId, granularity));
         }
         return Authorization.ACCEPTED;
     }
@@ -187,5 +207,26 @@ public class PermissionRequestService {
         } catch (URISyntaxException e) {
             throw new IllegalStateException("Unable to create redirect URI");
         }
+    }
+
+    /**
+     * Returns the distinct usage point ids of the services that are active today, the usage points of the most recently
+     * started services first. Enedis returns one service per measure type and direction, so a usage point is usually
+     * part of several services.
+     */
+    private static List<String> activeUsagePointIds(@Nullable List<SubscribedService> services) {
+        if (services == null) {
+            return List.of();
+        }
+        var today = LocalDate.now(ZONE_ID_FR);
+        return services.stream()
+                       .filter(service -> service.pointId() != null)
+                       .filter(service -> service.state() == null || service.state() == ServiceState.ACTIVE)
+                       .filter(service -> service.end() == null || !service.end().isBefore(today))
+                       .sorted(Comparator.comparing(SubscribedService::start,
+                                                    Comparator.nullsLast(Comparator.reverseOrder())))
+                       .map(SubscribedService::pointId)
+                       .distinct()
+                       .toList();
     }
 }
