@@ -12,9 +12,9 @@ import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
@@ -155,15 +155,18 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Sends the passed status message in a blocking manner and then terminally stops the streamer.
+     * Sends the passed permission market document in a blocking manner and then terminally stops the streamer.
      *
-     * @param message Message to send before stopping the streamer. The status should be one of
-     *                {@link PermissionStatus#TERMINATED}, {@link PermissionStatus#REVOKED} or
-     *                {@link PermissionStatus#FULFILLED}.
+     * @param permissionMarketDocument Document to send before stopping the streamer. The status should be one of
+     *                                 {@link PermissionStatus#TERMINATED}, {@link PermissionStatus#REVOKED} or
+     *                                 {@link PermissionStatus#FULFILLED}.
      */
-    public void stopStreamer(AiidaConnectionStatusMessageDto message) {
-        requireStreamer(message.permissionId())
-                .ifPresent(streamer -> streamer.closeTerminally(message));
+    public void stopStreamer(RequestPermissionEnvelope permissionMarketDocument) {
+        var permissionId = permissionMarketDocument.getMessageDocumentHeader()
+                                                   .getMetaInformation()
+                                                   .getRequestPermissionId();
+        requireStreamer(UUID.fromString(permissionId))
+                .ifPresent(streamer -> streamer.closeTerminally(permissionMarketDocument));
     }
 
     /**

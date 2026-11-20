@@ -3,7 +3,6 @@
 
 package energy.eddie.regionconnector.aiida;
 
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.data.needs.DataNeedCalculationService;
 import energy.eddie.api.agnostic.process.model.events.PermissionEventRepository;
 import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
@@ -11,6 +10,7 @@ import energy.eddie.cim.agnostic.OpaqueEnvelope;
 import energy.eddie.cim.agnostic.RawDataMessage;
 import energy.eddie.cim.v1_12.ack.AcknowledgementEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.dataneeds.rules.DataNeedRuleSet;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.aiida.config.AiidaConfiguration;
@@ -95,7 +95,7 @@ public class AiidaBeanConfig {
     }
 
     @Bean
-    public Sinks.Many<AiidaConnectionStatusMessageDto> statusSink() {
+    public Sinks.Many<RequestPermissionEnvelope> statusSink() {
         return Sinks.many().multicast().onBackpressureBuffer();
     }
 

@@ -14,9 +14,11 @@ import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
+import energy.eddie.cim.v1_12.rpmd.MessageDocumentHeader;
+import energy.eddie.cim.v1_12.rpmd.MetaInformation;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,8 +55,6 @@ class StreamerManagerTest {
     private OutboundAggregator aggregatorMock;
     @Mock
     private FailedToSendRepository mockRepository;
-    @Mock
-    private AiidaConnectionStatusMessageDto mockStatusMessage;
     @Mock
     private AcceptedPermission mockPermission;
     @Mock
@@ -195,24 +195,31 @@ class StreamerManagerTest {
     @Test
     void givenInvalidPermissionId_stopStreamer_doesNothing() {
         // Given
-        when(mockStatusMessage.permissionId()).thenReturn(UUID.fromString("62831e2c-a01c-41b8-9db6-3f51670df7a5"));
+        var permissionMarketDocument = permissionMarketDocument(UUID.fromString("62831e2c-a01c-41b8-9db6-3f51670df7a5"));
 
         // When, Then
-        assertDoesNotThrow(() -> manager.stopStreamer(mockStatusMessage));
+        assertDoesNotThrow(() -> manager.stopStreamer(permissionMarketDocument));
     }
 
     @Test
     void verify_stopStreamer_closesStreamerTerminally() {
         // Given
         ReflectionTestUtils.setField(manager, "streamers", mockMap);
-        when(mockStatusMessage.permissionId()).thenReturn(permissionId);
+        var permissionMarketDocument = permissionMarketDocument(permissionId);
         when(mockMap.get(permissionId)).thenReturn(mockAiidaStreamer);
 
         // When
-        manager.stopStreamer(mockStatusMessage);
+        manager.stopStreamer(permissionMarketDocument);
 
         // Then
-        verify(mockAiidaStreamer).closeTerminally(any());
+        verify(mockAiidaStreamer).closeTerminally(permissionMarketDocument);
+    }
+
+    private static RequestPermissionEnvelope permissionMarketDocument(UUID permissionId) {
+        return new RequestPermissionEnvelope()
+                .withMessageDocumentHeader(new MessageDocumentHeader()
+                                                   .withMetaInformation(new MetaInformation()
+                                                                                .withRequestPermissionId(permissionId.toString())));
     }
 
     @Test

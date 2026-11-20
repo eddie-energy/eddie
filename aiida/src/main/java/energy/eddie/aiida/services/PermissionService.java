@@ -20,10 +20,10 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.StreamerManager;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -63,6 +63,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
     private final AiidaEventPublisher aiidaEventPublisher;
     private final SecretsService secretsService;
+    private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
 
     @Autowired
     public PermissionService(
@@ -76,7 +77,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
             AiidaEventPublisher aiidaEventPublisher,
-            SecretsService secretsService
+            SecretsService secretsService,
+            PermissionMarketDocumentFactory permissionMarketDocumentFactory
     ) {
         this.permissionRepository = permissionRepository;
         this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
@@ -89,11 +91,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
+        this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
     }
 
     /**
      * Revokes the specified permission by updating its status and records the timestamp and persisting the changes. If
-     * an error during shutdown of the AiidaStreamer or sending of the {@link AiidaConnectionStatusMessageDto} occurs, they are
+     * an error during shutdown of the AiidaStreamer or sending of the permission market document occurs, they are
      * logged but not propagated to the caller.
      *
      * @param permissionId The ID of the permission that should be revoked.
@@ -126,15 +129,8 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         permission.setStatus(REVOKED);
         permission.setRevokeTime(revocationTime);
 
-        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
-        var connectionId = requireNonNull(permission.connectionId());
-        var revokedMessage = new AiidaConnectionStatusMessageDto(connectionId,
-                                                                 dataNeedId,
-                                                                 clock.instant(),
-                                                                 PermissionProcessStatus.REVOKED,
-                                                                 permission.id(),
-                                                                 permission.eddieId());
-        streamerManager.stopStreamer(revokedMessage);
+        streamerManager.stopStreamer(permissionMarketDocumentFactory.create(permission,
+                                                                            PermissionProcessStatus.REVOKED));
         removeInboundDataSourceIfExists(permission);
 
         return permission;

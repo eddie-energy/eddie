@@ -10,6 +10,8 @@ import energy.eddie.api.agnostic.data.needs.*;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.api.agnostic.process.model.events.PermissionEvent;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.v1_12.StandardStatusTypeList;
+import energy.eddie.cim.v1_12.rpmd.*;
 import energy.eddie.dataneeds.duration.RelativeDuration;
 import energy.eddie.dataneeds.exceptions.DataNeedNotFoundException;
 import energy.eddie.dataneeds.exceptions.UnsupportedDataNeedException;
@@ -516,6 +518,51 @@ class AiidaPermissionServiceTest {
                                                                                                    .equals(permissionId)));
     }
 
+    static Stream<Arguments> externalStatusChanges() {
+        return Stream.of(
+                Arguments.of(StandardStatusTypeList.WITHDRAWN, ACCEPTED, REVOKED),
+                Arguments.of(StandardStatusTypeList.DEACTIVATION, REQUIRES_EXTERNAL_TERMINATION, EXTERNALLY_TERMINATED),
+                Arguments.of(StandardStatusTypeList.CONFIRMED, ACCEPTED, FULFILLED)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("externalStatusChanges")
+    void givenPermissionMarketDocument_statusChangedExternally_appliesStatus(
+            StandardStatusTypeList cimStatus,
+            PermissionProcessStatus currentStatus,
+            PermissionProcessStatus expectedStatus
+    ) {
+        // Given
+        when(mockViewRepository.findById(permissionId)).thenReturn(Optional.of(mockRequest));
+        when(mockRequest.status()).thenReturn(currentStatus);
+
+        // When
+        service.statusChangedExternally(permissionMarketDocument(cimStatus.value()));
+
+        // Then
+        verify(mockMqttService).deleteAclsForPermission(permissionId);
+        verify(mockOutbox).commit(argThat(event -> event.status() == expectedStatus && event.permissionId()
+                                                                                            .equals(permissionId)));
+    }
+
+    @Test
+    void givenUnsupportedStatus_statusChangedExternally_doesNothing() {
+        // When
+        service.statusChangedExternally(permissionMarketDocument(StandardStatusTypeList.REJECTED.value()));
+
+        // Then
+        verifyNoInteractions(mockMqttService);
+        verifyNoInteractions(mockOutbox);
+    }
+
+    @Test
+    void givenUnknownStatusCode_statusChangedExternally_doesNotThrow() {
+        // When, Then
+        assertDoesNotThrow(() -> service.statusChangedExternally(permissionMarketDocument("unknown")));
+        verifyNoInteractions(mockOutbox);
+    }
+
     @Test
     void givenPermissionInInvalidState_fulfillPermission_throwsException() {
         // Given
@@ -635,8 +682,7 @@ class AiidaPermissionServiceTest {
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
                                                    && event instanceof FailedToTerminateEvent failedEvent
-                                                   && failedEvent.message()
-                                                                 .equals(expectedMessage)));
+                                                   && expectedMessage.equals(failedEvent.message())));
     }
 
     @Test
@@ -652,7 +698,8 @@ class AiidaPermissionServiceTest {
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
                                                    && event instanceof FailedToTerminateEvent failedEvent
-                                                   && failedEvent.message().contains("1234567")));
+                                                   && failedEvent.message() instanceof String message
+                                                   && message.contains("1234567")));
     }
 
     @Test
@@ -721,5 +768,16 @@ class AiidaPermissionServiceTest {
         aiidaIdField.setAccessible(true);
 
         return (UUID) aiidaIdField.get(aiidaIdReceivedEvent);
+    }
+
+    private RequestPermissionEnvelope permissionMarketDocument(String status) {
+        return new RequestPermissionEnvelope()
+                .withMessageDocumentHeader(new MessageDocumentHeader()
+                                                   .withMetaInformation(new MetaInformation()
+                                                                                .withRequestPermissionId(permissionId)))
+                .withMarketDocument(new RequestPermissionMarketDocument()
+                                            .withRequestPermission(new RequestPermission()
+                                                                           .withMktActivityRecords(new MktActivityRecord()
+                                                                                                           .withStatus(status))));
     }
 }

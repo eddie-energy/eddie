@@ -16,9 +16,9 @@ import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.AiidaStreamer;
 import energy.eddie.aiida.streamers.ConnectionStatusEventStream;
 import energy.eddie.aiida.streamers.StreamerDependencies;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import jakarta.annotation.Nullable;
 import org.eclipse.paho.mqttv5.client.*;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -142,15 +142,12 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
     }
 
     @Override
-    public void closeTerminally(AiidaConnectionStatusMessageDto statusMessage) {
+    public void closeTerminally(RequestPermissionEnvelope permissionMarketDocument) {
         isBeingTerminated = true;
         if (subscription != null) subscription.dispose();
-        LOGGER.atInfo()
-              .addArgument(statusMessage.permissionId())
-              .addArgument(statusMessage.status())
-              .log("MqttStreamer for permission {} is requested to close with status {}");
+        LOGGER.info("MqttStreamer for permission {} is requested to close terminally", streamingConfig.permissionId());
 
-        publishStatusMessageSynchronously(statusMessage);
+        publishPermissionMarketDocumentSynchronously(permissionMarketDocument);
         close();
 
         failedToSendRepository.deleteAllByPermissionId(streamingConfig.permissionId());
@@ -333,27 +330,27 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
         }
     }
 
-    private void publishStatusMessageSynchronously(AiidaConnectionStatusMessageDto statusMessage) {
-        LOGGER.trace("MqttStreamer for permission {} synchronously publishing connectionStatusMessage {}",
+    private void publishPermissionMarketDocumentSynchronously(RequestPermissionEnvelope permissionMarketDocument) {
+        LOGGER.trace("MqttStreamer for permission {} synchronously publishing permission market document {}",
                      streamingConfig.permissionId(),
-                     statusMessage);
+                     permissionMarketDocument);
 
         try {
-            byte[] jsonBytes = mapper.writeValueAsBytes(statusMessage);
+            byte[] jsonBytes = mapper.writeValueAsBytes(permissionMarketDocument);
             client.publish(streamingConfig.statusTopic(), jsonBytes, 1, true)
                   .waitForCompletion(Duration.ofMinutes(2).toMillis());
         } catch (JacksonException exception) {
             LOGGER.atError()
                   .addArgument(streamingConfig.permissionId())
-                  .addArgument(statusMessage)
+                  .addArgument(permissionMarketDocument)
                   .setCause(exception)
-                  .log("MqttStreamer for permission {} cannot convert ConnectionStatusMessage {} to JSON, will ignore it");
+                  .log("MqttStreamer for permission {} cannot convert permission market document {} to JSON, will ignore it");
         } catch (MqttException exception) {
             LOGGER.atError()
                   .addArgument(streamingConfig.permissionId())
-                  .addArgument(statusMessage)
+                  .addArgument(permissionMarketDocument)
                   .setCause(exception)
-                  .log("MqttStreamer for permission {} failed to send ConnectionStatusMessage {}, will close streamer without retrying to send");
+                  .log("MqttStreamer for permission {} failed to send permission market document {}, will close streamer without retrying to send");
         }
     }
 

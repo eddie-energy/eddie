@@ -13,6 +13,7 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
@@ -26,6 +27,7 @@ import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -37,11 +39,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class PermissionCommandServiceTest {
     private final UUID permissionId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
-    private final UUID dataNeedId = UUID.fromString("92831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID eddieId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID dataSourceId = UUID.fromString("40201e2c-a01c-41b8-9db6-3f51670df7a5");
     private final String regionConnectorId = "rc-1";
-    private final String connectionId = "conn-1";
     private final Clock clock = Clock.fixed(Instant.parse("2026-06-03T10:00:00.00Z"), ZoneOffset.UTC);
 
     @Mock
@@ -64,6 +64,8 @@ class PermissionCommandServiceTest {
     private MqttStreamingConfig mqttStreamingConfig;
     @Mock
     private PermissionCommandService self;
+    @Mock
+    private PermissionMarketDocumentFactory permissionMarketDocumentFactory;
 
     private PermissionCommandService service;
 
@@ -74,6 +76,7 @@ class PermissionCommandServiceTest {
                                                clock,
                                                permissionScheduler,
                                                aiidaEventPublisher,
+                                               permissionMarketDocumentFactory,
                                                self);
     }
 
@@ -120,12 +123,16 @@ class PermissionCommandServiceTest {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(acceptedPermission));
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_TRANSMISSION_SCHEDULE));
 
-        service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId, permissionId, "*/30 * * * * *"));
+        service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId,
+                                                                               permissionId,
+                                                                               "*/30 * * * * *"));
 
         verify(permissionRepository).save(acceptedPermission);
         verify(streamerManager).updateSchedule(argThat(snapshot ->
-                snapshot.id().equals(permissionId)
-                && snapshot.transmissionSchedule().toString().equals("*/30 * * * * *")));
+                                                               snapshot.id().equals(permissionId)
+                                                               && snapshot.transmissionSchedule()
+                                                                          .toString()
+                                                                          .equals("*/30 * * * * *")));
     }
 
     @Test
@@ -134,7 +141,9 @@ class PermissionCommandServiceTest {
         when(permission.dataNeed()).thenReturn(dataNeed);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_TRANSMISSION_SCHEDULE));
 
-        service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId, permissionId, "not-a-cron"));
+        service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId,
+                                                                               permissionId,
+                                                                               "not-a-cron"));
 
         verify(permission, never()).setTransmissionSchedule(any());
         verify(permissionRepository, never()).save(any());
@@ -149,7 +158,10 @@ class PermissionCommandServiceTest {
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
         when(dataNeed.supportsConnectionLimits()).thenReturn(true);
 
-        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
+                                                                        permissionId,
+                                                                        BigDecimal.ONE,
+                                                                        BigDecimal.TEN));
 
         verify(connectionLimitDefaultRepository).closeOpenDefaults(permissionId, clock.instant());
         verify(connectionLimitDefaultRepository)
@@ -157,8 +169,10 @@ class PermissionCommandServiceTest {
                                       defaultLimit.permissionId().equals(permissionId) &&
                                       defaultLimit.start().equals(clock.instant()) &&
                                       defaultLimit.end() == null &&
-                                      defaultLimit.minLimitKw().compareTo(BigDecimal.ONE) == 0 &&
-                                      defaultLimit.maxLimitKw().compareTo(BigDecimal.TEN) == 0));
+                                      Objects.requireNonNull(defaultLimit.minLimitKw())
+                                             .compareTo(BigDecimal.ONE) == 0 &&
+                                      Objects.requireNonNull(defaultLimit.maxLimitKw())
+                                             .compareTo(BigDecimal.TEN) == 0));
         verify(permissionRepository, never()).save(any());
     }
 
@@ -184,7 +198,10 @@ class PermissionCommandServiceTest {
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
         when(dataNeed.supportsConnectionLimits()).thenReturn(false);
 
-        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.ONE, BigDecimal.TEN));
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
+                                                                        permissionId,
+                                                                        BigDecimal.ONE,
+                                                                        BigDecimal.TEN));
 
         verify(connectionLimitDefaultRepository, never()).closeOpenDefaults(any(), any());
         verify(connectionLimitDefaultRepository, never()).save(any());
@@ -198,7 +215,10 @@ class PermissionCommandServiceTest {
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
         when(dataNeed.supportsConnectionLimits()).thenReturn(true);
 
-        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.TEN, BigDecimal.ONE));
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
+                                                                        permissionId,
+                                                                        BigDecimal.TEN,
+                                                                        BigDecimal.ONE));
 
         verify(connectionLimitDefaultRepository, never()).closeOpenDefaults(any(), any());
         verify(connectionLimitDefaultRepository, never()).save(any());
@@ -210,10 +230,6 @@ class PermissionCommandServiceTest {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
         when(permissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(permission.id()).thenReturn(permissionId);
-        when(permission.eddieId()).thenReturn(eddieId);
-        when(permission.connectionId()).thenReturn(connectionId);
-        when(permission.dataNeed()).thenReturn(dataNeed);
-        when(dataNeed.dataNeedId()).thenReturn(dataNeedId);
         when(permission.dataSource()).thenReturn(dataSource);
         when(dataSource.type()).thenReturn(DataSourceType.INBOUND);
         when(dataSource.id()).thenReturn(dataSourceId);
@@ -223,14 +239,20 @@ class PermissionCommandServiceTest {
         verify(permissionScheduler).removePermission(permissionId);
         verify(permission).setStatus(PermissionStatus.TERMINATED);
         verify(permission).setRevokeTime(any());
-        verify(streamerManager).stopStreamer(
-                argThat(msg -> msg.status() == PermissionProcessStatus.EXTERNALLY_TERMINATED));
+        verify(permissionMarketDocumentFactory).create(permission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
+        verify(streamerManager).stopStreamer(any());
         verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
         verify(permission).setDataSource(null);
     }
 
     private Permission acceptedPermission() {
-        var acceptedPermission = new Permission(eddieId, permissionId, "https://example.org", "token", UUID.randomUUID());
+        var acceptedPermission = new Permission(eddieId,
+                                                permissionId,
+                                                "https://example.org",
+                                                "token",
+                                                UUID.randomUUID());
+        var connectionId = "conn-1";
+
         acceptedPermission.setConnectionId(connectionId);
         acceptedPermission.setStartTime(clock.instant());
         acceptedPermission.setExpirationTime(clock.instant().plusSeconds(3600));
