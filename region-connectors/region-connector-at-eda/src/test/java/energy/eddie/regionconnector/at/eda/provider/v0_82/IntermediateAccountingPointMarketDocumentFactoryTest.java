@@ -7,14 +7,21 @@ import energy.eddie.api.cim.config.PlainCommonInformationModelConfiguration;
 import energy.eddie.cim.CommonInformationModelVersions;
 import energy.eddie.cim.v0_82.ap.*;
 import energy.eddie.cim.v0_82.vhd.CodingSchemeTypeList;
+import energy.eddie.regionconnector.at.eda.AtEdaBeanConfig;
 import energy.eddie.regionconnector.at.eda.EdaResourceLoader;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.EdaMasterData;
 import energy.eddie.regionconnector.at.eda.dto.IdentifiableMasterData;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p33.EdaMasterData01p33;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p33.EdaMasterData01p33InboundMessageFactory;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p35.EdaMasterData01p35;
+import energy.eddie.regionconnector.at.eda.ponton.messages.masterdata._01p35.EdaMasterData01p35InboundMessageFactory;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpDateTime;
+import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -285,5 +292,64 @@ class IntermediateAccountingPointMarketDocumentFactoryTest {
                     .getAccountingPoints()
                     .getFirst();
         assertNull(ap.getDirection());
+    }
+
+    @Test
+    void mapsOptionalContractPartnerDatesFromMasterData01p33() throws IOException {
+        var factory = new EdaMasterData01p33InboundMessageFactory(new AtEdaBeanConfig().jaxb2Marshaller());
+        try (var inputStream = getClass().getResourceAsStream("/xsd/masterdata/_01p33/masterdata.xml")) {
+            var masterData = (EdaMasterData01p33) factory.parseInputStream(inputStream);
+            var contractPartner = masterData.masterData().getProcessDirectory().getContractPartner();
+            var dateOfBirth = contractPartner.getDateOfBirth();
+            var expectedDate = dateOfBirth.toGregorianCalendar().toZonedDateTime();
+            assertMappedContractPartnerDates(masterData, expectedDate, null);
+
+            contractPartner.setDateOfBirth(null);
+            contractPartner.setDateOfDeath(dateOfBirth);
+            assertMappedContractPartnerDates(masterData, null, expectedDate);
+        }
+    }
+
+    @Test
+    void mapsOptionalContractPartnerDatesFromMasterData01p35() throws IOException {
+        var factory = new EdaMasterData01p35InboundMessageFactory(new AtEdaBeanConfig().jaxb2Marshaller());
+        try (var inputStream = getClass().getResourceAsStream("/xsd/masterdata/_01p35/masterdata.xml")) {
+            var masterData = (EdaMasterData01p35) factory.parseInputStream(inputStream);
+            var contractPartner = masterData.masterData().getProcessDirectory().getContractPartner();
+            var dateOfBirth = contractPartner.getDateOfBirth();
+            var expectedDate = dateOfBirth.toGregorianCalendar().toZonedDateTime();
+            assertMappedContractPartnerDates(masterData, expectedDate, null);
+
+            contractPartner.setDateOfBirth(null);
+            contractPartner.setDateOfDeath(dateOfBirth);
+            assertMappedContractPartnerDates(masterData, null, expectedDate);
+        }
+    }
+
+    private static void assertMappedContractPartnerDates(
+            EdaMasterData masterData,
+            @Nullable ZonedDateTime expectedDateOfBirth,
+            @Nullable ZonedDateTime expectedDateOfDeath
+    ) {
+        var factory = new IntermediateAccountingPointMarketDocumentFactory(
+                new PlainCommonInformationModelConfiguration(
+                        CodingSchemeTypeList.AUSTRIA_NATIONAL_CODING_SCHEME,
+                        "fallbackId")
+        );
+        var permissionRequest = new SimplePermissionRequest("pid", "cid", "did");
+        var identifiableMasterData = new IdentifiableMasterData(masterData, permissionRequest);
+
+        var envelope = factory.create(identifiableMasterData).accountingPointEnvelope();
+        var contractParty = envelope.getAccountingPointMarketDocument()
+                                    .getAccountingPointList()
+                                    .getAccountingPoints()
+                                    .getFirst()
+                                    .getContractPartyList()
+                                    .getContractParties()
+                                    .getFirst();
+        assertAll(
+                () -> assertEquals(expectedDateOfBirth, contractParty.getDateOfBirth()),
+                () -> assertEquals(expectedDateOfDeath, contractParty.getDateOfDeath())
+        );
     }
 }
