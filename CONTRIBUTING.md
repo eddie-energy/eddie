@@ -212,6 +212,17 @@ Each change added to the main branch triggers the following steps (if needed):
 
 For a complete overview, take a look at the [_Actions_](https://github.com/eddie-energy/eddie/actions) tab of the repository.
 
+### Vulnerability scanning
+
+We use [Trivy](https://trivy.dev/) to automatically scan dependencies and container images for vulnerabilities.
+
+Pull requests, pushes to `main`, and a weekly scheduled run scan the dependency tree and upload the results to [GitHub Code Scanning](https://docs.github.com/en/code-security/code-scanning).
+Code Scanning only flags alerts that are new relative to the default branch, so pre-existing findings do not block unrelated pull requests.
+
+The release pipeline independently scans the built container images and fails on fixable `CRITICAL` or `HIGH` findings.
+
+If a finding is reviewed and confirmed not to be applicable, add its vulnerability ID to the `.trivyignore` file at the repository root and document the reason in the pull request that introduces the exception.
+
 ## Releases
 
 A new version of the EDDIE Framework is released every three weeks.

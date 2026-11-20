@@ -51,6 +51,26 @@ runs:
       env:
         SECRETS: ${{ inputs.secrets }}
       run: echo "$SECRETS" | docker login ghcr.io -u $ --password-stdin
+    - name: "Scan image: EDDIE example-app"
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        scan-type: image
+        image-ref: eddie-example-app
+        scanners: vuln
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        exit-code: 1
+        version: v0.76.0
+    - name: "Scan image: EDDIE"
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        scan-type: image
+        image-ref: eddie
+        scanners: vuln
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        exit-code: 1
+        version: v0.76.0
     - name: "Docker push image: EDDIE example-app"
       shell: bash
       env:
@@ -97,6 +117,19 @@ runs:
         java-version: '21'
         distribution: 'temurin'
 
+    - name: "Build image for scanning: AIIDA"
+      shell: bash
+      run: ./gradlew --no-daemon jibDockerBuild -Djib.from.platforms=linux/amd64 -Djib.to.image=aiida:scan
+    - name: "Scan image: AIIDA"
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      with:
+        scan-type: image
+        image-ref: aiida:scan
+        scanners: vuln
+        severity: CRITICAL,HIGH
+        ignore-unfixed: true
+        exit-code: 1
+        version: v0.76.0
     - name: Build and publish image
       shell: bash
       env:
