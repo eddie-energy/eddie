@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.us.green.button.providers;
@@ -33,6 +33,24 @@ public class ReadingTypeValueConverter<T> {
             Map.entry("42", new MeasurementScale<>(StandardUnitOfMeasureTypeList.CUBIC_METRE, 0)),
             Map.entry("6", new MeasurementScale<>(StandardUnitOfMeasureTypeList.K_KELVIN, 0)),
             Map.entry("45", new MeasurementScale<>(StandardUnitOfMeasureTypeList.CUBIC_METRES_PER_SECOND, 0))
+    );
+
+    private static final Map<String, MeasurementScale<energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList>> v112MAP = Map.ofEntries(
+            Map.entry("61", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.MEGAVOLTAMPERE, NONE_TO_MEGA)),
+            Map.entry("38", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.WATT, 0)),
+            Map.entry("63", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.KILOVOLT_AMPERE_REACTIVE, NONE_TO_KILO)),
+            Map.entry("71", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE_HOURS, NONE_TO_MEGA)),
+            Map.entry("72", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.KILOWATT_HOUR, NONE_TO_KILO)),
+            Map.entry("73", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.MEGAVOLT_AMPERE_REACTIVE_HOURS, NONE_TO_MEGA)),
+            Map.entry("29", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.KILOVOLT, NONE_TO_KILO)),
+            Map.entry("5", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.AMPERE, 0)),
+            Map.entry("23", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.CELSIUS, 0)),
+            Map.entry("9", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.DEGREE_UNIT_OF_ANGLE, 0)),
+            Map.entry("39", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.HECTOPASCAL, NONE_TO_HECTO)),
+            Map.entry("2", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.METRE, 0)),
+            Map.entry("42", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.CUBIC_METRE, 0)),
+            Map.entry("6", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.K_KELVIN, 0)),
+            Map.entry("45", new MeasurementScale<>(energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList.CUBIC_METRES_PER_SECOND, 0))
     );
 
     private static final Map<String, MeasurementScale<UnitOfMeasureTypeList>> v082MAP = Map.ofEntries(
@@ -70,6 +88,12 @@ public class ReadingTypeValueConverter<T> {
 
     public static ReadingTypeValueConverter<StandardUnitOfMeasureTypeList> v104UnitOfMeasureTypeList(int scale, String vom) {
         return new ReadingTypeValueConverter<>(scale, vom, v104MAP);
+    }
+
+    public static ReadingTypeValueConverter<energy.eddie.cim.v1_12.StandardUnitOfMeasureTypeList> v112UnitOfMeasureTypeList(
+            ReadingType rt
+    ) {
+        return new ReadingTypeValueConverter<>(rt, v112MAP);
     }
 
     public static ReadingTypeValueConverter<UnitOfMeasureTypeList> v082UnitOfMeasureTypeList(ReadingType rt) {

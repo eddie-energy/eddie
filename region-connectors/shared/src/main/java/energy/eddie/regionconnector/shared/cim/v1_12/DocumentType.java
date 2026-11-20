@@ -4,7 +4,8 @@
 package energy.eddie.regionconnector.shared.cim.v1_12;
 
 public enum DocumentType {
-    REQUEST_PERMISSION_MARKET_DOCUMENT("request-permission-market-document");
+    REQUEST_PERMISSION_MARKET_DOCUMENT("request-permission-market-document"),
+    VALIDATED_HISTORICAL_DATA_MARKET_DOCUMENT("validated-historical-data-market-document");
 
     private final String description;
 

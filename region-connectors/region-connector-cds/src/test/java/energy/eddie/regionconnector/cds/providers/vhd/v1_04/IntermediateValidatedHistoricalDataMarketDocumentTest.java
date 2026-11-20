@@ -14,6 +14,7 @@ import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.cds.openapi.model.UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner;
 import energy.eddie.regionconnector.cds.permission.requests.CdsPermissionRequestBuilder;
 import energy.eddie.regionconnector.cds.providers.cim.*;
+import energy.eddie.regionconnector.cds.providers.vhd.CdsMeteringSeries;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -257,13 +258,13 @@ class IntermediateValidatedHistoricalDataMarketDocumentTest {
                              StandardDirectionTypeList.DOWN,
                              CommodityKind.POTABLEWATER,
                              StandardUnitOfMeasureTypeList.CUBIC_METRE,
-                             CimUnitConverter.GAL_TO_CUBIC_METRE),
+                             CdsMeteringSeries.GAL_TO_CUBIC_METRE),
                 Arguments.of(UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum.GAS_CCF,
                              StandardBusinessTypeList.CONSUMPTION,
                              StandardDirectionTypeList.DOWN,
                              CommodityKind.NATURALGAS,
                              StandardUnitOfMeasureTypeList.KILOWATT_HOUR,
-                             CimUnitConverter.CCF_TO_KWH),
+                             CdsMeteringSeries.CCF_TO_KWH),
                 Arguments.of(UsageSegmentEndpoint200ResponseAllOfUsageSegmentsInner.FormatEnum.EACS,
                              StandardBusinessTypeList.CONSUMPTION,
                              StandardDirectionTypeList.DOWN,

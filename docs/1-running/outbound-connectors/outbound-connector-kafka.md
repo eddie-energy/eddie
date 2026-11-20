@@ -13,6 +13,8 @@ The following parameters are of special interest:
 | outbound-connector.kafka.eddie-id | String                                         |         | Sets the ID of the eddie instance in relation to the kafka broker                                                           |
 | kafka.bootstrap.servers           | comma-separated _host:port_ tuples (mandatory) |         | A list of host/port pairs to use for establishing the initial connection to the Kafka cluster.                              |
 
+In JSON, fields without a value are omitted instead of being sent as `null`, matching the XML output.
+
 E.g., if Kafka is installed locally:
 
 ```properties :spring
@@ -51,6 +53,10 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents
+- `ep.${outbound-connector.kafka.eddie-id}.cim_1_04.validated-historical-data-md`:
+  Provides validated historical data market documents in CIM v1.04
+- `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.validated-historical-data-md`:
+  Provides [validated historical data market documents](../../2-integrating/messages/cim/validated-historical-data-market-documents.md) in CIM v1.12
 - `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.near-real-time-data-md`:
   Provides near real-time data market documents
 - `ep.${outbound-connector.kafka.eddie-id}.cim_1_12.acknowledgement-md`:

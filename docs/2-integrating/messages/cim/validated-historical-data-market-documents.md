@@ -5,7 +5,17 @@ Validated historical data market documents contain metered data that is received
 > [!Warning]
 > Only the XSD is provided since the CIM is an XML first format, and it cannot be guaranteed that the JSON variant is stable.
 
-The XSD files can be found [here for v0.82](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/vhd) and [here for v1.04](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v1_04/vhd).
+The XSD files can be found [here for v0.82](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v0_82/vhd), [here for v1.04](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v1_04/vhd) and [here for v1.12](https://github.com/eddie-energy/eddie/tree/main/cim/src/main/schemas/cim/xsd/v1_12/vhd).
+
+All region connectors that provide validated historical data in CIM v0.82 or v1.04 also provide it in CIM v1.12.
+The CIM version is selected by subscribing to the corresponding endpoint, topic, or queue, for example `/cim_1_12/validated-historical-data-md` or `ep.<eddie-id>.cim_1_12.validated-historical-data-md`.
+The same validated historical data data need and permission are used for all CIM versions.
+Compared to CIM v1.04, CIM v1.12 has the following differences:
+
+- The market document has no `period.timeInterval`, the time intervals are only part of the `Series_Period`s.
+- `marketEvaluationPoint.*` was renamed to `accountingPoint.*`.
+- `TimeSeries.dateAndOrTime.dateTime` is mandatory. If the region connector provides no such timestamp, the creation time of the document is used.
+- `MetaInformation.regionCountry` contains the upper-case ISO 3166-1 alpha-2 country code, for example `AT`, instead of the national coding scheme.
 The following is an example of a validated historical data market document.
 
 ::: code-group
@@ -194,6 +204,78 @@ The following is an example of a validated historical data market document.
         </ns1:TimeSeries>
     </ns1:MarketDocument>
 </ns1:VHD_Envelope>
+```
+
+```xml [v1.12]
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ns2:Envelope xmlns:ns2="https://insieme.energy/CEEDS_ValidatedHistoricalDataDocument_v1.12.38">
+    <ns2:MessageDocumentHeader>
+        <!-- creation datetime of the envelope -->
+        <ns2:creationDateTime>2026-11-09T07:59:39Z</ns2:creationDateTime>
+        <ns2:MetaInformation>
+            <!-- the connection ID that was supplied by the eligible party -->
+            <ns2:connectionId>1</ns2:connectionId>
+            <!-- the permission ID -->
+            <ns2:requestPermissionId>69a800c4-8c5f-4b9a-9541-97f6d7b676b6</ns2:requestPermissionId>
+            <!-- the data need ID -->
+            <ns2:dataNeedId>9bd0668f-cc19-40a8-99db-dc2cb2802b17</ns2:dataNeedId>
+            <ns2:documentType>validated-historical-data-market-document</ns2:documentType>
+            <!-- the region connector ID -->
+            <ns2:regionConnector>at-eda</ns2:regionConnector>
+            <!-- the ISO country code of the permission request -->
+            <ns2:regionCountry>AT</ns2:regionCountry>
+        </ns2:MetaInformation>
+    </ns2:MessageDocumentHeader>
+    <ns2:VHD_MarketDocument>
+        <!-- ID identifying this document -->
+        <ns2:mRID>AT003000202611061110154591074115141</ns2:mRID>
+        <!-- created datetime of this document -->
+        <ns2:createdDateTime>2026-11-06T10:10:15Z</ns2:createdDateTime>
+        <!-- The CIM version of the document without the period -->
+        <ns2:revisionNumber>112</ns2:revisionNumber>
+        <!-- Indicates the nature of the process from which the document was generated -->
+        <ns2:process.processType>A16</ns2:process.processType>
+        <!-- Receiver of the data, the identifier of the eligible party at the MDA -->
+        <ns2:receiver_MarketParticipant.mRID codingScheme="NAT">EP100307</ns2:receiver_MarketParticipant.mRID>
+        <ns2:receiver_MarketParticipant.marketRole.type>A13</ns2:receiver_MarketParticipant.marketRole.type>
+        <!-- Sender of the data -->
+        <ns2:sender_MarketParticipant.mRID codingScheme="NAT">AT003000</ns2:sender_MarketParticipant.mRID>
+        <ns2:sender_MarketParticipant.marketRole.type>A26</ns2:sender_MarketParticipant.marketRole.type>
+        <!-- contains the measurement data of one meter -->
+        <ns2:TimeSeries>
+            <!-- The version of the time series, will be always 1 for EDDIE -->
+            <ns2:version>1</ns2:version>
+            <!-- The flow direction of the energy -->
+            <ns2:flowDirection.direction>A02</ns2:flowDirection.direction>
+            <ns2:dateAndOrTime.dateTime>2026-11-05T23:00:00Z</ns2:dateAndOrTime.dateTime>
+            <ns2:registeredResource.mRID codingScheme="NAT">1-1:1.9.0 P.01</ns2:registeredResource.mRID>
+            <ns2:reason.code>999</ns2:reason.code>
+            <!-- Unit of the measurements -->
+            <ns2:energy_Measurement_Unit.name>KWH</ns2:energy_Measurement_Unit.name>
+            <ns2:energyQuality_Measurement_Unit.name>C62</ns2:energyQuality_Measurement_Unit.name>
+            <!-- The mRID of the accounting point, for example the metering point ID -->
+            <ns2:accountingPoint.mRID codingScheme="NAT">AT0030000000000000000000030107193</ns2:accountingPoint.mRID>
+            <ns2:Series_Period>
+                <!-- the resolution of the measurements in ISO 8601 duration -->
+                <ns2:resolution>P0Y0M0DT0H15M0.000S</ns2:resolution>
+                <ns2:Point>
+                    <!-- Is the index of the Point, the index starts with 1 and is always positive -->
+                    <ns2:position>1</ns2:position>
+                    <!-- Measurement quantity -->
+                    <ns2:energy_Quantity.quantity>0.123</ns2:energy_Quantity.quantity>
+                    <!-- Describes if the value was measured, interpolated, etc -->
+                    <ns2:energy_Quantity.quality>A04</ns2:energy_Quantity.quality>
+                </ns2:Point>
+                <ns2:timeInterval>
+                    <!-- Start of the period -->
+                    <ns2:start>2026-11-04T23:00Z</ns2:start>
+                    <!-- End of the period -->
+                    <ns2:end>2026-11-05T23:00Z</ns2:end>
+                </ns2:timeInterval>
+            </ns2:Series_Period>
+        </ns2:TimeSeries>
+    </ns2:VHD_MarketDocument>
+</ns2:Envelope>
 ```
 
 :::

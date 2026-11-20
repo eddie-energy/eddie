@@ -8,6 +8,7 @@ import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
 import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.provider.EdaMeteringSeries;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
 import jakarta.annotation.Nullable;
@@ -144,46 +145,30 @@ class IntermediateValidatedHistoricalDataMarketDocument {
 
     @Nullable
     private String measurementUnit(EnergyData energyData) {
-        var funcs = List.<UnaryOperator<String>>of(
-                (String r) -> StandardUnitOfMeasureTypeList.fromValue(r).value(),
-                (String r) -> LocalUnitOfMeasureType.fromValue(r).value()
+        return EdaMeteringSeries.measurementUnit(
+                energyData,
+                consumptionRecord.messageId(),
+                unit -> isKnown(unit, code -> StandardUnitOfMeasureTypeList.fromValue(code).value())
+                        || isKnown(unit, code -> LocalUnitOfMeasureType.fromValue(code).value())
         );
-        for (var func : funcs) {
-            try {
-                return func.apply(energyData.billingUnit());
-            } catch (IllegalArgumentException e) {
-                LOGGER.atDebug()
-                      .addArgument(energyData::billingUnit)
-                      .addArgument(consumptionRecord::messageId)
-                      .log("Got unknown unit {} for message {}", e);
-            }
-        }
-        return null;
     }
 
     private List<Point> points(EnergyData energyData) {
         List<Point> points = new ArrayList<>();
-        for (int i = 0; i < energyData.energyPositions().size(); i++) {
-            var meterReading = energyData.energyPositions().get(i);
+        for (var point : EdaMeteringSeries.points(energyData, consumptionRecord.messageId())) {
             points.add(new Point()
-                               .withPosition(i + 1) // Position has to be a positive integer != 0
-                               .withEnergyQuantityQuantity(meterReading.billingQuantity())
-                               .withEnergyQuantityQuality(energyQuantityQuality(meterReading)));
+                               .withPosition(point.position())
+                               .withEnergyQuantityQuantity(point.quantity())
+                               .withEnergyQuantityQuality(point.quality()));
         }
         return points;
     }
 
-    @Nullable
-    private String energyQuantityQuality(EnergyPosition meterReading) {
-        var meteringMethod = meterReading.meteringMethod();
-        return switch (meteringMethod) {
-            case "L1" -> StandardQualityTypeList.AS_PROVIDED.value();
-            case "L2" -> StandardQualityTypeList.ADJUSTED.value();
-            case "L3" -> StandardQualityTypeList.ESTIMATED.value();
-            default -> {
-                LOGGER.info("Unknown metering method {} for message {}", meteringMethod, consumptionRecord.messageId());
-                yield null;
-            }
-        };
+    private static boolean isKnown(String code, UnaryOperator<String> converter) {
+        try {
+            return converter.apply(code) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

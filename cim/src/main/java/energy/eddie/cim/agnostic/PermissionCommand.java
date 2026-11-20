@@ -3,6 +3,7 @@
 
 package energy.eddie.cim.agnostic;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import jakarta.annotation.Nullable;
@@ -86,7 +87,7 @@ public sealed interface PermissionCommand permits PermissionCommand.SetTransmiss
 
     /**
      * Adjusts the default energy consumption or production limits for a permission.
-     * Null values are interpreted as "no limit".
+     * Null values are interpreted as "no limit" and are always serialized explicitly.
      *
      * @param minLimitKw Lower limit in kilowatt
      * @param maxLimitKw Upper limit in kilowatt
@@ -94,8 +95,8 @@ public sealed interface PermissionCommand permits PermissionCommand.SetTransmiss
     record UpdateLimitDefaults(
             String regionConnectorId,
             UUID permissionId,
-            @Nullable BigDecimal minLimitKw,
-            @Nullable BigDecimal maxLimitKw
+            @JsonInclude(JsonInclude.Include.ALWAYS) @Nullable BigDecimal minLimitKw,
+            @JsonInclude(JsonInclude.Include.ALWAYS) @Nullable BigDecimal maxLimitKw
     ) implements PermissionCommand {
     }
 
