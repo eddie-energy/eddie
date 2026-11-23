@@ -74,10 +74,4 @@ class OutboundPermissionTest {
         // When, Then
         assertEquals(ownSchedule, permission.effectiveTransmissionSchedule());
     }
-
-    @Test
-    void givenNull_setTransmissionSchedule_throws() {
-        // When, Then
-        assertThrows(NullPointerException.class, () -> permission.setTransmissionSchedule(null));
-    }
 }

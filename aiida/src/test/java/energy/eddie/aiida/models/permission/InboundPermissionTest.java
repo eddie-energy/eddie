@@ -54,12 +54,6 @@ class InboundPermissionTest {
     }
 
     @Test
-    void givenNull_updateInboundMessageFormat_throws() {
-        // When, Then
-        assertThrows(NullPointerException.class, () -> permission.updateInboundMessageFormat(null));
-    }
-
-    @Test
     void givenNoDefaults_minAndMaxLimitKw_returnNull() {
         // Then
         assertNull(permission.minLimitKw());

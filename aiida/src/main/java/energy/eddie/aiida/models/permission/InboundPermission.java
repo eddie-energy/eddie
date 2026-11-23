@@ -15,8 +15,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Permission that allows the eligible party to send data to AIIDA. Accepting it creates a dedicated inbound data
  * source.
@@ -139,7 +137,7 @@ public class InboundPermission extends Permission {
     }
 
     public void updateInboundMessageFormat(InboundMessageFormat inboundMessageFormat) {
-        this.inboundMessageFormat = requireNonNull(inboundMessageFormat);
+        this.inboundMessageFormat = inboundMessageFormat;
     }
 
     /**

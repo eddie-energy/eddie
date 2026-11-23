@@ -21,8 +21,6 @@ import tools.jackson.databind.annotation.JsonSerialize;
 import java.time.Instant;
 import java.util.UUID;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  * Permission that allows AIIDA to stream data of a data source selected by the user to the eligible party.
  */
@@ -97,7 +95,7 @@ public class OutboundPermission extends Permission {
     }
 
     public void setTransmissionSchedule(CronExpression transmissionSchedule) {
-        this.transmissionSchedule = requireNonNull(transmissionSchedule);
+        this.transmissionSchedule = transmissionSchedule;
     }
 
     /**

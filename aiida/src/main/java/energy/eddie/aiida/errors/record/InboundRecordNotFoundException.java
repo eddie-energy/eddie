@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class InboundRecordNotFoundException extends Exception {
     public InboundRecordNotFoundException(UUID permissionId) {
-        super("No inbound record found for permission ('%s'), permission has no data source.".formatted(permissionId));
+        super("No inbound record found for permission ('%s'). Permission has no data source.".formatted(permissionId));
     }
 
     public InboundRecordNotFoundException(UUID permissionId, UUID dataSourceId) {
