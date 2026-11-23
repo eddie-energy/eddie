@@ -4,6 +4,7 @@
 package energy.eddie.aiida.models.permission;
 
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class AcceptedPermissionTest {
     private InboundAiidaLocalDataNeed inboundDataNeed;
     @Mock
     private DataSource dataSource;
+    @Mock
+    private InboundDataSource inboundDataSource;
     @Mock
     private MqttStreamingConfig mqttStreamingConfig;
 
@@ -131,7 +134,7 @@ class AcceptedPermissionTest {
                                                START,
                                                EXPIRATION,
                                                Instant.parse("2026-01-01T00:00:00Z"));
-        permission.setDataSource(dataSource);
+        permission.setDataSource(inboundDataSource);
         permission.setMqttStreamingConfig(mqttStreamingConfig);
 
         // When
@@ -141,7 +144,7 @@ class AcceptedPermissionTest {
         assertThat(acceptedPermission).isInstanceOf(AcceptedInboundPermission.class);
         assertThat(acceptedPermission.id()).isEqualTo(PERMISSION_ID);
         assertThat(acceptedPermission.dataNeed()).isSameAs(inboundDataNeed);
-        assertThat(acceptedPermission.dataSource()).isSameAs(dataSource);
+        assertThat(acceptedPermission.dataSource()).isSameAs(inboundDataSource);
         assertThat(acceptedPermission.mqttStreamingConfig()).isSameAs(mqttStreamingConfig);
     }
 

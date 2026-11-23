@@ -8,7 +8,6 @@ import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.dtos.record.LatestInboundPermissionRecordDto;
 import energy.eddie.aiida.dtos.record.LatestOutboundPermissionRecordDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -111,8 +110,7 @@ public class LatestRecordController {
     @GetMapping(value = "permission/{id}/inbound/latest")
     public LatestInboundPermissionRecordDto latestInboundPermissionRecord(
             @PathVariable("id") UUID permissionId
-    ) throws PermissionNotFoundException, InvalidDataSourceTypeException,
-             InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+    ) throws PermissionNotFoundException, InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         LOGGER.debug("Fetching latest inbound permission record for permission with ID: {}", permissionId);
 
         return latestRecordService.latestInboundPermissionRecord(permissionId);

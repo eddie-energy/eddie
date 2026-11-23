@@ -6,7 +6,6 @@ package energy.eddie.aiida.services.record;
 import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.dtos.record.*;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -121,8 +120,7 @@ public class LatestRecordService {
     }
 
     public LatestInboundPermissionRecordDto latestInboundPermissionRecord(UUID permissionId)
-            throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+            throws PermissionNotFoundException, InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         var inboundRecord = inboundRecordService.latestRecord(permissionId);
 
         return new LatestInboundPermissionRecordDto(

@@ -5,7 +5,7 @@ package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.*;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +53,6 @@ class PermissionRepositoryIntegrationTest {
             MountableFile.forClasspathResource(TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE),
             TIMESCALEDB_CONTAINER_PATH
     );
-    private static final UUID DATA_NEED_ID = UUID.fromString("f7698978-b9fe-40c8-aebe-c997f7f58f2f");
     @Autowired
     private PermissionRepository permissionRepository;
     @Autowired
@@ -72,7 +71,7 @@ class PermissionRepositoryIntegrationTest {
         insertOtherDataNeed();
         var dataSourceId = insertDataSource();
         var permissionId = UUID.randomUUID();
-        var permission = acceptedPermission(permissionId);
+        var permission = outboundPermission(permissionId, UUID.randomUUID());
         permission.setDataSource(entityManager.find(DataSource.class, dataSourceId));
 
         // When
@@ -83,8 +82,8 @@ class PermissionRepositoryIntegrationTest {
         // Then
         var stored = permissionRepository.findById(permissionId).orElseThrow();
         assertEquals(PermissionStatus.ACCEPTED, stored.status());
-        assertInstanceOf(InboundAiidaLocalDataNeed.class, stored.dataNeed());
-        assertEquals(DATA_NEED_ID, stored.dataNeed().dataNeedId());
+        assertInstanceOf(OutboundAiidaLocalDataNeed.class, stored.dataNeed());
+        assertEquals(outboundDataNeed().dataNeedId(), stored.dataNeed().dataNeedId());
         assertNotNull(stored.dataSource());
         assertEquals(dataSourceId, stored.dataSource().id());
         assertNotNull(stored.mqttStreamingConfig());

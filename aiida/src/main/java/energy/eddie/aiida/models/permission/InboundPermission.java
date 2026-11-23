@@ -4,6 +4,7 @@
 package energy.eddie.aiida.models.permission;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
@@ -87,6 +88,11 @@ public class InboundPermission extends Permission {
     @Override
     public InboundAiidaLocalDataNeed dataNeed() {
         return (InboundAiidaLocalDataNeed) super.dataNeed();
+    }
+
+    @Override
+    public @Nullable InboundDataSource dataSource() {
+        return (InboundDataSource) super.dataSource();
     }
 
     /**

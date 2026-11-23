@@ -6,7 +6,6 @@ package energy.eddie.aiida.web;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -50,7 +49,6 @@ public class InboundController {
      * @return A response containing the latest inbound record.
      * @throws PermissionNotFoundException                     If the permission does not exist.
      * @throws UnauthorizedException                           If no access code is supplied or the code is invalid.
-     * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
      * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
      * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
      * @throws ProvisioningTypeNotConfiguredException          If the selected REST provisioning type is not active.
@@ -66,7 +64,6 @@ public class InboundController {
             @RequestParam(value = "apiKey", required = false) String queryKey
     ) throws PermissionNotFoundException,
              UnauthorizedException,
-             InvalidDataSourceTypeException,
              InboundRecordNotFoundException,
              UnsupportedInboundRecordTransformationException,
              ProvisioningTypeNotConfiguredException,

@@ -768,7 +768,7 @@ class PermissionServiceTest {
             return invocation.getArgument(0);
         });
         doAnswer(invocation -> {
-            savedPermission.get().setDataSource(mockDataSource);
+            savedPermission.get().setDataSource(mockInboundDataSource);
             return null;
         }).when(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
     }

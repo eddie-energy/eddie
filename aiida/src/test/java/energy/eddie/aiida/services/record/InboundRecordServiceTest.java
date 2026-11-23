@@ -5,12 +5,10 @@ package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
-import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
@@ -37,7 +35,8 @@ import java.util.UUID;
 import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.inboundDataNeed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InboundRecordServiceTest {
@@ -83,7 +82,7 @@ class InboundRecordServiceTest {
     @EnumSource(value = InboundProvisioningType.class, names = {"REST_BEARER", "REST_API_TOKEN"})
     void testLatestRecord_returnsMappedRecordForRestProvisioning(InboundProvisioningType provisioningType)
             throws UnauthorizedException, PermissionNotFoundException,
-                   InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   InboundRecordNotFoundException,
                    UnsupportedInboundRecordTransformationException,
                    ProvisioningTypeNotConfiguredException,
                    SecretLoadingException {
@@ -106,20 +105,6 @@ class InboundRecordServiceTest {
         assertEquals("mapped-payload", latestRecord.payload());
         assertEquals(AiidaSchema.MIN_MAX_ENVELOPE_CIM_V1_12, latestRecord.schema());
         assertEquals(InboundMessageFormat.CIM_1_12, latestRecord.messageFormat());
-    }
-
-    @Test
-    void testLatestRecord_withWrongDataSourceType_throwsException() {
-        // Given
-        var wrongDataSource = mock(SimulationDataSource.class);
-        permission.setDataSource(wrongDataSource);
-        mockPermissionRepository();
-
-        // When, Then
-        assertThrows(InvalidDataSourceTypeException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
-                                                             ACCESS_CODE,
-                                                             InboundProvisioningType.REST_API_TOKEN));
     }
 
     @Test

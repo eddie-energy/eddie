@@ -4,8 +4,8 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
-import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.OutboundPermission;
@@ -65,7 +65,7 @@ class PermissionCommandServiceTest {
     @Mock
     private InboundAiidaLocalDataNeed inboundDataNeed;
     @Mock
-    private DataSource dataSource;
+    private InboundDataSource dataSource;
     @Mock
     private MqttStreamingConfig mqttStreamingConfig;
     @Mock

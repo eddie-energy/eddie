@@ -6,7 +6,6 @@ package energy.eddie.aiida.services.record;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -64,7 +63,6 @@ public class InboundRecordService {
      * @return The latest inbound record transformed to the permission's configured message format.
      * @throws PermissionNotFoundException                     If no inbound permission with the ID exists.
      * @throws UnauthorizedException                           If the supplied access code is invalid.
-     * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
      * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
      * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
      * @throws ProvisioningTypeNotConfiguredException          If the requested REST provisioning type is not active.
@@ -75,7 +73,7 @@ public class InboundRecordService {
             String accessCode,
             InboundProvisioningType provisioningType
     ) throws PermissionNotFoundException, UnauthorizedException,
-             InvalidDataSourceTypeException, InboundRecordNotFoundException,
+             InboundRecordNotFoundException,
              UnsupportedInboundRecordTransformationException,
              ProvisioningTypeNotConfiguredException, SecretLoadingException {
         var permission = permission(permissionId);
@@ -101,29 +99,24 @@ public class InboundRecordService {
      * @param permissionId ID of the inbound permission whose latest record should be returned.
      * @return The latest inbound record transformed to the permission's configured message format.
      * @throws PermissionNotFoundException                     If no inbound permission with the ID exists.
-     * @throws InvalidDataSourceTypeException                  If the permission does not use an inbound data source.
      * @throws InboundRecordNotFoundException                  If no inbound record exists for the data source.
      * @throws UnsupportedInboundRecordTransformationException If the record cannot be transformed to the configured format.
      */
     public InboundRecordDto latestRecord(UUID permissionId)
-            throws PermissionNotFoundException, InvalidDataSourceTypeException,
-                   InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
+            throws PermissionNotFoundException, InboundRecordNotFoundException,
+                   UnsupportedInboundRecordTransformationException {
         var permission = permission(permissionId);
         var dataSource = dataSource(permission);
 
         return toDto(permission, latestRecord(permissionId, dataSource));
     }
 
-    private InboundDataSource dataSource(InboundPermission permission)
-            throws InvalidDataSourceTypeException, InboundRecordNotFoundException {
+    private InboundDataSource dataSource(InboundPermission permission) throws InboundRecordNotFoundException {
         var dataSource = permission.dataSource();
         if (dataSource == null) {
             throw new InboundRecordNotFoundException(permission.id());
         }
-        if (!(dataSource instanceof InboundDataSource inboundDataSource)) {
-            throw new InvalidDataSourceTypeException();
-        }
-        return inboundDataSource;
+        return dataSource;
     }
 
     private InboundPermission permission(UUID permissionId) throws PermissionNotFoundException {

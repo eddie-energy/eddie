@@ -7,7 +7,6 @@ import energy.eddie.aiida.aggregator.InboundAggregator;
 import energy.eddie.aiida.dtos.record.InboundRecordDto;
 import energy.eddie.aiida.dtos.record.LatestDataSourceRecordDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.permission.LatestPermissionRecordNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
@@ -252,7 +251,7 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldReturnLatestRecord_whenFound()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+            throws PermissionNotFoundException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         var inboundRecord = mock(InboundRecordDto.class);
         when(inboundRecord.timestamp()).thenReturn(TIMESTAMP);
@@ -276,7 +275,7 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagatePermissionNotFoundException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+            throws PermissionNotFoundException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new PermissionNotFoundException(PERMISSION_ID));
@@ -290,7 +289,7 @@ class LatestRecordServiceTest {
 
     @Test
     void latestInboundPermissionRecord_shouldPropagateInboundRecordNotFoundException()
-            throws PermissionNotFoundException, InvalidDataSourceTypeException,
+            throws PermissionNotFoundException,
                    InboundRecordNotFoundException, UnsupportedInboundRecordTransformationException {
         when(inboundRecordService.latestRecord(PERMISSION_ID))
                 .thenThrow(new InboundRecordNotFoundException(UUID.randomUUID()));
