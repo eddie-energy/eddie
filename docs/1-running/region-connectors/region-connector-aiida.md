@@ -21,7 +21,7 @@ which then forwards them to the active outbound connectors.
 
 This RC also subscribes to the status topic and updates the internal status of a permission when AIIDA reports a
 status change.
-AIIDA sends a CIM v1.12 permission market document (`RequestPermissionEnvelope`); other CIM versions are not supported yet.
+AIIDA sends a CIM v1.12 [permission market document](../../2-integrating/messages/cim/permission-market-documents.md) (`RequestPermissionEnvelope`).
 The permission is identified by `MessageDocumentHeader.MetaInformation.requestPermissionId`, and the RC reads the CIM
 status code of the first `RequestPermission.MktActivityRecord`:
 

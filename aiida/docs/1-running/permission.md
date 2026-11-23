@@ -66,10 +66,10 @@ The AIIDA Web UI is notified about changes of the connection status and updates 
 
 ### Informing EDDIE about status changes
 
-When a permission reaches a final state, AIIDA publishes a CIM v1.12 permission market document
+When a permission reaches a final state, AIIDA publishes a CIM v1.12
+[permission market document](https://architecture.eddie.energy/framework/2-integrating/messages/cim/permission-market-documents.html)
 (`RequestPermissionEnvelope`) on the status topic `aiida/v1/<permissionId>/status` and then closes the connection
 of the permission.
-Only CIM v1.12 is currently supported.
 
 The status is set in `RequestPermission.MktActivityRecord.status` as a CIM status code.
 `MktActivityRecord.description` contains the matching EDDIE permission process status.
