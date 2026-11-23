@@ -247,21 +247,21 @@ class InboundDataSourceTest {
     }
 
     @Test
-    void legacyDataSource_withoutMqttStreamingConfig_returnsNoAcknowledgementTopic() {
-        var legacyDataSource = new InboundDataSource();
+    void withoutMqttStreamingConfig_returnsNoAcknowledgementTopic() {
+        when(permission.mqttStreamingConfig()).thenReturn(null);
 
-        assertThat(legacyDataSource.acknowledgementTopic()).isNull();
+        assertThat(dataSource.acknowledgementTopic()).isNull();
     }
 
     @Test
-    void legacyDataSource_withoutMqttStreamingConfig_failsExplicitlyWhenCreatingMqttResources() throws Exception {
-        var legacyDataSource = new InboundDataSource();
-        setId(legacyDataSource, DATA_SOURCE_ID);
+    void withoutMqttStreamingConfig_failsExplicitlyWhenCreatingMqttResources() throws Exception {
+        setId(dataSource, DATA_SOURCE_ID);
+        when(permission.mqttStreamingConfig()).thenReturn(null);
 
-        assertThatThrownBy(legacyDataSource::createMqttUser)
+        assertThatThrownBy(dataSource::createMqttUser)
                 .isInstanceOf(MissingMqttStreamingConfigException.class)
                 .hasMessage("MQTT streaming configuration is missing for inbound data source " + DATA_SOURCE_ID);
-        assertThatThrownBy(legacyDataSource::createAccessControlEntry)
+        assertThatThrownBy(dataSource::createAccessControlEntry)
                 .isInstanceOf(MissingMqttStreamingConfigException.class)
                 .hasMessage("MQTT streaming configuration is missing for inbound data source " + DATA_SOURCE_ID);
     }
@@ -288,13 +288,6 @@ class InboundDataSourceTest {
         dataSource.updateAccessCode("new-access-code");
 
         assertEquals("new-access-code", dataSource.accessCode());
-    }
-
-    @Test
-    void schemas_returnsEmptySet_whenPermissionMissing() {
-        var legacyDataSource = new InboundDataSource();
-
-        assertEquals(Set.of(), legacyDataSource.schemas());
     }
 
     @Test

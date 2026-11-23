@@ -127,13 +127,12 @@ public class InboundDataSource extends MqttDataSource {
 
     @JsonProperty
     public Set<AiidaSchema> schemas() {
-        // legacy inbound data sources may have lost their permission
-        return permission == null ? Set.of() : permission.dataNeed().schemas();
+        return permission.dataNeed().schemas();
     }
 
     @Nullable
     public String acknowledgementTopic() {
-        var streamingConfig = permission == null ? null : permission.mqttStreamingConfig();
+        var streamingConfig = permission.mqttStreamingConfig();
         return streamingConfig == null ? null : streamingConfig.acknowledgementTopic();
     }
 
@@ -229,7 +228,7 @@ public class InboundDataSource extends MqttDataSource {
     }
 
     private MqttStreamingConfig streamingConfig() throws MissingMqttStreamingConfigException {
-        var streamingConfig = permission == null ? null : permission.mqttStreamingConfig();
+        var streamingConfig = permission.mqttStreamingConfig();
         if (streamingConfig != null) {
             return streamingConfig;
         }
