@@ -21,10 +21,10 @@ import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.ConnectionStatusEventStream;
 import energy.eddie.aiida.streamers.StreamerDependencies;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttClientException;
@@ -88,7 +88,7 @@ class MqttStreamerTest {
     @Mock
     private ObjectMapper mockMapper;
     @Mock
-    private AiidaConnectionStatusMessageDto mockStatusMessage;
+    private RequestPermissionEnvelope mockPermissionMarketDocument;
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
     @Mock
@@ -432,7 +432,7 @@ class MqttStreamerTest {
         streamer.connect();
 
         // When
-        streamer.closeTerminally(mockStatusMessage);
+        streamer.closeTerminally(mockPermissionMarketDocument);
 
         // Then
         verify(mockClient).publish(EXPECTED_STATUS_TOPIC, json, 1, true);

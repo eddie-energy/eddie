@@ -4,9 +4,9 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.models.record.AiidaRecord;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import reactor.core.publisher.Flux;
 
 import java.util.UUID;
@@ -36,12 +36,12 @@ public interface AiidaStreamer extends AutoCloseable {
     void close();
 
     /**
-     * Sends a {@link AiidaConnectionStatusMessageDto} with the passed {@code status} before closing this streamer for
-     * good. May block until the passed {@code statusMessage} is transmitted.
+     * Sends the passed permission market document before closing this streamer for good. May block until the passed
+     * {@code permissionMarketDocument} is transmitted.
      *
      * @see AiidaStreamer#close()
      */
-    void closeTerminally(AiidaConnectionStatusMessageDto statusMessage);
+    void closeTerminally(RequestPermissionEnvelope permissionMarketDocument);
 
     /**
      * Enables or disables data transmission for this streamer. While disabled, records are not published to the EP.
