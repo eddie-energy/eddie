@@ -6,7 +6,6 @@ package energy.eddie.aiida.services;
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
-import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.OutboundPermission;
@@ -245,9 +244,9 @@ public class PermissionCommandService {
     }
 
     private void removeInboundDataSourceIfExists(Permission permission) {
-        var dataSource = permission.dataSource();
-
-        if (dataSource != null && dataSource.type() == DataSourceType.INBOUND) {
+        // outbound permissions may stream from the inbound data source of another permission
+        var dataSource = permission instanceof InboundPermission inboundPermission ? inboundPermission.dataSource() : null;
+        if (dataSource != null) {
             aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSource.id()));
             permission.setDataSource(null);
         }

@@ -273,7 +273,6 @@ class PermissionCommandServiceTest {
         when(permissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(inboundPermission.id()).thenReturn(permissionId);
         when(inboundPermission.dataSource()).thenReturn(dataSource);
-        when(dataSource.type()).thenReturn(DataSourceType.INBOUND);
         when(dataSource.id()).thenReturn(dataSourceId);
 
         service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
@@ -285,6 +284,21 @@ class PermissionCommandServiceTest {
         verify(streamerManager).stopStreamer(any());
         verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
         verify(inboundPermission).setDataSource(null);
+    }
+
+    @Test
+    void givenOutboundPermissionUsingInboundDataSource_terminate_doesNotRemoveInboundDataSource() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(permission.id()).thenReturn(permissionId);
+        lenient().when(permission.dataSource()).thenReturn(dataSource);
+        lenient().when(dataSource.type()).thenReturn(DataSourceType.INBOUND);
+
+        service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
+
+        verify(permission).setStatus(PermissionStatus.TERMINATED);
+        verify(aiidaEventPublisher, never()).publishEvent(any());
+        verify(permission, never()).setDataSource(any());
     }
 
     private OutboundPermission acceptedPermission() {

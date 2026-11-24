@@ -633,12 +633,14 @@ class PermissionServiceTest {
         when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockOutboundPermission));
         when(mockOutboundPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
         when(mockOutboundPermission.id()).thenReturn(permissionId1);
+        lenient().when(mockOutboundPermission.dataSource()).thenReturn(mockInboundDataSource);
 
         // When
         service.revokePermission(permissionId1);
 
         // Then
         verify(mockAiidaEventPublisher, never()).publishEvent(any(InboundPermissionRevokeEvent.class));
+        verify(mockOutboundPermission, never()).setDataSource(any());
     }
 
     @Test
