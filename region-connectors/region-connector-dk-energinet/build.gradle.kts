@@ -46,6 +46,7 @@ dependencies {
 
     implementation(libs.nimbus.oidc)
 
+    testImplementation(testFixtures(project(":cim")))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)

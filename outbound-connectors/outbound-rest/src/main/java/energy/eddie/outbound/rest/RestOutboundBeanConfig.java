@@ -3,6 +3,7 @@
 
 package energy.eddie.outbound.rest;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import energy.eddie.outbound.rest.config.RestOutboundConnectorConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
@@ -25,7 +26,10 @@ public class RestOutboundBeanConfig {
     public JsonMapper jsonMapper(List<JsonMapperBuilderCustomizer> customizers) {
         var builder = JsonMapper.builder();
         customizers.forEach(customizer -> customizer.customize(builder));
-        return builder.build();
+        return builder.changeDefaultPropertyInclusion(
+                              incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL)
+                      )
+                      .build();
     }
 
     @Bean

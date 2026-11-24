@@ -34,5 +34,7 @@ class CimMessageTypesTest {
         assertEquals(RECMMOEEnvelope.class,
                      CimMessageTypes.REFERENCE_ENERGY_CURVE_MIN_MAX_OPERATION_V1_12.messageClass());
         assertEquals(RequestPermissionEnvelope.class, CimMessageTypes.PERMISSION_V1_12.messageClass());
+        assertEquals(energy.eddie.cim.v1_12.vhd.Envelope.class,
+                     CimMessageTypes.VALIDATED_HISTORICAL_DATA_V1_12.messageClass());
     }
 }

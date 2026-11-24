@@ -91,6 +91,12 @@ public class XmlValidator {
         return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
     }
 
+    public static boolean validateV112ValidatedHistoricalDataMarketDocument(byte[] xml) {
+        var xsd = XmlValidator.class.getResource(
+                "/cim/xsd/v1_12/vhd/CEEDS_ValidatedHistoricalDataDocument_v1.12.38.xsd");
+        return validateXMLSchema(xsd, new String(xml, StandardCharsets.UTF_8));
+    }
+
     public static boolean validateV104RealTimeDataMarketDocument(byte[] xml) {
         var xsd = XmlValidator.class.getResource(
                 "/cim/xsd/v1_04/rtd/RealTimeData Document_v1.04_Annotated.xsd");

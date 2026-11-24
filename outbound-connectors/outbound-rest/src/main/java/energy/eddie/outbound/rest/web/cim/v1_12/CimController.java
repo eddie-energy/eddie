@@ -8,6 +8,7 @@ import energy.eddie.cim.v1_12.esr.ESRDMDEnvelope;
 import energy.eddie.cim.v1_12.recmmoe.RECMMOEEnvelope;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import energy.eddie.cim.v1_12.rtd.RTDEnvelope;
+import energy.eddie.cim.v1_12.vhd.Envelope;
 import energy.eddie.outbound.rest.connectors.cim.v1_12.CimConnector;
 import energy.eddie.outbound.rest.dto.v1_12.*;
 import energy.eddie.outbound.rest.model.cim.v1_12.*;
@@ -39,8 +40,10 @@ public class CimController implements CimSwagger {
     private final EnergySharingReferenceDataMarketDocumentRepository esrRepository;
     private final MinMaxEnvelopeMarketDocumentRepository minMaxRepository;
     private final RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository;
+    private final ValidatedHistoricalDataMarketDocumentRepository vhdRepository;
     private final EventStream eventStream;
 
+    @SuppressWarnings("java:S107")
     public CimController(
             CimConnector cimConnector,
             NearRealTimeDataMarketDocumentRepository rtdRepository,
@@ -48,6 +51,7 @@ public class CimController implements CimSwagger {
             EnergySharingReferenceDataMarketDocumentRepository esrRepository,
             MinMaxEnvelopeMarketDocumentRepository minMaxRepository,
             RequestPermissionMarketDocumentRepository requestPermissionMarketDocumentRepository,
+            ValidatedHistoricalDataMarketDocumentRepository vhdRepository,
             EventStream eventStream
     ) {
         this.cimConnector = cimConnector;
@@ -56,6 +60,7 @@ public class CimController implements CimSwagger {
         this.esrRepository = esrRepository;
         this.minMaxRepository = minMaxRepository;
         this.requestPermissionMarketDocumentRepository = requestPermissionMarketDocumentRepository;
+        this.vhdRepository = vhdRepository;
         this.eventStream = eventStream;
     }
 
@@ -95,6 +100,44 @@ public class CimController implements CimSwagger {
         var messages = payloadsOf(all);
         return ResponseEntity.ok()
                              .body(new NearRealTimeDataMarketDocuments(messages));
+    }
+
+    @Override
+    @GetMapping(value = "/validated-historical-data-md", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<Flux<Envelope>> validatedHistoricalDataMdSSE() {
+        return eventStream.toJson(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/validated-historical-data-md", produces = EVENT_STREAM_XML_VALUE)
+    public ResponseEntity<Flux<String>> validatedHistoricalDataMdSSEXML() {
+        return eventStream.toXml(cimConnector.getValidatedHistoricalDataMarketDocumentStream());
+    }
+
+    @Override
+    @GetMapping(value = "/validated-historical-data-md", produces = {APPLICATION_JSON_VALUE, APPLICATION_XML_VALUE})
+    public ResponseEntity<ValidatedHistoricalDataMarketDocuments> validatedHistoricalDataMd(
+            @RequestParam(required = false) Optional<String> permissionId,
+            @RequestParam(required = false) Optional<String> connectionId,
+            @RequestParam(required = false) Optional<String> dataNeedId,
+            @RequestParam(required = false) Optional<String> countryCode,
+            @RequestParam(required = false) Optional<String> regionConnectorId,
+            @RequestParam(required = false) Optional<ZonedDateTime> from,
+            @RequestParam(required = false) Optional<ZonedDateTime> to
+    ) {
+        PredicateSpecification<ValidatedHistoricalDataMarketDocumentModel> specification = CimSpecification.buildQueryForV1_12(
+                permissionId,
+                connectionId,
+                dataNeedId,
+                countryCode,
+                regionConnectorId,
+                from,
+                to
+        );
+        var all = vhdRepository.findAll(specification);
+        var messages = payloadsOf(all);
+        return ResponseEntity.ok()
+                             .body(new ValidatedHistoricalDataMarketDocuments(messages));
     }
 
     @Override

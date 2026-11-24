@@ -51,6 +51,26 @@ class TopicConfigurationTest {
     }
 
     @Test
+    void testValidatedHistoricalDataMarketDocument_V1_04_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04);
+
+        // Then
+        assertEquals("ep.e123.cim_1_04.validated-historical-data-md", res);
+    }
+
+    @Test
+    void testValidatedHistoricalDataMarketDocument_V1_12_returnsCorrectTopicName() {
+        // Given
+        // When
+        var res = config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12);
+
+        // Then
+        assertEquals("ep.e123.cim_1_12.validated-historical-data-md", res);
+    }
+
+    @Test
     void testNearRealTimeDataMarketDocument_V1_04_returnsCorrectTopicName() {
         // Given
         // When

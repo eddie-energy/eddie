@@ -2,7 +2,6 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import STATUS from '@/constants/permission-status'
 import { computed, onMounted, ref, watch } from 'vue'
 import { fetchPermissions, permissions } from '@/stores/permissions'
 import { fetchInboundProvisioningTypes } from '@/stores/inboundProvisioningTypes.ts'
@@ -30,7 +29,7 @@ const activePermissionCategory = ref<AiidaPermission[]>(
 )
 
 const activePermissions = ref<AiidaPermission[]>(
-  activePermissionCategory.value.filter((p) => STATUS[p.status]?.isActive),
+  activePermissionCategory.value.filter((p) => p.status === 'ACCEPTED'),
 )
 
 onMounted(async () => {
@@ -56,15 +55,10 @@ watch([selectedTab, permissions, selectedPermissionCategory], () => {
   activePermissionCategory.value = permissions.value.filter(
     (p) => p.dataNeed?.type === selectedPermissionCategory.value,
   )
-  if (selectedTab.value === 'Active') {
-    activePermissions.value = activePermissionCategory.value.filter(
-      (p) => STATUS[p.status]?.isActive,
-    )
-  } else {
-    activePermissions.value = activePermissionCategory.value.filter(
-      (p) => !STATUS[p.status]?.isActive,
-    )
-  }
+  activePermissions.value =
+    selectedTab.value === 'Active'
+      ? activePermissionCategory.value.filter((p) => p.status === 'ACCEPTED')
+      : activePermissionCategory.value.filter((p) => p.status !== 'ACCEPTED')
 })
 
 const slicedPermissions = computed(() => {

@@ -24,6 +24,7 @@ public class EnerginetApiHealthIndicator implements HealthIndicator {
                   .onErrorResume(Exception.class, e -> Mono.just(Health.down(e)))
                   .onErrorResume(e -> Mono.just(Health.down()))
                   .map(Health.Builder::build)
-                  .block();
+                  .blockOptional()
+                  .orElseGet(() -> Health.down().build());
     }
 }

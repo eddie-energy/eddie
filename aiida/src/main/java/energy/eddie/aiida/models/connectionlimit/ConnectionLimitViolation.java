@@ -17,7 +17,13 @@ import java.util.UUID;
  * A continuous period in which the measured power of a permission was outside its connection limits.
  * <p>
  * The limit and the document are only the ones that were violated first. If the limit changes while the violation is
- * ongoing, they are not updated. The peak power is only tracked in the direction of the first violation.
+ * ongoing, they are not updated, so comparing the extreme powers with these limits is an approximation.
+ * <p>
+ * Only measurements that violated the limits are tracked, measurements back within the limits are not. As a violation
+ * can alternate between exceeding the maximum and falling below the minimum, the lowest and the highest violating
+ * measurement are both kept. For a violation that stays on one side, the opposite extreme is its least severe
+ * measurement.
+ * <p>
  * The measurements and limits are copied, as they may be cleaned up independently of the violation.
  */
 @Entity
@@ -78,10 +84,15 @@ public class ConnectionLimitViolation {
     @Schema(description = "Signed power in kW of the first measurement that violated the limits.", example = "9.1")
     private BigDecimal startPowerKw;
 
-    @Column(name = "peak_power_kw", nullable = false)
+    @Column(name = "lowest_power_kw", nullable = false)
     @JsonProperty
-    @Schema(description = "Signed power in kW furthest beyond the limit that was violated first.", example = "9.8")
-    private BigDecimal peakPowerKw;
+    @Schema(description = "Lowest signed power in kW measured while violating the limits.", example = "-2.4")
+    private BigDecimal lowestPowerKw;
+
+    @Column(name = "highest_power_kw", nullable = false)
+    @JsonProperty
+    @Schema(description = "Highest signed power in kW measured while violating the limits.", example = "9.8")
+    private BigDecimal highestPowerKw;
 
     @SuppressWarnings("NullAway.Init")
     protected ConnectionLimitViolation() {
@@ -103,7 +114,8 @@ public class ConnectionLimitViolation {
         this.minLimitKw = minLimitKw;
         this.maxLimitKw = maxLimitKw;
         this.startPowerKw = startPowerKw;
-        this.peakPowerKw = startPowerKw;
+        this.lowestPowerKw = startPowerKw;
+        this.highestPowerKw = startPowerKw;
     }
 
     public UUID permissionId() {
@@ -138,8 +150,12 @@ public class ConnectionLimitViolation {
         return startPowerKw;
     }
 
-    public BigDecimal peakPowerKw() {
-        return peakPowerKw;
+    public BigDecimal lowestPowerKw() {
+        return lowestPowerKw;
+    }
+
+    public BigDecimal highestPowerKw() {
+        return highestPowerKw;
     }
 
     public void end(Instant endedAt) {
@@ -147,16 +163,19 @@ public class ConnectionLimitViolation {
     }
 
     /**
-     * Updates the peak power if the measured power is further beyond the limit than any previous measurement.
+     * Tracks a measurement that violates the limits.
      *
-     * @return true if the peak changed.
+     * @return true if it is lower or higher than any violating measurement before.
      */
     public boolean registerPower(BigDecimal powerKw) {
-        var exceededMax = maxLimitKw != null && startPowerKw.compareTo(maxLimitKw) > 0;
-        var isNewPeak = exceededMax ? powerKw.compareTo(peakPowerKw) > 0 : powerKw.compareTo(peakPowerKw) < 0;
-        if (isNewPeak) {
-            peakPowerKw = powerKw;
+        var isNewLowest = powerKw.compareTo(lowestPowerKw) < 0;
+        var isNewHighest = powerKw.compareTo(highestPowerKw) > 0;
+        if (isNewLowest) {
+            lowestPowerKw = powerKw;
         }
-        return isNewPeak;
+        if (isNewHighest) {
+            highestPowerKw = powerKw;
+        }
+        return isNewLowest || isNewHighest;
     }
 }

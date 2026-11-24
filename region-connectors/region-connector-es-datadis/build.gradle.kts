@@ -36,6 +36,7 @@ dependencies {
 
     implementation(libs.reactor.core)
 
+    testImplementation(testFixtures(project(":cim")))
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)

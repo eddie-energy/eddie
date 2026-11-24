@@ -703,6 +703,43 @@ class XmlMessageSerdeTest {
     }
 
     @Test
+    void testSerialize_producesCIM_v1_12_CompliantValidatedHistoricalDataMarketDocument() throws SerdeInitializationException, SerializationException {
+        // Given
+        var document = ValidatedHistoricalDataV112TestDocuments.envelope();
+        var serde = new XmlMessageSerde();
+
+        // When
+        var res = serde.serialize(document);
+        var valid = XmlValidator.validateV112ValidatedHistoricalDataMarketDocument(res);
+        var count = countExplicitNamespaces(res);
+
+        // Then
+        assertTrue(valid);
+        assertEquals(1, count);
+    }
+
+    @Test
+    void testDeserialize_roundTripsCIM_v1_12_ValidatedHistoricalDataMarketDocument() throws SerdeInitializationException, SerializationException, DeserializationException {
+        // Given
+        var document = ValidatedHistoricalDataV112TestDocuments.envelope();
+        var serde = new XmlMessageSerde();
+        var bytes = serde.serialize(document);
+
+        // When
+        var res = serde.deserialize(bytes, energy.eddie.cim.v1_12.vhd.Envelope.class);
+
+        // Then
+        var vhd = res.getVHDMarketDocument();
+        assertAll(
+                () -> assertEquals("pid", res.getMessageDocumentHeader().getMetaInformation().getRequestPermissionId()),
+                () -> assertEquals("mrid", vhd.getMRID()),
+                () -> assertEquals(1, vhd.getTimeSeries().size()),
+                () -> assertEquals(0, BigDecimal.valueOf(1.5).compareTo(
+                        vhd.getTimeSeries().getFirst().getSeriesPeriods().getFirst().getPoints().getFirst().getEnergyQuantityQuantity()))
+        );
+    }
+
+    @Test
     void testSerialize_producesCIMCompliantV1_12RTDEnvelope() throws SerdeInitializationException, SerializationException {
         // Given
         var dateTime = ZonedDateTime.of(2024, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);

@@ -403,6 +403,44 @@ class AmqpOutboundTest {
     }
 
     @Test
+    void testValidatedHistoricalDataMarketDocumentsV1_12_producesMessage() throws InterruptedException {
+        // Given
+        CountDownLatch latch = new CountDownLatch(1);
+        TestPublisher<energy.eddie.cim.v1_12.vhd.Envelope> publisher = TestPublisher.create();
+        amqpOutbound.setValidatedHistoricalDataMarketDocumentStreamV1_12(publisher.flux());
+        var metaInformation = new energy.eddie.cim.v1_12.vhd.MetaInformation()
+                .withRequestPermissionId("pid")
+                .withConnectionId("cid")
+                .withDataNeedId("dnid");
+        var header = new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader()
+                .withMetaInformation(metaInformation);
+        var message = new energy.eddie.cim.v1_12.vhd.Envelope()
+                .withMessageDocumentHeader(header);
+
+        // When
+        publisher.emit(message);
+
+        // Then
+        var consumer = connection.consumerBuilder()
+                                 .queue(config.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12))
+                                 .messageHandler((ctx, msg) -> {
+                                     assertAll(
+                                             () -> assertEquals("pid", msg.property(Headers.PERMISSION_ID)),
+                                             () -> assertEquals("cid", msg.property(Headers.CONNECTION_ID)),
+                                             () -> assertEquals("dnid", msg.property(Headers.DATA_NEED_ID))
+                                     );
+                                     latch.countDown();
+                                 })
+                                 .build();
+        var res = latch.await(5, TimeUnit.SECONDS);
+        assertTrue(res, "Assertions in message handler might have failed");
+
+        // Clean-Up
+        consumer.close();
+        publisher.complete();
+    }
+
+    @Test
     void testEnergySharingRefernceDataMarketDocument_producesMessage() throws InterruptedException {
         // Given
         CountDownLatch latch = new CountDownLatch(1);

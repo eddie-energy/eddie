@@ -13,6 +13,7 @@ import type {
   AiidaPermission,
   AiidaPermissionRequestsDTO,
   ConnectionLimit,
+  ConnectionLimitViolation,
   ConnectionStatusEvent,
   InboundMessageFormat,
   LastMessageEvent,
@@ -124,6 +125,16 @@ export function getConnectionLimits(
   to: string,
 ): Promise<ConnectionLimit[]> {
   return fetch(`/connection-limits?${new URLSearchParams({ permissionId, from, to })}`)
+}
+
+export function getConnectionLimitViolations(
+  permissionId: string,
+  from: string,
+  to: string,
+): Promise<ConnectionLimitViolation[]> {
+  return fetch(
+    `/connection-limits/${encodeURIComponent(permissionId)}/violations?${new URLSearchParams({ from, to })}`,
+  )
 }
 
 export function getAcceptedInboundPermissions(): Promise<AiidaPermission[]> {

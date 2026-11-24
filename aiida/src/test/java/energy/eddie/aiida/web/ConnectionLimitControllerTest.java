@@ -124,6 +124,7 @@ class ConnectionLimitControllerTest {
                                                       new BigDecimal("8.0"),
                                                       new BigDecimal("9.1"));
         violation.registerPower(new BigDecimal("9.8"));
+        violation.registerPower(new BigDecimal("-1.2"));
         var from = Instant.parse("2026-07-10T08:00:00Z");
         var to = Instant.parse("2026-07-10T10:00:00Z");
         when(connectionLimitViolationService.getViolations(permissionId, from, to)).thenReturn(List.of(violation));
@@ -135,7 +136,8 @@ class ConnectionLimitControllerTest {
                .andExpect(jsonPath("$[0].startedAt").value(start.toString()))
                .andExpect(jsonPath("$[0].endedAt").doesNotExist())
                .andExpect(jsonPath("$[0].dataSourceId").value(dataSourceId.toString()))
-               .andExpect(jsonPath("$[0].peakPowerKw").value(9.8));
+               .andExpect(jsonPath("$[0].lowestPowerKw").value(-1.2))
+               .andExpect(jsonPath("$[0].highestPowerKw").value(9.8));
     }
 
     @Test
