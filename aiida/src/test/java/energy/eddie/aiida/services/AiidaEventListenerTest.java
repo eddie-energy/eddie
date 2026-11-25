@@ -5,7 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
@@ -104,9 +104,9 @@ class AiidaEventListenerTest {
     }
 
     @Test
-    void testOnInboundPermissionRevokeEvent() {
+    void testOnInboundPermissionEndEvent() {
         // Given
-        var event = mock(InboundPermissionRevokeEvent.class);
+        var event = mock(InboundPermissionEndEvent.class);
         var dataSourceId = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
         // When

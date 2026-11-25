@@ -4,7 +4,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.dtos.permission.*;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
@@ -613,7 +613,7 @@ public class PermissionService {
     private void removeInboundDataSourceIfExists(Permission permission) {
         var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
         if (dataSourceId != null) {
-            aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
+            aiidaEventPublisher.publishEvent(new InboundPermissionEndEvent(dataSourceId));
             permission.setDataSource(null);
         }
     }

@@ -3,7 +3,7 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundPermission;
@@ -276,7 +276,7 @@ class PermissionCommandServiceTest {
         verify(inboundPermission).setStatus(PermissionStatus.TERMINATED);
         verify(inboundPermission).setRevokeTime(any());
         verify(permissionScheduler).stopPermission(inboundPermission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
-        verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
+        verify(aiidaEventPublisher).publishEvent(new InboundPermissionEndEvent(dataSourceId));
         verify(inboundPermission).setDataSource(null);
     }
 

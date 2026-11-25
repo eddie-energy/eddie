@@ -5,7 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
@@ -70,14 +70,15 @@ public class AiidaEventListener {
     }
 
     /**
-     * Stops the runtime publisher and deletes the revoked permission's inbound data source. Deleting the entity also
-     * removes its persisted provisioning connection, MQTT user credentials, and ACL through JPA cascade removal.
+     * Stops the runtime publisher and deletes the inbound data source of the ended (revoked, terminated or expired)
+     * permission. Deleting the entity also removes its persisted provisioning connection, MQTT user credentials, and
+     * ACL through JPA cascade removal.
      *
-     * @param event Revocation event identifying the inbound data source.
+     * @param event End event identifying the inbound data source.
      */
     @EventListener
-    protected void deleteInboundDataSource(InboundPermissionRevokeEvent event) {
-        LOGGER.trace("Received InboundPermissionDeletionEvent: {}", event);
+    protected void deleteInboundDataSource(InboundPermissionEndEvent event) {
+        LOGGER.trace("Received InboundPermissionEndEvent: {}", event);
         provisioningService.stopPublisher(event.dataSourceId());
         dataSourceService.deleteDataSource(event.dataSourceId());
     }

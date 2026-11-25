@@ -4,7 +4,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.dtos.permission.AcceptInboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.AcceptOutboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.PermissionDetailsDto;
@@ -602,7 +602,7 @@ class PermissionServiceTest {
         verify(mockInboundPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockInboundPermission).setRevokeTime(fixedInstant);
         verify(mockPermissionScheduler).stopPermission(mockInboundPermission, PermissionProcessStatus.REVOKED);
-        verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
+        verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionEndEvent.class));
     }
 
     @Test
@@ -617,7 +617,7 @@ class PermissionServiceTest {
         service.revokePermission(permissionId1);
 
         // Then
-        verify(mockAiidaEventPublisher, never()).publishEvent(any(InboundPermissionRevokeEvent.class));
+        verify(mockAiidaEventPublisher, never()).publishEvent(any(InboundPermissionEndEvent.class));
         verify(mockOutboundPermission, never()).setDataSource(any());
     }
 
