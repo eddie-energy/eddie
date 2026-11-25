@@ -4,13 +4,20 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
+import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledFuture;
 
 @Service
-public class PermissionScheduler {
+public class PermissionScheduler implements ApplicationListener<ContextRefreshedEvent> {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionScheduler.class);
     private final Clock clock;
     private final TaskScheduler scheduler;
@@ -33,6 +40,7 @@ public class PermissionScheduler {
     private final ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures;
     private final StreamerManager streamerManager;
     private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
+    private final FailedToSendRepository failedToSendRepository;
 
     public PermissionScheduler(
             Clock clock,
@@ -40,7 +48,8 @@ public class PermissionScheduler {
             PermissionRepository repository,
             ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures,
             StreamerManager streamerManager,
-            PermissionMarketDocumentFactory permissionMarketDocumentFactory
+            PermissionMarketDocumentFactory permissionMarketDocumentFactory,
+            FailedToSendRepository failedToSendRepository
     ) {
         this.clock = clock;
         this.scheduler = scheduler;
@@ -48,6 +57,43 @@ public class PermissionScheduler {
         this.permissionFutures = permissionFutures;
         this.streamerManager = streamerManager;
         this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
+        this.failedToSendRepository = failedToSendRepository;
+    }
+
+    /**
+     * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
+     * If not, streaming is resumed, otherwise their database entry will be updated accordingly and their unsent
+     * messages are deleted.
+     * This is done when a {@link ContextRefreshedEvent} is received,
+     * which ensures that all beans are started and the database is set up correctly.
+     */
+    @Override
+    @Transactional
+    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
+        // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
+        var acceptedPermissions = repository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED);
+        LOGGER.info(
+                "Fetched {} permission from database that should resume streaming or be updated if expired.",
+                acceptedPermissions.size());
+
+        var now = clock.instant();
+        for (Permission permission : acceptedPermissions) {
+            try {
+                var acceptedPermission = AcceptedPermission.from(permission);
+                if (acceptedPermission.expirationTime().isAfter(now)) {
+                    scheduleOrStart(acceptedPermission);
+                } else {
+                    LOGGER.info(
+                            "Permission {} has expired but AIIDA was not running at that time, will expire it now",
+                            permission.id());
+                    permission.setStatus(PermissionStatus.FULFILLED);
+                    failedToSendRepository.deleteAllByPermissionId(permission.id());
+                }
+            } catch (IllegalStateException exception) {
+                // don't throw exception so other permissions are not skipped
+                LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
+            }
+        }
     }
 
     /**

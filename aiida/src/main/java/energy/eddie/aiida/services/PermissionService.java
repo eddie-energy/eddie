@@ -38,12 +38,9 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -54,7 +51,7 @@ import static energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED;
 import static energy.eddie.aiida.models.permission.PermissionStatus.REVOKED;
 
 @Service
-public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
+public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
     private final InboundPermissionRepository inboundPermissionRepository;
@@ -389,40 +386,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public Permission findById(UUID permissionId) throws PermissionNotFoundException {
         return permissionRepository.findById(permissionId)
                                    .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-    }
-
-    /**
-     * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
-     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
-     * This is done when a {@link ContextRefreshedEvent} is received,
-     * which ensures that all beans are started and the database is set up correctly.
-     */
-    @Override
-    @Transactional
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-        // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var acceptedPermissions = permissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(ACCEPTED);
-        LOGGER.info(
-                "Fetched {} permission from database that should resume streaming or be updated if expired.",
-                acceptedPermissions.size());
-
-        var now = clock.instant();
-        for (Permission permission : acceptedPermissions) {
-            try {
-                var acceptedPermission = AcceptedPermission.from(permission);
-                if (acceptedPermission.expirationTime().isAfter(now)) {
-                    permissionScheduler.scheduleOrStart(acceptedPermission);
-                } else {
-                    LOGGER.info(
-                            "Permission {} has expired but AIIDA was not running at that time, will expire it now",
-                            permission.id());
-                    permission.setStatus(PermissionStatus.FULFILLED);
-                }
-            } catch (IllegalStateException exception) {
-                // don't throw exception so other permissions are not skipped
-                LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
-            }
-        }
     }
 
     /**

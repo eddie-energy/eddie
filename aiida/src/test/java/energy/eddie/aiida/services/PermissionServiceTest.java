@@ -35,21 +35,14 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.support.CronExpression;
 import org.springframework.web.client.HttpClientErrorException;
 import reactor.core.publisher.Mono;
@@ -61,10 +54,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -798,153 +788,5 @@ class PermissionServiceTest {
 
     private AcceptInboundPermissionDto inboundAcceptDto(@Nullable InboundMessageFormat inboundMessageFormat) {
         return new AcceptInboundPermissionDto(eddieId, handshakeUrl, accessToken, inboundMessageFormat, null);
-    }
-
-    @Nested
-    @DisplayName("Tests whether the @PostConstruct annotated method of PermissionService updates the permissions correctly")
-    class PermissionServiceTestUpdatePermissionsOnStartup {
-        @Mock
-        private Clock mockClock;
-        @Mock
-        private TaskScheduler mockScheduler;
-        @Mock
-        private ScheduledFuture<?> mockScheduledFuture;
-        @Mock
-        private OutboundAiidaLocalDataNeed mockStartupDataNeed;
-        @Mock
-        private MqttStreamingConfig mockMqttStreamingConfig;
-
-        public static Stream<Arguments> onStartupVariousPermissions() {
-            return Stream.of(Arguments.of(
-                                          "2023-09-01T00:00:00.000Z",
-                                          "2023-12-24T00:00:00.000Z",
-                                          PermissionStatus.ACCEPTED),
-                             Arguments.of(
-                                          "2023-09-01T00:00:00.000Z",
-                                          "2023-09-19T00:00:00.000Z",
-                                          PermissionStatus.FULFILLED),
-                             Arguments.of(
-                                          "2023-09-11T00:00:00.000Z",
-                                          "2023-09-30T00:00:00.000Z",
-                                          PermissionStatus.FULFILLED),
-                             Arguments.of(
-                                          "2023-09-11T00:00:00.000Z",
-                                          "2023-10-31T00:00:00.000Z",
-                                          PermissionStatus.ACCEPTED),
-                             Arguments.of(
-                                          "2023-10-12T00:00:00.000Z",
-                                          "2023-10-15T00:00:00.000Z",
-                                          PermissionStatus.ACCEPTED));
-        }
-
-        @BeforeEach
-        void setUp() {
-            var permissionScheduler = new PermissionScheduler(mockClock,
-                                                              mockScheduler,
-                                                              mockPermissionRepository,
-                                                              new ConcurrentHashMap<>(),
-                                                              streamerManager,
-                                                              mockPermissionMarketDocumentFactory);
-            service = new PermissionService(mockPermissionRepository,
-                                            mockInboundPermissionRepository,
-                                            mockOutboundPermissionRepository,
-                                            mockConnectionLimitDefaultRepository,
-                                            mockClock,
-                                            streamerManager,
-                                            mockHandshakeService,
-                                            permissionScheduler,
-                                            mockAuthService,
-                                            mockDataSourceService,
-                                            mockAiidaLocalDataNeedService,
-                                            mockAiidaEventPublisher,
-                                            mockSecretsService,
-                                        mockPermissionMarketDocumentFactory);
-        }
-
-        /**
-         * Tests that permissions are queried from the DB on startup and if their expiration time has passed, their
-         * status is set accordingly or streaming is started again otherwise.
-         * <p>
-         * {@link PermissionServiceIntegrationTest} tests the same functionality but with a database and ensures that
-         * the method is correctly called by Spring on startup.
-         * </p>
-         */
-        @ParameterizedTest
-        @MethodSource("onStartupVariousPermissions")
-        void givenVariousPermissions_statusAsExpected(
-                String start,
-                String end,
-                PermissionStatus expectedState
-        ) {
-            // Given
-            doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
-            var permission = new OutboundPermission(UUID.fromString("15ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
-                                                    UUID.fromString("25ee5365-5d71-4b01-b21f-9c61f76a5cc9"),
-                                                    "https://example.org",
-                                                    "accessToken",
-                                                    UUID.randomUUID(),
-                                                    mockStartupDataNeed,
-                                                    "connectionId",
-                                                    Instant.parse(start),
-                                                    Instant.parse(end),
-                                                    Instant.parse("2026-01-01T00:00:00Z"));
-            permission.setStatus(PermissionStatus.ACCEPTED);
-            lenient().when(mockStartupDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/5 * * * * *"));
-            permission.setDataSource(mockDataSource);
-            permission.setMqttStreamingConfig(mockMqttStreamingConfig);
-            when(mockPermissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED)).thenReturn(List.of(permission));
-
-            // strict stubbing requires us to only stub the .schedule if a runnable will be scheduled
-            if (expectedState == PermissionStatus.ACCEPTED)
-                doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
-
-            // When
-            service.onApplicationEvent(mock(ContextRefreshedEvent.class));
-
-            // Then
-            assertEquals(expectedState, permission.status());
-        }
-
-        @Test
-        void givenIncompletePermission_isSkipped_andOtherPermissionsAreStillResumed() {
-            // Given
-            doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
-            var incomplete = new OutboundPermission(UUID.randomUUID(),
-                                                    UUID.randomUUID(),
-                                                    "handshakeUrl",
-                                                    "token",
-                                                    userId,
-                                                    mockStartupDataNeed,
-                                                    "connection-id",
-                                                    Instant.parse("2026-01-01T00:00:00Z"),
-                                                    Instant.parse("2026-12-31T00:00:00Z"),
-                                                    Instant.parse("2026-01-01T00:00:00Z"));
-            incomplete.setStatus(PermissionStatus.ACCEPTED);
-            var complete = new OutboundPermission(UUID.randomUUID(),
-                                                  UUID.randomUUID(),
-                                                  "handshakeUrl",
-                                                  "token",
-                                                  userId,
-                                                  mockStartupDataNeed,
-                                                  "connectionId",
-                                                  Instant.parse("2023-10-02T00:00:00.000Z"),
-                                                  Instant.parse("2023-10-05T00:00:00.000Z"),
-                                                  Instant.parse("2026-01-01T00:00:00Z"));
-            complete.setStatus(PermissionStatus.ACCEPTED);
-            when(mockStartupDataNeed.transmissionSchedule()).thenReturn(CronExpression.parse("*/5 * * * * *"));
-            complete.setDataSource(mockDataSource);
-            complete.setMqttStreamingConfig(mockMqttStreamingConfig);
-            when(mockPermissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED))
-                    .thenReturn(List.of(incomplete, complete));
-            doReturn(mockScheduledFuture).when(mockScheduler).schedule(any(), any(Instant.class));
-
-            // When
-            service.onApplicationEvent(mock(ContextRefreshedEvent.class));
-
-            // Then
-            assertEquals(PermissionStatus.ACCEPTED, incomplete.status());
-            assertEquals(PermissionStatus.ACCEPTED, complete.status());
-            verify(mockScheduler).schedule(any(), any(Instant.class));
-        }
     }
 }

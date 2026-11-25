@@ -325,7 +325,6 @@ public class MqttStreamer implements AiidaStreamer, MqttCallback {
                   .addArgument(topic)
                   .log("MqttStreamer for permission {} failed to send message {} to topic {}, will store it in the DB",
                        exception);
-            // TODO need to delete these messages again if permission expires --> GH-981
             failedToSendRepository.save(new FailedToSendEntity(streamingConfig.permissionId(), topic, payload));
         }
     }
