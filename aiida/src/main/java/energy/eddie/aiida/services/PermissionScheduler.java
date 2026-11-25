@@ -3,9 +3,12 @@
 
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
@@ -42,6 +45,7 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
     private final StreamerManager streamerManager;
     private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
     private final FailedToSendRepository failedToSendRepository;
+    private final AiidaEventPublisher aiidaEventPublisher;
 
     public PermissionScheduler(
             Clock clock,
@@ -50,7 +54,8 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
             ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures,
             StreamerManager streamerManager,
             PermissionMarketDocumentFactory permissionMarketDocumentFactory,
-            FailedToSendRepository failedToSendRepository
+            FailedToSendRepository failedToSendRepository,
+            AiidaEventPublisher aiidaEventPublisher
     ) {
         this.clock = clock;
         this.scheduler = scheduler;
@@ -59,12 +64,14 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
         this.streamerManager = streamerManager;
         this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
         this.failedToSendRepository = failedToSendRepository;
+        this.aiidaEventPublisher = aiidaEventPublisher;
     }
 
     /**
      * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
      * If not, streaming is resumed, otherwise their database entry will be updated accordingly and their unsent
-     * messages are deleted.
+     * messages are deleted. The inbound data source of an expired inbound permission is removed via an
+     * {@link InboundPermissionEndEvent}.
      * This is done when a {@link ContextRefreshedEvent} is received,
      * which ensures that all beans are started and the database is set up correctly.
      */
@@ -79,6 +86,10 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
 
         var now = clock.instant();
         for (Permission permission : acceptedPermissions) {
+            // e.g. a forwarding outbound permission fulfilled because its inbound permission expired earlier in this loop
+            if (!permission.status().isAccepted()) {
+                continue;
+            }
             try {
                 var acceptedPermission = AcceptedPermission.from(permission);
                 if (acceptedPermission.expirationTime().isAfter(now)) {
@@ -89,6 +100,13 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
                             permission.id());
                     permission.setStatus(PermissionStatus.FULFILLED);
                     failedToSendRepository.deleteAllByPermissionId(permission.id());
+                    if (permission instanceof InboundPermission inboundPermission) {
+                        var inboundDataSource = inboundPermission.dataSource();
+                        if (inboundDataSource != null) {
+                            inboundPermission.setDataSource(null);
+                            aiidaEventPublisher.publishEvent(new InboundPermissionEndEvent(inboundDataSource.id()));
+                        }
+                    }
                 }
             } catch (IllegalStateException exception) {
                 // don't throw exception so other permissions are not skipped
@@ -165,6 +183,7 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
                                                                streamerManager,
                                                                permissionMarketDocumentFactory,
                                                                repository,
+                                                               aiidaEventPublisher,
                                                                clock);
         ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, expirationTime);
 

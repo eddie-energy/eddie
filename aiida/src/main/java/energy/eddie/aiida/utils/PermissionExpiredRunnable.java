@@ -3,8 +3,11 @@
 
 package energy.eddie.aiida.utils;
 
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -21,25 +24,29 @@ public class PermissionExpiredRunnable implements Runnable {
     private final StreamerManager streamerManager;
     private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
     private final PermissionRepository repository;
+    private final AiidaEventPublisher aiidaEventPublisher;
     private final Instant expirationTime;
     private final Clock clock;
 
     /**
      * Create a new PermissionExpiredRunnable that when executed, instructs the {@link StreamerManager} to send the
      * {@link PermissionStatus#FULFILLED} permission market document to the EDDIE framework, stops streaming for the specified
-     * permission and updates the database.
+     * permission and updates the database. The inbound data source of an expired inbound permission is removed via an
+     * {@link InboundPermissionEndEvent}.
      */
     public PermissionExpiredRunnable(
             AcceptedPermission permission,
             StreamerManager streamerManager,
             PermissionMarketDocumentFactory permissionMarketDocumentFactory,
             PermissionRepository repository,
+            AiidaEventPublisher aiidaEventPublisher,
             Clock clock
     ) {
         this.permission = permission;
         this.streamerManager = streamerManager;
         this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
         this.repository = repository;
+        this.aiidaEventPublisher = aiidaEventPublisher;
         this.clock = clock;
         this.expirationTime = permission.expirationTime();
     }
@@ -67,6 +74,13 @@ public class PermissionExpiredRunnable implements Runnable {
         }
 
         currentPermission.setStatus(PermissionStatus.FULFILLED);
+        if (currentPermission instanceof InboundPermission inboundPermission) {
+            var inboundDataSource = inboundPermission.dataSource();
+            if (inboundDataSource != null) {
+                inboundPermission.setDataSource(null);
+                aiidaEventPublisher.publishEvent(new InboundPermissionEndEvent(inboundDataSource.id()));
+            }
+        }
         repository.save(currentPermission);
 
         streamerManager.stopStreamer(permissionMarketDocumentFactory.create(currentPermission,

@@ -4,12 +4,12 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.OutboundPermission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
@@ -71,6 +71,8 @@ class PermissionSchedulerTest {
     private PermissionMarketDocumentFactory mockPermissionMarketDocumentFactory;
     @Mock
     private FailedToSendRepository mockFailedToSendRepository;
+    @Mock
+    private AiidaEventPublisher mockAiidaEventPublisher;
     @Captor
     private ArgumentCaptor<Runnable> runnableCaptor;
     private PermissionScheduler permissionScheduler;
@@ -85,7 +87,8 @@ class PermissionSchedulerTest {
                                                       permissionFutures,
                                                       mockStreamerManager,
                                                       mockPermissionMarketDocumentFactory,
-                                                      mockFailedToSendRepository);
+                                                      mockFailedToSendRepository,
+                                                      mockAiidaEventPublisher);
     }
 
     @Test
@@ -207,7 +210,8 @@ class PermissionSchedulerTest {
                                                        new ConcurrentHashMap<>(),
                                                        mockStreamerManager,
                                                        mockPermissionMarketDocumentFactory,
-                                                       mockFailedToSendRepository);
+                                                       mockFailedToSendRepository,
+                                                       mockAiidaEventPublisher);
         }
 
         /**
@@ -257,6 +261,49 @@ class PermissionSchedulerTest {
             } else {
                 verify(mockFailedToSendRepository, never()).deleteAllByPermissionId(any());
             }
+            assertEquals(mockDataSource, outboundPermission.dataSource());
+            verifyNoInteractions(mockAiidaEventPublisher);
+        }
+
+        @Test
+        void givenExpiredInboundPermission_removesInboundDataSource() {
+            // Given
+            doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
+            var inboundPermission = mock(InboundPermission.class);
+            var inboundDataSource = mock(InboundDataSource.class);
+            var dataSourceId = UUID.fromString("c69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+            when(inboundPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
+            when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
+            when(inboundPermission.mqttStreamingConfig()).thenReturn(mockMqttStreamingConfig);
+            when(inboundPermission.expirationTime()).thenReturn(Instant.parse("2023-09-30T00:00:00.000Z"));
+            when(inboundDataSource.id()).thenReturn(dataSourceId);
+            when(mockRepository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED))
+                    .thenReturn(List.of(inboundPermission));
+
+            // When
+            startupScheduler.onApplicationEvent(mock(ContextRefreshedEvent.class));
+
+            // Then
+            verify(inboundPermission).setStatus(PermissionStatus.FULFILLED);
+            verify(inboundPermission).setDataSource(null);
+            verify(mockAiidaEventPublisher).publishEvent(new InboundPermissionEndEvent(dataSourceId));
+        }
+
+        @Test
+        void givenPermissionNoLongerAccepted_isSkipped() {
+            // Given
+            doReturn(Instant.parse("2023-10-01T12:00:00.00Z")).when(mockClock).instant();
+            var fulfilledPermission = mock(OutboundPermission.class);
+            when(fulfilledPermission.status()).thenReturn(PermissionStatus.FULFILLED);
+            when(mockRepository.findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus.ACCEPTED))
+                    .thenReturn(List.of(fulfilledPermission));
+
+            // When
+            startupScheduler.onApplicationEvent(mock(ContextRefreshedEvent.class));
+
+            // Then
+            verify(fulfilledPermission, never()).setStatus(any());
+            verifyNoInteractions(mockScheduler, mockStreamerManager, mockFailedToSendRepository);
         }
 
         @Test

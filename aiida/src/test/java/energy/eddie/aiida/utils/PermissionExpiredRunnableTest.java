@@ -4,9 +4,13 @@
 package energy.eddie.aiida.utils;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
+import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
+import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -40,6 +44,8 @@ class PermissionExpiredRunnableTest {
     private PermissionRepository repository;
     @Mock
     private PermissionMarketDocumentFactory permissionMarketDocumentFactory;
+    @Mock
+    private AiidaEventPublisher aiidaEventPublisher;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +62,7 @@ class PermissionExpiredRunnableTest {
                                                      streamerManager,
                                                      permissionMarketDocumentFactory,
                                                      repository,
+                                                     aiidaEventPublisher,
                                                      clock);
 
         // When
@@ -65,7 +72,37 @@ class PermissionExpiredRunnableTest {
         verify(permissionMarketDocumentFactory).create(mockCurrentPermission, PermissionProcessStatus.FULFILLED);
         verify(streamerManager).stopStreamer(any());
         verify(mockCurrentPermission).setStatus(PermissionStatus.FULFILLED);
+        verify(mockCurrentPermission, never()).setDataSource(any());
         verify(repository).save(mockCurrentPermission);
+        verifyNoInteractions(aiidaEventPublisher);
+    }
+
+    @Test
+    void givenInboundPermission_run_removesInboundDataSource() {
+        // Given
+        var inboundPermission = mock(InboundPermission.class);
+        var inboundDataSource = mock(InboundDataSource.class);
+        var dataSourceId = UUID.fromString("6f0b7a3c-6a43-4a43-9f2c-0b3e5a9f2d11");
+        when(repository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
+        when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
+        when(inboundDataSource.id()).thenReturn(dataSourceId);
+        var runnable = new PermissionExpiredRunnable(mockAcceptedPermission,
+                                                     streamerManager,
+                                                     permissionMarketDocumentFactory,
+                                                     repository,
+                                                     aiidaEventPublisher,
+                                                     clock);
+
+        // When
+        runnable.run();
+
+        // Then
+        var inOrder = inOrder(inboundPermission, repository, aiidaEventPublisher);
+        inOrder.verify(inboundPermission).setStatus(PermissionStatus.FULFILLED);
+        inOrder.verify(inboundPermission).setDataSource(null);
+        inOrder.verify(aiidaEventPublisher).publishEvent(new InboundPermissionEndEvent(dataSourceId));
+        inOrder.verify(repository).save(inboundPermission);
     }
 
     @Test
@@ -77,6 +114,7 @@ class PermissionExpiredRunnableTest {
                                                      streamerManager,
                                                      permissionMarketDocumentFactory,
                                                      repository,
+                                                     aiidaEventPublisher,
                                                      clock);
 
         // When
@@ -96,6 +134,7 @@ class PermissionExpiredRunnableTest {
                                                      streamerManager,
                                                      permissionMarketDocumentFactory,
                                                      repository,
+                                                     aiidaEventPublisher,
                                                      clock);
 
         // When
