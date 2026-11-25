@@ -43,7 +43,7 @@ const handleClick = async () => {
       latestMessage = await getLatestDataSourceMessage(data.id)
     } else {
       latestMessage =
-        data.dataNeed.type === 'inbound-aiida'
+        data.type === 'inbound'
           ? await getLatestInboundPermissionMessage(data.permissionId)
           : await getLatestOutboundPermissionMessage(data.permissionId)
     }

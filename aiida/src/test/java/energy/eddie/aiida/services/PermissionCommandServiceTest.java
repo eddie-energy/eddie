@@ -4,12 +4,14 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
-import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
@@ -55,11 +57,15 @@ class PermissionCommandServiceTest {
     @Mock
     private AiidaEventPublisher aiidaEventPublisher;
     @Mock
-    private Permission permission;
+    private OutboundPermission permission;
     @Mock
-    private AiidaLocalDataNeed dataNeed;
+    private OutboundAiidaLocalDataNeed dataNeed;
     @Mock
-    private DataSource dataSource;
+    private InboundPermission inboundPermission;
+    @Mock
+    private InboundAiidaLocalDataNeed inboundDataNeed;
+    @Mock
+    private InboundDataSource dataSource;
     @Mock
     private MqttStreamingConfig mqttStreamingConfig;
     @Mock
@@ -152,11 +158,11 @@ class PermissionCommandServiceTest {
 
     @Test
     void givenValidLimitDefaults_updateLimitDefaults_savesOpenDefault() {
-        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
-        when(permission.id()).thenReturn(permissionId);
-        when(permission.dataNeed()).thenReturn(dataNeed);
-        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsConnectionLimits()).thenReturn(true);
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.id()).thenReturn(permissionId);
+        when(inboundPermission.dataNeed()).thenReturn(inboundDataNeed);
+        when(inboundDataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(inboundPermission.supportsConnectionLimits()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
                                                                         permissionId,
@@ -178,11 +184,11 @@ class PermissionCommandServiceTest {
 
     @Test
     void givenNullLimitDefaults_updateLimitDefaults_closesOpenDefaultWithoutNewRow() {
-        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
-        when(permission.id()).thenReturn(permissionId);
-        when(permission.dataNeed()).thenReturn(dataNeed);
-        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsConnectionLimits()).thenReturn(true);
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.id()).thenReturn(permissionId);
+        when(inboundPermission.dataNeed()).thenReturn(inboundDataNeed);
+        when(inboundDataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(inboundPermission.supportsConnectionLimits()).thenReturn(true);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, null, null));
 
@@ -193,10 +199,10 @@ class PermissionCommandServiceTest {
 
     @Test
     void givenNotEligibleForLimitDefaults_updateLimitDefaults_isIgnored() {
-        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
-        when(permission.dataNeed()).thenReturn(dataNeed);
-        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsConnectionLimits()).thenReturn(false);
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.dataNeed()).thenReturn(inboundDataNeed);
+        when(inboundDataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(inboundPermission.supportsConnectionLimits()).thenReturn(false);
 
         service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
                                                                         permissionId,
@@ -210,15 +216,12 @@ class PermissionCommandServiceTest {
 
     @Test
     void givenMinNotLessThanMax_updateLimitDefaults_isIgnored() {
-        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
-        when(permission.dataNeed()).thenReturn(dataNeed);
-        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
-        when(dataNeed.supportsConnectionLimits()).thenReturn(true);
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.dataNeed()).thenReturn(inboundDataNeed);
+        when(inboundDataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+        when(inboundPermission.supportsConnectionLimits()).thenReturn(true);
 
-        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
-                                                                        permissionId,
-                                                                        BigDecimal.TEN,
-                                                                        BigDecimal.ONE));
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId, permissionId, BigDecimal.TEN, BigDecimal.ONE));
 
         verify(connectionLimitDefaultRepository, never()).closeOpenDefaults(any(), any());
         verify(connectionLimitDefaultRepository, never()).save(any());
@@ -226,37 +229,89 @@ class PermissionCommandServiceTest {
     }
 
     @Test
-    void givenTerminate_handleCommand_stopsStreamerAndUpdatesStatus() {
+    void givenInboundPermission_setTransmissionEnabled_isRejected() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.dataNeed()).thenReturn(inboundDataNeed);
+        when(inboundDataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.SET_TRANSMISSION_ENABLED));
+
+        service.handleCommand(new PermissionCommand.SetTransmissionEnabled(regionConnectorId, permissionId, false));
+
+        verify(permissionRepository, never()).save(any());
+        verify(streamerManager, never()).setTransmissionEnabled(any(), anyBoolean());
+    }
+
+    @Test
+    void givenInboundPermission_updateSchedule_isRejected() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.dataNeed()).thenReturn(inboundDataNeed);
+        when(inboundDataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_TRANSMISSION_SCHEDULE));
+
+        service.handleCommand(new PermissionCommand.UpdateTransmissionSchedule(regionConnectorId, permissionId, "*/30 * * * * *"));
+
+        verify(permissionRepository, never()).save(any());
+        verify(streamerManager, never()).updateSchedule(any());
+    }
+
+    @Test
+    void givenOutboundPermission_updateLimitDefaults_isIgnored() {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permission.dataNeed()).thenReturn(dataNeed);
+        when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of(PermissionCommand.Action.UPDATE_LIMIT_DEFAULTS));
+
+        service.handleCommand(new PermissionCommand.UpdateLimitDefaults(regionConnectorId,
+                                                                        permissionId,
+                                                                        BigDecimal.ONE,
+                                                                        BigDecimal.TEN));
+
+        verify(connectionLimitDefaultRepository, never()).closeOpenDefaults(any(), any());
+        verify(connectionLimitDefaultRepository, never()).save(any());
+    }
+
+    @Test
+    void givenTerminate_handleCommand_stopsStreamerAndUpdatesStatus() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
         when(permissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
-        when(permission.id()).thenReturn(permissionId);
-        when(permission.dataSource()).thenReturn(dataSource);
-        when(dataSource.type()).thenReturn(DataSourceType.INBOUND);
+        when(inboundPermission.id()).thenReturn(permissionId);
+        when(inboundPermission.dataSource()).thenReturn(dataSource);
         when(dataSource.id()).thenReturn(dataSourceId);
 
         service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
 
         verify(permissionScheduler).removePermission(permissionId);
-        verify(permission).setStatus(PermissionStatus.TERMINATED);
-        verify(permission).setRevokeTime(any());
-        verify(permissionMarketDocumentFactory).create(permission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
+        verify(inboundPermission).setStatus(PermissionStatus.TERMINATED);
+        verify(inboundPermission).setRevokeTime(any());
+        verify(permissionMarketDocumentFactory).create(inboundPermission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
         verify(streamerManager).stopStreamer(any());
         verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
-        verify(permission).setDataSource(null);
+        verify(inboundPermission).setDataSource(null);
     }
 
-    private Permission acceptedPermission() {
-        var acceptedPermission = new Permission(eddieId,
-                                                permissionId,
-                                                "https://example.org",
-                                                "token",
-                                                UUID.randomUUID());
-        var connectionId = "conn-1";
+    @Test
+    void givenOutboundPermissionUsingInboundDataSource_terminate_doesNotRemoveInboundDataSource() {
+        when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(permission));
+        when(permissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(permission.id()).thenReturn(permissionId);
+        lenient().when(permission.dataSource()).thenReturn(dataSource);
+        lenient().when(dataSource.type()).thenReturn(DataSourceType.INBOUND);
 
-        acceptedPermission.setConnectionId(connectionId);
-        acceptedPermission.setStartTime(clock.instant());
-        acceptedPermission.setExpirationTime(clock.instant().plusSeconds(3600));
-        acceptedPermission.initializeFromDataNeed(dataNeed);
+        service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
+
+        verify(permission).setStatus(PermissionStatus.TERMINATED);
+        verify(aiidaEventPublisher, never()).publishEvent(any());
+        verify(permission, never()).setDataSource(any());
+    }
+
+    private OutboundPermission acceptedPermission() {
+        var acceptedPermission = new OutboundPermission(eddieId,
+                                                        permissionId,
+                                                        "https://example.org",
+                                                        "token",
+                                                        UUID.randomUUID(),
+                                                        dataNeed,
+                                                        "conn-1",
+                                                        clock.instant(),
+                                                        clock.instant().plusSeconds(3600),
+                                                        Instant.parse("2026-01-01T00:00:00Z"));
         acceptedPermission.setDataSource(dataSource);
         acceptedPermission.setMqttStreamingConfig(mqttStreamingConfig);
         return acceptedPermission;

@@ -46,11 +46,18 @@ const { permission, status } = defineProps<{
 const acceptedPermission = computed(() =>
   isAcceptedPermission(permission) ? permission : undefined,
 )
+const inboundPermission = computed(() => (permission.type === 'inbound' ? permission : undefined))
+const acceptedInboundPermission = computed(() =>
+  acceptedPermission.value?.type === 'inbound' ? acceptedPermission.value : undefined,
+)
+const acceptedOutboundPermission = computed(() =>
+  acceptedPermission.value?.type === 'outbound' ? acceptedPermission.value : undefined,
+)
 const dataSource = computed(() => acceptedPermission.value?.dataSource)
 /** Pending permissions do not have their own schedule yet, they use the schedule of the data need. */
 const transmissionSchedule = computed(
   () =>
-    acceptedPermission.value?.effectiveTransmissionSchedule ??
+    acceptedOutboundPermission.value?.effectiveTransmissionSchedule ??
     permission.dataNeed.transmissionSchedule,
 )
 const emit = defineEmits<{
@@ -61,7 +68,7 @@ const emit = defineEmits<{
   selectMonitoringDataSource: [dataSourceId: string | undefined]
 }>()
 
-const selectedInboundMessageFormat = ref(permission.inboundMessageFormat)
+const selectedInboundMessageFormat = ref(inboundPermission.value?.inboundMessageFormat)
 
 const inboundMessageFormatOptions: { label: string; value: InboundMessageFormat }[] = [
   {
@@ -96,7 +103,7 @@ const permissionPeriodFormat = new Intl.DateTimeFormat(undefined, {
 })
 
 watch(
-  () => permission.inboundMessageFormat,
+  () => inboundPermission.value?.inboundMessageFormat,
   (inboundMessageFormat) => {
     selectedInboundMessageFormat.value = inboundMessageFormat
   },
@@ -119,7 +126,10 @@ const handleRevoke = async () => {
 const handleInboundMessageFormatSelection = async (
   inboundMessageFormat: string | number | boolean | undefined,
 ) => {
-  if (inboundMessageFormat && inboundMessageFormat !== permission.inboundMessageFormat) {
+  if (
+    inboundMessageFormat &&
+    inboundMessageFormat !== inboundPermission.value?.inboundMessageFormat
+  ) {
     if (
       await confirm(
         t('permissions.updateInboundMessageFormatTitle'),
@@ -136,10 +146,10 @@ const handleInboundMessageFormatSelection = async (
           inboundMessageFormat as InboundMessageFormat,
         )
       } catch {
-        selectedInboundMessageFormat.value = permission.inboundMessageFormat
+        selectedInboundMessageFormat.value = inboundPermission.value?.inboundMessageFormat
       }
     } else {
-      selectedInboundMessageFormat.value = permission.inboundMessageFormat
+      selectedInboundMessageFormat.value = inboundPermission.value?.inboundMessageFormat
     }
   }
 }
@@ -152,14 +162,14 @@ const openInboundProvisioningModal = () => {
 
 const isInboundMqttProvisioning = computed(
   () =>
-    permission.dataNeed.type === 'inbound-aiida' &&
+    permission.type === 'inbound' &&
     (dataSource.value?.provisioningType === 'MQTT_SERVER' ||
       dataSource.value?.provisioningType === 'MQTT_CLIENT'),
 )
 
 const isInboundRestProvisioning = computed(
   () =>
-    permission.dataNeed.type === 'inbound-aiida' &&
+    permission.type === 'inbound' &&
     (dataSource.value?.provisioningType === 'REST_BEARER' ||
       dataSource.value?.provisioningType === 'REST_API_TOKEN'),
 )
@@ -189,14 +199,14 @@ const dataSourceDisplayName = computed(() => {
   const currentDataSource = dataSource.value
   if (!currentDataSource) return undefined
   const inboundPermission = permissions.value.find(
-    (p) => p.dataNeed.type === 'inbound-aiida' && p.dataSource?.id === currentDataSource.id,
+    (p) => p.type === 'inbound' && p.dataSource?.id === currentDataSource.id,
   )
   return inboundPermission?.displayName ?? currentDataSource.name
 })
 
 const NO_MONITORING_DATA_SOURCE = 'NONE'
 const monitoringDataSourceId = ref<string>(
-  acceptedPermission.value?.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE,
+  acceptedInboundPermission.value?.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE,
 )
 
 const monitoringDataSourceOptions = computed(() => [
@@ -224,12 +234,12 @@ const handleMonitoringDataSourceSelection = async (
     await fetchPermissions()
   } catch {
     monitoringDataSourceId.value =
-      acceptedPermission.value?.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE
+      acceptedInboundPermission.value?.monitoringDataSourceId ?? NO_MONITORING_DATA_SOURCE
   }
 }
 
 onMounted(async () => {
-  if (permission.supportsConnectionLimits && !dataSources.value.length) {
+  if (inboundPermission.value?.supportsConnectionLimits && !dataSources.value.length) {
     await fetchDataSources()
   }
 })
@@ -271,15 +281,15 @@ const { lastMessageAt } = useLastMessageRefresh(
         <dt>{{ t('permissions.dropdown.meterId') }}</dt>
         <dd>{{ permission.meterId }}</dd>
       </div>
-      <div class="permission-field" v-if="permission.minLimitKw != null">
+      <div v-if="inboundPermission?.minLimitKw != null" class="permission-field">
         <dt>{{ t('permissions.dropdown.minLimitKw') }}</dt>
-        <dd>{{ permission.minLimitKw }} kW</dd>
+        <dd>{{ inboundPermission.minLimitKw }} kW</dd>
       </div>
-      <div class="permission-field" v-if="permission.maxLimitKw != null">
+      <div v-if="inboundPermission?.maxLimitKw != null" class="permission-field">
         <dt>{{ t('permissions.dropdown.maxLimitKw') }}</dt>
-        <dd>{{ permission.maxLimitKw }} kW</dd>
+        <dd>{{ inboundPermission.maxLimitKw }} kW</dd>
       </div>
-      <template v-if="permission.supportsConnectionLimits">
+      <template v-if="inboundPermission?.supportsConnectionLimits">
         <div class="permission-field permission-field--select">
           <dt>{{ t('permissions.dropdown.monitoringDataSource') }}</dt>
           <dd>
@@ -313,14 +323,14 @@ const { lastMessageAt } = useLastMessageRefresh(
           }}
         </dd>
       </div>
-      <div v-if="acceptedPermission" class="permission-field">
+      <div v-if="acceptedOutboundPermission" class="permission-field">
         <dt>{{ t('permissions.dropdown.transmissionEnabled') }}</dt>
         <dd>
           <StatusTag
-            :status-type="acceptedPermission.transmissionEnabled ? 'healthy' : 'unhealthy'"
+            :status-type="acceptedOutboundPermission.transmissionEnabled ? 'healthy' : 'unhealthy'"
           >
             {{
-              acceptedPermission.transmissionEnabled
+              acceptedOutboundPermission.transmissionEnabled
                 ? t('permissions.dropdown.transmissionOn')
                 : t('permissions.dropdown.transmissionOff')
             }}
@@ -351,7 +361,7 @@ const { lastMessageAt } = useLastMessageRefresh(
       </template>
     </div>
     <div class="column">
-      <template v-if="permission.dataNeed.type !== 'inbound-aiida'">
+      <template v-if="permission.type === 'outbound'">
         <div class="permission-field">
           <dt>{{ t('permissions.dropdown.asset') }}</dt>
           <dd>
@@ -379,22 +389,18 @@ const { lastMessageAt } = useLastMessageRefresh(
           <dd>{{ acceptedPermission.mqttStreamingConfig.dataTopic }}</dd>
         </div>
       </template>
-      <template v-if="permission.dataNeed.type === 'inbound-aiida'">
+      <template v-if="inboundPermission">
         <div class="permission-field permission-field--select">
           <dt>{{ t('permissions.dropdown.inboundMessageFormat') }}</dt>
           <dd v-if="!acceptedPermission">
-            {{
-              t(
-                `permissions.inboundMessageFormats.${permission.inboundMessageFormat ?? 'CIM_1_12'}`,
-              )
-            }}
+            {{ t(`permissions.inboundMessageFormats.${inboundPermission.inboundMessageFormat}`) }}
           </dd>
           <dd v-else>
             <CustomSelect
               v-model="selectedInboundMessageFormat"
               :options="inboundMessageFormatOptions"
               :placeholder="
-                t(`permissions.inboundMessageFormats.${permission.inboundMessageFormat}`)
+                t(`permissions.inboundMessageFormats.${inboundPermission.inboundMessageFormat}`)
               "
               @update:model-value="handleInboundMessageFormatSelection"
             />
@@ -428,7 +434,7 @@ const { lastMessageAt } = useLastMessageRefresh(
       <div v-if="status" class="permission-field">
         <dt>
           {{
-            permission.dataNeed.type === 'inbound-aiida'
+            permission.type === 'inbound'
               ? t('permissions.dropdown.lastMessageReceived')
               : t('permissions.dropdown.lastMessageSent')
           }}
@@ -448,10 +454,7 @@ const { lastMessageAt } = useLastMessageRefresh(
             {{ t('permissions.openConnectionMonitor') }}
           </Button>
         </div>
-        <div
-          v-if="permission.dataNeed.type === 'inbound-aiida'"
-          class="actions-row actions-row--end"
-        >
+        <div v-if="permission.type === 'inbound'" class="actions-row actions-row--end">
           <Button
             v-if="dataSource?.provisioningType === 'MQTT_SERVER'"
             button-style="secondary"

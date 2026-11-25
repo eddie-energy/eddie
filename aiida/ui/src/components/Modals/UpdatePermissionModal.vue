@@ -17,7 +17,7 @@ import {
 } from '@/api'
 import { usePermissionDialog } from '@/composables/permission-dialog'
 import CustomSelect from '../CustomSelect.vue'
-import type { AiidaDataSource, AiidaPermission, AiidaSchema } from '@/types'
+import type { AiidaDataSource, AiidaInboundPermission, AiidaSchema } from '@/types'
 import { useI18n } from 'vue-i18n'
 
 const inboundSchemas: Set<AiidaSchema> = new Set(['MIN-MAX-ENVELOPE-CIM-V1-12', 'OPAQUE'])
@@ -29,7 +29,7 @@ const loading = ref(false)
 const selectedDataSource = ref<string>('')
 const displayName = ref<string>('')
 const monitoringDataSourceId = ref<string>()
-const inboundPermissions = ref<AiidaPermission[]>([])
+const inboundPermissions = ref<AiidaInboundPermission[]>([])
 const outboundDataSources = ref<AiidaDataSource[]>([])
 const emit = defineEmits(['update'])
 
@@ -49,7 +49,7 @@ watch([open], async () => {
   }
 })
 
-const isOutbound = computed(() => permission.value?.dataNeed.type === 'outbound-aiida')
+const isOutbound = computed(() => permission.value?.type === 'outbound')
 
 const handleInput = async (confirm: boolean) => {
   loading.value = true
@@ -151,7 +151,7 @@ const dataSourceOptions = computed(() => {
           type="text"
         />
       </form>
-      <form v-if="permission?.dataNeed.type === 'outbound-aiida'" class="form">
+      <form v-if="isOutbound" class="form">
         <span id="updatePermLabel" class="heading-3">
           {{ t('permissions.modal.datasourceInputLabel') }}
         </span>
@@ -163,10 +163,7 @@ const dataSourceOptions = computed(() => {
           aria-labelledby="updatePermLabel"
         />
 
-        <p
-          class="text-normal"
-          v-if="!dataSourceOptions.length && permission?.dataNeed.type === 'outbound-aiida'"
-        >
+        <p v-if="!dataSourceOptions.length && isOutbound" class="text-normal">
           {{ t('permissions.modal.datasourceEmpty') }}
         </p>
       </form>
@@ -175,10 +172,7 @@ const dataSourceOptions = computed(() => {
         <Button button-style="error-secondary" @click="handleInput(false)">
           {{ t('rejectButton') }}
         </Button>
-        <Button
-          @click="handleInput(true)"
-          :disabled="!selectedDataSource && permission?.dataNeed.type === 'outbound-aiida'"
-        >
+        <Button :disabled="!selectedDataSource && isOutbound" @click="handleInput(true)">
           {{ t('acceptButton') }}
         </Button>
       </div>

@@ -8,9 +8,9 @@ import energy.eddie.aiida.errors.connectionlimit.ConnectionLimitMonitoringNotAll
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.repositories.DataSourceRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.services.AuthService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,16 +26,16 @@ import java.util.UUID;
 public class ConnectionLimitMonitoringService {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionLimitMonitoringService.class);
 
-    private final PermissionRepository permissionRepository;
+    private final InboundPermissionRepository inboundPermissionRepository;
     private final DataSourceRepository dataSourceRepository;
     private final AuthService authService;
 
     public ConnectionLimitMonitoringService(
-            PermissionRepository permissionRepository,
+            InboundPermissionRepository inboundPermissionRepository,
             DataSourceRepository dataSourceRepository,
             AuthService authService
     ) {
-        this.permissionRepository = permissionRepository;
+        this.inboundPermissionRepository = inboundPermissionRepository;
         this.dataSourceRepository = dataSourceRepository;
         this.authService = authService;
     }
@@ -68,10 +68,10 @@ public class ConnectionLimitMonitoringService {
         LOGGER.debug("Cleared connection limit monitoring of permission {}", permissionId);
     }
 
-    private Permission requireMonitorablePermission(UUID permissionId) throws PermissionNotFoundException, InvalidUserException, ConnectionLimitMonitoringNotAllowedException {
+    private InboundPermission requireMonitorablePermission(UUID permissionId) throws PermissionNotFoundException, InvalidUserException, ConnectionLimitMonitoringNotAllowedException {
         var currentUserId = authService.getCurrentUserId();
-        var permission = permissionRepository.findByPermissionIdAndUserId(permissionId, currentUserId)
-                                             .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        var permission = inboundPermissionRepository.findByPermissionIdAndUserId(permissionId, currentUserId)
+                                                    .orElseThrow(() -> new PermissionNotFoundException(permissionId));
 
         if (!permission.supportsConnectionLimits()) {
             throw new ConnectionLimitMonitoringNotAllowedException(permissionId);

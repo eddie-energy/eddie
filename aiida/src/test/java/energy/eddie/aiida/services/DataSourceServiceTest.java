@@ -26,9 +26,9 @@ import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSo
 import energy.eddie.aiida.models.datasource.mqtt.at.OesterreichsEnergieDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
@@ -305,10 +305,10 @@ class DataSourceServiceTest {
     @Test
     void testCreateInboundDatasource() throws Exception {
         // Given
-        var permission = mock(Permission.class);
+        var permission = mock(InboundPermission.class);
         var permissionId = UUID.randomUUID();
         var userId = UUID.randomUUID();
-        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         var mqttStreamingConfig = mock(MqttStreamingConfig.class);
         var password = "password";
 

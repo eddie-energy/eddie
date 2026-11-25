@@ -4,10 +4,10 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.aggregator.InboundAggregator;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.InboundRecord;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.OpaqueEnvelope;
@@ -20,7 +20,6 @@ import reactor.core.scheduler.Schedulers;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -28,18 +27,18 @@ public class InboundPermissionRelayService {
     private static final Logger LOGGER = LoggerFactory.getLogger(InboundPermissionRelayService.class);
 
     private final InboundAggregator inboundAggregator;
-    private final PermissionRepository permissionRepository;
+    private final OutboundPermissionRepository outboundPermissionRepository;
     private final StreamerManager streamerManager;
     private final ObjectMapper objectMapper;
 
     public InboundPermissionRelayService(
             InboundAggregator inboundAggregator,
-            PermissionRepository permissionRepository,
+            OutboundPermissionRepository outboundPermissionRepository,
             StreamerManager streamerManager,
             ObjectMapper objectMapper
     ) {
         this.inboundAggregator = inboundAggregator;
-        this.permissionRepository = permissionRepository;
+        this.outboundPermissionRepository = outboundPermissionRepository;
         this.streamerManager = streamerManager;
         this.objectMapper = objectMapper;
     }
@@ -54,7 +53,7 @@ public class InboundPermissionRelayService {
     }
 
     private void relayInboundRecord(InboundRecord inboundRecord) {
-        var outboundPermissions = permissionRepository.findOutboundByDataSourceIdAndStatus(
+        var outboundPermissions = outboundPermissionRepository.findByDataSourceIdAndStatus(
                 inboundRecord.dataSource().id(),
                 PermissionStatus.ACCEPTED
         );
@@ -64,7 +63,7 @@ public class InboundPermissionRelayService {
         }
     }
 
-    private void relayToOutboundPermission(InboundRecord inboundRecord, Permission outboundPermission) {
+    private void relayToOutboundPermission(InboundRecord inboundRecord, OutboundPermission outboundPermission) {
         if (!isSchemaRequested(outboundPermission, inboundRecord.schema())) {
             return;
         }
@@ -87,19 +86,19 @@ public class InboundPermissionRelayService {
         }
     }
 
-    private boolean isSchemaRequested(Permission outboundPermission, AiidaSchema schema) {
+    private boolean isSchemaRequested(OutboundPermission outboundPermission, AiidaSchema schema) {
         var dataNeed = outboundPermission.dataNeed();
-        return dataNeed != null && dataNeed.schemas() != null && dataNeed.schemas().contains(schema);
+        return dataNeed.schemas() != null && dataNeed.schemas().contains(schema);
     }
 
-    private String rewriteOpaquePayload(String payload, Permission outboundPermission) {
+    private String rewriteOpaquePayload(String payload, OutboundPermission outboundPermission) {
         var inboundEnvelope = objectMapper.readValue(payload, OpaqueEnvelope.class);
 
         var outboundEnvelope = new OpaqueEnvelope(
                 inboundEnvelope.regionConnectorId(),
                 outboundPermission.id().toString(),
                 outboundPermission.connectionId(),
-                Objects.requireNonNull(outboundPermission.dataNeed()).dataNeedId().toString(),
+                outboundPermission.dataNeed().dataNeedId().toString(),
                 UUID.randomUUID().toString(),
                 inboundEnvelope.timestamp(),
                 inboundEnvelope.payload()
@@ -108,14 +107,14 @@ public class InboundPermissionRelayService {
         return objectMapper.writeValueAsString(outboundEnvelope);
     }
 
-    private String rewriteMinMaxPayload(String payload, Permission outboundPermission) {
+    private String rewriteMinMaxPayload(String payload, OutboundPermission outboundPermission) {
         var minMaxEnvelope = objectMapper.readValue(payload, RECMMOEEnvelope.class);
         var header = minMaxEnvelope.getMessageDocumentHeader();
         var meta = header.getMetaInformation();
 
         meta.setRequestPermissionId(outboundPermission.id().toString());
         meta.setConnectionId(outboundPermission.connectionId());
-        meta.setDataNeedId(Objects.requireNonNull(outboundPermission.dataNeed()).dataNeedId().toString());
+        meta.setDataNeedId(outboundPermission.dataNeed().dataNeedId().toString());
 
         header.setMetaInformation(meta);
         minMaxEnvelope.setMessageDocumentHeader(header);

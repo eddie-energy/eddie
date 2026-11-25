@@ -4,9 +4,10 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.aggregator.OutboundAggregator;
+import energy.eddie.aiida.models.permission.AcceptedInboundPermission;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
@@ -101,7 +102,10 @@ public class StreamerManager implements AutoCloseable {
                                                     secretsService,
                                                     connectionStatusEventStream);
 
-        var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux);
+        var streamer = StreamerFactory.getAiidaStreamer(dependencies,
+                                                        permission,
+                                                        recordFlux,
+                                                        isTransmissionEnabled(permission));
         streamer.connect();
         streamers.put(id, streamer);
     }
@@ -124,14 +128,9 @@ public class StreamerManager implements AutoCloseable {
 
     /**
      * Applies a new transmission schedule to the streamer of the passed permission by rebuilding its record flux with
-     * the new aggregation cadence. No-op for permissions whose data need is not outbound, since only outbound
-     * permissions currently have a record flux to rebuild.
+     * the new aggregation cadence.
      */
-    public void updateSchedule(AcceptedPermission permission) {
-        if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed)) {
-            return;
-        }
-
+    public void updateSchedule(AcceptedOutboundPermission permission) {
         requireStreamer(permission.id())
                 .ifPresent(streamer -> streamer.updateRecordFlux(buildFilteredFlux(permission)));
     }
@@ -184,16 +183,30 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Builds the filtered and aggregated record flux for the passed permission. Permissions that were not created by an
-     * outbound data need get a flux that never emits, as they do not stream any records.
+     * Builds the filtered and aggregated record flux for the passed permission. Inbound permissions get a flux that
+     * never emits, as they do not stream any records.
      */
     private Flux<AiidaRecord> buildFilteredFlux(AcceptedPermission permission) {
-        if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed outboundDataNeed)) {
-            return Flux.never();
-        }
+        return switch (permission) {
+            case AcceptedInboundPermission ignored -> Flux.never();
+            case AcceptedOutboundPermission outboundPermission -> buildFilteredFlux(outboundPermission);
+        };
+    }
 
-        return aggregator.getFilteredFlux(outboundDataNeed.dataTags(),
-                                          outboundDataNeed.asset(),
+    /**
+     * Inbound permissions do not stream records, so there is no transmission to control.
+     */
+    private static boolean isTransmissionEnabled(AcceptedPermission permission) {
+        return switch (permission) {
+            case AcceptedInboundPermission ignored -> true;
+            case AcceptedOutboundPermission outboundPermission -> outboundPermission.transmissionEnabled();
+        };
+    }
+
+    private Flux<AiidaRecord> buildFilteredFlux(AcceptedOutboundPermission permission) {
+        var dataNeed = permission.dataNeed();
+        return aggregator.getFilteredFlux(dataNeed.dataTags(),
+                                          dataNeed.asset(),
                                           permission.expirationTime(),
                                           permission.transmissionSchedule(),
                                           permission.userId(),

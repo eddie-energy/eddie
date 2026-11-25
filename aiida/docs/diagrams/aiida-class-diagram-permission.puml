@@ -7,7 +7,7 @@
 hide empty members
 left to right direction
 
-class Permission {
+abstract class Permission {
     - permissionId: UUID
     - eddieId: UUID
     - userId: UUID
@@ -20,15 +20,26 @@ class Permission {
     - revokeTime: Instant
     - connectionId: String
     - meterId: String
-    - minLimitKw: BigDecimal
-    - maxLimitKw: BigDecimal
-    - monitoringDataSourceId: UUID
     - handshakeUrl: String
     - accessToken: String
     - dataNeed: AiidaLocalDataNeed
     - mqttStreamingConfig: MqttStreamingConfig
     - dataSource: DataSource
+}
+
+note top of Permission
+    Stored in a single table, the type column
+    tells inbound and outbound permissions apart.
+end note
+
+class InboundPermission {
+    - minLimitKw: BigDecimal
+    - maxLimitKw: BigDecimal
+    - monitoringDataSourceId: UUID
     - inboundMessageFormat: InboundMessageFormat
+}
+
+class OutboundPermission {
     - transmissionEnabled: boolean
     - transmissionSchedule: CronExpression
 }
@@ -71,10 +82,12 @@ enum InboundMessageFormat {
     OPENADR_3_1
 }
 
+Permission <|-- InboundPermission
+Permission <|-- OutboundPermission
 Permission "n" o-- "1" AiidaLocalDataNeed
 Permission - PermissionStatus
 Permission ..> ConnectionStatus : derived
-Permission - InboundMessageFormat
+InboundPermission - InboundMessageFormat
 Permission "1" *-up- "1" MqttStreamingConfig
 Permission "n" o-- "1" DataSource
 

@@ -4,7 +4,9 @@
 package energy.eddie.aiida.models.permission;
 
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -27,9 +29,13 @@ class AcceptedPermissionTest {
     private static final Instant EXPIRATION = Instant.parse("2026-12-01T00:00:00Z");
     private static final CronExpression SCHEDULE = CronExpression.parse("*/5 * * * * *");
     @Mock
-    private AiidaLocalDataNeed dataNeed;
+    private OutboundAiidaLocalDataNeed dataNeed;
+    @Mock
+    private InboundAiidaLocalDataNeed inboundDataNeed;
     @Mock
     private DataSource dataSource;
+    @Mock
+    private InboundDataSource inboundDataSource;
     @Mock
     private MqttStreamingConfig mqttStreamingConfig;
 
@@ -97,11 +103,16 @@ class AcceptedPermissionTest {
     @Test
     void from_permissionWithoutMqttStreamingConfig_throws() {
         // Given
-        var permission = new Permission(EDDIE_ID, PERMISSION_ID, "https://example.org", "token", USER_ID);
-        permission.setConnectionId("connection-id");
-        permission.setStartTime(START);
-        permission.setExpirationTime(EXPIRATION);
-        permission.initializeFromDataNeed(dataNeed);
+        var permission = new OutboundPermission(EDDIE_ID,
+                                                PERMISSION_ID,
+                                                "https://example.org",
+                                                "token",
+                                                USER_ID,
+                                                dataNeed,
+                                                "connection-id",
+                                                START,
+                                                EXPIRATION,
+                                                Instant.parse("2026-01-01T00:00:00Z"));
         permission.setDataSource(dataSource);
 
         // When, Then
@@ -110,12 +121,57 @@ class AcceptedPermissionTest {
                 .hasMessage("Accepted permission %s is missing its MQTT streaming config", PERMISSION_ID);
     }
 
-    private Permission completePermission() {
-        var permission = new Permission(EDDIE_ID, PERMISSION_ID, "https://example.org", "token", USER_ID);
-        permission.setConnectionId("connection-id");
-        permission.setStartTime(START);
-        permission.setExpirationTime(EXPIRATION);
-        permission.initializeFromDataNeed(dataNeed);
+    @Test
+    void from_acceptedInboundPermission_createsInboundSnapshot() {
+        // Given
+        var permission = new InboundPermission(EDDIE_ID,
+                                               PERMISSION_ID,
+                                               "https://example.org",
+                                               "token",
+                                               USER_ID,
+                                               inboundDataNeed,
+                                               "connection-id",
+                                               START,
+                                               EXPIRATION,
+                                               Instant.parse("2026-01-01T00:00:00Z"));
+        permission.setDataSource(inboundDataSource);
+        permission.setMqttStreamingConfig(mqttStreamingConfig);
+
+        // When
+        AcceptedPermission acceptedPermission = AcceptedPermission.from((Permission) permission);
+
+        // Then
+        assertThat(acceptedPermission).isInstanceOf(AcceptedInboundPermission.class);
+        assertThat(acceptedPermission.id()).isEqualTo(PERMISSION_ID);
+        assertThat(acceptedPermission.dataNeed()).isSameAs(inboundDataNeed);
+        assertThat(acceptedPermission.dataSource()).isSameAs(inboundDataSource);
+        assertThat(acceptedPermission.mqttStreamingConfig()).isSameAs(mqttStreamingConfig);
+    }
+
+    @Test
+    void from_acceptedOutboundPermissionAsPermission_createsOutboundSnapshot() {
+        // Given
+        Permission permission = completePermission();
+        when(dataNeed.transmissionSchedule()).thenReturn(SCHEDULE);
+
+        // When
+        var acceptedPermission = AcceptedPermission.from(permission);
+
+        // Then
+        assertThat(acceptedPermission).isInstanceOf(AcceptedOutboundPermission.class);
+    }
+
+    private OutboundPermission completePermission() {
+        var permission = new OutboundPermission(EDDIE_ID,
+                                                PERMISSION_ID,
+                                                "https://example.org",
+                                                "token",
+                                                USER_ID,
+                                                dataNeed,
+                                                "connection-id",
+                                                START,
+                                                EXPIRATION,
+                                                Instant.parse("2026-01-01T00:00:00Z"));
         permission.setDataSource(dataSource);
         permission.setMqttStreamingConfig(mqttStreamingConfig);
         return permission;

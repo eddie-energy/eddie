@@ -3,15 +3,10 @@
 
 package energy.eddie.aiida.repositories;
 
-import energy.eddie.aiida.ObjectMapperCreatorUtil;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
-import energy.eddie.dataneeds.needs.aiida.AiidaDataNeed;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -27,9 +22,10 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.inboundDataNeed;
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.outboundDataNeed;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -57,26 +53,12 @@ class PermissionRepositoryIntegrationTest {
             MountableFile.forClasspathResource(TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE),
             TIMESCALEDB_CONTAINER_PATH
     );
-    private static final UUID DATA_NEED_ID = UUID.fromString("f7698978-b9fe-40c8-aebe-c997f7f58f2f");
-    private static final String INBOUND_DATA_NEED_JSON = """
-            {
-              "type": "inbound-aiida",
-              "id": "f7698978-b9fe-40c8-aebe-c997f7f58f2f",
-              "name": "FUTURE_MIN_MAX_ENVELOPE_INBOUND",
-              "description": "Inbound min-max envelopes",
-              "purpose": "purpose",
-              "policyLink": "https://example.com/toc",
-              "enabled": true,
-              "duration": {"type": "relativeDuration", "start": "P0D", "end": "P10D"},
-              "transmissionSchedule": "*/5 * * * * *",
-              "acknowledgementRequired": true,
-              "allowedPermissionCommands": ["UPDATE_LIMIT_DEFAULTS"],
-              "asset": "CONNECTION-AGREEMENT-POINT",
-              "schemas": ["OPAQUE", "MIN-MAX-ENVELOPE-CIM-V1-12"]
-            }
-            """;
     @Autowired
     private PermissionRepository permissionRepository;
+    @Autowired
+    private InboundPermissionRepository inboundPermissionRepository;
+    @Autowired
+    private OutboundPermissionRepository outboundPermissionRepository;
     @Autowired
     private TestEntityManager entityManager;
     @Autowired
@@ -89,7 +71,7 @@ class PermissionRepositoryIntegrationTest {
         insertOtherDataNeed();
         var dataSourceId = insertDataSource();
         var permissionId = UUID.randomUUID();
-        var permission = acceptedPermission(permissionId);
+        var permission = outboundPermission(permissionId, UUID.randomUUID());
         permission.setDataSource(entityManager.find(DataSource.class, dataSourceId));
 
         // When
@@ -100,8 +82,8 @@ class PermissionRepositoryIntegrationTest {
         // Then
         var stored = permissionRepository.findById(permissionId).orElseThrow();
         assertEquals(PermissionStatus.ACCEPTED, stored.status());
-        assertInstanceOf(InboundAiidaLocalDataNeed.class, stored.dataNeed());
-        assertEquals(DATA_NEED_ID, stored.dataNeed().dataNeedId());
+        assertInstanceOf(OutboundAiidaLocalDataNeed.class, stored.dataNeed());
+        assertEquals(outboundDataNeed().dataNeedId(), stored.dataNeed().dataNeedId());
         assertNotNull(stored.dataSource());
         assertEquals(dataSourceId, stored.dataSource().id());
         assertNotNull(stored.mqttStreamingConfig());
@@ -129,6 +111,89 @@ class PermissionRepositoryIntegrationTest {
         assertEquals(PermissionStatus.REVOKED, permissionRepository.findById(permissionId).orElseThrow().status());
     }
 
+    @Test
+    void save_inboundAndOutboundPermission_persistsDiscriminatorAndLoadsSubtype() {
+        // Given
+        var inboundPermissionId = UUID.randomUUID();
+        var outboundPermissionId = UUID.randomUUID();
+        saveAccepted(acceptedPermission(inboundPermissionId));
+        saveAccepted(outboundPermission(outboundPermissionId, UUID.randomUUID()));
+        entityManager.flush();
+        entityManager.clear();
+
+        // When
+        var inbound = permissionRepository.findById(inboundPermissionId).orElseThrow();
+        var outbound = permissionRepository.findById(outboundPermissionId).orElseThrow();
+
+        // Then
+        assertInstanceOf(InboundPermission.class, inbound);
+        assertInstanceOf(OutboundPermission.class, outbound);
+        assertEquals(InboundPermission.DISCRIMINATOR_VALUE, typeColumn(inboundPermissionId));
+        assertEquals(OutboundPermission.DISCRIMINATOR_VALUE, typeColumn(outboundPermissionId));
+        assertNull(jdbcTemplate.queryForObject("SELECT transmission_enabled FROM permission WHERE permission_id = ?",
+                                               Boolean.class,
+                                               inboundPermissionId));
+        assertTrue(((OutboundPermission) outbound).transmissionEnabled());
+    }
+
+    @Test
+    void typedRepositories_returnOnlyPermissionsOfTheirSubtype() {
+        // Given
+        var userId = UUID.randomUUID();
+        var dataSource = entityManager.find(DataSource.class, insertDataSource());
+        var inboundPermission = new InboundPermission(UUID.randomUUID(),
+                                                      UUID.randomUUID(),
+                                                      "https://example.org",
+                                                      "token",
+                                                      userId,
+                                                      inboundDataNeed(),
+                                                      "connection-id",
+                                                      Instant.parse("2026-01-01T00:00:00Z"),
+                                                      Instant.parse("2026-12-31T00:00:00Z"),
+                                                      Instant.parse("2026-01-01T00:00:00Z"));
+        inboundPermission.setDataSource(dataSource);
+        var outboundPermission = outboundPermission(UUID.randomUUID(), userId);
+        outboundPermission.setDataSource(dataSource);
+        saveAccepted(inboundPermission);
+        saveAccepted(outboundPermission);
+        entityManager.flush();
+        entityManager.clear();
+
+        // When
+        var inbound = inboundPermissionRepository.findByUserIdAndDataSourceIsNotNullAndStatusOrderByGrantTimeDesc(
+                userId,
+                PermissionStatus.ACCEPTED);
+        var outbound = outboundPermissionRepository.findByDataSourceIdAndStatus(dataSource.id(),
+                                                                                PermissionStatus.ACCEPTED);
+        var inboundById = inboundPermissionRepository.findById(outboundPermission.id());
+        var outboundById = outboundPermissionRepository.findById(inboundPermission.id());
+
+        // Then
+        assertThat(inbound).extracting(Permission::id).containsExactly(inboundPermission.id());
+        assertThat(outbound).extracting(Permission::id).containsExactly(outboundPermission.id());
+        assertThat(inboundById).isEmpty();
+        assertThat(outboundById).isEmpty();
+    }
+
+    private String typeColumn(UUID permissionId) {
+        return jdbcTemplate.queryForObject("SELECT type FROM permission WHERE permission_id = ?",
+                                           String.class,
+                                           permissionId);
+    }
+
+    private static OutboundPermission outboundPermission(UUID permissionId, UUID userId) {
+        return new OutboundPermission(UUID.randomUUID(),
+                                      permissionId,
+                                      handshakeUrl(permissionId),
+                                      "token",
+                                      userId,
+                                      outboundDataNeed(),
+                                      "connection-id",
+                                      Instant.parse("2026-01-01T00:00:00Z"),
+                                      Instant.parse("2026-12-31T00:00:00Z"),
+                                      Instant.parse("2026-01-01T00:00:00Z"));
+    }
+
     private void insertOtherDataNeed() {
         jdbcTemplate.update("""
                             INSERT INTO aiida_local_data_need (data_need_id, asset, name, policy_link, purpose, transmission_schedule, type)
@@ -153,20 +218,21 @@ class PermissionRepositoryIntegrationTest {
         saved.setMqttStreamingConfig(mqttStreamingConfig(saved.id()));
     }
 
-    private static Permission acceptedPermission(UUID permissionId) {
-        var dataNeed = ObjectMapperCreatorUtil.mapper().readValue(INBOUND_DATA_NEED_JSON, AiidaDataNeed.class);
-        var permission = new Permission(UUID.randomUUID(),
-                                        permissionId,
-                                        "http://localhost:8080/region-connectors/aiida/permission-request/" + permissionId,
-                                        "token",
-                                        UUID.randomUUID());
-        var now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        permission.setConnectionId("connection-id");
-        permission.setStartTime(now);
-        permission.setExpirationTime(now.plus(10, ChronoUnit.DAYS));
-        permission.initializeFromDataNeed(AiidaLocalDataNeedFactory.create(dataNeed));
-        permission.setGrantTime(now);
-        return permission;
+    private static InboundPermission acceptedPermission(UUID permissionId) {
+        return new InboundPermission(UUID.randomUUID(),
+                                     permissionId,
+                                     handshakeUrl(permissionId),
+                                     "token",
+                                     UUID.randomUUID(),
+                                     inboundDataNeed(),
+                                     "connection-id",
+                                     Instant.parse("2026-01-01T00:00:00Z"),
+                                     Instant.parse("2026-12-31T00:00:00Z"),
+                                     Instant.parse("2026-01-01T00:00:00Z"));
+    }
+
+    private static String handshakeUrl(UUID permissionId) {
+        return "http://localhost:8080/region-connectors/aiida/permission-request/" + permissionId;
     }
 
     private static MqttStreamingConfig mqttStreamingConfig(UUID permissionId) {

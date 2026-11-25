@@ -5,21 +5,17 @@ package energy.eddie.aiida.services.record;
 
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
 import energy.eddie.aiida.errors.inbound.ProvisioningTypeNotConfiguredException;
-import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.errors.record.InboundRecordNotFoundException;
 import energy.eddie.aiida.errors.record.UnsupportedInboundRecordTransformationException;
-import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
 import energy.eddie.aiida.models.permission.InboundMessageFormat;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.record.InboundRecord;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.InboundRecordRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.record.transform.InboundPayloadTransformationService;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -36,16 +32,17 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.inboundDataNeed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class InboundRecordServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("00000000-0000-0000-0000-000000000000");
     private static final UUID PERMISSION_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String ACCESS_CODE = "test-access-code";
-    private static final Permission PERMISSION = new Permission();
 
     @Mock
     private InboundDataSource dataSource;
@@ -53,7 +50,7 @@ class InboundRecordServiceTest {
     @Mock
     private InboundRecordRepository inboundRecordRepository;
     @Mock
-    private PermissionRepository permissionRepository;
+    private InboundPermissionRepository inboundPermissionRepository;
     @Mock
     private InboundPayloadTransformationService inboundPayloadTransformationService;
     @Mock
@@ -61,26 +58,32 @@ class InboundRecordServiceTest {
 
     @InjectMocks
     private InboundRecordService inboundRecordService;
+    private InboundPermission permission;
 
     @BeforeEach
-    void setUp() throws InvalidInboundPermissionException, SecretLoadingException {
+    void setUp() throws SecretLoadingException {
         lenient().when(secretsService.loadSecret(ACCESS_CODE)).thenReturn(ACCESS_CODE);
         lenient().when(dataSource.inboundProvisioningType()).thenReturn(InboundProvisioningType.REST_API_TOKEN);
 
-        PERMISSION.setDataSource(dataSource);
-        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
-        when(dataNeed.name()).thenReturn("someDataNeed");
-        PERMISSION.initializeFromDataNeed(dataNeed);
-        PERMISSION.updateInboundMessageFormat(InboundMessageFormat.CIM_1_12);
+        permission = new InboundPermission(UUID.randomUUID(),
+                                           PERMISSION_ID,
+                                           "https://example.org",
+                                           "token",
+                                           UUID.randomUUID(),
+                                           inboundDataNeed(),
+                                           "connection-id",
+                                           Instant.parse("2026-01-01T00:00:00Z"),
+                                           Instant.parse("2026-12-31T00:00:00Z"),
+                                           Instant.parse("2026-01-01T00:00:00Z"));
+        permission.setDataSource(dataSource);
     }
 
     @ParameterizedTest
     @EnumSource(value = InboundProvisioningType.class, names = {"REST_BEARER", "REST_API_TOKEN"})
     void testLatestRecord_returnsMappedRecordForRestProvisioning(InboundProvisioningType provisioningType)
             throws UnauthorizedException, PermissionNotFoundException,
-                   InvalidDataSourceTypeException, InboundRecordNotFoundException,
+                   InboundRecordNotFoundException,
                    UnsupportedInboundRecordTransformationException,
-                   InvalidInboundPermissionException,
                    ProvisioningTypeNotConfiguredException,
                    SecretLoadingException {
         // Given
@@ -105,21 +108,6 @@ class InboundRecordServiceTest {
     }
 
     @Test
-    void testLatestRecord_withWrongDataSourceType_throwsException() {
-        // Given
-        var wrongPermission = new Permission();
-        var wrongDataSource = mock(SimulationDataSource.class);
-        wrongPermission.setDataSource(wrongDataSource);
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(wrongPermission));
-
-        // When, Then
-        assertThrows(InvalidDataSourceTypeException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
-                                                             ACCESS_CODE,
-                                                             InboundProvisioningType.REST_API_TOKEN));
-    }
-
-    @Test
     void testLatestRecord_withWrongAccessCode_throwsException() {
         // Given
         mockPermissionRepository();
@@ -134,13 +122,24 @@ class InboundRecordServiceTest {
     @Test
     void testLatestRecord_withMissingDataSource_throwsException() {
         // Given
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
+        when(inboundPermissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.empty());
 
         // When, Then
         assertThrows(PermissionNotFoundException.class,
                      () -> inboundRecordService.latestRecord(PERMISSION_ID,
                                                              ACCESS_CODE,
                                                              InboundProvisioningType.REST_API_TOKEN));
+    }
+
+    @Test
+    void testLatestRecord_withoutDataSource_throwsInboundRecordNotFound() {
+        // Given
+        permission.setDataSource(null);
+        mockPermissionRepository();
+
+        // When, Then
+        assertThrows(InboundRecordNotFoundException.class,
+                     () -> inboundRecordService.latestRecord(PERMISSION_ID));
     }
 
     @Test
@@ -151,21 +150,6 @@ class InboundRecordServiceTest {
 
         // When, Then
         assertThrows(InboundRecordNotFoundException.class,
-                     () -> inboundRecordService.latestRecord(PERMISSION_ID,
-                                                             ACCESS_CODE,
-                                                             InboundProvisioningType.REST_API_TOKEN));
-    }
-
-    @Test
-    void testLatestRecord_withMissingInboundMessageFormat_throwsException() {
-        var permissionWithoutInboundFormat = new Permission();
-        permissionWithoutInboundFormat.setDataSource(dataSource);
-
-        mockDataSource();
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permissionWithoutInboundFormat));
-        mockInboundRecordRepository(inboundRecord());
-
-        assertThrows(InvalidInboundPermissionException.class,
                      () -> inboundRecordService.latestRecord(PERMISSION_ID,
                                                              ACCESS_CODE,
                                                              InboundProvisioningType.REST_API_TOKEN));
@@ -186,7 +170,7 @@ class InboundRecordServiceTest {
     }
 
     private void mockPermissionRepository() {
-        when(permissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(PERMISSION));
+        when(inboundPermissionRepository.findById(PERMISSION_ID)).thenReturn(Optional.of(permission));
     }
 
     private void mockInboundRecordRepository(InboundRecord inboundRecord) {

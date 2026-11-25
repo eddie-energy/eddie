@@ -3,29 +3,16 @@
 
 package energy.eddie.aiida.models.permission;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.aiida.errors.permission.InvalidInboundPermissionException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
-import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
-import energy.eddie.cim.agnostic.PermissionCommand;
-import energy.eddie.dataneeds.utils.cron.CronExpressionConverter;
-import energy.eddie.dataneeds.utils.cron.CronExpressionDeserializer;
-import energy.eddie.dataneeds.utils.cron.CronExpressionSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Formula;
-import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Persistable;
-import org.springframework.scheduling.support.CronExpression;
-import tools.jackson.databind.annotation.JsonDeserialize;
-import tools.jackson.databind.annotation.JsonSerialize;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -33,15 +20,17 @@ import static java.util.Objects.requireNonNull;
 
 @Entity
 @Table(name = "permission")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "type", discriminatorType = DiscriminatorType.STRING)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Permission implements Persistable<UUID> {
+public abstract class Permission implements Persistable<UUID> {
     @Id
     @Column(name = "permission_id", nullable = false, updatable = false)
     @Schema(description = "Unique ID of this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @JsonProperty
     private UUID permissionId;
 
-    @Column(name = "eddie_id", updatable = false)
+    @Column(name = "eddie_id", nullable = false, updatable = false)
     @Schema(description = "Unique ID of the EDDIE application that created this permission.", requiredMode = Schema.RequiredMode.REQUIRED, example = "a4dc1bad-b9fe-47ae-9336-690cfb4aada9")
     @JsonProperty
     private UUID eddieId;
@@ -52,32 +41,27 @@ public class Permission implements Persistable<UUID> {
     @JsonProperty
     private PermissionStatus status;
 
-    @Column(name = "service_name")
+    @Column(name = "service_name", nullable = false)
     @Schema(description = "Name of the EP service that requested near real-time data.", example = "My Energy Visualization Service")
     @JsonProperty
-    @Nullable
     private String serviceName;
 
-    @Column(name = "display_name")
+    @Column(name = "display_name", nullable = false)
     @Schema(description = "User-chosen display name for this permission.", example = "My smart meter")
     @JsonProperty
-    @Nullable
     private String displayName;
 
-    @Column(name = "start_time")
+    @Column(name = "start_time", nullable = false, updatable = false)
     @Schema(description = "UTC timestamp when the data sharing should start.")
     @JsonProperty
-    @Nullable
     private Instant startTime;
 
-    @Nullable
-    @Column(name = "expiration_time")
+    @Column(name = "expiration_time", nullable = false, updatable = false)
     @Schema(description = "UTC timestamp the data sharing should automatically stop. Must be after startTime.")
     @JsonProperty
     private Instant expirationTime;
 
-    @Nullable
-    @Column(name = "grant_time")
+    @Column(name = "grant_time", nullable = false, updatable = false)
     @Schema(description = "UTC timestamp when the customer granted the sharing permission.")
     @JsonProperty
     private Instant grantTime;
@@ -88,8 +72,7 @@ public class Permission implements Persistable<UUID> {
     @JsonProperty
     private Instant revokeTime = null;
 
-    @Nullable
-    @Column(name = "connection_id")
+    @Column(name = "connection_id", nullable = false, updatable = false)
     @Schema(description = "Connection ID as supplied by EDDIE/EP.", example = "SomeRandomString")
     @JsonIgnore
     private String connectionId;
@@ -99,22 +82,6 @@ public class Permission implements Persistable<UUID> {
     @Schema(description = "ID of a physical smart meter asset used to map flexible connection agreements and control data source selection.", example = "003114735")
     @JsonProperty
     private String meterId;
-
-    @Nullable
-    @Formula("(SELECT d.min_limit_kw FROM connection_limit_default d WHERE d.permission_id = permission_id AND d.replaced_at IS NULL ORDER BY d.start DESC, d.id DESC LIMIT 1)")
-    @JsonProperty
-    @Schema(description = "Optional current default minimum energy consumption or production limit in kilowatts for controllable units.", example = "1.0")
-    private BigDecimal minLimitKw;
-
-    @Nullable
-    @Formula("(SELECT d.max_limit_kw FROM connection_limit_default d WHERE d.permission_id = permission_id AND d.replaced_at IS NULL ORDER BY d.start DESC, d.id DESC LIMIT 1)")
-    @Schema(description = "Optional current default maximum energy consumption or production limit in kilowatts for controllable units.", example = "10.0")
-    @JsonProperty
-    private BigDecimal maxLimitKw;
-
-    @Nullable
-    @Column(name = "monitoring_data_source_id")
-    private UUID monitoringDataSourceId;
 
     @Nullable
     @PrimaryKeyJoinColumn
@@ -130,8 +97,7 @@ public class Permission implements Persistable<UUID> {
     @JsonIgnore
     private String accessToken;
 
-    @Nullable
-    @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id")
+    @JoinColumn(name = "data_need_id", referencedColumnName = "data_need_id", nullable = false, updatable = false)
     @ManyToOne(optional = false, cascade = CascadeType.PERSIST)
     @JsonProperty
     private AiidaLocalDataNeed dataNeed;
@@ -147,49 +113,48 @@ public class Permission implements Persistable<UUID> {
     @JsonProperty
     private DataSource dataSource;
 
-    @Column(name = "inbound_message_format")
-    @Enumerated(EnumType.STRING)
-    @Schema(description = "Selected format for inbound permission messages.", example = "CIM_1_12")
-    @JsonProperty
-    @Nullable
-    private InboundMessageFormat inboundMessageFormat;
-
-    @Column(name = "transmission_enabled", nullable = false)
-    @JsonProperty
-    private boolean transmissionEnabled = true;
-
-    @Nullable
-    @Column(name = "transmission_schedule")
-    @Convert(converter = CronExpressionConverter.class)
-    @JsonProperty
-    @JsonSerialize(using = CronExpressionSerializer.class)
-    @JsonDeserialize(using = CronExpressionDeserializer.class)
-    private CronExpression transmissionSchedule;
-
     @Transient
     @JsonIgnore
     private boolean isNew = true;
 
     /**
-     * Create a new permission from the contents of the AIIDA code. Permissions are only persisted once the user accepted
-     * them, therefore the status is set to {@link PermissionStatus#ACCEPTED}. The details of the permission have to be
-     * set before it is persisted.
+     * Create a new permission from the contents of the AIIDA code and the details fetched from the EDDIE framework.
+     * Permissions are only persisted once the user accepted them, therefore the status is set to
+     * {@link PermissionStatus#ACCEPTED}. The service name and display name are derived from the data need.
      */
-    public Permission(UUID eddieId, UUID permissionId, String handshakeUrl, String accessToken, UUID userId) {
-        this.eddieId = eddieId;
-        this.permissionId = permissionId;
-        this.handshakeUrl = handshakeUrl;
-        this.accessToken = accessToken;
+    @SuppressWarnings("java:S107") // Permissions are created from the AIIDA code and the fetched details at once
+    protected Permission(
+            UUID eddieId,
+            UUID permissionId,
+            String handshakeUrl,
+            String accessToken,
+            UUID userId,
+            AiidaLocalDataNeed dataNeed,
+            String connectionId,
+            Instant startTime,
+            Instant expirationTime,
+            Instant grantTime
+    ) {
+        this.eddieId = requireNonNull(eddieId);
+        this.permissionId = requireNonNull(permissionId);
+        this.handshakeUrl = requireNonNull(handshakeUrl);
+        this.accessToken = requireNonNull(accessToken);
         this.status = PermissionStatus.ACCEPTED;
-        this.userId = userId;
+        this.userId = requireNonNull(userId);
+        this.dataNeed = requireNonNull(dataNeed);
+        this.connectionId = requireNonNull(connectionId);
+        this.startTime = requireNonNull(startTime);
+        this.expirationTime = requireNonNull(expirationTime);
+        this.grantTime = requireNonNull(grantTime);
+        this.serviceName = dataNeed.name();
+        this.displayName = dataNeed.name();
     }
 
     /**
      * Constructor only for JPA.
      */
     @SuppressWarnings("NullAway.Init")
-    @JsonCreator
-    public Permission() {
+    protected Permission() {
     }
 
     @Override
@@ -207,7 +172,7 @@ public class Permission implements Persistable<UUID> {
     /**
      * @return The UTC timestamp when this permission starts
      */
-    public @Nullable Instant startTime() {
+    public Instant startTime() {
         return startTime;
     }
 
@@ -229,15 +194,15 @@ public class Permission implements Persistable<UUID> {
     /**
      * @return The UTC timestamp when this permission expires and no more data should be shared.
      */
-    public @Nullable Instant expirationTime() {
+    public Instant expirationTime() {
         return expirationTime;
     }
 
     /**
-     * @return The UTC timestamp when the customer granted the permission. Will return null until the customer grants
-     * the permission. Only available if status is {@link PermissionStatus#ACCEPTED} or a later status.
+     * @return The UTC timestamp when the customer granted the permission, i.e. when the permission was built to be
+     * accepted.
      */
-    public @Nullable Instant grantTime() {
+    public Instant grantTime() {
         return grantTime;
     }
 
@@ -252,7 +217,7 @@ public class Permission implements Persistable<UUID> {
     /**
      * @return The connectionId that was generated by the EDDIE framework and is sent along with each message to the EP.
      */
-    public @Nullable String connectionId() {
+    public String connectionId() {
         return connectionId;
     }
 
@@ -265,52 +230,17 @@ public class Permission implements Persistable<UUID> {
     }
 
     /**
-     * Resolved from the current connection limit default with the newest start time in the database.
-     * @return Optional current default minimum energy consumption or production limit in kilowatts for controllable units.
-     */
-    public @Nullable BigDecimal minLimitKw() {
-        return minLimitKw;
-    }
-
-    /**
-     * Resolved from the current connection limit default with the newest start time in the database.
-     * @return Optional current default maximum energy consumption or production limit in kilowatts for controllable units.
-     */
-    public @Nullable BigDecimal maxLimitKw() {
-        return maxLimitKw;
-    }
-
-    /**
-     * @return The data source monitored for connection limit violations, or null if none is assigned.
-     */
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    public @Nullable UUID monitoringDataSourceId() {
-        return monitoringDataSourceId;
-    }
-
-    /**
-     * Assigns the data source to monitor for connection limit violations, or clears the assignment if null.
-     */
-    public void updateMonitoringDataSource(@Nullable UUID dataSourceId) {
-        monitoringDataSourceId = dataSourceId;
-    }
-
-    /**
      * @return The service name for which this permission is for.
      */
-    public @Nullable String serviceName() {
+    public String serviceName() {
         return serviceName;
     }
 
     /**
      * @return The user-chosen display name for this permission. Defaults to the data need's name.
      */
-    public @Nullable String displayName() {
+    public String displayName() {
         return displayName;
-    }
-
-    public @Nullable InboundMessageFormat inboundMessageFormat() {
-        return inboundMessageFormat;
     }
 
     /**
@@ -358,32 +288,12 @@ public class Permission implements Persistable<UUID> {
     /**
      * @return The data need for the permission.
      */
-    public @Nullable AiidaLocalDataNeed dataNeed() {
+    public AiidaLocalDataNeed dataNeed() {
         return dataNeed;
-    }
-
-    /**
-     * Defaults to {@code true} and is toggled by {@link PermissionCommand.SetTransmissionEnabled} commands from the EP.
-     * @return Whether data transmission is currently enabled for this permission.
-     */
-    public boolean transmissionEnabled() {
-        return transmissionEnabled;
     }
 
     public void setStatus(PermissionStatus newStatus) {
         this.status = requireNonNull(newStatus);
-    }
-
-    public void setStartTime(Instant startTime) {
-        this.startTime = requireNonNull(startTime);
-    }
-
-    public void setExpirationTime(Instant expirationTime) {
-        this.expirationTime = requireNonNull(expirationTime);
-    }
-
-    public void setGrantTime(Instant grantTime) {
-        this.grantTime = requireNonNull(grantTime);
     }
 
     /**
@@ -395,26 +305,14 @@ public class Permission implements Persistable<UUID> {
     public void setRevokeTime(Instant revokeTime) {
         requireNonNull(revokeTime);
 
-        if (grantTime != null && revokeTime.isBefore(grantTime))
+        if (revokeTime.isBefore(grantTime))
             throw new IllegalArgumentException("revokeTime must not be before grantTime.");
 
         this.revokeTime = revokeTime;
     }
 
-    public void setConnectionId(String connectionId) {
-        this.connectionId = requireNonNull(connectionId);
-    }
-
     public void setMeterId(@Nullable String meterId) {
         this.meterId = meterId;
-    }
-
-    public void setMinLimitKw(@Nullable BigDecimal minLimitKw) {
-        this.minLimitKw = minLimitKw;
-    }
-
-    public void setMaxLimitKw(@Nullable BigDecimal maxLimitKw) {
-        this.maxLimitKw = maxLimitKw;
     }
 
     public void setDisplayName(String displayName) {
@@ -425,89 +323,13 @@ public class Permission implements Persistable<UUID> {
         this.mqttStreamingConfig = requireNonNull(mqttStreamingConfig);
     }
 
-    /**
-     * Initializes the permission from the data need by deriving {@link #serviceName}, {@link #displayName}
-     * and {@link #inboundMessageFormat} from it.
-     */
-    public void initializeFromDataNeed(AiidaLocalDataNeed dataNeed) {
-        this.dataNeed = requireNonNull(dataNeed);
-        deriveServiceName(dataNeed);
-        deriveDisplayName(dataNeed);
-        deriveInboundMessageFormat(dataNeed);
-    }
-
     public void setDataSource(@Nullable DataSource dataSource) {
         this.dataSource = dataSource;
-    }
-
-    public void updateInboundMessageFormat(@NonNull InboundMessageFormat inboundMessageFormat)
-            throws InvalidInboundPermissionException {
-        if (!(dataNeed instanceof InboundAiidaLocalDataNeed)) {
-            throw new InvalidInboundPermissionException(permissionId);
-        }
-
-        this.inboundMessageFormat = inboundMessageFormat;
-    }
-
-    public void setTransmissionEnabled(boolean transmissionEnabled) {
-        this.transmissionEnabled = transmissionEnabled;
-    }
-
-    public void setTransmissionSchedule(CronExpression transmissionSchedule) {
-        this.transmissionSchedule = requireNonNull(transmissionSchedule);
-    }
-
-    /**
-     * @return The schedule that should be used to stream data for this permission: the permission's own
-     * transmission schedule if set, otherwise the data need's schedule as a fallback
-     */
-    @Nullable
-    @JsonProperty
-    @JsonSerialize(using = CronExpressionSerializer.class)
-    public CronExpression effectiveTransmissionSchedule() {
-        if (transmissionSchedule != null) {
-            return transmissionSchedule;
-        }
-        return dataNeed != null ? dataNeed.transmissionSchedule() : null;
-    }
-
-    /**
-     * @return {@code true} if the permission is inbound.
-     */
-    @JsonIgnore
-    public boolean isInbound() {
-        return dataNeed instanceof InboundAiidaLocalDataNeed;
-    }
-
-    /**
-     * {@code true} if the permission allows the eligible party to send connection limits.
-     * @return Whether the permission supports connection limit features such as monitoring.
-     */
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    @Schema(description = "Whether the permission supports connection limit features such as monitoring.", example = "true")
-    public boolean supportsConnectionLimits() {
-        return dataNeed instanceof InboundAiidaLocalDataNeed && dataNeed.supportsConnectionLimits();
     }
 
     @PostLoad
     @PostPersist
     void markNotNew() {
         this.isNew = false;
-    }
-
-    private void deriveServiceName(AiidaLocalDataNeed dataNeed) {
-        this.serviceName = dataNeed.name();
-    }
-
-    private void deriveDisplayName(AiidaLocalDataNeed dataNeed) {
-        this.displayName = dataNeed.name();
-    }
-
-    private void deriveInboundMessageFormat(AiidaLocalDataNeed dataNeed) {
-        if (dataNeed instanceof InboundAiidaLocalDataNeed && this.inboundMessageFormat == null) {
-            this.inboundMessageFormat = InboundMessageFormat.CIM_1_12;
-        } else {
-            this.inboundMessageFormat = null;
-        }
     }
 }

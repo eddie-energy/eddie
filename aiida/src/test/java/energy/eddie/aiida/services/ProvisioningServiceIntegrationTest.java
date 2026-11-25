@@ -10,8 +10,8 @@ import energy.eddie.aiida.dtos.provisioning.ProvisioningTypePatchDto;
 import energy.eddie.aiida.dtos.provisioning.ProvisioningTypeSelectionPatchDto;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundProvisioningType;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.repositories.AiidaLocalDataNeedRepository;
 import energy.eddie.aiida.repositories.InboundDataSourceRepository;
@@ -46,6 +46,7 @@ import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 import reactor.core.publisher.Flux;
 
+import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 
@@ -103,7 +104,7 @@ class ProvisioningServiceIntegrationTest {
 
     @Test
     void mqttClient_persistsProvisioningConnectionAndAccessControlEntry() throws Exception {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
         var mqttClient = mock(MqttAsyncClient.class);
 
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
@@ -131,7 +132,7 @@ class ProvisioningServiceIntegrationTest {
 
     @Test
     void loadingPermissionWithInboundDataSource_eagerlyLoadsStreamingConfig() {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
 
         entityManager.flush();
         entityManager.clear();
@@ -147,7 +148,7 @@ class ProvisioningServiceIntegrationTest {
 
     @Test
     void loadingInboundDataSource_eagerlyLoadsStreamingConfigForDetachedAdapterCreation() {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
         var dataSourceId = dataSourceId(permissionId);
 
         entityManager.flush();
@@ -160,22 +161,8 @@ class ProvisioningServiceIntegrationTest {
     }
 
     @Test
-    void creatingInboundDataSource_withNewStreamingConfig_persistsBothEntities() {
-        var permission = createPermissionWithoutStreamingConfig();
-        permission.setMqttStreamingConfig(streamingConfig(permission.id()));
-
-        var dataSource = new InboundDataSource.Builder(permission).build();
-
-        assertThatCode(() -> inboundDataSourceRepository.saveAndFlush(dataSource)).doesNotThrowAnyException();
-
-        entityManager.clear();
-        var persistedDataSource = inboundDataSourceRepository.findById(dataSource.id()).orElseThrow();
-        assertThat(persistedDataSource.acknowledgementTopic()).isEqualTo("aiida/ack");
-    }
-
-    @Test
     void loadingMqttProvisioningDataSourcesForStartup_eagerlyLoadsMqttConfig() throws Exception {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
         var mqttClient = mock(MqttAsyncClient.class);
 
         try (MockedStatic<MqttFactory> ignored = mqttFactoryReturning(mqttClient)) {
@@ -199,7 +186,7 @@ class ProvisioningServiceIntegrationTest {
 
     @Test
     void mqttServer_persistsGeneratedCredentialsAndBrokerConfiguration() throws Exception {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
         var dataSourceId = dataSourceId(permissionId);
         var mqttClient = mock(MqttAsyncClient.class);
         var plaintextPasswordCaptor = ArgumentCaptor.forClass(String.class);
@@ -247,7 +234,7 @@ class ProvisioningServiceIntegrationTest {
 
     @Test
     void resetMqttServerPassword_persistsPasswordWithoutChangingUsernameOrTopic() throws Exception {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
         var dataSourceId = dataSourceId(permissionId);
         var mqttClient = mock(MqttAsyncClient.class);
 
@@ -286,7 +273,7 @@ class ProvisioningServiceIntegrationTest {
 
     @Test
     void mqttClientToRest_removesProvisioningRowsAndClosesPublisher() throws Exception {
-        var permissionId = createInboundPermission();
+        var permissionId = inboundPermissionId();
         var dataSourceId = dataSourceId(permissionId);
         var mqttClient = mock(MqttAsyncClient.class);
         when(mqttClient.isConnected()).thenReturn(true);
@@ -356,8 +343,8 @@ class ProvisioningServiceIntegrationTest {
         return new ProvisioningTypeSelectionPatchDto(provisioningType);
     }
 
-    private UUID createInboundPermission() {
-        var permission = createPermission();
+    private UUID inboundPermissionId() {
+        var permission = createInboundPermission();
 
         var dataSource = new InboundDataSource.Builder(permission).build();
         dataSource = inboundDataSourceRepository.saveAndFlush(dataSource);
@@ -367,25 +354,24 @@ class ProvisioningServiceIntegrationTest {
         return permission.id();
     }
 
-    private Permission createPermission() {
-        var permission = createPermissionWithoutStreamingConfig();
-        permission.setMqttStreamingConfig(streamingConfig(permission.id()));
-        return permissionRepository.saveAndFlush(permission);
-    }
-
-    private Permission createPermissionWithoutStreamingConfig() {
+    private InboundPermission createInboundPermission() {
         var permissionId = UUID.randomUUID();
-        var permission = new Permission(
+        var localDataNeed = aiidaLocalDataNeedRepository.saveAndFlush(inboundDataNeed());
+        var permission = new InboundPermission(
                 UUID.randomUUID(),
                 permissionId,
                 "https://example.test/handshake",
                 "access-token",
-                UUID.randomUUID()
-        );
-        permissionRepository.saveAndFlush(permission);
+                UUID.randomUUID(),
+                localDataNeed,
+                "connection-id",
+                Instant.parse("2026-01-01T00:00:00Z"),
+                Instant.parse("2026-12-31T00:00:00Z"),
+                Instant.now());
 
-        var localDataNeed = aiidaLocalDataNeedRepository.saveAndFlush(inboundDataNeed());
-        permission.initializeFromDataNeed(localDataNeed);
+        permission = permissionRepository.saveAndFlush(permission);
+        permission.setMqttStreamingConfig(streamingConfig(permission.id()));
+
         return permissionRepository.saveAndFlush(permission);
     }
 
