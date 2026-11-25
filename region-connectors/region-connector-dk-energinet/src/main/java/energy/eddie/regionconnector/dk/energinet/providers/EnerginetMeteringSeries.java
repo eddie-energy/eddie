@@ -26,6 +26,8 @@ public final class EnerginetMeteringSeries {
     }
 
     /**
+     * One period of a time series.
+     *
      * @param resolution ISO 8601 duration of the resolution, or null if unknown
      * @param start      start of the period, formatted as ESMP date time, or null if unknown
      * @param end        end of the period, formatted as ESMP date time, or null if unknown
@@ -39,6 +41,8 @@ public final class EnerginetMeteringSeries {
     ) {}
 
     /**
+     * One measured value at a position within a period.
+     *
      * @param position the position of the point, starts at 1
      * @param quantity the measured value
      * @param quality  CIM quality code
@@ -46,6 +50,8 @@ public final class EnerginetMeteringSeries {
     public record SeriesPoint(int position, BigDecimal quantity, String quality) {}
 
     /**
+     * Maps the periods of a time series.
+     *
      * @param periods        the periods of a time series
      * @param isKnownQuality checks whether a quality code is part of the CIM code list
      */
@@ -70,9 +76,10 @@ public final class EnerginetMeteringSeries {
     }
 
     /**
+     * Returns the business type, or null if it is unknown.
+     *
      * @param businessType        the business type of the time series
      * @param isKnownBusinessType checks whether a business type code is part of the CIM code list
-     * @return the business type, or null if it is unknown
      */
     @Nullable
     public static String businessType(@Nullable String businessType, Predicate<String> isKnownBusinessType) {
@@ -80,8 +87,9 @@ public final class EnerginetMeteringSeries {
     }
 
     /**
+     * Returns the CIM flow direction code.
+     *
      * @param businessType a CIM business type code
-     * @return the CIM flow direction code
      */
     public static String direction(@Nullable String businessType) {
         return switch (businessType) {

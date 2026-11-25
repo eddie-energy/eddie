@@ -63,8 +63,8 @@ class IntermediateValidatedHistoricalDocumentTest {
                 "creationDateTime"
         );
         var expectedStream = classLoader.getResourceAsStream(expectedXmlFile);
-        assert expectedStream != null;
-        var expected = new BufferedReader(new InputStreamReader(expectedStream))
+        assertNotNull(expectedStream);
+        var expected = new BufferedReader(new InputStreamReader(expectedStream, StandardCharsets.UTF_8))
                 .lines()
                 .collect(Collectors.joining("\n"));
 

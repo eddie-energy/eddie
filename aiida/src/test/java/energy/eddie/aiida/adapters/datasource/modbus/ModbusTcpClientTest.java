@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.modbus;
@@ -25,8 +25,7 @@ import org.mockito.Mockito;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ModbusTcpClientTest {
@@ -45,7 +44,7 @@ class ModbusTcpClientTest {
         ModbusDataPoint dp = new ModbusDataPoint("status", 10, RegisterType.HOLDING, 1, "uint16", Endian.LITTLE, false, null, null, null, null);
 
         ReadMultipleRegistersResponse response = mock(ReadMultipleRegistersResponse.class);
-        Register[] regs = new Register[]{new SimpleRegister(0x01F4)};
+        Register[] regs = {new SimpleRegister(0x01F4)};
         when(response.getRegisters()).thenReturn(regs);
 
         try (MockedConstruction<ModbusTCPTransaction> ignored = Mockito.mockConstruction(ModbusTCPTransaction.class,
@@ -69,7 +68,7 @@ class ModbusTcpClientTest {
         short lo = (short) (bits & 0xFFFF);
         short hi = (short) ((bits >> 16) & 0xFFFF);
 
-        Register[] regs = new Register[]{
+        Register[] regs = {
                 new SimpleRegister(lo),
                 new SimpleRegister(hi)
         };
@@ -191,7 +190,7 @@ class ModbusTcpClientTest {
         };
         ModbusDataPoint dp = new ModbusDataPoint("val", 0, RegisterType.HOLDING, 2, "float32", Endian.LITTLE, false, null, null, null, null);
         Optional<Object> result = callParseRegisterResponse(regs, dp);
-        assert result.orElse(0.0) instanceof Float;
+        assertInstanceOf(Float.class, result.orElse(0.0));
         assertEquals(f, (Float) result.orElse(0.0), 0.0001);
     }
 
@@ -210,11 +209,11 @@ class ModbusTcpClientTest {
         assertEquals("test", result.orElse(0));
     }
 
+    @SuppressWarnings("unchecked") // Intentionally unchecked method invoke.
     private Optional<Object> callParseRegisterResponse(InputRegister[] regs, ModbusDataPoint dp) {
         try {
             var method = ModbusTcpClient.class.getDeclaredMethod("parseRegisterResponse", InputRegister[].class, ModbusDataPoint.class);
             method.setAccessible(true);
-            //noinspection unchecked
             return (Optional<Object>) method.invoke(client, regs, dp);
         } catch (Exception e) {
             throw new RuntimeException(e);

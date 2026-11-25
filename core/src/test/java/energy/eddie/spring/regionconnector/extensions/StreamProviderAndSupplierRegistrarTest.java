@@ -127,18 +127,21 @@ class StreamProviderAndSupplierRegistrarTest {
         return Stream.of(
                 Arguments.of(new Supplier<String>() {
                     @MessageStream(String.class)
+                    @Override
                     public String get() {
                         return "test";
                     }
                 }),
                 Arguments.of(new Object() {
                     @MessageStream(Integer.class)
+                    @SuppressWarnings("UnusedMethod") // Invoked reflectively by the registrar.
                     public Flux<String> someMethod(Flux<String> ignored) {
                         return Flux.just("test");
                     }
                 }),
                 Arguments.of(new Consumer<String>() {
                     @MessageStream(String.class)
+                    @Override
                     public void accept(String ignored) {
                         // No-Op
                     }

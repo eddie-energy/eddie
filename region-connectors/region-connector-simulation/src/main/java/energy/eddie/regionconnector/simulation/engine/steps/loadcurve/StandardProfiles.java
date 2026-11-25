@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class StandardProfiles {
@@ -34,7 +35,8 @@ public class StandardProfiles {
 
     private void parseProfiles() throws IOException {
         try (var inputStream = StandardProfiles.class.getResourceAsStream("/loadcurve/profiles.csv");
-             var reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream)))) {
+             var reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(inputStream),
+                                                                   StandardCharsets.UTF_8))) {
 
             reader.lines().forEach(line -> {
                 var columns = line.split(",", -1);

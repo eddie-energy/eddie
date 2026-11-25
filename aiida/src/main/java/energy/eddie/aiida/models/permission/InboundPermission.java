@@ -118,7 +118,7 @@ public class InboundPermission extends Permission {
     }
 
     /**
-     * @return The data source monitored for connection limit violations, or null if none is assigned.
+     * Returns the data source monitored for connection limit violations, or null if none is assigned.
      */
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public @Nullable UUID monitoringDataSourceId() {

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.spring;
@@ -6,6 +6,8 @@ package energy.eddie.spring;
 
 import energy.eddie.api.agnostic.RegionConnectorExtension;
 import energy.eddie.api.utils.Shared;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -15,8 +17,6 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.core.type.StandardMethodMetadata;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -34,6 +34,8 @@ public class SharedBeansRegistrar implements BeanPostProcessor {
     private final ConfigurableListableBeanFactory localBeanFactory;
 
     /**
+     * Creates a registrar for the given bean factory.
+     *
      * @see SharedBeansRegistrar
      */
     public SharedBeansRegistrar(ConfigurableListableBeanFactory localBeanFactory) {

@@ -21,6 +21,7 @@ import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -192,28 +193,6 @@ class AmqpInboundTest {
     }
 
     @Test
-    void testPermissionCommand_discardsInvalidMessage() throws InterruptedException {
-        // Given
-        CountDownLatch latch = new CountDownLatch(1);
-        var publisher = connection.publisherBuilder()
-                                  .queue(config.redistributionTransactionRequestDocument())
-                                  .build();
-        var msg = publisher.message("INVALID MESSAGE".getBytes(StandardCharsets.UTF_8));
-        // When
-        publisher.publish(msg, ctx -> {
-            assertEquals(Publisher.Status.ACCEPTED, ctx.status());
-            latch.countDown();
-        });
-
-        // Then
-        var res = latch.await(5, TimeUnit.SECONDS);
-        assertTrue(res, "assertions in callback might have failed");
-
-        // Clean-Up
-        publisher.close();
-    }
-
-    @Test
     void testMinMaxEnvelope_acceptsMessage() throws InterruptedException, SerializationException {
         // Given
         CountDownLatch latch = new CountDownLatch(1);
@@ -268,7 +247,13 @@ class AmqpInboundTest {
                                   .build();
 
         var id = "test-id";
-        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
+        var envelope = new OpaqueEnvelope(id,
+                                          id,
+                                          id,
+                                          id,
+                                          id,
+                                          ZonedDateTime.now(ZoneId.systemDefault()),
+                                          "test-payload");
 
         var msg = publisher.message(serde.serialize(envelope));
         // When

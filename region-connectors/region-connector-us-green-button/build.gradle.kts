@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import net.ltgt.gradle.errorprone.CheckSeverity
@@ -23,7 +23,7 @@ repositories {
 }
 
 // JAXB configuration holds classpath for running the JAXB XJC compiler
-val jaxb: Configuration by configurations.creating
+val jaxb = configurations.create("jaxb")
 dependencies {
     implementation(project(":api"))
     implementation(project(":data-needs"))
@@ -82,7 +82,7 @@ sourceSets {
 val generateGreenButtonClassesName = "generateGreenButtonClasses"
 tasks.register(generateGreenButtonClassesName, JavaExec::class) {
     description = "Generate Green Button Java Classes from XSD files"
-    group = JavaBasePlugin.BUILD_DEPENDENTS_TASK_NAME
+    group = "build"
     classpath(jaxb)
     mainClass.set("com.sun.tools.xjc.XJCFacade")
 

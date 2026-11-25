@@ -34,6 +34,8 @@ public class JwtUtil {
     private final int timeoutDuration;
 
     /**
+     * Creates a JWT utility with the given HMAC secret and timeout.
+     *
      * @param jwtHmacSecret Base64 encoded secret that should be used as secret key for calculating and validating the
      *                      HMAC signatures.
      */

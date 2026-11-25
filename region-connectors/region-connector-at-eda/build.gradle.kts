@@ -65,7 +65,7 @@ val edaVersionMatrix: Map<String, Map<String, String>> = mapOf(
 val pontonVersion = "5.0.1"
 val pontonLib = layout.projectDirectory.file("libs/adapterapi2.jar")
 // JAXB configuration holds classpath for running the JAXB XJC compiler
-val jaxb: Configuration by configurations.creating
+val jaxb = configurations.create("jaxb")
 dependencies {
     implementation(project(":api"))
     implementation(project(":data-needs"))

@@ -4,7 +4,7 @@
 rootProject.name = "eddie"
 
 plugins {
-    id("com.autonomousapps.build-health") version ("2.5.0")
+    id("com.autonomousapps.build-health") version ("3.20.4")
 }
 
 include("region-connectors")

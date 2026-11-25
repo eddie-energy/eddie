@@ -194,7 +194,7 @@ class MinMaxEnvelopeInboundProcessingStrategyTest {
     }
 
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("givenInvalidFields_rejectsWithoutPersisting")
     void givenInvalidFields_rejectsWithoutPersisting(String payload, String expectedReason) {
         when(inboundRecord.payload()).thenReturn(payload);
 

@@ -99,7 +99,7 @@ public class OutboundPermission extends Permission {
     }
 
     /**
-     * @return The schedule that should be used to stream data for this permission: the permission's own
+     * Returns the schedule that should be used to stream data for this permission: the permission's own
      * transmission schedule if set, otherwise the data need's schedule as a fallback
      */
     @JsonProperty

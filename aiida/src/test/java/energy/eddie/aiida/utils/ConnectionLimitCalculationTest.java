@@ -290,7 +290,7 @@ class ConnectionLimitCalculationTest {
             int min,
             int max
     ) {
-        var times = interval.split("-");
+        var times = interval.split("-", 2);
 
         return new ConnectionLimit(permissionId,
                                    meterId,
@@ -352,7 +352,7 @@ class ConnectionLimitCalculationTest {
             int min,
             int max
     ) {
-        var times = interval.split("-");
+        var times = interval.split("-", 2);
 
         return new ConnectionLimitDto(permissionId,
                                       meterId,

@@ -35,6 +35,8 @@ public final class FingridMeteringSeries {
     public record Period(String start, String end, Duration resolution, List<SeriesPoint> points) {}
 
     /**
+     * One observed value at a position within a period.
+     *
      * @param position starts at 1
      * @param quantity the observed value
      * @param quality  CIM quality code
@@ -54,7 +56,7 @@ public final class FingridMeteringSeries {
     }
 
     /**
-     * @return the event reasons of the data separated by line breaks, or null if there are none
+     * Returns the event reasons of the data separated by line breaks, or null if there are none.
      */
     @Nullable
     public static String reasons(TimeSeriesData data) {

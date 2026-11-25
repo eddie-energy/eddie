@@ -257,12 +257,12 @@ class FluviusApiClientTest {
             Assertions.assertEquals("sub-key", request.getHeader("Ocp-Apim-Subscription-Key"));
             var body = OBJECT_MAPPER.readTree(request.getBody().readUtf8());
             Assertions.assertFalse(body.get("sso").asBoolean());
-            Assertions.assertEquals("permissionid", body.get("referenceNumber").asText());
-            Assertions.assertEquals("contract-number", body.get("dataAccessContractNumber").asText());
+            Assertions.assertEquals("permissionid", body.get("referenceNumber").asString());
+            Assertions.assertEquals("contract-number", body.get("dataAccessContractNumber").asString());
             Assertions.assertEquals("https://service.example/eddie/region-connectors/be-fluvius/permission-request/permission-id/accepted",
-                                    body.get("returnUrlSuccess").asText());
+                                    body.get("returnUrlSuccess").asString());
             Assertions.assertEquals("https://service.example/eddie/region-connectors/be-fluvius/permission-request/permission-id/rejected",
-                                    body.get("returnUrlFailed").asText());
+                                    body.get("returnUrlFailed").asString());
         }
     }
 

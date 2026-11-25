@@ -28,6 +28,8 @@ public final class EtaPlusMeteringSeries {
     }
 
     /**
+     * One time series of a metering point.
+     *
      * @param meteringPointId the metering point of the response
      * @param unit            CIM unit of measure code
      * @param businessType    CIM business type code
@@ -51,6 +53,8 @@ public final class EtaPlusMeteringSeries {
     ) {}
 
     /**
+     * One measured value at a position within a series.
+     *
      * @param position starts at 1
      * @param quantity the measured value
      * @param quality  CIM quality code, or null if the reading status is unknown
@@ -58,7 +62,7 @@ public final class EtaPlusMeteringSeries {
     public record SeriesPoint(int position, BigDecimal quantity, @Nullable String quality) {}
 
     /**
-     * @return the series, or empty if the response contains no readings or an unsupported unit
+     * Returns the series, or empty if the response contains no readings or an unsupported unit.
      */
     public static Optional<Series> of(IdentifiableValidatedHistoricalData identifiableData) {
         var payload = identifiableData.payload();

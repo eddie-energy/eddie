@@ -1,14 +1,14 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.spring.regionconnector.extensions;
 
 import energy.eddie.api.agnostic.RegionConnector;
 import energy.eddie.api.agnostic.RegionConnectorExtension;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.lang.NonNull;
 
 import static java.util.Objects.requireNonNull;
 

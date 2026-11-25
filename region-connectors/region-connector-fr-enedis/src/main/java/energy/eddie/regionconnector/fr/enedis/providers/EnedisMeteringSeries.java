@@ -43,6 +43,8 @@ public final class EnedisMeteringSeries {
     ) {}
 
     /**
+     * Consecutive points with the same resolution.
+     *
      * @param resolution the resolution of the points
      * @param start      start of the period, already adjusted for the Enedis timestamp semantics
      * @param end        end of the period, already adjusted for the Enedis timestamp semantics
@@ -51,6 +53,8 @@ public final class EnedisMeteringSeries {
     public record Period(Duration resolution, ZonedDateTime start, ZonedDateTime end, List<SeriesPoint> points) {}
 
     /**
+     * One measured value at a position within a period.
+     *
      * @param position starts at 1 for every period
      * @param quantity the measured value, converted to kilo units for energy
      * @param quality  CIM quality code

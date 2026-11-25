@@ -10,6 +10,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "aiida_migration")
+@SuppressWarnings("UnusedVariable") // Fields are read by JPA/Hibernate, not by application code.
 public class Migration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

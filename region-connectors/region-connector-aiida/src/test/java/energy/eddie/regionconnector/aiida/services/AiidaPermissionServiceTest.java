@@ -54,10 +54,7 @@ import reactor.core.publisher.Sinks;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static energy.eddie.cim.agnostic.PermissionProcessStatus.*;
@@ -698,8 +695,7 @@ class AiidaPermissionServiceTest {
         // Then
         verify(mockOutbox).commit(argThat(event -> event.status() == PermissionProcessStatus.FAILED_TO_TERMINATE
                                                    && event instanceof FailedToTerminateEvent failedEvent
-                                                   && failedEvent.message() instanceof String message
-                                                   && message.contains("1234567")));
+                                                   && Objects.requireNonNull(failedEvent.message()).contains("1234567")));
     }
 
     @Test
