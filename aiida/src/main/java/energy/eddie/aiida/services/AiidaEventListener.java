@@ -14,12 +14,17 @@ import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
+import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import static energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED;
+import static energy.eddie.aiida.models.permission.PermissionStatus.FULFILLED;
 
 @Component
 public class AiidaEventListener {
@@ -28,6 +33,8 @@ public class AiidaEventListener {
     private final PermissionService permissionService;
     private final ProvisioningService provisioningService;
     private final InboundPermissionRepository inboundPermissionRepository;
+    private final OutboundPermissionRepository outboundPermissionRepository;
+    private final PermissionScheduler permissionScheduler;
 
     /**
      * Creates the central listener for permission and data-source lifecycle events.
@@ -36,12 +43,16 @@ public class AiidaEventListener {
             DataSourceService dataSourceService,
             PermissionService permissionService,
             ProvisioningService provisioningService,
-            InboundPermissionRepository inboundPermissionRepository
+            InboundPermissionRepository inboundPermissionRepository,
+            OutboundPermissionRepository outboundPermissionRepository,
+            PermissionScheduler permissionScheduler
     ) {
         this.dataSourceService = dataSourceService;
         this.permissionService = permissionService;
         this.provisioningService = provisioningService;
         this.inboundPermissionRepository = inboundPermissionRepository;
+        this.outboundPermissionRepository = outboundPermissionRepository;
+        this.permissionScheduler = permissionScheduler;
     }
 
     @Transactional
@@ -72,13 +83,23 @@ public class AiidaEventListener {
     /**
      * Stops the runtime publisher and deletes the inbound data source of the ended (revoked, terminated or expired)
      * permission. Deleting the entity also removes its persisted provisioning connection, MQTT user credentials, and
-     * ACL through JPA cascade removal.
+     * ACL through JPA cascade removal. Accepted outbound permissions forwarding the inbound data source are fulfilled,
+     * because there is no more data to forward.
      *
      * @param event End event identifying the inbound data source.
      */
+    @Transactional
     @EventListener
     protected void deleteInboundDataSource(InboundPermissionEndEvent event) {
         LOGGER.trace("Received InboundPermissionEndEvent: {}", event);
+        for (var outboundPermission : outboundPermissionRepository.findByDataSourceIdAndStatus(event.dataSourceId(),
+                                                                                                ACCEPTED)) {
+            LOGGER.info("Fulfilling outbound permission {} because its inbound data source {} was removed",
+                        outboundPermission.id(),
+                        event.dataSourceId());
+            outboundPermission.setStatus(FULFILLED);
+            permissionScheduler.stopPermission(outboundPermission, PermissionProcessStatus.FULFILLED);
+        }
         provisioningService.stopPublisher(event.dataSourceId());
         dataSourceService.deleteDataSource(event.dataSourceId());
     }
