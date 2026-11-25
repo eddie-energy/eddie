@@ -15,7 +15,6 @@ import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
@@ -70,8 +69,6 @@ class PermissionCommandServiceTest {
     private MqttStreamingConfig mqttStreamingConfig;
     @Mock
     private PermissionCommandService self;
-    @Mock
-    private PermissionMarketDocumentFactory permissionMarketDocumentFactory;
 
     private PermissionCommandService service;
 
@@ -82,7 +79,6 @@ class PermissionCommandServiceTest {
                                                clock,
                                                permissionScheduler,
                                                aiidaEventPublisher,
-                                               permissionMarketDocumentFactory,
                                                self);
     }
 
@@ -92,7 +88,7 @@ class PermissionCommandServiceTest {
 
         service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
 
-        verify(streamerManager, never()).stopStreamer(any());
+        verify(permissionScheduler, never()).stopPermission(any(), any());
         verify(permissionRepository, never()).save(any());
     }
 
@@ -277,11 +273,9 @@ class PermissionCommandServiceTest {
 
         service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
 
-        verify(permissionScheduler).removePermission(permissionId);
         verify(inboundPermission).setStatus(PermissionStatus.TERMINATED);
         verify(inboundPermission).setRevokeTime(any());
-        verify(permissionMarketDocumentFactory).create(inboundPermission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
-        verify(streamerManager).stopStreamer(any());
+        verify(permissionScheduler).stopPermission(inboundPermission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
         verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
         verify(inboundPermission).setDataSource(null);
     }

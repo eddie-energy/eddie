@@ -25,10 +25,8 @@ import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -58,7 +56,6 @@ public class PermissionService {
     private final OutboundPermissionRepository outboundPermissionRepository;
     private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final Clock clock;
-    private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
@@ -66,7 +63,6 @@ public class PermissionService {
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
     private final AiidaEventPublisher aiidaEventPublisher;
     private final SecretsService secretsService;
-    private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
 
     @Autowired
     public PermissionService(
@@ -75,22 +71,19 @@ public class PermissionService {
             OutboundPermissionRepository outboundPermissionRepository,
             ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             Clock clock,
-            StreamerManager streamerManager,
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
             DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
             AiidaEventPublisher aiidaEventPublisher,
-            SecretsService secretsService,
-            PermissionMarketDocumentFactory permissionMarketDocumentFactory
+            SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
         this.inboundPermissionRepository = inboundPermissionRepository;
         this.outboundPermissionRepository = outboundPermissionRepository;
         this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.clock = clock;
-        this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
         this.permissionScheduler = permissionScheduler;
         this.authService = authService;
@@ -98,7 +91,6 @@ public class PermissionService {
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
-        this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
     }
 
     /**
@@ -129,15 +121,12 @@ public class PermissionService {
         }
 
         validateInboundDataSourceNotInUse(permission);
-        permissionScheduler.removePermission(permissionId);
-
 
         Instant revocationTime = clock.instant();
         permission.setStatus(REVOKED);
         permission.setRevokeTime(revocationTime);
 
-        streamerManager.stopStreamer(permissionMarketDocumentFactory.create(permission,
-                                                                            PermissionProcessStatus.REVOKED));
+        permissionScheduler.stopPermission(permission, PermissionProcessStatus.REVOKED);
         removeInboundDataSourceIfExists(permission);
 
         return permission;

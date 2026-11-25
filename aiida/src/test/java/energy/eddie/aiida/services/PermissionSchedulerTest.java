@@ -15,6 +15,8 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -139,16 +141,22 @@ class PermissionSchedulerTest {
     }
 
     @Test
-    void removePermission_cancelsFuture() {
+    void stopPermission_cancelsFuture_andStopsStreamer() {
         // Given
+        var outboundPermission = mock(OutboundPermission.class);
+        var permissionMarketDocument = mock(RequestPermissionEnvelope.class);
+        when(outboundPermission.id()).thenReturn(permissionId);
         doReturn(mockScheduledFuture).when(permissionFutures).remove(permissionId);
+        when(mockPermissionMarketDocumentFactory.create(outboundPermission, PermissionProcessStatus.REVOKED))
+                .thenReturn(permissionMarketDocument);
 
         // When
-        permissionScheduler.removePermission(permissionId);
+        permissionScheduler.stopPermission(outboundPermission, PermissionProcessStatus.REVOKED);
 
         // Then
         verify(mockScheduledFuture).cancel(true);
         verify(permissionFutures).remove(permissionId);
+        verify(mockStreamerManager).stopStreamer(permissionMarketDocument);
     }
 
     @Nested

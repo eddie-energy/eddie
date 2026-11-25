@@ -24,9 +24,7 @@ import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.*;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
@@ -95,8 +93,6 @@ class PermissionServiceTest {
     @Mock
     private AiidaEventPublisher mockAiidaEventPublisher;
     @Mock
-    private StreamerManager streamerManager;
-    @Mock
     private PermissionScheduler mockPermissionScheduler;
     @Mock
     private HandshakeService mockHandshakeService;
@@ -126,8 +122,6 @@ class PermissionServiceTest {
     private AiidaLocalDataNeedService mockAiidaLocalDataNeedService;
     @Mock
     private SecretsService mockSecretsService;
-    @Mock
-    private PermissionMarketDocumentFactory mockPermissionMarketDocumentFactory;
     @Captor
     private ArgumentCaptor<Permission> permissionCaptor;
     @Captor
@@ -145,15 +139,13 @@ class PermissionServiceTest {
                                         mockOutboundPermissionRepository,
                                         mockConnectionLimitDefaultRepository,
                                         clock,
-                                        streamerManager,
                                         mockHandshakeService,
                                         mockPermissionScheduler,
                                         mockAuthService,
                                         mockDataSourceService,
                                         mockAiidaLocalDataNeedService,
                                         mockAiidaEventPublisher,
-                                        mockSecretsService,
-                                        mockPermissionMarketDocumentFactory);
+                                        mockSecretsService);
     }
 
     @Test
@@ -588,11 +580,9 @@ class PermissionServiceTest {
         service.revokePermission(permissionId1);
 
         // Then
-        verify(mockPermissionScheduler).removePermission(permissionId1);
         verify(mockOutboundPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockOutboundPermission).setRevokeTime(fixedInstant);
-        verify(mockPermissionMarketDocumentFactory).create(mockOutboundPermission, PermissionProcessStatus.REVOKED);
-        verify(streamerManager).stopStreamer(any());
+        verify(mockPermissionScheduler).stopPermission(mockOutboundPermission, PermissionProcessStatus.REVOKED);
     }
 
     @Test
@@ -609,11 +599,9 @@ class PermissionServiceTest {
         service.revokePermission(permissionId1);
 
         // Then
-        verify(mockPermissionScheduler).removePermission(permissionId1);
         verify(mockInboundPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockInboundPermission).setRevokeTime(fixedInstant);
-        verify(mockPermissionMarketDocumentFactory).create(mockInboundPermission, PermissionProcessStatus.REVOKED);
-        verify(streamerManager).stopStreamer(any());
+        verify(mockPermissionScheduler).stopPermission(mockInboundPermission, PermissionProcessStatus.REVOKED);
         verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionRevokeEvent.class));
     }
 
@@ -656,7 +644,7 @@ class PermissionServiceTest {
 
         assertTrue(exception.getMessage().contains(blockingPermissionId1.toString()));
         assertTrue(exception.getMessage().contains(blockingPermissionId2.toString()));
-        verify(mockPermissionScheduler, never()).removePermission(any());
+        verify(mockPermissionScheduler, never()).stopPermission(any(), any());
     }
 
     @Test

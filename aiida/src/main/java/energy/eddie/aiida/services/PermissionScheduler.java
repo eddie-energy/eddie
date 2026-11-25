@@ -11,6 +11,7 @@ import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.aiida.utils.PermissionExpiredRunnable;
+import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.jspecify.annotations.NonNull;
@@ -113,15 +114,17 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
     }
 
     /**
-     * Removes any scheduled start or expiration runnable for the specified ID. E.g. when the permission is revoked or
-     * terminated.
+     * Cancels any scheduled start or expiration runnable of the permission and stops its streamer, which sends a
+     * permission market document with the given status. E.g. when the permission is revoked or terminated.
      */
-    public void removePermission(UUID permissionId) {
-        var future = permissionFutures.remove(permissionId);
+    public void stopPermission(Permission permission, PermissionProcessStatus status) {
+        var future = permissionFutures.remove(permission.id());
         if (future != null) {
-            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission '{}'", permissionId);
+            LOGGER.info("Cancelling permissionExpiration/permissionStart future for permission '{}'", permission.id());
             future.cancel(true);
         }
+
+        streamerManager.stopStreamer(permissionMarketDocumentFactory.create(permission, status));
     }
 
     private void schedulePermissionStart(AcceptedPermission permission) {
