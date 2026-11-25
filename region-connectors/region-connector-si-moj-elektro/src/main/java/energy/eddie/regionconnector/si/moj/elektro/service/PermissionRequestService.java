@@ -50,7 +50,7 @@ public class PermissionRequestService {
         ));
 
         var calculation = dataNeedCalculationService.calculate(dataNeedId);
-        switch (calculation) {
+        return switch (calculation) {
             case AccountingPointDataNeedResult ignored -> {
                 String message = "AccountingPointDataNeedResult not supported!";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
@@ -81,13 +81,13 @@ public class PermissionRequestService {
                                                  energyTimeframe.end(),
                                                  granularities.getFirst(),
                                                  requestForCreation.apiToken()));
-                return new CreatedPermissionRequest(permissionId);
+                yield new CreatedPermissionRequest(permissionId);
             }
             default -> {
                 var message = calculation.getClass().getSimpleName() + " not supported";
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-        }
+        };
     }
 }

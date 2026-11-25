@@ -102,7 +102,7 @@ class MqttStreamerTest {
     private MqttStreamingConfig mqttStreamingConfig;
     private MqttStreamer streamer;
 
-    @BeforeEach()
+    @BeforeEach
     void setUp() throws Exception {
         // Mqtt Streaming Config
         var mqttDto = new MqttDto("tcp://localhost:1883",

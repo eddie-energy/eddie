@@ -132,7 +132,7 @@ class MeterReadingPermissionRequestUpdateAndFulfillmentServiceTest {
         private final LocalDate latestMeterReadingEndDate;
 
 
-        public SimpleMeterReadingPermissionRequest(
+        SimpleMeterReadingPermissionRequest(
                 LocalDate start,
                 LocalDate end,
                 @Nullable LocalDate latest

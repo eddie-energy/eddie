@@ -189,6 +189,7 @@ public final class ConnectionLimitCalculation {
             return current.isBefore(to);
         }
 
+        @SuppressWarnings("ReferenceEquality")
         Segment next() {
             var start = current;
             var winner = active.winner();

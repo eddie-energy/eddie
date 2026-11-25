@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.us.green.button.permission.request.helper;
@@ -93,7 +93,7 @@ public class Scope {
     }
 
     public static class ScopeBuilder {
-        private final Set<DataField> dataFields = new TreeSet<>(Comparator.comparing(DataField::getCode));
+        private final Set<DataField> dataFields = new TreeSet<>(Comparator.comparingInt(DataField::getCode));
         private LocalDate historicalDataStart;
         private LocalDate ongoingDataEnd;
         private Granularity granularity;

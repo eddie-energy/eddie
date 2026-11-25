@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("UnusedMethod") // Methods are invoked reflectively by the registrar.
 class StreamProviderAndSupplierRegistrarTest {
     @Mock
     private MessageStreamHub messageStreamHub;
@@ -60,7 +61,7 @@ class StreamProviderAndSupplierRegistrarTest {
         // Given
         Object provider = new Object() {
             @MessageStream(String.class)
-            public Flux<String> provideMessages() {
+            Flux<String> provideMessages() {
                 return Flux.just("test1", "test2");
             }
         };
@@ -82,7 +83,7 @@ class StreamProviderAndSupplierRegistrarTest {
         // Given
         Object consumer = new Object() {
             @MessageStream(String.class)
-            public void accept(Flux<String> messages) {
+            void accept(Flux<String> ignored) {
                 // No Op
             }
         };
@@ -134,8 +135,7 @@ class StreamProviderAndSupplierRegistrarTest {
                 }),
                 Arguments.of(new Object() {
                     @MessageStream(Integer.class)
-                    @SuppressWarnings("UnusedMethod") // Invoked reflectively by the registrar.
-                    public Flux<String> someMethod(Flux<String> ignored) {
+                    Flux<String> someMethod(Flux<String> ignored) {
                         return Flux.just("test");
                     }
                 }),
@@ -155,7 +155,7 @@ class StreamProviderAndSupplierRegistrarTest {
         mockEnvironment.setProperty("eddie.raw.data.output.enabled", "true");
         Object provider = new Object() {
             @MessageStream(RawDataMessage.class)
-            public Flux<RawDataMessage> provideRawMessages() {
+            Flux<RawDataMessage> provideRawMessages() {
                 return Flux.just();
             }
         };
@@ -177,7 +177,7 @@ class StreamProviderAndSupplierRegistrarTest {
         mockEnvironment.setProperty("eddie.raw.data.output.enabled", "false");
         Object provider = new Object() {
             @MessageStream(RawDataMessage.class)
-            public Flux<RawDataMessage> provideRawMessages() {
+            Flux<RawDataMessage> provideRawMessages() {
                 return Flux.just();
             }
         };
