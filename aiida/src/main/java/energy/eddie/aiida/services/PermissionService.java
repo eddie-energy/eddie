@@ -25,10 +25,8 @@ import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -38,12 +36,9 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -54,14 +49,13 @@ import static energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED;
 import static energy.eddie.aiida.models.permission.PermissionStatus.REVOKED;
 
 @Service
-public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
+public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
     private final InboundPermissionRepository inboundPermissionRepository;
     private final OutboundPermissionRepository outboundPermissionRepository;
     private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final Clock clock;
-    private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
@@ -69,7 +63,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
     private final AiidaEventPublisher aiidaEventPublisher;
     private final SecretsService secretsService;
-    private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
 
     @Autowired
     public PermissionService(
@@ -78,22 +71,19 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             OutboundPermissionRepository outboundPermissionRepository,
             ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             Clock clock,
-            StreamerManager streamerManager,
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
             DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
             AiidaEventPublisher aiidaEventPublisher,
-            SecretsService secretsService,
-            PermissionMarketDocumentFactory permissionMarketDocumentFactory
+            SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
         this.inboundPermissionRepository = inboundPermissionRepository;
         this.outboundPermissionRepository = outboundPermissionRepository;
         this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.clock = clock;
-        this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
         this.permissionScheduler = permissionScheduler;
         this.authService = authService;
@@ -101,7 +91,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
         this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
-        this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
     }
 
     /**
@@ -132,15 +121,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         validateInboundDataSourceNotInUse(permission);
-        permissionScheduler.removePermission(permissionId);
-
 
         Instant revocationTime = clock.instant();
         permission.setStatus(REVOKED);
         permission.setRevokeTime(revocationTime);
 
-        streamerManager.stopStreamer(permissionMarketDocumentFactory.create(permission,
-                                                                            PermissionProcessStatus.REVOKED));
+        permissionScheduler.stopPermission(permission, PermissionProcessStatus.REVOKED);
         removeInboundDataSourceIfExists(permission);
 
         return permission;
@@ -389,40 +375,6 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     public Permission findById(UUID permissionId) throws PermissionNotFoundException {
         return permissionRepository.findById(permissionId)
                                    .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-    }
-
-    /**
-     * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
-     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
-     * This is done when a {@link ContextRefreshedEvent} is received,
-     * which ensures that all beans are started and the database is set up correctly.
-     */
-    @Override
-    @Transactional
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-        // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var acceptedPermissions = permissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(ACCEPTED);
-        LOGGER.info(
-                "Fetched {} permission from database that should resume streaming or be updated if expired.",
-                acceptedPermissions.size());
-
-        var now = clock.instant();
-        for (Permission permission : acceptedPermissions) {
-            try {
-                var acceptedPermission = AcceptedPermission.from(permission);
-                if (acceptedPermission.expirationTime().isAfter(now)) {
-                    permissionScheduler.scheduleOrStart(acceptedPermission);
-                } else {
-                    LOGGER.info(
-                            "Permission {} has expired but AIIDA was not running at that time, will expire it now",
-                            permission.id());
-                    permission.setStatus(PermissionStatus.FULFILLED);
-                }
-            } catch (IllegalStateException exception) {
-                // don't throw exception so other permissions are not skipped
-                LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
-            }
-        }
     }
 
     /**

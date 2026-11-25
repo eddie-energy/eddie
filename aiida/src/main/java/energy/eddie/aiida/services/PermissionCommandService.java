@@ -13,7 +13,6 @@ import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
-import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
 import energy.eddie.cim.agnostic.PermissionCommand;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
@@ -49,7 +48,6 @@ public class PermissionCommandService {
     private final Clock clock;
     private final PermissionScheduler permissionScheduler;
     private final AiidaEventPublisher aiidaEventPublisher;
-    private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
     private final PermissionCommandService self;
 
     @Autowired
@@ -60,7 +58,6 @@ public class PermissionCommandService {
             Clock clock,
             PermissionScheduler permissionScheduler,
             AiidaEventPublisher aiidaEventPublisher,
-            PermissionMarketDocumentFactory permissionMarketDocumentFactory,
             @Lazy PermissionCommandService self
     ) {
         this.permissionRepository = permissionRepository;
@@ -69,7 +66,6 @@ public class PermissionCommandService {
         this.clock = clock;
         this.permissionScheduler = permissionScheduler;
         this.aiidaEventPublisher = aiidaEventPublisher;
-        this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
         this.self = self; // proxy ref so @Transactional applies on internal call
     }
 
@@ -231,14 +227,12 @@ public class PermissionCommandService {
     private void terminate(Permission permission) {
         LOGGER.info("Will handle termination request for permission '{}'.", permission.id());
 
-        permissionScheduler.removePermission(permission.id());
-
         Instant terminateTime = clock.instant();
         permission.setRevokeTime(terminateTime);
         permission.setStatus(TERMINATED);
         permission = permissionRepository.save(permission);
 
-        streamerManager.stopStreamer(permissionMarketDocumentFactory.create(permission, PermissionProcessStatus.EXTERNALLY_TERMINATED));
+        permissionScheduler.stopPermission(permission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
 
         removeInboundDataSourceIfExists(permission);
     }
