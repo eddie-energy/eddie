@@ -7,8 +7,8 @@ import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.errors.formatter.SchemaFormatterException;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AcceptedPermission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.schemas.rtd.cim.BaseCimFormatterStrategy;
@@ -161,7 +161,7 @@ class SchemaTest {
 
     @Test
     void schemaRaw() throws SchemaFormatterException, IOException {
-        var permissionMock = mock(AcceptedPermission.class);
+        var permissionMock = mock(AcceptedOutboundPermission.class);
         when(permissionMock.id()).thenReturn(PERMISSION_ID);
 
         var rawFormatter = new RawFormatter(applicationInformationService, mapper);
@@ -198,8 +198,8 @@ class SchemaTest {
             var permissionId = UUID.fromString("2211ea05-d4ab-48ff-8613-8f4791a56606");
             var cimFormatter = new CimFormatter(applicationInformationService, mapper);
 
-            var permissionMock = mock(AcceptedPermission.class);
-            var dataNeedMock = mock(AiidaLocalDataNeed.class);
+            var permissionMock = mock(AcceptedOutboundPermission.class);
+            var dataNeedMock = mock(OutboundAiidaLocalDataNeed.class);
             var dataSource = mock(DataSource.class);
 
             when(permissionMock.id()).thenReturn(permissionId);
@@ -233,8 +233,8 @@ class SchemaTest {
             var cimFormatter = new energy.eddie.aiida.schemas.rtd.cim.v1_12.CimFormatter(applicationInformationService,
                                                                                          mapper);
 
-            var permissionMock = mock(AcceptedPermission.class);
-            var dataNeedMock = mock(AiidaLocalDataNeed.class);
+            var permissionMock = mock(AcceptedOutboundPermission.class);
+            var dataNeedMock = mock(OutboundAiidaLocalDataNeed.class);
             var dataSource = mock(DataSource.class);
 
             when(permissionMock.id()).thenReturn(permissionId);

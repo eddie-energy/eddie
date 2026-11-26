@@ -8,9 +8,9 @@ import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceType;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.repositories.DataSourceRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class ConnectionLimitMonitoringServiceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("51d0a13e-688a-454d-acab-7a6b2951cde2");
 
     @Mock
-    private PermissionRepository permissionRepository;
+    private InboundPermissionRepository permissionRepository;
     @Mock
     private DataSourceRepository dataSourceRepository;
     @Mock
@@ -69,7 +69,7 @@ class ConnectionLimitMonitoringServiceTest {
 
     @Test
     void givenPermissionWithoutConnectionLimits_throwsNotAllowed() throws Exception {
-        var permission = mock(Permission.class);
+        var permission = mock(InboundPermission.class);
         when(permission.supportsConnectionLimits()).thenReturn(false);
         when(permissionRepository.findByPermissionIdAndUserId(PERMISSION_ID, USER_ID))
                 .thenReturn(Optional.of(permission));
@@ -108,8 +108,8 @@ class ConnectionLimitMonitoringServiceTest {
         verify(permission).updateMonitoringDataSource(null);
     }
 
-    private Permission mockOwnedMonitorablePermission() throws Exception {
-        var permission = mock(Permission.class);
+    private InboundPermission mockOwnedMonitorablePermission() throws Exception {
+        var permission = mock(InboundPermission.class);
         when(permission.supportsConnectionLimits()).thenReturn(true);
         when(permissionRepository.findByPermissionIdAndUserId(PERMISSION_ID, USER_ID))
                 .thenReturn(Optional.of(permission));

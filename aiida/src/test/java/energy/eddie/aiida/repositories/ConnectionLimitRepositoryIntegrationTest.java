@@ -4,6 +4,7 @@
 package energy.eddie.aiida.repositories;
 
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimit;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -200,7 +201,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                     BigDecimal.valueOf(90),
                     "2026-07-13T10:00:00Z");
 
-        var permission = permissionRepository.findById(PERMISSION_A1).orElseThrow();
+        var permission = inboundPermission(PERMISSION_A1);
 
         assertEquals(0, BigDecimal.valueOf(2).compareTo(permission.minLimitKw()));
         assertEquals(0, BigDecimal.valueOf(20).compareTo(permission.maxLimitKw()));
@@ -211,8 +212,8 @@ class ConnectionLimitRepositoryIntegrationTest {
         saveDefault(PERMISSION_A1, "2026-07-10T10:00:00Z", BigDecimal.ONE, BigDecimal.TEN, null);
         saveDefault(PERMISSION_A2, "2026-07-11T10:00:00Z", BigDecimal.valueOf(99), BigDecimal.valueOf(99), null);
 
-        var permissionA1 = permissionRepository.findById(PERMISSION_A1).orElseThrow();
-        var permissionA2 = permissionRepository.findById(PERMISSION_A2).orElseThrow();
+        var permissionA1 = inboundPermission(PERMISSION_A1);
+        var permissionA2 = inboundPermission(PERMISSION_A2);
 
         assertEquals(0, BigDecimal.ONE.compareTo(permissionA1.minLimitKw()));
         assertEquals(0, BigDecimal.TEN.compareTo(permissionA1.maxLimitKw()));
@@ -224,7 +225,7 @@ class ConnectionLimitRepositoryIntegrationTest {
     void permission_withoutOpenDefault_minAndMaxLimitKw_returnNull() {
         saveDefault(PERMISSION_A1, "2026-07-10T10:00:00Z", BigDecimal.ONE, BigDecimal.TEN, "2026-07-11T10:00:00Z");
 
-        var permission = permissionRepository.findById(PERMISSION_A1).orElseThrow();
+        var permission = inboundPermission(PERMISSION_A1);
 
         assertNull(permission.minLimitKw());
         assertNull(permission.maxLimitKw());
@@ -266,10 +267,17 @@ class ConnectionLimitRepositoryIntegrationTest {
                                         handshake_url,
                                         access_token,
                                         user_id,
-                                        transmission_enabled,
-                                        data_need_id
+                                        data_need_id,
+                                        type,
+                                        connection_id,
+                                        start_time,
+                                        expiration_time,
+                                        grant_time,
+                                        service_name,
+                                        display_name
                                     )
-                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'connection-id', now(), now() + INTERVAL '1 day',
+                                            now(), 'TEST_DATA_NEED', 'TEST_DATA_NEED')
                                     """,
                             permissionId,
                             eddieId,
@@ -277,8 +285,12 @@ class ConnectionLimitRepositoryIntegrationTest {
                             "https://example.org",
                             "token",
                             userId,
-                            true,
-                            DATA_NEED_ID);
+                            DATA_NEED_ID,
+                            InboundPermission.DISCRIMINATOR_VALUE);
+    }
+
+    private InboundPermission inboundPermission(UUID permissionId) {
+        return (InboundPermission) permissionRepository.findById(permissionId).orElseThrow();
     }
 
     private void saveDataNeed() {
@@ -296,7 +308,7 @@ class ConnectionLimitRepositoryIntegrationTest {
                                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                                     """,
                             DATA_NEED_ID,
-                            "outbound-aiida",
+                            "inbound-aiida",
                             "TEST_DATA_NEED",
                             "test",
                             "https://example.org/policy",

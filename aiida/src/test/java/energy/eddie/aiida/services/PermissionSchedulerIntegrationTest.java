@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.services;
@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
         "spring.flyway.enabled=false"})
 @MockitoBean(types = {ClientRegistrationRepository.class, OAuth2SecurityConfiguration.class, CorsConfigurationSource.class})
 @Testcontainers
-class PermissionServiceIntegrationTest {
+class PermissionSchedulerIntegrationTest {
     private static final String TIMESCALEDB_IMAGE = "timescale/timescaledb:latest-pg17";
     private static final String TIMESCALEDB_CREATE_AIIDA_DB_AND_EMQX_USER_FILE =
             "timescaledb/create-aiida-db-and-emqx-user.sql";

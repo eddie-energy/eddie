@@ -5,9 +5,8 @@ package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
-import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.services.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,7 +33,7 @@ class ConnectionLimitViolationServiceTest {
     @Mock
     private ConnectionLimitViolationRepository connectionLimitViolationRepository;
     @Mock
-    private PermissionRepository permissionRepository;
+    private InboundPermissionRepository permissionRepository;
     @Mock
     private AuthService authService;
 
@@ -59,8 +56,7 @@ class ConnectionLimitViolationServiceTest {
                                                      BigDecimal.valueOf(3),
                                                      BigDecimal.valueOf(8),
                                                      BigDecimal.valueOf(9));
-        when(permissionRepository.findByPermissionIdAndUserId(PERMISSION_ID, USER_ID))
-                .thenReturn(Optional.of(mock(Permission.class)));
+        when(permissionRepository.existsByPermissionIdAndUserId(PERMISSION_ID, USER_ID)).thenReturn(true);
         when(connectionLimitViolationRepository.findOverlapping(PERMISSION_ID, FROM, TO))
                 .thenReturn(List.of(violation));
 
@@ -71,7 +67,7 @@ class ConnectionLimitViolationServiceTest {
 
     @Test
     void givenForeignPermission_throwsNotFound() {
-        when(permissionRepository.findByPermissionIdAndUserId(PERMISSION_ID, USER_ID)).thenReturn(Optional.empty());
+        when(permissionRepository.existsByPermissionIdAndUserId(PERMISSION_ID, USER_ID)).thenReturn(false);
 
         assertThrows(PermissionNotFoundException.class, () -> service.getViolations(PERMISSION_ID, FROM, TO));
     }

@@ -5,13 +5,13 @@ package energy.eddie.aiida.services.connectionlimit;
 
 import energy.eddie.aiida.dtos.connectionlimit.ConnectionLimitDto;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitViolation;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.repositories.AiidaRecordRepository;
 import energy.eddie.aiida.repositories.ConnectionLimitViolationRepository;
-import energy.eddie.aiida.repositories.PermissionRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import jakarta.annotation.Nullable;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class ConnectionLimitViolationDetectionService {
 
     private final AiidaRecordRepository aiidaRecordRepository;
     private final ConnectionLimitViolationRepository connectionLimitViolationRepository;
-    private final PermissionRepository permissionRepository;
+    private final InboundPermissionRepository inboundPermissionRepository;
     private final ConnectionLimitService connectionLimitService;
     private final ConnectionLimitNotificationService connectionLimitNotificationService;
     private final Clock clock;
@@ -60,7 +60,7 @@ public class ConnectionLimitViolationDetectionService {
     public ConnectionLimitViolationDetectionService(
             AiidaRecordRepository aiidaRecordRepository,
             ConnectionLimitViolationRepository connectionLimitViolationRepository,
-            PermissionRepository permissionRepository,
+            InboundPermissionRepository inboundPermissionRepository,
             ConnectionLimitService connectionLimitService,
             ConnectionLimitNotificationService connectionLimitNotificationService,
             Clock clock,
@@ -68,7 +68,7 @@ public class ConnectionLimitViolationDetectionService {
     ) {
         this.aiidaRecordRepository = aiidaRecordRepository;
         this.connectionLimitViolationRepository = connectionLimitViolationRepository;
-        this.permissionRepository = permissionRepository;
+        this.inboundPermissionRepository = inboundPermissionRepository;
         this.connectionLimitService = connectionLimitService;
         this.connectionLimitNotificationService = connectionLimitNotificationService;
         this.clock = clock;
@@ -77,11 +77,10 @@ public class ConnectionLimitViolationDetectionService {
 
     @Scheduled(fixedDelayString = "${aiida.connection-limit.violation-detection.interval-ms:10000}")
     void checkViolations() {
-        var permissionsByDataSource = permissionRepository.findByMonitoringDataSourceIdIsNotNullAndStatus(
-                                                                  PermissionStatus.ACCEPTED)
-                                                          .stream()
-                                                          .collect(Collectors.groupingBy(permission -> Objects.requireNonNull(
-                                                                  permission.monitoringDataSourceId())));
+        var permissionsByDataSource = inboundPermissionRepository
+                .findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus.ACCEPTED)
+                .stream()
+                .collect(Collectors.groupingBy(permission -> Objects.requireNonNull(permission.monitoringDataSourceId())));
         forgetUnassigned(permissionsByDataSource);
         var openViolations = loadOpenViolations(permissionsByDataSource);
 
@@ -98,7 +97,7 @@ public class ConnectionLimitViolationDetectionService {
      * Drops the record watermark of data sources that are no longer monitored, so that a later assignment starts from a
      * clean state.
      */
-    private void forgetUnassigned(Map<UUID, List<Permission>> permissionsByDataSource) {
+    private void forgetUnassigned(Map<UUID, List<InboundPermission>> permissionsByDataSource) {
         lastCheckedRecordId.keySet().retainAll(permissionsByDataSource.keySet());
     }
 
@@ -107,11 +106,11 @@ public class ConnectionLimitViolationDetectionService {
      *
      * @return the ongoing violations by permission ID.
      */
-    private Map<UUID, ConnectionLimitViolation> loadOpenViolations(Map<UUID, List<Permission>> permissionsByDataSource) {
+    private Map<UUID, ConnectionLimitViolation> loadOpenViolations(Map<UUID, List<InboundPermission>> permissionsByDataSource) {
         var monitoredPermissionIds = permissionsByDataSource.values()
                                                             .stream()
                                                             .flatMap(List::stream)
-                                                            .map(Permission::id)
+                                                            .map(InboundPermission::id)
                                                             .collect(Collectors.toSet());
         var openViolations = new HashMap<UUID, ConnectionLimitViolation>();
         for (var violation : connectionLimitViolationRepository.findByEndedAtIsNull()) {
@@ -128,7 +127,7 @@ public class ConnectionLimitViolationDetectionService {
 
     private void check(
             UUID dataSourceId,
-            List<Permission> permissions,
+            List<InboundPermission> permissions,
             Map<UUID, ConnectionLimitViolation> openViolations
     ) {
         var lastCheckedId = lastCheckedRecordId.computeIfAbsent(dataSourceId, this::latestRecordId);
@@ -166,7 +165,7 @@ public class ConnectionLimitViolationDetectionService {
     }
 
     private void evaluate(
-            Permission permission,
+            InboundPermission permission,
             UUID dataSourceId,
             List<ConnectionLimitDto> limits,
             BigDecimal netPower, Instant timestamp, Map<UUID, ConnectionLimitViolation> openViolations
@@ -244,7 +243,7 @@ public class ConnectionLimitViolationDetectionService {
         }
     }
 
-    private List<ConnectionLimitDto> limits(Permission permission, Instant from, Instant to) {
+    private List<ConnectionLimitDto> limits(InboundPermission permission, Instant from, Instant to) {
         var userId = permission.userId();
         if (userId == null) {
             return List.of();

@@ -16,14 +16,17 @@ import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.*;
+import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
+import energy.eddie.aiida.repositories.InboundPermissionRepository;
+import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import energy.eddie.aiida.streamers.StreamerManager;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaPermissionRequestsDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
@@ -33,12 +36,9 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -47,15 +47,15 @@ import java.util.*;
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static energy.eddie.aiida.models.permission.PermissionStatus.ACCEPTED;
 import static energy.eddie.aiida.models.permission.PermissionStatus.REVOKED;
-import static java.util.Objects.requireNonNull;
 
 @Service
-public class PermissionService implements ApplicationListener<ContextRefreshedEvent> {
+public class PermissionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PermissionService.class);
     private final PermissionRepository permissionRepository;
+    private final InboundPermissionRepository inboundPermissionRepository;
+    private final OutboundPermissionRepository outboundPermissionRepository;
     private final ConnectionLimitDefaultRepository connectionLimitDefaultRepository;
     private final Clock clock;
-    private final StreamerManager streamerManager;
     private final HandshakeService handshakeService;
     private final PermissionScheduler permissionScheduler;
     private final AuthService authService;
@@ -67,9 +67,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     @Autowired
     public PermissionService(
             PermissionRepository permissionRepository,
+            InboundPermissionRepository inboundPermissionRepository,
+            OutboundPermissionRepository outboundPermissionRepository,
             ConnectionLimitDefaultRepository connectionLimitDefaultRepository,
             Clock clock,
-            StreamerManager streamerManager,
             HandshakeService handshakeService,
             PermissionScheduler permissionScheduler,
             AuthService authService,
@@ -79,9 +80,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
+        this.inboundPermissionRepository = inboundPermissionRepository;
+        this.outboundPermissionRepository = outboundPermissionRepository;
         this.connectionLimitDefaultRepository = connectionLimitDefaultRepository;
         this.clock = clock;
-        this.streamerManager = streamerManager;
         this.handshakeService = handshakeService;
         this.permissionScheduler = permissionScheduler;
         this.authService = authService;
@@ -93,7 +95,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
     /**
      * Revokes the specified permission by updating its status and records the timestamp and persisting the changes. If
-     * an error during shutdown of the AiidaStreamer or sending of the {@link AiidaConnectionStatusMessageDto} occurs, they are
+     * an error during shutdown of the AiidaStreamer or sending of the permission market document occurs, they are
      * logged but not propagated to the caller.
      *
      * @param permissionId The ID of the permission that should be revoked.
@@ -119,22 +121,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         validateInboundDataSourceNotInUse(permission);
-        permissionScheduler.removePermission(permissionId);
-
 
         Instant revocationTime = clock.instant();
         permission.setStatus(REVOKED);
         permission.setRevokeTime(revocationTime);
 
-        var dataNeedId = requireNonNull(permission.dataNeed()).dataNeedId();
-        var connectionId = requireNonNull(permission.connectionId());
-        var revokedMessage = new AiidaConnectionStatusMessageDto(connectionId,
-                                                                 dataNeedId,
-                                                                 clock.instant(),
-                                                                 PermissionProcessStatus.REVOKED,
-                                                                 permission.id(),
-                                                                 permission.eddieId());
-        streamerManager.stopStreamer(revokedMessage);
+        permissionScheduler.stopPermission(permission, PermissionProcessStatus.REVOKED);
         removeInboundDataSourceIfExists(permission);
 
         return permission;
@@ -164,12 +156,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
 
         var pendingPermissions = new ArrayList<PendingPermissionDto>();
         for (var permissionId : permissionRequests.permissionIds()) {
-            var permission = buildValidatedPermission(permissionRequests.eddieId(),
-                                                      permissionId,
-                                                      permissionRequests.handshakeUrl(),
-                                                      permissionRequests.accessToken(),
-                                                      currentUserId);
-            pendingPermissions.add(PendingPermissionDto.from(permission));
+            var fetched = fetchValidatedDetails(permissionRequests.eddieId(),
+                                                permissionId,
+                                                permissionRequests.handshakeUrl(),
+                                                permissionRequests.accessToken(),
+                                                currentUserId);
+            pendingPermissions.add(PendingPermissionDto.from(buildPermission(fetched)));
         }
         return pendingPermissions;
     }
@@ -193,11 +185,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             UUID permissionId,
             AcceptOutboundPermissionDto acceptDto
     ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidOutboundPermissionException, DataSourceNotFoundException, IncompatibleDataSourceException, SecretStoringException {
-        var permission = buildValidatedPermission(permissionId, acceptDto);
-        if (permission.isInbound()) {
+        var fetched = fetchValidatedDetails(permissionId, acceptDto);
+        if (!(fetched.dataNeed() instanceof OutboundAiidaLocalDataNeed dataNeed)) {
             throw new InvalidOutboundPermissionException(permissionId);
         }
 
+        var permission = buildOutboundPermission(fetched, dataNeed);
         permission.setDataSource(validateDataSourceSelection(permission, acceptDto.dataSourceId()));
         permission = accept(permission, acceptDto);
         permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
@@ -221,10 +214,12 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             UUID permissionId,
             AcceptInboundPermissionDto acceptDto
     ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, InvalidUserException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException, InvalidInboundPermissionException, SecretStoringException {
-        var permission = buildValidatedPermission(permissionId, acceptDto);
-        if (!permission.isInbound()) {
+        var fetched = fetchValidatedDetails(permissionId, acceptDto);
+        if (!(fetched.dataNeed() instanceof InboundAiidaLocalDataNeed dataNeed)) {
             throw new InvalidInboundPermissionException(permissionId);
         }
+
+        var permission = buildInboundPermission(fetched, dataNeed);
 
         var inboundMessageFormat = acceptDto.inboundMessageFormat();
         if (inboundMessageFormat != null) {
@@ -238,43 +233,28 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permission;
     }
 
-    /**
-     * Accepts the validated permission at the EDDIE framework and persists it together with its MQTT credentials.
-     * Everything has to be validated before, to keep the window small in which EDDIE considers the permission
-     * accepted, but AIIDA fails to persist it.
-     */
-    private Permission accept(
-            Permission permission,
-            AcceptPermissionDto acceptDto
-    ) throws DetailFetchingFailedException, SecretStoringException {
-        var displayName = acceptDto.displayName();
-        if (displayName != null && !displayName.isBlank()) {
-            permission.setDisplayName(displayName);
+    @Transactional
+    public Permission updateInboundMessageFormat(
+            UUID permissionId,
+            @Nullable InboundMessageFormat inboundMessageFormat
+    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException,
+             MissingInboundMessageFormatException {
+        if (inboundMessageFormat == null) {
+            throw new MissingInboundMessageFormatException();
         }
 
-        var permissionId = permission.id();
-        var mqttDto = handshakeService.accept(HandshakeTarget.of(permission))
-                                      .doOnError(error -> LOGGER.atError()
-                                                                .addArgument(permissionId)
-                                                                .setCause(error)
-                                                                .log("Error while accepting permission '{}' at the EDDIE framework"))
-                                      .onErrorComplete()
-                                      .block();
-        if (mqttDto == null) {
-            throw new DetailFetchingFailedException(permissionId);
-        }
+        var permission = inboundPermissionRepository.findById(permissionId)
+                                                    .orElseThrow(() -> new PermissionNotFoundException(permissionId));
+        authService.checkAuthorizationForPermission(permission);
 
-        var mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
-        secretsService.storeSecret(mqttStreamingConfig.permissionId(), SecretType.PASSWORD, mqttDto.password());
-        permission.setGrantTime(Instant.now(clock));
+        var previousInboundMessageFormat = permission.inboundMessageFormat();
+        permission.updateInboundMessageFormat(inboundMessageFormat);
 
-        // The MQTT streaming config references the permission, but is mapped via @PrimaryKeyJoinColumn, which makes
-        // Hibernate insert it before the permission. Attaching it to the already persisted permission orders the
-        // inserts correctly.
-        permission = permissionRepository.save(permission);
-        permission.setMqttStreamingConfig(mqttStreamingConfig);
-        persistLimitDefaults(permission);
-        LOGGER.info("Permission ({}) accepted, will start or schedule data sharing", permission.id());
+        LOGGER.info("Updated inbound message format for permission {} from {} to {}.",
+                    permission.id(),
+                    previousInboundMessageFormat,
+                    inboundMessageFormat);
+
         return permission;
     }
 
@@ -298,28 +278,10 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                                 rejectDto.reason());
     }
 
-    @Transactional
-    public Permission updateInboundMessageFormat(
-            UUID permissionId,
-            @Nullable InboundMessageFormat inboundMessageFormat
-    ) throws PermissionNotFoundException, UnauthorizedException, InvalidUserException,
-             MissingInboundMessageFormatException, InvalidInboundPermissionException {
-        if (inboundMessageFormat == null) {
-            throw new MissingInboundMessageFormatException();
-        }
-
-        var permission = findById(permissionId);
-        authService.checkAuthorizationForPermission(permission);
-
-        var previousInboundMessageFormat = permission.inboundMessageFormat();
-        permission.updateInboundMessageFormat(inboundMessageFormat);
-
-        LOGGER.info("Updated inbound message format for permission {} from {} to {}.",
-                    permission.id(),
-                    previousInboundMessageFormat,
-                    inboundMessageFormat);
-
-        return permission;
+    public List<InboundPermission> getAcceptedInboundPermissions() throws InvalidUserException {
+        var currentUserId = authService.getCurrentUserId();
+        return inboundPermissionRepository.findByUserIdAndDataSourceIsNotNullAndStatusOrderByGrantTimeDesc(currentUserId,
+                                                                                                          ACCEPTED);
     }
 
     /**
@@ -362,9 +324,45 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         return permissionRepository.findByUserIdOrderByGrantTimeDescRevokeTimeDesc(currentUserId);
     }
 
-    public List<Permission> getAcceptedInboundPermissions() throws InvalidUserException {
-        var currentUserId = authService.getCurrentUserId();
-        return permissionRepository.findInboundByUserIdAndStatus(currentUserId, ACCEPTED);
+    /**
+     * Accepts the validated permission at the EDDIE framework and persists it together with its MQTT credentials.
+     * Everything has to be validated before, to keep the window small in which EDDIE considers the permission
+     * accepted, but AIIDA fails to persist it.
+     */
+    private <T extends Permission> T accept(
+            T permission,
+            AcceptPermissionDto acceptDto
+    ) throws DetailFetchingFailedException, SecretStoringException {
+        var displayName = acceptDto.displayName();
+        if (displayName != null && !displayName.isBlank()) {
+            permission.setDisplayName(displayName);
+        }
+
+        var permissionId = permission.id();
+        var mqttDto = handshakeService.accept(HandshakeTarget.of(permission))
+                                      .doOnError(error -> LOGGER.atError()
+                                                                .addArgument(permissionId)
+                                                                .setCause(error)
+                                                                .log("Error while accepting permission '{}' at the EDDIE framework"))
+                                      .onErrorComplete()
+                                      .block();
+        if (mqttDto == null) {
+            throw new DetailFetchingFailedException(permissionId);
+        }
+
+        var mqttStreamingConfig = new MqttStreamingConfig(mqttDto);
+        secretsService.storeSecret(mqttStreamingConfig.permissionId(), SecretType.PASSWORD, mqttDto.password());
+
+        // The MQTT streaming config references the permission, but is mapped via @PrimaryKeyJoinColumn, which makes
+        // Hibernate insert it before the permission. Attaching it to the already persisted permission orders the
+        // inserts correctly.
+        permission = permissionRepository.save(permission);
+        permission.setMqttStreamingConfig(mqttStreamingConfig);
+        if (permission instanceof InboundPermission inboundPermission) {
+            persistLimitDefaults(inboundPermission);
+        }
+        LOGGER.info("Permission ({}) accepted, will start or schedule data sharing", permission.id());
+        return permission;
     }
 
     /**
@@ -380,69 +378,17 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     /**
-     * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
-     * If not, streaming is resumed, otherwise their database entry will be updated accordingly.
-     * This is done when a {@link ContextRefreshedEvent} is received,
-     * which ensures that all beans are started and the database is set up correctly.
+     * Fetches the details of the permission request from the EDDIE framework and validates what applies to both
+     * directions: the permission request was not accepted yet, the data need type is supported, the start lies not in
+     * the past and there is no other active flexible connection agreement for the meter.
      */
-    @Override
-    @Transactional
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-        // fields of permissions are loaded eagerly to avoid n+1 select problem in loop
-        var acceptedPermissions = permissionRepository.findByMqttStreamingConfigIsNotNullAndStatus(ACCEPTED);
-        LOGGER.info(
-                "Fetched {} permission from database that should resume streaming or be updated if expired.",
-                acceptedPermissions.size());
-
-        var now = clock.instant();
-        for (Permission permission : acceptedPermissions) {
-            try {
-                var acceptedPermission = AcceptedPermission.from(permission);
-                if (acceptedPermission.expirationTime().isAfter(now)) {
-                    permissionScheduler.scheduleOrStart(acceptedPermission);
-                } else {
-                    LOGGER.info(
-                            "Permission {} has expired but AIIDA was not running at that time, will expire it now",
-                            permission.id());
-                    permission.setStatus(PermissionStatus.FULFILLED);
-                }
-            } catch (IllegalStateException exception) {
-                // don't throw exception so other permissions are not skipped
-                LOGGER.error("Cannot resume streaming for permission {}", permission.id(), exception);
-            }
-        }
-    }
-
-    /**
-     * Builds and validates the permission of the AIIDA code passed to accept it, for the current user.
-     */
-    private Permission buildValidatedPermission(
-            UUID permissionId,
-            AcceptPermissionDto acceptDto
-    ) throws InvalidUserException, PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
-        return buildValidatedPermission(acceptDto.eddieId(),
-                                        permissionId,
-                                        acceptDto.handshakeUrl(),
-                                        acceptDto.accessToken(),
-                                        authService.getCurrentUserId());
-    }
-
-    /**
-     * Builds a permission from the details fetched from the EDDIE framework and validates whether this AIIDA instance
-     * can fulfill it.
-     *
-     * @see PermissionService#validatePermissionStartInTheFuture(Permission)
-     * @see PermissionService#validateDataNeedType(Permission)
-     * @see PermissionService#validateLimitDefaults(Permission)
-     * @see PermissionService#validateSingleActiveFcaPermissionPerMeterId(Permission)
-     */
-    private Permission buildValidatedPermission(
+    private FetchedDetails fetchValidatedDetails(
             UUID eddieId,
             UUID permissionId,
             String handshakeUrlTemplate,
             String accessToken,
             UUID currentUserId
-    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException, LimitDefaultsNotAllowedException {
+    ) throws PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
         if (permissionRepository.existsById(permissionId)) {
             throw new PermissionAlreadyExistsException(permissionId);
         }
@@ -459,30 +405,103 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new DetailFetchingFailedException(permissionId);
         }
 
-        var permission = new Permission(eddieId, permissionId, target.handshakeUrl(), accessToken, currentUserId);
-        permission.setConnectionId(details.connectionId());
-        permission.setMeterId(details.meterId());
-        permission.setStartTime(ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant());
-        permission.setExpirationTime(ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID)
-                                                  .toInstant());
-        // Limits are only persisted as connection limit defaults once the permission is accepted
-        permission.setMinLimitKw(details.minLimitKw());
-        permission.setMaxLimitKw(details.maxLimitKw());
-
+        validateDataNeedType(target, permissionId, details.dataNeed().type());
         var dataNeedId = details.dataNeed().dataNeedId();
-        var localDataNeed = aiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId)
-                                                     .orElseGet(() -> AiidaLocalDataNeedFactory.create(details.dataNeed()));
-        permission.initializeFromDataNeed(localDataNeed);
+        var dataNeed = aiidaLocalDataNeedService.optionalAiidaLocalDataNeedById(dataNeedId)
+                                                .orElseGet(() -> AiidaLocalDataNeedFactory.create(details.dataNeed()));
+        var fetched = new FetchedDetails(eddieId, permissionId, currentUserId, target, details, dataNeed);
 
-        validatePermissionStartInTheFuture(permission);
-        validateDataNeedType(permission);
-        validateLimitDefaults(permission);
-        validateSingleActiveFcaPermissionPerMeterId(permission);
+        validatePermissionStartInTheFuture(fetched);
+        validateSingleActiveFcaPermissionPerMeterId(fetched);
+        return fetched;
+    }
 
+    /**
+     * Fetches and validates the details of the permission request from the AIIDA code passed to accept it, for the
+     * current user.
+     */
+    private FetchedDetails fetchValidatedDetails(
+            UUID permissionId,
+            AcceptPermissionDto acceptDto
+    ) throws InvalidUserException, PermissionAlreadyExistsException, DetailFetchingFailedException, ActiveFcaPermissionAlreadyExistsException, PermissionStartInThePastException, PermissionDataNeedTypeNotSupportedException {
+        return fetchValidatedDetails(acceptDto.eddieId(),
+                                     permissionId,
+                                     acceptDto.handshakeUrl(),
+                                     acceptDto.accessToken(),
+                                     authService.getCurrentUserId());
+    }
+
+    /**
+     * Builds the permission matching the direction of the data need.
+     */
+    private Permission buildPermission(FetchedDetails fetched) throws LimitDefaultsNotAllowedException {
+        return switch (fetched.dataNeed()) {
+            case InboundAiidaLocalDataNeed inboundDataNeed -> buildInboundPermission(fetched, inboundDataNeed);
+            case OutboundAiidaLocalDataNeed outboundDataNeed -> buildOutboundPermission(fetched, outboundDataNeed);
+            default -> throw new IllegalArgumentException("Unsupported data need type " + fetched.dataNeed().type());
+        };
+    }
+
+    /**
+     * Builds an inbound permission. Connection limit defaults are only allowed if the data need supports connection
+     * limits, and they are only persisted once the permission is accepted.
+     */
+    private InboundPermission buildInboundPermission(
+            FetchedDetails fetched,
+            InboundAiidaLocalDataNeed dataNeed
+    ) throws LimitDefaultsNotAllowedException {
+        var details = fetched.details();
+        var minLimitKw = details.minLimitKw();
+        var maxLimitKw = details.maxLimitKw();
+        var hasLimitDefaults = minLimitKw != null || maxLimitKw != null;
+        var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
+        if (hasLimitDefaults && (!dataNeed.supportsConnectionLimits() || !isRangeValid)) {
+            throw rejectLimitDefaults(fetched);
+        }
+
+        var permission = new InboundPermission(fetched.eddieId(),
+                                               fetched.permissionId(),
+                                               fetched.target().handshakeUrl(),
+                                               fetched.target().accessToken(),
+                                               fetched.userId(),
+                                               dataNeed,
+                                               details.connectionId(),
+                                               fetched.startTime(),
+                                               fetched.expirationTime(),
+                                               clock.instant());
+        permission.setMeterId(details.meterId());
+        permission.setMinLimitKw(minLimitKw);
+        permission.setMaxLimitKw(maxLimitKw);
         return permission;
     }
 
-    private void persistLimitDefaults(Permission permission) {
+    /**
+     * Builds an outbound permission. Connection limit defaults are not allowed for outbound permissions.
+     */
+    private OutboundPermission buildOutboundPermission(
+            FetchedDetails fetched,
+            OutboundAiidaLocalDataNeed dataNeed
+    ) throws LimitDefaultsNotAllowedException {
+        var details = fetched.details();
+        if (details.minLimitKw() != null || details.maxLimitKw() != null) {
+            throw rejectLimitDefaults(fetched);
+        }
+
+        var permission = new OutboundPermission(fetched.eddieId(),
+                                                fetched.permissionId(),
+                                                fetched.target().handshakeUrl(),
+                                                fetched.target().accessToken(),
+                                                fetched.userId(),
+                                                dataNeed,
+                                                details.connectionId(),
+                                                fetched.startTime(),
+                                                fetched.expirationTime(),
+                                                clock.instant());
+        permission.setMeterId(details.meterId());
+        return permission;
+    }
+
+    private void persistLimitDefaults(InboundPermission permission) {
         if (permission.minLimitKw() != null || permission.maxLimitKw() != null) {
             var defaultLimit = new ConnectionLimitDefault(permission.id(),
                                                           permission.meterId(),
@@ -494,39 +513,57 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
     }
 
-    private void validatePermissionStartInTheFuture(Permission permission) throws PermissionStartInThePastException {
-        var start = requireNonNull(permission.startTime()).atZone(AIIDA_ZONE_ID);
+    private void validateDataNeedType(
+            HandshakeTarget target,
+            UUID permissionId,
+            String dataNeedType
+    ) throws PermissionDataNeedTypeNotSupportedException {
+        if (!isValidDataNeedType(dataNeedType)) {
+            var exception = new PermissionDataNeedTypeNotSupportedException(permissionId, dataNeedType);
+            denotePermissionAsUnfulfillable(target, permissionId, exception.getMessage());
+            throw exception;
+        }
+    }
+
+    private void validatePermissionStartInTheFuture(FetchedDetails fetched) throws PermissionStartInThePastException {
+        var start = fetched.startTime().atZone(AIIDA_ZONE_ID);
         var today = LocalDate.now(AIIDA_ZONE_ID).atStartOfDay(AIIDA_ZONE_ID);
         if (start.isBefore(today)) {
-            var exception = new PermissionStartInThePastException(permission.id(), start);
-            denotePermissionAsUnfulfillable(permission, exception.getMessage());
+            var exception = new PermissionStartInThePastException(fetched.permissionId(), start);
+            denotePermissionAsUnfulfillable(fetched.target(), fetched.permissionId(), exception.getMessage());
             throw exception;
         }
     }
 
-    private void validateDataNeedType(Permission permission) throws PermissionDataNeedTypeNotSupportedException {
-        var dataNeedType = requireNonNull(permission.dataNeed()).type();
-        if (dataNeedType == null || !isValidDataNeedType(dataNeedType)) {
-            var exception = new PermissionDataNeedTypeNotSupportedException(permission.id(), dataNeedType);
-            denotePermissionAsUnfulfillable(permission, exception.getMessage());
-            throw exception;
-        }
-    }
-
-    private void validateLimitDefaults(Permission permission) throws LimitDefaultsNotAllowedException {
-        var minLimitKw = permission.minLimitKw();
-        var maxLimitKw = permission.maxLimitKw();
-        if (minLimitKw == null && maxLimitKw == null) {
+    private void validateSingleActiveFcaPermissionPerMeterId(FetchedDetails fetched) throws ActiveFcaPermissionAlreadyExistsException {
+        var dataNeed = fetched.dataNeed();
+        if (!dataNeed.contexts().contains(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT)) {
             return;
         }
 
-        var isRangeValid = minLimitKw == null || maxLimitKw == null || minLimitKw.compareTo(maxLimitKw) < 0;
-        var dataNeed = Objects.requireNonNull(permission.dataNeed());
-        if (!dataNeed.supportsConnectionLimits() || !isRangeValid) {
-            var exception = new LimitDefaultsNotAllowedException(permission.id());
-            denotePermissionAsUnfulfillable(permission, exception.getMessage());
+        var meterId = fetched.details().meterId();
+        if (meterId == null || meterId.isBlank()) {
+            return;
+        }
+
+        var hasConflict = permissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatus(fetched.userId(),
+                                                                                                            dataNeed.type(),
+                                                                                                            AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
+                                                                                                            meterId,
+                                                                                                            ACCEPTED);
+        if (hasConflict) {
+            var exception = new ActiveFcaPermissionAlreadyExistsException(fetched.permissionId(),
+                                                                          meterId,
+                                                                          dataNeed.type());
+            denotePermissionAsUnfulfillable(fetched.target(), fetched.permissionId(), exception.getMessage());
             throw exception;
         }
+    }
+
+    private LimitDefaultsNotAllowedException rejectLimitDefaults(FetchedDetails fetched) {
+        var exception = new LimitDefaultsNotAllowedException(fetched.permissionId());
+        denotePermissionAsUnfulfillable(fetched.target(), fetched.permissionId(), exception.getMessage());
+        return exception;
     }
 
     private boolean isValidDataNeedType(String dataNeedType) {
@@ -534,33 +571,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
                || InboundAiidaDataNeed.DISCRIMINATOR_VALUE.equals(dataNeedType);
     }
 
-    private void denotePermissionAsUnfulfillable(Permission permission, @Nullable String reason) {
-        LOGGER.info("Permission request {} cannot be fulfilled: {}", permission.id(), reason);
-        handshakeService.denoteUnfulfillable(HandshakeTarget.of(permission), reason);
-    }
-
-    private void validateSingleActiveFcaPermissionPerMeterId(Permission permission) throws ActiveFcaPermissionAlreadyExistsException {
-        var dataNeed = permission.dataNeed();
-        if (dataNeed == null || !dataNeed.contexts().contains(AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT)) {
-            return;
-        }
-
-        var meterId = permission.meterId();
-        if (meterId == null || meterId.isBlank()) {
-            return;
-        }
-
-        var hasConflict = permissionRepository.existsByUserIdAndDataNeedTypeAndContextAndMeterIdAndStatus(requireNonNull(permission.userId()),
-                                                                                                            dataNeed.type(),
-                                                                                                            AiidaContext.FLEXIBLE_CONNECTION_AGREEMENT,
-                                                                                                            meterId,
-                                                                                                            ACCEPTED);
-
-        if (hasConflict) {
-            var exception = new ActiveFcaPermissionAlreadyExistsException(permission.id(), meterId, dataNeed.type());
-            denotePermissionAsUnfulfillable(permission, exception.getMessage());
-            throw exception;
-        }
+    private void denotePermissionAsUnfulfillable(HandshakeTarget target, UUID permissionId, @Nullable String reason) {
+        LOGGER.info("Permission request {} cannot be fulfilled: {}", permissionId, reason);
+        handshakeService.denoteUnfulfillable(target, reason);
     }
 
     private DataSource validateDataSourceSelection(Permission permission, UUID dataSourceId)
@@ -571,7 +584,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
             throw new DataSourceNotFoundException(dataSourceId);
         }
 
-        var requiredAsset = requireNonNull(permission.dataNeed()).asset();
+        var requiredAsset = permission.dataNeed().asset();
         if (dataSource.asset() != requiredAsset) {
             throw new IncompatibleDataSourceException(
                     dataSourceId,
@@ -582,7 +595,7 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
         }
 
         if (dataSource instanceof InboundDataSource inboundDataSource) {
-            var requiredSchemas = requireNonNull(permission.dataNeed()).schemas();
+            var requiredSchemas = permission.dataNeed().schemas();
             if (!hasSchemaOverlap(requiredSchemas, inboundDataSource.schemas())) {
                 throw new IncompatibleDataSourceException(
                         dataSourceId,
@@ -608,9 +621,9 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     private void validateInboundDataSourceNotInUse(Permission permission) throws InboundDataSourceInUseException {
         var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
         if (dataSourceId != null) {
-            var permissions = permissionRepository.findOutboundByDataSourceIdAndStatus(dataSourceId, ACCEPTED);
+            var permissions = outboundPermissionRepository.findByDataSourceIdAndStatus(dataSourceId, ACCEPTED);
             if (!permissions.isEmpty()) {
-                var blockingIds = permissions.stream().map(Permission::id).toList();
+                var blockingIds = permissions.stream().map(OutboundPermission::id).toList();
                 LOGGER.trace(
                         "Revoke on inbound permission {} was blocked because its data source {} is used by outbound permissions {}.",
                         permission.id(),
@@ -622,7 +635,28 @@ public class PermissionService implements ApplicationListener<ContextRefreshedEv
     }
 
     private @Nullable UUID inboundDataSourceIdIfInboundPermission(Permission permission) {
-        return permission.dataSource() instanceof InboundDataSource inboundDataSource &&
-               permission.equals(inboundDataSource.permission()) ? inboundDataSource.id() : null;
+        return permission instanceof InboundPermission
+               && permission.dataSource() instanceof InboundDataSource inboundDataSource
+               && permission.equals(inboundDataSource.permission()) ? inboundDataSource.id() : null;
+    }
+
+    /**
+     * Details of a permission request fetched from the EDDIE framework, together with the context from the AIIDA code.
+     */
+    private record FetchedDetails(
+            UUID eddieId,
+            UUID permissionId,
+            UUID userId,
+            HandshakeTarget target,
+            PermissionDetailsDto details,
+            AiidaLocalDataNeed dataNeed
+    ) {
+        Instant startTime() {
+            return ZonedDateTime.of(details.start(), LocalTime.MIN, AIIDA_ZONE_ID).toInstant();
+        }
+
+        Instant expirationTime() {
+            return ZonedDateTime.of(details.end(), LocalTime.MAX.withNano(0), AIIDA_ZONE_ID).toInstant();
+        }
     }
 }

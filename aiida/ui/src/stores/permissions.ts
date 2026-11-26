@@ -3,7 +3,7 @@
 
 import { computed, ref } from 'vue'
 import { getPermissions } from '@/api.js'
-import type { AiidaPendingPermission, AiidaPermission } from '@/types'
+import type { AiidaInboundPermission, AiidaPendingPermission, AiidaPermission } from '@/types'
 import { connect as reconnectLastMessageStream } from '@/stores/lastMessageStream'
 
 export const permissions = ref<AiidaPermission[]>([])
@@ -17,8 +17,14 @@ export function isAcceptedPermission(
   return 'status' in permission
 }
 
-export function isMonitorablePermission(permission: AiidaPermission): boolean {
-  return permission.status === 'ACCEPTED' && permission.supportsConnectionLimits
+export function isMonitorablePermission(
+  permission: AiidaPermission,
+): permission is AiidaInboundPermission {
+  return (
+    permission.type === 'inbound' &&
+    permission.status === 'ACCEPTED' &&
+    permission.supportsConnectionLimits
+  )
 }
 
 export function isFcaPermission(permission: AiidaPermission): boolean {

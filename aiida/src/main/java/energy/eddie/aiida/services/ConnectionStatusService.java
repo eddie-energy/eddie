@@ -3,8 +3,10 @@
 
 package energy.eddie.aiida.services;
 
+import energy.eddie.aiida.dtos.permission.InboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.PermissionDto;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -37,8 +39,7 @@ public class ConnectionStatusService {
             return null;
         }
 
-        var startTime = permission.startTime();
-        if (startTime != null && startTime.isAfter(clock.instant())) {
+        if (permission.startTime().isAfter(clock.instant())) {
             return ConnectionStatus.WAITING_FOR_CONNECTION;
         }
 
@@ -52,5 +53,12 @@ public class ConnectionStatusService {
      */
     public PermissionDto toDto(Permission permission) {
         return PermissionDto.from(permission, connectionStatusOf(permission));
+    }
+
+    /**
+     * Creates the API representation of the passed inbound permission, including its derived connection status.
+     */
+    public InboundPermissionDto toDto(InboundPermission permission) {
+        return InboundPermissionDto.from(permission, connectionStatusOf(permission));
     }
 }

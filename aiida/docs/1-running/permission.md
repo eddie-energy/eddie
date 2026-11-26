@@ -10,6 +10,11 @@ The following class diagram shows the main entities involved in the permission s
 ![Class diagram showing the main entities involved in the permission system.](../diagrams/aiida-class-diagram-permission.svg)
 
 Each permission is associated with a single `Datasource` and a single `DataNeed` (`LocalAiidaDataNeed`).
+Depending on the type of the data need, a permission is either an `OutboundPermission`, which shares data of the
+selected data source with the eligible party, or an `InboundPermission`, which receives data from the eligible party via
+a data source that AIIDA creates for it.
+Fields that only apply to one direction are only part of that permission type, e.g. the transmission schedule of
+outbound permissions, or the connection limits and the message format of inbound permissions.
 Permissions are only stored once the user accepted them.
 Permission requests that are rejected or cannot be fulfilled are never stored in AIIDA.
 
@@ -63,6 +68,31 @@ stateDiagram-v2
 ```
 
 The AIIDA Web UI is notified about changes of the connection status and updates them without reloading the page.
+
+### Informing EDDIE about status changes
+
+When a permission reaches a final state, AIIDA publishes a CIM v1.12
+[permission market document](https://architecture.eddie.energy/framework/2-integrating/messages/cim/permission-market-documents.html)
+(`RequestPermissionEnvelope`) on the status topic `aiida/v1/<permissionId>/status` and then closes the connection
+of the permission.
+
+The status is set in `RequestPermission.MktActivityRecord.status` as a CIM status code.
+`MktActivityRecord.description` contains the matching EDDIE permission process status.
+
+| AIIDA status | CIM status (`MktActivityRecord.status`) | EDDIE status (`MktActivityRecord.description`) |
+|--------------|-----------------------------------------|------------------------------------------------|
+| `REVOKED`    | `A13` (Withdrawn)                       | `REVOKED`                                      |
+| `TERMINATED` | `A16` (Deactivation)                    | `EXTERNALLY_TERMINATED`                        |
+| `FULFILLED`  | `A37` (Confirmed)                       | `FULFILLED`                                    |
+
+The following fields identify the permission:
+
+| Field                                                       | Content                   |
+|-------------------------------------------------------------|---------------------------|
+| `MessageDocumentHeader.MetaInformation.requestPermissionId` | ID of the permission.     |
+| `MessageDocumentHeader.MetaInformation.connectionId`        | Connection ID of the EP.  |
+| `MessageDocumentHeader.MetaInformation.dataNeedId`          | ID of the data need.      |
+| `MessageDocumentHeader.MetaInformation.finalCustomerId`     | ID of the AIIDA instance. |
 
 ## Adding a permission
 

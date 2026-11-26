@@ -4,17 +4,18 @@
 package energy.eddie.aiida.streamers;
 
 import energy.eddie.aiida.aggregator.OutboundAggregator;
+import energy.eddie.aiida.models.permission.AcceptedInboundPermission;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
-import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.PermissionLatestRecordMap;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
 import energy.eddie.aiida.schemas.rtd.SchemaFormatterRegistry;
 import energy.eddie.aiida.services.secrets.SecretsService;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
 import org.slf4j.Logger;
@@ -101,7 +102,10 @@ public class StreamerManager implements AutoCloseable {
                                                     secretsService,
                                                     connectionStatusEventStream);
 
-        var streamer = StreamerFactory.getAiidaStreamer(dependencies, permission, recordFlux);
+        var streamer = StreamerFactory.getAiidaStreamer(dependencies,
+                                                        permission,
+                                                        recordFlux,
+                                                        isTransmissionEnabled(permission));
         streamer.connect();
         streamers.put(id, streamer);
     }
@@ -124,14 +128,9 @@ public class StreamerManager implements AutoCloseable {
 
     /**
      * Applies a new transmission schedule to the streamer of the passed permission by rebuilding its record flux with
-     * the new aggregation cadence. No-op for permissions whose data need is not outbound, since only outbound
-     * permissions currently have a record flux to rebuild.
+     * the new aggregation cadence.
      */
-    public void updateSchedule(AcceptedPermission permission) {
-        if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed)) {
-            return;
-        }
-
+    public void updateSchedule(AcceptedOutboundPermission permission) {
         requireStreamer(permission.id())
                 .ifPresent(streamer -> streamer.updateRecordFlux(buildFilteredFlux(permission)));
     }
@@ -155,15 +154,18 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Sends the passed status message in a blocking manner and then terminally stops the streamer.
+     * Sends the passed permission market document in a blocking manner and then terminally stops the streamer.
      *
-     * @param message Message to send before stopping the streamer. The status should be one of
-     *                {@link PermissionStatus#TERMINATED}, {@link PermissionStatus#REVOKED} or
-     *                {@link PermissionStatus#FULFILLED}.
+     * @param permissionMarketDocument Document to send before stopping the streamer. The status should be one of
+     *                                 {@link PermissionStatus#TERMINATED}, {@link PermissionStatus#REVOKED} or
+     *                                 {@link PermissionStatus#FULFILLED}.
      */
-    public void stopStreamer(AiidaConnectionStatusMessageDto message) {
-        requireStreamer(message.permissionId())
-                .ifPresent(streamer -> streamer.closeTerminally(message));
+    public void stopStreamer(RequestPermissionEnvelope permissionMarketDocument) {
+        var permissionId = permissionMarketDocument.getMessageDocumentHeader()
+                                                   .getMetaInformation()
+                                                   .getRequestPermissionId();
+        requireStreamer(UUID.fromString(permissionId))
+                .ifPresent(streamer -> streamer.closeTerminally(permissionMarketDocument));
     }
 
     /**
@@ -181,16 +183,30 @@ public class StreamerManager implements AutoCloseable {
     }
 
     /**
-     * Builds the filtered and aggregated record flux for the passed permission. Permissions that were not created by an
-     * outbound data need get a flux that never emits, as they do not stream any records.
+     * Builds the filtered and aggregated record flux for the passed permission. Inbound permissions get a flux that
+     * never emits, as they do not stream any records.
      */
     private Flux<AiidaRecord> buildFilteredFlux(AcceptedPermission permission) {
-        if (!(permission.dataNeed() instanceof OutboundAiidaLocalDataNeed outboundDataNeed)) {
-            return Flux.never();
-        }
+        return switch (permission) {
+            case AcceptedInboundPermission ignored -> Flux.never();
+            case AcceptedOutboundPermission outboundPermission -> buildFilteredFlux(outboundPermission);
+        };
+    }
 
-        return aggregator.getFilteredFlux(outboundDataNeed.dataTags(),
-                                          outboundDataNeed.asset(),
+    /**
+     * Inbound permissions do not stream records, so there is no transmission to control.
+     */
+    private static boolean isTransmissionEnabled(AcceptedPermission permission) {
+        return switch (permission) {
+            case AcceptedInboundPermission ignored -> true;
+            case AcceptedOutboundPermission outboundPermission -> outboundPermission.transmissionEnabled();
+        };
+    }
+
+    private Flux<AiidaRecord> buildFilteredFlux(AcceptedOutboundPermission permission) {
+        var dataNeed = permission.dataNeed();
+        return aggregator.getFilteredFlux(dataNeed.dataTags(),
+                                          dataNeed.asset(),
                                           permission.expirationTime(),
                                           permission.transmissionSchedule(),
                                           permission.userId(),

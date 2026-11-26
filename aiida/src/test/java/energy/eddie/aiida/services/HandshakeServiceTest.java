@@ -5,7 +5,7 @@ package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.models.permission.HandshakeTarget;
-import energy.eddie.aiida.models.permission.Permission;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.outboundDataNeed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
@@ -107,7 +108,16 @@ class HandshakeServiceTest {
     @Test
     void handshakeTargetOf_usesUrlAndTokenOfPermission() {
         // Given
-        var permission = new Permission(UUID.randomUUID(), UUID.randomUUID(), HANDSHAKE_URL, "token", UUID.randomUUID());
+        var permission = new OutboundPermission(UUID.randomUUID(),
+                                                UUID.randomUUID(),
+                                                HANDSHAKE_URL,
+                                                "token",
+                                                UUID.randomUUID(),
+                                                outboundDataNeed(),
+                                                "connection-id",
+                                                Instant.parse("2026-01-01T00:00:00Z"),
+                                                Instant.parse("2026-12-31T00:00:00Z"),
+                                                Instant.parse("2026-01-01T00:00:00Z"));
 
         // When
         var target = HandshakeTarget.of(permission);

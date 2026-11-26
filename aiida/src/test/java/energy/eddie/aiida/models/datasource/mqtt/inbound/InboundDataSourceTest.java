@@ -9,9 +9,9 @@ import energy.eddie.aiida.dtos.datasource.mqtt.inbound.InboundDataSourceDto;
 import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.inbound.ProvisioningConfigurationException;
 import energy.eddie.aiida.models.datasource.DataSource;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.services.secrets.KeyStoreSecretsService;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.inboundDataNeed;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -50,14 +51,14 @@ class InboundDataSourceTest {
     private static final String RESET_SERVER_PASSWORD = "reset-server-password";
     private static final String RESET_SERVER_PASSWORD_HASH = "reset-server-password-hash";
 
-    private Permission permission;
+    private InboundPermission permission;
     private InboundDataSource dataSource;
 
     @BeforeEach
     void setUp() {
         var dto = mock(InboundDataSourceDto.class);
         var streamingConfig = mock(MqttStreamingConfig.class);
-        permission = mock(Permission.class);
+        permission = mock(InboundPermission.class);
 
         when(dto.id()).thenReturn(DATA_SOURCE_ID);
         when(streamingConfig.serverUri()).thenReturn(STREAMING_HOST);
@@ -66,6 +67,7 @@ class InboundDataSourceTest {
         when(streamingConfig.dataTopic()).thenReturn(STREAMING_TOPIC);
         when(streamingConfig.acknowledgementTopic()).thenReturn(ACKNOWLEDGEMENT_TOPIC);
         when(permission.mqttStreamingConfig()).thenReturn(streamingConfig);
+        lenient().when(permission.dataNeed()).thenReturn(inboundDataNeed());
 
         dataSource = new InboundDataSource(dto, USER_ID, permission, ACCESS_CODE);
         dataSource.createMqttUser();
@@ -236,7 +238,7 @@ class InboundDataSourceTest {
 
     @Test
     void constructor_throwsMissingMqttStreamingConfigException_whenMqttStreamingConfigMissing() {
-        var permissionWithoutConfig = mock(Permission.class);
+        var permissionWithoutConfig = mock(InboundPermission.class);
         var dto = dto();
 
         assertThatThrownBy(() -> new InboundDataSource(dto, USER_ID, permissionWithoutConfig))
@@ -245,21 +247,21 @@ class InboundDataSourceTest {
     }
 
     @Test
-    void legacyDataSource_withoutMqttStreamingConfig_returnsNoAcknowledgementTopic() {
-        var legacyDataSource = new InboundDataSource();
+    void withoutMqttStreamingConfig_returnsNoAcknowledgementTopic() {
+        when(permission.mqttStreamingConfig()).thenReturn(null);
 
-        assertThat(legacyDataSource.acknowledgementTopic()).isNull();
+        assertThat(dataSource.acknowledgementTopic()).isNull();
     }
 
     @Test
-    void legacyDataSource_withoutMqttStreamingConfig_failsExplicitlyWhenCreatingMqttResources() throws Exception {
-        var legacyDataSource = new InboundDataSource();
-        setId(legacyDataSource, DATA_SOURCE_ID);
+    void withoutMqttStreamingConfig_failsExplicitlyWhenCreatingMqttResources() throws Exception {
+        setId(dataSource, DATA_SOURCE_ID);
+        when(permission.mqttStreamingConfig()).thenReturn(null);
 
-        assertThatThrownBy(legacyDataSource::createMqttUser)
+        assertThatThrownBy(dataSource::createMqttUser)
                 .isInstanceOf(MissingMqttStreamingConfigException.class)
                 .hasMessage("MQTT streaming configuration is missing for inbound data source " + DATA_SOURCE_ID);
-        assertThatThrownBy(legacyDataSource::createAccessControlEntry)
+        assertThatThrownBy(dataSource::createAccessControlEntry)
                 .isInstanceOf(MissingMqttStreamingConfigException.class)
                 .hasMessage("MQTT streaming configuration is missing for inbound data source " + DATA_SOURCE_ID);
     }
@@ -270,7 +272,7 @@ class InboundDataSourceTest {
         var config = mock(MqttStreamingConfig.class);
         when(config.username()).thenReturn(UUID.randomUUID());
         when(config.dataTopic()).thenReturn("data-topic");
-        var owningPermission = mock(Permission.class);
+        var owningPermission = mock(InboundPermission.class);
         when(owningPermission.mqttStreamingConfig()).thenReturn(config);
         var inboundDataSource = new InboundDataSource(dto(), USER_ID, owningPermission, "initial-access-code");
         setId(inboundDataSource, id);
@@ -289,15 +291,8 @@ class InboundDataSourceTest {
     }
 
     @Test
-    void schemas_returnsEmptySet_whenDataNeedNull() {
-        when(permission.dataNeed()).thenReturn(null);
-
-        assertEquals(Set.of(), dataSource.schemas());
-    }
-
-    @Test
     void schemas_returnsDataNeedSchemas_whenPresent() {
-        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
         when(permission.dataNeed()).thenReturn(dataNeed);
 
@@ -306,7 +301,7 @@ class InboundDataSourceTest {
 
     @Test
     void builder_throwsNpe_whenPermissionUserIdMissing() {
-        var permissionWithoutUser = mock(Permission.class);
+        var permissionWithoutUser = mock(InboundPermission.class);
 
         assertThrows(NullPointerException.class, () -> new InboundDataSource.Builder(permissionWithoutUser));
     }
@@ -314,10 +309,10 @@ class InboundDataSourceTest {
     @Test
     void builder_build_createsInboundDataSourceLinkedToPermission() {
         var permissionId = UUID.randomUUID();
-        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         var streamingConfig = mock(MqttStreamingConfig.class);
         when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
-        var owningPermission = mock(Permission.class);
+        var owningPermission = mock(InboundPermission.class);
         when(owningPermission.userId()).thenReturn(USER_ID);
         when(owningPermission.id()).thenReturn(permissionId);
         when(owningPermission.dataNeed()).thenReturn(dataNeed);

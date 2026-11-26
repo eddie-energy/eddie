@@ -20,6 +20,10 @@ The following topics are created upon starting this outbound-connector:
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.permission-md`: Provides permission market documents
 - `ep.${outbound-connector.amqp.eddie-id}.cim_0_82.validated-historical-data-md`:
   Provides validated historical data market documents
+- `ep.${outbound-connector.amqp.eddie-id}.cim_1_04.validated-historical-data-md`:
+  Provides validated historical data market documents in CIM v1.04
+- `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.validated-historical-data-md`:
+  Provides [validated historical data market documents](../../2-integrating/messages/cim/validated-historical-data-market-documents.md) in CIM v1.12
 - `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.near-real-time-data-md`:
   Provides near real-time data market documents
 - `ep.${outbound-connector.amqp.eddie-id}.cim_1_12.acknowledgement-md`:
@@ -60,6 +64,8 @@ The following configuration values are supported by the AMQP outbound-connector:
 | `outbound-connector.amqp.format`   | `xml` or `json`                                                                                       | `json`  | Sets the format of the messages that are sent and received.       |
 | `outbound-connector.amqp.uri`      | [URI](https://docs.oasis-open.org/amqp/addressing/v1.0/csd01/addressing-v1.0-csd01.html#_Toc69731043) |         | Sets the URI of the AMQP 1.0 broker.                              |
 | `outbound-connector.amqp.eddie-id` | String                                                                                                |         | Sets the ID of the eddie instance in relation to the amqp broker. |
+
+In JSON, fields without a value are omitted instead of being sent as `null`, matching the XML output.
 
 ### .properties file
 

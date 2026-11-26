@@ -4,6 +4,7 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.models.permission.ConnectionStatus;
+import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -20,6 +21,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
 
+import static energy.eddie.aiida.models.permission.dataneed.LocalDataNeedTestData.outboundDataNeed;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -37,7 +39,7 @@ class ConnectionStatusServiceTest {
     @BeforeEach
     void setUp() {
         service = new ConnectionStatusService(Clock.fixed(NOW, ZoneOffset.UTC), streamerManager);
-        permission = new Permission(UUID.randomUUID(), permissionId, "https://example.org", "token", UUID.randomUUID());
+        permission = permissionStartingAt(NOW.minusSeconds(60));
     }
 
     @ParameterizedTest
@@ -58,7 +60,7 @@ class ConnectionStatusServiceTest {
     void givenAcceptedPermissionWithFutureStart_returnsWaitingForConnection() {
         // Given
         permission.setStatus(PermissionStatus.ACCEPTED);
-        permission.setStartTime(NOW.plusSeconds(60));
+        permission = permissionStartingAt(NOW.plusSeconds(60));
 
         // When
         var connectionStatus = service.connectionStatusOf(permission);
@@ -72,7 +74,7 @@ class ConnectionStatusServiceTest {
     void givenAcceptedPermissionWithConnectedStreamer_returnsConnected() {
         // Given
         permission.setStatus(PermissionStatus.ACCEPTED);
-        permission.setStartTime(NOW.minusSeconds(60));
+        permission = permissionStartingAt(NOW.minusSeconds(60));
         when(streamerManager.isConnected(permissionId)).thenReturn(true);
 
         // When
@@ -86,7 +88,7 @@ class ConnectionStatusServiceTest {
     void givenAcceptedPermissionWithoutConnectedStreamer_returnsNotConnected() {
         // Given
         permission.setStatus(PermissionStatus.ACCEPTED);
-        permission.setStartTime(NOW);
+        permission = permissionStartingAt(NOW);
         when(streamerManager.isConnected(permissionId)).thenReturn(false);
 
         // When
@@ -100,7 +102,7 @@ class ConnectionStatusServiceTest {
     void toDto_includesDerivedConnectionStatus() {
         // Given
         permission.setStatus(PermissionStatus.ACCEPTED);
-        permission.setStartTime(NOW.minusSeconds(60));
+        permission = permissionStartingAt(NOW.minusSeconds(60));
         when(streamerManager.isConnected(permissionId)).thenReturn(true);
 
         // When
@@ -110,5 +112,18 @@ class ConnectionStatusServiceTest {
         assertEquals(permissionId, result.permissionId());
         assertEquals(PermissionStatus.ACCEPTED, result.status());
         assertEquals(ConnectionStatus.CONNECTED, result.connectionStatus());
+    }
+
+    private Permission permissionStartingAt(Instant startTime) {
+        return new OutboundPermission(UUID.randomUUID(),
+                                                permissionId,
+                                                "https://example.org",
+                                                "token",
+                                                UUID.randomUUID(),
+                                                outboundDataNeed(),
+                                                "connection-id",
+                                                startTime,
+                                                NOW.plusSeconds(3600),
+                                                Instant.now());
     }
 }

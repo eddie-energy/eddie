@@ -32,6 +32,7 @@ public class AmqpSetup {
                 configuration.minMaxEnvelopeDocument(),
                 configuration.opaqueEnvelope(),
                 configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_04),
+                configuration.validatedHistoricalDataMarketDocument(TopicStructure.DataModels.CIM_1_12),
                 configuration.energySharingReferenceDataMarketDocument(),
                 configuration.requestPermissionMarketDocument(),
                 configuration.forwardedMinMaxEnvelopeDocument(),

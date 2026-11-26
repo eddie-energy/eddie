@@ -38,6 +38,7 @@ dependencies {
 
     runtimeOnly(libs.hibernate.validator)
 
+    testImplementation(testFixtures(project(":cim")))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)

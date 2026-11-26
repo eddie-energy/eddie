@@ -13,11 +13,12 @@ plugins {
     jacoco
     signing
     `java-library`
+    `java-test-fixtures`
 }
 
 group = "energy.eddie"
 
-version = "3.14.1"
+version = "3.15.0"
 
 repositories {
     mavenCentral()
@@ -91,7 +92,8 @@ val generateCIMSchemaClasses = tasks.register<GenerateCimSchemaClassesTask>("gen
         "v1_12/recmmoe/ReferenceEnergyCurveMinMaxOperatingEnvelope Document_v1.12_annotated.xsd",
         "v1_12/ack/Acknowledgement Document_v1.12_annotated.xsd",
         "v1_12/esr/CEEDS_EnergySharingReferenceDataMarketDocument_annotated_v1.12.xsd",
-        "v1_12/rpmd/RequestPermissionDocument_annotated_v1.12.xsd"
+        "v1_12/rpmd/RequestPermissionDocument_annotated_v1.12.xsd",
+        "v1_12/vhd/CEEDS_ValidatedHistoricalDataDocument_v1.12.38.xsd"
     )
 
     schemaDirectory.set(layout.projectDirectory.dir("src/main/schemas/cim/xsd"))
@@ -127,6 +129,11 @@ tasks.compileJava {
 
 val mavenCentralUsername: String? = System.getenv("MAVEN_CENTRAL_USERNAME")
 val mavenCentralPassword: String? = System.getenv("MAVEN_CENTRAL_PASSWORD")
+// Test fixtures are only shared with the tests of other modules and are not part of the published artifact
+val javaComponent = components["java"] as AdhocComponentWithVariants
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+javaComponent.withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
+
 publishing {
     repositories {
         maven {

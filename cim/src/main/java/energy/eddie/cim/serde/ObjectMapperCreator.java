@@ -4,6 +4,7 @@
 package energy.eddie.cim.serde;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import energy.eddie.cim.agnostic.DataSourceInformation;
 import energy.eddie.cim.agnostic.SimpleDataSourceInformation;
 import tools.jackson.databind.ObjectMapper;
@@ -30,7 +31,10 @@ class ObjectMapperCreator {
     public static ObjectMapper create(SerializationFormat format) {
         MapperBuilder<?, ?> builder = switch (format) {
             case XML -> XmlMapper.builder();
-            case JSON -> JsonMapper.builder();
+            case JSON -> JsonMapper.builder()
+                                   .changeDefaultPropertyInclusion(
+                                           incl -> incl.withValueInclusion(JsonInclude.Include.NON_NULL)
+                                   );
         };
 
         var simpleModule = new SimpleModule()

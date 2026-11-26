@@ -33,7 +33,8 @@ public enum CimMessageTypes implements MessageType {
     ACKNOWLEDGEMENT_V1_12(AcknowledgementEnvelope.class),
     ENERGY_SHARING_REFERENCE_DATA_V1_12(ESRDMDEnvelope.class),
     REFERENCE_ENERGY_CURVE_MIN_MAX_OPERATION_V1_12(RECMMOEEnvelope.class),
-    PERMISSION_V1_12(RequestPermissionEnvelope.class);
+    PERMISSION_V1_12(RequestPermissionEnvelope.class),
+    VALIDATED_HISTORICAL_DATA_V1_12(energy.eddie.cim.v1_12.vhd.Envelope.class);
 
     private final Class<?> messageClass;
 

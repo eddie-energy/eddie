@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.jakarta.persistence.api)
     implementation(libs.jakarta.transaction.api)
 
+    testImplementation(testFixtures(project(":cim")))
     testImplementation(libs.junit.mockito)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.reactor.test)

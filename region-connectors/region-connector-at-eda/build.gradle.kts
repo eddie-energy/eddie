@@ -99,6 +99,7 @@ dependencies {
     runtimeOnly(libs.hibernate.validator)
     runtimeOnly(libs.jaxb.runtime)
 
+    testImplementation(testFixtures(project(":cim")))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)
     testImplementation(libs.reactor.test)

@@ -132,6 +132,65 @@ class FallbackXmlMessageConverterTest {
     }
 
     @Test
+    void write_validatedHistoricalDataMarketDocumentsV1_12_returnsXml() throws IOException {
+        // Given
+        var envelope = new energy.eddie.cim.v1_12.vhd.Envelope()
+                .withMessageDocumentHeader(
+                        new energy.eddie.cim.v1_12.vhd.MessageDocumentHeader()
+                                .withMetaInformation(
+                                        new energy.eddie.cim.v1_12.vhd.MetaInformation()
+                                                .withRequestPermissionId("pid")
+                                                .withRegionCountry("AT")
+                                )
+                )
+                .withVHDMarketDocument(new energy.eddie.cim.v1_12.vhd.VHDMarketDocument().withMRID("mrid"));
+        var docs = new energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments(List.of(envelope));
+        var collectionMsg = new MockHttpOutputMessage();
+        var singleMsg = new MockHttpOutputMessage();
+
+        // When
+        converter.write(docs, MediaType.APPLICATION_XML, collectionMsg);
+        converter.write(envelope, MediaType.APPLICATION_XML, singleMsg);
+
+        // Then
+        var collection = collectionMsg.getBodyAsString();
+        assertAll(
+                () -> assertTrue(collection.contains("ValidatedHistoricalDataMarketDocuments"), collection),
+                () -> assertTrue(collection.contains("https://insieme.energy/CEEDS_ValidatedHistoricalDataDocument_v1.12.38"),
+                                 collection),
+                () -> assertTrue(collection.contains("<ns2:mRID>mrid</ns2:mRID>") || collection.contains(">mrid<"),
+                                 collection)
+        );
+        // Schema compliance of complete documents is covered by the CIM and region connector tests
+        var single = singleMsg.getBodyAsString();
+        assertTrue(single.contains("Envelope") && single.contains(">pid<"), single);
+    }
+
+    @Test
+    void read_validatedHistoricalDataMarketDocumentsV1_12_returnsDocuments() throws IOException {
+        // Given
+        var envelope = new energy.eddie.cim.v1_12.vhd.Envelope()
+                .withVHDMarketDocument(new energy.eddie.cim.v1_12.vhd.VHDMarketDocument().withMRID("mrid"));
+        var out = new MockHttpOutputMessage();
+        converter.write(new energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments(List.of(envelope)),
+                        MediaType.APPLICATION_XML,
+                        out);
+
+        // When
+        var res = converter.read(energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments.class,
+                                 new MockHttpInputMessage(out.getBodyAsBytes()));
+
+        // Then
+        assertThat(res)
+                .asInstanceOf(InstanceOfAssertFactories.type(energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments.class))
+                .extracting(energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments::getDocuments)
+                .asInstanceOf(InstanceOfAssertFactories.list(energy.eddie.cim.v1_12.vhd.Envelope.class))
+                .singleElement()
+                .extracting(e -> e.getVHDMarketDocument().getMRID())
+                .isEqualTo("mrid");
+    }
+
+    @Test
     void write_connectionStatusMessage_doesNotThrow() {
         // Given
         var csm = new ConnectionStatusMessages(List.of(
@@ -170,6 +229,8 @@ class FallbackXmlMessageConverterTest {
     private static Stream<Arguments> cimAndAgnosticClasses() {
         return Stream.of(
                 Arguments.of(ValidatedHistoricalDataMarketDocuments.class),
+                Arguments.of(energy.eddie.outbound.rest.dto.v1_12.ValidatedHistoricalDataMarketDocuments.class),
+                Arguments.of(energy.eddie.cim.v1_12.vhd.Envelope.class),
                 Arguments.of(ConnectionStatusMessages.class)
         );
     }

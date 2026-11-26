@@ -6,10 +6,10 @@ package energy.eddie.aiida.streamers.mqtt;
 import energy.eddie.aiida.application.information.ApplicationInformation;
 import energy.eddie.aiida.config.AiidaConfiguration;
 import energy.eddie.aiida.models.datasource.DataSource;
-import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.AcceptedOutboundPermission;
 import energy.eddie.aiida.models.permission.ConnectionStatus;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
+import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.FailedToSendEntity;
@@ -21,10 +21,10 @@ import energy.eddie.aiida.services.ApplicationInformationService;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.streamers.ConnectionStatusEventStream;
 import energy.eddie.aiida.streamers.StreamerDependencies;
-import energy.eddie.api.agnostic.aiida.AiidaConnectionStatusMessageDto;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.cim.agnostic.PermissionCommand;
+import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import org.eclipse.paho.mqttv5.client.IMqttToken;
 import org.eclipse.paho.mqttv5.client.MqttAsyncClient;
 import org.eclipse.paho.mqttv5.client.MqttClientException;
@@ -88,13 +88,13 @@ class MqttStreamerTest {
     @Mock
     private ObjectMapper mockMapper;
     @Mock
-    private AiidaConnectionStatusMessageDto mockStatusMessage;
+    private RequestPermissionEnvelope mockPermissionMarketDocument;
     @Mock
     private PermissionLatestRecordMap mockLatestRecordMap;
     @Mock
     private ApplicationInformationService mockApplicationInformationService;
     @Mock
-    private AcceptedPermission permissionMock;
+    private AcceptedOutboundPermission permissionMock;
     @Mock
     private SecretsService mockSecretsService;
     @Mock
@@ -104,9 +104,6 @@ class MqttStreamerTest {
 
     @BeforeEach()
     void setUp() throws Exception {
-        // Permission
-        when(permissionMock.transmissionEnabled()).thenReturn(true);
-
         // Mqtt Streaming Config
         var mqttDto = new MqttDto("tcp://localhost:1883",
                                   PERMISSION_ID.toString(),
@@ -141,7 +138,7 @@ class MqttStreamerTest {
                                                     mockSecretsService,
                                                     mockConnectionStatusEventStream);
 
-        streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), streamingContext);
+        streamer = new MqttStreamer(dependencies, permissionMock, recordPublisher.flux(), true, streamingContext);
     }
 
 
@@ -432,7 +429,7 @@ class MqttStreamerTest {
         streamer.connect();
 
         // When
-        streamer.closeTerminally(mockStatusMessage);
+        streamer.closeTerminally(mockPermissionMarketDocument);
 
         // Then
         verify(mockClient).publish(EXPECTED_STATUS_TOPIC, json, 1, true);
@@ -462,7 +459,7 @@ class MqttStreamerTest {
     }
 
     private void mockDataNeedWithSchemas() {
-        var dataNeed = mock(AiidaLocalDataNeed.class);
+        var dataNeed = mock(OutboundAiidaLocalDataNeed.class);
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.SMART_METER_P1_RAW));
         when(permissionMock.dataNeed()).thenReturn(dataNeed);
     }

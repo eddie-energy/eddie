@@ -27,6 +27,8 @@ They can be seen via the hosted swagger UI under `<host>:<server.port>/outbound-
 For the [development setup](../OPERATION.md#quickstart) this would be:
 - http://localhost:9090/outbound-connectors/rest/swagger-ui/index.html
 
+In JSON, fields without a value are omitted instead of being sent as `null`, matching the XML output.
+
 While OpenAPI provides examples and schemas, it is recommended to use [the client library](../../2-integrating/messages/cim/client-libraries.md) to parse CIM documents, since the OpenAPI generated schemas are not true to the actual schema.
 
 ```http request
@@ -48,6 +50,7 @@ The following table lists all the endpoints and its required scopes, if the sett
 | `/cim_0_82/accounting-point-data-md`         | `cim-accounting-point-data-md:read`         |
 | `/cim_0_82/validated-historical-data-md`     | `cim-validated-historical-data-md:read`     |
 | `/cim_1_04/validated-historical-data-md`     | `cim-validated-historical-data-md:read`     |
+| `/cim_1_12/validated-historical-data-md`     | `cim-validated-historical-data-md:read`     |
 | `/cim_1_04/near-real-time-data-md`           | `cim-near-real-time-data-md:read`           |
 | `/cim_1_12/near-real-time-data-md`           | `cim-near-real-time-data-md:read`           |
 | `/cim_1_12/acknowledgement-md`               | `cim-acknowledgement-md:read`               |

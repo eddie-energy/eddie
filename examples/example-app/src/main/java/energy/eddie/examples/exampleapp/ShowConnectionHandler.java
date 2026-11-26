@@ -4,7 +4,7 @@
 package energy.eddie.examples.exampleapp;
 
 import com.google.inject.Inject;
-import io.javalin.Javalin;
+import io.javalin.config.RoutesConfig;
 import org.jdbi.v3.core.Jdbi;
 import tools.jackson.databind.ObjectMapper;
 
@@ -22,7 +22,7 @@ public class ShowConnectionHandler implements JavalinHandler {
     }
 
     @Override
-    public void register(Javalin app) {
+    public void register(RoutesConfig routes) {
         final var selectConsumptionPointsSql = """
                                 SELECT metering_point,
                        (start_date_time + (ord * INTERVAL '1 second' * CRS.METERING_INTERVAL_SECS))       AS start,
@@ -37,7 +37,7 @@ public class ShowConnectionHandler implements JavalinHandler {
                   AND CONSUMPTION IS NOT NULL
                 ORDER BY START_DATE_TIME, ORD
                 """;
-        app.get("/connections/{connectionId}", ctx -> {
+        routes.get("/connections/{connectionId}", ctx -> {
             var connectionId = ctx.pathParam("connectionId");
             var consumptionRecordSummaries = jdbi.withHandle(h ->
                     h.createQuery("SELECT start_date_time || '##' || metering_interval_secs FROM consumption_records WHERE connection_id=?")

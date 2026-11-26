@@ -46,11 +46,11 @@ public class TopicConfiguration {
      * Used to emit messages to the eligible party.
      *
      * @param cimVersion the version of the CIM that's used
-     * @throws IllegalArgumentException if the cimVersion is not {@code CIM_0_82} or {@code CIM_1_04}
+     * @throws IllegalArgumentException if the cimVersion is not {@code CIM_0_82}, {@code CIM_1_04} or {@code CIM_1_12}
      */
     public String validatedHistoricalDataMarketDocument(TopicStructure.DataModels cimVersion) {
         return switch (cimVersion) {
-            case CIM_0_82, CIM_1_04 -> toTopic(TopicStructure.Direction.EP,
+            case CIM_0_82, CIM_1_04, CIM_1_12 -> toTopic(TopicStructure.Direction.EP,
                                                cimVersion,
                                                TopicStructure.DocumentTypes.VALIDATED_HISTORICAL_DATA_MD);
             default -> throw new IllegalArgumentException("Invalid cim version: " + cimVersion);

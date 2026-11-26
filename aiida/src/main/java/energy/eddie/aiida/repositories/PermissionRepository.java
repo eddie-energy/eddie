@@ -10,45 +10,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Queries permissions of both directions, see {@link InboundPermissionRepository} and
+ * {@link OutboundPermissionRepository} for direction specific queries.
+ */
 public interface PermissionRepository extends JpaRepository<Permission, UUID> {
     List<Permission> findByUserIdOrderByGrantTimeDescRevokeTimeDesc(UUID userId);
 
-    List<Permission> findByMonitoringDataSourceIdIsNotNullAndStatus(PermissionStatus status);
-
     List<Permission> findByMqttStreamingConfigIsNotNullAndStatus(PermissionStatus status);
-
-    Optional<Permission> findByPermissionIdAndUserId(UUID permissionId, UUID userId);
-
-    @Query("""
-            SELECT p
-            FROM Permission p
-            WHERE p.dataSource.id = :dataSourceId
-              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed.DISCRIMINATOR_VALUE
-              AND p.status = :status
-            """)
-    List<Permission> findOutboundByDataSourceIdAndStatus(UUID dataSourceId, PermissionStatus status);
-
-    @Query("""
-            SELECT p
-            FROM Permission p
-            WHERE p.dataSource.id = :dataSourceId
-              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed.DISCRIMINATOR_VALUE
-            """)
-    Optional<Permission> findInboundByDataSourceId(UUID dataSourceId);
-
-    @Query("""
-            SELECT p
-            FROM Permission p
-            WHERE p.userId = :userId
-              AND p.dataNeed.type = energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed.DISCRIMINATOR_VALUE
-              AND p.dataSource IS NOT NULL
-              AND p.status = :status
-            ORDER BY p.grantTime DESC
-            """)
-    List<Permission> findInboundByUserIdAndStatus(UUID userId, PermissionStatus status);
 
     @Query("""
             SELECT CASE WHEN COUNT(p) > 0 THEN true ELSE false END

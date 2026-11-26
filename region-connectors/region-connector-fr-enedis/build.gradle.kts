@@ -45,6 +45,7 @@ dependencies {
     runtimeOnly(libs.hibernate.validator)
     runtimeOnly(libs.jackson.databind.nullable)
 
+    testImplementation(testFixtures(project(":cim")))
     testImplementation(libs.reactor.test)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.junit.mockito)

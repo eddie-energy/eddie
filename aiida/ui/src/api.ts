@@ -9,6 +9,7 @@ import type {
   AiidaDataSource,
   AiidaDataSourceHealthStatus,
   AiidaDataSourceType,
+  AiidaInboundPermission,
   AiidaPendingPermission,
   AiidaPermission,
   AiidaPermissionRequestsDTO,
@@ -137,7 +138,7 @@ export function getConnectionLimitViolations(
   )
 }
 
-export function getAcceptedInboundPermissions(): Promise<AiidaPermission[]> {
+export function getAcceptedInboundPermissions(): Promise<AiidaInboundPermission[]> {
   return fetch('/permissions/inbound/active')
 }
 
