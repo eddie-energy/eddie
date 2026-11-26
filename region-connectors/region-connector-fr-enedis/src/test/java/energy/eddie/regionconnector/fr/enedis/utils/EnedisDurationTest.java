@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class EnedisDurationTest {
 
     @Test
-    void testEnedisDuration_returnsISODurationOfOneDay_ifEndIsInPast() {
+    void testEnedisDuration_returnsMinimumDuration_ifEndIsInPast() {
         // Given
         LocalDate end = LocalDate.now(ZoneOffset.UTC).minusDays(10);
         EnedisDuration duration = new EnedisDuration(end);
@@ -28,7 +28,7 @@ class EnedisDurationTest {
         var res = duration.toString();
 
         // Then
-        assertEquals("P1D", res);
+        assertEquals("P7D", res);
     }
 
     @ParameterizedTest
@@ -48,7 +48,10 @@ class EnedisDurationTest {
     private static Stream<Arguments> testEnedisDuration_returnsISODuration_ifEndIsInFuture_methodSource() {
         LocalDate now = LocalDate.of(2021, 1, 1);
         return Stream.of(
-                Arguments.of(now, now.plusDays(3), "P3D"),
+                Arguments.of(now, now, "P7D"),
+                Arguments.of(now, now.plusDays(3), "P7D"),
+                Arguments.of(now, now.plusDays(7), "P7D"),
+                Arguments.of(now, now.plusDays(8), "P8D"),
                 Arguments.of(now, now.plusYears(3), "P1095D")
         );
     }
