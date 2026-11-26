@@ -26,10 +26,12 @@ import org.apache.http.client.utils.URIBuilder;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -50,7 +52,9 @@ public class PermissionRequestService {
     private final Outbox outbox;
     private final DataNeedCalculationService calculationService;
     private final EnedisSubscribedServicesApi enedisApiClient;
+    private final Clock clock;
 
+    @Autowired
     public PermissionRequestService(
             FrPermissionRequestRepository repository,
             EnedisConfiguration configuration,
@@ -58,11 +62,23 @@ public class PermissionRequestService {
             DataNeedCalculationService calculationService,
             EnedisSubscribedServicesApi enedisApiClient
     ) {
+        this(repository, configuration, outbox, calculationService, enedisApiClient, Clock.system(ZONE_ID_FR));
+    }
+
+    PermissionRequestService(
+            FrPermissionRequestRepository repository,
+            EnedisConfiguration configuration,
+            Outbox outbox,
+            DataNeedCalculationService calculationService,
+            EnedisSubscribedServicesApi enedisApiClient,
+            Clock clock
+    ) {
         this.repository = repository;
         this.configuration = configuration;
         this.outbox = outbox;
         this.calculationService = calculationService;
         this.enedisApiClient = enedisApiClient;
+        this.clock = clock;
     }
 
     public CreatedPermissionRequest createPermissionRequest(PermissionRequestForCreation permissionRequestForCreation) throws DataNeedNotFoundException, UnsupportedDataNeedException {
@@ -128,7 +144,7 @@ public class PermissionRequestService {
                                               : response.services())
                                       .onErrorReturn(List.of())
                                       .block();
-        var usagePointIds = activeUsagePointIds(services);
+        var usagePointIds = activeUsagePointIds(services, LocalDate.now(clock.withZone(ZONE_ID_FR)));
         if (usagePointIds.isEmpty()) {
             LOGGER.warn("No usage point id found for authorization id '{}'", authorizationId);
             outbox.commit(new FrSimpleEvent(permissionId, PermissionProcessStatus.INVALID));
@@ -214,11 +230,10 @@ public class PermissionRequestService {
      * started services first. Enedis returns one service per measure type and direction, so a usage point is usually
      * part of several services.
      */
-    private static List<String> activeUsagePointIds(@Nullable List<SubscribedService> services) {
+    private static List<String> activeUsagePointIds(@Nullable List<SubscribedService> services, LocalDate today) {
         if (services == null) {
             return List.of();
         }
-        var today = LocalDate.now(ZONE_ID_FR);
         return services.stream()
                        .filter(service -> service.pointId() != null)
                        .filter(service -> service.state() == null || service.state() == ServiceState.ACTIVE)

@@ -16,6 +16,7 @@ import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
 import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.fr.enedis.CimTestConfiguration;
 import energy.eddie.regionconnector.fr.enedis.client.EnedisApiClient;
+import energy.eddie.regionconnector.fr.enedis.config.EnedisConfiguration;
 import energy.eddie.regionconnector.fr.enedis.dto.Authorization;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceState;
 import energy.eddie.regionconnector.fr.enedis.dto.subscription.ServiceSubscriptionsResponse;
@@ -42,6 +43,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import reactor.core.publisher.Mono;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -407,6 +410,39 @@ class PermissionRequestServiceTest {
         assertEquals(Authorization.INVALID, res);
         verify(outbox).commit(argThat(event -> event.status() == PermissionProcessStatus.INVALID));
         verify(outbox, never()).commit(isA(FrAcceptedEvent.class));
+    }
+
+    @Test
+    void testAuthorizePermissionRequest_usesFrenchDateOfClock_toFilterEndedServices() throws PermissionNotFoundException {
+        // Given
+        // 23:30 UTC on 10 March is already 11 March in France
+        var clock = Clock.fixed(Instant.parse("2026-03-10T23:30:00Z"), ZoneOffset.UTC);
+        var service = new PermissionRequestService(repository,
+                                                   new EnedisConfiguration("client-id",
+                                                                           "client-secret",
+                                                                           "http://localhost"),
+                                                   outbox,
+                                                   calculationService,
+                                                   enedisApiClient,
+                                                   clock);
+        var start = LocalDate.of(2026, 1, 1);
+        when(repository.findByPermissionId("pid"))
+                .thenReturn(Optional.of(permissionRequestWithGranularity(Granularity.PT30M)));
+        when(enedisApiClient.getSubscribedServices(999999999L))
+                .thenReturn(Mono.just(new ServiceSubscriptionsResponse(2L, List.of(
+                        service("endsToday", ServiceState.ACTIVE, start, LocalDate.of(2026, 3, 11)),
+                        service("endedYesterday", ServiceState.ACTIVE, start, LocalDate.of(2026, 3, 10))
+                ))));
+        var acceptedCaptor = ArgumentCaptor.forClass(FrAcceptedEvent.class);
+
+        // When
+        var res = service.authorizePermissionRequest("pid", 999999999L);
+
+        // Then
+        assertEquals(Authorization.ACCEPTED, res);
+        verify(outbox).commit(acceptedCaptor.capture());
+        verify(outbox, never()).commit(isA(FrCreatedEvent.class));
+        assertEquals("endsToday", acceptedCaptor.getValue().usagePointId());
     }
 
     @Test
