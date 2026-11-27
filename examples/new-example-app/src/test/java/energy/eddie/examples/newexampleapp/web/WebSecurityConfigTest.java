@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.examples.newexampleapp.web;
@@ -23,8 +23,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 
@@ -91,7 +90,7 @@ class WebSecurityConfigTest {
         String setCookieHeader = result.getResponse().getHeader("Set-Cookie");
 
         // Check if the JSESSIONID cookie is empty
-        assert setCookieHeader != null;
+        assertNotNull(setCookieHeader);
         assertTrue(setCookieHeader.matches("JSESSIONID=;.*"));
     }
 }

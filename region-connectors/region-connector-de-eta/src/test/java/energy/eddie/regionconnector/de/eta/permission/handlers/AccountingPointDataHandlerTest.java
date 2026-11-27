@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.de.eta.permission.handlers;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
@@ -7,20 +10,14 @@ import energy.eddie.dataneeds.services.DataNeedsService;
 import energy.eddie.regionconnector.de.eta.auth.AuthTokenResponse;
 import energy.eddie.regionconnector.de.eta.auth.EtaAuthService;
 import energy.eddie.regionconnector.de.eta.client.EtaPlusApiClient;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.AuthenticationException;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.DeserializationException;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusBadRequestException;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusForbiddenException;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusNotFoundException;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusServerException;
-import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.EtaPlusTimeoutException;
+import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusClientExceptions.*;
 import energy.eddie.regionconnector.de.eta.exceptions.EtaPlusOperationExceptions.RateLimitException;
 import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCredentials;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
+import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
 import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
-import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
 import energy.eddie.regionconnector.de.eta.providers.AccountingPointDataStream;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusAccountingPointData;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -34,15 +31,8 @@ import reactor.core.publisher.Mono;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 class AccountingPointDataHandlerTest {
 
@@ -99,7 +89,8 @@ class AccountingPointDataHandlerTest {
     @Test
     void nonApDataNeed_skipsFetch() {
         when(repository.findByPermissionId(PID)).thenReturn(Optional.of(pr));
-        when(dataNeedsService.getById(DATA_NEED_ID)).thenReturn(mock(ValidatedHistoricalDataDataNeed.class));
+        var validatedHistoricalDataDataNeed = mock(ValidatedHistoricalDataDataNeed.class);
+        when(dataNeedsService.getById(DATA_NEED_ID)).thenReturn(validatedHistoricalDataDataNeed);
 
         emit(new SimpleEvent(PID, PermissionProcessStatus.ACCEPTED));
 

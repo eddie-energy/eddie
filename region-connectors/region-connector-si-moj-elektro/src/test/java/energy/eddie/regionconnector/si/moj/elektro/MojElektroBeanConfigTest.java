@@ -12,18 +12,15 @@ import energy.eddie.regionconnector.shared.event.sourcing.handlers.integration.P
 import energy.eddie.regionconnector.si.moj.elektro.permission.request.MojElektroPermissionRequest;
 import energy.eddie.regionconnector.si.moj.elektro.persistence.SiPermissionEventRepository;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = MojElektroBeanConfig.class)
 class MojElektroBeanConfigTest {
 

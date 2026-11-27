@@ -79,7 +79,7 @@ class WebPontonConnectionControllerTest {
     void givenCmNotification_whenPostToEndpoint_thenReturnNoContent() throws Exception {
         // Given
         InputStream xml = classLoader.getResourceAsStream("xsd/cmnotification/_01p20/accepted_ccmo.xml");
-        assert xml != null;
+        assertNotNull(xml);
         controller.withCMNotificationHandler((cmNotification, notificationMessageType) -> {
             assertAll(
                     () -> assertEquals(NotificationMessageType.CCMO_ACCEPT, notificationMessageType),
@@ -103,7 +103,7 @@ class WebPontonConnectionControllerTest {
     void givenCmRevoke_whenPostToEndpoint_thenReturnNoContent() throws Exception {
         // Given
         InputStream xml = classLoader.getResourceAsStream("xsd/cmrevoke/_01p10/cmrevoke.xml");
-        assert xml != null;
+        assertNotNull(xml);
         controller.withCMRevokeHandler(message -> {
             assertNotNull(message);
             return new InboundMessageResult(InboundStatusEnum.SUCCESS, "");
@@ -126,7 +126,7 @@ class WebPontonConnectionControllerTest {
         InputStream xml = classLoader.getResourceAsStream(
                 "xsd/consumptionrecord/_01p41/consumptionrecord_quater-hourly.xml"
         );
-        assert xml != null;
+        assertNotNull(xml);
         controller.withConsumptionRecordHandler(message -> {
             assertNotNull(message);
             return new InboundMessageResult(InboundStatusEnum.SUCCESS, "");
@@ -147,7 +147,7 @@ class WebPontonConnectionControllerTest {
     void givenMasterData_whenPostToEndpoint_thenReturnNoContent() throws Exception {
         // Given
         InputStream xml = classLoader.getResourceAsStream("xsd/masterdata/_01p32/masterdata.xml");
-        assert xml != null;
+        assertNotNull(xml);
         controller.withMasterDataHandler(message -> {
             assertNotNull(message);
             return new InboundMessageResult(InboundStatusEnum.SUCCESS, "");
@@ -168,7 +168,7 @@ class WebPontonConnectionControllerTest {
     void givenCpNotification_whenPostToEndpoint_thenReturnNoContent() throws Exception {
         // Given
         InputStream xml = classLoader.getResourceAsStream("xsd/cpnotification/_01p12/answer_pt.xml");
-        assert xml != null;
+        assertNotNull(xml);
         controller.withCPNotificationHandler((message, type) -> {
             assertAll(
                     () -> assertEquals(CPNotificationMessageType.ANTWORT_PT, type),
@@ -192,7 +192,7 @@ class WebPontonConnectionControllerTest {
     void givenECMPList_whenPostToEndpoint_thenReturnNoContent() throws Exception {
         // Given
         InputStream xml = classLoader.getResourceAsStream("xsd/ecmplist/_01p10/ecmplist.xml");
-        assert xml != null;
+        assertNotNull(xml);
         controller.withECMPListHandler(message -> {
             assertNotNull(message);
             return new InboundMessageResult(InboundStatusEnum.SUCCESS, "");

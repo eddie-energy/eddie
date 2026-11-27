@@ -117,7 +117,7 @@ class JwtUtilTest {
     @Test
     void createJwt_returnsJwtWithOnlyNewPermissionId() throws JwtCreationFailedException, BadJOSEException, ParseException, JOSEException {
         // Given
-        String[] newPermissionId = new String[]{"myTestId1", "myTestId2"};
+        String[] newPermissionId = {"myTestId1", "myTestId2"};
 
         // When
         var jwt = jwtUtil.createJwt("aiida", newPermissionId);

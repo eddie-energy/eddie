@@ -31,7 +31,7 @@ class EdaECMPList01p10InboundMessageFactoryTest {
         // Given
         ClassLoader classLoader = EdaECMPList01p10InboundMessageFactory.class.getClassLoader();
         var inputStream = classLoader.getResourceAsStream("xsd/ecmplist/_01p10/ecmplist.xml");
-        assert inputStream != null;
+        assertNotNull(inputStream);
         var factory = new EdaECMPList01p10InboundMessageFactory(marshaller);
 
         // When

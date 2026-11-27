@@ -59,7 +59,7 @@ public class SmartGatewaysAdapter extends MqttDataSourceAdapter<SmartGatewaysDat
                     timeoutFuture = scheduler.schedule(() -> {
                         LOGGER.warn("Batch timeout reached. Processing incomplete batch with {} entries.",
                                     batchBuffer.size());
-                        synchronized (SmartGatewaysAdapter.this) {
+                        synchronized (this) {
                             processBatch(batchBuffer);
                             batchBuffer.clear();
                         }

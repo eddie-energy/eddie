@@ -48,9 +48,9 @@ public enum AuthorizationStatus {
     public Object toJson() {
         return new Object() {
             @JsonProperty("id")
-            public final int id = AuthorizationStatus.this.id;
+            public final int statusId = AuthorizationStatus.this.id;
             @JsonProperty("description")
-            public final String description = AuthorizationStatus.this.description;
+            public final String statusDescription = AuthorizationStatus.this.description;
         };
     }
 }

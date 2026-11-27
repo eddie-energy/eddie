@@ -58,7 +58,8 @@ class PermissionFacadeControllerTest {
 
     @Test
     void applicationInformation_returnsApplicationInformation() throws Exception {
-        when(applicationInformationService.applicationInformation()).thenReturn(mock(ApplicationInformation.class));
+        var applicationInformation = mock(ApplicationInformation.class);
+        when(applicationInformationService.applicationInformation()).thenReturn(applicationInformation);
 
         mockMvc.perform(get("/api/application-information")).andExpect(status().isOk());
     }

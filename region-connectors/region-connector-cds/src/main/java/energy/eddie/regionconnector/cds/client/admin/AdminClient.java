@@ -39,17 +39,17 @@ public class AdminClient {
             Caffeine.newBuilder()
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .maximumSize(100)
-                    .buildAsync(AdminClient.this::credentialsLoader);
+                    .buildAsync(this::credentialsLoader);
     private final AsyncLoadingCache<Tuple2<URI, CredentialsWithoutRefreshToken>, CarbonDataSpec200Response> carbonDataSpecCache =
             Caffeine.newBuilder()
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .maximumSize(100)
-                    .buildAsync(AdminClient.this::carbonDataSpecLoader);
+                    .buildAsync(this::carbonDataSpecLoader);
     private final AsyncLoadingCache<Tuple2<URI, CredentialsWithoutRefreshToken>, OAuthAuthorizationServer200Response> oauthMetadataSpecCache =
             Caffeine.newBuilder()
                     .expireAfterWrite(10, TimeUnit.MINUTES)
                     .maximumSize(100)
-                    .buildAsync(AdminClient.this::oauthMetadataSpecLoader);
+                    .buildAsync(this::oauthMetadataSpecLoader);
 
     public AdminClient(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();

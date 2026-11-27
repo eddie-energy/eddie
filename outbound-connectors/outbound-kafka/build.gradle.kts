@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import energy.eddie.configureJavaCompileWithErrorProne
@@ -24,13 +24,11 @@ dependencies {
 
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.kafka)
+    implementation(libs.jakarta.annotation.api)
+    implementation(libs.reactor.core)
 
     // Declare specific version of vulnerable lz4-java required by Kafka 4.2.x
     runtimeOnly(libs.lz4.java)
-
-    implementation(libs.jakarta.annotation.api)
-
-    implementation(libs.reactor.core)
 
     testImplementation(libs.spring.boot.starter.test)
     testImplementation(libs.spring.kafka.test)

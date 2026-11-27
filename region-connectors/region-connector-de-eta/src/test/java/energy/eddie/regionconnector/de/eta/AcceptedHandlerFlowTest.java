@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-License-Identifier: Apache-2.0
+
 package energy.eddie.regionconnector.de.eta;
 
 import energy.eddie.api.agnostic.Granularity;
@@ -13,10 +16,10 @@ import energy.eddie.regionconnector.de.eta.permission.credentials.DePermissionCr
 import energy.eddie.regionconnector.de.eta.permission.handlers.AcceptedHandler;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequest;
 import energy.eddie.regionconnector.de.eta.permission.request.DePermissionRequestBuilder;
-import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
-import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.permission.request.events.LatestMeterReadingEvent;
 import energy.eddie.regionconnector.de.eta.permission.request.events.SimpleEvent;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionCredentialsRepository;
+import energy.eddie.regionconnector.de.eta.persistence.DePermissionRequestRepository;
 import energy.eddie.regionconnector.de.eta.providers.EtaPlusMeteredData;
 import energy.eddie.regionconnector.de.eta.providers.ValidatedHistoricalDataStream;
 import energy.eddie.regionconnector.shared.event.sourcing.EventBus;
@@ -65,16 +68,15 @@ class AcceptedHandlerFlowTest {
     @Mock
     private DePermissionCredentialsRepository credentialsRepository;
 
-    private ValidatedHistoricalDataStream realStream;
-
     private AcceptedHandler acceptedHandler;
 
     @BeforeEach
     void setUp() {
-        realStream = new ValidatedHistoricalDataStream(outbox);
+        var realStream = new ValidatedHistoricalDataStream(outbox);
 
         when(eventBus.filteredFlux(PermissionProcessStatus.ACCEPTED)).thenReturn(Flux.empty());
-        lenient().when(dataNeedsService.getById(anyString())).thenReturn(mock(ValidatedHistoricalDataDataNeed.class));
+        var validatedHistoricalDataDataNeed = mock(ValidatedHistoricalDataDataNeed.class);
+        lenient().when(dataNeedsService.getById(anyString())).thenReturn(validatedHistoricalDataDataNeed);
 
         acceptedHandler = new AcceptedHandler(
                 eventBus,
@@ -309,7 +311,8 @@ class AcceptedHandlerFlowTest {
         DePermissionRequest permissionRequest = buildDefaultRequest(permissionId, start, end);
 
         when(repository.findByPermissionId(permissionId)).thenReturn(Optional.of(permissionRequest));
-        when(dataNeedsService.getById(anyString())).thenReturn(mock(AccountingPointDataNeed.class));
+        var accountingPointDataNeed = mock(AccountingPointDataNeed.class);
+        when(dataNeedsService.getById(anyString())).thenReturn(accountingPointDataNeed);
 
         acceptedHandler.accept(new SimpleEvent(permissionId, PermissionProcessStatus.ACCEPTED));
 

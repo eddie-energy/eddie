@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.services;
@@ -11,14 +11,14 @@ import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionReque
 import energy.eddie.regionconnector.at.eda.persistence.JpaPermissionRequestRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Component
+@Service
 public class IdentifiableConsumptionRecordService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableConsumptionRecordService.class);
     private final JpaPermissionRequestRepository repository;

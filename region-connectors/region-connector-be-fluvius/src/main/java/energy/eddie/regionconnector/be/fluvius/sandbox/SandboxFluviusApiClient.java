@@ -13,10 +13,11 @@ import energy.eddie.regionconnector.be.fluvius.client.model.v3.mandate.mock.Crea
 import energy.eddie.regionconnector.be.fluvius.client.model.v3.shorturlidentifier.FluviusSessionCreateResultResponseModelApiDataResponse;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
 import energy.eddie.regionconnector.be.fluvius.persistence.BePermissionRequestRepository;
-import jakarta.annotation.Priority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -24,7 +25,7 @@ import java.time.ZonedDateTime;
 
 @Component
 @ConditionalOnProperty(name = "region-connector.be.fluvius.mock-mandates", havingValue = "true")
-@Priority(value = 1)
+@Primary
 public class SandboxFluviusApiClient implements FluviusApi {
     private static final Logger LOGGER = LoggerFactory.getLogger(SandboxFluviusApiClient.class);
     private final FluviusApi api;
@@ -32,7 +33,7 @@ public class SandboxFluviusApiClient implements FluviusApi {
     private final DataNeedsService dataNeedsService;
 
     public SandboxFluviusApiClient(
-            FluviusApi api,
+            @Qualifier("fluviusApiClient") FluviusApi api,
             BePermissionRequestRepository repository,
             @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") DataNeedsService dataNeedsService
     ) {
