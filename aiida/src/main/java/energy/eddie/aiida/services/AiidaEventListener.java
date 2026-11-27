@@ -4,16 +4,11 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
-import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
-import energy.eddie.aiida.errors.SecretLoadingException;
-import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
-import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.InboundDataSourceInUseException;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
-import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.api.agnostic.process.model.PermissionStateTransitionException;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
@@ -32,7 +27,6 @@ public class AiidaEventListener {
     private final DataSourceService dataSourceService;
     private final PermissionService permissionService;
     private final ProvisioningService provisioningService;
-    private final InboundPermissionRepository inboundPermissionRepository;
     private final OutboundPermissionRepository outboundPermissionRepository;
     private final PermissionScheduler permissionScheduler;
 
@@ -43,41 +37,14 @@ public class AiidaEventListener {
             DataSourceService dataSourceService,
             PermissionService permissionService,
             ProvisioningService provisioningService,
-            InboundPermissionRepository inboundPermissionRepository,
             OutboundPermissionRepository outboundPermissionRepository,
             PermissionScheduler permissionScheduler
     ) {
         this.dataSourceService = dataSourceService;
         this.permissionService = permissionService;
         this.provisioningService = provisioningService;
-        this.inboundPermissionRepository = inboundPermissionRepository;
         this.outboundPermissionRepository = outboundPermissionRepository;
         this.permissionScheduler = permissionScheduler;
-    }
-
-    @Transactional
-    @EventListener
-    protected void createInboundDataSource(InboundPermissionAcceptEvent event) {
-        LOGGER.trace("Received InboundPermissionCreationEvent: {}", event);
-        var permissionId = event.permissionId();
-        try {
-            var permission = inboundPermissionRepository.findById(permissionId)
-                                                        .orElseThrow(() -> new PermissionNotFoundException(permissionId));
-            var inboundDataSource = dataSourceService.createInboundDataSource(permission);
-
-            LOGGER.debug("Set data source {} to permission {}", inboundDataSource, permission);
-            permission.setDataSource(inboundDataSource);
-
-            dataSourceService.startDataSource(inboundDataSource);
-        } catch (PermissionNotFoundException e) {
-            LOGGER.error("No inbound permission found with id {}", permissionId, e);
-        } catch (SecretStoringException | SecretLoadingException e) {
-            LOGGER.error("Could not create secrets for inbound datasource.", e);
-        } catch (MissingMqttStreamingConfigException e) {
-            LOGGER.error(
-                    "Could not create inbound data source because its permission has no MQTT streaming configuration.",
-                    e);
-        }
     }
 
     /**

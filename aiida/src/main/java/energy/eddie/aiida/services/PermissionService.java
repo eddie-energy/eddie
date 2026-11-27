@@ -3,14 +3,15 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.dtos.permission.*;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -227,8 +228,7 @@ public class PermissionService {
         }
 
         permission = accept(permission, acceptDto);
-        // creates the inbound data source, which is required to start the permission
-        aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
+        createInboundDataSource(permission);
         permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
         return permission;
     }
@@ -608,6 +608,23 @@ public class PermissionService {
 
     private boolean hasSchemaOverlap(Set<AiidaSchema> requiredSchemas, Set<AiidaSchema> availableSchemas) {
         return requiredSchemas.stream().anyMatch(availableSchemas::contains);
+    }
+
+    private void createInboundDataSource(InboundPermission permission) {
+        try {
+            var inboundDataSource = dataSourceService.createInboundDataSource(permission);
+
+            LOGGER.debug("Set data source {} to permission {}", inboundDataSource, permission);
+            permission.setDataSource(inboundDataSource);
+
+            dataSourceService.startDataSource(inboundDataSource);
+        } catch (SecretStoringException | SecretLoadingException e) {
+            LOGGER.error("Could not create secrets for inbound datasource.", e);
+        } catch (MissingMqttStreamingConfigException e) {
+            LOGGER.error(
+                    "Could not create inbound data source because its permission has no MQTT streaming configuration.",
+                    e);
+        }
     }
 
     private void removeInboundDataSourceIfExists(Permission permission) {

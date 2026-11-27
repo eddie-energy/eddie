@@ -3,7 +3,6 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
 import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.dtos.permission.AcceptInboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.AcceptOutboundPermissionDto;
@@ -12,6 +11,7 @@ import energy.eddie.aiida.dtos.permission.RejectPermissionDto;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static energy.eddie.aiida.config.AiidaConfiguration.AIIDA_ZONE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -441,11 +440,11 @@ class PermissionServiceTest {
     }
 
     @Test
-    void givenInboundPermission_acceptInboundPermission_persistsFormat_andPublishesInboundAcceptEvent() throws Exception {
+    void givenInboundPermission_acceptInboundPermission_persistsFormat_andCreatesInboundDataSource() throws Exception {
         // Given
         stubInboundLocalDataNeed(false);
         stubSuccessfulAccept();
-        createInboundDataSourceOnAcceptEvent();
+        when(mockDataSourceService.createInboundDataSource(any())).thenReturn(mockInboundDataSource);
 
         // When
         service.acceptInboundPermission(permissionId1, inboundAcceptDto(InboundMessageFormat.OPENADR_3_1));
@@ -455,8 +454,24 @@ class PermissionServiceTest {
         verify(mockPermissionRepository).save(permissionCaptor.capture());
         var permission = permissionCaptor.getValue();
         assertEquals(InboundMessageFormat.OPENADR_3_1, ((InboundPermission) permission).inboundMessageFormat());
-        verify(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
+        assertEquals(mockInboundDataSource, permission.dataSource());
+        verify(mockDataSourceService).startDataSource(mockInboundDataSource);
         verify(mockPermissionScheduler).scheduleOrStart(argThat(acceptedPermission -> acceptedPermission.id().equals(permissionId1)));
+    }
+
+    @Test
+    void givenInboundDataSourceCreationFails_acceptInboundPermission_doesNotStartDataSource() throws Exception {
+        // Given
+        stubInboundLocalDataNeed(false);
+        stubSuccessfulAccept();
+        when(mockDataSourceService.createInboundDataSource(any()))
+                .thenThrow(new MissingMqttStreamingConfigException(null));
+        var acceptDto = inboundAcceptDto(null);
+
+        // When, Then
+        assertThrows(IllegalStateException.class, () -> service.acceptInboundPermission(permissionId1, acceptDto));
+        verify(mockDataSourceService, never()).startDataSource(any());
+        verifyNoInteractions(mockPermissionScheduler);
     }
 
     @Test
@@ -464,7 +479,7 @@ class PermissionServiceTest {
         // Given
         stubInboundLocalDataNeed(true);
         stubSuccessfulAccept(minLimitKw, maxLimitKw);
-        createInboundDataSourceOnAcceptEvent();
+        when(mockDataSourceService.createInboundDataSource(any())).thenReturn(mockInboundDataSource);
 
         // When
         service.acceptInboundPermission(permissionId1, inboundAcceptDto(null));
@@ -736,21 +751,6 @@ class PermissionServiceTest {
         lenient().when(mockInboundAiidaLocalDataNeed.supportsConnectionLimits()).thenReturn(supportsConnectionLimits);
         lenient().when(mockInboundAiidaLocalDataNeed.transmissionSchedule())
                  .thenReturn(CronExpression.parse("*/5 * * * * *"));
-    }
-
-    /**
-     * Mirrors the synchronous event listener, which creates the inbound data source of an accepted inbound permission.
-     */
-    private void createInboundDataSourceOnAcceptEvent() {
-        var savedPermission = new AtomicReference<Permission>();
-        when(mockPermissionRepository.save(any(Permission.class))).then(invocation -> {
-            savedPermission.set(invocation.getArgument(0));
-            return invocation.getArgument(0);
-        });
-        doAnswer(invocation -> {
-            savedPermission.get().setDataSource(mockInboundDataSource);
-            return null;
-        }).when(mockAiidaEventPublisher).publishEvent(any(InboundPermissionAcceptEvent.class));
     }
 
     private void stubSuccessfulAccept() throws InvalidUserException {
