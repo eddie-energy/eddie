@@ -58,6 +58,10 @@ export type AiidaDataSource = {
   deviceId?: string
   //DatasourceType = SIMULATION
   pollingInterval?: number
+  minConsumptionWatt?: number
+  maxConsumptionWatt?: number
+  minProductionWatt?: number
+  maxProductionWatt?: number
   //DatasourceType = SINAPSI_ALFA
   activationKey?: string
 }
