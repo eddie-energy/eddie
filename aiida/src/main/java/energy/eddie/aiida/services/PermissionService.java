@@ -128,6 +128,43 @@ public class PermissionService {
     }
 
     /**
+     * Revokes all accepted outbound permissions streaming from the data source, e.g. before the data source is deleted.
+     * Permissions that cannot be revoked are skipped and logged.
+     *
+     * @param dataSourceId ID of the data source whose permissions should be revoked.
+     */
+    @Transactional
+    public void revokePermissionsOfDataSource(UUID dataSourceId) {
+        var revocationCount = 0;
+
+        for (var permission : outboundPermissionRepository.findByDataSourceIdAndStatus(dataSourceId, ACCEPTED)) {
+            var permissionId = permission.id();
+            try {
+                revokePermission(permissionId);
+                revocationCount++;
+            } catch (PermissionNotFoundException e) {
+                LOGGER.warn(
+                        "Permission {} associated with deleted data source not found in database anymore, skipping revocation.",
+                        permissionId);
+            } catch (PermissionStateTransitionException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because it is not in an eligible state.",
+                        permissionId);
+            } catch (InboundDataSourceInUseException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because its inbound data source is still used by outbound permissions.",
+                        permissionId);
+            } catch (UnauthorizedException | InvalidUserException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because the current user is not authorized to do so.",
+                        permissionId);
+            }
+        }
+
+        LOGGER.info("Revoked {} permission(s) of data source {}.", revocationCount, dataSourceId);
+    }
+
+    /**
      * Fetches the details of the permission requests contained in an AIIDA code from the respective EDDIE framework and
      * validates whether this AIIDA instance can fulfill them. Nothing is persisted, so the AIIDA code can be used again
      * as long as the permission requests were neither accepted nor rejected. If a permission request cannot be

@@ -12,7 +12,6 @@ import energy.eddie.aiida.config.datasource.it.SinapsiAlfaConfiguration;
 import energy.eddie.aiida.dtos.datasource.DataSourceDto;
 import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.it.SinapsiAlfaDataSourceDto;
-import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.errors.SecretDeletionException;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
@@ -30,8 +29,6 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
-import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretType;
 import energy.eddie.aiida.services.secrets.SecretsService;
@@ -47,14 +44,12 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 @Service
 public class DataSourceService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceService.class);
 
     private final DataSourceRepository repository;
-    private final AiidaEventPublisher aiidaEventPublisher;
     private final OutboundAggregator outboundAggregator;
     private final InboundAggregator inboundAggregator;
     private final AuthService authService;
@@ -76,7 +71,6 @@ public class DataSourceService {
             ObjectMapper objectMapper,
             BCryptPasswordEncoder bCryptPasswordEncoder,
             SinapsiAlfaConfiguration sinapsiAlfaConfiguration,
-            AiidaEventPublisher aiidaEventPublisher,
             SecretsService secretsService,
             InboundMqttClientRegistry inboundMqttClientRegistry
     ) {
@@ -88,7 +82,6 @@ public class DataSourceService {
         this.objectMapper = objectMapper;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.sinapsiAlfaConfiguration = sinapsiAlfaConfiguration;
-        this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
         this.inboundMqttClientRegistry = inboundMqttClientRegistry;
     }
@@ -170,7 +163,6 @@ public class DataSourceService {
         repository.findById(dataSourceId)
                   .ifPresentOrElse(
                           dataSource -> {
-                              publishDataSourceDeletionEventIfOutboundDataSource(dataSource);
                               var dataSourceName = dataSource.name();
                               repository.delete(dataSource);
                               deleteDataSourceSecrets(dataSource);
@@ -290,17 +282,6 @@ public class DataSourceService {
             secretsService.deleteSecret(alias);
         } catch (SecretDeletionException e) {
             LOGGER.error("Failed to delete secret with alias {}", alias, e);
-        }
-    }
-
-    private void publishDataSourceDeletionEventIfOutboundDataSource(DataSource dataSource) {
-        if (dataSource.type() != DataSourceType.INBOUND) {
-            var permissionIds = dataSource.permissions()
-                                          .stream()
-                                          .map(Permission::id)
-                                          .collect(Collectors.toSet());
-
-            aiidaEventPublisher.publishEvent(new DataSourceDeletionEvent(permissionIds));
         }
     }
 

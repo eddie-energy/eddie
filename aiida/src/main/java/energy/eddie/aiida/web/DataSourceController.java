@@ -10,12 +10,15 @@ import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
+import energy.eddie.aiida.errors.datasource.InboundDataSourceDeletionNotAllowedException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.errors.datasource.mqtt.it.SinapsiAlfaEmptyConfigException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.DataSourceIcon;
 import energy.eddie.aiida.models.datasource.DataSourceType;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.services.DataSourceService;
+import energy.eddie.aiida.services.PermissionService;
 import energy.eddie.api.agnostic.EddieApiError;
 import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,11 +47,13 @@ import java.util.UUID;
 public class DataSourceController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceController.class);
-    private final DataSourceService service;
+    private final DataSourceService dataSourceService;
+    private final PermissionService permissionService;
 
     @Autowired
-    public DataSourceController(DataSourceService service) {
-        this.service = service;
+    public DataSourceController(DataSourceService dataSourceService, PermissionService permissionService) {
+        this.dataSourceService = dataSourceService;
+        this.permissionService = permissionService;
     }
 
     @Operation(summary = "Get all outbound data source types", description = "Retrieve all available outbound data source types.",
@@ -100,8 +105,8 @@ public class DataSourceController {
             @Parameter(description = "Filter data sources by physical meter ID")
             @RequestParam(required = false) String meterId) throws InvalidUserException {
         var dataSources = meterId != null
-                ? service.getOutboundDataSourcesByMeterId(meterId)
-                : service.getOutboundDataSources();
+                ? dataSourceService.getOutboundDataSourcesByMeterId(meterId)
+                : dataSourceService.getOutboundDataSources();
 
         return ResponseEntity.ok(dataSources);
     }
@@ -130,23 +135,31 @@ public class DataSourceController {
             return ResponseEntity.badRequest().build();
         }
 
-        var dataSourceSecrets = service.addDataSource(dataSource);
+        var dataSourceSecrets = dataSourceService.addDataSource(dataSource);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(dataSourceSecrets);
     }
 
-    @Operation(summary = "Delete a datasource", description = "Delete a datasource by ID.",
+    @Operation(summary = "Delete a datasource", description = "Delete a datasource by ID. Inbound data sources cannot be deleted, they are removed when their permission ends.",
             operationId = "deleteDatasource", tags = {"datasource"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Datasource deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Deleting an inbound data source is not allowed.",
+                    content = @Content(schema = @Schema(implementation = EddieApiError.class))),
             @ApiResponse(responseCode = "404", description = "Datasource not found",
                     content = @Content(schema = @Schema(implementation = EddieApiError.class)))
     })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDataSource(@PathVariable("id") UUID dataSourceId) {
+    public ResponseEntity<Void> deleteDataSource(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException, InboundDataSourceDeletionNotAllowedException {
         LOGGER.info("Deleting datasource with ID: {}", dataSourceId);
 
-        service.deleteDataSource(dataSourceId);
+        // an inbound permission cannot exist without its data source
+        if (dataSourceService.dataSourceByIdOrThrow(dataSourceId) instanceof InboundDataSource) {
+            throw new InboundDataSourceDeletionNotAllowedException(dataSourceId);
+        }
+
+        permissionService.revokePermissionsOfDataSource(dataSourceId);
+        dataSourceService.deleteDataSource(dataSourceId);
 
         return ResponseEntity.ok().build();
     }
@@ -169,7 +182,7 @@ public class DataSourceController {
     ) throws ModbusConnectionException, DataSourceNotFoundException {
         LOGGER.info("Updating datasource with ID: {} - {}", dataSourceId, dataSource);
 
-        return ResponseEntity.ok(service.updateDataSource(dataSource));
+        return ResponseEntity.ok(dataSourceService.updateDataSource(dataSource));
     }
 
     @Operation(summary = "Get datasource by ID", description = "Retrieve a datasource by its ID.",
@@ -184,7 +197,7 @@ public class DataSourceController {
     public ResponseEntity<DataSource> getDataSourceById(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException {
         LOGGER.info("Fetching datasource with ID: {}", dataSourceId);
 
-        return ResponseEntity.ok(service.dataSourceByIdOrThrow(dataSourceId));
+        return ResponseEntity.ok(dataSourceService.dataSourceByIdOrThrow(dataSourceId));
     }
 
     @Operation(summary = "Update enabled state of a datasource",
@@ -204,7 +217,7 @@ public class DataSourceController {
     ) throws DataSourceNotFoundException {
         LOGGER.info("Updating enabled state of datasource with ID: {} - {}", dataSourceId, enabled);
 
-        service.updateEnabledState(dataSourceId, enabled);
+        dataSourceService.updateEnabledState(dataSourceId, enabled);
 
         return ResponseEntity.ok().build();
     }
@@ -225,7 +238,7 @@ public class DataSourceController {
     public ResponseEntity<DataSourceSecretsDto> regenerateSecrets(@PathVariable("id") UUID dataSourceId) throws DataSourceNotFoundException, DataSourceSecretGenerationNotSupportedException {
         LOGGER.info("Regenerating secrets for datasource with ID: {}", dataSourceId);
 
-        var dataSourceSecrets = service.regenerateSecrets(dataSourceId);
+        var dataSourceSecrets = dataSourceService.regenerateSecrets(dataSourceId);
 
         return ResponseEntity.ok().body(dataSourceSecrets);
     }

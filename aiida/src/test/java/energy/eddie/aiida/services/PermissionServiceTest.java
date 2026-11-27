@@ -629,6 +629,28 @@ class PermissionServiceTest {
     }
 
     @Test
+    void revokePermissionsOfDataSource_revokesAcceptedPermissions_andSkipsNotRevocableOnes() {
+        // Given
+        var notRevocablePermission = mock(OutboundPermission.class);
+        when(notRevocablePermission.id()).thenReturn(permissionId2);
+        when(notRevocablePermission.status()).thenReturn(PermissionStatus.FULFILLED);
+        when(mockOutboundPermission.id()).thenReturn(permissionId1);
+        when(mockOutboundPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
+        when(mockOutboundPermissionRepository.findByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACCEPTED))
+                .thenReturn(List.of(notRevocablePermission, mockOutboundPermission));
+        when(mockPermissionRepository.findById(permissionId2)).thenReturn(Optional.of(notRevocablePermission));
+        when(mockPermissionRepository.findById(permissionId1)).thenReturn(Optional.of(mockOutboundPermission));
+
+        // When
+        service.revokePermissionsOfDataSource(dataSourceId);
+
+        // Then
+        verify(notRevocablePermission, never()).setStatus(any());
+        verify(mockOutboundPermission).setStatus(PermissionStatus.REVOKED);
+        verify(mockPermissionScheduler).stopPermission(mockOutboundPermission, PermissionProcessStatus.REVOKED);
+    }
+
+    @Test
     void givenInboundPermissionWithBlockingOutboundPermissions_revokePermission_throws() {
         var blockingPermissionId1 = UUID.fromString("a57a9f3d-2b5a-4b84-a32c-51bfa4b865c1");
         var blockingPermissionId2 = UUID.fromString("6dbc4ec9-4f2f-4aa7-b016-36c28945a6e4");
