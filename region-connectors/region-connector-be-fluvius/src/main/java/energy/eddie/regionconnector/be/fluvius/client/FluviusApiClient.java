@@ -15,7 +15,6 @@ import energy.eddie.regionconnector.be.fluvius.config.FluviusConfiguration;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthRequestException;
 import energy.eddie.regionconnector.be.fluvius.oauth.OAuthTokenService;
 import energy.eddie.regionconnector.be.fluvius.permission.request.Flow;
-import jakarta.annotation.Priority;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,7 +31,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
-@Priority(value = 2)
 public class FluviusApiClient implements FluviusApi {
     public static final String OCP_APIM_SUBSCRIPTION_KEY = "Ocp-Apim-Subscription-Key";
     public static final String PERIOD_TYPE_READ_TIME = "readTime";
