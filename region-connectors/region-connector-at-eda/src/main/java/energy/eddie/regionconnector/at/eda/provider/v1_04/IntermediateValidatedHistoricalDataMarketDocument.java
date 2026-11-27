@@ -7,7 +7,10 @@ import energy.eddie.api.cim.config.CommonInformationModelConfiguration;
 import energy.eddie.cim.v1_04.*;
 import energy.eddie.cim.v1_04.vhd.*;
 import energy.eddie.regionconnector.at.api.AtPermissionRequest;
-import energy.eddie.regionconnector.at.eda.dto.*;
+import energy.eddie.regionconnector.at.eda.dto.EdaConsumptionRecord;
+import energy.eddie.regionconnector.at.eda.dto.Energy;
+import energy.eddie.regionconnector.at.eda.dto.EnergyData;
+import energy.eddie.regionconnector.at.eda.dto.IdentifiableConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.provider.EdaMeteringSeries;
 import energy.eddie.regionconnector.shared.cim.v0_82.EsmpTimeInterval;
 import energy.eddie.regionconnector.shared.cim.v1_04.VhdEnvelopeWrapper;
@@ -128,19 +131,18 @@ class IntermediateValidatedHistoricalDataMarketDocument {
         // The available meter/OBIS codes can be found on https://www.ebutilities.at/documents/20200304112759_MeterCodes_ConsumptionRecord.pdf
         // a code looks like this 1-1:1.9.0 P.01
         // Looking at the document, we can use the 5th character to determine if the meter is a consumption or production meter
-        String flowDirection = null;
         var obisMeterCode = energyData.meterCode().charAt(4);
-        if (obisMeterCode == '1') { // Consumption
-            flowDirection = StandardDirectionTypeList.DOWN.value();
-        } else if (obisMeterCode == '2') { // Production
-            flowDirection = StandardDirectionTypeList.UP.value();
-        } else {
-            LOGGER.atInfo()
-                  .addArgument(obisMeterCode)
-                  .addArgument(consumptionRecord::messageId)
-                  .log("Unknown meter code {} for message {}");
-        }
-        return flowDirection;
+        return switch (obisMeterCode) {
+            case '1' -> StandardDirectionTypeList.DOWN.value(); // Consumption
+            case '2' -> StandardDirectionTypeList.UP.value(); // Production
+            default -> {
+                LOGGER.atInfo()
+                      .addArgument(obisMeterCode)
+                      .addArgument(consumptionRecord::messageId)
+                      .log("Unknown meter code {} for message {}");
+                yield null;
+            }
+        };
     }
 
     @Nullable

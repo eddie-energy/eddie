@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.adapters.datasource.simulation;
@@ -7,6 +7,7 @@ import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSo
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.test.StepVerifier;
 
@@ -14,29 +15,29 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.lenient;
 
 @ExtendWith(MockitoExtension.class)
 class SimulationDataSourceTest {
     private static final UUID DATA_SOURCE_ID = UUID.fromString("4211ea05-d4ab-48ff-8613-8f4791a56606");
     private static final UUID USER_ID = UUID.fromString("5211ea05-d4ab-48ff-8613-8f4791a56606");
-    private static final SimulationDataSource DATA_SOURCE = mock(SimulationDataSource.class);
+    @Mock
+    private SimulationDataSource dataSource;
     private static final Integer POLLING_INTERVAL = 1;
     private SimulationAdapter simulator;
 
     @BeforeEach
     void setup() {
-        when(DATA_SOURCE.id()).thenReturn(DATA_SOURCE_ID);
-        when(DATA_SOURCE.userId()).thenReturn(USER_ID);
-        when(DATA_SOURCE.name()).thenReturn("simulation");
-        when(DATA_SOURCE.pollingInterval()).thenReturn(POLLING_INTERVAL);
+        lenient().when(dataSource.id()).thenReturn(DATA_SOURCE_ID);
+        lenient().when(dataSource.userId()).thenReturn(USER_ID);
+        lenient().when(dataSource.name()).thenReturn("simulation");
+        lenient().when(dataSource.pollingInterval()).thenReturn(POLLING_INTERVAL);
     }
 
     @Test
     void testConstructorWithoutNameParameter() {
         // given, when
-        simulator = new SimulationAdapter(DATA_SOURCE);
+        simulator = new SimulationAdapter(dataSource);
 
         // then
         assertEquals("simulation", simulator.dataSource().name());
@@ -45,7 +46,7 @@ class SimulationDataSourceTest {
 
     @Test
     void verify_bundleOfFourValuesIsGeneratedPerPeriod_andCloseEmitsCompleteOnFlux() {
-        simulator = new SimulationAdapter(DATA_SOURCE);
+        simulator = new SimulationAdapter(dataSource);
         var period = Duration.ofSeconds(POLLING_INTERVAL);
 
         StepVerifier.withVirtualTime(() -> simulator.start())
@@ -69,7 +70,7 @@ class SimulationDataSourceTest {
      */
     @Test
     void verify_close_immediatelyEmitsCompleteOnFlux() {
-        simulator = new SimulationAdapter(DATA_SOURCE);
+        simulator = new SimulationAdapter(dataSource);
 
         var stepVerifier = StepVerifier.create(simulator.start()).expectComplete().log().verifyLater();
 

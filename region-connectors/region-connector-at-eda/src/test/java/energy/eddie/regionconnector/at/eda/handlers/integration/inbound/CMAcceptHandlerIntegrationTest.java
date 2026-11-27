@@ -3,6 +3,7 @@
 
 package energy.eddie.regionconnector.at.eda.handlers.integration.inbound;
 
+import energy.eddie.api.agnostic.process.model.PermissionRequest;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.regionconnector.at.eda.dto.SimpleEdaConsumptionRecord;
 import energy.eddie.regionconnector.at.eda.models.CMRequestStatus;
@@ -164,7 +165,7 @@ class CMAcceptHandlerIntegrationTest {
 
         assertThat(eventRepository.count()).isEqualTo(3);
         assertThat(requestRepository.findByPermissionId("original")).get()
-                .extracting(request -> request.status()).isEqualTo(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
+                .extracting(PermissionRequest::status).isEqualTo(PermissionProcessStatus.SENT_TO_PERMISSION_ADMINISTRATOR);
         verifyNoInteractions(eventBus);
     }
 

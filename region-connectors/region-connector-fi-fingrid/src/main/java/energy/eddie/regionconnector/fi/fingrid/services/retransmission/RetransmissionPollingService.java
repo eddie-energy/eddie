@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.fi.fingrid.services.retransmission;
@@ -11,7 +11,7 @@ import energy.eddie.api.agnostic.retransmission.result.Success;
 import energy.eddie.regionconnector.fi.fingrid.permission.request.FingridPermissionRequest;
 import energy.eddie.regionconnector.fi.fingrid.services.PollingService;
 import energy.eddie.regionconnector.shared.retransmission.PollingFunction;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.time.ZoneOffset;
@@ -19,7 +19,7 @@ import java.time.ZonedDateTime;
 
 import static energy.eddie.regionconnector.shared.utils.DateTimeUtils.endOfDay;
 
-@Component
+@Service
 public class RetransmissionPollingService implements PollingFunction<FingridPermissionRequest> {
     private final PollingService pollingService;
 

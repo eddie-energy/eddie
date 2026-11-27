@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.shared.cim.v0_82;
@@ -53,10 +53,10 @@ public class EsmpDateTime {
     @Override
     public String toString() {
         ZonedDateTime normalized = dateTime.withZoneSameInstant(ZoneOffset.UTC);
-        return precision == ChronoUnit.SECONDS
-                ? normalized.format(ESMP_DATE_TIME_SECOND_FORMATTER)
-                : normalized.format(ESMP_DATE_TIME_MINUTE_FORMATTER);
-
+        var formatter = precision == ChronoUnit.SECONDS
+                ? ESMP_DATE_TIME_SECOND_FORMATTER
+                : ESMP_DATE_TIME_MINUTE_FORMATTER;
+        return normalized.format(formatter);
     }
 
     public EsmpDateTime plus(TemporalAmount temporalAmount) {

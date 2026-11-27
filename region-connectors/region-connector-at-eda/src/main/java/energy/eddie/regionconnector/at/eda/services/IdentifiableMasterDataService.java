@@ -11,11 +11,11 @@ import energy.eddie.regionconnector.at.eda.permission.request.events.SimpleEvent
 import energy.eddie.regionconnector.shared.event.sourcing.Outbox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Component
+@Service
 public class IdentifiableMasterDataService {
     private static final Logger LOGGER = LoggerFactory.getLogger(IdentifiableMasterDataService.class);
     private final AtPermissionRequestRepository repository;

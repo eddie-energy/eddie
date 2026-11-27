@@ -46,6 +46,7 @@ import java.util.stream.Stream;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.MAXIMUM_MONTHS_IN_THE_PAST;
 import static energy.eddie.regionconnector.es.datadis.DatadisRegionConnectorMetadata.ZONE_ID_SPAIN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -104,7 +105,7 @@ class DataApiServiceTest {
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
                                                                .block(Duration.ofMillis(10));
-        assert intermediateMeteringData != null;
+        assertNotNull(intermediateMeteringData);
         LocalDate start = intermediateMeteringData.start();
         LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end);
@@ -132,7 +133,7 @@ class DataApiServiceTest {
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
                                                                .block(Duration.ofMillis(10));
-        assert intermediateMeteringData != null;
+        assertNotNull(intermediateMeteringData);
         LocalDate start = intermediateMeteringData.start();
         LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.minusDays(1));
@@ -166,7 +167,7 @@ class DataApiServiceTest {
         List<MeteringData> meteringData = MeteringDataProvider.loadMeteringData();
         var intermediateMeteringData = IntermediateMeteringData.fromMeteringData(meteringData)
                                                                .block(Duration.ofMillis(10));
-        assert intermediateMeteringData != null;
+        assertNotNull(intermediateMeteringData);
         LocalDate start = intermediateMeteringData.start();
         LocalDate end = intermediateMeteringData.end();
         EsPermissionRequest permissionRequest = acceptedPermissionRequest(start, end.plusDays(1));

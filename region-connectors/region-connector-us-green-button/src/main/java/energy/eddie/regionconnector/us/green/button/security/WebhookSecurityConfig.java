@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.us.green.button.security;
@@ -19,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.web.cors.CorsConfigurationSource;
 import tools.jackson.databind.ObjectMapper;
+
+import java.util.Objects;
 
 import static energy.eddie.regionconnector.us.green.button.security.WebhookSecurityConfig.US_GREEN_BUTTON_ENABLED;
 import static energy.eddie.spring.regionconnector.extensions.SecurityUtils.pathPatternRequestMatcher;
@@ -44,14 +46,16 @@ public class WebhookSecurityConfig {
             ObjectMapper mapper,
             CorsConfigurationSource corsConfigurationSource,
             GreenButtonConfiguration config
-    ) throws Exception {
+    ) {
         return http
                 .securityMatcher(mvcRequestMatcher.matcher("/**"))    // apply following rules only to requests of this DispatcherServlet
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new RequestBodyCachingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(mvcRequestMatcher.matcher("/webhook"))
-                        .access((authorization, object) -> WebhookVerifier.verifySignature(object.getRequest(), config))
+                        .access((authorization, object) ->
+                                        WebhookVerifier.verifySignature(Objects.requireNonNull(object).getRequest(),
+                                                                        config))
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(new SecurityExceptionHandler(mapper))

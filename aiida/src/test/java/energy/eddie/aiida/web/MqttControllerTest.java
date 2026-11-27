@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.aiida.web;
@@ -29,7 +29,8 @@ class MqttControllerTest {
 
     @Test
     void tlsCertificate_returnsTlsCertificate() throws Exception {
-        when(mqttService.tlsCertificate()).thenReturn(mock(ByteArrayResource.class));
+        var tlsCertificate = mock(ByteArrayResource.class);
+        when(mqttService.tlsCertificate()).thenReturn(tlsCertificate);
         mockMvc.perform(get("/mqtt/download/tls-certificate")).andExpect(status().isOk());
     }
 
