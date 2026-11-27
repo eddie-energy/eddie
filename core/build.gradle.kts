@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2025 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 import energy.eddie.configureJavaCompileWithErrorProne
@@ -48,6 +48,7 @@ dependencies {
     implementation(project(":region-connectors:region-connector-us-green-button"))
     implementation(project(":region-connectors:region-connector-cds"))
     implementation(project(":region-connectors:region-connector-si-moj-elektro"))
+    implementation(project(":region-connectors:region-connector-onenet"))
     implementation(libs.spring.boot.starter.web)
     implementation(libs.spring.openapi.webmvc.ui)
     implementation(libs.spring.boot.security)
