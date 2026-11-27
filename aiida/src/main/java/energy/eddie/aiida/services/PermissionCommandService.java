@@ -3,14 +3,12 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.errors.permission.PermissionNotFoundException;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.permission.AcceptedPermission;
 import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -47,7 +45,6 @@ public class PermissionCommandService {
     private final StreamerManager streamerManager;
     private final Clock clock;
     private final PermissionScheduler permissionScheduler;
-    private final AiidaEventPublisher aiidaEventPublisher;
     private final PermissionCommandService self;
 
     @Autowired
@@ -57,7 +54,6 @@ public class PermissionCommandService {
             StreamerManager streamerManager,
             Clock clock,
             PermissionScheduler permissionScheduler,
-            AiidaEventPublisher aiidaEventPublisher,
             @Lazy PermissionCommandService self
     ) {
         this.permissionRepository = permissionRepository;
@@ -65,7 +61,6 @@ public class PermissionCommandService {
         this.streamerManager = streamerManager;
         this.clock = clock;
         this.permissionScheduler = permissionScheduler;
-        this.aiidaEventPublisher = aiidaEventPublisher;
         this.self = self; // proxy ref so @Transactional applies on internal call
     }
 
@@ -233,16 +228,5 @@ public class PermissionCommandService {
         permission = permissionRepository.save(permission);
 
         permissionScheduler.stopPermission(permission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
-
-        removeInboundDataSourceIfExists(permission);
-    }
-
-    private void removeInboundDataSourceIfExists(Permission permission) {
-        // outbound permissions may stream from the inbound data source of another permission
-        var dataSource = permission instanceof InboundPermission inboundPermission ? inboundPermission.dataSource() : null;
-        if (dataSource != null) {
-            aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSource.id()));
-            permission.setDataSource(null);
-        }
     }
 }

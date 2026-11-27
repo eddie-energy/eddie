@@ -26,13 +26,13 @@ sequenceDiagram
         participant EP2 as Eligible Party 2
     end
 
-    EP1->>REST1: post document
-    REST1->>RC1: route document
-    RC1->>AIIDA: inbound message
+    EP1 ->> REST1: post document
+    REST1 ->> RC1: route document
+    RC1 ->> AIIDA: inbound message
     Note over AIIDA: replace headers
-    AIIDA->>RC2: forward message
-    RC2->>KAFKA2: forward message
-    EP2->>KAFKA2: retrieve document
+    AIIDA ->> RC2: forward message
+    RC2 ->> KAFKA2: forward message
+    EP2 ->> KAFKA2: retrieve document
 ```
 
 EP1 sends a document to an outbound connector of the EDDIE instance.
@@ -73,10 +73,14 @@ See the [EDDIE framework documentation](https://architecture.eddie.energy/framew
 The selected data source can be an inbound or an outbound data source.
 It must support at least one schema that the data need requests.
 
-## Revocation
+## End of the Inbound Permission
 
 You cannot revoke an inbound permission while an active outbound permission uses its data source.
 AIIDA rejects the revocation and lists the blocking outbound permissions.
+
+If the inbound permission is terminated by the EP or reaches its expiration time, there is no more data to forward.
+AIIDA sets every outbound permission forwarding its data source to `FULFILLED`, stops sharing data for them and informs
+the receiving EP.
 
 ## Related Documentation
 

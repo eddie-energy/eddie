@@ -3,7 +3,6 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.models.datasource.DataSourceType;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.InboundPermission;
@@ -12,7 +11,6 @@ import energy.eddie.aiida.models.permission.OutboundPermission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.streamers.StreamerManager;
@@ -41,7 +39,6 @@ import static org.mockito.Mockito.*;
 class PermissionCommandServiceTest {
     private final UUID permissionId = UUID.fromString("82831e2c-a01c-41b8-9db6-3f51670df7a5");
     private final UUID eddieId = UUID.fromString("72831e2c-a01c-41b8-9db6-3f51670df7a5");
-    private final UUID dataSourceId = UUID.fromString("40201e2c-a01c-41b8-9db6-3f51670df7a5");
     private final String regionConnectorId = "rc-1";
     private final Clock clock = Clock.fixed(Instant.parse("2026-06-03T10:00:00.00Z"), ZoneOffset.UTC);
 
@@ -53,8 +50,6 @@ class PermissionCommandServiceTest {
     private StreamerManager streamerManager;
     @Mock
     private PermissionScheduler permissionScheduler;
-    @Mock
-    private AiidaEventPublisher aiidaEventPublisher;
     @Mock
     private OutboundPermission permission;
     @Mock
@@ -78,7 +73,6 @@ class PermissionCommandServiceTest {
                                                streamerManager,
                                                clock,
                                                permissionScheduler,
-                                               aiidaEventPublisher,
                                                self);
     }
 
@@ -268,16 +262,12 @@ class PermissionCommandServiceTest {
         when(permissionRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
         when(permissionRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
         when(inboundPermission.id()).thenReturn(permissionId);
-        when(inboundPermission.dataSource()).thenReturn(dataSource);
-        when(dataSource.id()).thenReturn(dataSourceId);
 
         service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
 
         verify(inboundPermission).setStatus(PermissionStatus.TERMINATED);
         verify(inboundPermission).setRevokeTime(any());
         verify(permissionScheduler).stopPermission(inboundPermission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
-        verify(aiidaEventPublisher).publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
-        verify(inboundPermission).setDataSource(null);
     }
 
     @Test
@@ -291,7 +281,6 @@ class PermissionCommandServiceTest {
         service.handleCommand(new PermissionCommand.Terminate(regionConnectorId, permissionId));
 
         verify(permission).setStatus(PermissionStatus.TERMINATED);
-        verify(aiidaEventPublisher, never()).publishEvent(any());
         verify(permission, never()).setDataSource(any());
     }
 

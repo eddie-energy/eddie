@@ -4,13 +4,14 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.models.permission.AcceptedPermission;
+import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.Permission;
 import energy.eddie.aiida.models.permission.PermissionStatus;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
-import energy.eddie.aiida.utils.PermissionExpiredRunnable;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import jakarta.transaction.Transactional;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -42,6 +43,9 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
     private final StreamerManager streamerManager;
     private final PermissionMarketDocumentFactory permissionMarketDocumentFactory;
     private final FailedToSendRepository failedToSendRepository;
+    private final OutboundPermissionRepository outboundPermissionRepository;
+    private final DataSourceService dataSourceService;
+    private final ProvisioningService provisioningService;
 
     public PermissionScheduler(
             Clock clock,
@@ -50,7 +54,10 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
             ConcurrentMap<UUID, ScheduledFuture<?>> permissionFutures,
             StreamerManager streamerManager,
             PermissionMarketDocumentFactory permissionMarketDocumentFactory,
-            FailedToSendRepository failedToSendRepository
+            FailedToSendRepository failedToSendRepository,
+            OutboundPermissionRepository outboundPermissionRepository,
+            DataSourceService dataSourceService,
+            ProvisioningService provisioningService
     ) {
         this.clock = clock;
         this.scheduler = scheduler;
@@ -59,12 +66,15 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
         this.streamerManager = streamerManager;
         this.permissionMarketDocumentFactory = permissionMarketDocumentFactory;
         this.failedToSendRepository = failedToSendRepository;
+        this.outboundPermissionRepository = outboundPermissionRepository;
+        this.dataSourceService = dataSourceService;
+        this.provisioningService = provisioningService;
     }
 
     /**
      * Gets all accepted permissions with MQTT credentials from the database and checks if they have expired.
      * If not, streaming is resumed, otherwise their database entry will be updated accordingly and their unsent
-     * messages are deleted.
+     * messages are deleted. The inbound data source of an expired inbound permission is removed.
      * This is done when a {@link ContextRefreshedEvent} is received,
      * which ensures that all beans are started and the database is set up correctly.
      */
@@ -79,6 +89,10 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
 
         var now = clock.instant();
         for (Permission permission : acceptedPermissions) {
+            // e.g. a forwarding outbound permission fulfilled because its inbound permission expired earlier in this loop
+            if (!permission.status().isAccepted()) {
+                continue;
+            }
             try {
                 var acceptedPermission = AcceptedPermission.from(permission);
                 if (acceptedPermission.expirationTime().isAfter(now)) {
@@ -89,6 +103,9 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
                             permission.id());
                     permission.setStatus(PermissionStatus.FULFILLED);
                     failedToSendRepository.deleteAllByPermissionId(permission.id());
+                    if (permission instanceof InboundPermission inboundPermission) {
+                        removeInboundDataSource(inboundPermission);
+                    }
                 }
             } catch (IllegalStateException exception) {
                 // don't throw exception so other permissions are not skipped
@@ -114,8 +131,8 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
     }
 
     /**
-     * Cancels any scheduled start or expiration runnable of the permission and stops its streamer, which sends a
-     * permission market document with the given status. E.g. when the permission is revoked or terminated.
+     * Cancels any scheduled start or expiration of the permission and ends it, see
+     * {@link #endPermission(Permission, PermissionProcessStatus)}. E.g. when the permission is revoked or terminated.
      */
     public void stopPermission(Permission permission, PermissionProcessStatus status) {
         var future = permissionFutures.remove(permission.id());
@@ -124,7 +141,46 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
             future.cancel(true);
         }
 
+        endPermission(permission, status);
+    }
+
+    /**
+     * Stops the streamer of the permission, which sends a permission market document with the given status. The
+     * inbound data source of an inbound permission is removed.
+     */
+    private void endPermission(Permission permission, PermissionProcessStatus status) {
         streamerManager.stopStreamer(permissionMarketDocumentFactory.create(permission, status));
+
+        if (permission instanceof InboundPermission inboundPermission) {
+            removeInboundDataSource(inboundPermission);
+        }
+    }
+
+    /**
+     * Fulfills the outbound permissions forwarding the inbound data source, because there is no more data to forward.
+     * Then stops the publisher and deletes the inbound data source. Deleting the entity also removes its persisted
+     * provisioning connection, MQTT user credentials and ACL.
+     */
+    private void removeInboundDataSource(InboundPermission permission) {
+        var inboundDataSource = permission.dataSource();
+        if (inboundDataSource == null) {
+            return;
+        }
+
+        var dataSourceId = inboundDataSource.id();
+        for (var outboundPermission : outboundPermissionRepository.findByDataSourceIdAndStatus(dataSourceId,
+                                                                                                PermissionStatus.ACCEPTED)) {
+            LOGGER.info("Fulfilling outbound permission {} because its inbound data source {} is removed",
+                        outboundPermission.id(),
+                        dataSourceId);
+            outboundPermission.setStatus(PermissionStatus.FULFILLED);
+            repository.save(outboundPermission);
+            stopPermission(outboundPermission, PermissionProcessStatus.FULFILLED);
+        }
+
+        provisioningService.stopPublisher(dataSourceId);
+        dataSourceService.deleteDataSource(dataSourceId);
+        permission.setDataSource(null);
     }
 
     private void schedulePermissionStart(AcceptedPermission permission) {
@@ -151,23 +207,47 @@ public class PermissionScheduler implements ApplicationListener<ContextRefreshed
                   .setCause(exception)
                   .log("Failed to start streaming for permission '{}' owned by EDDIE framework '{}' because the MqttClient could not be created");
         }
-        schedulePermissionExpirationRunnable(permission);
+        schedulePermissionExpiration(permission);
     }
 
-    private void schedulePermissionExpirationRunnable(AcceptedPermission permission) {
+    private void schedulePermissionExpiration(AcceptedPermission permission) {
         var expirationTime = permission.expirationTime();
         var permissionId = permission.id();
-        LOGGER.info("Will schedule a PermissionExpirationRunnable for permission '{}' to run at  {}",
-                    permissionId,
-                    expirationTime);
+        LOGGER.info("Will schedule the expiration of permission '{}' to run at {}", permissionId, expirationTime);
 
-        var expirationRunnable = new PermissionExpiredRunnable(permission,
-                                                               streamerManager,
-                                                               permissionMarketDocumentFactory,
-                                                               repository,
-                                                               clock);
-        ScheduledFuture<?> future = scheduler.schedule(expirationRunnable, expirationTime);
+        ScheduledFuture<?> future = scheduler.schedule(() -> expirePermission(permission), expirationTime);
 
         permissionFutures.put(permissionId, future);
+    }
+
+    /**
+     * Sets the permission to {@link PermissionStatus#FULFILLED} and ends it, see
+     * {@link #endPermission(Permission, PermissionProcessStatus)}.
+     */
+    private void expirePermission(AcceptedPermission permission) {
+        permissionFutures.remove(permission.id());
+
+        var offsetMs = clock.instant().toEpochMilli() - permission.expirationTime().toEpochMilli();
+        LOGGER.atInfo()
+              .addArgument(permission.id())
+              .addArgument(offsetMs)
+              .log("Will expire permission {}, running {} ms too late compared to target time (negative number would be too early)");
+
+        var currentPermission = repository.findById(permission.id()).orElse(null);
+        if (currentPermission == null) {
+            LOGGER.warn("Permission {} no longer exists. Will NOT expire the permission", permission.id());
+            return;
+        }
+
+        // safeguard if e.g. a revocation operation could not properly cancel the expiration before it runs
+        if (!currentPermission.status().isAccepted()) {
+            LOGGER.warn("Permission {} was modified, its status is {}. Will NOT expire the permission",
+                        permission.id(), currentPermission.status());
+            return;
+        }
+
+        currentPermission.setStatus(PermissionStatus.FULFILLED);
+        endPermission(currentPermission, PermissionProcessStatus.FULFILLED);
+        repository.save(currentPermission);
     }
 }

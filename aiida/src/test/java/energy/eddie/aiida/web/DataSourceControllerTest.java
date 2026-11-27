@@ -8,7 +8,9 @@ import energy.eddie.aiida.dtos.datasource.DataSourceSecretsDto;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.services.DataSourceService;
+import energy.eddie.aiida.services.PermissionService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,8 @@ class DataSourceControllerTest {
 
     @MockitoBean
     private DataSourceService service;
+    @MockitoBean
+    private PermissionService permissionService;
 
     @Test
     @WithMockUser
@@ -120,13 +124,42 @@ class DataSourceControllerTest {
     @Test
     @WithMockUser
     void deleteDataSource_shouldReturn200() throws Exception {
-        doNothing().when(service).deleteDataSource(DATA_SOURCE_ID);
+        when(service.dataSourceByIdOrThrow(DATA_SOURCE_ID)).thenReturn(DATA_SOURCE);
 
         mockMvc.perform(delete("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
                                 .with(csrf()))
                .andExpect(status().isOk());
 
-        verify(service, times(1)).deleteDataSource(DATA_SOURCE_ID);
+        var inOrder = inOrder(permissionService, service);
+        inOrder.verify(permissionService).revokePermissionsOfDataSource(DATA_SOURCE_ID);
+        inOrder.verify(service).deleteDataSource(DATA_SOURCE_ID);
+    }
+
+    @Test
+    @WithMockUser
+    void deleteDataSource_givenInboundDataSource_shouldReturn403() throws Exception {
+        var inboundDataSource = mock(InboundDataSource.class);
+        when(service.dataSourceByIdOrThrow(DATA_SOURCE_ID)).thenReturn(inboundDataSource);
+
+        mockMvc.perform(delete("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
+                                .with(csrf()))
+               .andExpect(status().isForbidden());
+
+        verifyNoInteractions(permissionService);
+        verify(service, never()).deleteDataSource(any());
+    }
+
+    @Test
+    @WithMockUser
+    void deleteDataSource_givenUnknownDataSource_shouldReturn404() throws Exception {
+        when(service.dataSourceByIdOrThrow(DATA_SOURCE_ID)).thenThrow(new DataSourceNotFoundException(DATA_SOURCE_ID));
+
+        mockMvc.perform(delete("/datasources/4211ea05-d4ab-48ff-8613-8f4791a56606")
+                                .with(csrf()))
+               .andExpect(status().isNotFound());
+
+        verifyNoInteractions(permissionService);
+        verify(service, never()).deleteDataSource(any());
     }
 
     @Test

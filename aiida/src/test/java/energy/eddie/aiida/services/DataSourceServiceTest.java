@@ -12,7 +12,6 @@ import energy.eddie.aiida.config.MqttConfiguration;
 import energy.eddie.aiida.dtos.datasource.modbus.ModbusDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.mqtt.at.OesterreichsEnergieDataSourceDto;
 import energy.eddie.aiida.dtos.datasource.simulation.SimulationDataSourceDto;
-import energy.eddie.aiida.dtos.events.DataSourceDeletionEvent;
 import energy.eddie.aiida.errors.SecretDeletionException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
@@ -29,7 +28,6 @@ import energy.eddie.aiida.models.datasource.mqtt.it.SinapsiAlfaDataSource;
 import energy.eddie.aiida.models.permission.InboundPermission;
 import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.DataSourceRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import org.junit.jupiter.api.Test;
@@ -76,8 +74,6 @@ class DataSourceServiceTest {
     private MqttConfiguration mqttConfiguration;
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Mock
-    private AiidaEventPublisher aiidaEventPublisher;
     @Mock
     private SecretsService secretsService;
     @Mock
@@ -185,7 +181,6 @@ class DataSourceServiceTest {
         dataSourceService.deleteDataSource(DATA_SOURCE_ID);
 
         verify(repository).findById(DATA_SOURCE_ID);
-        verify(aiidaEventPublisher).publishEvent(any(DataSourceDeletionEvent.class));
         verify(repository).delete(any(DataSource.class));
     }
 

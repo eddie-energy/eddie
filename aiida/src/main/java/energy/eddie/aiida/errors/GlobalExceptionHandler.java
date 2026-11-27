@@ -9,10 +9,7 @@ import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.connectionlimit.ConnectionLimitMonitoringNotAllowedException;
 import energy.eddie.aiida.errors.conversion.InvalidInstantOrDurationException;
-import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
-import energy.eddie.aiida.errors.datasource.DataSourceSecretGenerationNotSupportedException;
-import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
-import energy.eddie.aiida.errors.datasource.InvalidDataSourceTypeException;
+import energy.eddie.aiida.errors.datasource.*;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusConnectionException;
 import energy.eddie.aiida.errors.datasource.modbus.ModbusDeviceConfigException;
 import energy.eddie.aiida.errors.datasource.mqtt.MqttTlsCertificateNotFoundException;
@@ -124,7 +121,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
-            DataSourceSecretGenerationNotSupportedException.class
+            DataSourceSecretGenerationNotSupportedException.class,
+            InboundDataSourceDeletionNotAllowedException.class
     })
     public ResponseEntity<Map<String, List<EddieApiError>>> handleForbiddenExceptions(Exception exception) {
         var message = Map.of(ERRORS_PROPERTY_NAME, List.of(new EddieApiError(exception.getMessage())));

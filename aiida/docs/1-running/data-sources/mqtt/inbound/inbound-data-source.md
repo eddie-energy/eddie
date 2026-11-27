@@ -1,15 +1,15 @@
 # Inbound Data Source
+
 > [Data Sources](../../data-sources.md) / [MQTT-based](../mqtt-data-sources.md)
 
 For **outbound data** (data sent from AIIDA to an EP), the data need type `outbound-aiida` is used.
 
-In contrast, instead of collecting data from local resources running on the edge, 
-**AIIDA can also receive data from the EP** using the `inbound-aiida` data need.
-Similar to an outbound permission, an **inbound permission** is created for that purpose. 
+In contrast, instead of collecting data from local resources running on the edge, **AIIDA can also receive data from the EP** using the `inbound-aiida` data need.
+Similar to an outbound permission, an **inbound permission** is created for that purpose.
 
 These permissions automatically create an inbound data source.
-This data source connects to the **MQTT broker** of the EDDIE instance, where the EP can send any data to AIIDA. 
-Therefore, an inbound data source is a [MQTT-based data source](../mqtt-data-sources.md) that connects to the MQTT broker of the 
+This data source connects to the **MQTT broker** of the EDDIE instance, where the EP can send any data to AIIDA.
+Therefore, an inbound data source is a [MQTT-based data source](../mqtt-data-sources.md) that connects to the MQTT broker of the
 EDDIE instance instead of the local MQTT broker.
 This data source is not visible in the AIIDA UI, as it is automatically created and managed by the inbound permission.
 
@@ -52,6 +52,11 @@ The `received_MarketDocument.mRID` is identical to the mRID sent by the EP, allo
 The reason code and text describe the final processing result.
 See [Acknowledgements](../../../../2-integrating/acknowledgements.md).
 
-## Revocation
+## End of the Permission
 
-If an inbound permission is revoked, the associated inbound data source is automatically deleted.
+When an inbound permission ends, i.e. it is revoked, terminated by the EP or reaches its expiration time, AIIDA
+automatically deletes the associated inbound data source, including its MQTT user, ACL and secrets.
+The EP can no longer send data to AIIDA afterwards.
+
+An inbound data source cannot be deleted on its own, as an inbound permission cannot exist without it.
+It is only removed when its permission ends.

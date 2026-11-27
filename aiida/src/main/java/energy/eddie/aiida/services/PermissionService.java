@@ -3,14 +3,14 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionAcceptEvent;
-import energy.eddie.aiida.dtos.events.InboundPermissionRevokeEvent;
 import energy.eddie.aiida.dtos.permission.*;
+import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
 import energy.eddie.aiida.errors.auth.InvalidUserException;
 import energy.eddie.aiida.errors.auth.UnauthorizedException;
 import energy.eddie.aiida.errors.datasource.DataSourceNotFoundException;
 import energy.eddie.aiida.errors.datasource.IncompatibleDataSourceException;
+import energy.eddie.aiida.errors.inbound.MissingMqttStreamingConfigException;
 import energy.eddie.aiida.errors.permission.*;
 import energy.eddie.aiida.models.connectionlimit.ConnectionLimitDefault;
 import energy.eddie.aiida.models.datasource.DataSource;
@@ -20,7 +20,6 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
@@ -61,7 +60,6 @@ public class PermissionService {
     private final AuthService authService;
     private final DataSourceService dataSourceService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
-    private final AiidaEventPublisher aiidaEventPublisher;
     private final SecretsService secretsService;
 
     @Autowired
@@ -76,7 +74,6 @@ public class PermissionService {
             AuthService authService,
             DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
-            AiidaEventPublisher aiidaEventPublisher,
             SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
@@ -89,7 +86,6 @@ public class PermissionService {
         this.authService = authService;
         this.dataSourceService = dataSourceService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
-        this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
     }
 
@@ -127,9 +123,45 @@ public class PermissionService {
         permission.setRevokeTime(revocationTime);
 
         permissionScheduler.stopPermission(permission, PermissionProcessStatus.REVOKED);
-        removeInboundDataSourceIfExists(permission);
 
         return permission;
+    }
+
+    /**
+     * Revokes all accepted outbound permissions streaming from the data source, e.g. before the data source is deleted.
+     * Permissions that cannot be revoked are skipped and logged.
+     *
+     * @param dataSourceId ID of the data source whose permissions should be revoked.
+     */
+    @Transactional
+    public void revokePermissionsOfDataSource(UUID dataSourceId) {
+        var revocationCount = 0;
+
+        for (var permission : outboundPermissionRepository.findByDataSourceIdAndStatus(dataSourceId, ACCEPTED)) {
+            var permissionId = permission.id();
+            try {
+                revokePermission(permissionId);
+                revocationCount++;
+            } catch (PermissionNotFoundException e) {
+                LOGGER.warn(
+                        "Permission {} associated with deleted data source not found in database anymore, skipping revocation.",
+                        permissionId);
+            } catch (PermissionStateTransitionException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because it is not in an eligible state.",
+                        permissionId);
+            } catch (InboundDataSourceInUseException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because its inbound data source is still used by outbound permissions.",
+                        permissionId);
+            } catch (UnauthorizedException | InvalidUserException e) {
+                LOGGER.error(
+                        "Permission {} associated with deleted data source cannot be revoked, because the current user is not authorized to do so.",
+                        permissionId);
+            }
+        }
+
+        LOGGER.info("Revoked {} permission(s) of data source {}.", revocationCount, dataSourceId);
     }
 
     /**
@@ -227,8 +259,7 @@ public class PermissionService {
         }
 
         permission = accept(permission, acceptDto);
-        // creates the inbound data source, which is required to start the permission
-        aiidaEventPublisher.publishEvent(new InboundPermissionAcceptEvent(permission.id()));
+        createInboundDataSource(permission);
         permissionScheduler.scheduleOrStart(AcceptedPermission.from(permission));
         return permission;
     }
@@ -610,11 +641,20 @@ public class PermissionService {
         return requiredSchemas.stream().anyMatch(availableSchemas::contains);
     }
 
-    private void removeInboundDataSourceIfExists(Permission permission) {
-        var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
-        if (dataSourceId != null) {
-            aiidaEventPublisher.publishEvent(new InboundPermissionRevokeEvent(dataSourceId));
-            permission.setDataSource(null);
+    private void createInboundDataSource(InboundPermission permission) {
+        try {
+            var inboundDataSource = dataSourceService.createInboundDataSource(permission);
+
+            LOGGER.debug("Set data source {} to permission {}", inboundDataSource, permission);
+            permission.setDataSource(inboundDataSource);
+
+            dataSourceService.startDataSource(inboundDataSource);
+        } catch (SecretStoringException | SecretLoadingException e) {
+            LOGGER.error("Could not create secrets for inbound datasource.", e);
+        } catch (MissingMqttStreamingConfigException e) {
+            LOGGER.error(
+                    "Could not create inbound data source because its permission has no MQTT streaming configuration.",
+                    e);
         }
     }
 
