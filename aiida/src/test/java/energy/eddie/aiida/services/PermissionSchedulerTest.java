@@ -4,17 +4,15 @@
 package energy.eddie.aiida.services;
 
 import energy.eddie.aiida.config.AiidaConfiguration;
-import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.models.datasource.DataSource;
 import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.FailedToSendRepository;
+import energy.eddie.aiida.repositories.OutboundPermissionRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.schemas.pmd.PermissionMarketDocumentFactory;
 import energy.eddie.aiida.streamers.StreamerManager;
-import energy.eddie.aiida.utils.PermissionExpiredRunnable;
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
 import energy.eddie.cim.v1_12.rpmd.RequestPermissionEnvelope;
 import org.eclipse.paho.mqttv5.common.MqttException;
@@ -38,6 +36,7 @@ import org.springframework.scheduling.support.CronExpression;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -45,7 +44,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -72,7 +70,11 @@ class PermissionSchedulerTest {
     @Mock
     private FailedToSendRepository mockFailedToSendRepository;
     @Mock
-    private AiidaEventPublisher mockAiidaEventPublisher;
+    private OutboundPermissionRepository mockOutboundPermissionRepository;
+    @Mock
+    private DataSourceService mockDataSourceService;
+    @Mock
+    private ProvisioningService mockProvisioningService;
     @Captor
     private ArgumentCaptor<Runnable> runnableCaptor;
     private PermissionScheduler permissionScheduler;
@@ -88,7 +90,9 @@ class PermissionSchedulerTest {
                                                       mockStreamerManager,
                                                       mockPermissionMarketDocumentFactory,
                                                       mockFailedToSendRepository,
-                                                      mockAiidaEventPublisher);
+                                                      mockOutboundPermissionRepository,
+                                                      mockDataSourceService,
+                                                      mockProvisioningService);
     }
 
     @Test
@@ -104,7 +108,7 @@ class PermissionSchedulerTest {
 
         // Then
         verify(permissionFutures).put(eq(permissionId), any());
-        verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
+        verify(mockTaskScheduler).schedule(any(Runnable.class), eq(expirationTime));
         verify(mockStreamerManager).createNewStreamer(any());
         verifyNoInteractions(mockRepository);
     }
@@ -121,7 +125,6 @@ class PermissionSchedulerTest {
         // Then
         verify(permissionFutures).put(eq(permissionId), any());
         verify(mockTaskScheduler).schedule(runnableCaptor.capture(), eq(startTimeInFuture));
-        assertFalse(runnableCaptor.getValue() instanceof PermissionExpiredRunnable);
         verifyNoInteractions(mockStreamerManager);
         verifyNoInteractions(mockRepository);
     }
@@ -139,7 +142,7 @@ class PermissionSchedulerTest {
         permissionScheduler.scheduleOrStart(permission);
 
         // Then
-        verify(mockTaskScheduler).schedule(any(PermissionExpiredRunnable.class), eq(expirationTime));
+        verify(mockTaskScheduler).schedule(any(Runnable.class), eq(expirationTime));
         verifyNoInteractions(mockRepository);
     }
 
@@ -160,6 +163,145 @@ class PermissionSchedulerTest {
         verify(mockScheduledFuture).cancel(true);
         verify(permissionFutures).remove(permissionId);
         verify(mockStreamerManager).stopStreamer(permissionMarketDocument);
+        verifyNoInteractions(mockDataSourceService, mockProvisioningService);
+    }
+
+    @Test
+    void givenInboundPermission_stopPermission_fulfillsForwardingOutboundPermissions_andRemovesInboundDataSource() {
+        // Given
+        var inboundPermission = mock(InboundPermission.class);
+        var inboundDataSource = mock(InboundDataSource.class);
+        var forwardingPermission = mock(OutboundPermission.class);
+        var forwardingPermissionId = UUID.fromString("d69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+        var dataSourceId = UUID.fromString("c69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+        var forwardingPermissionMarketDocument = mock(RequestPermissionEnvelope.class);
+        var inboundPermissionMarketDocument = mock(RequestPermissionEnvelope.class);
+        when(inboundPermission.id()).thenReturn(permissionId);
+        when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
+        when(inboundDataSource.id()).thenReturn(dataSourceId);
+        when(forwardingPermission.id()).thenReturn(forwardingPermissionId);
+        when(mockOutboundPermissionRepository.findByDataSourceIdAndStatus(dataSourceId, PermissionStatus.ACCEPTED))
+                .thenReturn(List.of(forwardingPermission));
+        when(mockPermissionMarketDocumentFactory.create(forwardingPermission, PermissionProcessStatus.FULFILLED))
+                .thenReturn(forwardingPermissionMarketDocument);
+        when(mockPermissionMarketDocumentFactory.create(inboundPermission,
+                                                        PermissionProcessStatus.EXTERNALLY_TERMINATED))
+                .thenReturn(inboundPermissionMarketDocument);
+
+        // When
+        permissionScheduler.stopPermission(inboundPermission, PermissionProcessStatus.EXTERNALLY_TERMINATED);
+
+        // Then
+        var inOrder = inOrder(forwardingPermission, mockRepository, mockStreamerManager, mockProvisioningService,
+                              mockDataSourceService, inboundPermission);
+        inOrder.verify(mockStreamerManager).stopStreamer(inboundPermissionMarketDocument);
+        inOrder.verify(forwardingPermission).setStatus(PermissionStatus.FULFILLED);
+        inOrder.verify(mockRepository).save(forwardingPermission);
+        inOrder.verify(mockStreamerManager).stopStreamer(forwardingPermissionMarketDocument);
+        inOrder.verify(mockProvisioningService).stopPublisher(dataSourceId);
+        inOrder.verify(mockDataSourceService).deleteDataSource(dataSourceId);
+        inOrder.verify(inboundPermission).setDataSource(null);
+    }
+
+    @Test
+    void givenInboundPermissionWithoutDataSource_stopPermission_removesNothing() {
+        // Given
+        var inboundPermission = mock(InboundPermission.class);
+        when(inboundPermission.id()).thenReturn(permissionId);
+
+        // When
+        permissionScheduler.stopPermission(inboundPermission, PermissionProcessStatus.REVOKED);
+
+        // Then
+        verifyNoInteractions(mockOutboundPermissionRepository, mockDataSourceService, mockProvisioningService);
+    }
+
+    @Test
+    void givenAcceptedPermission_expiration_fulfillsPermission_stopsStreamer_andUpdatesDb() {
+        // Given
+        var expiration = scheduledExpiration();
+        var currentPermission = mock(OutboundPermission.class);
+        when(mockRepository.findById(permissionId)).thenReturn(Optional.of(currentPermission));
+        when(currentPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
+
+        // When
+        expiration.run();
+
+        // Then
+        verify(permissionFutures).remove(permissionId);
+        verify(currentPermission).setStatus(PermissionStatus.FULFILLED);
+        verify(mockPermissionMarketDocumentFactory).create(currentPermission, PermissionProcessStatus.FULFILLED);
+        verify(mockStreamerManager).stopStreamer(any());
+        verify(mockRepository).save(currentPermission);
+        verify(currentPermission, never()).setDataSource(any());
+        verifyNoInteractions(mockDataSourceService, mockProvisioningService);
+    }
+
+    @Test
+    void givenInboundPermission_expiration_removesInboundDataSource() {
+        // Given
+        var expiration = scheduledExpiration();
+        var inboundPermission = mock(InboundPermission.class);
+        var inboundDataSource = mock(InboundDataSource.class);
+        var dataSourceId = UUID.fromString("c69f9bc2-e16c-4de4-8c3e-00d219dcd819");
+        when(mockRepository.findById(permissionId)).thenReturn(Optional.of(inboundPermission));
+        when(inboundPermission.status()).thenReturn(PermissionStatus.ACCEPTED);
+        when(inboundPermission.dataSource()).thenReturn(inboundDataSource);
+        when(inboundDataSource.id()).thenReturn(dataSourceId);
+
+        // When
+        expiration.run();
+
+        // Then
+        var inOrder = inOrder(inboundPermission, mockDataSourceService, mockRepository);
+        inOrder.verify(inboundPermission).setStatus(PermissionStatus.FULFILLED);
+        inOrder.verify(mockDataSourceService).deleteDataSource(dataSourceId);
+        inOrder.verify(inboundPermission).setDataSource(null);
+        inOrder.verify(mockRepository).save(inboundPermission);
+        verify(mockProvisioningService).stopPublisher(dataSourceId);
+    }
+
+    @Test
+    void givenPermissionRevokedInTheMeantime_expiration_doesNotExpirePermission() {
+        // Given
+        var expiration = scheduledExpiration();
+        var currentPermission = mock(OutboundPermission.class);
+        when(mockRepository.findById(permissionId)).thenReturn(Optional.of(currentPermission));
+        when(currentPermission.status()).thenReturn(PermissionStatus.REVOKED);
+
+        // When
+        expiration.run();
+
+        // Then
+        verify(mockStreamerManager, never()).stopStreamer(any());
+        verify(mockRepository, never()).save(any());
+        verify(currentPermission, never()).setStatus(any());
+    }
+
+    @Test
+    void givenPermissionNoLongerExists_expiration_doesNotExpirePermission() {
+        // Given
+        var expiration = scheduledExpiration();
+        when(mockRepository.findById(permissionId)).thenReturn(Optional.empty());
+
+        // When
+        expiration.run();
+
+        // Then
+        verify(mockStreamerManager, never()).stopStreamer(any());
+        verify(mockRepository, never()).save(any());
+    }
+
+    /**
+     * Starts the permission and returns its scheduled expiration.
+     */
+    private Runnable scheduledExpiration() {
+        var expirationTime = clock.instant().plusSeconds(10000);
+        when(permission.startTime()).thenReturn(clock.instant().minusSeconds(100));
+        when(permission.expirationTime()).thenReturn(expirationTime);
+        permissionScheduler.scheduleOrStart(permission);
+        verify(mockTaskScheduler).schedule(runnableCaptor.capture(), eq(expirationTime));
+        return runnableCaptor.getValue();
     }
 
     @Nested
@@ -211,7 +353,9 @@ class PermissionSchedulerTest {
                                                        mockStreamerManager,
                                                        mockPermissionMarketDocumentFactory,
                                                        mockFailedToSendRepository,
-                                                       mockAiidaEventPublisher);
+                                                       mockOutboundPermissionRepository,
+                                                       mockDataSourceService,
+                                                       mockProvisioningService);
         }
 
         /**
@@ -262,7 +406,7 @@ class PermissionSchedulerTest {
                 verify(mockFailedToSendRepository, never()).deleteAllByPermissionId(any());
             }
             assertEquals(mockDataSource, outboundPermission.dataSource());
-            verifyNoInteractions(mockAiidaEventPublisher);
+            verifyNoInteractions(mockDataSourceService);
         }
 
         @Test
@@ -286,7 +430,8 @@ class PermissionSchedulerTest {
             // Then
             verify(inboundPermission).setStatus(PermissionStatus.FULFILLED);
             verify(inboundPermission).setDataSource(null);
-            verify(mockAiidaEventPublisher).publishEvent(new InboundPermissionEndEvent(dataSourceId));
+            verify(mockProvisioningService).stopPublisher(dataSourceId);
+            verify(mockDataSourceService).deleteDataSource(dataSourceId);
         }
 
         @Test

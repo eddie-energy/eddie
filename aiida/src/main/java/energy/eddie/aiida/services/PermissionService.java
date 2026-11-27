@@ -3,7 +3,6 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.dtos.permission.*;
 import energy.eddie.aiida.errors.SecretLoadingException;
 import energy.eddie.aiida.errors.SecretStoringException;
@@ -21,7 +20,6 @@ import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.AiidaLocalDataNeedFactory;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
@@ -62,7 +60,6 @@ public class PermissionService {
     private final AuthService authService;
     private final DataSourceService dataSourceService;
     private final AiidaLocalDataNeedService aiidaLocalDataNeedService;
-    private final AiidaEventPublisher aiidaEventPublisher;
     private final SecretsService secretsService;
 
     @Autowired
@@ -77,7 +74,6 @@ public class PermissionService {
             AuthService authService,
             DataSourceService dataSourceService,
             AiidaLocalDataNeedService aiidaLocalDataNeedService,
-            AiidaEventPublisher aiidaEventPublisher,
             SecretsService secretsService
     ) {
         this.permissionRepository = permissionRepository;
@@ -90,7 +86,6 @@ public class PermissionService {
         this.authService = authService;
         this.dataSourceService = dataSourceService;
         this.aiidaLocalDataNeedService = aiidaLocalDataNeedService;
-        this.aiidaEventPublisher = aiidaEventPublisher;
         this.secretsService = secretsService;
     }
 
@@ -128,7 +123,6 @@ public class PermissionService {
         permission.setRevokeTime(revocationTime);
 
         permissionScheduler.stopPermission(permission, PermissionProcessStatus.REVOKED);
-        removeInboundDataSourceIfExists(permission);
 
         return permission;
     }
@@ -624,14 +618,6 @@ public class PermissionService {
             LOGGER.error(
                     "Could not create inbound data source because its permission has no MQTT streaming configuration.",
                     e);
-        }
-    }
-
-    private void removeInboundDataSourceIfExists(Permission permission) {
-        var dataSourceId = inboundDataSourceIdIfInboundPermission(permission);
-        if (dataSourceId != null) {
-            aiidaEventPublisher.publishEvent(new InboundPermissionEndEvent(dataSourceId));
-            permission.setDataSource(null);
         }
     }
 

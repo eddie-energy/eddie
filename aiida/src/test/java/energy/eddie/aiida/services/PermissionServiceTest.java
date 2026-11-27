@@ -3,7 +3,6 @@
 
 package energy.eddie.aiida.services;
 
-import energy.eddie.aiida.dtos.events.InboundPermissionEndEvent;
 import energy.eddie.aiida.dtos.permission.AcceptInboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.AcceptOutboundPermissionDto;
 import energy.eddie.aiida.dtos.permission.PermissionDetailsDto;
@@ -19,7 +18,6 @@ import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.permission.*;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.models.permission.dataneed.OutboundAiidaLocalDataNeed;
-import energy.eddie.aiida.publisher.AiidaEventPublisher;
 import energy.eddie.aiida.repositories.ConnectionLimitDefaultRepository;
 import energy.eddie.aiida.repositories.InboundPermissionRepository;
 import energy.eddie.aiida.repositories.OutboundPermissionRepository;
@@ -90,8 +88,6 @@ class PermissionServiceTest {
     @Mock
     private ConnectionLimitDefaultRepository mockConnectionLimitDefaultRepository;
     @Mock
-    private AiidaEventPublisher mockAiidaEventPublisher;
-    @Mock
     private PermissionScheduler mockPermissionScheduler;
     @Mock
     private HandshakeService mockHandshakeService;
@@ -143,7 +139,6 @@ class PermissionServiceTest {
                                         mockAuthService,
                                         mockDataSourceService,
                                         mockAiidaLocalDataNeedService,
-                                        mockAiidaEventPublisher,
                                         mockSecretsService);
     }
 
@@ -314,7 +309,6 @@ class PermissionServiceTest {
         assertNotNull(mqttStreamingConfig);
         assertEquals("dataTopic", mqttStreamingConfig.dataTopic());
         verify(mockPermissionScheduler).scheduleOrStart(argThat(acceptedPermission -> acceptedPermission.id().equals(permissionId1)));
-        verify(mockAiidaEventPublisher, never()).publishEvent(any());
         verifyNoInteractions(mockConnectionLimitDefaultRepository);
     }
 
@@ -617,7 +611,6 @@ class PermissionServiceTest {
         verify(mockInboundPermission).setStatus(PermissionStatus.REVOKED);
         verify(mockInboundPermission).setRevokeTime(fixedInstant);
         verify(mockPermissionScheduler).stopPermission(mockInboundPermission, PermissionProcessStatus.REVOKED);
-        verify(mockAiidaEventPublisher, times(1)).publishEvent(any(InboundPermissionEndEvent.class));
     }
 
     @Test
@@ -632,7 +625,6 @@ class PermissionServiceTest {
         service.revokePermission(permissionId1);
 
         // Then
-        verify(mockAiidaEventPublisher, never()).publishEvent(any(InboundPermissionEndEvent.class));
         verify(mockOutboundPermission, never()).setDataSource(any());
     }
 
