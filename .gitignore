@@ -106,6 +106,15 @@ build
 !.idea/codeStyles
 !.idea/copyright
 
+### Common LLM context directory
+.context
+
+### Kotlin caches
+.kotlin
+
+### Sonar context caches
+.sonar
+
 ### jte template generated files ###
 **/jte-classes
 

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.at.eda.requests;
@@ -30,7 +30,7 @@ class CCMOTimeFrameTest {
     }
 
 
-    @Test()
+    @Test
     void ccmoTimeFrameNullStart() {
         // given
         LocalDate end = LocalDate.of(2023, 5, 5);
@@ -40,7 +40,7 @@ class CCMOTimeFrameTest {
         assertThrows(NullPointerException.class, () -> new CCMOTimeFrame(null, end));
     }
 
-    @Test()
+    @Test
     void ccmoTimeFrameInFutureAndEndNull_doesNotThrow() {
         // given
         LocalDate start = LocalDate.now(ZoneOffset.UTC).plusDays(10);

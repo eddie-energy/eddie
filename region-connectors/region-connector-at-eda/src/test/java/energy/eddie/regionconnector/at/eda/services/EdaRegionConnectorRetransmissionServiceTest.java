@@ -12,11 +12,11 @@ import energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata;
 import energy.eddie.regionconnector.at.eda.SimplePermissionRequest;
 import energy.eddie.regionconnector.at.eda.TransmissionException;
 import energy.eddie.regionconnector.at.eda.config.AtConfiguration;
+import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestBuilder;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestCR;
 import energy.eddie.regionconnector.at.eda.requests.CPRequestResult;
 import energy.eddie.regionconnector.at.eda.requests.EdaGroupingIdFactory;
 import energy.eddie.regionconnector.at.eda.requests.restricted.enums.AllowedGranularity;
-import energy.eddie.regionconnector.at.eda.permission.request.EdaPermissionRequestBuilder;
 import jakarta.annotation.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,8 +41,8 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static energy.eddie.regionconnector.at.eda.EdaRegionConnectorMetadata.AT_ZONE_ID;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -70,7 +70,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         );
     }
 
-    @ParameterizedTest()
+    @ParameterizedTest
     @MethodSource("inScopeTimeFrames")
     @SuppressWarnings("ReturnValueIgnored")
     void requestRetransmission_whenTimeFrameInPermissionAndAdapterReturnsAccepted_resultIsSuccess(
@@ -123,7 +123,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
         }
     }
 
-    @ParameterizedTest()
+    @ParameterizedTest
     @MethodSource("cpRequestResultsToRetransmissionResults")
     @SuppressWarnings("ReturnValueIgnored")
     void requestRetransmission_whenRequestIsTransmittedViaTheAdapter_resultIsMappedAsExpected(
@@ -301,7 +301,7 @@ class EdaRegionConnectorRetransmissionServiceTest {
                 .verify(Duration.ofSeconds(2));
     }
 
-    @ParameterizedTest()
+    @ParameterizedTest
     @MethodSource("outOfScopeTimeFrames")
     void requestRetransmission_whenTimeFrameNotInPermissionScope_resultsIsNoPermissionForTimeFrame(
             LocalDate from,

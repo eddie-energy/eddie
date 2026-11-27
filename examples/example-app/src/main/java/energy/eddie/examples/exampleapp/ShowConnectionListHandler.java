@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2023-2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.examples.exampleapp;
@@ -7,9 +7,9 @@ import com.google.inject.Inject;
 import io.javalin.config.RoutesConfig;
 import io.javalin.http.Context;
 import org.jdbi.v3.core.Jdbi;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.util.annotation.Nullable;
 
 import java.util.Map;
 

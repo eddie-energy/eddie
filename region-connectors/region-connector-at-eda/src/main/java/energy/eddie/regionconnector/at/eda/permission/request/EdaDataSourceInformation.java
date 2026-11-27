@@ -54,6 +54,6 @@ public class EdaDataSourceInformation implements DataSourceInformation {
 
     @Override
     public int hashCode() {
-        return Objects.hash(dsoId);
+        return Objects.hashCode(dsoId);
     }
 }

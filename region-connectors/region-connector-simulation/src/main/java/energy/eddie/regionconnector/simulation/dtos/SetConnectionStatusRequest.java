@@ -4,7 +4,7 @@
 package energy.eddie.regionconnector.simulation.dtos;
 
 import energy.eddie.cim.agnostic.PermissionProcessStatus;
-import reactor.util.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 public class SetConnectionStatusRequest {
     @Nullable

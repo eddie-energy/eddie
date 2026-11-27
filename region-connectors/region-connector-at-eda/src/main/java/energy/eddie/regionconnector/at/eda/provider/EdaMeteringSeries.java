@@ -27,6 +27,8 @@ public final class EdaMeteringSeries {
     }
 
     /**
+     * One billing quantity at a position within a series.
+     *
      * @param position starts at 1
      * @param quantity the billing quantity
      * @param quality  CIM quality code, or null if the metering method is unknown
@@ -34,10 +36,11 @@ public final class EdaMeteringSeries {
     public record SeriesPoint(int position, BigDecimal quantity, @Nullable String quality) {}
 
     /**
+     * Returns the billing unit, or null if it is not part of the CIM code lists.
+     *
      * @param energyData  the energy data of a meter
      * @param messageId   the ID of the consumption record, used for logging
      * @param isKnownUnit checks whether a unit is part of the CIM code lists
-     * @return the billing unit, or null if it is not part of the CIM code lists
      */
     @Nullable
     public static String measurementUnit(EnergyData energyData, String messageId, Predicate<String> isKnownUnit) {

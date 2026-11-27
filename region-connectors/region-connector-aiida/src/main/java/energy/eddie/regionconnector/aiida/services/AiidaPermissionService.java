@@ -267,7 +267,7 @@ public class AiidaPermissionService {
         var permissionId = UUID.randomUUID().toString();
         LOGGER.info("Creating new permission request with ID {}", permissionId);
         var res = calculationService.calculate(dataNeedId);
-        switch (res) {
+        return switch (res) {
             case DataNeedNotFoundResult ignored -> throw new DataNeedNotFoundException(dataNeedId);
             case DataNeedNotSupportedResult(String message) -> throw new UnsupportedDataNeedException(
                     AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
@@ -298,13 +298,13 @@ public class AiidaPermissionService {
                 outbox.commit(new SimpleEvent(permissionId, VALIDATED));
                 // we consider displaying the QR code to the user as SENT_TO_PERMISSION_ADMINISTRATOR for AIIDA
                 outbox.commit(new SimpleEvent(permissionId, SENT_TO_PERMISSION_ADMINISTRATOR));
-                return UUID.fromString(permissionId);
+                yield UUID.fromString(permissionId);
             }
             default -> throw new UnsupportedDataNeedException(
                     AiidaRegionConnectorMetadata.REGION_CONNECTOR_ID,
                     dataNeedId,
                     "Data need not supported");
-        }
+        };
     }
 
     private boolean isInvalidPermissionRequest(AiidaDataNeedResult aiidaResult) {

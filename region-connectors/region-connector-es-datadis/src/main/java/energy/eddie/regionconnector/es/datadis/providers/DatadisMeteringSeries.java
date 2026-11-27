@@ -37,6 +37,8 @@ public final class DatadisMeteringSeries {
     public record Series(String businessType, String direction, String cups, List<SeriesPoint> points) {}
 
     /**
+     * One measured value at a position within a series.
+     *
      * @param position the position of the point in the metering data, starts at 1
      * @param quantity the measured value in kWh
      * @param quality  CIM quality code
@@ -65,7 +67,7 @@ public final class DatadisMeteringSeries {
     }
 
     /**
-     * @return the resolution of the metering data, based on the measurement type of the permission request
+     * Returns the resolution of the metering data, based on the measurement type of the permission request.
      */
     public static Duration resolution(IdentifiableMeteringData identifiableMeteringData) {
         var granularity = switch (identifiableMeteringData.permissionRequest().measurementType()) {

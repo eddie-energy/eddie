@@ -774,7 +774,7 @@ class AiidaUiTests {
         OUTBOUND("Outbound Permissions"),
         INBOUND("Inbound Permissions");
 
-        public final String label;
+        final String label;
 
         PermissionTab(String label) {this.label = label;}
     }
@@ -783,7 +783,7 @@ class AiidaUiTests {
         ACTIVE("Active"),
         COMPLETE("Complete");
 
-        public final String label;
+        final String label;
 
         PermissionStatus(String label) {this.label = label;}
     }

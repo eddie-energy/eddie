@@ -235,7 +235,7 @@ class DataSourceAdapterTest {
 
     private static class HealthTestDataSourceAdapter extends DataSourceAdapter<DataSource> {
 
-        protected HealthTestDataSourceAdapter(DataSource dataSource) {
+        HealthTestDataSourceAdapter(DataSource dataSource) {
             super(dataSource);
         }
 
@@ -249,7 +249,7 @@ class DataSourceAdapterTest {
             // Not needed for test setup
         }
 
-        public void addTestHealthValidationMessage(AiidaRecord r) {
+        void addTestHealthValidationMessage(AiidaRecord r) {
             healthValidationMessages.addFirst(r);
         }
     }

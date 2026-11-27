@@ -49,6 +49,8 @@ public final class FluviusMeteringSeries {
     ) {}
 
     /**
+     * One measured value at a position within a series.
+     *
      * @param position starts at 1
      * @param quantity the value converted to the standard unit
      * @param quality  CIM quality code

@@ -3,6 +3,9 @@
     <module2copyright>
       <element module="All" copyright="Apache 2.0 SPDX" />
     </module2copyright>
+    <LanguageOptions name="Properties">
+      <option name="fileTypeOverride" value="1" />
+    </LanguageOptions>
     <LanguageOptions name="__TEMPLATE__">
       <option name="block" value="false" />
     </LanguageOptions>

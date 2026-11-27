@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.sandbox;
@@ -14,8 +14,6 @@ public class MockEan {
     private static final Logger LOGGER = LoggerFactory.getLogger(MockEan.class);
     // EAN for quarter hourly electricity meter for consumption and production
     private static final String DEFAULT_EAN = "541440110000000001";
-    // 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
-    private static final String EAN_FORMAT = "54144%s%s%s0000000001";
     private final DataNeed dataNeed;
     private final FluviusPermissionRequest permissionRequest;
     private final Granularity granularity;
@@ -49,6 +47,7 @@ public class MockEan {
                 throw new IllegalArgumentException("Invalid granularity " + permissionRequest.granularity());
             }
         };
-        return EAN_FORMAT.formatted(energyType, "1", granularityString);
+        // 54144 (0 -> electricity, 1 -> gas) (0 -> decrease only, 1 -> sampling & injection) (0 -> VH_day, 1 -> VH_quarter_hour) 0000000 (xxx -> 1000 meters per group)
+        return "54144%s%s%s0000000001".formatted(energyType, "1", granularityString);
     }
 }

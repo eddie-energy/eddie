@@ -53,27 +53,24 @@ public class UtilityEventService {
         var permissionId = res.permissionId();
         LOGGER.debug("Got webhook event '{}' for permission request {}", event.type(), permissionId);
         switch (event.type()) {
-            case "authorization_expired":
+            case "authorization_expired" -> {
                 LOGGER.info("Got authorization expired event for {} permission request {}",
                             res.status(),
                             permissionId);
                 if (res.status() != PermissionProcessStatus.EXTERNALLY_TERMINATED) {
                     outbox.commit(new UsUnfulfillableEvent(permissionId, false));
                 }
-                break;
-            case "authorization_revoked":
+            }
+            case "authorization_revoked" -> {
                 LOGGER.info("Got authorization revoked for {} permission request {}",
                             res.status(),
                             permissionId);
                 outbox.commit(new UsSimpleEvent(permissionId, PermissionProcessStatus.REVOKED));
-                break;
-            case "meter_created":
-                meterEventCallbacks.onMeterCreatedEvent(event, res);
-                break;
-            case "meter_historical_collection_finished_successful":
-                meterEventCallbacks.onHistoricalCollectionFinishedEvent(event, res);
-                break;
-            case "authorization_update_finished_successful":
+            }
+            case "meter_created" -> meterEventCallbacks.onMeterCreatedEvent(event, res);
+            case "meter_historical_collection_finished_successful" ->
+                    meterEventCallbacks.onHistoricalCollectionFinishedEvent(event, res);
+            case "authorization_update_finished_successful" -> {
                 if (res.status() == PermissionProcessStatus.ACCEPTED) {
                     outbox.commit(new UsAuthorizationUpdateFinishedEvent(permissionId));
                 } else {
@@ -81,9 +78,10 @@ public class UtilityEventService {
                                 permissionId,
                                 res.status());
                 }
-                break;
-            default:
+            }
+            default -> {
                 // No-Op
+            }
         }
     }
 }

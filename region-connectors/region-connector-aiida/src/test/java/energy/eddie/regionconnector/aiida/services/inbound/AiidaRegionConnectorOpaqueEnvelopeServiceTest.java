@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import static org.mockito.Mockito.verify;
@@ -28,7 +29,13 @@ class AiidaRegionConnectorOpaqueEnvelopeServiceTest {
     void opaqueEnvelopeArrived_publishesToMqtt() throws Exception {
         // Given
         var id = "test-id";
-        var envelope = new OpaqueEnvelope(id, id, id, id, id, ZonedDateTime.now(), "test-payload");
+        var envelope = new OpaqueEnvelope(id,
+                                          id,
+                                          id,
+                                          id,
+                                          id,
+                                          ZonedDateTime.now(ZoneId.systemDefault()),
+                                          "test-payload");
 
         // When
         service.opaqueEnvelopeArrived(envelope);

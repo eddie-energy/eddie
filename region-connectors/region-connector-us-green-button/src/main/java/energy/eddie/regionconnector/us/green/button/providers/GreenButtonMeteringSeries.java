@@ -98,7 +98,7 @@ public final class GreenButtonMeteringSeries {
     }
 
     /**
-     * @return the CIM commodity kind value, or null if the commodity is not supported
+     * Returns the CIM commodity kind value, or null if the commodity is not supported.
      */
     @Nullable
     public static String commodity(ReadingType readingType) {
@@ -110,7 +110,7 @@ public final class GreenButtonMeteringSeries {
     }
 
     /**
-     * @return the CIM flow direction code, or null if the direction is not supported
+     * Returns the CIM flow direction code, or null if the direction is not supported.
      */
     @Nullable
     public static String direction(ReadingType readingType) {
@@ -123,7 +123,7 @@ public final class GreenButtonMeteringSeries {
     }
 
     /**
-     * @return the CIM business type code for a CIM flow direction code
+     * Returns the CIM business type code for a CIM flow direction code.
      */
     @Nullable
     public static String businessType(@Nullable String direction) {

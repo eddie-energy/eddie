@@ -63,7 +63,7 @@ class MqttDataSourceAdapterTest {
 
         private static final Logger LOGGER = LoggerFactory.getLogger(HealthTestMqttDataSourceAdapter.class);
 
-        protected HealthTestMqttDataSourceAdapter(MqttDataSource dataSource, MqttConfiguration mqttConfiguration) {
+        HealthTestMqttDataSourceAdapter(MqttDataSource dataSource, MqttConfiguration mqttConfiguration) {
             super(dataSource, LOGGER, mqttConfiguration);
         }
 

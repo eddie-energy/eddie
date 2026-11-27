@@ -45,7 +45,7 @@ public class PermissionRequestService {
                                        permissionRequestForCreation.connectionId()));
 
         var calculation = calculationService.calculate(dataNeedId);
-        switch (calculation) {
+        return switch (calculation) {
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(permissionId,
                                                  new AttributeError(DATA_NEED_ID, "DataNeed not found!")));
@@ -69,13 +69,13 @@ public class PermissionRequestService {
                                                  energyTimeframe.end(),
                                                  granularities.getFirst(),
                                                  permissionRequestForCreation.flow()));
-                return new CreatedPermissionRequest(permissionId);
+                yield new CreatedPermissionRequest(permissionId);
             }
             default -> {
                 var message = calculation.getClass().getSimpleName() + " not supported";
                 outbox.commit(new MalformedEvent(permissionId, List.of(new AttributeError(DATA_NEED_ID, message))));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-        }
+        };
     }
 }

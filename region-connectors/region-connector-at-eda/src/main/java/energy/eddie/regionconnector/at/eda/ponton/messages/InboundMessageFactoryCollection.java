@@ -161,6 +161,7 @@ public class InboundMessageFactoryCollection {
                         .findFirst();
     }
 
+    @SuppressWarnings("ReferenceEquality") // Factory instances are singletons; compare by identity.
     private void updateActiveConsumptionRecordFactory(EdaConsumptionRecordInboundMessageFactory factory) {
         if (activeConsumptionRecordFactory != factory) {
             LOGGER.atInfo()
@@ -176,6 +177,7 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    @SuppressWarnings("ReferenceEquality") // Factory instances are singletons; compare by identity.
     private void updateActiveMasterDataFactory(EdaMasterDataInboundMessageFactory factory) {
         if (activeMasterDataFactory != factory) {
             LOGGER.atInfo()
@@ -191,6 +193,7 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    @SuppressWarnings("ReferenceEquality") // Factory instances are singletons; compare by identity.
     private void updateActiveCMNotificationFactory(EdaCMNotificationInboundMessageFactory factory) {
         if (activeCMNotificationFactory != factory) {
             LOGGER.atInfo()
@@ -206,6 +209,7 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    @SuppressWarnings("ReferenceEquality") // Factory instances are singletons; compare by identity.
     private void updateActiveCMRevokeFactory(EdaCMRevokeInboundMessageFactory factory) {
         if (activeCMRevokeFactory != factory) {
             LOGGER.atInfo()
@@ -221,6 +225,7 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    @SuppressWarnings("ReferenceEquality") // Factory instances are singletons; compare by identity.
     private void updateActiveCPNotificationFactory(EdaCPNotificationInboundMessageFactory factory) {
         if (activeCPNotificationFactory != factory) {
             LOGGER.atInfo()
@@ -236,6 +241,7 @@ public class InboundMessageFactoryCollection {
         }
     }
 
+    @SuppressWarnings("ReferenceEquality") // Factory instances are singletons; compare by identity.
     private void updateActiveECMPListFactory(EdaECMPListInboundMessageFactory factory) {
         if (activeECMPListFactory != factory) {
             LOGGER.atInfo()

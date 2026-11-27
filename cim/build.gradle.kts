@@ -5,7 +5,7 @@ import energy.eddie.cim.GenerateCimSchemaClassesTask
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
-import java.util.Base64
+import java.util.*
 
 plugins {
     id("java")
@@ -41,6 +41,7 @@ dependencies {
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.xmlunit.core)
+    testFixturesImplementation(libs.jakarta.xml.bind.api)
     testRuntimeOnly(libs.junit.platform.launcher)
 
     // dependencies needed to generate code

@@ -78,14 +78,14 @@ public class PermissionRequestCreationService {
                 requestForCreation.connectionId(),
                 requestForCreation.meteringPointId()));
 
-        switch (dataNeedCalculationService.calculate(dataNeedId)) {
+        return switch (dataNeedCalculationService.calculate(dataNeedId)) {
             case AccountingPointDataNeedResult(Timeframe permissionTimeframe, DataNeed ignored) -> {
                 LOGGER.info("Validated accounting-point permission request {}", permissionId);
                 outbox.commit(new AccountingPointValidatedEvent(
                         permissionId,
                         permissionTimeframe.start(),
                         permissionTimeframe.end()));
-                return new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
+                yield new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
             }
             case DataNeedNotFoundResult ignored -> {
                 outbox.commit(new MalformedEvent(
@@ -106,14 +106,14 @@ public class PermissionRequestCreationService {
                         energyTimeframe.start(),
                         energyTimeframe.end(),
                         granularities.getFirst()));
-                return new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
+                yield new CreatedPermissionRequest(permissionId, buildRedirectUri(permissionId));
             }
             default -> {
                 String message = "Data need not supported!";
                 outbox.commit(new MalformedEvent(permissionId, new AttributeError(DATA_NEED_ID, message)));
                 throw new UnsupportedDataNeedException(REGION_CONNECTOR_ID, dataNeedId, message);
             }
-        }
+        };
     }
 
     private String buildRedirectUri(String permissionId) {

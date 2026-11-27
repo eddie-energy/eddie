@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.dk.energinet.filter;
@@ -57,9 +57,9 @@ class MeteringDetailsApiResponseFilterTest {
 
         // Assert
         result.as(StepVerifier::create)
-              .expectErrorMatches(e -> e instanceof ApiResponseException &&
-                                       ((ApiResponseException) e).errorCode() == 2000 &&
-                                       ((ApiResponseException) e).errorText().equals("errorText"))
+              .expectErrorMatches(e -> e instanceof ApiResponseException apiException &&
+                                       apiException.errorCode() == 2000 &&
+                                       apiException.errorText().equals("errorText"))
               .verify();
     }
 

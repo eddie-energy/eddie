@@ -81,6 +81,7 @@ class DataSourceServiceTest {
     @Mock
     private SecretsService secretsService;
     @Mock
+    @SuppressWarnings("UnusedVariable") // Injected by Mockito.
     private InboundMqttClientRegistry inboundMqttClientRegistry;
 
     @InjectMocks

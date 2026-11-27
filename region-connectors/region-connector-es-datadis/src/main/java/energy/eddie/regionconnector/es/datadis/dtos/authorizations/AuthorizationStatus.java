@@ -44,6 +44,7 @@ public enum AuthorizationStatus {
     }
 
     @JsonValue
+    @SuppressWarnings({"EffectivelyPrivate", "UnusedVariable"}) // Fields are read by Jackson via reflection.
     public Object toJson() {
         return new Object() {
             @JsonProperty("id")

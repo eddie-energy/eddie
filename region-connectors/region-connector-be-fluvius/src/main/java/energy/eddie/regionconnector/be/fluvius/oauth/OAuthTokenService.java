@@ -1,14 +1,10 @@
-// SPDX-FileCopyrightText: 2024 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
+// SPDX-FileCopyrightText: 2024-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
 package energy.eddie.regionconnector.be.fluvius.oauth;
 
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.oauth2.sdk.ClientCredentialsGrant;
-import com.nimbusds.oauth2.sdk.ParseException;
-import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientAuthentication;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
@@ -72,8 +68,10 @@ public class OAuthTokenService {
                                        Map.of("client_id", List.of(config.clientId())));
         var response = TokenResponse.parse(request.toHTTPRequest().send());
         if (!response.indicatesSuccess()) {
-            var errorResponse = response.toErrorResponse();
-            throw new OAuthException(errorResponse.toString());
+            var error = response.toErrorResponse().getErrorObject();
+            var errorMessage = "Token request rejected with code '%s'. %s".formatted(error.getCode(),
+                                                                                     error.getDescription());
+            throw new OAuthException(errorMessage);
         }
         var successResponse = response.toSuccessResponse();
         accessToken = successResponse.getTokens().getAccessToken().getValue();

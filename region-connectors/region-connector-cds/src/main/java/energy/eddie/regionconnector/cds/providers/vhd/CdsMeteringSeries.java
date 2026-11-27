@@ -34,6 +34,8 @@ public final class CdsMeteringSeries {
     }
 
     /**
+     * One measured value at a position within a usage segment.
+     *
      * @param position the position of the value in the usage segment, starts at 1
      * @param quantity the value converted to the CIM unit
      * @param quality  CIM quality code
@@ -41,7 +43,7 @@ public final class CdsMeteringSeries {
     public record SeriesPoint(int position, BigDecimal quantity, String quality) {}
 
     /**
-     * @return the CIM unit of measure code of the format
+     * Returns the CIM unit of measure code of the format.
      */
     public static String unit(FormatEnum format) {
         return conversion(format).unit();
@@ -55,7 +57,7 @@ public final class CdsMeteringSeries {
     }
 
     /**
-     * @return the CIM commodity kind value of the format
+     * Returns the CIM commodity kind value of the format.
      */
     public static String commodity(FormatEnum format) {
         return switch (format) {
@@ -68,7 +70,7 @@ public final class CdsMeteringSeries {
     }
 
     /**
-     * @return the CIM flow direction code of the format
+     * Returns the CIM flow direction code of the format.
      */
     public static String direction(FormatEnum format) {
         return switch (format) {
@@ -79,7 +81,7 @@ public final class CdsMeteringSeries {
     }
 
     /**
-     * @return the CIM business type code of a CIM flow direction code, or null for netted values
+     * Returns the CIM business type code of a CIM flow direction code, or null for netted values.
      */
     @Nullable
     public static String businessType(String direction) {
@@ -91,7 +93,7 @@ public final class CdsMeteringSeries {
     }
 
     /**
-     * @return the resolution of the usage segment
+     * Returns the resolution of the usage segment.
      */
     public static Duration resolution(UsageSegment usageSegment) {
         return Duration.ofSeconds(usageSegment.interval().longValue());

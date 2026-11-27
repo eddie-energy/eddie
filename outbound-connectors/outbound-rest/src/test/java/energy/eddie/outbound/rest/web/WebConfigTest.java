@@ -24,6 +24,7 @@ class WebConfigTest {
     private HttpMessageConverters.ServerBuilder serverBuilder;
 
     @Test
+    @SuppressWarnings("ReferenceEquality") // The exact mapper instance must be used.
     void configure_removesJacksonMappers_replacesWithFallbackAndCustomJacksonJsonMapper() {
         // Given
 
