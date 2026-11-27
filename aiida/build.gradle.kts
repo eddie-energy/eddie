@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2023-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
+import com.google.cloud.tools.jib.gradle.JibTask
 import energy.eddie.configureJavaCompileWithErrorProne
 
 plugins {
@@ -118,6 +119,11 @@ tasks.withType<JavaCompile>().configureEach {
 
 tasks.withType<ProcessResources>().configureEach {
     dependsOn(":pnpmBuildAiida")
+}
+
+// Jib does not support the configuration cache yet, see https://github.com/GoogleContainerTools/jib/issues/3132
+tasks.withType<JibTask>().configureEach {
+    notCompatibleWithConfigurationCache("Jib does not support the configuration cache, see https://github.com/GoogleContainerTools/jib/issues/3132")
 }
 
 jib {
