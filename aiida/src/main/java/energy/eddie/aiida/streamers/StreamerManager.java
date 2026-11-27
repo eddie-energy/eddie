@@ -206,7 +206,7 @@ public class StreamerManager implements AutoCloseable {
     private Flux<AiidaRecord> buildFilteredFlux(AcceptedOutboundPermission permission) {
         var dataNeed = permission.dataNeed();
         return aggregator.getFilteredFlux(dataNeed.dataTags(),
-                                          dataNeed.asset(),
+                                          dataNeed.assets(),
                                           permission.expirationTime(),
                                           permission.transmissionSchedule(),
                                           permission.userId(),

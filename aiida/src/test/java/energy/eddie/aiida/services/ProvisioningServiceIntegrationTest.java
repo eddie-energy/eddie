@@ -18,7 +18,6 @@ import energy.eddie.aiida.repositories.InboundDataSourceRepository;
 import energy.eddie.aiida.repositories.PermissionRepository;
 import energy.eddie.aiida.services.secrets.SecretsService;
 import energy.eddie.aiida.utils.MqttFactory;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.mqtt.MqttDto;
 import energy.eddie.dataneeds.needs.aiida.InboundAiidaDataNeed;
@@ -398,7 +397,6 @@ class ProvisioningServiceIntegrationTest {
                 CronExpression.parse("0 * * * * *")
         );
         when(dataNeed.schemas()).thenReturn(Set.of(AiidaSchema.OPAQUE));
-        when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         when(dataNeed.allowedPermissionCommands()).thenReturn(Set.of());
         when(dataNeed.contexts()).thenReturn(Set.of());
         return new InboundAiidaLocalDataNeed(dataNeed);

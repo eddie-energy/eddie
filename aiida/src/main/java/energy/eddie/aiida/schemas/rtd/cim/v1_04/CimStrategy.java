@@ -58,7 +58,7 @@ public class CimStrategy extends BaseCimFormatterStrategy<RTDEnvelope, TimeSerie
         return new RTDEnvelope()
                 .withMarketDocument(toRealTimeDataMarketDocument(aiidaRecord, countryCode))
                 .withMessageDocumentHeaderCreationDateTime(ZonedDateTime.now(UTC))
-                .withMessageDocumentHeaderMetaInformationAsset(dataSource.asset().toString())
+                .withMessageDocumentHeaderMetaInformationAsset(Objects.toString(dataSource.asset(), null))
                 .withMessageDocumentHeaderMetaInformationConnectionId(permission.connectionId())
                 .withMessageDocumentHeaderMetaInformationDataNeedId(dataNeed.dataNeedId().toString())
                 .withMessageDocumentHeaderMetaInformationDataSourceId(dataSource.id().toString())

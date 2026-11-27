@@ -4,7 +4,6 @@
 package energy.eddie.aiida.models.permission.dataneed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaContext;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.cim.agnostic.PermissionCommand;
@@ -77,11 +76,6 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Enumerated(EnumType.STRING)
     protected Set<AiidaSchema> schemas;
 
-    @Column(nullable = false, name = "asset")
-    @JsonProperty
-    @Enumerated(EnumType.STRING)
-    protected AiidaAsset asset;
-
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "aiida_local_data_need_contexts", joinColumns = @JoinColumn(name = "data_need_id"))
     @Column(name = "context")
@@ -104,7 +98,6 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
         this.policyLink = dataNeed.policyLink();
         this.transmissionSchedule = dataNeed.transmissionSchedule();
         this.schemas = dataNeed.schemas();
-        this.asset = dataNeed.asset();
         this.acknowledgementRequired = dataNeed.acknowledgementRequired();
         this.allowedPermissionCommands = Objects.requireNonNullElse(dataNeed.allowedPermissionCommands(), Set.of());
         this.contexts = Objects.requireNonNullElse(dataNeed.contexts(), Set.of());
@@ -122,11 +115,6 @@ public abstract class AiidaLocalDataNeed implements AiidaDataNeedInterface {
     @Override
     public Set<PermissionCommand.Action> allowedPermissionCommands() {
         return allowedPermissionCommands;
-    }
-
-    @Override
-    public AiidaAsset asset() {
-        return asset;
     }
 
     @Override

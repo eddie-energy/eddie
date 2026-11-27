@@ -100,7 +100,7 @@ class StreamerManagerTest {
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
-        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), anyBoolean()))
                      .thenReturn(mockAiidaStreamer);
@@ -126,7 +126,7 @@ class StreamerManagerTest {
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
-        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
         try (MockedStatic<StreamerFactory> utilities = Mockito.mockStatic(StreamerFactory.class)) {
             utilities.when(() -> StreamerFactory.getAiidaStreamer(any(), any(), any(), anyBoolean()))
                      .thenReturn(mockAiidaStreamer);
@@ -170,7 +170,7 @@ class StreamerManagerTest {
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
-        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
         when(mockMap.get(permissionId)).thenReturn(mockAiidaStreamer);
 
         // When
@@ -247,7 +247,7 @@ class StreamerManagerTest {
         when(mockPermission.expirationTime()).thenReturn(expirationTime);
         when(mockPermission.dataNeed()).thenReturn(mockDataNeed);
         when(mockDataNeed.dataTags()).thenReturn(Set.of(ObisCode.POSITIVE_ACTIVE_ENERGY));
-        when(mockDataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
+        when(mockDataNeed.assets()).thenReturn(Set.of(AiidaAsset.SUBMETER));
         when(mockPermission.userId()).thenReturn(userId);
         when(mockPermission.dataSource()).thenReturn(mockDataSource);
         when(mockPermission.transmissionSchedule()).thenReturn(CronExpression.parse("* * * * * *"));

@@ -5,6 +5,7 @@ package energy.eddie.aiida.aggregator;
 
 import energy.eddie.aiida.adapters.datasource.simulation.SimulationAdapter;
 import energy.eddie.aiida.models.datasource.interval.simulation.SimulationDataSource;
+import energy.eddie.aiida.models.datasource.mqtt.inbound.InboundDataSource;
 import energy.eddie.aiida.models.record.AiidaRecord;
 import energy.eddie.aiida.models.record.AiidaRecordValue;
 import energy.eddie.aiida.models.record.DataSourceRecord;
@@ -17,6 +18,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,6 +37,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static energy.eddie.api.agnostic.aiida.ObisCode.*;
 import static energy.eddie.api.agnostic.aiida.UnitOfMeasurement.KILO_WATT;
@@ -52,6 +56,8 @@ class OutboundAggregatorTest {
     private SimulationDataSource dataSource1;
     @Mock
     private SimulationDataSource dataSource2;
+    @Mock
+    private InboundDataSource inboundDataSource;
     private final HealthContributorRegistry healthContributorRegistry = new DefaultHealthContributorRegistry();
     private OutboundAggregator aggregator;
     private AiidaAsset wantedAsset;
@@ -175,7 +181,7 @@ class OutboundAggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter2);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
-                                                                                   wantedAsset,
+                                                                                   Set.of(wantedAsset),
                                                                                    expiration,
                                                                                    transmissionSchedule,
                                                                                    USER_ID,
@@ -212,7 +218,7 @@ class OutboundAggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter1);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
-                                                                                   wantedAsset,
+                                                                                   Set.of(wantedAsset),
                                                                                    expiration,
                                                                                    transmissionSchedule,
                                                                                    USER_ID,
@@ -230,6 +236,87 @@ class OutboundAggregatorTest {
         stepVerifier.verify(Duration.ofSeconds(2));
     }
 
+
+    static Stream<Set<AiidaAsset>> allowedAssetsContainingDataSourceAsset() {
+        return Stream.of(
+                Set.of(),
+                Set.of(AiidaAsset.SUBMETER),
+                Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT, AiidaAsset.SUBMETER)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("allowedAssetsContainingDataSourceAsset")
+    void getFilteredFlux_withEmptyOrMatchingAllowedAssets_emitsRecord(Set<AiidaAsset> allowedAssets) {
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
+        when(mockAdapter1.start()).thenReturn(publisher.flux());
+        aggregator.addNewDataSourceAdapter(mockAdapter1);
+
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   allowedAssets,
+                                                                                   expiration,
+                                                                                   transmissionSchedule,
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
+                                                .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
+                                                        aiidaRecord,
+                                                        wanted.aiidaRecordValues().getFirst()))
+                                                .thenCancel()
+                                                .verifyLater();
+
+        publisher.next(wanted);
+
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void getFilteredFlux_withInboundDataSourceAndRestrictedAssets_emitsRecord() {
+        when(inboundDataSource.id()).thenReturn(DATA_SOURCE_ID_1);
+        when(inboundDataSource.userId()).thenReturn(USER_ID);
+        var inboundRecord = new AiidaRecord(wanted.timestamp(), inboundDataSource, wanted.aiidaRecordValues());
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
+        when(mockAdapter1.start()).thenReturn(publisher.flux());
+        aggregator.addNewDataSourceAdapter(mockAdapter1);
+
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   Set.of(AiidaAsset.CONTROLLABLE_UNIT),
+                                                                                   expiration,
+                                                                                   transmissionSchedule,
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
+                                                .expectNextMatches(aiidaRecord -> containsExpectedAiidaRecordValue(
+                                                        aiidaRecord,
+                                                        wanted.aiidaRecordValues().getFirst()))
+                                                .thenCancel()
+                                                .verifyLater();
+
+        publisher.next(inboundRecord);
+
+        stepVerifier.verify(Duration.ofSeconds(2));
+    }
+
+    @Test
+    void getFilteredFlux_withAllowedAssetsNotContainingDataSourceAsset_filtersRecord() {
+        TestPublisher<DataSourceRecord> publisher = TestPublisher.create();
+        when(mockAdapter1.start()).thenReturn(publisher.flux());
+        aggregator.addNewDataSourceAdapter(mockAdapter1);
+
+        StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
+                                                                                   Set.of(AiidaAsset.CONNECTION_AGREEMENT_POINT,
+                                                                                          AiidaAsset.CONTROLLABLE_UNIT),
+                                                                                   expiration,
+                                                                                   transmissionSchedule,
+                                                                                   USER_ID,
+                                                                                   DATA_SOURCE_ID_1))
+                                                .expectSubscription()
+                                                .expectNoEvent(Duration.ofSeconds(2))
+                                                .thenCancel()
+                                                .verifyLater();
+
+        publisher.next(wanted);
+
+        stepVerifier.verify(Duration.ofSeconds(4));
+    }
 
     @Test
     void getFilteredFlux_mergeRecordsByRawTag() {
@@ -264,7 +351,7 @@ class OutboundAggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter1);
 
         StepVerifier stepVerifier = StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
-                                                                                   wantedAsset,
+                                                                                   Set.of(wantedAsset),
                                                                                    expiration,
                                                                                    transmissionSchedule,
                                                                                    USER_ID,
@@ -339,7 +426,7 @@ class OutboundAggregatorTest {
         aggregator.addNewDataSourceAdapter(mockAdapter1);
 
         StepVerifier.create(aggregator.getFilteredFlux(wantedCodes,
-                                                       wantedAsset,
+                                                       Set.of(wantedAsset),
                                                        expiration,
                                                        transmissionSchedule,
                                                        USER_ID,
@@ -361,7 +448,7 @@ class OutboundAggregatorTest {
     @Test
     void verify_close_emitsCompleteSignalForFilteredFlux() {
         var stepVerifier1 = StepVerifier.create(aggregator.getFilteredFlux(Set.of(POSITIVE_ACTIVE_ENERGY_IN_PHASE_L1),
-                                                                           wantedAsset,
+                                                                           Set.of(wantedAsset),
                                                                            expiration,
                                                                            transmissionSchedule,
                                                                            USER_ID,
@@ -370,7 +457,7 @@ class OutboundAggregatorTest {
                                         .verifyLater();
 
         var stepVerifier2 = StepVerifier.create(aggregator.getFilteredFlux(Set.of(POSITIVE_ACTIVE_ENERGY_IN_PHASE_L2),
-                                                                           wantedAsset,
+                                                                           Set.of(wantedAsset),
                                                                            expiration,
                                                                            transmissionSchedule,
                                                                            USER_ID,
@@ -379,7 +466,7 @@ class OutboundAggregatorTest {
                                         .verifyLater();
 
         var stepVerifier3 = StepVerifier.create(aggregator.getFilteredFlux(Set.of(POSITIVE_ACTIVE_ENERGY_IN_PHASE_L3),
-                                                                           wantedAsset,
+                                                                           Set.of(wantedAsset),
                                                                            expiration,
                                                                            transmissionSchedule,
                                                                            USER_ID,

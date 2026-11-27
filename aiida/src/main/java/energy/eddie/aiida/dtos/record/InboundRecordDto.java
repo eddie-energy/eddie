@@ -16,7 +16,7 @@ public record InboundRecordDto(
         @JsonProperty Instant timestamp,
         @JsonProperty UUID userId,
         @JsonProperty UUID dataSourceId,
-        @JsonProperty AiidaAsset asset,
+        @JsonProperty @Nullable AiidaAsset asset,
         @JsonProperty @Nullable String meterId,
         @JsonProperty @Nullable String operatorId,
         @JsonProperty AiidaSchema schema,

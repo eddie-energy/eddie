@@ -14,7 +14,6 @@ import energy.eddie.aiida.models.permission.MqttStreamingConfig;
 import energy.eddie.aiida.models.permission.dataneed.InboundAiidaLocalDataNeed;
 import energy.eddie.aiida.services.secrets.KeyStoreSecretsService;
 import energy.eddie.aiida.services.secrets.SecretType;
-import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -309,22 +308,20 @@ class InboundDataSourceTest {
     @Test
     void builder_build_createsInboundDataSourceLinkedToPermission() {
         var permissionId = UUID.randomUUID();
-        var dataNeed = mock(InboundAiidaLocalDataNeed.class);
         var streamingConfig = mock(MqttStreamingConfig.class);
-        when(dataNeed.asset()).thenReturn(AiidaAsset.SUBMETER);
         var owningPermission = mock(InboundPermission.class);
         when(owningPermission.userId()).thenReturn(USER_ID);
         when(owningPermission.id()).thenReturn(permissionId);
-        when(owningPermission.dataNeed()).thenReturn(dataNeed);
         when(owningPermission.mqttStreamingConfig()).thenReturn(streamingConfig);
 
         var inboundDataSource = new InboundDataSource.Builder(owningPermission).build();
 
         assertEquals(owningPermission, inboundDataSource.permission());
+        assertThat(inboundDataSource.asset()).isNull();
     }
 
     private static InboundDataSourceDto dto() {
-        return new InboundDataSourceDto(AiidaAsset.SUBMETER, UUID.randomUUID());
+        return new InboundDataSourceDto(UUID.randomUUID());
     }
 
     private static void setId(InboundDataSource dataSource, UUID id) throws Exception {

@@ -4,11 +4,14 @@
 package energy.eddie.dataneeds.needs.aiida;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.AiidaSchema;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -32,6 +35,17 @@ public class OutboundAiidaDataNeed extends AiidaDataNeed implements OutboundAiid
     @JsonProperty
     private Set<ObisCode> dataTags;
 
+    @Schema(description = "The kinds of asset the data may be retrieved from ('CONNECTION-AGREEMENT-POINT', 'CONTROLLABLE-UNIT', 'DEDICATED-MEASUREMENT-DEVICE', 'SUBMETER'). An empty or missing list allows any asset.")
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_data_need_assets",
+            joinColumns = @JoinColumn(name = "data_need_id"),
+            schema = "data_needs")
+    @Column(name = "asset")
+    @JsonProperty
+    @Enumerated(EnumType.STRING)
+    // Mutable, since Hibernate adds the elements to the default value of a new instance when merging
+    private Set<AiidaAsset> assets = new HashSet<>();
+
     @SuppressWarnings("NullAway.Init")
     public OutboundAiidaDataNeed() {
         // Default constructor for JPA
@@ -40,6 +54,11 @@ public class OutboundAiidaDataNeed extends AiidaDataNeed implements OutboundAiid
     @Override
     public Set<AiidaSchema> supportedSchemas() {
         return SUPPORTED_SCHEMAS;
+    }
+
+    @Override
+    public Set<AiidaAsset> assets() {
+        return assets == null ? Set.of() : assets;
     }
 
     @Override

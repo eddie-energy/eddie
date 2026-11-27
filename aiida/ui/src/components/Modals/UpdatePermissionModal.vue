@@ -2,11 +2,11 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
 <script setup lang="ts">
-import ModalDialog from '@/components/ModalDialog.vue'
+import ModalDialog from "@/components/ModalDialog.vue";
 
-import Button from '@/components/Button.vue'
-import { computed, ref, watch } from 'vue'
-import PermissionDetails from '@/components/PermissionDetails.vue'
+import Button from "@/components/Button.vue";
+import { computed, ref, watch } from "vue";
+import PermissionDetails from "@/components/PermissionDetails.vue";
 import {
   acceptInboundPermission,
   acceptOutboundPermission,
@@ -14,11 +14,11 @@ import {
   getDataSources,
   rejectPermission,
   updateConnectionLimitMonitoring,
-} from '@/api'
-import { usePermissionDialog } from '@/composables/permission-dialog'
-import CustomSelect from '../CustomSelect.vue'
-import type { AiidaDataSource, AiidaInboundPermission, AiidaSchema } from '@/types'
-import { useI18n } from 'vue-i18n'
+} from "@/api";
+import { usePermissionDialog } from "@/composables/permission-dialog";
+import CustomSelect from "../CustomSelect.vue";
+import type { AiidaDataSource, AiidaInboundPermission, AiidaSchema } from "@/types";
+import { useI18n } from "vue-i18n";
 
 const inboundSchemas: Set<AiidaSchema> = new Set(['MIN-MAX-ENVELOPE-CIM-V1-12', 'OPAQUE'])
 
@@ -50,6 +50,12 @@ watch([open], async () => {
 })
 
 const isOutbound = computed(() => permission.value?.type === 'outbound')
+
+/** An empty list of allowed assets allows any asset. */
+const isAllowedAsset = (asset?: string) => {
+  const allowedAssets = permission.value?.dataNeed.assets ?? []
+  return allowedAssets.length === 0 || (!!asset && allowedAssets.includes(asset))
+}
 
 const handleInput = async (confirm: boolean) => {
   loading.value = true
@@ -91,7 +97,6 @@ const handleModalClose = () => {
 
 const dataSourceOptions = computed(() => {
   const requestedSchemas = permission.value?.dataNeed.schemas ?? []
-  const requestedAsset = permission.value?.dataNeed.asset
   const permissionMeterId = permission.value?.meterId
   const matches: { label: string; value: string }[] = []
 
@@ -100,7 +105,6 @@ const dataSourceOptions = computed(() => {
     for (const { dataSource, displayName } of inboundPermissions.value) {
       if (
         dataSource && // For TypeScript, even though it should always be set here
-        dataSource.asset === requestedAsset &&
         requestedSchemas.some((requestedSchema) => dataSource.schemas?.includes(requestedSchema)) &&
         (!permissionMeterId || dataSource.meterId === permissionMeterId)
       ) {
@@ -113,7 +117,7 @@ const dataSourceOptions = computed(() => {
   if (requestedSchemas.some((requestedSchema) => !inboundSchemas.has(requestedSchema))) {
     matches.push(
       ...outboundDataSources.value
-        .filter(({ asset }) => asset === requestedAsset)
+        .filter(({ asset }) => isAllowedAsset(asset))
         .map(({ id, name }) => ({
           label: name,
           value: id,

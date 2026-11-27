@@ -4,12 +4,14 @@
 package energy.eddie.aiida.models.permission.dataneed;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import energy.eddie.api.agnostic.aiida.AiidaAsset;
 import energy.eddie.api.agnostic.aiida.ObisCode;
 import energy.eddie.api.agnostic.aiida.ObisCodeConverter;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeed;
 import energy.eddie.dataneeds.needs.aiida.OutboundAiidaDataNeedInterface;
 import jakarta.persistence.*;
 
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
@@ -24,6 +26,13 @@ public class OutboundAiidaLocalDataNeed extends AiidaLocalDataNeed implements Ou
     @JsonProperty
     protected Set<ObisCode> dataTags;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "aiida_local_data_need_assets", joinColumns = @JoinColumn(name = "data_need_id"))
+    @Column(name = "asset")
+    @Enumerated(EnumType.STRING)
+    @JsonProperty
+    protected Set<AiidaAsset> assets;
+
     @SuppressWarnings("NullAway.Init")
     protected OutboundAiidaLocalDataNeed() {
     }
@@ -31,6 +40,12 @@ public class OutboundAiidaLocalDataNeed extends AiidaLocalDataNeed implements Ou
     public OutboundAiidaLocalDataNeed(OutboundAiidaDataNeed dataNeed) {
         super(dataNeed);
         this.dataTags = Objects.requireNonNullElse(dataNeed.dataTags(), Set.of());
+        this.assets = new HashSet<>(dataNeed.assets());
+    }
+
+    @Override
+    public Set<AiidaAsset> assets() {
+        return assets;
     }
 
     @Override

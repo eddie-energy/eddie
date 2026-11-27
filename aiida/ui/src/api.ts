@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2025-2026 The EDDIE Developers <eddie.developers@fh-hagenberg.at>
 // SPDX-License-Identifier: Apache-2.0
 
-import { fetchEventSource } from '@microsoft/fetch-event-source'
-import useToast from './composables/useToast'
-import { keycloak } from './keycloak'
+import { fetchEventSource } from "@microsoft/fetch-event-source";
+import useToast from "./composables/useToast";
+import { keycloak } from "./keycloak";
 import type {
   AiidaApplicationInformation,
   AiidaDataSource,
@@ -23,7 +23,7 @@ import type {
   ProvisioningConnectionDto,
   ProvisioningTypePatchDto,
   UserSettings,
-} from './types'
+} from "./types";
 
 const { danger, success } = useToast()
 

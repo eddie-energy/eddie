@@ -75,7 +75,7 @@ public abstract class BaseAckFormatterStrategy implements AckFormatterStrategy {
 
     private Asset toAsset(InboundDataSource dataSource) {
         return new Asset()
-                .withType(dataSource.asset().toString())
+                .withType(Objects.toString(dataSource.asset(), null))
                 .withMeterId(dataSource.meterId())
                 .withOperatorId(dataSource.operatorId());
     }
