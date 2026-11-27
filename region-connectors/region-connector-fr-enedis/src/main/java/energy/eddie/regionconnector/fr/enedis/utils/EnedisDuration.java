@@ -10,6 +10,11 @@ import java.time.temporal.ChronoUnit;
 import static energy.eddie.regionconnector.fr.enedis.EnedisRegionConnectorMetadata.ZONE_ID_FR;
 
 public class EnedisDuration {
+    /**
+     * The minimum duration of the consent. Historical data needs end today or in the past, which would result in a
+     * consent of a single day, which is too short for the customer to authorize and for the data to be fetched.
+     */
+    static final long MINIMUM_DAYS = 7;
     private final LocalDate end;
     private final Clock clock;
 
@@ -25,10 +30,7 @@ public class EnedisDuration {
     @Override
     public String toString() {
         LocalDate now = LocalDate.now(clock);
-        long days = ChronoUnit.DAYS.between(now, end);
-        if (days <= 0) {
-            days = 1; // minimum duration is 1 day
-        }
+        long days = Math.max(ChronoUnit.DAYS.between(now, end), MINIMUM_DAYS);
         return "P%sD".formatted(days);
     }
 }
